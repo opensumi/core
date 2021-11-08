@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
+import { ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
@@ -318,8 +318,8 @@ export class VSCodeContributeRunner extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(ISchemaRegistry)
-  schemaRegistry: ISchemaRegistry;
+  @Autowired(IJSONSchemaRegistry)
+  schemaRegistry: IJSONSchemaRegistry;
 
   @Autowired(IEventBus)
   protected eventBus: IEventBus;
@@ -343,8 +343,6 @@ export class VSCodeContributeRunner extends WithEventBus {
     if (skipContribute.length > 0 && skipContribute[0].result) {
       return;
     }
-
-    // TODO: filter for contributes here
 
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);

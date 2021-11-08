@@ -251,7 +251,6 @@ function isPosixPathSeparator(code?: number | undefined): boolean {
 	return code === CHAR_FORWARD_SLASH;
 }
 
-// FIXME: 此部分实现应该有问题，需要进一步判断下一个是不是 Colon，否则对于带 scheme 的会引起问题
 function isWindowsDeviceRoot(code: number) {
 	return code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z ||
 		code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z;

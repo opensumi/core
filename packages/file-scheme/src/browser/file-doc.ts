@@ -1,13 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, IJSONSchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
-// TODO 这块其实应该放到file service当中
 @Injectable()
 export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProvider implements IEditorDocumentModelContentProvider {
 
@@ -70,8 +69,8 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
   @Autowired(ISchemaStore)
   schemaStore: ISchemaStore;
 
-  @Autowired(ISchemaRegistry)
-  jsonRegistry: ISchemaRegistry;
+  @Autowired(IJSONSchemaRegistry)
+  jsonRegistry: IJSONSchemaRegistry;
 
   private _onDidChangeContent: Emitter<URI> = new Emitter();
 

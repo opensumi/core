@@ -101,9 +101,6 @@ export interface IBrowserFileSystemRegistry {
 
 export const IBrowserFileSystemRegistry = Symbol('IBrowserFileSystemRegistry');
 
-// TODO 重构前真正的provider仍然注册在node层，这里只保留scheme让它能够欧正常判断是否处理scheme
 export interface IFileSystemProvider {
-
   scheme: string;
-
 }

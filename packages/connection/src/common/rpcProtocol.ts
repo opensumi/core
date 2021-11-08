@@ -31,13 +31,16 @@ export function transformErrorForSerialization(error: any): any {
   return error;
 }
 
-// T 啥?
+export interface IProxyIdentifier {
+  serviceId: string;
+  countId: number;
+}
+
 export class ProxyIdentifier<T = any> {
   public static count = 0;
 
   public readonly serviceId: string;
   public readonly countId: number;
-  // TODO: 增加 env 标识
   constructor(serviceId: string) {
     this.serviceId = serviceId;
     this.countId = ++ProxyIdentifier.count;

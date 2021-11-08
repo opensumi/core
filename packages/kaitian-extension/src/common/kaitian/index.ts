@@ -3,7 +3,7 @@ import { IMainThreadLifeCycle, IExtHostLifeCycle } from './lifecycle';
 import { IExtHostTheme, IMainThreadTheme } from './theme';
 import { IMainThreadLayout, IExtHostLayout } from './layout';
 import { IMainThreadCommon, IExtHostCommon } from './common';
-import { IMainThreadToolbar } from './toolbar';
+import { IExtHostToolbar, IMainThreadToolbar } from './toolbar';
 import { IExtHostIDEWindow, IMainThreadIDEWindow } from './window';
 
 export const MainThreadKaitianAPIIdentifier = {
@@ -20,6 +20,6 @@ export const ExtHostKaitianAPIIdentifier = {
   ExtHostLayout: createExtHostContextProxyIdentifier<IExtHostLayout>('ExtHostLayout'),
   ExtHostTheme: createExtHostContextProxyIdentifier<IExtHostTheme>('ExtHostTheme'),
   ExtHostCommon: createExtHostContextProxyIdentifier<IExtHostCommon>('ExtHostCommon'),
-  ExtHostToolbar: createExtHostContextProxyIdentifier('ExtHostToolbar'),
+  ExtHostToolbar: createExtHostContextProxyIdentifier<IExtHostToolbar>('ExtHostToolbar'),
   ExtHostIDEWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostIDEWindow'),
 };

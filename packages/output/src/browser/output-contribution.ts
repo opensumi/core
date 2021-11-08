@@ -44,7 +44,6 @@ export class OutputContribution extends Disposable implements CommandContributio
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(OUTPUT_CLEAR, {
       execute: () => this.outputService.selectedChannel.clear(),
-      // FIXME 默认为output面板时，无法直接刷新按钮可用状态，需要给出事件 @CC
       isEnabled: () => !!this.outputService.selectedChannel,
     });
   }

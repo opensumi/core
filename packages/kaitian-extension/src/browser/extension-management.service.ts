@@ -123,9 +123,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   private disableExtension(extensionPath: string): void {
     const extension = this.extInstanceManagementService.getExtensionInstanceByPath(extensionPath);
     if (extension) {
-      // FIXME: 考虑直接 disable 中内置掉 dispose @柳千
       extension.disable();
-      extension.dispose();
       this.extInstanceManagementService.deleteExtensionInstanceByPath(extensionPath);
     }
   }

@@ -62,7 +62,7 @@ export class MarkerViewModel extends Disposable {
         } else {
           this.markers.delete(resource);
         }
-      } else {// TODO 考虑优化性能
+      } else {
         this.markers.set(resource, markerModel);
       }
     }

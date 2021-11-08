@@ -2,7 +2,8 @@ import { IDialogService } from '@ali/ide-overlay';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
-import { Disposable, URI, localize, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
+import { Disposable, URI, localize, IJSONSchemaRegistry, ISchemaStore, OS, IApplicationService } from '@ali/ide-core-browser';
+import { CommonServerPath } from '@ali/ide-core-common';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
@@ -16,7 +17,7 @@ import { HashCalculateServiceImpl, IHashCalculateService } from '@ali/ide-core-c
 describe('file scheme tests', () => {
 
   const injector = createBrowserInjector([FileSchemeModule]);
-  injector.addProviders({
+  injector.overrideProviders({
     token: IFileServiceClient,
     useClass: MockFileServiceClient,
   },
@@ -37,18 +38,19 @@ describe('file scheme tests', () => {
     },
     override: true,
   }, {
-    token: ISchemaRegistry,
+    token: IJSONSchemaRegistry,
     useValue: {},
   }, {
     token: ISchemaStore,
     useValue: {},
+  }, {
+    token: CommonServerPath,
+    useValue: {
+      getBackendOS: jest.fn(() => OS.Type.Linux),
+    },
   });
 
   const hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
-
-  beforeAll(async () => {
-    await hashCalculateService.initialize();
-  });
 
   let dialogResult: string | undefined;
   injector.mock(IDialogService, 'open', async () => {
@@ -79,15 +81,21 @@ describe('file scheme tests', () => {
     useValue: {},
   });
 
+  beforeAll(async () => {
+    await hashCalculateService.initialize();
+    const applicationService = injector.get(IApplicationService);
+    await applicationService.initializeData();
+  });
+
   const saveByContent = jest.fn();
   injector.mock(FileSchemeDocNodeServicePath, '$saveByContent', () => {
     return saveByContent();
   });
 
-  it('resource service test', async (done) => {
+  it('resource service test', async () => {
 
     const resourceProvider = injector.get(FileSystemResourceProvider);
-
+    await resourceProvider.init();
     const resource = await resourceProvider.provideResource(new URI('file:///test.ts'));
 
     expect(resource.name).toBe('test.ts');
@@ -107,8 +115,6 @@ describe('file scheme tests', () => {
 
     dialogResult = localize('file.prompt.cancel', '取消');
     expect (await resourceProvider.shouldCloseResource(resource, [[resource]])).toBeFalsy();
-
-    done();
   });
 
   it('doc service test', async (done) => {
@@ -152,7 +158,7 @@ describe('file scheme tests', () => {
 
     expect(vscodeDoc.handlesScheme('vscode')).toBeTruthy();
     expect(vscodeDoc.isReadonly(new URI('vscode:///anyUri'))).toBeTruthy();
-    injector.mock(ISchemaRegistry, 'getSchemaContributions', jest.fn(() => {
+    injector.mock(IJSONSchemaRegistry, 'getSchemaContributions', jest.fn(() => {
       return {
         schemas: {
           [new URI('vscode:///testuri').toString()] : {

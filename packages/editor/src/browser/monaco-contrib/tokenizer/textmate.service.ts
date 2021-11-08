@@ -154,7 +154,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       }
 
       if (configuration) {
-        // FIXME: type for wordPattern/indentationRules @寻壑
+        // FIXME: type for wordPattern/indentationRules
         monaco.languages.setLanguageConfiguration(language.id, {
           wordPattern: this.createRegex(configuration.wordPattern),
           autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),

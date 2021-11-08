@@ -431,8 +431,6 @@ function getEditorOption(editor: IMonacoCodeEditor): IResolvedTextEditorConfigur
     insertSpaces: modelOptions.insertSpaces,
     cursorStyle: editor.getOption(monaco.editor.EditorOption.cursorStyle),
     // 这里之前取 lineNumbers 配置项的值，现在改成取 renderType，是为了跟之前保持返回值一致
-    // FIXME RenderLineNumbersType 类型冲突了
-    // @ts-ignore
     lineNumbers: editor.getOption(monaco.editor.EditorOption.lineNumbers).renderType,
   };
 }

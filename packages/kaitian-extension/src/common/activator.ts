@@ -20,12 +20,10 @@ export interface IExtensionModule {
 
 // tslint:disable-next-line: no-empty-interface
 export interface IExtensionAPI {
-  // TODO
 }
 
 // tslint:disable-next-line: no-empty-interface
 export interface IExtendExportAPI {
-  //
 }
 
 export interface ActivatedExtensionJSON {

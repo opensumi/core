@@ -389,7 +389,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       rangePromise.push((async () => {
         const ranges = await provider.getCommentingRanges(model?.instance!);
         if (ranges && ranges.length) {
-          // FIXME: range会被diff uri的两个range互相覆盖，导致可能根据行查不到provider
+          // FIXME: ranges 会被 Diff uri 的两个 range 互相覆盖，导致可能根据行查不到 provider
           this.rangeOwner.set(id, ranges);
         }
         return ranges;

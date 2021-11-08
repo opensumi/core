@@ -469,6 +469,9 @@ export const localizationBundle = {
 
     'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
     'editor.largeFile.prevent.stillOpen': '仍要打开',
+    'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
+    'editor.resetEditorGroups': '重置编辑器组大小',
+    'editor.revert': '还原文档',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',

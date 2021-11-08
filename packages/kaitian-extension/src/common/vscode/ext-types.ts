@@ -2571,7 +2571,7 @@ export enum ExtensionMode {
    * The extension is running from an `--extensionDevelopmentPath` and
    * the extension host is running unit tests.
    */
-  // TODO: 暂未实现
+  // TODO: 暂未实现该模式
   Test = 3,
 }
 

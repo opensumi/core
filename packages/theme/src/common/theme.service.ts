@@ -55,7 +55,6 @@ export interface IIconService {
     type?: IconType,
     shape?: IconShape,
   ): string | undefined;
-  getVscodeIconClass(iconKey: string): string;
   registerIconThemes(
     iconThemesContribution: ThemeContribution[],
     extPath: URI,

@@ -139,7 +139,6 @@ class Menu extends Disposable implements IMenu {
           return;
         }
 
-        // FIXME: Command.isVisible 待废弃
         // command 存在但是 isVisible 为 false 则跳过
         if (command && !this.commandRegistry.isVisible(menuCommand.id, ...args)) {
           return;
@@ -229,6 +228,4 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   }
 
   return 0;
-  // TODO: 临时先禁用掉这里的排序
-  // return Command.compareCommands(a.command, b.command);
 }

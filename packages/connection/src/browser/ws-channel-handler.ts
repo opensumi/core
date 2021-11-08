@@ -15,7 +15,6 @@ if (ReconnectingWebSocket.default) {
 export class WSChannelHandler {
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
-  // FIXME: 这里的默认值和类型需要修复一下 @上坡
   private logger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timer | null;

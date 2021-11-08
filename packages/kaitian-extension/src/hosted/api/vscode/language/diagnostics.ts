@@ -131,8 +131,6 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
     this.ensureNotDisposed();
     this.diagnostics.forEach((diagnostics, uriString) => {
       const uri = URI.parse(uriString);
-
-      // TODO: tslint undefined error
       callback.apply(thisArg, [uri, this.getDiagnosticsByUri(uri) as any, this]);
     });
   }

@@ -73,7 +73,6 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   }
 
   async onStart() {
-    // TODO: workspace、remote模式内容不同
     this.viewsRegistry.registerViewWelcomeContent(ExplorerResourceViewId, {
       content: formatLocalize('welcome-view.noFolderHelp', FILE_COMMANDS.OPEN_FOLDER.id),
       group: ViewContentGroups.Open,

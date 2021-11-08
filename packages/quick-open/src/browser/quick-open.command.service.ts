@@ -142,7 +142,6 @@ export class QuickCommandHandler implements QuickOpenHandler {
   }
 
   protected getCommands(): { recent: Command[], other: Command[] } {
-    // FIXME: 待 context key 补齐之后再开启该功能
     const otherCommands = this.getOtherCommands();
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
     const limit = this.corePreferences['workbench.commandPalette.history'];

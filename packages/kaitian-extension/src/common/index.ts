@@ -101,7 +101,7 @@ export abstract class IExtCommandManagement {
   abstract executeExtensionCommand(env: ExtensionHostType, command: string, args: any[]): Promise<any>;
   /**
    * @param command command id
-   * @param targetHost 目标插件进程的运行环境，默认 'node' // TODO worker中的声明未支持，
+   * @param targetHost 目标插件进程的运行环境，默认 'node'
    */
   abstract registerExtensionCommandEnv(command: string, targetHost?: ExtensionHostType): IDisposable;
   abstract getExtensionCommandEnv(command: string): ExtensionHostType | undefined;

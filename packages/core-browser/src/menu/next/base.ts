@@ -52,7 +52,6 @@ interface IBaseMenuItem extends ICoreMenuItem {
    * 当 menu 在 InlineActionBar 出现时，使用的 iconClass
    * 如果这个值不存在，则默认跟随 command 的 iconClass
    * 如果command的icon也不存在，使用 command 的 label
-   * // TODO: 未来可能废弃 command 内的 iconClass
    */
   iconClass?: string;
   /**
@@ -168,7 +167,6 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
 
   // 记录被禁用的 menu-id
-  // TODO: 考虑是否存到持久化数据中? @taian.lta
   private readonly _disabledMenuIds = new Set<string>();
 
   @Autowired(MenuContribution)

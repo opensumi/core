@@ -321,7 +321,6 @@ export class DebugSessionManager implements IDebugSessionManager {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl, compact } = options;
-    // TODO：当前调试配置均通过配置全量透传的方式进行解析，更合理的方式应该通过一个configProviderHandle来进行provider的匹配
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     let configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     configuration = await this.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);

@@ -1,10 +1,8 @@
 import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@ali/common-di';
 
-// TODO min_size挂到单个panel下
-const MIN_SIZE = 120;
-
 @Injectable({ multiple: true })
 export class SplitPanelService {
+  private static MIN_SIZE: number = 120;
   constructor(public panelId: string) {}
 
   panels: HTMLElement[] = [];
@@ -21,7 +19,7 @@ export class SplitPanelService {
         return this.panels[index];
       } else {
         for (let i = index; i >= 0; i--) {
-          if (this.panels[i].clientHeight > MIN_SIZE) {
+          if (this.panels[i].clientHeight > SplitPanelService.MIN_SIZE) {
             return this.panels[i];
           }
         }
@@ -31,7 +29,7 @@ export class SplitPanelService {
         return this.panels[index + 1];
       } else {
         for (let i = index + 1; i < this.panels.length; i++) {
-          if (this.panels[i].clientHeight > MIN_SIZE) {
+          if (this.panels[i].clientHeight > SplitPanelService.MIN_SIZE) {
             return this.panels[i];
           }
         }

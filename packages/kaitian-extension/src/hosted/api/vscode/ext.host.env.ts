@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
-import * as address from 'address';
+import address from 'address';
 import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostTerminal, IExtensionDescription } from '../../../common/vscode';
 import {
   IExtHostEnv,
@@ -16,7 +16,6 @@ export class Env {
   public sessionId: string;
 
   constructor() {
-    // TODO: address库不靠谱，是否考虑其他 machineId 方案
     address.mac((err, macAddress) => {
       if (!err && macAddress) {
         this.macMachineId = createHash('sha256').update(macAddress, 'utf8').digest('hex');

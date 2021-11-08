@@ -22,7 +22,6 @@ export class VariableQuickOpenService implements QuickOpenModel {
       placeholder: localize('variable.registered.variables'),
       fuzzyMatchLabel: true,
       fuzzyMatchDescription: true,
-      // FIXME: quickOpenService 当前暂不支持
       // fuzzySort: true,
     });
   }

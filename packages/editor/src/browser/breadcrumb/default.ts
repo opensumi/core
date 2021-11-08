@@ -35,7 +35,6 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   private debouncedFireUriEvent = new Map<string, () => any>();
 
   handlesUri(uri: URI): boolean {
-    // TODO;
     return uri.scheme === 'file';
   }
 

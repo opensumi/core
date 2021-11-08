@@ -115,7 +115,6 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
             .then((stat) => !!stat);
         },
       });
-      // TODO: createFile迁移到uint8array
       return this._fileService.createFile(_uri.toString(), { content: BinaryBuffer.wrap(content).toString() })
         .then(() => undefined).catch(MainThreadFileSystem._handleError);
     } else {
@@ -247,25 +246,6 @@ class RemoteFileSystemProvider implements FileSystemProvider {
   copy(resource: Uri, target: Uri, opts: { overwrite: boolean }): Promise<void> {
     return this._proxy.$copy(this._handle, resource, target, opts);
   }
-  // TODO: proposed
-  // open(resource: Uri, opts: { create: boolean }): Promise<number> {
-  // 	return this._proxy.$open(this._handle, resource, opts);
-  // }
-
-  // close(fd: number): Promise<void> {
-  // 	return this._proxy.$close(this._handle, fd);
-  // }
-
-  // read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
-  // 	return this._proxy.$read(this._handle, fd, pos, length).then(readData => {
-  // 		data.set(readData.buffer, offset);
-  // 		return readData.byteLength;
-  // 	});
-  // }
-
-  // write(fd: number, pos: number, data: string, offset: number, length: number): Promise<number> {
-  // 	return this._proxy.$write(this._handle, fd, pos, data.slice(offset, offset + length));
-  // }
 
   protected async doGetStat(resource: Uri, depth = 1) {
     const stat = await this._proxy.$stat(this._handle, resource);

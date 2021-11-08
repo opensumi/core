@@ -8,7 +8,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { FileUri, Uri } from '@ali/ide-core-common';
 import { MonacoService } from '../../../monaco';
-import { PreferenceService, ISchemaRegistry, ISchemaStore, QuickOpenService } from '@ali/ide-core-browser';
+import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@ali/ide-core-browser';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
 import { taskSchemaUri, schema } from '@ali/ide-task/lib/browser/task.schema';
 import { TaskService } from '@ali/ide-task/lib/browser/task.service';
@@ -68,7 +68,7 @@ describe('TaskService Test Suite', () => {
       useClass: SchemaStore,
     },
     {
-      token: ISchemaRegistry,
+      token: IJSONSchemaRegistry,
       useClass: SchemaRegistry,
     },
     {
@@ -116,7 +116,7 @@ describe('TaskService Test Suite', () => {
     });
     taskService = injector.get<ITaskService>(ITaskService);
     workspace = injector.get<MockWorkspaceService>(IWorkspaceService);
-    const schemaRegistry: ISchemaRegistry = injector.get(ISchemaRegistry);
+    const schemaRegistry: IJSONSchemaRegistry = injector.get(IJSONSchemaRegistry);
     schemaRegistry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
     const rootPath = path.resolve(__dirname);
     const rootUri = FileUri.create(rootPath).toString();

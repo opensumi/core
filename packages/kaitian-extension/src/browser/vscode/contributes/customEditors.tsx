@@ -65,13 +65,11 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
       this.addDispose(this.editorComponentRegistry.registerEditorComponentResolver(() => 10,  (resource, results) => {
         for (const pattern of patterns) {
 
-          // TODO: 这个match 规则可能需要再好好研究下。。vscode里面也没说
           if (match(pattern, resource.uri.path.toString().toLowerCase()) || match(pattern, resource.uri.path.base.toLowerCase())) {
             results.push({
               componentId,
               type: 'component',
               title: customEditor.displayName ? this.getLocalizeFromNlsJSON(customEditor.displayName) : customEditor.viewType,
-              // TODO: 根据用户配置调整
               weight: priority === 'default' ? Number.MAX_SAFE_INTEGER : 0,
               saveResource: (resource) => {
                 return this.eventBus.fireAndAwait(new CustomEditorShouldSaveEvent({

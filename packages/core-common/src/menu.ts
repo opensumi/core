@@ -1,7 +1,6 @@
 import { IDisposable } from './disposable';
 import { IElectronMainApi } from './electron';
 
-// TODO: 后续应迁移到 core-browser
 export interface INativeMenuTemplate {
   id?: string;
   label?: string;

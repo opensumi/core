@@ -114,37 +114,10 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
 }
 
 @Injectable()
-class FileSearchActionUpDown extends QuickOpenBaseAction {
-
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
-
-  constructor() {
-    super({
-      id: 'file-search:splitToRight',
-      tooltip: localize('file-search.quickOpen.upDown'),
-      class: getIcon('embed'),
-    });
-  }
-
-  run(item: QuickOpenItem): Promise<void> {
-    // TODO: 读取 quickOpenPreview 配置
-    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
-      preview: false,
-      // split: EditorGroupSplitAction.Bottom,
-      groupIndex: 1,
-    });
-  }
-}
-
-@Injectable()
 class FileSearchActionProvider implements QuickOpenActionProvider {
 
   @Autowired()
-  fileSearchActionLeftRight: FileSearchActionLeftRight;
-
-  @Autowired()
-  fileSearchActionUpDown: FileSearchActionUpDown;
+  private readonly fileSearchActionLeftRight: FileSearchActionLeftRight;
 
   hasActions(): boolean {
     return true;
@@ -324,7 +297,6 @@ export class FileSearchQuickCommandHandler {
         targetFile = this.workbenchEditorService.currentResource?.uri;
       }
       if (targetFile) {
-        // TODO: store ready event
         const symbols = await this.documentSymbolStore.getDocumentSymbolAsync(targetFile) || [];
         // 将symbol tree节点展开
         const flatSymbols: INormalizedDocumentSymbol[] = [];
@@ -489,7 +461,6 @@ export class FileSearchQuickCommandHandler {
   }
 
   private locateSymbol(uri: URI, symbol: INormalizedDocumentSymbol) {
-    // TODO: 目前symbol跳转后会被quickOpen挡住，需要优化
     this.workbenchEditorService.open(uri, {
       range: symbol.range,
       preview: true,

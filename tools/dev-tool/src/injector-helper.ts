@@ -30,7 +30,6 @@ export async function createBrowserApp(modules: Array<ConstructorOf<BrowserModul
 
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
   const injector = inj || new MockInjector();
-  // TODO mock支持新版的引入
   const app = new ClientApp({ modules, injector } as any);
 
   afterAll(() => {
@@ -41,7 +40,6 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
 }
 
 export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
-  // TODO: 等 Node 这边的加载器写好之后，再把这里改一下
   const injector = inj || new MockInjector();
 
   // Mock logger

@@ -41,7 +41,6 @@ export class WorkspaceFileOperationParticipant extends Disposable {
   }
 }
 
-// TODO: 目前所有文件操作都是后置报错的，是否需要改造成先检测、后操作的模式？
 @Injectable()
 export class WorkspaceFileService implements IWorkspaceFileService {
   @Autowired(IFileServiceClient)
@@ -86,7 +85,6 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     // before events
     const event = { correlationId: this.correlationIds++, operation: FileOperation.DELETE, files };
     await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
-    // TODO: dirty check
     // now actually delete from disk
     try {
       for (const resource of resources) {
@@ -126,7 +124,6 @@ export class WorkspaceFileService implements IWorkspaceFileService {
 
     try {
       for (const { source, target } of files) {
-        // TODO: dirty check
         // now we can rename the source to target via file operation
         if (move) {
           stats.push(await this.fileService.move(source.toString(), target.toString(), { overwrite }));

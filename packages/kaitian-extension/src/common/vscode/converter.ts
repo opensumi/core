@@ -1140,7 +1140,6 @@ export function toSymbolInformation(
     containerName: symbolInformation.containerName,
     kind: symbolInformation.kind,
     location: {
-      // TODO URI.create 是否等价
       uri: URI.revive(symbolInformation.location.uri),
       range: symbolInformation.location.range,
     },
@@ -1402,7 +1401,6 @@ export namespace ProgressLocation {
   }
 }
 
-// FIXME: 不完备，fileService.FileStat信息会更多
 export function fromFileStat(stat: vscode.FileStat, uri: types.Uri) {
   const isSymbolicLink =
     stat.type.valueOf() === FileType.SymbolicLink.valueOf();

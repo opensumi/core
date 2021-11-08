@@ -50,7 +50,6 @@ export class MainThreadPreference implements IMainThreadPreference {
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
     this.toDispose.push(this.preferenceService.onPreferencesChanged((changes) => {
-      // TODO: 这块目前一直是全量发送？应该增量发送就能用了吧？未来优化 - by 吭头
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];

@@ -139,10 +139,7 @@ describe('ExtHostLanguageFeatures', () => {
     disposables.dispose();
   });
 
-  // TODO  --- outline
-  // --- codelens
   test('CodeLens, evil provider', async (done) => {
-
     disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
       provideCodeLenses(): any {
         throw new Error('evil');
@@ -215,10 +212,6 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
 
-  // TODO 实现 Declaration
-  // test('Declaration, data conversion', async () => {
-
-  // });
   test('Implementation, data conversion', async (done) => {
     disposables.push(extHost.registerImplementationProvider(defaultSelector, new class implements vscode.ImplementationProvider {
       provideImplementation(): any {
@@ -309,7 +302,6 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider = monacoModes.ReferenceProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      // FIXME 第三个参数context mock
       const value = await provider.provideReferences(model, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
@@ -455,16 +447,7 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  // TODO 实现 registerDocumentFormattingEditProvider api
-  // test('Format Doc, data conversion', async () => {
 
-  // });
-  // test('Format Doc, evil provider', async (done) => {
-
-  // });
-  // test('Format Doc, order', async (done) => {
-
-  // });
   test('Format Range, data conversion', async (done) => {
     disposables.push(extHost.registerDocumentRangeFormattingEditProvider({
       id: 'test',
@@ -486,10 +469,6 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  // TODO doc
-  // test('Format Range, + format_doc', async (done) => {
-
-  // });
 
   test('Format on Type, data conversion', async (done) => {
     disposables.push(extHost.registerOnTypeFormattingEditProvider(defaultSelector, new class implements vscode.OnTypeFormattingEditProvider {

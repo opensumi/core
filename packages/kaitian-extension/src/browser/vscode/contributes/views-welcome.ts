@@ -24,7 +24,6 @@ export interface ViewWelcome {
 export type ViewsWelcomeSchema = ViewWelcome[];
 
 export const ViewIdentifierMap: { [key: string]: string } = {
-  // TODO: 视图为空时应该隐藏opened-editor、debug相关面板
   'explorer': 'file-explorer-next',
   'debug': DEBUG_WELCOME_ID,
   'scm': 'scm_view',

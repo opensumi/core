@@ -267,7 +267,6 @@ export class DebugSession implements IDebugSession {
   }
 
   protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    // TODO: shellPath 参数解析
     return this.doRunInTerminal({ name: title, cwd, env }, args.join(' '));
   }
 

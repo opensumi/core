@@ -23,13 +23,10 @@ import { FilesChangeEvent, ExtensionActivateEvent } from '@ali/ide-core-browser'
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 import { Iterable } from '@ali/monaco-editor-core/esm/vs/base/common/iterator';
 
-// TODO: 这里只做标记，实现插件注册的scheme统一走fs-client
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
 
   public readonly providers = new Map<string, IFileSystemProvider>();
-
-  // 这里的 provider 只是一个空 scheme
   registerFileSystemProvider(provider: IFileSystemProvider) {
     const scheme = provider.scheme;
     this.providers.set(scheme, provider);
@@ -73,10 +70,9 @@ export class FileServiceClient implements IFileServiceClient {
   // 记录哪些 fsProviders 发生了变更
   private _providerChanged: Set<string> = new Set();
 
-  // TODO: 这个registry只记录了 scheme
   @Autowired(IBrowserFileSystemRegistry)
   private registry: BrowserFileSystemRegistryImpl;
-  // FIXME: 融合registry & fsProviders
+
   private fsProviders: Map<string, FileSystemProvider | IDiskFileProvider> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
@@ -348,7 +344,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async getEncoding(uri: string): Promise<string> {
-    // TODO 临时修复方案 目前识别率太低，全部返回 UTF8
+    // FIXME: 临时修复方案 目前识别率太低，全部返回 UTF8
     return 'utf8';
   }
 
@@ -424,7 +420,7 @@ export class FileServiceClient implements IFileServiceClient {
     return await provider.getFileType(uri);
   }
 
-  // TODO: file scheme only?
+  // FIXME: file scheme only?
   async getCurrentUserHome() {
     const provider = await this.getProvider(FILE_SCHEME);
     return provider.getCurrentUserHome();

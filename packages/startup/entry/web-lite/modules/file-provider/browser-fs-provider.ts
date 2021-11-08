@@ -69,26 +69,26 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
-    // TODO: shall we implement this method?
     return 0;
   }
+
   unwatch(watcherId: number): void { }
   setWatchFileExcludes(excludes: string[]) { }
   getWatchFileExcludes(): string[] {
     return [];
   }
 
-  async stat(uri: Uri): Promise<FileStat> {
+  async stat(uri: Uri): Promise<FileStat | undefined> {
     const _uri = new URI(uri);
-    return new Promise<void>(async (resolve) => {
+    return new Promise<FileStat | undefined>(async (resolve) => {
       this.doGetStat(_uri, 1)
         .then((stat) => resolve(stat!))
         .catch((e) => {
-          // @ts-ignore
-          resolve();
+          resolve(undefined);
         });
     });
   }
+
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
     const result: [string, FileType][] = [];
     try {
@@ -103,6 +103,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       return result;
     }
   }
+
   async createDirectory(uri: Uri): Promise<FileStat> {
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
@@ -119,6 +120,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       throw err;
     }
   }
+
   async readFile(uri: Uri): Promise<Uint8Array> {
     const _uri = new URI(uri);
     let content: string | undefined;
@@ -131,13 +133,13 @@ export class BrowserFsProvider implements IDiskFileProvider {
       // content为空读取远程
       content = await this.httpFileService.readFile(uri);
       await ensureDir(_uri.path.dir.toString());
-      // TODO: dispose
       window.localStorage.setItem(_uri.toString(), '1');
       // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
       content && fs.writeFile(FileUri.fsPath(_uri), content, () => { });
     }
     return BinaryBuffer.fromString(content!).buffer;
   }
+
   async writeFile(uri: Uri, buffer: Uint8Array, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
     const content = BinaryBuffer.wrap(buffer).toString();
     this.checkCapability();
@@ -164,6 +166,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
   }
+
   async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
     this.checkCapability();
     if (uri.fsPath.startsWith(this.options.rootFolder)) {
@@ -171,6 +174,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return await promisify(fs.unlink)((uri.fsPath));
   }
+
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(oldUri);
@@ -180,6 +184,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
   }
+
   async access(uri: Uri): Promise<boolean> {
     const _uri = new URI(uri);
     try {
@@ -257,7 +262,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
     } catch (err) {
       // 文件已存在
     }
-    // TODO: 感觉没必要再取一次
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -301,7 +305,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   protected async ensureNodeFetched(uri: URI) {
-    // FIXME: browserFs是否不应该耦合HttpFileService？
+    // FIXME: browserFs 是否不应该耦合 HttpFileService？
     const childNodes = await this.httpFileService.readDir(uri.codeUri);
     const ensureNodes: Promise<FileStat>[] = [];
     for (const node of childNodes) {
@@ -315,18 +319,10 @@ export class BrowserFsProvider implements IDiskFileProvider {
       await Promise.all(ensureNodes);
       window.localStorage.setItem(uri.toString(), '1');
     } catch (err) {
-      // logger
-      // console.error('node fetch failed ', err);
     }
   }
 
   protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
-    // Then stat the target and return that
-    // const isLink = !!(stat && stat.isSymbolicLink());
-    // if (isLink) {
-    //   stat = await fs.stat(FileUri.fsPath(uri));
-    // }
-
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
@@ -351,7 +347,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
-    // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
+    // FIXME: 获取 stat 前拉取一遍远端的结构信息，理论上要加一个cache做优化
     if (!window.localStorage.getItem(uri.toString()) && uri.codeUri.fsPath.startsWith(this.options.rootFolder)) {
       await this.ensureNodeFetched(uri);
     }

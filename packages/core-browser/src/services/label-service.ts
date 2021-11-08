@@ -110,7 +110,6 @@ export class DefaultUriLabelProvider extends Disposable implements ILabelProvide
     return 0;
   }
 
-  // TODO 运行时获取
   public getIcon(uri: URI, options?: ILabelOptions): string {
     const { iconClass, onDidChange } = getIconClass(uri, options);
     if ( onDidChange ) {

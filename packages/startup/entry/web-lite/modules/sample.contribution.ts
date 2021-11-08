@@ -117,7 +117,6 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
 
     registry.registerCommand(TOGGLE_REF, {
       execute: async () => {
-        // TODO: 约定使用/workspace作为工作区根目录，以便切换ref
         const newRef = 'master';
         const newWorkspaceDir = `/${newRef}/${this.metaService.repo}`;
         await ensureDir(newWorkspaceDir);

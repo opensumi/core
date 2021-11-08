@@ -1,4 +1,3 @@
-// FIXME: 这里不能从'./uri'文件引入，否则在filters.ts中调用相关函数会产生循环调用
 import { URI as Uri } from 'vscode-uri';
 import { Iterator, IteratorResult, FIN } from './iterator';
 import { CharCode } from './charCode';

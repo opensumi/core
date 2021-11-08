@@ -100,7 +100,6 @@ abstract class BaseBrowserStorageService implements StorageService {
     }
   }
 
-  // FIXME: @kuiwu
   private async showDiskQuotaExceededMessage(): Promise<void> {
     const READ_INSTRUCTIONS_ACTION = 'Read Instructions';
     const CLEAR_STORAGE_ACTION = 'Clear Local Storage';

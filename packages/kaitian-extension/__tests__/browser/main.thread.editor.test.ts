@@ -309,7 +309,6 @@ describe('MainThreadEditor Test Suites', () => {
     });
   });
 
-  // FIXME 暂时跑不通
   it.skip('should receive onDidChangeTextEditorViewColumn event when editor view column has changed', async (done) => {
     eventBus.fire(new EditorGroupIndexChangedEvent({ group: workbenchEditorService.currentEditorGroup, index: 1 }));
     extEditor.onDidChangeTextEditorViewColumn((e) => {
@@ -326,7 +325,6 @@ describe('MainThreadEditor Test Suites', () => {
     };
     workbenchEditorService.currentEditor?.updateOptions({}, modelOptions);
     extEditor.onDidChangeTextEditorOptions((e) => {
-      // FIXME 似乎 modelOptions 没有更新到
       expect(e.options).toBeDefined();
       done();
     });

@@ -11,4 +11,3 @@ export interface IMainThreadExtensionLog {
 }
 
 export const MainThreadExtensionLogIdentifier = createMainContextProxyIdentifier<IMainThreadExtensionLog>('MainThreadExtensionLog');
-// const ExtHostExtensionLog: createExtHostContextProxyIdentifier<ExtHostExtensionLog>('ExtHostExtensionLog');

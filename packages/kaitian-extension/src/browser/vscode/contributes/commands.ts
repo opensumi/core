@@ -51,12 +51,10 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
           return this.extensionService.executeExtensionCommand(command.command, args);
         },
       }));
-      // TODO: 支持定义worker中的command
       if (this.config.noExtHost) {
         this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'worker'));
       } else {
         this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'node'));
-        // this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'worker'));
       }
     });
   }

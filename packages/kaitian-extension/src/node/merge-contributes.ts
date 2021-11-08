@@ -28,7 +28,6 @@ export function mergeContributes(
       const childKeySet = new Set(Object.keys(value).concat(Object.keys(srcValue)));
       const result = {};
       // 合并掉相同 menuId 下的 menu items
-      // TODO: 是否需要去重
       for (const childKey of childKeySet) {
         result[childKey] = (value[childKey] || []).concat(srcValue[childKey] || []);
       }

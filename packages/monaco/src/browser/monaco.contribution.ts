@@ -10,7 +10,7 @@ import { ContextKeyExpr, ContextKeyExprType } from '@ali/monaco-editor-core/esm/
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
-  PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
+  PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, IJSONSchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
 } from '@ali/ide-core-browser';
@@ -57,8 +57,8 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   @Autowired(ISchemaStore)
   schemaStore: ISchemaStore;
 
-  @Autowired(ISchemaRegistry)
-  jsonContributionRegistry: ISchemaRegistry;
+  @Autowired(IJSONSchemaRegistry)
+  jsonContributionRegistry: IJSONSchemaRegistry;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;

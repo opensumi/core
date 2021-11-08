@@ -67,7 +67,6 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       canSelectMany: false,
     };
     if (isElectronRenderer()) {
-      // TODO 非file协议OpenDialog
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const properties: Array<'openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory'> = [];
       if (options.canSelectFiles) {
@@ -126,7 +125,6 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
     await this.whenReady;
     if (isElectronRenderer()) {
-      // TODO 非file协议SaveDialog
       const defaultUri = options.defaultUri || this.defaultUri;
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const res = await electronUi.showSaveDialog(electronEnv.currentWindowId, {

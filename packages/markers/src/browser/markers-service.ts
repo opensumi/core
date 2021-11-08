@@ -55,7 +55,6 @@ export class MarkerService extends Themable implements IMarkerService {
 
   @OnEvent(EditorGroupOpenEvent)
   onEditorGroupOpen(e: EditorGroupOpenEvent) {
-    // TODO，重新打开没有走changeDiagnostics事件
     const uri = e.payload.resource.uri;
     const resource = uri.toString();
     this.markerManager.onEditorGroupOpen(resource);

@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { deepClone, IJSONSchema, ISchemaRegistry } from '@ali/ide-core-browser';
+import { deepClone, IJSONSchema, IJSONSchemaRegistry } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchemaUri } from '../common';
@@ -9,8 +9,8 @@ export class DebugSchemaUpdater {
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
 
-  @Autowired(ISchemaRegistry)
-  private schemaRegistry: ISchemaRegistry;
+  @Autowired(IJSONSchemaRegistry)
+  private schemaRegistry: IJSONSchemaRegistry;
 
   @Autowired(DebugConfigurationManager)
   private config: DebugConfigurationManager;

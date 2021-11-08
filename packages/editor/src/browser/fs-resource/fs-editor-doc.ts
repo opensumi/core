@@ -104,8 +104,8 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   async provideEditorDocumentModelContent(uri: URI, encoding: string) {
     // TODO: 这部分要优化成buffer获取（长期来看是stream获取，encoding在哪一层做？）
-    // TODO: 暂时还是使用 resolveContent 内提供的 decode 功能
-    // TODO: 之后 encoding 做了分层之后和其他的需要 decode 的地方一起改
+    // 暂时还是使用 resolveContent 内提供的 decode 功能
+    // 之后 encoding 做了分层之后和其他的需要 decode 的地方一起改
     return (await this.read(uri, { encoding })).content;
   }
 

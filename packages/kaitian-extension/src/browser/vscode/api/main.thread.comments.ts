@@ -270,7 +270,6 @@ export class MainThreadCommentThread implements CommentThread {
   private readonly _onDidChangeComments = new Emitter<CoreComment[] | undefined>();
   get onDidChangeComments(): Event<CoreComment[] | undefined> { return this._onDidChangeComments.event; }
 
-  // TODO: range 暂时不支持修改
   set range(range: IRange) {
     this._thread.range = range;
     this._onDidChangeRange.fire(this._thread.range);

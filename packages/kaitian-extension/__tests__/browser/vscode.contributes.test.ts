@@ -6,7 +6,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { mockExtensionProps } from '../../__mocks__/extensions';
 import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ali/ide-core-common';
 import { ExtensionWillContributeEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
-import { ISchemaRegistry } from '@ali/ide-monaco';
+import { IJSONSchemaRegistry } from '@ali/ide-monaco';
 import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
 import { ISchemaStore, PreferenceService } from '@ali/ide-core-browser';
@@ -90,7 +90,7 @@ describe('VSCodeContributeRunner', () => {
         useClass: SchemaStore,
       },
       {
-        token: ISchemaRegistry,
+        token: IJSONSchemaRegistry,
         useClass: SchemaRegistry,
       },
       {

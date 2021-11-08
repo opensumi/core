@@ -1,6 +1,6 @@
 import MonacoServiceImpl from './monaco.service';
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, ISchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, IJSONSchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { MonacoClientContribution } from './monaco.contribution';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 import { MonacoMimeService } from './monaco-mime';
@@ -28,7 +28,7 @@ export class MonacoModule extends BrowserModule {
       useClass: MonacoOverrideServiceRegistryImpl,
     },
     {
-      token: ISchemaRegistry,
+      token: IJSONSchemaRegistry,
       useClass: SchemaRegistry,
     },
     {

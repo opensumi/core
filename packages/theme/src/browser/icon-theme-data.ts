@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { localize, getDebugLogger, URI, parseWithComments } from '@ali/ide-core-common';
+import { getDebugLogger, URI, parseWithComments, formatLocalize } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IIconTheme } from '../common';
 
@@ -17,15 +17,13 @@ export class IconThemeData implements IIconTheme {
   @Autowired()
   private readonly staticResourceService: StaticResourceService;
 
-  // TODO 无主题插件的fallback
   async load(location: URI) {
-    const ret = await this.fileServiceClient.resolveContent(location.toString());
+    const ret = await this.fileServiceClient.readFile(location.toString());
     let contentValue = {} as IconThemeDocument;
     try {
-      contentValue = parseWithComments<IconThemeDocument>(ret.content);
+      contentValue = parseWithComments<IconThemeDocument>(ret.content.toString());
     } catch (error) {
-      getDebugLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
-      // TODO 返回默认主题信息
+      getDebugLogger().log(formatLocalize('error.cannotparseicontheme', location.codeUri.fsPath));
     }
 
     const result = processIconThemeDocument(location, contentValue, this.staticResourceService);

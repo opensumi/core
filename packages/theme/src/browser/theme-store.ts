@@ -14,7 +14,6 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  // TODO 支持插件安装（运行时的加载？）
   protected async initTheme(contribution: ThemeContribution, extPath: URI): Promise<ThemeData> {
     const themePath = contribution.path.replace(/^\.\//, '');
     const themeLocation = extPath.resolve(themePath);

@@ -98,7 +98,6 @@ export interface IUndoStopOptions {
 }
 
 export interface ICodeEditor extends IEditor, IDisposable {
-
   layout(): void;
 
   /**
@@ -109,10 +108,9 @@ export interface ICodeEditor extends IEditor, IDisposable {
 
   focus(): void;
 
-  // TODO monaco.position和lsp的是不兼容的
   onCursorPositionChanged: Event<CursorStatus>;
-  onRefOpen: Event<IEditorDocumentModelRef>;
 
+  onRefOpen: Event<IEditorDocumentModelRef>;
 }
 
 /**

@@ -15,8 +15,7 @@ export interface IWebviewPanelOptions {
 export interface IWebviewOptions {
   readonly enableScripts?: boolean;
   readonly enableCommandUris?: boolean;
-  readonly localResourceRoots?: ReadonlyArray<vscode.Uri>; // TODO 资源文件处理
-  // TODO readonly portMapping?: ReadonlyArray<IWebviewPortMapping>;
+  readonly localResourceRoots?: ReadonlyArray<vscode.Uri>;
 }
 
 export interface IWebviewPanelViewState {

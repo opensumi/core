@@ -267,7 +267,7 @@ export class ProgressService implements IProgressService {
     let progressBar: React.ReactNode;
     let progressRunner: IProgressRunner;
     let isInfinite = false;
-    // TODO: support silent mode
+
     const createNotification = (message: string, silent: boolean, increment?: number): string => {
 
       const buttons: string[] = [];

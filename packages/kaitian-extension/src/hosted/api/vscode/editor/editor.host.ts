@@ -155,7 +155,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   closeEditor(editor: TextEditorData): void {
     if (editor.id !== this._activeEditorId) {
-      return; // TODO depecrated warning
+      return;
     }
     this._proxy.$closeEditor(editor.id);
   }

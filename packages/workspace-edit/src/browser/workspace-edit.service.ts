@@ -39,7 +39,6 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   }
 
   revertTopFileEdit(): Promise<void> {
-    // TODO
     throw new Error('Method not implemented.');
   }
 
@@ -91,7 +90,6 @@ export class BulkEdit {
   }
 
   revert(onlyFileEdits: true) {
-    // TODO
   }
 
 }
@@ -178,7 +176,6 @@ export class ResourceTextEditTask {
   }
 
   async revert(): Promise<void> {
-    // TODO
   }
 
 }
@@ -273,7 +270,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
         await this.notifyEditor(editorService, documentModelService);
 
-        // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
+        // TODO: 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
         eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldResource, newUri: this.newResource }));
       }
 
@@ -323,7 +320,6 @@ export class ResourceFileEdit implements IResourceFileEdit {
   }
 
   async revert(): Promise<void> {
-    // TODO
   }
 }
 

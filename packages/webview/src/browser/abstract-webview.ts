@@ -96,11 +96,11 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     });
 
     this._onWebviewMessage('load-resource', () => {
-      // TODO 资源相关
+      // TODO: 资源相关
     });
 
     this._onWebviewMessage('load-localhost', () => {
-      // TODO 好像是消息转发
+      // TODO: 好像是消息转发
     });
 
     this._onWebviewMessage('did-focus', () => {

@@ -44,7 +44,7 @@ describe('ServerApp', () => {
     const server = net.createServer();
     await app.start(server);
 
-    // FIXME: server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
+    // server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
     server.listen(rpcListenPath, () => {
       server.close(() => {
         done();
@@ -68,7 +68,7 @@ describe('ServerApp', () => {
     const server = http.createServer(koa.callback());
     await app.start(server);
 
-    // FIXME: server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
+    // server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
     server.listen(testPort, () => {
       server.close(() => {
         done();

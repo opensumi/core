@@ -43,7 +43,7 @@ module.exports = {
     '/packages/terminal-next/__tests__/browser/render.test.ts',
     // ci 环境可能无法正常创建 pty 后端，需要 mock 一下 service
     // '/packages/terminal-next/__tests__/browser/client.test.ts',
-    // FIXME：componets下的 utils 均引用自 @ali/ide-core-common 模块，无须重复测试
+    // componets下的 utils 均引用自 @ali/ide-core-common 模块，无须重复测试
     // 后续统一至 @ali/ide-utils 模块
     '/packages/components/src/utils',
   ],
@@ -60,7 +60,7 @@ module.exports = {
     '/packages/status-bar/entry',
     '/packages/startup/entry',
     '/packages/quick-open/entry',
-    // FIXME：componets下的 utils 均引用自 @ali/ide-core-common 模块，无须重复测试
+    // componets下的 utils 均引用自 @ali/ide-core-common 模块，无须重复测试
     // 后续统一至 @ali/ide-utils 模块
     '/packages/components/src/utils',
   ],

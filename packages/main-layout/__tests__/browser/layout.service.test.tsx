@@ -343,26 +343,10 @@ describe('main layout test', () => {
     expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.zIndex).toEqual('1');
   });
 
-  // TODO jest has no style
-  // it('should be able to expand bottom panel', () => {
-  //   expect(service.bottomExpanded).toBeFalsy();
-  //   service.expandBottom(true);
-  //   act(() => { jest.advanceTimersByTime(10); });
-  //   expect(service.bottomExpanded).toBeTruthy();
-  // });
-  // it('accordion height calculate test', () => {
-  // });
-
   it('should be able to judge whether a tab panel is visible', () => {
     expect(service.isVisible('right')).toBeTruthy();
     service.toggleSlot('right', false);
     act(() => { jest.advanceTimersByTime(10); });
     expect(service.isVisible('right')).toBeFalsy();
   });
-
-  // TODO mock ContextKey event
-  // it('should be able to responde to context key change', () => {
-
-  // });
-
 });

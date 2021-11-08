@@ -581,7 +581,6 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
   $setWebviewViewDescription(handle: string, value: string | undefined): void {
     const webviewView = this._webviewViews.get(handle);
     if (webviewView) {
-      // TODO: 寻壑 似乎没有 description 的功能
     }
   }
 

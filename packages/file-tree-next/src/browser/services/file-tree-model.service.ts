@@ -103,7 +103,6 @@ export class FileTreeModelService {
   private _nextLocationTarget: URI | undefined;
 
   // 右键菜单ContextKey，相对独立
-  // TODO：后续需支持通过DOM获取context，这样无需耦合contextMenuService
   private _currentRelativeUriContextKey: IContextKey<string>;
   private _currentContextUriContextKey: IContextKey<string>;
   private _contextMenuResourceContext: ResourceContextKey;

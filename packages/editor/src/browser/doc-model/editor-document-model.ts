@@ -188,13 +188,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private applyCache(cache: IDocCache) {
     if (this.dirty) {
-      // TODO: 此时应该弹出 DiffView 让用户选择
       this.logger.error(EditorDocumentError.APPLY_CACHE_TO_DIRTY_DOCUMENT);
       return;
     }
 
     if (this.baseContentMd5 !== cache.startMD5) {
-      // TODO: 此时应该弹出 DiffView 让用户选择
       this.logger.error(EditorDocumentError.APPLY_CACHE_TO_DIFFERENT_DOCUMENT);
       return;
     }
@@ -384,8 +382,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   async revert(notOnDisk?: boolean) {
     if (notOnDisk) {
-      // FIXME
-      // 暂时就让它不dirty, 不是真正的revert
+      // FIXME: 暂时就让它不 dirty, 不是真正的 revert
       this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     } else {
       // 利用修改编码的副作用

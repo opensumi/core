@@ -465,7 +465,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE_OTHER_GROUPS: Command = {
     id: 'editor.closeOtherGroup',
     category: CATEGORY,
-    label: localize('closeEditorsInOtherGroups', '关闭其他组中的编辑器'),
+    label: localize('editor.closeEditorsInOtherGroups', 'Close Other Groups'),
   };
 
   export const OPEN_EDITOR_AT_INDEX: Command = {
@@ -476,13 +476,13 @@ export namespace EDITOR_COMMANDS {
   export const EVEN_EDITOR_GROUPS: Command = {
     id: 'editor.evenEditorGroups',
     category: CATEGORY,
-    label: localize('evenEditorGroups', '重置编辑器组大小'),  // TODO command注册支持国际化格式
+    label: localize('editor.resetEditorGroups', 'Reset Editor Group'),
   };
 
   export const REVERT_DOCUMENT: Command = {
     id: 'editor.document.revert',
     category: CATEGORY,
-    label: localize('revert', '还原文档'),  // TODO command注册支持国际化格式
+    label: localize('editor.revert', 'Revert Document'),
   };
 
   export const REVERT_AND_CLOSE: Command = {

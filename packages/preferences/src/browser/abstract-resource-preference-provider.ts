@@ -207,10 +207,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (typeof jsonData !== 'object') {
       return preferences;
     }
-    // tslint:disable-next-line:forin
-    for (const preferenceName in jsonData) {
+    for (const preferenceName of Object.keys(jsonData)) {
       const preferenceValue = jsonData[preferenceName];
-      // TODO：这里由于插件的schema注册较晚，在第一次获取配置时会校验不通过导致取不到值，读取暂时去掉校验逻辑
+      // 这里由于插件的schema注册较晚，在第一次获取配置时会校验不通过导致取不到值，读取暂时去掉校验逻辑
       if (OVERRIDE_PROPERTY_PATTERN.test(preferenceName)) {
         const language = preferenceName.match(OVERRIDE_PROPERTY_PATTERN)![1];
         preferences.languageSpecific[language] = preferences.languageSpecific[language] || {};

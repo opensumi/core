@@ -95,8 +95,6 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   get shellPath() {
-    // return this._shellPath;
-    // FIXME: 临时修复，后续在 https://yuque.antfin.com/ide-framework/topics/626 中跟踪
     return process.env.SHELL || userInfo().shell;
   }
 

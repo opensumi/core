@@ -29,7 +29,6 @@ export const FILE_TREE_DEFAULTS = {
   indent: 8,
 };
 
-// TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
   properties: {
@@ -216,7 +215,6 @@ export const corePreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      // FIXME: 此处应该是node层的platform，考虑到目前只有electron会有windows机器，暂时这样
       enum: (isElectronRenderer() && isWindows) ? [
         'powershell',
         'cmd',

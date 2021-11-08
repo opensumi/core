@@ -343,7 +343,7 @@ export class FileService implements IFileService {
    * @memberof FileService
    */
   async getEncoding(uri: string): Promise<string> {
-    // TODO 临时修复方案 目前识别率太低，全部返回 UTF8
+    // TODO: 临时修复方案 目前识别率太低，全部返回 UTF8
     return UTF8;
 
     // const _uri = this.getUri(uri);

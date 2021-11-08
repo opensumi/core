@@ -26,16 +26,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     this.serviceClientMap.set(clientId, client);
-
-    /*
-    if(this.clientTerminalThresholdMap.has(clientId)){
-      clearTimeout(this.clientTerminalThresholdMap.get(clientId) as NodeJS.Timeout)
-      this.clientTerminalThresholdMap.delete(clientId)
-      this.logger;.debug(`clientId ${clientId} 窗口的 pty 进程恢复`)
-    }
-    */
-
-     // TODO: 存在已经删除当前窗口 pty 进程的情况，进行重新创建
   }
 
   public ensureClientTerminal(clientId: string, terminalIdArr: string[]) {

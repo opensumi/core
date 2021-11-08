@@ -12,8 +12,6 @@ export interface IPathHander {
   connection?: any;
 }
 
-// export const pathHandler: Map<string, ((connection: any) => void)[]> = new Map();
-
 export class CommonChannelPathHandler {
   private handlerMap: Map<string, IPathHander[]> = new Map();
   private paramsKey: Map<string, string> = new Map();
@@ -73,17 +71,6 @@ export class CommonChannelPathHandler {
       });
     });
   }
-
-  reconnectConnectionClientId(connection: ws, clientId: string) { }
-
-  // 待废弃
-  disposeAll() {
-    // this.handlerMap.forEach((handlerArr: IPathHander[]) => {
-    //   handlerArr.forEach((handler: IPathHander) => {
-    //     handler.dispose(handler.connection);
-    //   });
-    // });
-  }
   getAll() {
     return Array.from(this.handlerMap.values());
   }
@@ -134,30 +121,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
             this.logger.log('new connection clientId', clientId);
-
-            /*
-            // 避免内存泄露，这个 map 是需要删除掉关系的，那么则无法判断
-            if (this.connectionMap.has(clientId)) {
-              console.log(`connection reconnect success ${clientId}`);
-
-              Array.from(this.channelMap.values())
-                   .filter((channel) => {
-                      return channel.id.toString().indexOf(clientId) !== -1;
-                    })
-                   .forEach((channel) => {
-                      const connectionSend = this.channelConnectionSend(connection);
-                      channel.setConnectionSend(connectionSend);
-                   });
-              //TODO: 存在 map 被清空的情况，只有前台知道有哪些 channel 要重新注册
-
-            } else {
-              */
-
             connectionId = clientId;
-            /*
-            }
-            */
-
             this.connectionMap.set(clientId, connection);
             this.hearbeat(connectionId, connection);
             // channel 消息处理
@@ -175,7 +139,6 @@ export class CommonChannelHandler extends WebSocketHandler {
             let handlerArr = commonChannelPathHandler.get(path);
             let params;
             // 尝试通过父路径查找处理函数，如server/:id方式注册的handler
-            // TODO：支持多个参数
             if (!handlerArr) {
               const slashIndex = path.indexOf('/');
               const hasSlash = slashIndex >= 0;

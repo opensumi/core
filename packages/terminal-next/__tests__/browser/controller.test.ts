@@ -1,8 +1,6 @@
 /**
  * Terminal Controller Test
  */
-// import WebSocket from 'ws';
-// import httpProxy from 'http-proxy';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { ITerminalController } from '../../src/common';
 import { injector } from './inject';

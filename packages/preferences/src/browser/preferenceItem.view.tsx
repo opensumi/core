@@ -275,15 +275,19 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
   });
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-  const options = optionEnum && optionEnum.length > 0 ? optionEnum.map((item, idx) =>
+  const options = optionEnum && optionEnum.length > 0 ? optionEnum.map((item, idx) => {
+    if (typeof item === 'boolean') {
+      item = String(item);
+    }
     isElectronRenderer() ?
       <option value={item} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
       }</option> :
       <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</Option>) :
-      isElectronRenderer() ?
+      }</Option>;
+    }) :
+    isElectronRenderer() ?
       <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>{localize('preference.stringArray.none')}</option> :
       <Option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} label={localize('preference.stringArray.none')} disabled>{localize('preference.stringArray.none')}</Option>;
 
@@ -333,7 +337,6 @@ function EditInSettingsJsonPreferenceItem({ preferenceName, localizedName, schem
 
 }
 
-// TODO: 优化这个组件
 function StringArrayPreferenceItem({ preferenceName, localizedName, currentValue, schema, effectingScope, scope, hasValueInScope }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const [value, setValue] = React.useState<string[]>([]);

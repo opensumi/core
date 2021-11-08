@@ -1,7 +1,7 @@
 import { ISchemaStore, JsonSchemaConfiguration } from '../common';
 import debounce = require('lodash.debounce');
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
-import { Emitter, Event, ISchemaRegistry, ISchemaContributions, IJSONSchema } from '@ali/ide-core-browser';
+import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 @Injectable()
@@ -48,7 +48,7 @@ function normalizeId(id: string) {
 }
 
 @Injectable()
-export class SchemaRegistry implements ISchemaRegistry {
+export class SchemaRegistry implements IJSONSchemaRegistry {
 
   @Autowired(ISchemaStore)
   schemaStore: ISchemaStore;

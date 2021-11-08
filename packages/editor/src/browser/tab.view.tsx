@@ -101,10 +101,15 @@ export const Tabs = ({ group }: ITabsProps) => {
 
   React.useEffect(() => {
     if (!wrapMode) {
-      // TODO: 需要一个更好的解决方案
-      setTimeout(() => {
+      // FIXME: 依赖了不稳定的 setTimeout 逻辑，需要一个更好的解决方案
+      const timer = setTimeout(() => {
         scrollToCurrent();
       }, 200);
+      return () => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      };
     }
   }, [wrapMode, tabContainer.current]);
 

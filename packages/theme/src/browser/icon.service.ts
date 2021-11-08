@@ -230,7 +230,6 @@ export class IconService implements IIconService {
   }
 
   async applyTheme(themeId?: string, fromExtension?: boolean) {
-    // TODO: 复用图标和颜色主题的部分逻辑
     if (fromExtension) {
       this.extensionReady = true;
     }
@@ -273,10 +272,4 @@ export class IconService implements IIconService {
       rootNode.classList.remove('show-file-icons');
     }
   }
-
-  getVscodeIconClass(iconKey: string) {
-    // TODO
-    return '';
-  }
-
 }

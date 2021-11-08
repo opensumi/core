@@ -9,7 +9,6 @@ import { fromSCMUri } from '../../../utils/scm-uri';
 
 @Injectable()
 export class GitDocContentProvider extends AbstractSCMDocContentProvider implements IEditorDocumentModelContentProvider {
-  // TODO: 需要增加对文件变更后的监听，以保持文件内容最新
   scheme = 'git';
 
   @Autowired(ICodeService)

@@ -52,7 +52,6 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
 
     const codeActionsOnSave: CodeActionKind[] = [];
 
-    // TODO: 暂时只支持这两种
     if (preferenceActions['source.fixAll']) {
       codeActionsOnSave.push(CodeActionKind.SourceFixAll);
     }

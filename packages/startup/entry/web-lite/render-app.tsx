@@ -27,7 +27,6 @@ export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
   opts.injector = injector;
 
-  // FIXME: 应尽快去掉 mock 模块的使用
   injector.addProviders({
     token: LogServiceForClientPath,
     useClass: MockLogServiceForClient,

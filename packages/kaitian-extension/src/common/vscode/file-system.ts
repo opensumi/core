@@ -348,11 +348,6 @@ export interface IExtHostFileSystemShape {
   $delete(handle: number, resource: UriComponents, opts: FileDeleteOptions): Promise<void>;
   $watch(handle: number, session: number, resource: UriComponents, opts: IWatchOptions): void;
   $unwatch(handle: number, session: number): void;
-  // TODO: proposed
-  // $open(handle: number, resource: UriComponents, opts: FileOpenOptions): Promise<number>;
-  // $close(handle: number, fd: number): Promise<void>;
-  // $read(handle: number, fd: number, pos: number, length: number): Promise<string>;
-  // $write(handle: number, fd: number, pos: number, data: string): Promise<number>;
 }
 
 export interface IMainThreadFileSystemShape extends IDisposable {

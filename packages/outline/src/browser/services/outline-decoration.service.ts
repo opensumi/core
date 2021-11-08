@@ -23,7 +23,6 @@ export class OutlineDecorationService {
     let topMarker: IOutlineMarker | undefined;
     // 根据 node.raw.range 判断相交情况
     // 这里的相交判断实际上可以做一下数据裁剪
-    // TODO：根据父节点的诊断信息查询子节点诊断信息
     const diagnosisInfos = this._diagnosisInfo.filter((marker: IMarker) => {
       if (marker.startLineNumber <= node.raw.range.startLineNumber && marker.endLineNumber >= node.raw.range.startLineNumber) {
         return true;

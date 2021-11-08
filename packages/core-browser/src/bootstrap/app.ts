@@ -411,7 +411,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e); // TODO 这里无法落日志
+          getDebugLogger().error(e);
         }
       }
     }
@@ -436,11 +436,11 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e); // TODO 这里无法落日志
+          getDebugLogger().error(e);
         }
       }
     }
-    return false; // Electron暂时不问，结束stop行为后关闭
+    return false;
   }
 
   /**

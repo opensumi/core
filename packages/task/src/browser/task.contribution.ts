@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Domain, Command, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Domain, Command, JsonSchemaContribution, IJSONSchemaRegistry } from '@ali/ide-core-browser';
 import { ITaskService } from '../common';
 import { schema, taskSchemaUri } from './task.schema';
 
@@ -14,7 +14,7 @@ export class TaskContribution implements CommandContribution, JsonSchemaContribu
   @Autowired(ITaskService)
   private readonly taskService: ITaskService;
 
-  registerSchema(registry: ISchemaRegistry) {
+  registerSchema(registry: IJSONSchemaRegistry) {
     registry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
   }
 

@@ -70,7 +70,7 @@ export interface PreferenceItem {
      * preference default value, if `undefined` then `default`
      */
     defaultValue?: any;
-    enum?: Array<string | number>;
+    enum?: Array<string | number | boolean>;
     items?: PreferenceItem;
     properties?: { [name: string]: PreferenceItem };
     additionalProperties?: object;

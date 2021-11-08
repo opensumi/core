@@ -99,7 +99,6 @@ export class MonacoBulkEditService implements IBulkEditService {
       if ((resourceEdit as IResourceTextEdit).resource) {
         const resourceTextEdit = resourceEdit as IResourceTextEdit;
         const tmp: IResourceTextEdit = {
-          // TODO 类型定义有问题，拿到的是URIComponents并不是monaco.Uri
           resource: URI.from(resourceTextEdit.resource as unknown as UriComponents),
           textEdit: resourceTextEdit.textEdit,
           options: {

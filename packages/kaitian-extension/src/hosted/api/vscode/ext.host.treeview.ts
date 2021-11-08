@@ -218,7 +218,6 @@ class ExtHostTreeView<T> implements IDisposable {
     if (this.treeDataProvider.onDidChangeTreeData) {
 
       const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
-        // TODO: 处理单独的Item刷新
         proxy.$refresh<T>(treeViewId);
       });
       if (dispose) {

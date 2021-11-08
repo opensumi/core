@@ -114,7 +114,6 @@ declare module 'kaitian-worker' {
   /**
    * Reactions of a [comment](#Comment)
    */
-  // TODO 还未实现
   export interface CommentReaction {
     /**
      * The human-readable label for the reaction
@@ -179,7 +178,7 @@ declare module 'kaitian-worker' {
     /**
      * Optional reactions of the [comment](#Comment)
      */
-    // TODO 还未实现
+    // TODO: 还未实现
     reactions?: CommentReaction[];
 
     /**
@@ -246,10 +245,10 @@ declare module 'kaitian-worker' {
      */
     createCommentThread(uri: Uri, range: Range, comments: Comment[]): CommentThread;
 
-    // /**
-    //  * Optional reaction handler for creating and deleting reactions on a [comment](#Comment).
-    //  */
-    // TODO 还未实现
+    /**
+     * Optional reaction handler for creating and deleting reactions on a [comment](#Comment).
+     */
+    // TODO: 还未实现
     reactionHandler?: (comment: Comment, reaction: CommentReaction) => Promise<void>;
 
     /**

@@ -2,8 +2,15 @@ import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
 import { Layout } from './layout';
-// TODO: 类型标准化
-type ChildComponent = React.ReactElement<{ flex?: number; defaultSize?: number; id: string; overflow: string; }>;
+
+export interface IChildComponentProps {
+  flex?: number;
+  defaultSize?: number;
+  id: string;
+  overflow: string;
+}
+
+type ChildComponent = React.ReactElement<IChildComponentProps>;
 
 export const BoxPanel: React.FC<{
   children?: ChildComponent | ChildComponent[];

@@ -151,12 +151,6 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     if (typeof provider.copy === 'function') {
       capabilities += FileSystemProviderCapabilities.FileFolderCopy;
     }
-    // TODO: proposed api
-    // if (typeof provider.open === 'function' && typeof provider.close === 'function'
-    // 	&& typeof provider.read === 'function' && typeof provider.write === 'function'
-    // ) {
-    // 	capabilities += FileSystemProviderCapabilities.FileOpenReadWriteClose;
-    // }
 
     this._proxy.$registerFileSystemProvider(handle, scheme, capabilities);
 

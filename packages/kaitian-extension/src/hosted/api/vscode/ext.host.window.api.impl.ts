@@ -98,7 +98,6 @@ export function createWindowApiFactory(
     get visibleTextEditors() {
       return extHostEditors.visibleEditors;
     },
-    // TODO: 内部无此类需求，先空实现，等有需求再做
     get isTrusted() {
       return true;
     },

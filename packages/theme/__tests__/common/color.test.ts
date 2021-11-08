@@ -166,13 +166,8 @@ describe('Color', () => {
       expect(HSVA.toRGBA(new HSVA(360, 0, 0, 0))).toEqual(new RGBA(0, 0, 0, 0));
       expect(HSVA.toRGBA(new HSVA(360, 0, 0, 1))).toEqual(new RGBA(0, 0, 0, 1));
       expect(HSVA.toRGBA(new HSVA(360, 0, 1, 1))).toEqual(new RGBA(255, 255, 255, 1));
-      // FIXME: 这里与VSCode的实现有不一致的地方
-      // expect(HSVA.toRGBA(new HSVA(360, 1, 1, 1))).toEqual(new RGBA(255, 0, 0, 1));
       expect(HSVA.toRGBA(new HSVA(360, 0, 0.753, 1))).toEqual(new RGBA(192, 192, 192, 1));
       expect(HSVA.toRGBA(new HSVA(360, 0, 0.502, 1))).toEqual(new RGBA(128, 128, 128, 1));
-      // FIXME: 这里与VSCode的实现有不一致的地方
-      // expect(HSVA.toRGBA(new HSVA(360, 1, 0.502, 1))).toEqual(new RGBA(128, 0, 0, 1));
-
     });
 
     test('HSVA.fromRGBA', () => {

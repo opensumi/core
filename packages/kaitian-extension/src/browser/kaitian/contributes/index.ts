@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { ISchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
+import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
@@ -41,8 +41,8 @@ export class KaitianContributesRunner extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(ISchemaRegistry)
-  schemaRegistry: ISchemaRegistry;
+  @Autowired(IJSONSchemaRegistry)
+  schemaRegistry: IJSONSchemaRegistry;
 
   @Autowired(ILogger)
   private logger: ILogger;

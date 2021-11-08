@@ -50,7 +50,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
           this.proxy.$onDidChange(handle, !e ? null : asArray(e));
         });
       }
-      // TODO: 1.55 API，后续被废弃掉了，为了兼容先保留
+      // 1.55 API，后续被废弃掉了，为了兼容先保留
       if (provider.onDidChangeFileDecorations) {
         listener = provider.onDidChangeFileDecorations((e) => {
           this.proxy.$onDidChange(handle, !e ? null : asArray(e));

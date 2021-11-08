@@ -279,27 +279,6 @@ export interface CustomEditorProvider<T extends CustomDocument = CustomDocument>
   ): Thenable<void>;
 
   /**
-   * Save a custom document to a different location.
-   *
-   * This method is invoked by VS Code when the user triggers 'save as' on a custom editor. The implementer must
-   * persist the custom editor to `destination`.
-   *
-   * When the user accepts save as, the current editor is be replaced by an non-dirty editor for the newly saved file.
-   *
-   * @param document Document to save.
-   * @param destination Location to save to.
-   * @param cancellation Token that signals the save is no longer required.
-   *
-   * @return Thenable signaling that saving has completed.
-   */
-  // TODO: 暂时不会调用，未实现相关逻辑
-  // saveCustomDocumentAs(
-  //   document: T,
-  //   destination: Uri,
-  //   cancellation: CancellationToken,
-  // ): Thenable<void>;
-
-  /**
    * Revert a custom document to its last saved state.
    *
    * This method is invoked by VS Code when the user triggers `File: Revert File` in a custom editor. (Note that
@@ -340,12 +319,6 @@ export interface CustomEditorProvider<T extends CustomDocument = CustomDocument>
    * in an operation that takes time to complete, your extension may decide to finish the ongoing backup rather
    * than cancelling it to ensure that VS Code has some valid backup.
    */
-  // TODO: 暂时不会调用，未实现相关逻辑
-  // backupCustomDocument(
-  //   document: T,
-  //   context: CustomDocumentBackupContext,
-  //   cancellation: CancellationToken,
-  // ): Thenable<CustomDocumentBackup>;
 }
 
 export interface ICustomEditorSelector {

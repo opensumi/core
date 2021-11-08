@@ -26,7 +26,6 @@ export function createBrowserApi(injector: Injector, extension: IExtension, rpcP
   const reporter = injector.get(IReporterService);
 
   return {
-    // Components
     ...components,
     commands,
     Scroll,

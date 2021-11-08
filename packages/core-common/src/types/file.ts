@@ -106,7 +106,6 @@ export interface FileSystemProvider {
   readonly capabilities: FileSystemProviderCapabilities;
   readonly onDidChangeCapabilities: Event<void>;
 
-  // TODO: 对单个文件判断 readonly
   readonly readonly?: boolean;
   /**
    * An event to signal that a resource has been created, changed, or deleted. This

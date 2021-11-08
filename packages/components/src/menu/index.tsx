@@ -205,7 +205,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
 
   // Restore vertical mode when menu is collapsed responsively when mounted
   // https://github.com/ant-design/ant-design/issues/13104
-  // TODO: not a perfect solution, looking a new way to avoid setting switchingModeFromInline in this situation
+  // not a perfect solution, looking a new way to avoid setting switchingModeFromInline in this situation
   handleMouseEnter = (e: MouseEvent) => {
     this.restoreModeVerticalFromInline();
     const { onMouseEnter } = this.props;

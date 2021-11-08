@@ -341,7 +341,7 @@ export interface IToolbarPopoverStyle {
 
   /**
    * 在上方还是在下方, 默认下方
-   * // TODO: 暂时只支持 bottom;
+   * 暂时只支持 bottom;
    */
   position?: 'top' | 'bottom';
 

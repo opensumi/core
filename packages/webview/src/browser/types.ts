@@ -61,9 +61,6 @@ export interface IWebview extends IDisposable {
 
   onDispose: Event<void>;
 
-   // TODO showFind(): void;
-  // TODO hideFind(): void;
-
   readonly onDidFocus: Event<void>;
   readonly onDidBlur: Event<void>;
   readonly onDidClickLink: Event<URI>;
@@ -82,8 +79,7 @@ export interface IWebviewContentOptions {
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
   readonly longLive?: boolean;
-  readonly enableFindWidget?: boolean; // TODO 未实现
-  // TODO readonly portMappings?: ReadonlyArray<modes.IWebviewPortMapping>;
+  readonly enableFindWidget?: boolean;
 }
 
 export interface IWebviewContentScrollPosition {

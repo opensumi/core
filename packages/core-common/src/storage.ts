@@ -94,7 +94,6 @@ export namespace StoragePaths {
   // 可通过AppConfig配置替换，目前仅作为默认值使用
   export const DEFAULT_STORAGE_DIR_NAME = '.kaitian';
   export const DEFAULT_DATA_DIR_NAME = 'datas';
-  // TODO: 当前不可替换
   export const MARKETPLACE_DIR = 'extensions';
   export const EXTENSIONS_LOGS_DIR = 'extensions';
   export const EXTENSIONS_GLOBAL_STORAGE_DIR = 'extension-storage';

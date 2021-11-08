@@ -414,7 +414,6 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 }
 
 // 不可保存，因此不需要设置 saveDocumentModel
-// TODO: 统一的 walkThroughSnippet 的 provider，应挪走
 @Injectable()
 export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelContentProvider {
   @Autowired(DebugConsoleService)

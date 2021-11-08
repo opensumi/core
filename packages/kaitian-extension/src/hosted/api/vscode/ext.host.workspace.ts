@@ -392,7 +392,6 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       return Promise.resolve([]);
     }
 
-    // TODO: 临时用 glob 实现
     return this.proxy.$startFileSearch(includePattern || '*', {
       cwd: includeFolder ? includeFolder.fsPath : this.rootPath,
       absolute: true,

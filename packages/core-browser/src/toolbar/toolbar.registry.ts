@@ -97,9 +97,6 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     this._onActionAdded.event((action) => {
       this.calculateActionPosition(action);
     });
-    this._onLocationAdded.event((locationName) => {
-      // TODO:
-    });
     this.eventBus.fire(new ToolbarRegistryReadyEvent());
   }
 

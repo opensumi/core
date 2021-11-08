@@ -182,10 +182,6 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       expect(result).toBe('permitted!');
     });
 
-    it.skip('builtin command should not be called via mainthread', async () => {
-      // TODO 需 mock mainthreadCommand
-    });
-
     it('dispose calls unregister', async () => {
       const extTest = jest.fn();
       const command = extCommand.registerCommand(true, 'ext.test', extTest);

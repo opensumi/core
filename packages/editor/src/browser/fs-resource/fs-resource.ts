@@ -1,5 +1,5 @@
 import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
-import { URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap } from '@ali/ide-core-browser';
+import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
@@ -31,13 +31,22 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired(IEditorDocumentModelService)
   protected documentModelService: IEditorDocumentModelService;
 
+  @Autowired(IApplicationService)
+  protected applicationService: IApplicationService;
+
   cachedFileStat = new LRUMap<string, FileStat | undefined>(200, 100);
 
-  private involvedFiles = new FileTreeSet();
+  private involvedFiles: FileTreeSet;
 
   constructor() {
     super();
+    this.init();
     this.listen();
+  }
+
+  async init() {
+    const os = await this.applicationService.getBackendOS();
+    this.involvedFiles = new FileTreeSet(os === OS.Type.Windows);
   }
 
   handlesUri(uri: URI): number {

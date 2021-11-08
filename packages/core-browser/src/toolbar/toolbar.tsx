@@ -11,7 +11,6 @@ import { PreferenceService } from '../preferences';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
 import throttle = require('lodash.throttle');
 
-// TODO: use preference
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
 export const DEFAULT_TOOLBAR_MORE_WIDTH = 14;
 

@@ -172,7 +172,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }>
               tooltip: marker.message,
             };
           });
-          nodes = nodes.concat(item.children); // TODO 需要优化掉
+          nodes = nodes.concat(item.children);
         } else {
           item.children = [];
         }

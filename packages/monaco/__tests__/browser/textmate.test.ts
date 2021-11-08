@@ -168,10 +168,6 @@ describe('textmate service test', () => {
     expect(languageIds).toContain('html');
   });
 
-  it('on language event should be fired', () => {
-    // TODO
-  });
-
   it('should be able to register grammar with or without languageId', () => {
     textmateService.registerGrammar({
       'language': 'html',

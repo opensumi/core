@@ -418,7 +418,6 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
       const state = this.monacoEditor.saveViewState();
       if (state) {
         this.editorState.set(this.currentUri.toString(), state);
-        // TODO store in storage
       }
     }
   }
@@ -503,7 +502,6 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       const state = this.monacoDiffEditor.saveViewState();
       if (state) {
         this.editorState.set(this.currentUri.toString(), state);
-        // TODO store in storage
       }
     }
   }

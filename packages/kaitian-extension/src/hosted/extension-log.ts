@@ -2,7 +2,6 @@ import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../co
 import { RPCProtocol } from '@ali/ide-connection';
 import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@ali/ide-core-common';
 
-// TODO: 考虑插件的 Logger 直接自己实例化一套 manage 流程，不走插件通信通道
 export class ExtensionLogger implements IExtensionLogger {
   private rpcProtocol: RPCProtocol;
   private logger: IMainThreadExtensionLog;

@@ -247,7 +247,6 @@ describe('MainThreadTask Test Suite', () => {
     });
 
     it.skip('executeTask should be work', async (done) => {
-      // TODO 暂时跳过，需要 mock 创建终端的完整流程
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       const execution = await extHostTaskApi.executeTask(tasks[0]);
       expect(execution.task.name).toBe('Echo Task');

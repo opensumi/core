@@ -87,7 +87,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     use: app.use.bind(app),
     marketplace: {
       showBuiltinExtensions: true,
-      // FIXME: @伊北 @柳千
       accountId: 'Eb0Ejh96qukCy_NzKNxztjzY',
       masterKey: 'FWPUOR6NAH3mntLqKtNOvqKt',
       extensionDir: path.join(DEV_PATH, 'extensions'),

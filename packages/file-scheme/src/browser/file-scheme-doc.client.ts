@@ -2,7 +2,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, IFileSchemeDocClient, IContentChange, ISavingContent } from '../common';
 import { IEditorDocumentModelSaveResult } from '@ali/ide-core-browser';
 
-// TODO 这块其实应该放到file service当中
 @Injectable()
 export class FileSchemeDocClientService implements IFileSchemeDocClient {
   @Autowired(FileSchemeDocNodeServicePath)

@@ -34,16 +34,11 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
   async provideHostLogPath(): Promise<URI> {
     const parentLogsDir = await this.getLogsDirPath();
-
     if (!parentLogsDir) {
       throw new Error('Unable to get parent log directory');
     }
-
-    // FIXME: path.join(parentLogsDir)是啥意思
-    const extensionDirPath = parentLogsDir;
-    await this.fileSystem.createFolder(URI.file(extensionDirPath).toString());
-
-    return new URI(extensionDirPath);
+    await this.fileSystem.createFolder(URI.file(parentLogsDir).toString());
+    return new URI(parentLogsDir);
   }
 
   async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<URI | undefined> {

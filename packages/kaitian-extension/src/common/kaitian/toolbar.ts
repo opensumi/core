@@ -41,3 +41,11 @@ export interface IMainThreadToolbar {
 
   $registerToolbarSelectAction<T = any>(extensionId: string, extensionPath: string, contribution: IToolbarSelectContribution<T>): Promise<void>;
 }
+
+export interface IExtHostToolbar {
+  registerToolbarAction<T>(extensionId: string, extensionPath: string, contribution: IToolbarButtonContribution | IToolbarSelectContribution): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>>;
+
+  getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle>;
+
+  getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>>;
+}

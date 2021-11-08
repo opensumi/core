@@ -17,7 +17,6 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
       keybinding: 'ctrlcmd+k',
       when: IsTerminalFocused.raw,
     });
-    // FIXME: 这里的 when 条件在终端搜索开启的情况下是不成立的
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.SEARCH_NEXT.id,
       keybinding: 'ctrlcmd+g',

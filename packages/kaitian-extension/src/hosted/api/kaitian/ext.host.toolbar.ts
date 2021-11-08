@@ -1,6 +1,6 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { ExtHostCommon } from './ext.host.common';
-import { IToolbarButtonActionHandle, IToolbarSelectActionHandle, IMainThreadToolbar } from '../../../common/kaitian/toolbar';
+import { IToolbarButtonActionHandle, IToolbarSelectActionHandle, IMainThreadToolbar, IExtHostToolbar } from '../../../common/kaitian/toolbar';
 import { Emitter, Disposable } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
@@ -24,7 +24,7 @@ export function createToolbarAPIFactory(
   };
 }
 
-export class ExtHostToolbarActionService {
+export class ExtHostToolbarActionService implements IExtHostToolbar {
 
   private btnHandles = new Map<string, Promise<ToolbarBtnActionHandleController>>();
 

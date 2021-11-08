@@ -196,7 +196,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     return this._menuItems.get(menuId) || [];
   }
 
-  // FIXME: 由于现在的 command 无法通知 isEnable/isVisible/isToggle
+  // 由于现在的 command 无法通知 isEnable/isVisible/isToggle
   // 所以 web 版本 menubar 每次需要强制重新计算
   public rebuildMenuNodes(menuId: string) {
     this._buildMenus(menuId);

@@ -1041,7 +1041,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
       sub: {
         // 将类单独作为一个 tab，Java 场景比较常见，其它技术栈可能不一定
-        // TODO: 看是否需要用配置来开启
         '#': {
           title: localize('quickopen.tab.class'),
           order: 2,

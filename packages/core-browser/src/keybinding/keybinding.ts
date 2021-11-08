@@ -217,9 +217,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   public async initialize(): Promise<void> {
     await this.keyboardLayoutService.initialize();
-    this.keyboardLayoutService.onKeyboardLayoutChanged((newLayout) => {
+    this.keyboardLayoutService.onKeyboardLayoutChanged(() => {
       this.clearResolvedKeybindings();
-      // this.keybindingsChanged.fire([]); // TODO 暂时不会改keyboard布局
     });
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {

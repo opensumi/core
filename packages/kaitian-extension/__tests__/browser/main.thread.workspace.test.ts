@@ -382,7 +382,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
 
     disposables.push(extHostWorkspaceAPI.onWillCreateFiles((e) => {
       const edit = new WorkspaceEdit();
-      // FIXME: insert并没有作用在document对象上 @吭头
       edit.insert(Uri.file(randomFile), new Position(0, 0), 'HELLO');
       e.waitUntil(Promise.resolve(edit));
     }));

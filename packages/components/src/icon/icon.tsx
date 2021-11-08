@@ -78,7 +78,6 @@ const IconBase = function<T>(
 
   let iconClx: string | undefined;
   if (icon) {
-    // FIXME: @柳千 这一段看不懂，是啥意思呢?
     // 因为 getIcon 默认是倒序查找优先级
     // 这里的逻辑会导致是优先用 defaultIconFont 里面去查找
     // 所以这里应该是跟 getIcon 逻辑表现不太一样

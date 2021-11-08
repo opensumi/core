@@ -5,7 +5,7 @@ import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensi
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
-import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, ISchemaRegistry, ISchemaStore, URI, Disposable, ICryptrService, ICredentialsService, Emitter } from '@ali/ide-core-browser';
+import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, IJSONSchemaRegistry, ISchemaStore, URI, Disposable, ICryptrService, ICredentialsService, Emitter } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IThemeService, IIconService } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
@@ -484,7 +484,7 @@ export function setupExtensionServiceInjector() {
       useClass: SchemaStore,
     },
     {
-      token: ISchemaRegistry,
+      token: IJSONSchemaRegistry,
       useClass: SchemaRegistry,
     },
     {

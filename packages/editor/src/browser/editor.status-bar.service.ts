@@ -49,7 +49,6 @@ export class EditorStatusBarService extends WithEventBus {
     });
   }
 
-  // TODO 更新 Language 状态
   protected updateLanguageStatus(editor: IEditor | null): void {
     if (!editor) {
       this.statusBar.removeElement('editor-status-language');
@@ -82,7 +81,6 @@ export class EditorStatusBarService extends WithEventBus {
       command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
       tooltip: localize('status.editor.chooseLanguage'),
     });
-    // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
       name: localize('status-bar.editor-encoding'),
       text: encoding.toUpperCase(),
@@ -104,7 +102,6 @@ export class EditorStatusBarService extends WithEventBus {
       text: (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) + ': ' + tabSize,
       alignment: StatusBarAlignment.RIGHT,
       priority: 4,
-      // TODO 添加快捷设置Tab能力
       command: undefined,
     });
   }

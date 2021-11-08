@@ -141,7 +141,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.$getLanguages();
   }
 
-  // TODO: I need this
   // ### Hover begin
   registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
     const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents));
@@ -153,7 +152,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
   }
 
-  // TODO: I need this
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector);
     const hoverProvider = this.createHoverProvider(handle, languageSelector);
@@ -182,7 +180,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
   }
   // ### Hover end
 
-  // TODO: I need this
   // ### Definition provider begin
   registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
     const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents));
@@ -237,7 +234,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
   }
   // ### Definition provider end
 
-  // TODO: I need this
   // ### Code Reference Provider begin
   registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
     const callId = this.addNewAdapter(new ReferenceAdapter(provider, this.documents));
@@ -249,7 +245,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.withAdapter(handle, ReferenceAdapter, (adapter) => adapter.provideReferences(resource, position, context, token));
   }
 
-  // TODO: I need this
   $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector);
     const referenceProvider = this.createReferenceProvider(handle, languageSelector);

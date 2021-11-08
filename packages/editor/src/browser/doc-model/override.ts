@@ -9,7 +9,6 @@ import { IEditorDocumentModelService } from './types';
 export class MonacoTextModelService implements ITextModelService {
 
   canHandleResource(resource: any): boolean {
-    // FIXME: 暂时返回 true
     return true;
   }
 

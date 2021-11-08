@@ -219,7 +219,6 @@ describe('ExtHostTask API', () => {
     done();
   });
 
-  // TODO: 需要 mock 的太多, 只能测到这里了
   it('run custombuild task', async (done) => {
     const taskSet = await taskService['getGroupedTasks']();
     taskService.run(taskSet[0].tasks[0]);

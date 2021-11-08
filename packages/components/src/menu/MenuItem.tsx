@@ -43,7 +43,6 @@ export default class MenuItem extends React.Component<MenuItemProps> {
             return <Item {...rest} title={title} ref={this.saveMenuItem} />;
           }
 
-          // TODO: Tooltip
           return <Item {...rest} title={title} ref={this.saveMenuItem} />;
         }}
       </MenuContext.Consumer>

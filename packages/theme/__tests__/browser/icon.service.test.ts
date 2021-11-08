@@ -10,7 +10,7 @@ import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable()
 class MockFileServiceClient {
-  resolveContent(uri: string) {
+  readFile(uri: string) {
     if (uri.indexOf('font') > -1) {
       return `{
         "fonts": [

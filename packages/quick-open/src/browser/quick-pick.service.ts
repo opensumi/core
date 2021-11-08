@@ -67,7 +67,7 @@ export class QuickPickServiceImpl implements QuickPickService {
     const [icon, text] = getIconClass(label);
 
     if (icon) {
-      iconClass = getIcon(icon) || getExternalIcon(icon); // FIXME: 内部不应使用外部图标，避免更新导致问题
+      iconClass = getIcon(icon) || getExternalIcon(icon);
       label = ` ${text}`;
     }
     return {

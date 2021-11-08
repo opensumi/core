@@ -12,7 +12,6 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
   @Autowired(IThemeService)
   themeService: IThemeService;
 
-  // TODO 内部注册的颜色description映射到schema
   schema = {
     description: localize('contributes.color', 'Contributes extension defined themable colors'),
     type: 'array',

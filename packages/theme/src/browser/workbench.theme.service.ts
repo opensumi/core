@@ -34,7 +34,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   private colorClassNameMap = new Map<string, string>();
 
-  // TODO 初始化时读取本地存储配置
   public currentThemeId: string;
   private currentTheme?: Theme;
   private themeIdNotFound?: string;
@@ -130,7 +129,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.doApplyTheme(this.currentTheme);
   }
 
-  // TODO 插件机制需要支持 contribution 增/减量，来做deregister
   public registerColor(contribution: ExtColorContribution) {
     if (!this.checkColorContribution(contribution)) {
       return;

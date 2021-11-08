@@ -466,8 +466,6 @@ export interface TextEdit {
   eol?: editor.EndOfLineSequence;
 }
 
-// TODO 放在正确位置 start
-
 export interface RawColorInfo {
   color: [number, number, number, number];
   range: Range;

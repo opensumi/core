@@ -90,5 +90,5 @@ function isBreadCrumbArrayEqual(p1: IBreadCrumbPart[] | undefined, p2: IBreadCru
 }
 
 function isBreadCrumbEqual(p1: IBreadCrumbPart, p2: IBreadCrumbPart): boolean {
-  return p1.name === p2.name; // TODO more good equal
+  return p1.name === p2.name;
 }

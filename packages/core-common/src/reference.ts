@@ -2,7 +2,6 @@ import { Disposable } from './disposable';
 import { MaybePromise } from './async';
 import { Emitter, Event } from './event';
 
-// TODO key名与vscode的reference对齐
 export interface IRef<T> {
   instance: T;
   reason?: string;

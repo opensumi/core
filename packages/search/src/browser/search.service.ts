@@ -234,7 +234,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     // 由于查询的限制，暂时只支持单一 workspace 的编码参数
     searchOptions.encoding = this.preferenceService.get<string>('files.encoding', undefined, rootDirs[0]?.toString());
 
-    // TODO: 当前无法在不同 cwd 内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
+    // FIXME: 当前无法在不同根目录内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
     // 同时 searchId 设计原因只能针对单服务，多个 search 服务无法对同一个 searchId 返回结果
     // 长期看需要改造，以支持 registerFileSearchProvider
     if (this.UIState.isOnlyOpenEditors) {

@@ -34,7 +34,6 @@ export class FileServiceModule extends NodeModule {
       servicePath: ShadowFileServicePath,
       token: IShadowFileProvider,
     },
-    // TODO: 移除node层fs
     {
       servicePath: FileServicePath,
       token: IFileService,

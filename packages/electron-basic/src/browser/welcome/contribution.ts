@@ -41,7 +41,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
           return {
             uri,
             name: localize('welcome.title'),
-            icon: '', // TODO
+            icon: '',
             metadata: {
               recentWorkspaces: workspaces || [],
               recentFiles: files || [],

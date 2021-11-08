@@ -154,7 +154,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return this._isCompactMode;
   }
 
-  // FIXME: 临时给测试用例使用
   set isCompactMode(value: boolean) {
     this._isCompactMode = value;
   }

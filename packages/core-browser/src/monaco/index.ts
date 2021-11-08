@@ -79,8 +79,7 @@ export interface ISchemaContributions {
   schemas: { [id: string]: IJSONSchema };
 }
 
-// FIXME: should named as IJSONSchemaRegistry ?
-export interface ISchemaRegistry {
+export interface IJSONSchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;
 
@@ -91,11 +90,11 @@ export interface ISchemaRegistry {
   getSchemaContributions(): ISchemaContributions;
 }
 
-export const ISchemaRegistry = Symbol('ISchemaRegistry');
+export const IJSONSchemaRegistry = Symbol('IJSONSchemaRegistry');
 
 export const JsonSchemaContribution = Symbol('JsonSchemaContribution');
 export interface JsonSchemaContribution {
-  registerSchema(registry: ISchemaRegistry): void;
+  registerSchema(registry: IJSONSchemaRegistry): void;
 }
 export interface JsonSchemaConfiguration {
   url: string;

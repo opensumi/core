@@ -1,19 +1,7 @@
-import { isElectronRenderer, isWindows } from '@ali/ide-core-common';
-
-function isNodeWindow() {
-  // TODO 更好的判断 node 是否 windows（虽然一般除了electron不会把windows当服务器吧?)
-  return isElectronRenderer() && isWindows;
-}
-
 /**
  * 对于 tree-like 的结构，希望父节点被删除/更新时，能影响到子节点
- * FIXME: 这边前后端环境不一致的时候还是有坑，应该使用 uri
- * TODO: 写点测试
  */
 export class FileTreeNode {
-
-  static separator: string = isNodeWindow() ? '\\' : '/';
-
   public readonly key: string;
 
   private _children: Map<string, FileTreeNode> | undefined;
@@ -29,9 +17,9 @@ export class FileTreeNode {
     return this._children!;
   }
 
-  constructor(public readonly path: string, public readonly parent?: FileTreeNode) {
+  constructor(public readonly path: string, public readonly parent?: FileTreeNode, private separator: string = '/') {
     if (parent) {
-      this.key = parent.key + FileTreeNode.separator + path;
+      this.key = parent.key + this.separator + path;
     } else {
       this.key = path;
     }
@@ -42,7 +30,7 @@ export class FileTreeNode {
   }
 
   addChild(path: string): FileTreeNode {
-    const node = new FileTreeNode(path, this);
+    const node = new FileTreeNode(path, this, this.separator);
     this.children.set(path, node);
     return node;
   }
@@ -78,18 +66,22 @@ export class FileTreeNode {
 }
 
 export class FileTreeSet<T = any> {
+  private separator: string;
+  constructor(isWindows: boolean = false) {
+    this.separator = isWindows ? '\\' : '/';
+  }
 
   private nodes: Map<string, FileTreeNode> = new Map();
 
   add<T>(path: string) {
-    const segments = path.split(FileTreeNode.separator);
+    const segments = path.split(this.separator);
     let p: string | undefined;
     let currentNode: FileTreeNode | undefined;
     for (const seg of segments) {
       if (p === undefined) {
         p = seg;
       }  else {
-        p += FileTreeNode.separator + seg;
+        p += this.separator + seg;
       }
       let node: FileTreeNode;
       if (this.nodes.has(p)) {
@@ -98,7 +90,7 @@ export class FileTreeSet<T = any> {
         if (currentNode) {
           node = currentNode!.addChild(seg);
         } else {
-          node = new FileTreeNode(seg);
+          node = new FileTreeNode(seg, undefined, this.separator);
         }
         node.bindOnDispose(() => {
           this.nodes.delete(node.key);

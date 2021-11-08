@@ -337,7 +337,6 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   private async resolveVariable(value: string | undefined): Promise<string>;
   private async resolveVariable(value: CommandString | undefined): Promise<CommandString>;
   private async resolveVariable(value: CommandString | undefined): Promise<CommandString> {
-    // TODO@Dirk Task.getWorkspaceFolder should return a WorkspaceFolder that is defined in workspace.ts
     if (isString(value)) {
       return await this.variableResolver.resolve<string>(value);
     } else if (value !== undefined) {

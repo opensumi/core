@@ -114,7 +114,6 @@ export interface IEditorDocumentModelContentProvider {
 
   /**
    * 提供文档内容
-   * // TODO 支持TextBuffer以打开大型文件
    * @param uri
    * @param encoding 以某种编码获取内容
    */

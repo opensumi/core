@@ -50,12 +50,11 @@ export class GitResourceProvider implements IResourceProvider {
     }
   }
 
-  // TODO 除了doc dirty之外的逻辑基本上是通用的
+  // 除了doc dirty之外的逻辑基本上是通用的
   async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
     return true;
   }
 
-  // TODO browser fs
   private getFileStat(uri: string) {
     return true;
   }

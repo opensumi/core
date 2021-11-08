@@ -107,7 +107,6 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {
-    // TODO electron 6.0好像api有变动, 目前适应5.0.10
     return new Promise((resolve, reject) => {
       try {
         if (semver.lt(process.versions.electron, '6.0.0')) {

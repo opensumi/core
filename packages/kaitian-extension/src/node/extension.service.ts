@@ -216,7 +216,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         ...process.env,
       },
     };
-    // TODO: 软链模式下的路径兼容性存在问题
+    // 软链模式下的路径兼容性存在问题
     if (isElectronNode()) {
       this.logger.verbose('try get shell path for extension process');
       let shellPath: string | undefined;
@@ -580,7 +580,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
     const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
-    // TODO: 先使用单个 server，再尝试单个 server 与多个进程进行连接
+    // 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
 
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);

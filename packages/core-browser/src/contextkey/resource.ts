@@ -36,9 +36,9 @@ export class ResourceContextKey {
       this.resourceScheme.set(uri.scheme);
       this.resourceFilename.set(uri.path.name + uri.path.ext);
       this.resourceExtname.set(uri.path.ext);
-      this.resourceLangId.set(this.languageResolver(uri)!); // TODO
+      this.resourceLangId.set(this.languageResolver(uri)!);
       this.resourceKey.set(uri.toString());
-      this.isFileSystemResource.set(uri.scheme === 'file'); // TOOD FileSystemClient.canHandle
+      this.isFileSystemResource.set(uri.scheme === 'file');
     }
   }
 
@@ -46,9 +46,9 @@ export class ResourceContextKey {
     this.resourceScheme.set('');
     this.resourceFilename.set('');
     this.resourceExtname.set('');
-    this.resourceLangId.set(''); // TODO
+    this.resourceLangId.set('');
     this.resourceKey.set('');
-    this.isFileSystemResource.set(false); // TOOD FileSystemClient.canHandle
+    this.isFileSystemResource.set(false);
   }
 
 }

@@ -6,7 +6,6 @@ import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/sel
 import styles from './debug-console.module.less';
 
 export const DebugConsoleToolbarView = observer(() => {
-  // FIXME: 当前逻辑仅占位用，并无实际分channel输出功能
   if (isElectronRenderer()) {
     return (
       <NativeSelect value='default' className={styles.debug_console_select}>

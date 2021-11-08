@@ -103,6 +103,7 @@ export class Extension extends WithEventBus implements IExtension {
     }
     this.extMetadataService.dispose();
     this._enabled = false;
+    super.dispose();
   }
 
   enable() {

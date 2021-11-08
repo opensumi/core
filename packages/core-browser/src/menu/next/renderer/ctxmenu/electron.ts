@@ -34,10 +34,9 @@ export class ElectronMenuFactory extends Disposable {
         };
       } else {
         this.bindAction(menuNode, map, context);
-        // FIXME 这里不管是不是checkbox，checked返回都会是有值的
         return {
           type: menuNode.checked ? 'checkbox' : undefined,
-          checked: menuNode.checked ? menuNode.checked : undefined,
+          checked: menuNode.checked ? menuNode.checked : false,
           label: `${mnemonicButtonLabel(menuNode.label, true)} ${menuNode.isKeyCombination ? menuNode.keybinding : ''}`,
           id: menuNode.id,
           action: true,
@@ -47,8 +46,6 @@ export class ElectronMenuFactory extends Disposable {
         };
       }
     });
-    // SubmenuItem
-    // TODO disabled, enabled等
   }
 
   private bindAction(menuNode: MenuNode, map: Map<string, () => void>, context?: any[]) {

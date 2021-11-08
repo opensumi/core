@@ -61,7 +61,6 @@ export function StatusBarItem(props: StatusBarEntry) {
       {items.map((item, key) => {
         if (!(typeof item === 'string') && LabelIcon.is(item)) {
           hasIcon = true;
-          // TODO 支持内置的iconfont
           return <span key={key} className={cls(styles.icon, getExternalIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
         } else {
           // 22px高度限制用于解决文本超长时文本折叠问题
