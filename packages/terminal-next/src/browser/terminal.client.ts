@@ -123,11 +123,16 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._container = document.createElement('div');
     this._container.className = styles.terminalInstance;
     this._prepare();
+
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
       ...this.service.getOptions(),
     });
+
+    if (options.message) {
+      this._term.writeln(options.message);
+    }
 
     // 可能存在 env 为 undefined 的情况，做一下初始化
     if (!this._options.env) {
