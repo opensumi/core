@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import cls from 'classnames';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
@@ -11,7 +11,6 @@ import { getIcon } from '@ali/ide-core-browser';
 import { RecycleList } from '@ali/ide-components';
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
-
   const {
     keybindings,
     searchKeybindings,
@@ -275,10 +274,15 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     </div>;
   };
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    searchKeybindings(value);
+  }, [search]);
+
   const onChangeHandler = (event) => {
     if (!activeKeyboardSearch) {
       const value = event.target && event.target.value ? event.target.value.toLocaleLowerCase() : '';
-      setSearch(value);
+      handleSearchChange(value);
     }
   };
 
@@ -291,7 +295,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         // 屏蔽回车键作为快捷键搜索
         return;
       } else {
-        setSearch(covert(event.nativeEvent));
+        handleSearchChange(covert(event.nativeEvent));
       }
     }
   };
@@ -306,10 +310,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       <span className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)} onClick={clearSearch} title={localize('keymaps.action.reset')}></span>
     </div>;
   };
-
-  React.useEffect(() => {
-    searchKeybindings(search);
-  }, [search]);
 
   const renderSearchInput = () => {
     return <div className={styles.search_container}>
