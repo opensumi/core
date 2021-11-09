@@ -1,7 +1,8 @@
+import type vscode from 'vscode';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter } from '@opensumi/ide-core-common';
 import { capitalize } from 'lodash';
-import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork, ITerminalExitEvent } from '../common';
+import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork, ITerminalExitEvent } from '../common';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {
@@ -51,7 +52,7 @@ export class TerminalApiService implements ITerminalApiService {
     });
   }
 
-  async createTerminal(options: TerminalOptions): Promise<ITerminalExternalClient> {
+  async createTerminal(options: vscode.TerminalOptions): Promise<ITerminalExternalClient> {
     const self = this;
     const client = this.controller.createClientWithWidget(options);
 

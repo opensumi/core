@@ -1,3 +1,4 @@
+import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@opensumi/ide-core-common';
 import { WindowsShellType } from './shell';
@@ -113,6 +114,25 @@ export interface TerminalOptions {
    * as normal.
    */
   hideFromUser?: boolean;
+
+  /**
+		 * A message to write to the terminal on first launch, note that this is not sent to the
+		 * process but, rather written directly to the terminal. This supports escape sequences such
+		 * a setting text style.
+		 */
+   message?: string;
+
+   /**
+    * The icon path or {@link ThemeIcon} for the terminal.
+    */
+   iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
+
+   /**
+    * The icon {@link ThemeColor} for the terminal.
+    * The `terminal.ansi*` theme keys are
+    * recommended for the best contrast and consistency across themes.
+    */
+   color?: vscode.ThemeColor;
 
   /**
    * pty 进程退出后是否自动关闭 terminal 控件
