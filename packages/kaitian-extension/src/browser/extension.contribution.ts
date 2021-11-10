@@ -294,9 +294,9 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
     });
 
     registry.registerCommand(VSCodeBuiltinCommands.DIFF, {
-      execute: (left: UriComponents, right: UriComponents, title: string, options: any = {}) => {
+      execute: (left: UriComponents, right: UriComponents, title: string, options?: any) => {
         const openOptions: IResourceOpenOptions = {
-          ...viewColumnToResourceOpenOptions(options.viewColumn),
+          ...viewColumnToResourceOpenOptions(options?.viewColumn),
           revealFirstDiff: true,
           ...options,
         };
@@ -339,6 +339,8 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
       VSCodeBuiltinCommands.REVERT_FILES,
       VSCodeBuiltinCommands.WORKBENCH_FOCUS_FILES_EXPLORER,
       VSCodeBuiltinCommands.WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP,
+      VSCodeBuiltinCommands.API_OPEN_EDITOR_COMMAND_ID,
+      VSCodeBuiltinCommands.API_OPEN_DIFF_EDITOR_COMMAND_ID,
       // debug builtin commands
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_INTO,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OVER,

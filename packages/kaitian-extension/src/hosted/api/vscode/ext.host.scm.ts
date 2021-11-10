@@ -27,7 +27,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,
-  IMainThreadSCMShape, IExtHostSCMShape, CommandDto,
+  IMainThreadSCMShape, IExtHostSCMShape, CommandDto, SCMGroupFeatures,
 } from '../../../common/vscode/scm';
 import { ExtHostCommands } from './ext.host.command';
 
@@ -115,6 +115,18 @@ function compareResourceStates(a: vscode.SourceControlResourceState, b: vscode.S
     return result;
   }
 
+  if (a.command && b.command) {
+    result = compareCommands(a.command, b.command);
+  } else if (a.command) {
+    return 1;
+  } else if (b.command) {
+    return -1;
+  }
+
+  if (result !== 0) {
+    return result;
+  }
+
   if (a.decorations && b.decorations) {
     result = compareResourceStatesDecorations(a.decorations, b.decorations);
   } else if (a.decorations) {
@@ -124,6 +136,49 @@ function compareResourceStates(a: vscode.SourceControlResourceState, b: vscode.S
   }
 
   return result;
+}
+
+function compareCommands(a: vscode.Command, b: vscode.Command): number {
+  if (a.command !== b.command) {
+    return a.command < b.command ? -1 : 1;
+  }
+
+  if (a.title !== b.title) {
+    return a.title < b.title ? -1 : 1;
+  }
+
+  if (a.tooltip !== b.tooltip) {
+    if (a.tooltip !== undefined && b.tooltip !== undefined) {
+      return a.tooltip < b.tooltip ? -1 : 1;
+    } else if (a.tooltip !== undefined) {
+      return 1;
+    } else if (b.tooltip !== undefined) {
+      return -1;
+    }
+  }
+
+  if (a.arguments === b.arguments) {
+    return 0;
+  } else if (!a.arguments) {
+    return -1;
+  } else if (!b.arguments) {
+    return 1;
+  } else if (a.arguments.length !== b.arguments.length) {
+    return a.arguments.length - b.arguments.length;
+  }
+
+  for (let i = 0; i < a.arguments.length; i++) {
+    const aArg = a.arguments[i];
+    const bArg = b.arguments[i];
+
+    if (aArg === bArg) {
+      continue;
+    }
+
+    return aArg < bArg ? -1 : 1;
+  }
+
+  return 0;
 }
 
 function compareArgs(a: any[], b: any[]): boolean {
@@ -276,6 +331,12 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
     this._onDidUpdateResourceStates.fire();
   }
 
+  get features(): SCMGroupFeatures {
+    return {
+      hideWhenEmpty: this.hideWhenEmpty,
+    };
+  }
+
   readonly handle = ExtHostSourceControlResourceGroup._handlePool++;
 
   constructor(
@@ -285,7 +346,6 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
     private _id: string,
     private _label: string,
   ) {
-    this._proxy.$registerGroup(_sourceControlHandle, this.handle, _id, _label);
   }
 
   getResourceState(handle: number): vscode.SourceControlResourceState | undefined {
@@ -370,6 +430,8 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
       for (const handle of handlesToDelete) {
         this._resourceStatesMap.delete(handle);
         this._resourceStatesCommandsMap.delete(handle);
+        this._resourceStatesDisposablesMap.get(handle)?.dispose();
+        this._resourceStatesDisposablesMap.delete(handle);
       }
     }
 
@@ -498,24 +560,50 @@ class ExtHostSourceControl implements vscode.SourceControl {
     this._proxy.$registerSourceControl(this.handle, _id, _label, _rootUri);
   }
 
+  private createdResourceGroups = new Map<ExtHostSourceControlResourceGroup, IDisposable>();
   private updatedResourceGroups = new Set<ExtHostSourceControlResourceGroup>();
 
   createResourceGroup(id: string, label: string): ExtHostSourceControlResourceGroup {
     const group = new ExtHostSourceControlResourceGroup(this._proxy, this._commands, this.handle, id, label);
-
-    const updateListener = group.onDidUpdateResourceStates(() => {
-      this.updatedResourceGroups.add(group);
-      this.eventuallyUpdateResourceStates();
-    });
-
-    Event.once(group.onDidDispose)(() => {
-      this.updatedResourceGroups.delete(group);
-      updateListener.dispose();
-      this._groups.delete(group.handle);
-    });
-
-    this._groups.set(group.handle, group);
+    const disposable = Event.once(group.onDidDispose)(() => this.createdResourceGroups.delete(group));
+    this.createdResourceGroups.set(group, disposable);
+    this.eventuallyAddResourceGroups();
     return group;
+  }
+
+  @debounce(100)
+  eventuallyAddResourceGroups(): void {
+    const groups: [number /*handle*/, string /*id*/, string /*label*/, SCMGroupFeatures][] = [];
+    const splices: SCMRawResourceSplices[] = [];
+
+    for (const [group, disposable] of this.createdResourceGroups) {
+      disposable.dispose();
+
+      const updateListener = group.onDidUpdateResourceStates(() => {
+        this.updatedResourceGroups.add(group);
+        this.eventuallyUpdateResourceStates();
+      });
+
+      Event.once(group.onDidDispose)(() => {
+        this.updatedResourceGroups.delete(group);
+        updateListener.dispose();
+        this._groups.delete(group.handle);
+        this._proxy.$unregisterGroup(this.handle, group.handle);
+      });
+
+      groups.push([group.handle, group.id, group.label, group.features]);
+
+      const snapshot = group._takeResourceStateSnapshot();
+
+      if (snapshot.length > 0) {
+        splices.push([group.handle, snapshot]);
+      }
+
+      this._groups.set(group.handle, group);
+    }
+
+    this._proxy.$registerGroups(this.handle, groups, splices);
+    this.createdResourceGroups.clear();
   }
 
   @debounce(100)

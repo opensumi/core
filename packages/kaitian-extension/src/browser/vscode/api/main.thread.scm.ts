@@ -154,18 +154,22 @@ class MainThreadSCMProvider implements ISCMProvider {
     }
   }
 
-  $registerGroup(handle: number, id: string, label: string): void {
-    const group = new MainThreadSCMResourceGroup(
-      this.handle,
-      handle,
-      this,
-      {},
-      label,
-      id,
-    );
+  $registerGroups(_groups: [number /*handle*/, string /*id*/, string /*label*/, SCMGroupFeatures][]): void {
+    const groups = _groups.map(([handle, id, label, features]) => {
+      const group = new MainThreadSCMResourceGroup(
+        this.handle,
+        handle,
+        this,
+        features,
+        label,
+        id,
+      );
 
-    this._groupsByHandle[handle] = group;
-    this.groups.splice(this.groups.elements.length, 0, [group]);
+      this._groupsByHandle[handle] = group;
+      return group;
+    });
+
+    this.groups.splice(this.groups.elements.length, 0, groups);
   }
 
   $updateGroup(handle: number, features: SCMGroupFeatures): void {
@@ -245,6 +249,7 @@ class MainThreadSCMProvider implements ISCMProvider {
 
     delete this._groupsByHandle[handle];
     this.groups.splice(this.groups.elements.indexOf(group), 1);
+    this._onDidChangeResources.fire();
   }
 
   async getOriginalResource(uri: URI): Promise<URI | null> {
@@ -336,7 +341,7 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     this._repositories.delete(handle);
   }
 
-  $registerGroup(sourceControlHandle: number, groupHandle: number, id: string, label: string): void {
+  $registerGroups(sourceControlHandle: number, groups: [number /*handle*/, string /*id*/, string /*label*/, SCMGroupFeatures][], splices: SCMRawResourceSplices[]): void {
     const repository = this._repositories.get(sourceControlHandle);
 
     if (!repository) {
@@ -344,10 +349,12 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     }
 
     const provider = repository.provider as MainThreadSCMProvider;
-    provider.$registerGroup(groupHandle, id, label);
-
+    provider.$registerGroups(groups);
+    provider.$spliceGroupResourceStates(splices);
     this.addDispose(Disposable.create(() => {
-      provider.$unregisterGroup(groupHandle);
+      for (const group of groups) {
+        provider.$unregisterGroup(group[0]);
+      }
     }));
   }
 

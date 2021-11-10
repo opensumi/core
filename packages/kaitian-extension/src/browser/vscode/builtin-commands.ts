@@ -155,6 +155,11 @@ export const OPEN: Command = {
   id: 'vscode.open',
 };
 
+export const API_OPEN_EDITOR_COMMAND_ID: Command = {
+  id: EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID,
+  delegate: OPEN.id,
+};
+
 // 打开文件夹
 export const OPEN_FOLDER: Command = {
   id: 'vscode.openFolder',
@@ -164,6 +169,11 @@ export const OPEN_FOLDER: Command = {
 // 比较内容
 export const DIFF: Command = {
   id: 'vscode.diff',
+};
+
+export const API_OPEN_DIFF_EDITOR_COMMAND_ID: Command = {
+  id: EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID,
+  delegate: DIFF.id,
 };
 
 export const RELOAD_WINDOW_COMMAND: Command = {
