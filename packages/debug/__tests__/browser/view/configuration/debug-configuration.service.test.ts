@@ -125,8 +125,6 @@ describe('Debug Configuration Service', () => {
     expect(typeof debugConfigurationService.updateConfiguration).toBe('function');
     expect(typeof debugConfigurationService.toValue).toBe('function');
     expect(typeof debugConfigurationService.toName).toBe('function');
-    expect(typeof debugConfigurationService.getCurrentConfiguration).toBe('function');
-    expect(typeof debugConfigurationService.setCurrentConfiguration).toBe('function');
   });
 
   it('should init success', () => {
@@ -191,17 +189,4 @@ describe('Debug Configuration Service', () => {
     expect(value).toBe('test');
   });
 
-  it('getCurrentConfiguration method should be work', async (done) => {
-    mockStorage.get.mockClear();
-    await debugConfigurationService.getCurrentConfiguration();
-    expect(mockStorage.get).toBeCalledTimes(1);
-    done();
-  });
-
-  it('setCurrentConfiguration method should be work', async (done) => {
-    mockStorage.set.mockClear();
-    await debugConfigurationService.setCurrentConfiguration('test');
-    expect(mockStorage.set).toBeCalledTimes(1);
-    done();
-  });
 });

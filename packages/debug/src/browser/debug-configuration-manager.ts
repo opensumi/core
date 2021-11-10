@@ -101,9 +101,10 @@ export class DebugConfigurationManager {
   protected readonly onWillProvideDebugConfigurationEmitter = new Emitter<WillProvideDebugConfiguration>();
   readonly onWillProvideDebugConfiguration: Event<WillProvideDebugConfiguration> = this.onWillProvideDebugConfigurationEmitter.event;
 
-  private _whenReadyDeferred: Deferred<void>;
+  private _whenReadyDeferred: Deferred<void> = new Deferred();
   protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT);
 
+  private debugConfigurationStorage: IStorage;
   constructor() {
     this.init();
     this.contextDebuggersAvailable = CONTEXT_DEBUGGERS_AVAILABLE.bind(this.contextKeyService);
@@ -115,7 +116,7 @@ export class DebugConfigurationManager {
         this.updateModels();
       }
     });
-    this._whenReadyDeferred = new Deferred();
+    this.debugConfigurationStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     this.updateModels();
   }
 
@@ -227,7 +228,7 @@ export class DebugConfigurationManager {
   find(name: string, workspaceFolderUri: string | undefined, index?: number): DebugSessionOptions | undefined {
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
-        if (!!index) {
+        if (typeof index === 'number') {
           const configuration = model.configurations[index];
           if (configuration && configuration.name === name) {
             return {
@@ -440,8 +441,7 @@ export class DebugConfigurationManager {
 
   async load(): Promise<void> {
     await this.whenReady;
-    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    const data = storage.get<IDebugConfigurationData>('configurations');
+    const data = this.debugConfigurationStorage.get<IDebugConfigurationData>('configurations');
     if (data && data.current) {
       this.current = this.find(data.current.name, data.current.workspaceFolderUri, data.current.index);
     }
@@ -450,7 +450,6 @@ export class DebugConfigurationManager {
   async save(): Promise<void> {
     const data: IDebugConfigurationData = {};
     const { current } = this;
-    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     if (current) {
       data.current = {
         name: current.configuration.name,
@@ -458,7 +457,7 @@ export class DebugConfigurationManager {
         index: current.index,
       };
     }
-    storage.set('configurations', data);
+    this.debugConfigurationStorage.set('configurations', data);
   }
 
   /**
