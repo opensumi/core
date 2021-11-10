@@ -80,6 +80,20 @@ export class CompletionAdapter {
         x: [pid, i] as [number, number],
       };
 
+      // 如果不支持 resolveCompletionItem 则全量返回
+      if (typeof this.delegate.resolveCompletionItem !== 'function') {
+        if (item.textEdit) {
+          dto[ISuggestDataDtoField.insertText] = item.textEdit.newText;
+        } else if (typeof item.insertText === 'string') {
+          dto[ISuggestDataDtoField.insertText] = item.insertText;
+        } else if (item.insertText instanceof SnippetString) {
+          dto[ISuggestDataDtoField.insertText] = item.insertText.value;
+          dto[ISuggestDataDtoField.insertTextRules] = CompletionItemInsertTextRule.InsertAsSnippet;
+        } else {
+          dto[ISuggestDataDtoField.insertText] = typeof item.label === 'string' ? item.label : item.label.label;
+        }
+      }
+
       const range = this.convertRange(item, inserting, replacing);
       if (range) {
         dto[ISuggestDataDtoField.range] = range;
