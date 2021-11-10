@@ -138,7 +138,9 @@ export class DebugModel implements IDebugModel {
     if (this.toDispose.disposed) {
       return;
     }
-
+    if (this.editor.getModel()?.uri.toString() !== this.uri.toString()) {
+      return;
+    }
     const decorations = this.createFrameDecorations();
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }, 100);
@@ -406,7 +408,7 @@ export class DebugModel implements IDebugModel {
   }
 
   /**
-   * 渲染当前断点装饰器素组
+   * 渲染当前断点装饰器数组
    * @protected
    * @returns {monaco.editor.IModelDeltaDecoration[]}
    * @memberof DebugModel
