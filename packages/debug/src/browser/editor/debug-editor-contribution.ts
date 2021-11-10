@@ -15,10 +15,11 @@ import { StandardTokenType } from '@ali/monaco-editor-core/esm/vs/editor/common/
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Constants } from '@ali/ide-core-common/lib/uint';
 import { MonacoCodeService } from '@ali/ide-editor/lib/browser/editor.override';
-import { CONTEXT_DEBUG_STOPPED_KEY, IDebugSessionManager } from './../../common';
+import { CONTEXT_DEBUG_STOPPED_KEY, DebugState, IDebugSessionManager } from './../../common';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
+import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
 
 const INLINE_VALUE_DECORATION_KEY = 'inlinevaluedecoration';
 const MAX_NUM_INLINE_VALUES = 100;
@@ -164,6 +165,9 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  @Autowired(DebugContextKey)
+  protected readonly debugContextKey: DebugContextKey;
+
   protected readonly onDidInDebugModeEmitter = new Emitter<IEditor>();
   public readonly onDidInDebugMode: Event<IEditor> = this.onDidInDebugModeEmitter.event;
 
@@ -228,10 +232,14 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   }
 
   public toggleHoverEnabled(editor: IEditor) {
-    const inDebugMode = this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY);
+    const debugState = this.debugContextKey.contextDebugState.get();
+    if (!debugState) {
+      return;
+    }
+
     editor.monacoEditor.updateOptions({
       hover: {
-        enabled: !inDebugMode,
+        enabled: DebugState[debugState] === DebugState.Stopped,
       },
     });
   }
