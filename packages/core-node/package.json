@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-node",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "description": "@ali/ide-core-node",
   "files": [
     "lib"
@@ -16,12 +16,12 @@
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "2.11.2",
-    "@ali/ide-core-common": "2.11.2",
+    "@ali/ide-connection": "2.12.0",
+    "@ali/ide-core-common": "2.12.0",
     "keytar": "^7.7.0"
   },
   "devDependencies": {

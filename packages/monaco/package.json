@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-monaco",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "files": [
     "lib"
   ],
@@ -18,15 +18,15 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian-codebase/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "2.11.2",
-    "@ali/ide-core-common": "2.11.2",
-    "@ali/ide-core-node": "2.11.2",
-    "@ali/ide-file-service": "2.11.2",
-    "@ali/ide-workspace": "2.11.2",
-    "@ali/ide-theme": "2.11.2",
+    "@ali/ide-core-browser": "2.12.0",
+    "@ali/ide-core-common": "2.12.0",
+    "@ali/ide-core-node": "2.12.0",
+    "@ali/ide-file-service": "2.12.0",
+    "@ali/ide-workspace": "2.12.0",
+    "@ali/ide-theme": "2.12.0",
     "@ali/monaco-editor-core": "0.29.1-patch.1",
     "vscode-oniguruma": "1.5.1"
   },

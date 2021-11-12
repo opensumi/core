@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -12,7 +12,7 @@
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -20,9 +20,9 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-components": "2.11.2",
-    "@ali/ide-connection": "2.11.2",
-    "@ali/ide-core-common": "2.11.2",
+    "@ali/ide-components": "2.12.0",
+    "@ali/ide-connection": "2.12.0",
+    "@ali/ide-core-common": "2.12.0",
     "ajv": "^6.10.0",
     "classnames": "2.2.6",
     "clsx": "^1.0.4",

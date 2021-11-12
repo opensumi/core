@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-extension-manager",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "files": [
     "lib"
   ],
@@ -18,24 +18,24 @@
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "2.11.2",
-    "@ali/ide-core-common": "2.11.2",
-    "@ali/ide-core-browser": "2.11.2",
-    "@ali/ide-core-node": "2.11.2",
-    "@ali/ide-editor": "2.11.2",
+    "@ali/ide-components": "2.12.0",
+    "@ali/ide-core-common": "2.12.0",
+    "@ali/ide-core-browser": "2.12.0",
+    "@ali/ide-core-node": "2.12.0",
+    "@ali/ide-editor": "2.12.0",
     "@ali/ide-extension-installer": "^2.1.0",
-    "@ali/ide-kaitian-extension": "2.11.2",
-    "@ali/ide-main-layout": "2.11.2",
-    "@ali/ide-markdown": "2.11.2",
-    "@ali/ide-overlay": "2.11.2",
-    "@ali/ide-static-resource": "2.11.2",
-    "@ali/ide-theme": "2.11.2",
-    "@ali/ide-file-service": "2.11.2",
-    "@ali/ide-preferences": "2.11.2",
-    "@ali/ide-storage": "2.11.2",
+    "@ali/ide-kaitian-extension": "2.12.0",
+    "@ali/ide-main-layout": "2.12.0",
+    "@ali/ide-markdown": "2.12.0",
+    "@ali/ide-overlay": "2.12.0",
+    "@ali/ide-static-resource": "2.12.0",
+    "@ali/ide-theme": "2.12.0",
+    "@ali/ide-file-service": "2.12.0",
+    "@ali/ide-preferences": "2.12.0",
+    "@ali/ide-storage": "2.12.0",
     "compare-versions": "^3.5.1",
     "fs-extra": "^8.1.0",
     "lodash.uniqby": "^4.7.0",
