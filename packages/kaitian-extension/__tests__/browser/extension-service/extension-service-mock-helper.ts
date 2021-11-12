@@ -206,6 +206,7 @@ class MockWorkbenchEditorService {
   apply() { }
   editorGroups = [];
   onActiveResourceChange = () => Disposable.NULL;
+  onActiveEditorUriChange = () => Disposable.NULL;
 }
 
 const mockExtension = {

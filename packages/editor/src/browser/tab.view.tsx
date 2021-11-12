@@ -326,16 +326,17 @@ export const EditorActions = ({ group, onRefInit, className }: { group: EditorGr
   }, []);
 
   useUpdateOnEvent(group.onDidEditorGroupBodyChanged, [group], () => !!group.currentOpenType);
+  useUpdateOnEvent(group.onDidEditorFocusChange, [group]);
 
   const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource ?
-    [group.currentResource.uri, group, group.currentEditor?.currentUri] : undefined;
+    [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri] : undefined;
   // 第三个参数是当前编辑器的URI（如果有）
   return <div ref={(ref) => ref && onRefInit(ref)} className={classnames(styles.editor_actions, className)}>
     <InlineActionBar<URI, IEditorGroup, MaybeNull<URI>>
       menus={menu}
       context={args as any /* 这个推断过不去.. */}
       // 不 focus 的时候只展示 more 菜单
-      regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]} />
+      regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]} debounce={{delay: 100, maxWait: 300}} />
   </div>;
 };
 

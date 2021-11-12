@@ -92,7 +92,9 @@ describe('OpenedEditorModelService should be work', () => {
 
       diffEditor: (() => { }) as any,
 
-      currentFocusedEditor: undefined,
+      currentFocusedEditor: null,
+
+      currentOrPreviousFocusedEditor: null,
 
       resources: [],
 

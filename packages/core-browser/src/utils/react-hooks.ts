@@ -4,6 +4,7 @@ import { DisposableStore, IDisposable } from '@ali/ide-core-common';
 import { MenuNode } from '../menu/next/base';
 import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
 import { generateInlineActions } from '../menu/next/menu-util';
+import _debounce from 'lodash.debounce';
 
 export function useDebounce(value, delay) {
   const [denouncedValue, setDenouncedValue] = useState(value);
@@ -46,26 +47,32 @@ export function useMenus(
   menus: IMenu,
   separator?: IMenuSeparator,
   args?: any[],
+  // 防止 menu 快速变化
+  debounce?: {delay: number, maxWait?: number},
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
   useDisposable(() => {
-    // initialize
-    updateMenuConfig(menus, args);
-
-    function updateMenuConfig(menuArg: IMenu, argList?: any[]) {
+    let updateMenuConfig = () => {
       const result = generateInlineActions({
-        menus: menuArg,
+        menus,
         separator,
-        args: argList,
+        args,
       });
 
       setMenuConfig(result);
+    };
+
+    if (debounce) {
+      updateMenuConfig = _debounce(updateMenuConfig, debounce.delay, {maxWait: debounce.maxWait});
     }
+
+    // initialize
+    updateMenuConfig();
 
     return [
       menus.onDidChange(() => {
-        updateMenuConfig(menus, args);
+        updateMenuConfig();
       }),
     ];
   }, [ menus, args ]);

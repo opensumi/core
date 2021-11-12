@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable, URI, MarkerManager } from '@ali/ide-core-common';
+import { Disposable, URI, MarkerManager, Emitter } from '@ali/ide-core-common';
 import { OutlineModelService } from '@ali/ide-outline/lib/browser/services/outline-model.service';
 import { OutlineTreeService } from '@ali/ide-outline/lib/browser/services/outline-tree.service';
 import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
@@ -65,6 +65,7 @@ describe('OutlineTreeModelService', () => {
     currentEditor: {
       currentUri: new URI('test.js'),
     },
+    onActiveResourceChange: new Emitter().event,
   };
 
   const mockMarkerManager = {
