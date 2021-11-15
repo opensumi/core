@@ -172,6 +172,37 @@ describe(__filename, () => {
     }, 0);
   });
 
+  it('should change terminal name', async (done) => {
+    const terminalName = 'terminal-should-change-name';
+    const changedName = 'changed-name';
+    const changeNameEmitter = new Emitter<string>();
+    const closeEmitter = new Emitter<number | undefined>();
+    const pty = {
+      onDidWrite: new Emitter<string>().event,
+      onDidChangeName: changeNameEmitter.event,
+      onDidClose: closeEmitter.event,
+      open: () => {},
+      close: () => {},
+    };
+
+    const terminal = extHost.createExtensionTerminal({
+      name: terminalName,
+      pty,
+    });
+
+    setTimeout(async () => {
+      extHost.onDidOpenTerminal((term) => {
+        expect(terminal.name).toBe(terminalName);
+      });
+
+      await mainThread['proxy'].$onDidOpenTerminal({ id: terminal['id'], name: terminalName, isActive: true });
+      await mainThread['proxy'].$acceptTerminalTitleChange(terminal['id'], changedName);
+
+      expect(terminal.name).toBe(changedName);
+      done();
+    }, 0);
+  });
+
   //#region ExthostTerminal#EnvironmentVariableCollection
   const mockExtension = {
     id: 'test-terminal-env',
