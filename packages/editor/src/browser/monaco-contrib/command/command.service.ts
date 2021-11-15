@@ -179,7 +179,7 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
     // 使用当前 editorGroup.editor 兜底
     const editorGroup = this.workbenchEditorService.currentEditorGroup;
     if (editorGroup) {
-      const editor = editorGroup.currentFocusedEditor || editorGroup.currentEditor;
+      const editor = editorGroup.currentOrPreviousFocusedEditor || editorGroup.currentEditor;
       if (editor) {
         return editor.monacoEditor;
       }

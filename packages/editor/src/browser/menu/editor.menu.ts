@@ -25,9 +25,9 @@ export class EditorActionRegistryImpl extends Disposable implements IEditorActio
   }
 
   getMenu(group: IEditorGroup): IMenu {
-    const key = group.currentEditor ? ('editor-menu-' + group.currentEditor.getId()) : ('editor-group-menu-' + group.name);
+    const key = group.currentFocusedEditor ? ('editor-menu-' + group.currentFocusedEditor.getId()) : ('editor-group-menu-' + group.name);
     if (!this._cachedMenus.has(key)) {
-      const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : (group as EditorGroup).contextKeyService;
+      const contextKeyService = group.currentFocusedEditor ? this.contextKeyService.createScoped((group.currentFocusedEditor.monacoEditor as any)._contextKeyService) : (group as EditorGroup).contextKeyService;
       const menus = this.registerDispose(this.menuService.createMenu(MenuId.EditorTitle, contextKeyService));
       this._cachedMenus.set(key, menus);
       menus.onDispose(() => {

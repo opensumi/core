@@ -186,6 +186,10 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
     return this.monacoEditor.getSelections() || [];
   }
 
+  public onFocus = this.monacoEditor.onDidFocusEditorWidget;
+
+  public onBlur = this.monacoEditor.onDidBlurEditorWidget;
+
   protected _specialEditorOptions: any = {};
 
   protected _specialModelOptions: monaco.editor.ITextModelUpdateOptions = {};

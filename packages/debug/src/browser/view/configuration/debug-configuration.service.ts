@@ -3,7 +3,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../../debug-configuration-manager';
 import { observable, action } from 'mobx';
 import { DebugSessionOptions, DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_NAME_SEPARATOR, DEFAULT_CONFIGURATION_INDEX_SEPARATOR } from '../../../common';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, PreferenceService, isUndefined } from '@ali/ide-core-browser';
+import { URI, PreferenceService, isUndefined } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
 import { IDebugSessionManager } from '../../../common/debug-session';
@@ -25,9 +25,6 @@ export class DebugConfigurationService {
 
   @Autowired(DebugConsoleService)
   protected debugConsoleService: DebugConsoleService;
-
-  @Autowired(StorageProvider)
-  private readonly storageProvider: StorageProvider;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -57,39 +54,13 @@ export class DebugConfigurationService {
     return this._whenReady;
   }
 
-  private async initCurrentConfiguration() {
-    const preValue = await this.getCurrentConfiguration();
-    const hasConfig = !!this.debugConfigurationManager.all.find((config) => this.toValue(config) === preValue);
-    if (!!preValue) {
-      if (hasConfig) {
-        this.updateCurrentValue(preValue);
-      } else {
-        // 当找不到配置项时，根据下标顺序查找对应位置配置项
-        const valueIndex = preValue.indexOf(DEFAULT_CONFIGURATION_NAME_SEPARATOR);
-        const configurationName = preValue.slice(0, valueIndex);
-        let nextValue;
-        if (this.configurationOptions.length > 0) {
-          let configuration = this.configurationOptions.find((option) => option.configuration.name === configurationName);
-          if (!!configuration) {
-            configuration = this.configurationOptions[0];
-          }
-          nextValue  = this.toValue(configuration!);
-        } else {
-          nextValue = DEFAULT_ADD_CONFIGURATION_KEY;
-        }
-        this.updateCurrentValue(nextValue);
-      }
-    } else if (this.debugConfigurationManager.current) {
-      this.updateCurrentValue(this.toValue(this.debugConfigurationManager.current));
-    }
-  }
-
   async init() {
+    await this.debugConfigurationManager.whenReady;
     await this.updateConfigurationOptions();
-    await this.initCurrentConfiguration();
+    // await this.initCurrentConfiguration();
     this.debugConfigurationManager.onDidChange(async () => {
       this.updateConfigurationOptions();
-      await this.initCurrentConfiguration();
+      // await this.initCurrentConfiguration();
     });
     this.preferenceService.onPreferenceChanged((event) => {
       const { preferenceName, newValue } = event;
@@ -126,11 +97,10 @@ export class DebugConfigurationService {
 
   @action
   updateConfigurationOptions() {
-    const { current } = this.debugConfigurationManager;
     this.configurationOptions = this.debugConfigurationManager.all;
+    const { current } = this.debugConfigurationManager;
     if (current) {
       const currentValue = this.toValue(current);
-      this.setCurrentConfiguration(currentValue);
       this.updateCurrentValue(currentValue);
     } else {
       this.updateCurrentValue(DEFAULT_ADD_CONFIGURATION_KEY);
@@ -183,16 +153,5 @@ export class DebugConfigurationService {
       return configuration.name;
     }
     return configuration.name + ' (' + new URI(workspaceFolderUri).path.base + ')';
-  }
-
-  async getCurrentConfiguration() {
-    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    const currentConfiguration = await storage.get<string>('currentConfiguration');
-    return currentConfiguration;
-  }
-
-  async setCurrentConfiguration(value: string) {
-    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    await storage.set('currentConfiguration', value);
   }
 }

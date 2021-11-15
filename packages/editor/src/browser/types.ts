@@ -264,6 +264,8 @@ export interface IEditorVisibleChangeEventPayload {
   resource: IResource;
 
   visibleRanges: IRange[];
+
+  editorUri: URI;
 }
 
 export class EditorConfigurationChangedEvent extends BasicEvent<IEditorConfigurationChangedEventPayload> {}
@@ -273,6 +275,8 @@ export interface IEditorConfigurationChangedEventPayload {
   group: IEditorGroup;
 
   resource: IResource;
+
+  editorUri: URI;
 }
 
 export class EditorGroupIndexChangedEvent extends BasicEvent<IEditorGroupIndexChangeEventPayload> {}

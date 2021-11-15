@@ -220,7 +220,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
         if (result[ISuggestResultDtoField.completions].length) {
           timer.timeEnd(extname(model.uri.fsPath), {
-            extDuration: (result as any)._dur,
+            extDuration: result.d,
           });
         }
         const suggestions = result[ISuggestResultDtoField.completions].map((data) => this.inflateSuggestDto(result[ISuggestResultDtoField.defaultRanges], data)) as unknown as monaco.languages.CompletionItem[];

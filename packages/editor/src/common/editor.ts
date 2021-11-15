@@ -90,6 +90,10 @@ export interface IEditor {
   monacoEditor: IMonacoCodeEditor;
 
   onDispose: Event<void>;
+
+  onFocus: Event<void>;
+
+  onBlur: Event<void>;
 }
 
 export interface IUndoStopOptions {
@@ -111,6 +115,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
   onCursorPositionChanged: Event<CursorStatus>;
 
   onRefOpen: Event<IEditorDocumentModelRef>;
+
 }
 
 /**
@@ -213,8 +218,9 @@ export interface IEditorGroup {
   /**
    * 和currentEditor不同，对于diffEditor来说会取确实在focus的Editor
    */
-  currentFocusedEditor: IEditor | undefined;
+  currentOrPreviousFocusedEditor: IEditor | null;
 
+  currentFocusedEditor: IEditor | null;
   /**
    * 所有当前编辑器租的 tab 的资源
    */

@@ -1,4 +1,3 @@
-import { DebugBreakpoint } from './../breakpoint/breakpoint-marker';
 import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';

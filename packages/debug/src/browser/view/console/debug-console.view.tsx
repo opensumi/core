@@ -326,6 +326,9 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     if (AnsiConsoleNode.is(node)) {
       return null;
     }
+    if (node instanceof DebugConsoleNode && node.variablesReference === 0) {
+      return null;
+    }
     return <div
       className={cls(styles.debug_console_node_segment, !DebugConsoleNode.is(node) && styles.debug_console_node_display_name, styles.debug_console_variable, (item as DebugConsoleNode).description ? styles.name : styles.info)}
     >
@@ -392,9 +395,10 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         <Loading />
       </div>;
     }
-    if (DebugConsoleNode.is(node) && !(node as DebugConsoleNode).variablesReference) {
+    if (node instanceof DebugConsoleNode && (node as DebugConsoleNode).variablesReference === 0) {
       return null;
     }
+
     return <div
       onClick={handleTwiceClick}
       className={cls(

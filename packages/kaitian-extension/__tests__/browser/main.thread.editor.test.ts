@@ -244,6 +244,7 @@ describe('MainThreadEditor Test Suites', () => {
       oldResource: null,
     }));
     group._onDidEditorGroupBodyChanged.fire();
+    group._onDidEditorFocusChange.fire();
   });
 
   it('should be able to get visibleTextEditors', async () => {
@@ -299,6 +300,7 @@ describe('MainThreadEditor Test Suites', () => {
       visibleRanges: [
         new monaco.Range(1, 12, 1, 12),
       ],
+      editorUri: workbenchEditorService.currentResource!.uri!,
     }));
     const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
       disposer.dispose();

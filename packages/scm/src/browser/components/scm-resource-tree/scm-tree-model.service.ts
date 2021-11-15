@@ -1,6 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@ali/ide-components';
-import { CommandService, CorePreferences, Deferred, DisposableCollection, Emitter, Event, URI, PreferenceService } from '@ali/ide-core-browser';
+import { CommandService, CorePreferences, Deferred, DisposableCollection, Emitter, Event, URI, PreferenceService, EDITOR_COMMANDS, ILogger } from '@ali/ide-core-browser';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -76,6 +76,9 @@ export class SCMTreeModelService {
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   private _activeTreeModel: SCMTreeModel;
   private _whenReady: Promise<void>;
@@ -615,7 +618,14 @@ export class SCMTreeModelService {
     // 如果为文件，则需要打开文件
     if (this.listOpenMode === 'singleClick') {
       if (type === TreeNodeType.TreeNode) {
-        this.openFile(item as SCMResourceFile);
+        const openFileItem = item as SCMResourceFile;
+        const commandID = openFileItem.resource.command?.id;
+        if (commandID === EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID || commandID === EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID)  {
+          this.commandService.executeCommand(commandID, ...(openFileItem.resource.command?.arguments || []))
+            .catch((err) => this.logger.error('Failed to execute command:', err, commandID));
+        } else {
+          this.openFile(openFileItem);
+        }
       } else {
         this.toggleDirectory(item as SCMResourceGroup);
       }

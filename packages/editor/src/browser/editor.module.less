@@ -61,13 +61,14 @@
     display:flex;
     .editor_actions{
       flex-shrink: 0;
-      height:@TAB_HEIGHT;
+      height: calc(@TAB_HEIGHT + 1px);
       display: flex;
       justify-content: center;
       align-items: center;
       padding:0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
       border-bottom: 1px solid var(--tab-border);
+      border-top: 1px solid var(--tab-border);
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -97,6 +98,7 @@
   .kt_editor_tabs_scroll_wrapper {
     flex-grow:1;
     width:10px;
+    border-top: 1px solid var(--activityBar-border);
   }
 
   .kt_editor_tabs_scroll {

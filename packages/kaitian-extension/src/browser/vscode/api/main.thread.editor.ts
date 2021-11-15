@@ -7,7 +7,7 @@ import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdent
 import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
-import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
+import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, IDiffResource } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
@@ -52,7 +52,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           return undefined;
         }
         return {
-          id: getTextEditorId(group, group.currentResource!),
+          id: getTextEditorId(group, group.currentResource!.uri),
           uri: editor.currentDocumentModel.uri.toString(),
           selections: editor!.getSelections() || [],
           options: getEditorOption(editor.monacoEditor),
@@ -151,8 +151,13 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return;
     }
     const currentResource = group.currentResource;
-    if (currentResource && group.currentOpenType && isEditor(group.currentOpenType) && id === getTextEditorId(group, currentResource)) {
-      return group.currentEditor as IMonacoImplEditor;
+    if (currentResource && group.currentOpenType && isEditor(group.currentOpenType)) {
+      if (id === getTextEditorId(group, currentResource.uri)) {
+        return group.currentEditor as IMonacoImplEditor;
+      }
+      if (group.currentOpenType?.type === 'diff' && id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, true)) {
+        return group.diffEditor.originalEditor;
+      }
     }
   }
 
@@ -176,7 +181,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           } else {
             change.created = [
               {
-                id: getTextEditorId(payload.group, payload.newResource!),
+                id: getTextEditorId(payload.group, payload.newResource!.uri),
                 uri: editor.currentDocumentModel!.uri.toString(),
                 selections: editor!.getSelections() || [],
                 options: getEditorOption(editor.monacoEditor),
@@ -184,24 +189,47 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
                 visibleRanges: editor.monacoEditor.getVisibleRanges(),
               },
             ];
+            if (payload.newOpenType.type === 'diff') {
+              const diffOriginalEditor = payload.group.diffEditor.originalEditor;
+              change.created.push({
+                id: getTextEditorId(payload.group, (payload.newResource as IDiffResource).metadata!.original, true),
+                uri: diffOriginalEditor.currentUri!.toString(),
+                selections: diffOriginalEditor!.getSelections() || [],
+                options: getEditorOption(diffOriginalEditor.monacoEditor),
+                viewColumn: getViewColumn(payload.group),
+                visibleRanges: diffOriginalEditor.monacoEditor.getVisibleRanges(),
+              });
+            }
           }
           // 来自切换打开类型
           if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
-            change.actived = getTextEditorId(payload.group, payload.newResource!);
+            change.actived = getTextEditorId(payload.group, payload.newResource!.uri);
           }
         }
         if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
-          change.removed = [getTextEditorId(payload.group, payload.oldResource!)];
+          change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
+          if (payload.oldOpenType.type === 'diff') {
+            change.removed.push(getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original));
+          }
         }
         this.proxy.$acceptChange(change);
       }
     }));
 
-    this.addDispose(this.editorService.onActiveResourceChange((resource) => {
-      if (resource && this.editorService.currentEditorGroup && isEditor(this.editorService.currentEditorGroup.currentOpenType)) {
-        this.proxy.$acceptChange({
-          actived: getTextEditorId(this.editorService.currentEditorGroup, this.editorService.currentResource!),
-        });
+    this.addDispose(this.editorService.onActiveEditorUriChange((uri) => {
+      if (uri && this.editorService.currentEditorGroup && isEditor(this.editorService.currentEditorGroup.currentOpenType)) {
+        const isDiffOriginal = this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
+          this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
+        if (isDiffOriginal) {
+          this.proxy.$acceptChange({
+            actived: getTextEditorId(this.editorService.currentEditorGroup, uri, true),
+          });
+        } else {
+          // 这里 id 还是兼容旧逻辑不做改动
+          this.proxy.$acceptChange({
+            actived: getTextEditorId(this.editorService.currentEditorGroup, this.editorService.currentEditorGroup.currentResource?.uri!),
+          });
+        }
       } else {
         this.proxy.$acceptChange({
           actived: '-1',
@@ -209,8 +237,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
     }));
 
-    const selectionChange = (e) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+    const selectionChange = (e: EditorSelectionChangeEvent) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
         selections: {
@@ -234,15 +262,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         }
       }));
 
-    this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+    this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e: EditorVisibleChangeEvent) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
         visibleRanges: e.payload.visibleRanges,
       });
     }, 50, {maxWait: 200, leading: true, trailing: true})));
-    this.addDispose(this.eventBus.on(EditorConfigurationChangedEvent, (e) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+    this.addDispose(this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
       if (e.payload.group.currentEditor && (e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor.getModel()) {
         this.proxy.$acceptPropertiesChange({
           id: editorId,
@@ -252,7 +280,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }));
     this.addDispose(this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
       if (isGroupEditorState(e.payload.group)) {
-        const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!);
+        const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!.uri);
         this.proxy.$acceptPropertiesChange({
           id: editorId,
           viewColumn: getViewColumn(e.payload.group),
@@ -301,7 +329,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     };
     const result = await this.editorService.open(new URI(uri), options);
     if (result) {
-      return getTextEditorId(result.group, result.resource);
+      return getTextEditorId(result.group, result.resource.uri);
     }
     throw new Error('Editor Open uri ' + uri.toString() + ' Failed');
   }
@@ -415,8 +443,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 }
 
-function getTextEditorId(group: IEditorGroup, resource: IResource): string {
-  return group.name + '.' + resource.uri;
+function getTextEditorId(group: IEditorGroup, uri: URI, isDiffOriginal?: boolean ): string {
+  return group.name + '.' + (isDiffOriginal ? 'diffOriginal.' : '') + uri.toString() ;
 }
 
 function getGroupIdFromTextEditorId(id: string): string {

@@ -414,14 +414,15 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   menus: IMenu;
   separator?: IMenuSeparator;
   className?: string;
+  debounce?: {delay: number, maxWait?: number};
 }
 
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineActionBarProps<T, U, K, M>,
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
-  const { menus, context, separator = 'navigation', ...restProps } = props;
+  const { menus, context, separator = 'navigation', debounce, ...restProps } = props;
   // 因为这里的 context 塞到 useMenus 之后会自动把参数加入到 MenuItem.execute 里面
-  const [navMenu, moreMenu] = useMenus(menus, separator, context);
+  const [navMenu, moreMenu] = useMenus(menus, separator, context, debounce);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (

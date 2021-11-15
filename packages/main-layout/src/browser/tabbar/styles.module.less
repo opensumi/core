@@ -71,6 +71,7 @@
   justify-content: space-between;
   background-color: var(--activityBar-background);
   border-right: 1px solid var(--activityBar-border);
+  border-top: 1px solid var(--activityBar-border);
   .tab_bar {
     flex: 1;
     overflow: hidden;
@@ -158,7 +159,9 @@
   user-select: none;
   height: 28px;
   align-items: center;
-
+  border-bottom: 1px solid var(--sideBar-border);
+  border-top: 1 px solid var(--sideBar-border);
+  box-sizing: border-box;
   h1 {
     margin: 0;
     font-size: 12px;
@@ -331,6 +334,8 @@
   align-items: center;
   z-index: 1;
   border-top: 1px solid var(--sideBar-border);
+  box-sizing: border-box;
+  height: 24px;
 }
 .split_line {
   border-left: 1px solid #202224;

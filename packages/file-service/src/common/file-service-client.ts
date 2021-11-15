@@ -48,7 +48,7 @@ export interface IFileServiceClient {
 
   getFileType(uri: string): Promise<string|undefined>;
 
-  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<void | FileStat>;
+  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat | void>;
 
   updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<void | FileStat>;
 

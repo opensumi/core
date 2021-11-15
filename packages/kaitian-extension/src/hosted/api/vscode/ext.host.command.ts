@@ -12,7 +12,7 @@ import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
 import { Uri } from '@ali/ide-core-common';
 import { IBuiltInCommand } from '../../ext.process-base';
-import { newCommands } from './ext.host.api.command';
+import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtensionDescription) {
   const commands: typeof vscode.commands = {
@@ -79,6 +79,7 @@ export class ExtHostCommands implements IExtHostCommands {
   protected readonly logger = getDebugLogger();
   protected readonly commands = new Map<string, CommandHandler<any>>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
+  private readonly _apiCommands = new Map<string, ApiCommand>();
   public converter: CommandsConverter;
 
   constructor(rpcProtocol: IRPCProtocol, private buildInCommands?: IBuiltInCommand[]) {
@@ -113,7 +114,14 @@ export class ExtHostCommands implements IExtHostCommands {
 
   // 需要在 $registerBuiltInCommands 一起注册 避免插件进程启动但浏览器未启动时报错
   public $registerCommandConverter() {
-    this.converter = new CommandsConverter(this);
+    this.converter = new CommandsConverter(this, (id) => {
+      // API commands that have no return type (void) can be
+      // converted to their internal command and don't need
+      // any indirection commands
+      const candidate = this._apiCommands.get(id);
+      return candidate?.result === ApiCommandResult.Void
+        ? candidate : undefined;
+    });
   }
 
   public $registerBuiltInCommands() {
@@ -127,22 +135,34 @@ export class ExtHostCommands implements IExtHostCommands {
     }
 
     for (const command of newCommands) {
-      this.register(command.id, async (...args) => {
-        const internalArgs = command.args.map((arg, i) => {
-          if (!arg.validate(args[i])) {
-            throw new Error(`Invalid argument '${arg.name}' when running '${command.id}', receieved: ${args[i]}`);
-          }
-          return arg.convert(args[i]);
-        });
-
-        const internalResult = await this.executeCommand(command.internalId, ...internalArgs);
-        return command.result.convert(internalResult, args, this.converter);
-      }, {
-        description: command.description,
-        args: command.args,
-        returns: command.result.description,
-      });
+      this.registerApiCommand(command);
     }
+  }
+
+  registerApiCommand(apiCommand: ApiCommand): Disposable {
+    const registration = this.registerCommand(false, apiCommand.id, async (...apiArgs) => {
+
+      const internalArgs = apiCommand.args.map((arg, i) => {
+        if (!arg.validate(apiArgs[i])) {
+          throw new Error(`Invalid argument '${arg.name}' when running '${apiCommand.id}', received: ${apiArgs[i]}`);
+        }
+        return arg.convert(apiArgs[i]);
+      });
+
+      const internalResult = await this.executeCommand(apiCommand.internalId, ...internalArgs);
+      return apiCommand.result.convert(internalResult, apiArgs, this.converter);
+    }, undefined, {
+      description: apiCommand.description,
+      args: apiCommand.args,
+      returns: apiCommand.result.description,
+    });
+
+    this._apiCommands.set(apiCommand.id, apiCommand);
+
+    return new Disposable(() => {
+      registration.dispose();
+      this._apiCommands.delete(apiCommand.id);
+    });
   }
 
   private register(id: string, commandHandler: CommandHandler | Handler, description?: ICommandHandlerDescription): Disposable {
@@ -305,7 +325,6 @@ export class ExtHostCommands implements IExtHostCommands {
     const { isPermitted } = commandHandler;
     return !isPermitted || isPermitted(extensionInfo, ...args);
   }
-
 }
 
 export class CommandsConverter {
@@ -315,7 +334,7 @@ export class CommandsConverter {
   private _cachIdPool = 0;
 
   // --- conversion between internal and api commands
-  constructor(commands: ExtHostCommands) {
+  constructor(commands: ExtHostCommands, private readonly _lookupApiCommand: (id: string) => ApiCommand | undefined) {
     this._delegatingCommandId = `_vscode_delegate_cmd_${Date.now().toString(36)}`;
     this._commands = commands;
     this._commands.registerCommand(true, this._delegatingCommandId, this._executeConvertedCommand, this);
@@ -333,19 +352,25 @@ export class CommandsConverter {
       title: command.title,
       tooltip: command.tooltip,
     };
+    const apiCommand = this._lookupApiCommand(command.command);
+    if (apiCommand) {
+      // API command with return-value can be converted inplace
+      result.id = apiCommand.internalId;
+      result.arguments = apiCommand.args.map((arg, i) => arg.convert(command.arguments && command.arguments[i]));
 
-    if (command.command && isNonEmptyArray(command.arguments)) {
+    } else if (isNonEmptyArray(command.arguments)) {
       // we have a contributed command with arguments. that
       // means we don't want to send the arguments around
 
       const id = ++this._cachIdPool;
       this._cache.set(id, command);
-      disposables.add(toDisposable(() => this._cache.delete(id)));
+      disposables.add(toDisposable(() => {
+        this._cache.delete(id);
+      }));
       result.$ident = id;
 
       result.id = this._delegatingCommandId;
       result.arguments = [id];
-
     }
 
     return result;

@@ -116,7 +116,8 @@ export class KeymapService implements IKeymapService {
     const exist = await this.filesystem.access(fsPath);
     if (!exist) {
       const fileStat = await this.filesystem.createFile(fsPath);
-      await this.filesystem.setContent(fileStat, '{\n}');
+      const stat = await this.filesystem.setContent(fileStat, '{\n}');
+      this.resource = stat || undefined;
     }
     if (fsPath) {
       this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(fsPath), { preview: false });
@@ -209,7 +210,7 @@ export class KeymapService implements IKeymapService {
           keybinding: rawKd.keybinding,
         };
         this.keybindingRegistry.unregisterKeybinding(targetKd);
-        const key = this.toUniqueKey(targetKd);
+        const key = this.toUniqueKey(kd);
         // 存储可恢复默认快捷键注册的函数
         this.toRestoreDefaultKeybindingMap.set(key, Disposable.create(() => {
           this.keybindingRegistry.registerKeybinding(targetKd);
@@ -293,7 +294,7 @@ export class KeymapService implements IKeymapService {
           if (kb.command === keybinding.command) {
             updated = true;
             this.unregisterUserKeybinding(item);
-            item.keybinding = keybinding.keybinding;
+            kb.key = keybinding.keybinding;
             this.registerUserKeybinding({
               ...item,
               priority: KeybindingWeight.WorkbenchContrib * 100,
@@ -341,13 +342,9 @@ export class KeymapService implements IKeymapService {
     if (!this.resource) {
       this.resource = await this.filesystem.createFile(KeymapService.KEYMAP_FILE_URI.toString());
     }
-    try {
-      // 存储前清理多余属性
-      await this.filesystem.setContent(this.resource, JSON.stringify(keymaps, undefined, 2));
-    } catch (e) {
-      // 这里主要为了处理测试环境下抛错导致的测试不稳定问题
-      // 存储配置的时候可能文件已被卸载了
-    }
+    // 更新当前文件资源
+    const stat = await this.filesystem.setContent(this.resource, JSON.stringify(keymaps, undefined, 2));
+    this.resource = stat || undefined;
   }
 
   covert = (event: KeyboardEvent) => {

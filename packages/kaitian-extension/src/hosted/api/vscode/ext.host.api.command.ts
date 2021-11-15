@@ -4,7 +4,8 @@ import * as types from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 import { Uri as URI } from '@ali/ide-core-common';
 import { isFalsyOrEmpty } from '@ali/ide-core-common/lib/arrays';
-import type vscode from 'vscode';
+import type * as vscode from 'vscode';
+import type { ITextEditorOptions } from '@ali/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 type IPosition = modes.Position;
 type IRange = modes.Range;
@@ -311,44 +312,43 @@ export const newCommands: ApiCommand[] = [
     }),
   ),
   // --- open'ish commands
-  // 目前直接在主进程注册一下打开命令命令
-  // new ApiCommand(
-  //   'vscode.open', '_workbench.open', 'Opens the provided resource in the editor. Can be a text or binary file, or a http(s) url. If you need more control over the options for opening a text file, use vscode.window.showTextDocument instead.',
-  //   [
-  //     ApiCommandArgument.Uri,
-  //     new ApiCommandArgument<vscode.ViewColumn | typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
-  //       v => v === undefined || typeof v === 'number' || typeof v === 'object',
-  //       v => !v ? v : typeof v === 'number' ? [v, undefined] : [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)]
-  //     ).optional(),
-  //     ApiCommandArgument.String.with('label', '').optional()
-  //   ],
-  //   ApiCommandResult.Void
-  // ),
-  // new ApiCommand(
-  //   'vscode.openWith', '_workbench.openWith', 'Opens the provided resource with a specific editor.',
-  //   [
-  //     ApiCommandArgument.Uri.with('resource', 'Resource to open'),
-  //     ApiCommandArgument.String.with('viewId', 'Custom editor view id or \'default\' to use VS Code\'s default editor'),
-  //     new ApiCommandArgument<vscode.ViewColumn | typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
-  //       v => v === undefined || typeof v === 'number' || typeof v === 'object',
-  //       v => !v ? v : typeof v === 'number' ? [v, undefined] : [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)],
-  //     ).optional()
-  //   ],
-  //   ApiCommandResult.Void
-  // ),
-  // new ApiCommand(
-  //   'vscode.diff', '_workbench.diff', 'Opens the provided resources in the diff editor to compare their contents.',
-  //   [
-  //     ApiCommandArgument.Uri.with('left', 'Left-hand side resource of the diff editor'),
-  //     ApiCommandArgument.Uri.with('right', 'Rigth-hand side resource of the diff editor'),
-  //     ApiCommandArgument.String.with('title', 'Human readable title for the diff editor').optional(),
-  //     new ApiCommandArgument<typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
-  //       v => v === undefined || typeof v === 'object',
-  //       v => v && [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)]
-  //     ).optional(),
-  //   ],
-  //   ApiCommandResult.Void
-  // ),
+  new ApiCommand(
+    'vscode.open', '_workbench.open', 'Opens the provided resource in the editor. Can be a text or binary file, or a http(s) url. If you need more control over the options for opening a text file, use vscode.window.showTextDocument instead.',
+    [
+      ApiCommandArgument.Uri,
+      new ApiCommandArgument<vscode.ViewColumn | typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
+        (v) => v === undefined || typeof v === 'number' || typeof v === 'object',
+        (v) => !v ? v : typeof v === 'number' ? [v, undefined] : [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)],
+      ).optional(),
+      ApiCommandArgument.String.with('label', '').optional(),
+    ],
+    ApiCommandResult.Void,
+  ),
+  new ApiCommand(
+    'vscode.openWith', '_workbench.openWith', 'Opens the provided resource with a specific editor.',
+    [
+      ApiCommandArgument.Uri.with('resource', 'Resource to open'),
+      ApiCommandArgument.String.with('viewId', 'Custom editor view id or \'default\' to use VS Code\'s default editor'),
+      new ApiCommandArgument<vscode.ViewColumn | typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
+        (v) => v === undefined || typeof v === 'number' || typeof v === 'object',
+        (v) => !v ? v : typeof v === 'number' ? [v, undefined] : [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)],
+      ).optional(),
+    ],
+    ApiCommandResult.Void,
+  ),
+  new ApiCommand(
+    'vscode.diff', '_workbench.diff', 'Opens the provided resources in the diff editor to compare their contents.',
+    [
+      ApiCommandArgument.Uri.with('left', 'Left-hand side resource of the diff editor'),
+      ApiCommandArgument.Uri.with('right', 'Rigth-hand side resource of the diff editor'),
+      ApiCommandArgument.String.with('title', 'Human readable title for the diff editor').optional(),
+      new ApiCommandArgument<typeConverters.TextEditorOpenOptions | undefined, [number?, ITextEditorOptions?] | undefined>('columnOrOptions', 'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
+        (v) => v === undefined || typeof v === 'object',
+        (v) => v && [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)],
+      ).optional(),
+    ],
+    ApiCommandResult.Void,
+  ),
 ];
 
 function tryMapWith<T, R>(f: (x: T) => R) {

@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-common",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "description": "@ali/ide-core-common",
   "files": [
     "lib"
@@ -16,7 +16,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {

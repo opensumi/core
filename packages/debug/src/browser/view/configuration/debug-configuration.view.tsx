@@ -48,7 +48,7 @@ export const DebugConfigurationView = observer(() => {
   };
 
   const renderConfigurationOptions = (options) => {
-    if (options.length) {
+    if (options && options.length) {
       return options.map((option, index) => {
         const label = isMultiRootWorkspace ? `${option.configuration.name} (${new URI(option.workspaceFolderUri).displayName})` : option.configuration.name;
         return isElectronRenderer() ?
