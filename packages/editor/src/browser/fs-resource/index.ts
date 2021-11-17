@@ -1,6 +1,6 @@
-import { Domain } from '@ali/ide-core-browser';
+import { Domain } from '@ide-framework/ide-core-browser';
 import { BrowserEditorContribution } from '../types';
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import { FileSystemResourceProvider } from './fs-resource';
 import { ResourceService } from '../../common';
 import { IEditorDocumentModelContentRegistry } from '../doc-model/types';

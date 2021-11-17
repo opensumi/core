@@ -1,18 +1,18 @@
-import { IDialogService } from '@ali/ide-overlay';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { IDialogService } from '@ide-framework/ide-overlay';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
-import { Disposable, URI, localize, IJSONSchemaRegistry, ISchemaStore, OS, IApplicationService } from '@ali/ide-core-browser';
-import { CommonServerPath } from '@ali/ide-core-common';
-import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
-import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
+import { DefaultUriLabelProvider } from '@ide-framework/ide-core-browser/lib/services';
+import { Disposable, URI, localize, IJSONSchemaRegistry, ISchemaStore, OS, IApplicationService } from '@ide-framework/ide-core-browser';
+import { CommonServerPath } from '@ide-framework/ide-core-common';
+import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks/file-service-client';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { FileSchemeDocNodeServicePath } from '@ide-framework/ide-file-scheme';
+import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ide-framework/ide-file-scheme/lib/browser/file-doc';
 import { FileSchemeModule } from '../../src/browser';
-import { EditorPreferences } from '@ali/ide-editor/lib/browser';
-import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EditorPreferences } from '@ide-framework/ide-editor/lib/browser';
+import { FileSystemResourceProvider } from '@ide-framework/ide-editor/lib/browser/fs-resource/fs-resource';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('file scheme tests', () => {
 

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { useInjectable } from '../react-hooks';
 import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference, IToolbarActionElementProps, ToolbarRegistryReadyEvent } from './types';
-import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
+import { IEventBus, Disposable, Emitter } from '@ide-framework/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
 import { getIcon } from '../style/icon/icon';
 import { DomListener } from '../dom';

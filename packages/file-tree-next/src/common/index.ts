@@ -1,6 +1,6 @@
-import { URI, BasicEvent, IDisposable } from '@ali/ide-core-common';
-import { ITree, ITreeNode } from '@ali/ide-components';
-import { FileStat } from '@ali/ide-file-service';
+import { URI, BasicEvent, IDisposable } from '@ide-framework/ide-core-common';
+import { ITree, ITreeNode } from '@ide-framework/ide-components';
+import { FileStat } from '@ide-framework/ide-file-service';
 import { Directory, File } from './file-tree-node.define';
 
 export const IFileTreeAPI = Symbol('IFileTreeAPI');

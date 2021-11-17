@@ -1,8 +1,8 @@
-import type { ICodeEditor, IDiffEditor, IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import * as suggest from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor, IDiffEditor, IEditorConstructionOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { IDiffEditorConstructionOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import * as suggest from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',

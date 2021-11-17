@@ -1,12 +1,12 @@
-import { CommentThread, CommentInput, CommentReaction as CoreCommentReaction, CommentMode as CoreCommentMode } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { CommentThread, CommentInput, CommentReaction as CoreCommentReaction, CommentMode as CoreCommentMode } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 import { UriComponents, CommentThreadCollapsibleState, Comment as CoreComment, CommentThreadChanges } from '../../../common/vscode/models';
-import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable, WithEventBus, OnEvent } from '@ide-framework/ide-core-common';
 import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ICommentsService, ICommentsThread, ICommentsFeatureRegistry, CommentMode, CommentReactionClick, IThreadComment, CommentReaction } from '@ali/ide-comments';
-import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ICommentsService, ICommentsThread, ICommentsFeatureRegistry, CommentMode, CommentReactionClick, IThreadComment, CommentReaction } from '@ide-framework/ide-comments';
+import { MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
 export class MainthreadComments implements IDisposable, IMainThreadComments {

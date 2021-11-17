@@ -1,5 +1,5 @@
 import { IExtension, JSONType } from '../../../common';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable } from '@ide-framework/ide-core-common';
 
 export const CONTRIBUTE_NAME_KEY = 'contribute_name';
 export abstract class VscodeContributionPoint<T extends JSONType = JSONType> extends Disposable {

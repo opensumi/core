@@ -3,7 +3,7 @@ import {
   SocketMessageWriter,
   createMessageConnection,
   MessageConnection,
-} from '@ali/vscode-jsonrpc/lib/node/main';
+} from '@ide-framework/vscode-jsonrpc/lib/node/main';
 
 export {
   SocketMessageReader,

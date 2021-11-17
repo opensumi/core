@@ -1,18 +1,18 @@
 import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ErrorBoundary, useViewState } from '@ali/ide-core-browser';
+import { INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ErrorBoundary, useViewState } from '@ide-framework/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { AccordionContainer } from '../accordion/accordion.view';
-import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { InlineActionBar, InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
+import { IMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { TitleBar } from '../accordion/titlebar.view';
 import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
-import { ProgressBar } from '@ali/ide-core-browser/lib/progress/progress-bar';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { ProgressBar } from '@ide-framework/ide-core-browser/lib/progress/progress-bar';
 
 const NoUpdateBoundary: React.FC<{visible: boolean, children: React.ReactElement}> = React.memo(
   ({children}) => children,

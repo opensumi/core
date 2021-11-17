@@ -1,11 +1,11 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from '../file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { getIcon, URI } from '@ali/ide-core-browser';
+import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ide-framework/ide-components';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { getIcon, URI } from '@ide-framework/ide-core-browser';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { Loading } from '@ali/ide-core-browser/lib/components/loading';
+import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
 
 export interface IFileTreeDialogNodeProps {
   item: any;

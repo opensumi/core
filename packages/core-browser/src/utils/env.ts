@@ -1,4 +1,4 @@
-import { isWindows, isElectronRenderer } from '@ali/ide-core-common';
+import { isWindows, isElectronRenderer } from '@ide-framework/ide-core-common';
 
 export function getElectronEnv(): any {
   return (global as any).env || {};

@@ -1,6 +1,6 @@
-import { createBrowserApp, MockClientApp } from '@ali/ide-dev-tool/src/injector-helper';
-import { IDialogService } from '@ali/ide-overlay';
-import { OverlayModule } from '@ali/ide-overlay/lib/browser';
+import { createBrowserApp, MockClientApp } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { IDialogService } from '@ide-framework/ide-overlay';
+import { OverlayModule } from '@ide-framework/ide-overlay/lib/browser';
 import { act } from 'react-dom/test-utils';
 
 describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {

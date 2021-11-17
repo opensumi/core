@@ -2,8 +2,8 @@
  * editor.main 包含了所有 monaco 自带的编辑器相关核心功能以及 contributes
  * 并且 editor.main 也包含对 editor.all 的导入
  */
-import '@ali/monaco-editor-core/esm/vs/editor/editor.main';
-import { Injector, ConstructorOf } from '@ali/common-di';
+import '@ide-framework/monaco-editor-core/esm/vs/editor/editor.main';
+import { Injector, ConstructorOf } from '@ide-framework/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
@@ -30,19 +30,19 @@ import {
   IApplicationService,
   IDisposable,
   Deferred,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
+import { RPCMessageConnection, WSChannelHandler } from '@ide-framework/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, registerLocalStorageProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp, IAppRenderer } from './app.view';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
-import { DEFAULT_APPLICATION_NAME, DEFAULT_URI_SCHEME } from '@ali/ide-core-common/lib/const/application';
+import { IElectronMainLifeCycleService } from '@ide-framework/ide-core-common/lib/electron';
+import { DEFAULT_APPLICATION_NAME, DEFAULT_URI_SCHEME } from '@ide-framework/ide-core-common/lib/const/application';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';

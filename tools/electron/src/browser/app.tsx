@@ -1,13 +1,13 @@
 console.time('Render');
-import { ClientApp, IClientAppOpts, electronEnv, URI } from '@ali/ide-core-browser';
-import { Injector, Domain } from '@ali/common-di';
-import { createSocketConnection } from '@ali/ide-connection';
+import { ClientApp, IClientAppOpts, electronEnv, URI } from '@ide-framework/ide-core-browser';
+import { Injector, Domain } from '@ide-framework/common-di';
+import { createSocketConnection } from '@ide-framework/ide-connection';
 
 // 引入公共样式文件
-import '@ali/ide-core-browser/lib/style/index.less';
+import '@ide-framework/ide-core-browser/lib/style/index.less';
 // 引入本地icon，不使用cdn版本，与useCdnIcon配套使用
-import '@ali/ide-core-browser/lib/style/icon.less';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import '@ide-framework/ide-core-browser/lib/style/icon.less';
+import { IElectronMainLifeCycleService } from '@ide-framework/ide-core-common/lib/electron';
 
 export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);

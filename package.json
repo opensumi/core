@@ -1,0 +1,149 @@
+{
+  "name": "@ide-framework/ide",
+  "version": "2.12.0",
+  "resolution": {
+    "webpack": "4.39.3"
+  },
+  "scripts": {
+    "clean:cache": "rimraf .cache",
+    "clean": "rimraf ./packages/*/lib",
+    "check:dep": "ts-node ./scripts/depcheck",
+    "init:deps": "ts-node ./scripts/bootstrap",
+    "init": "npm run init:deps && npm run clean && npm run build:all",
+    "start": "node ./scripts/rebuild-native.js && cross-env NODE_ENV=development ts-node ./scripts/start",
+    "start:electron": "cd tools/electron && tnpm i &&  npm run link-local && npm run rebuild-native && npm run build && npm run start",
+    "build:components": "cd packages/components && npm run build:dist",
+    "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
+    "prod:lite": "ts-node ./scripts/start --script=prod:lite",
+    "create": "ts-node ./scripts/create",
+    "add:node": "ts-node ./scripts/add-node",
+    "add:browser": "ts-node ./scripts/add-browser",
+    "build": "npm run compile && echo 'use `compile` instead'",
+    "build:all": "npm run build && npm run build:worker-host && npm run build:ext-host && npm run build:components",
+    "compile": "cross-env NODE_ENV=production ts-node ./scripts/build",
+    "build:worker-host": "cd packages/kaitian-extension && npm run compile:worker:slient",
+    "build:ext-host": "cd packages/kaitian-extension && npm run build:ext-host",
+    "watch:ext-host": "cd packages/kaitian-extension && npm run watch:ext-host",
+    "watch": "npm run rebuild:node && cross-env NODE_ENV=production ts-node ./scripts/watch",
+    "publish": "npm run build:all && ts-node ./scripts/publish",
+    "publish:snapshot": "npm run publish -- --rollback --type=snapshot",
+    "publish:next": "npm run publish -- --rollback --type=next",
+    "publish:engine": "sh ./scripts/release-cli-engine.sh",
+    "update-version": "ts-node ./scripts/publish --versionOnly",
+    "update-disttag": "ts-node ./scripts/dist-tag",
+    "lint": "tslint -c tslint.yml -p tsconfig.json -t stylish",
+    "lint:fix": "npm run lint -- --fix",
+    "lint-staged": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish",
+    "rebuild:node": "node ./scripts/rebuild-native.js",
+    "test": "jest --forceExit",
+    "test:module": "NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
+    "prepare:test": "npm run init:deps && npm run compile && npm run build:worker-host",
+    "test:cov": "NODE_OPTIONS=--max_old_space_size=32768 node ./node_modules/.bin/jest --coverage --forceExit --detectOpenHandles",
+    "coverage": "npm run init && npm run test:cov",
+    "ci": "npm run lint && npm run coverage && npm run check:dep",
+    "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
+    "changelog-old": "node scripts/changelog/index.js",
+    "changelog": "ts-node -P scripts/tsconfig.scripts.json scripts/releaselog/index.ts"
+  },
+  "dependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^7.1.2",
+    "@types/classnames": "2.2.6",
+    "@types/execa": "^0.9.0",
+    "@types/fs-extra": "^5.1.0",
+    "@types/glob": "^7.1.1",
+    "@types/lodash": "^4.14.126",
+    "@types/lodash.debounce": "^4.0.6",
+    "@types/lodash.sortby": "^4.7.6",
+    "@types/lodash.throttle": "^4.1.6",
+    "@types/lodash.uniqby": "^4.1.6",
+    "@types/md5": "^2.1.33",
+    "@types/node": "^10.14.6",
+    "@types/react": "^16.9.20",
+    "@types/react-dom": "^16.9.5",
+    "@types/react-is": "^16.7.1",
+    "@types/socket.io-client": "^1.4.32",
+    "@types/ws": "^6.0.1",
+    "canvas": "2.6.1",
+    "commitizen": "^4.2.4",
+    "commitlint": "^15.0.0",
+    "cz-conventional-changelog": "^2.1.0",
+    "execa": "^1.0.0",
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.4",
+    "husky": "^1.2.1",
+    "iconv-lite": "^0.6.3",
+    "lerna": "^4.0.0",
+    "lint-staged": "^12.0.2",
+    "lodash": "^4.17.11",
+    "node-gyp": "^8.3.0",
+    "ts-node": "8.0.2",
+    "tslint": "^5.12.0",
+    "typescript": "^4.4.2",
+    "webpack": "4.39.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "post-checkout": "npm run clean:cache",
+      "post-merge": "npm run clean:cache",
+      "pre-rebase": "npm run clean:cache"
+    }
+  },
+  "lint-staged": {
+    "packages/**/*.(ts|tsx)": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ide-framework/core.git"
+  },
+  "resolutions": {
+    "canvas": "2.6.1",
+    "y18n": "4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/read-pkg": "^5.1.0",
+    "@types/temp": "^0.8.34",
+    "@types/write-pkg": "^4.0.0",
+    "async-retry": "^1.3.1",
+    "chalk": "^3.0.0",
+    "cross-env": "^6.0.3",
+    "depcheck": "^0.9.2",
+    "git-rev-sync": "^1.12.0",
+    "handlebars": "^4.7.3",
+    "is-git-clean": "^1.1.0",
+    "jest": "^27.0.4",
+    "jest-jasmine2": "^27.0.6",
+    "jsdom": "^16.7.0",
+    "jsdom-worker": "^0.2.1",
+    "lodash.groupby": "^4.6.0",
+    "lodash.uniqby": "^4.7.0",
+    "mkdirp": "^0.5.1",
+    "node-fetch": "^2.6.1",
+    "offline-iconfont": "^1.1.0",
+    "parse-github-url": "^1.0.2",
+    "prettier": "^2.0.5",
+    "read-pkg": "^5.2.0",
+    "regenerator-runtime": "^0.13.3",
+    "rimraf": "^3.0.0",
+    "runscript": "^1.4.0",
+    "semver": "^6.3.0",
+    "simple-git": "^2.34.2",
+    "strip-html-comments": "^1.0.0",
+    "temp": "^0.9.0",
+    "ts-jest": "^27.0.3",
+    "write-pkg": "^4.0.0"
+  }
+}

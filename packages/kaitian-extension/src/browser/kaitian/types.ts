@@ -1,4 +1,4 @@
-import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } from '@ali/ide-core-browser';
+import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } from '@ide-framework/ide-core-browser';
 
 export interface IToolbarActionBasicContribution {
   id: string;

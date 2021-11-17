@@ -1,10 +1,10 @@
 import { IExtHostTreeView, IMainThreadTreeView, ITreeItemLabel, ITreeViewRevealOptions, MainThreadAPIIdentifier } from '../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
-import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ali/ide-core-common';
+import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ide-framework/ide-core-common';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 import { ExtHostCommands } from './ext.host.command';
-import type { CancellationToken } from '@ali/ide-core-common/lib/cancellation';
+import type { CancellationToken } from '@ide-framework/ide-core-common/lib/cancellation';
 import type vscode from 'vscode';
 
 export class ExtHostTreeViews implements IExtHostTreeView {

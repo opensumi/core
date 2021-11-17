@@ -1,11 +1,11 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI } from '@ali/ide-core-common';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { URI } from '@ide-framework/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
-import { IContextKeyService, CommandService } from '@ali/ide-core-browser';
-import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
+import { IContextKeyService, CommandService } from '@ide-framework/ide-core-browser';
+import { WorkspaceVariableContribution } from '@ide-framework/ide-workspace/lib/browser/workspace-variable-contribution';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
 
 describe('WorkspaceVariableContribution should be work', () => {
   let workspaceVariableContribution: WorkspaceVariableContribution;

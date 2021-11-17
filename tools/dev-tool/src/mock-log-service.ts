@@ -1,6 +1,6 @@
 
-import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
-import { ILogService, ILogServiceOptions, LogLevel } from '@ali/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@ide-framework/ide-core-node';
+import { ILogService, ILogServiceOptions, LogLevel } from '@ide-framework/ide-core-common';
 
 export default class LogServiceClass {
   constructor(args: ILogServiceOptions) {

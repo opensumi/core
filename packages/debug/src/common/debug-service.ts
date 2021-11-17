@@ -1,4 +1,4 @@
-import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError, Event } from '@ali/ide-core-common';
+import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError, Event } from '@ide-framework/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
 
 export interface DebuggerDescription {

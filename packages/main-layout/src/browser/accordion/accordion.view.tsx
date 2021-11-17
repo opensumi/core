@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { View, useInjectable } from '@ali/ide-core-browser';
-import { replaceLocalizePlaceholder } from '@ali/ide-core-common';
-import { Layout, SplitPanel } from '@ali/ide-core-browser/lib/components';
+import { View, useInjectable } from '@ide-framework/ide-core-browser';
+import { replaceLocalizePlaceholder } from '@ide-framework/ide-core-common';
+import { Layout, SplitPanel } from '@ide-framework/ide-core-browser/lib/components';
 
 import { AccordionSection } from './section.view';
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';

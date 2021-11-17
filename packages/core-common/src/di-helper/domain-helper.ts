@@ -1,4 +1,4 @@
-import { markInjectable, getInjectableOpts, Domain } from '@ali/common-di';
+import { markInjectable, getInjectableOpts, Domain } from '@ide-framework/common-di';
 import { ConstructorOf } from '../declare';
 
 /**

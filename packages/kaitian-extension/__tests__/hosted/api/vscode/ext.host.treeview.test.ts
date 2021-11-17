@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier, TreeView } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { ExtHostTreeViews } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.treeview';
-import { Emitter, Disposable, CancellationTokenSource } from '@ali/ide-core-common';
+import { ExtHostTreeViews } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.treeview';
+import { Emitter, Disposable, CancellationTokenSource } from '@ide-framework/ide-core-common';
 
 const moackManThreadTreeView = {
   $registerTreeDataProvider: jest.fn(),

@@ -1,4 +1,4 @@
-import { Disposable, Uri, Event, CancellationToken, IDisposable } from '@ali/ide-core-common';
+import { Disposable, Uri, Event, CancellationToken, IDisposable } from '@ide-framework/ide-core-common';
 
 type ColorIdentifier = string;
 

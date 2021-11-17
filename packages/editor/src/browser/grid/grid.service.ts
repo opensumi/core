@@ -1,6 +1,6 @@
 import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
-import { IDisposable, IEventBus, MaybeNull, Emitter } from '@ali/ide-core-browser';
-import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
+import { IDisposable, IEventBus, MaybeNull, Emitter } from '@ide-framework/ide-core-browser';
+import { makeRandomHexString } from '@ide-framework/ide-core-common/lib/functional';
 import { GridResizeEvent } from '../types';
 
 export const editorGridUid = new Set();

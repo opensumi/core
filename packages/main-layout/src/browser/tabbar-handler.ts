@@ -1,5 +1,5 @@
-import { Event, Emitter, ILogger } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Event, Emitter, ILogger } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMainLayoutService } from '../common';
 

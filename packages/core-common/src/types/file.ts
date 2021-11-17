@@ -5,8 +5,8 @@ import { FileChangeEvent } from './file-watch';
 export * from './file-watch';
 
 /**
- * @deprecated please import it from '@ali/ide-file-service/lib/common'
- * `import { IFileServiceClient } from '@ali/ide-file-service/lib/common';`
+ * @deprecated please import it from '@ide-framework/ide-file-service/lib/common'
+ * `import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';`
  */
 export const IFileServiceClient = Symbol('IFileServiceClient');
 

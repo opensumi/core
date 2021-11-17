@@ -1,0 +1,49 @@
+.panel,
+.panel :global(.views-container){
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.accordion {
+  height: calc(100% - 75px);
+}
+
+.tabs {
+  padding: 5px 0 0 10px;
+
+  :global(.kt-tab) {
+    font-size: 12px;
+  }
+}
+
+.content {
+  height: 100%;
+}
+
+.search_nofound {
+  padding-top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content: center;
+}
+
+.search_nofound_link {
+  margin-top: 10px;
+}
+
+.marketplace_search_nofound {
+  :global(.link-button) {
+    color: var(--textLink-foreground);
+  }
+}
+
+.extensions_view {
+  overflow-y: auto;
+  max-width: 100%;
+  width: 100%;
+  min-width: 300px;
+  height: 100%;
+  overflow-x: hidden;
+}

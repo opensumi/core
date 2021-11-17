@@ -1,10 +1,10 @@
-import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { MessageType, localize } from '@ali/ide-core-browser';
-import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
+import { MessageType, localize } from '@ide-framework/ide-core-browser';
+import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ide-framework/ide-components';
 import { AnsiConsoleNode } from './debug-console-tree-node.define';
-import { IRange } from '@ali/ide-core-common';
-import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
+import { IRange } from '@ide-framework/ide-core-common';
+import { Range } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
 
 export class ExpressionTreeService {
   constructor(

@@ -1,5 +1,5 @@
-import { IDisposable } from '@ali/ide-core-common';
-import { OperatingSystem } from '@ali/ide-core-common/lib/platform';
+import { IDisposable } from '@ide-framework/ide-core-common';
+import { OperatingSystem } from '@ide-framework/ide-core-common/lib/platform';
 import { ITerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from './pty';

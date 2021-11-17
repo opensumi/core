@@ -1,8 +1,8 @@
-import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-common/lib/disposable';
-import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { IContextKeyService } from '@ali/ide-core-browser';
-import { MenuId, AbstractContextMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { ISplice } from '@ide-framework/ide-core-common/lib/sequence';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { MenuId, AbstractContextMenuService, IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 import { ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup, SCMService, ISCMRepositoryMenus, ISCMMenus } from '../common';
 import { isSCMResource } from './scm-util';

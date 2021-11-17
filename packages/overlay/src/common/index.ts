@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageType, URI } from '@ali/ide-core-common';
+import { MessageType, URI } from '@ide-framework/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
 

@@ -1,12 +1,12 @@
 import React from 'react';
 import styles from './comments.module.less';
 import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget, ICommentsFeatureRegistry, ICommentsThread } from '../common';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineActionBar } from '@ide-framework/ide-core-browser/lib/components/actions';
 import { observer } from 'mobx-react-lite';
 import { CommentsTextArea } from './comments-textarea.view';
-import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { useInjectable, localize, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
-import { Button } from '@ali/ide-components';
+import { AbstractMenuService, MenuId, IMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { useInjectable, localize, IContextKeyService, isUndefined } from '@ide-framework/ide-core-browser';
+import { Button } from '@ide-framework/ide-components';
 import { CommentsBody } from './comments-body';
 import marked from 'marked';
 import { CommentReactions, CommentReactionSwitcher } from './comment-reactions.view';

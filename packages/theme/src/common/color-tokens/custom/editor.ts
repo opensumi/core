@@ -1,6 +1,6 @@
 import { TAB_BORDER } from '../tab';
 import { registerColor } from '../../color-registry';
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { foreground } from '../base';
 
 export const ktEditorBreadcrumbBorderDown = registerColor('kt.editorBreadcrumb.borderDown', {

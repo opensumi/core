@@ -1,6 +1,6 @@
 import React from 'react';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';
-import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
+import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@ide-framework/ide-core-browser';
+import { VALIDATE_TYPE } from '@ide-framework/ide-core-browser/lib/components';
 
 export const QuickOpenContext = React.createContext<{
   widget: IQuickOpenWidget;

@@ -1,10 +1,10 @@
-import { Autowired } from '@ali/common-di';
-import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ide-framework/ide-core-browser';
 import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle, SwitchCommandReaction, ICommentsThread, CommentReactionPayload, CommentReactionClick } from '../common';
-import { IEditor } from '@ali/ide-editor';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IMenuRegistry, MenuId, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
+import { IEditor } from '@ide-framework/ide-editor';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { IMenuRegistry, MenuId, MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 @Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution)
 export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution {

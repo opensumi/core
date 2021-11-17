@@ -1,12 +1,12 @@
 import { uniqueId } from 'lodash';
-import { URI } from '@ali/ide-core-browser';
+import { URI } from '@ide-framework/ide-core-browser';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
-import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EmptyDocCacheImpl } from '@ide-framework/ide-editor/lib/browser/doc-cache';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('EmptyDocCacheImpl', () => {
   let injector: MockInjector;

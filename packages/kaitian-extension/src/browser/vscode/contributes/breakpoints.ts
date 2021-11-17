@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { DebugConfigurationManager } from '@ide-framework/ide-debug/lib/browser';
 
 export interface BreakpointsContributionScheme {
   language: string;

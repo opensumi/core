@@ -1,5 +1,5 @@
-import { Deferred, IReporter } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
+import { Deferred, IReporter } from '@ide-framework/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
 import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
@@ -8,8 +8,8 @@ import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
 import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { AppConfig, DefaultReporter } from '@ali/ide-core-node';
-import { REPORT_NAME } from '@ali/ide-core-common';
+import { AppConfig, DefaultReporter } from '@ide-framework/ide-core-node';
+import { REPORT_NAME } from '@ide-framework/ide-core-common';
 
 const enum MessageType {
   Request = 1,

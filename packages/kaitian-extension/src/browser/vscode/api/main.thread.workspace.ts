@@ -1,13 +1,13 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat } from '@ali/ide-file-service';
-import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ali/ide-core-browser';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
+import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ide-framework/ide-core-browser';
+import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
+import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@ide-framework/ide-workspace-edit';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { FileSearchServicePath, IFileSearchService } from '@ide-framework/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
 
 @Injectable({multiple: true})

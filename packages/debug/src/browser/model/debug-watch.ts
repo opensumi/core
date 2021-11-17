@@ -1,6 +1,6 @@
 import { DEBUG_REPORT_NAME } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, IReporterService } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, Event, IReporterService } from '@ide-framework/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
 import { DEBUG_COMMANDS } from '../debug-contribution';

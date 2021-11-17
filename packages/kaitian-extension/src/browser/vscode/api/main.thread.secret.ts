@@ -1,8 +1,8 @@
-import { Injectable, Autowired, Optional } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Injectable, Autowired, Optional } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadSecret, IExtHostSecret } from '../../../common/vscode';
-import { AppConfig, ICredentialsService, Disposable } from '@ali/ide-core-browser';
-import { ICryptrService } from '@ali/ide-core-browser/lib/services';
+import { AppConfig, ICredentialsService, Disposable } from '@ide-framework/ide-core-browser';
+import { ICryptrService } from '@ide-framework/ide-core-browser/lib/services';
 
 @Injectable({ multiple: true })
 export class MainThreadSecret extends Disposable implements IMainThreadSecret {

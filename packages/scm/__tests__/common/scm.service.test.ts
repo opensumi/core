@@ -1,4 +1,4 @@
-import { DisposableCollection } from '@ali/ide-core-common';
+import { DisposableCollection } from '@ide-framework/ide-core-common';
 
 import { MockSCMProvider } from '../scm-test-util';
 

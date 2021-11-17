@@ -1,6 +1,6 @@
-import { Emitter, ICredentialsChangeEvent, INativeCredentialService, KeytarServicePath } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Event } from '@ali/ide-core-common';
+import { Emitter, ICredentialsChangeEvent, INativeCredentialService, KeytarServicePath } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Event } from '@ide-framework/ide-core-common';
 
 export const ICredentialsService = Symbol('ICredentialsService');
 

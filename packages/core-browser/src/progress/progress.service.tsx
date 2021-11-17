@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { localize, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format, CommandService, Disposable, Emitter, Event, toDisposable, dispose } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { localize, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format, CommandService, Disposable, Emitter, Event, toDisposable, dispose } from '@ide-framework/ide-core-common';
 import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
 import { timeout, IDisposable } from '..';
 import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
 import { ProgressIndicator } from './progress-indicator';
-import { parseLinkedText } from '@ali/ide-core-common/lib/linkedText';
+import { parseLinkedText } from '@ide-framework/ide-core-common/lib/linkedText';
 import { open } from '../components';
-import { MessageType, update, close } from '@ali/ide-components';
+import { MessageType, update, close } from '@ide-framework/ide-components';
 import React = require('react');
 import { ProgressBar } from './progress-bar';
 

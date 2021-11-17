@@ -4,59 +4,59 @@ if (!(window as any).process) {
   (window as any).process = { browser: true, env: (window as any).env, listener: () => [] };
 }
 
-import '@ali/ide-i18n';
-import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
+import '@ide-framework/ide-i18n';
+import { ElectronBasicModule } from '@ide-framework/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
-import { StartupModule } from '@ali/ide-startup/lib/browser';
+import { StartupModule } from '@ide-framework/ide-startup/lib/browser';
 
-import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
-import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
-import { MonacoModule } from '@ali/ide-monaco/lib/browser';
-import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
-import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
-import { EditorModule } from '@ali/ide-editor/lib/browser';
-import { ExplorerModule } from '@ali/ide-explorer/lib/browser';
-import { FileTreeNextModule } from '@ali/ide-file-tree-next/lib/browser';
-import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
-import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
-import { SearchModule } from '@ali/ide-search/lib/browser';
-import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
-import { OutputModule } from '@ali/ide-output/lib/browser';
-import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
-import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-browser';
-import { ThemeModule } from '@ali/ide-theme/lib/browser';
+import { MainLayoutModule } from '@ide-framework/ide-main-layout/lib/browser';
+import { MenuBarModule } from '@ide-framework/ide-menu-bar/lib/browser';
+import { MonacoModule } from '@ide-framework/ide-monaco/lib/browser';
+import { WorkspaceModule } from '@ide-framework/ide-workspace/lib/browser';
+import { StatusBarModule } from '@ide-framework/ide-status-bar/lib/browser';
+import { EditorModule } from '@ide-framework/ide-editor/lib/browser';
+import { ExplorerModule } from '@ide-framework/ide-explorer/lib/browser';
+import { FileTreeNextModule } from '@ide-framework/ide-file-tree-next/lib/browser';
+import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
+import { StaticResourceModule } from '@ide-framework/ide-static-resource/lib/browser';
+import { SearchModule } from '@ide-framework/ide-search/lib/browser';
+import { FileSchemeModule } from '@ide-framework/ide-file-scheme/lib/browser';
+import { OutputModule } from '@ide-framework/ide-output/lib/browser';
+import { QuickOpenModule } from '@ide-framework/ide-quick-open/lib/browser';
+import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ide-framework/ide-core-browser';
+import { ThemeModule } from '@ide-framework/ide-theme/lib/browser';
 
-import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
-import { OutlineModule } from '@ali/ide-outline/lib/browser';
-import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
-import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
-import { OverlayModule } from '@ali/ide-overlay/lib/browser';
-import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
-import { StorageModule } from '@ali/ide-storage/lib/browser';
-import { SCMModule } from '@ali/ide-scm/lib/browser';
+import { OpenedEditorModule } from '@ide-framework/ide-opened-editor/lib/browser';
+import { OutlineModule } from '@ide-framework/ide-outline/lib/browser';
+import { PreferencesModule } from '@ide-framework/ide-preferences/lib/browser';
+import { ToolbarModule } from '@ide-framework/ide-toolbar/lib/browser';
+import { OverlayModule } from '@ide-framework/ide-overlay/lib/browser';
+import { ExtensionStorageModule } from '@ide-framework/ide-extension-storage/lib/browser';
+import { StorageModule } from '@ide-framework/ide-storage/lib/browser';
+import { SCMModule } from '@ide-framework/ide-scm/lib/browser';
 
-import { MarkersModule } from '@ali/ide-markers/lib/browser';
+import { MarkersModule } from '@ide-framework/ide-markers/lib/browser';
 
-// import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
+// import { Terminal2Module } from '@ide-framework/ide-terminal2/lib/browser';
 
-import { WebviewModule } from '@ali/ide-webview';
-import { MarkdownModule } from '@ali/ide-markdown';
+import { WebviewModule } from '@ide-framework/ide-webview';
+import { MarkdownModule } from '@ide-framework/ide-markdown';
 
-import { LogModule } from '@ali/ide-logs/lib/browser';
-import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
-import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
-import { DecorationModule } from '@ali/ide-decoration/lib/browser';
-import { DebugModule } from '@ali/ide-debug/lib/browser';
-import { VariableModule } from '@ali/ide-variable/lib/browser';
-import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
-import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module';
+import { LogModule } from '@ide-framework/ide-logs/lib/browser';
+import { WorkspaceEditModule } from '@ide-framework/ide-workspace-edit/lib/browser';
+import { KaitianExtensionModule } from '@ide-framework/ide-kaitian-extension/lib/browser';
+import { DecorationModule } from '@ide-framework/ide-decoration/lib/browser';
+import { DebugModule } from '@ide-framework/ide-debug/lib/browser';
+import { VariableModule } from '@ide-framework/ide-variable/lib/browser';
+import { KeymapsModule } from '@ide-framework/ide-keymaps/lib/browser';
+import { MonacoEnhanceModule } from '@ide-framework/ide-monaco-enhance/lib/browser/module';
 
-import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
-import { TerminalNextModule } from '@ali/ide-terminal-next/lib/browser';
-import { CommentsModule } from '@ali/ide-comments/lib/browser';
+import { ExtensionManagerModule } from '@ide-framework/ide-extension-manager/lib/browser';
+import { TerminalNextModule } from '@ide-framework/ide-terminal-next/lib/browser';
+import { CommentsModule } from '@ide-framework/ide-comments/lib/browser';
 
-import { ClientAddonModule } from '@ali/ide-addons/lib/browser';
-import { TaskModule } from '@ali/ide-task/lib/browser';
+import { ClientAddonModule } from '@ide-framework/ide-addons/lib/browser';
+import { TaskModule } from '@ide-framework/ide-task/lib/browser';
 import { customLayoutConfig } from './layout';
 import { DemoModule } from 'modules/demo';
 import { TopbarModule } from 'modules/topbar/browser';

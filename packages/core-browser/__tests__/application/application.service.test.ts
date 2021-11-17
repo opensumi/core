@@ -1,6 +1,6 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ApplicationService } from '../../src/application/application.service';
-import { IApplicationService, CommonServerPath, OS } from '@ali/ide-core-common';
+import { IApplicationService, CommonServerPath, OS } from '@ide-framework/ide-core-common';
 
 describe('packages/core-browser/src/application/application.service.ts', () => {
   let applicationService: IApplicationService & { initializeData(): Promise<void> };

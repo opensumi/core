@@ -58,19 +58,19 @@ import type {
   SignatureHelpContext,
   Command,
   CompletionItemLabel,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
-import { IMarkerData, IRange, Uri, UriComponents } from '@ali/ide-core-common';
+import { IMarkerData, IRange, Uri, UriComponents } from '@ide-framework/ide-core-common';
 import { CompletionContext } from './model.api';
-import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
-import { InlineValueContext, InlineValue } from '@ali/ide-debug/lib/common/inline-values';
-import { ISingleEditOperation } from '@ali/ide-editor';
+import { IEvaluatableExpression } from '@ide-framework/ide-debug/lib/common/evaluatable-expression';
+import { InlineValueContext, InlineValue } from '@ide-framework/ide-debug/lib/common/inline-values';
+import { ISingleEditOperation } from '@ide-framework/ide-editor';
 import { IExtensionDescription } from './extension';
-import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { Range as MonacoRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
-import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { Range as MonacoRange } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
+import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;

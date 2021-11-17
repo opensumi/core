@@ -1,9 +1,9 @@
-import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
+import { InlineValue } from '@ide-framework/ide-debug/lib/common/inline-values';
 import type vscode from 'vscode';
-import { Uri, CancellationToken, IRange } from '@ali/ide-core-common';
+import { Uri, CancellationToken, IRange } from '@ide-framework/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager, IInlineValueContextDto } from '../../../../common/vscode';
-import { asPromise } from '@ali/ide-core-common';
+import { asPromise } from '@ide-framework/ide-core-common';
 
 export class InlineValuesAdapter {
 

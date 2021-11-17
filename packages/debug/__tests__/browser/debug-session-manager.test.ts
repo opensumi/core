@@ -1,14 +1,14 @@
-import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@ali/ide-debug';
+import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@ide-framework/ide-debug';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { BreakpointManager, DebugModelManager, DebugSessionContributionRegistry, DebugSessionFactory, DebugSessionManager } from '@ali/ide-debug/lib/browser';
-import { Emitter, IContextKeyService, IReporterService, LabelService } from '@ali/ide-core-browser';
+import { BreakpointManager, DebugModelManager, DebugSessionContributionRegistry, DebugSessionFactory, DebugSessionManager } from '@ide-framework/ide-debug/lib/browser';
+import { Emitter, IContextKeyService, IReporterService, LabelService } from '@ide-framework/ide-core-browser';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMessageService } from '@ali/ide-overlay';
-import { IVariableResolverService } from '@ali/ide-variable';
-import { ITaskService } from '@ali/ide-task';
-import { Disposable } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { IVariableResolverService } from '@ide-framework/ide-variable';
+import { ITaskService } from '@ide-framework/ide-task';
+import { Disposable } from '@ide-framework/ide-core-common';
 
 describe('DebugSessionManager', () => {
   let debugSessionManager: IDebugSessionManager;

@@ -1,10 +1,10 @@
 import { DebugBreakpointsService } from './../view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpoint } from './../breakpoint/breakpoint-marker';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { Position } from '@ali/monaco-editor-core/esm/vs/editor/common/core/position';
-import { URI } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { Position } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/position';
+import { URI } from '@ide-framework/ide-core-common';
 import { DebugSessionManager } from './../debug-session-manager';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IDebugSessionManager, DebugState } from './../../common/debug-session';
 
 @Injectable()

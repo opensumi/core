@@ -1,16 +1,16 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@ali/ide-core-common';
-import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
-import { IEditor } from '@ali/ide-editor';
-import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@ali/ide-editor/lib/browser';
-import { EditorTopPaddingContribution } from '@ali/ide-editor/lib/browser/view/topPadding';
-import { QuickPickService, PreferenceService, IContextKeyService } from '@ali/ide-core-browser';
-import { FormattingSelector } from '@ali/ide-editor/lib/browser/format/formatterSelect';
-import { EditorHistoryService } from '@ali/ide-editor/lib/browser/history';
-import { AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { EditorContextMenuBrowserEditorContribution } from '@ali/ide-editor/lib/browser/menu/editor.context';
-import { TabTitleMenuService } from '@ali/ide-editor/lib/browser/menu/title-context.menu';
+import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@ide-framework/ide-core-common';
+import { EditorFeatureRegistryImpl } from '@ide-framework/ide-editor/lib/browser/feature';
+import { IEditor } from '@ide-framework/ide-editor';
+import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@ide-framework/ide-editor/lib/browser';
+import { EditorTopPaddingContribution } from '@ide-framework/ide-editor/lib/browser/view/topPadding';
+import { QuickPickService, PreferenceService, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { FormattingSelector } from '@ide-framework/ide-editor/lib/browser/format/formatterSelect';
+import { EditorHistoryService } from '@ide-framework/ide-editor/lib/browser/history';
+import { AbstractContextMenuService, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { EditorContextMenuBrowserEditorContribution } from '@ide-framework/ide-editor/lib/browser/menu/editor.context';
+import { TabTitleMenuService } from '@ide-framework/ide-editor/lib/browser/menu/title-context.menu';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 Error.stackTraceLimit = 100;

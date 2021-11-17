@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { warning } from '@ali/ide-components/lib/utils';
-import { isUndefinedOrNull } from '@ali/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { warning } from '@ide-framework/ide-components/lib/utils';
+import { isUndefinedOrNull } from '@ide-framework/ide-core-common';
 
 import { Logger } from '../logger';
 

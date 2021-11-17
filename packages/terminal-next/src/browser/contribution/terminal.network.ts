@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
-import { OnEvent, WithEventBus, BrowserConnectionOpenEvent, BrowserConnectionCloseEvent } from '@ali/ide-core-common';
-import { Domain, ClientAppContribution } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { OnEvent, WithEventBus, BrowserConnectionOpenEvent, BrowserConnectionCloseEvent } from '@ide-framework/ide-core-common';
+import { Domain, ClientAppContribution } from '@ide-framework/ide-core-browser';
 import { ITerminalNetwork, ITerminalInternalService, TerminalNetworkStatus } from '../../common';
 
 @Domain(ClientAppContribution)

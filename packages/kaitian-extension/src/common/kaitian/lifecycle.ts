@@ -1,4 +1,4 @@
-import { ExtensionCandidate } from '@ali/ide-core-common';
+import { ExtensionCandidate } from '@ide-framework/ide-core-common';
 
 export interface IMainThreadLifeCycle {
   $setExtensionDir(path: string): void;

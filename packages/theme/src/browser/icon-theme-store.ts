@@ -1,7 +1,7 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 import { IIconTheme, ThemeContribution, getThemeId } from '../common';
 import { IconThemeData } from './icon-theme-data';
-import { URI } from '@ali/ide-core-common';
+import { URI } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class IconThemeStore {

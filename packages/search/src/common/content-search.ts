@@ -1,6 +1,6 @@
-import { endsWith, startsWith, Command, URI } from '@ali/ide-core-common';
-import { TreeNode, ValidateMessage } from '@ali/ide-core-browser/lib/components';
-import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
+import { endsWith, startsWith, Command, URI } from '@ide-framework/ide-core-common';
+import { TreeNode, ValidateMessage } from '@ide-framework/ide-core-browser/lib/components';
+import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 

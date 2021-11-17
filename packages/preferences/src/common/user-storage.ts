@@ -1,5 +1,5 @@
 
-import { FileSystemProvider } from '@ali/ide-core-browser';
+import { FileSystemProvider } from '@ide-framework/ide-core-browser';
 
 export const IUserStorageService = Symbol('IUserStorageService');
 

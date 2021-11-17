@@ -1,1 +1,1 @@
-export * from '@ali/ide-core-common/lib/utils/glob';
+export * from '@ide-framework/ide-core-common/lib/utils/glob';

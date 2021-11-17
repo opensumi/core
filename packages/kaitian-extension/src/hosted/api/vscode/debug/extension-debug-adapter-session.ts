@@ -1,6 +1,6 @@
 import type vscode from 'vscode';
-import { DebugStreamConnection, DebugConfiguration } from '@ali/ide-debug';
-import { IWebSocket } from '@ali/ide-connection';
+import { DebugStreamConnection, DebugConfiguration } from '@ide-framework/ide-debug';
+import { IWebSocket } from '@ide-framework/ide-connection';
 import { StreamDebugAdapter } from './abstract-debug-adapter-session';
 
 export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements vscode.DebugSession {

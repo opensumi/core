@@ -1,8 +1,8 @@
 import React from 'react';
-import { Injector } from '@ali/common-di';
-import * as Components from '@ali/ide-core-browser/lib/components';
+import { Injector } from '@ide-framework/common-di';
+import * as Components from '@ide-framework/ide-core-browser/lib/components';
 import { IExtension } from '../../common';
-import { AppConfig } from '@ali/ide-core-browser';
+import { AppConfig } from '@ide-framework/ide-core-browser';
 import { PortalRoot } from '../components/extension-portal-root';
 
 export function createBrowserComponents(injector: Injector, extension: IExtension) {

@@ -4,7 +4,7 @@ import {
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
   IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls, WebviewViewProvider,
 } from '../../../common/vscode';
-import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo, Event } from '@ali/ide-core-common';
+import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo, Event } from '@ide-framework/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
@@ -12,9 +12,9 @@ import * as types from '../../../common/vscode/ext-types';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError, IExtensionDescription } from '../../../common/vscode/extension';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostProgress } from './ext.host.progress';
-import { QuickInputOptions } from '@ali/ide-quick-open';
+import { QuickInputOptions } from '@ide-framework/ide-quick-open';
 import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 

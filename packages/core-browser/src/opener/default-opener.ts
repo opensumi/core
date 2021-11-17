@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Schemas, isElectronRenderer } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, Schemas, isElectronRenderer } from '@ide-framework/ide-core-common';
 import { IOpener } from '.';
 import { IWindowService } from '../window';
 

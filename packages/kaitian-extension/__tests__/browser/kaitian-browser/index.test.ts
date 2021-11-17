@@ -1,6 +1,6 @@
-import { registerLocalizationBundle } from '@ali/ide-core-common';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
+import { registerLocalizationBundle } from '@ide-framework/ide-core-common';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@ide-framework/ide-dev-tool/src/mock-injector';
 import { createBrowserApi } from '../../../src/browser/kaitian-browser';
 import { mockExtension } from '../../../__mocks__/extensions';
 

@@ -1,9 +1,9 @@
 import stream from 'stream';
-import type { editor } from '@ali/monaco-editor-core';
+import type { editor } from '@ide-framework/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
-import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@ali/ide-core-common';
+import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@ide-framework/ide-core-common';
 import { DebugEditor } from './debug-editor';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugBreakpoint } from '../browser';
 
 export const DebugAdapterSession = Symbol('DebugAdapterSession');

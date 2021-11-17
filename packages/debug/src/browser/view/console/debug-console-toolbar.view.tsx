@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, isElectronRenderer } from '@ali/ide-core-browser';
-import { Select, Option } from '@ali/ide-components';
-import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { localize, isElectronRenderer } from '@ide-framework/ide-core-browser';
+import { Select, Option } from '@ide-framework/ide-components';
+import { Select as NativeSelect } from '@ide-framework/ide-core-browser/lib/components/select';
 import styles from './debug-console.module.less';
 
 export const DebugConsoleToolbarView = observer(() => {

@@ -1,8 +1,8 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { MessageType, URI } from '@ali/ide-core-common';
-import { localize } from '@ali/ide-core-browser';
-import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { MessageType, URI } from '@ide-framework/ide-core-common';
+import { localize } from '@ide-framework/ide-core-browser';
+import { IWorkspaceEditService } from '@ide-framework/ide-workspace-edit';
 import {
   ContentSearchResult,
   ResultTotal,

@@ -1,13 +1,13 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 /**
  * 用于文件内容搜索
  */
 import React from 'react';
 import { createRef } from 'react';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@ali/ide-core-common';
-import * as arrays from '@ali/ide-core-common/lib/arrays';
-import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@ide-framework/ide-core-common';
+import * as arrays from '@ide-framework/ide-core-common/lib/arrays';
+import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
 import {
   Key,
   URI,
@@ -17,20 +17,20 @@ import {
   COMMON_COMMANDS,
   RecentStorage,
   PreferenceService,
-} from '@ali/ide-core-browser';
-import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services/storage-service';
-import { IWorkspaceService } from '@ali/ide-workspace';
+} from '@ide-framework/ide-core-browser';
+import { GlobalBrowserStorageService } from '@ide-framework/ide-core-browser/lib/services/storage-service';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
   IEditorDocumentModelContentChangedEventPayload,
-} from '@ali/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
+} from '@ide-framework/ide-editor/lib/browser';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
+import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { IWorkspaceEditService } from '@ide-framework/ide-workspace-edit';
+import { VALIDATE_TYPE, ValidateMessage } from '@ide-framework/ide-components';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,

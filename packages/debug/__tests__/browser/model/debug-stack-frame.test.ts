@@ -1,5 +1,5 @@
-import { DebugThread, DebugStackFrame } from '@ali/ide-debug/lib/browser';
-import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
+import { DebugThread, DebugStackFrame } from '@ide-framework/ide-debug/lib/browser';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
 
 describe('DebugStackFrame Model', () => {
   describe('DebugStackFrame should be work after init', () => {

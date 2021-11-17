@@ -1,0 +1,94 @@
+
+.extension_overview_header {
+  display: flex;
+  padding: 20px 20px 14px;
+  overflow: hidden;
+  font-size: 14px;
+
+  img {
+    height: 128px;
+    width: 128px;
+    object-fit: contain;
+  }
+
+  .extension_detail {
+    flex: 1;
+    padding-left: 20px;
+    white-space: nowrap;
+
+    .extension_name {
+      display: flex;
+      height: 30px;
+      align-items: center;
+
+      a {
+        color: var(--foreground);
+      }
+
+      h1 {
+        font-size: 26px;
+        line-height: 30px;
+        font-weight: 600;
+        // white-space: nowrap;
+        margin: 0px;
+        color: var(--foreground);
+      }
+
+      .extension_id {
+        font-size: 12px;
+        line-height: 18px;
+        margin-left: 10px;
+        color: var(--badge-foreground);
+        background-color: var(--badge-background);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+    }
+
+    .mainfest {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+
+      span {
+        font-size: 12px;
+        display: inline-block;
+        line-height: 20px;
+        height: 20px;
+        margin-left: 14px;
+        padding-left: 14px;
+        border-left: 1px solid hsla(0,0%,50.2%,.7);
+
+        a {
+          font-size: 12px !important;
+          color: var(--foreground);
+        }
+      }
+
+      :nth-child(1) {
+        margin-left: 0px;
+        padding-left: 0px;
+        border-left: none;
+
+        a {
+          font-size: 16px !important;
+          color: var(--foreground);
+        }
+      }
+    }
+
+    .description {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--descriptionForeground);
+    }
+  }
+}
+
+.extension_overview_body {
+  .tabs {
+    padding: 0px 20px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+}

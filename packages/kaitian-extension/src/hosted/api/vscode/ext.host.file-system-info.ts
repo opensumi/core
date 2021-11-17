@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from '@ali/ide-core-common';
+import { Schemas } from '@ide-framework/ide-core-common';
 import { IExtHostFileSystemInfoShape } from './../../../common/vscode/file-system';
 
 export class ExtHostFileSystemInfo implements IExtHostFileSystemInfoShape {

@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle, IToolbarPopoverRegistry } from '../types';
 import { useInjectable } from '../../react-hooks';
-import { BasicEvent, Disposable, Emitter, IDisposable } from '@ali/ide-core-common';
+import { BasicEvent, Disposable, Emitter, IDisposable } from '@ide-framework/ide-core-common';
 import classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
-import { Button } from '@ali/ide-components';
+import { Button } from '@ide-framework/ide-components';
 import { PreferenceService } from '../../preferences';
 import { DomListener } from '../../dom';
 

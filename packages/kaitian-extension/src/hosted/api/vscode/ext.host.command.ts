@@ -1,16 +1,16 @@
 import type vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler, IExtensionDescription } from '../../../common/vscode';
-import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
-import { validateConstraint, isFunction } from '@ali/ide-core-common/lib/utils/types';
-import { getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ali/ide-core-common';
+import { cloneAndChange } from '@ide-framework/ide-core-common/lib/utils/objects';
+import { validateConstraint, isFunction } from '@ide-framework/ide-core-common/lib/utils/types';
+import { getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ide-framework/ide-core-common';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
-import { Uri } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/ide-core-common';
 import { IBuiltInCommand } from '../../ext.process-base';
 import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';
 

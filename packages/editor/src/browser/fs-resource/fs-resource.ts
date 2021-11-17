@@ -1,11 +1,11 @@
 import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
-import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@ali/ide-core-browser';
-import { Autowired, Injectable } from '@ali/common-di';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { FileChangeType } from '@ali/ide-core-common';
-import { IDialogService } from '@ali/ide-overlay';
+import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@ide-framework/ide-core-browser';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service/lib/common';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { FileChangeType } from '@ide-framework/ide-core-common';
+import { IDialogService } from '@ide-framework/ide-overlay';
 import { FileTreeSet } from './file-tree-set';
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { DIFF_SCHEME } from '../../common';

@@ -1,10 +1,10 @@
-import { Injector, Injectable } from '@ali/common-di';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IThemeService } from '@ali/ide-theme';
-import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
-import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { Uri, URI, MarkerManager, Emitter } from '@ali/ide-core-common';
-import { EditorGroupCloseEvent, IResource } from '@ali/ide-editor/lib/browser';
+import { Injector, Injectable } from '@ide-framework/common-di';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { WorkbenchEditorService, IEditorGroup } from '@ide-framework/ide-editor';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
+import { Uri, URI, MarkerManager, Emitter } from '@ide-framework/ide-core-common';
+import { EditorGroupCloseEvent, IResource } from '@ide-framework/ide-editor/lib/browser';
 import { MarkerService } from '../../src/browser/markers-service';
 import { MarkerSeverity } from '../../../core-common/src/types/markers/markers';
 

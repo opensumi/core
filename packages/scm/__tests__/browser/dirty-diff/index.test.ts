@@ -1,14 +1,14 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { monaco as monacoAPI } from '@ali/ide-monaco/lib/browser/monaco-api';
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@ali/ide-core-common';
-import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@ali/ide-editor';
-import { PreferenceChange } from '@ali/ide-core-browser';
-import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
-import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/src/browser/workbench-editor.service';
-import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@ali/ide-editor/src/browser/';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { monaco as monacoAPI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@ide-framework/ide-core-common';
+import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
+import { PreferenceChange } from '@ide-framework/ide-core-browser';
+import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
+import { WorkbenchEditorServiceImpl } from '@ide-framework/ide-editor/src/browser/workbench-editor.service';
+import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@ide-framework/ide-editor/src/browser/';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';

@@ -1,7 +1,7 @@
-import { ConstructorOf, ILoggerManagerClient } from '@ali/ide-core-common';
-import { Injector, Injectable } from '@ali/common-di';
-import { BrowserModule, ClientApp } from '@ali/ide-core-browser';
-import { NodeModule, INodeLogger } from '@ali/ide-core-node';
+import { ConstructorOf, ILoggerManagerClient } from '@ide-framework/ide-core-common';
+import { Injector, Injectable } from '@ide-framework/common-di';
+import { BrowserModule, ClientApp } from '@ide-framework/ide-core-browser';
+import { NodeModule, INodeLogger } from '@ide-framework/ide-core-node';
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
 

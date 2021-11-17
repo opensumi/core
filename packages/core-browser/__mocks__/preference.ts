@@ -1,5 +1,5 @@
 import { PreferenceScope, ISettingGroup, ISettingSection } from '../src';
-import { Injectable, Injector, Optional } from '@ali/common-di';
+import { Injectable, Injector, Optional } from '@ide-framework/common-di';
 import { PreferenceProvider } from '../src/preferences';
 
 @Injectable()

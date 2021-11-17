@@ -1,9 +1,9 @@
 import React from 'react';
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ViewState, isUndefined, useInjectable, localize, DisposableCollection, getIcon } from '@ali/ide-core-browser';
+import { ViewState, isUndefined, useInjectable, localize, DisposableCollection, getIcon } from '@ide-framework/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
-import { RecycleList } from '@ali/ide-components';
+import { RecycleList } from '@ide-framework/ide-components';
 import { DebugStackFrame } from '../../model';
 import { IDebugSessionManager } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';

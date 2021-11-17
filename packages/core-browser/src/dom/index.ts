@@ -1,5 +1,5 @@
-import { Disposable, Emitter, Event as BaseEvent, IDisposable } from '@ali/ide-core-common';
-import { isWebKit } from '@ali/ide-core-common/lib/platform';
+import { Disposable, Emitter, Event as BaseEvent, IDisposable } from '@ide-framework/ide-core-common';
+import { isWebKit } from '@ide-framework/ide-core-common/lib/platform';
 
 export const EventType = {
   // Mouse

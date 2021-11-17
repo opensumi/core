@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event, Disposable } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Emitter, Event, Disposable } from '@ide-framework/ide-core-common';
 import { ITerminalErrorService, ITerminalNetwork, ITerminalInternalService, ITerminalController, ITerminalReconnectInfo, ITerminalError, TerminalNetworkStatus } from '../common';
 
 @Injectable()

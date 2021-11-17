@@ -1,12 +1,12 @@
-import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '@ali/ide-file-service/src/common';
-import { Event, URI, FileUri, Uri } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { promisify } from '@ali/ide-core-common/lib/browser-fs/util';
-import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
+import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '@ide-framework/ide-file-service/src/common';
+import { Event, URI, FileUri, Uri } from '@ide-framework/ide-core-common';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { promisify } from '@ide-framework/ide-core-common/lib/browser-fs/util';
+import { ensureDir } from '@ide-framework/ide-core-common/lib/browser-fs/ensure-dir';
 
 import fs from 'fs';
 import paths from 'path';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
 

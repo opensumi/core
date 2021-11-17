@@ -19,8 +19,8 @@ import { DebugSession } from '../debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugThread } from '../model/debug-thread';
 import { DebugStackFrame } from '../model/debug-stack-frame';
-import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { DebugState, IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()

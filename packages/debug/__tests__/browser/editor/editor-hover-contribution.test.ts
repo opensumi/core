@@ -1,11 +1,11 @@
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { DebugEditorContribution } from '@ali/ide-debug/lib/browser/editor/debug-editor-contribution';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { DebugModelFactory, IDebugServer } from '@ali/ide-debug';
-import { QuickPickService } from '@ali/ide-core-browser';
-import { DebugPreferences } from '@ali/ide-debug/lib/browser';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { DebugEditorContribution } from '@ide-framework/ide-debug/lib/browser/editor/debug-editor-contribution';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { DebugModelFactory, IDebugServer } from '@ide-framework/ide-debug';
+import { QuickPickService } from '@ide-framework/ide-core-browser';
+import { DebugPreferences } from '@ide-framework/ide-debug/lib/browser';
 import { IDebugSessionManager } from './../../../src/common/debug-session';
 
 describe('Editor Hover Contribution', () => {

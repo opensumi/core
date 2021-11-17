@@ -1,7 +1,7 @@
-import { Emitter, IDisposable } from '@ali/ide-core-common';
+import { Emitter, IDisposable } from '@ide-framework/ide-core-common';
 import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../../common/vscode';
-import { ExtensionStorageUri } from '@ali/ide-extension-storage/lib/common/storage';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { ExtensionStorageUri } from '@ide-framework/ide-extension-storage/lib/common/storage';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { Memento } from '../../../common/vscode/ext-types';
 
 export interface IStorageChangeEvent {

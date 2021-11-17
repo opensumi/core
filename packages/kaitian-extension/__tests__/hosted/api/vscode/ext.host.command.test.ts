@@ -1,12 +1,12 @@
-import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
-import { ExtHostCommands, createCommandsApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { Range } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
+import { ExtHostCommands, createCommandsApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionInfo, Uri } from '@ali/ide-core-common';
-import * as modes from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
-import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import { SymbolKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { IExtensionInfo, Uri } from '@ide-framework/ide-core-common';
+import * as modes from '@ide-framework/ide-kaitian-extension/lib/common/vscode/model.api';
+import * as types from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { SymbolKind } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type vscode from 'vscode';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {

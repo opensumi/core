@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, IToolbarRegistry, createToolbarActionBtn, ToolbarActionBtnClickEvent } from '@ali/ide-core-browser';
-import { IEventBus } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Disposable, IToolbarRegistry, createToolbarActionBtn, ToolbarActionBtnClickEvent } from '@ide-framework/ide-core-browser';
+import { IEventBus } from '@ide-framework/ide-core-common';
 import React from 'react';
 
 import { IToolBarViewService, ToolBarPosition, IToolBarElementHandle, IToolBarAction, IToolBarComponent } from './types';

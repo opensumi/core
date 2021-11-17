@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import { getDebugLogger, IEventBus, URI } from '@ali/ide-core-common';
-import { ComponentContextProvider, IIconResourceOptions } from '@ali/ide-components';
+import { getDebugLogger, IEventBus, URI } from '@ide-framework/ide-core-common';
+import { ComponentContextProvider, IIconResourceOptions } from '@ide-framework/ide-components';
 
 import { ResizeEvent } from '../layout';
 import { IClientApp } from '../browser-module';
 import { getIcon } from '../style/icon/icon';
 import { DefaultLayout } from '../components/layout/default-layout';
 import { ConfigProvider, allSlot } from '../react-providers';
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { LabelService } from '../services';
 
 export interface AppProps {

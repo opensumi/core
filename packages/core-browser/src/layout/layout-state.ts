@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { StorageProvider, IStorage, STORAGE_NAMESPACE, DisposableCollection, ILogger } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { StorageProvider, IStorage, STORAGE_NAMESPACE, DisposableCollection, ILogger } from '@ide-framework/ide-core-common';
 import debounce = require('lodash.debounce');
 import { PreferenceService } from '../preferences';
 

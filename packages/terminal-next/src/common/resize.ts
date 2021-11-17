@@ -1,5 +1,5 @@
-import { Event } from '@ali/ide-core-common';
-import { Disposable } from '@ali/ide-core-common';
+import { Event } from '@ide-framework/ide-core-common';
+import { Disposable } from '@ide-framework/ide-core-common';
 
 export interface IWidget extends Disposable {
   id: string;

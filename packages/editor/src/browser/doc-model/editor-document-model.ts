@@ -1,7 +1,7 @@
-import { monaco, URI as MonacoURI } from '@ali/ide-monaco/lib/browser/monaco-api';
-import { Autowired, Injectable } from '@ali/common-di';
-import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
-import { IMessageService } from '@ali/ide-overlay';
+import { monaco, URI as MonacoURI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ide-framework/ide-core-browser';
+import { IMessageService } from '@ide-framework/ide-overlay';
 import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
@@ -11,8 +11,8 @@ import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChange
 import debounce = require('lodash.debounce');
 import { EditorPreferences } from '../preference/schema';
 import { createEditorPreferenceProxy } from '../preference/util';
-import { EOL, EndOfLineSequence, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EOL, EndOfLineSequence, ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;

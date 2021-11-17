@@ -5,7 +5,7 @@
 
 // modified by https://github.com/microsoft/vscode/blob/f90a0abe02b932182bd72d689ce5dd0836583493/src/vs/workbench/services/keybinding/browser/keyboardLayouts/_.contribution.ts
 
-import { IKeymapInfo } from '@ali/ide-core-common';
+import { IKeymapInfo } from '@ide-framework/ide-core-common';
 
 export class KeyboardLayoutContribution {
   public static readonly INSTANCE: KeyboardLayoutContribution = new KeyboardLayoutContribution();

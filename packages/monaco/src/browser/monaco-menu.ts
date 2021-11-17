@@ -1,4 +1,4 @@
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
 
 export interface MonacoActionGroup {
   id: string;

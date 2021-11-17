@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/common/severity.ts
 
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { Diagnostic } from 'vscode';
 import { ProblemMatcher } from './problem-matcher';
 import { isArray, isString } from './utils/types';

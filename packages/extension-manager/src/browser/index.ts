@@ -1,22 +1,24 @@
-import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
-import { ExtensionManagerContribution } from './extension-manager.contribution';
-import { IExtensionManagerService, ExtensionManagerServerPath } from '../common';
-import { ExtensionManagerService } from './extension-manager.service';
+import { Provider, Injectable } from '@ide-framework/common-di';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
+
+import { VSXExtensionBackSerivceToken, VSXExtensionServicePath, VSXExtensionServiceToken } from '../common';
+import { VSXExtensionContribution } from './vsx-extension.contribution';
+import { VSXExtensionService } from './vsx-extension.service';
 
 @Injectable()
-export class ExtensionManagerModule extends BrowserModule {
+export class OpenVsxExtensionManagerModule extends BrowserModule {
   providers: Provider[] = [
-    ExtensionManagerContribution,
+    VSXExtensionContribution,
     {
-      token: IExtensionManagerService,
-      useClass: ExtensionManagerService,
+      token: VSXExtensionServiceToken,
+      useClass: VSXExtensionService,
     },
   ];
 
   backServices = [
     {
-      servicePath: ExtensionManagerServerPath,
+      servicePath: VSXExtensionServicePath,
+      token: VSXExtensionBackSerivceToken,
     },
   ];
 }

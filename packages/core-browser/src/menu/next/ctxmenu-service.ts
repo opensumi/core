@@ -1,6 +1,6 @@
-import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
-import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { IDisposable, Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Event, Emitter } from '@ide-framework/ide-core-common/lib/event';
+import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 
 import { IContextKeyService } from '../../context-key';
 import { MenuNode } from './base';

@@ -1,13 +1,13 @@
 // tslint:disable:new-parens
-import { Injector } from '@ali/common-di';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { createWindowApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
-import { MainThreadDecorations } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.decoration';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
-import { IDecorationsService } from '@ali/ide-decoration';
+import { Injector } from '@ide-framework/common-di';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { createWindowApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
+import { MainThreadDecorations } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.decoration';
+import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { FileDecorationsService } from '@ide-framework/ide-decoration/lib/browser/decorationsService';
+import { IDecorationsService } from '@ide-framework/ide-decoration';
 import type vscode from 'vscode';
-import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@ali/ide-core-common';
+import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@ide-framework/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 

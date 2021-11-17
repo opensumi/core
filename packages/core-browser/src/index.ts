@@ -1,5 +1,5 @@
 // 输出所有 common 里面会有的内容
-export * from '@ali/ide-core-common';
+export * from '@ide-framework/ide-core-common';
 
 // 输出当前 browser 特有的内容
 export * from './react-hooks';

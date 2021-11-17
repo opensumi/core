@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { URI, IDisposable } from '@ali/ide-core-browser';
+import { Injectable } from '@ide-framework/common-di';
+import { URI, IDisposable } from '@ide-framework/ide-core-browser';
 
 /**
  * @class StaticResourceService 静态资源转换服务

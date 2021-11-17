@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { ILogger } from '@ali/ide-core-common/lib/log';
-import { ISemanticTokenRegistry } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ILogger } from '@ide-framework/ide-core-common/lib/log';
+import { ISemanticTokenRegistry } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
 import { VSCodeContributePoint, Contributes, SemanticTokenScopesSchema } from '../../../common';
 
 @Injectable()

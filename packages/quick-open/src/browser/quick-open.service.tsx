@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters';
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';
-import { HideReason, Highlight, QuickOpenItem, QuickOpenModel as IKaitianQuickOpenModel, QuickOpenOptions, QuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
-import { MonacoContextKeyService } from '@ali/ide-monaco/lib/browser/monaco.context-key.service';
+import { matchesFuzzy } from '@ide-framework/monaco-editor-core/esm/vs/base/common/filters';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider, QuickOpenTabOptions } from '@ide-framework/ide-core-browser';
+import { HideReason, Highlight, QuickOpenItem, QuickOpenModel as IKaitianQuickOpenModel, QuickOpenOptions, QuickOpenService } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { MonacoContextKeyService } from '@ide-framework/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenWidget } from './quick-open.widget';
 import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type';
-import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
+import { VALIDATE_TYPE } from '@ide-framework/ide-core-browser/lib/components';
 import { QuickOpenView } from './quick-open.view';
 
 export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {

@@ -1,5 +1,5 @@
-import { Injectable, Provider, Autowired } from '@ali/common-di';
-import { BrowserModule, Domain, ContributionProvider, ClientAppContribution } from '@ali/ide-core-browser';
+import { Injectable, Provider, Autowired } from '@ide-framework/common-di';
+import { BrowserModule, Domain, ContributionProvider, ClientAppContribution } from '@ide-framework/ide-core-browser';
 import { StaticResourceService, StaticResourceContribution } from './static.definition';
 import { StaticResourceServiceImpl } from './static.service';
 export * from './static.definition';

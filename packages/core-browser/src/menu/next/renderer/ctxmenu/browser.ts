@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import omit from 'lodash.omit';
 
 import { MenuNode } from '../../base';

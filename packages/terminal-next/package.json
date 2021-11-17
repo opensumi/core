@@ -1,5 +1,5 @@
 {
-  "name": "@ali/ide-terminal-next",
+  "name": "@ide-framework/ide-terminal-next",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -25,23 +25,20 @@
     "type": "git",
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
-  },
   "dependencies": {
-    "@ali/ide-components": "2.12.0",
-    "@ali/ide-core-browser": "2.12.0",
-    "@ali/ide-core-common": "2.12.0",
-    "@ali/ide-connection": "2.12.0",
-    "@ali/ide-core-node": "2.12.0",
-    "@ali/ide-editor": "2.12.0",
-    "@ali/ide-file-service": "2.12.0",
-    "@ali/ide-main-layout": "2.12.0",
-    "@ali/ide-theme": "2.12.0",
-    "@ali/ide-workspace": "2.12.0",
-    "@ali/ide-variable": "2.12.0",
-    "@ali/ide-status-bar": "2.12.0",
-    "@ali/ide-overlay": "2.12.0",
+    "@ide-framework/ide-components": "2.12.0",
+    "@ide-framework/ide-core-browser": "2.12.0",
+    "@ide-framework/ide-core-common": "2.12.0",
+    "@ide-framework/ide-connection": "2.12.0",
+    "@ide-framework/ide-core-node": "2.12.0",
+    "@ide-framework/ide-editor": "2.12.0",
+    "@ide-framework/ide-file-service": "2.12.0",
+    "@ide-framework/ide-main-layout": "2.12.0",
+    "@ide-framework/ide-theme": "2.12.0",
+    "@ide-framework/ide-workspace": "2.12.0",
+    "@ide-framework/ide-variable": "2.12.0",
+    "@ide-framework/ide-status-bar": "2.12.0",
+    "@ide-framework/ide-overlay": "2.12.0",
     "os-locale": "^4.0.0",
     "lodash.omit": "^4.1.1",
     "event-kit": "^2.5.3",
@@ -51,7 +48,7 @@
     "xterm-addon-search": "^0.9.0-beta.3"
   },
   "devDependencies": {
-    "@ali/ide-dev-tool": "^1.1.0",
+    "@ide-framework/ide-dev-tool": "^1.1.0",
     "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
     "@types/puppeteer": "^2.0.0",

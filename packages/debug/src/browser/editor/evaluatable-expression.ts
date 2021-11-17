@@ -1,7 +1,7 @@
-import { Injectable } from '@ali/common-di';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IDisposable } from '@ali/ide-core-common';
-import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
+import { Injectable } from '@ide-framework/common-di';
+import type { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { IDisposable } from '@ide-framework/ide-core-common';
+import { LanguageFeatureRegistry } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 
 import { EvaluatableExpressionProvider } from '../../common/evaluatable-expression';
 

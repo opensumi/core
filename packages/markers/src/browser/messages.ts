@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-browser';
+import { localize } from '@ide-framework/ide-core-browser';
 
 export default class Messages {
   public static markerTitle = () => localize('markers.title', '问题');

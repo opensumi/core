@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ide-framework/common-di';
+import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ide-framework/ide-core-browser';
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 

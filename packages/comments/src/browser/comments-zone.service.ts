@@ -1,6 +1,6 @@
-import { Disposable, memoize } from '@ali/ide-core-common';
-import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { Disposable, memoize } from '@ide-framework/ide-core-common';
+import { Autowired, Injectable, Optional } from '@ide-framework/common-di';
+import { AbstractMenuService, MenuId, IMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 import { CommentsThread } from './comments-thread';
 

@@ -1,8 +1,8 @@
 // tslint:disable no-console
 console.time('Render');
-import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { ToolbarActionBasedLayout } from '@ali/ide-core-browser/lib/components';
+import { Injector } from '@ide-framework/common-di';
+import { ClientApp, IClientAppOpts } from '@ide-framework/ide-core-browser';
+import { ToolbarActionBasedLayout } from '@ide-framework/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();

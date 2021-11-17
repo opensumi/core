@@ -17,7 +17,7 @@ import {
   isWindows,
   getDebugLogger,
   FileUri,
-} from '@ali/ide-core-node';
+} from '@ide-framework/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
 import {
   FileChangeEvent,
@@ -32,11 +32,11 @@ import {
   FileAccess,
   FileSystemProviderCapabilities,
 } from '../common/';
-import { Injectable } from '@ali/common-di';
-import { RPCService } from '@ali/ide-connection';
+import { Injectable } from '@ide-framework/common-di';
+import { RPCService } from '@ide-framework/ide-connection';
 import fileType from 'file-type';
-import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
-import { isLinux } from '@ali/ide-core-common/lib/platform';
+import { ParsedPattern, parse } from '@ide-framework/ide-core-common/lib/utils/glob';
+import { isLinux } from '@ide-framework/ide-core-common/lib/platform';
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';

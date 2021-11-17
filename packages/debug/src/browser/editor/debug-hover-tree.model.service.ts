@@ -1,8 +1,8 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, WatchEvent, TreeNodeEvent } from '@ali/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection } from '@ali/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, WatchEvent, TreeNodeEvent } from '@ide-framework/ide-components';
+import { Emitter, Deferred, Event, DisposableCollection } from '@ide-framework/ide-core-browser';
 import { DebugHoverModel } from './debug-hover-model';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import pSeries = require('p-series');
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';

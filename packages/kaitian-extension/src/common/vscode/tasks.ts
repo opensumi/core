@@ -1,7 +1,7 @@
-import { IDisposable } from '@ali/ide-core-node';
+import { IDisposable } from '@ide-framework/ide-core-node';
 import type vscode from 'vscode';
 import { IExtensionProps } from '../index';
-import { UriComponents } from '@ali/ide-editor/lib/common';
+import { UriComponents } from '@ide-framework/ide-editor/lib/common';
 
 export interface TaskHandlerData {
   type: string;

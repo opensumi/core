@@ -1,9 +1,9 @@
 import React from 'react';
-import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
-import { TabRendererBase, TabbarConfig } from '@ali/ide-main-layout/lib/browser/tabbar/renderer.view';
-import { TabbarViewBase, IconElipses } from '@ali/ide-main-layout/lib/browser/tabbar/bar.view';
-import { RightTabPanelRenderer } from '@ali/ide-main-layout/lib/browser/tabbar/panel.view';
-import { TabbarService, TabbarServiceFactory } from '@ali/ide-main-layout/lib/browser/tabbar/tabbar.service';
+import { ComponentRegistryInfo, useInjectable } from '@ide-framework/ide-core-browser';
+import { TabRendererBase, TabbarConfig } from '@ide-framework/ide-main-layout/lib/browser/tabbar/renderer.view';
+import { TabbarViewBase, IconElipses } from '@ide-framework/ide-main-layout/lib/browser/tabbar/bar.view';
+import { RightTabPanelRenderer } from '@ide-framework/ide-main-layout/lib/browser/tabbar/panel.view';
+import { TabbarService, TabbarServiceFactory } from '@ide-framework/ide-main-layout/lib/browser/tabbar/tabbar.service';
 import cls from 'classnames';
 import './styles.less';
 

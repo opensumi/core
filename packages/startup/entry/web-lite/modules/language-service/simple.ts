@@ -1,5 +1,5 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable, ConstructorOf } from '@ali/common-di';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable, ConstructorOf } from '@ide-framework/common-di';
 import type vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
 import {
@@ -10,23 +10,23 @@ import {
   DefinitionLink,
   ReferenceContext,
   Location,
-} from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
-import { ExtensionDocumentDataManager, IExtHostLanguages } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { Uri, URI, LRUMap, DisposableCollection } from '@ali/ide-core-common';
-import { Disposable } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+} from '@ide-framework/ide-kaitian-extension/lib/common/vscode/model.api';
+import { ExtensionDocumentDataManager, IExtHostLanguages } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { Uri, URI, LRUMap, DisposableCollection } from '@ide-framework/ide-core-common';
+import { Disposable } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
 
-import { DefinitionAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/definition';
-import { HoverAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/hover';
-import { ReferenceAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/reference';
-import { Adapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.language';
+import { DefinitionAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/definition';
+import { HoverAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/hover';
+import { ReferenceAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/reference';
+import { Adapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.language';
 
-import { ExtHostDocumentData } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/doc/ext-data.host';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { ExtHostDocumentData } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/doc/ext-data.host';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { fromLanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
-import { MonacoModelIdentifier, testGlob } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { LanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
-import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { fromLanguageSelector } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/converter';
+import { MonacoModelIdentifier, testGlob } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { LanguageSelector } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/model.api';
+import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 class LiteDocumentDataManager implements Partial<ExtensionDocumentDataManager> {

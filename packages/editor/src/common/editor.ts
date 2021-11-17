@@ -1,11 +1,11 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import type { ITextModelUpdateOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import type { IEditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition, IThemeColor } from '@ali/ide-core-common';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import type { ITextModelUpdateOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import type { IEditorOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { Injectable } from '@ide-framework/common-di';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition, IThemeColor } from '@ide-framework/ide-core-common';
 import { IResource } from './resource';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
-import { IScopedContextKeyService } from '@ali/ide-core-browser';
+import { IScopedContextKeyService } from '@ide-framework/ide-core-browser';
 
 export interface CursorStatus {
   position: MaybeNull<IPosition>;

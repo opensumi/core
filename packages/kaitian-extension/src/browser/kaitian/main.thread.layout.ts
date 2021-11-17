@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IMainThreadLayout, IExtHostLayout } from '../../common/kaitian/layout';
-import { IMainLayoutService, TabBarRegistrationEvent } from '@ali/ide-main-layout';
-import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
+import { IMainLayoutService, TabBarRegistrationEvent } from '@ide-framework/ide-main-layout';
+import { TabBarHandler } from '@ide-framework/ide-main-layout/lib/browser/tabbar-handler';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { IEventBus, Disposable, ILogger } from '@ali/ide-core-browser';
-import { IconType, IconShape, IIconService } from '@ali/ide-theme';
+import { IEventBus, Disposable, ILogger } from '@ide-framework/ide-core-browser';
+import { IconType, IconShape, IIconService } from '@ide-framework/ide-theme';
 
 @Injectable({ multiple: true })
 export class MainThreadLayout extends Disposable implements IMainThreadLayout {

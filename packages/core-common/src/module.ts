@@ -2,7 +2,7 @@
  * 项目中会使用到的模块接口定义
  */
 
-import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@ali/common-di';
+import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@ide-framework/common-di';
 
 interface FrontService {
   token: Token,

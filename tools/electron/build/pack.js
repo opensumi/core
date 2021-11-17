@@ -4,8 +4,7 @@ const rootPackage = require('../package.json');
 
 electronBuilder.build({
   config: {
-    productName: "Kaitian IDE",
-    npmArgs: ['--registry=https://registry.npm.alibaba-inc.com'],
+    productName: "KAITIAN IDE",
     electronVersion: rootPackage.devDependencies.electron,
     files:[
       "app/dist"
@@ -18,7 +17,7 @@ electronBuilder.build({
       }
     ],
     asar: true,
-    asarUnpack: 'node_modules/@ali/vscode-ripgrep',
+    asarUnpack: 'node_modules/vscode-ripgrep',
     mac: {
       target:'dmg',
     },

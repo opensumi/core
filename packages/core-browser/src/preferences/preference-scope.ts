@@ -1,3 +1,3 @@
-import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
+import { PreferenceScope } from '@ide-framework/ide-core-common/lib/preferences/preference-scope';
 
 export { PreferenceScope };

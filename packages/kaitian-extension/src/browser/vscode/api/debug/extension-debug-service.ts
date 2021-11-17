@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { DebugServer, DebuggerDescription, IDebugSessionManager } from '@ali/ide-debug';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { DebugServer, DebuggerDescription, IDebugSessionManager } from '@ide-framework/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
-import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@ali/ide-core-browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
-import { DebugConfiguration } from '@ali/ide-debug/lib/common/debug-configuration';
-import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
+import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@ide-framework/ide-core-browser';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ide-framework/ide-logs/lib/browser';
+import { DebugConfiguration } from '@ide-framework/ide-debug/lib/common/debug-configuration';
+import { DebugConfigurationManager } from '@ide-framework/ide-debug/lib/browser';
 import { DebugActivationEvent } from '../../../../common/vscode';
 import { IActivationEventService } from '../../../types';
 

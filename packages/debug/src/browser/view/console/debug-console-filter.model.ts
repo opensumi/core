@@ -1,6 +1,6 @@
-import { matchesFuzzy } from '@ali/ide-core-common/lib/filters';
-import { Injectable } from '@ali/common-di';
-import { splitGlobAware } from '@ali/ide-core-common/lib/utils/glob';
+import { matchesFuzzy } from '@ide-framework/ide-core-common/lib/filters';
+import { Injectable } from '@ide-framework/common-di';
+import { splitGlobAware } from '@ide-framework/ide-core-common/lib/utils/glob';
 
 interface ParsedQuery {
   type: 'include' | 'exclude';

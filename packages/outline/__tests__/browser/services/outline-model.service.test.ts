@@ -1,16 +1,16 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable, URI, MarkerManager, Emitter } from '@ali/ide-core-common';
-import { OutlineModelService } from '@ali/ide-outline/lib/browser/services/outline-model.service';
-import { OutlineTreeService } from '@ali/ide-outline/lib/browser/services/outline-tree.service';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
-import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { OutlineEventService } from '@ali/ide-outline/lib/browser/services/outline-event.service';
-import { IOutlineDecorationService } from '@ali/ide-outline';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { Disposable, URI, MarkerManager, Emitter } from '@ide-framework/ide-core-common';
+import { OutlineModelService } from '@ide-framework/ide-outline/lib/browser/services/outline-model.service';
+import { OutlineTreeService } from '@ide-framework/ide-outline/lib/browser/services/outline-tree.service';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
+import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { OutlineEventService } from '@ide-framework/ide-outline/lib/browser/services/outline-event.service';
+import { IOutlineDecorationService } from '@ide-framework/ide-outline';
 import styles from '../../../../src/browser/outline-node.module.less';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { IContextKeyService } from '@ali/ide-core-browser';
-import { SymbolKind } from '@ali/ide-kaitian-extension/lib/hosted/api/worker/worker.ext-types';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { SymbolKind } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/worker/worker.ext-types';
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;

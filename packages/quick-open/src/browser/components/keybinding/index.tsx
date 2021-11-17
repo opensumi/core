@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keybinding, KeybindingRegistry, useInjectable } from '@ali/ide-core-browser';
+import { Keybinding, KeybindingRegistry, useInjectable } from '@ide-framework/ide-core-browser';
 import clx from 'classnames';
 import styles from './styles.module.less';
 

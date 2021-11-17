@@ -1,4 +1,4 @@
-import { createMainContextProxyIdentifier } from '@ali/ide-connection';
+import { createMainContextProxyIdentifier } from '@ide-framework/ide-connection';
 
 export interface IMainThreadExtensionLog {
   $verbose(...args: any[]): Promise<void>;

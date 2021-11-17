@@ -1,11 +1,11 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { ContextMenuController } from '@ali/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, Domain, IContextKeyService } from '@ali/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { EditorOption } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { IAnchor } from '@ali/monaco-editor-core/esm/vs/base/browser/ui/contextview/contextview';
-import * as dom from '@ali/monaco-editor-core/esm/vs/base/browser/dom';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextMenuController } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Disposable, Domain, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { EditorOption } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IAnchor } from '@ide-framework/monaco-editor-core/esm/vs/base/browser/ui/contextview/contextview';
+import * as dom from '@ide-framework/monaco-editor-core/esm/vs/base/browser/dom';
 
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';

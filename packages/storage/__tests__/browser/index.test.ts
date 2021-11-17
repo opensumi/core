@@ -1,17 +1,17 @@
-import { Injectable, Injector } from '@ali/common-di';
+import { Injectable, Injector } from '@ide-framework/common-di';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
-import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@ali/ide-core-node';
+import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@ide-framework/ide-core-node';
 import temp from 'temp';
 import path from 'path';
 import * as fs from 'fs-extra';
-import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { IFileServiceClient, IDiskFileProvider } from '@ide-framework/ide-file-service';
+import { FileServiceClient } from '@ide-framework/ide-file-service/lib/browser/file-service-client';
+import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
 import { StorageModule } from '../../src/browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { DatabaseStorageContribution } from '@ali/ide-storage/lib/browser/storage.contribution';
-import { Storage } from '@ali/ide-storage/lib/browser/storage';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { DatabaseStorageContribution } from '@ide-framework/ide-storage/lib/browser/storage.contribution';
+import { Storage } from '@ide-framework/ide-storage/lib/browser/storage';
 
 const track = temp.track();
 let root: URI;

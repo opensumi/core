@@ -1,12 +1,12 @@
-import { IContextKeyService, QuickOpenMode, QuickPickService } from '@ali/ide-core-browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '@ali/ide-dev-tool/src/mock-injector';
-import { MonacoContextKeyService } from '@ali/ide-monaco/lib/browser/monaco.context-key.service';
+import { IContextKeyService, QuickOpenMode, QuickPickService } from '@ide-framework/ide-core-browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@ide-framework/ide-dev-tool/src/mock-injector';
+import { MonacoContextKeyService } from '@ide-framework/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenModule } from '../../src/browser';
 import { QuickOpenService } from '../../src/common';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
-import { IThemeService, IIconService } from '@ali/ide-theme';
+import { IThemeService, IIconService } from '@ide-framework/ide-theme';
 
 describe(__filename, () => {
 

@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/common/strings.ts
 
-import { CharCode } from '@ali/ide-core-common';
+import { CharCode } from '@ide-framework/ide-core-common';
 
 /**
  * Determines if haystack starts with needle.

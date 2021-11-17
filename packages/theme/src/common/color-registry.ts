@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
 import { Color } from '../common/color';
 import { ITheme, ColorIdentifier, ColorDefaults, ColorContribution, ColorValue, ColorFunction } from '../common/theme.service';
 

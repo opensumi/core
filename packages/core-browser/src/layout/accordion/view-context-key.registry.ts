@@ -1,6 +1,6 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IContextKeyService } from '../../context-key';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class ViewContextKeyRegistry {

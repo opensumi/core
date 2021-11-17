@@ -1,23 +1,23 @@
-import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService, IStartDebuggingOptions } from '../../../common/vscode';
-import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
-import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMessageService } from '@ali/ide-overlay';
+import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ide-framework/ide-core-browser';
+import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@ide-framework/ide-debug';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ide-framework/ide-debug/lib/browser';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IMessageService } from '@ide-framework/ide-overlay';
 import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { IDebugSessionManager, IDebugSessionOptions } from '@ali/ide-debug/lib/common/debug-session';
-import { ITerminalApiService } from '@ali/ide-terminal-next';
-import { OutputService } from '@ali/ide-output/lib/browser/output.service';
-import { DebugConsoleModelService } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { IDebugSessionManager, IDebugSessionOptions } from '@ide-framework/ide-debug/lib/common/debug-session';
+import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
+import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
+import { DebugConsoleModelService } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 
 @Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {

@@ -1,12 +1,12 @@
-import { ExtHostEnv, createEnvApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
-import { Emitter, ILoggerManagerClient, Uri, uuid } from '@ali/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@ali/ide-connection';
-import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
+import { ExtHostEnv, createEnvApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
+import { Emitter, ILoggerManagerClient, Uri, uuid } from '@ide-framework/ide-core-common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { RPCProtocol, WSChannelHandler } from '@ide-framework/ide-connection';
+import { MainThreadEnv } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { UIKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { UIKind } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 import type vscode from 'vscode';
 

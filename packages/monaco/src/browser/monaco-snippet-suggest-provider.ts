@@ -1,11 +1,11 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { SnippetParser } from '@ali/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { SnippetParser } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
 import * as jsoncparser from 'jsonc-parser';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { IRange, Uri, localize, ILogger, Disposable, IDisposable, DisposableCollection } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { isPatternInWord } from '@ali/ide-core-common/lib/filters';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { IRange, Uri, localize, ILogger, Disposable, IDisposable, DisposableCollection } from '@ide-framework/ide-core-common';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { isPatternInWord } from '@ide-framework/ide-core-common/lib/filters';
 import { ITextModel } from './monaco-api/types';
 
 @Injectable()

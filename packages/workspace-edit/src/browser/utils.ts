@@ -1,6 +1,6 @@
-import { Uri } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ResourceFileEdit, ResourceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { isObject } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ResourceFileEdit, ResourceTextEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { isObject } from '@ide-framework/ide-core-common';
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {
   return isObject(thing) && (Boolean(thing.newResource) || Boolean(thing.oldResource));

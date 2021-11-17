@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@ide-framework/ide-core-browser';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
-import { IIconService, IconType } from '@ali/ide-theme';
+import { IIconService, IconType } from '@ide-framework/ide-theme';
 import { EMIT_EXT_HOST_EVENT } from '../../common';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable } from '@ide-framework/ide-core-browser';
 import { IMainThreadToolbar } from '../../common/kaitian/toolbar';
 import { ExtensionLoadingView } from '../components';
 

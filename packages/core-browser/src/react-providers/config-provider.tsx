@@ -1,6 +1,6 @@
 import React from 'react';
-import { Injector } from '@ali/common-di';
-import { ExtensionCandidate, ExtensionConnectOption } from '@ali/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
+import { ExtensionCandidate, ExtensionConnectOption } from '@ide-framework/ide-core-common';
 import { IPreferences, LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
@@ -79,8 +79,8 @@ export interface AppConfig {
   panelSizes?: {[slotLocation: string]: number};
   /**
    * 定义各个区块的默认面板
-   * 如：{ [SlotLocation.bottom]: '@ali/ide-terminal-next' }
-   * 定义了底部区块默认使用 `@ali/ide-terminal-next` 模块进行初始化
+   * 如：{ [SlotLocation.bottom]: '@ide-framework/ide-terminal-next' }
+   * 定义了底部区块默认使用 `@ide-framework/ide-terminal-next` 模块进行初始化
    */
   defaultPanels?: {[slotLocation: string]: string};
   /**

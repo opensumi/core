@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { URI } from '@ali/ide-core-browser';
+import { Injectable } from '@ide-framework/common-di';
+import { URI } from '@ide-framework/ide-core-browser';
 import { IDocPersistentCacheProvider, IDocStatus } from '../../common/doc-cache';
 
 /**

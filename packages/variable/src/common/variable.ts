@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-browser';
+import { URI } from '@ide-framework/ide-core-browser';
 
 export interface VariableResolveOptions {
   context?: URI;

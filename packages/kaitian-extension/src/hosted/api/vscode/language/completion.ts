@@ -1,4 +1,4 @@
-import { Uri as URI, Cache } from '@ali/ide-core-common';
+import { Uri as URI, Cache } from '@ide-framework/ide-core-common';
 import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDto, ISuggestResultDtoField, RangeSuggestDataDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import type vscode from 'vscode';
@@ -11,7 +11,7 @@ import {
 } from '../../../../common/vscode/model.api';
 import { SnippetString, Range, CompletionList, CompletionItemLabel } from '../../../../common/vscode/ext-types';
 import { CommandsConverter } from '../ext.host.command';
-import { DisposableStore } from '@ali/ide-core-common';
+import { DisposableStore } from '@ide-framework/ide-core-common';
 import { getPerformance } from './util';
 
 export class CompletionAdapter {

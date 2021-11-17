@@ -1,4 +1,4 @@
-import { IEditor } from '@ali/ide-editor';
+import { IEditor } from '@ide-framework/ide-editor';
 import {
   IRange,
   URI,
@@ -9,14 +9,14 @@ import {
   BasicEvent,
   positionToRange,
   IContextKeyService,
-} from '@ali/ide-core-browser';
-import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
-import { RecycleTreeProps } from '@ali/ide-core-browser/lib/components';
+} from '@ide-framework/ide-core-browser';
+import { IEditorDocumentModel } from '@ide-framework/ide-editor/lib/browser';
+import { RecycleTreeProps } from '@ide-framework/ide-core-browser/lib/components';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 /**
- * @deprecated please use `positionToRange` from '@ali/ide-core-common`
+ * @deprecated please use `positionToRange` from '@ide-framework/ide-core-common`
  */
 export const toRange = positionToRange;
 

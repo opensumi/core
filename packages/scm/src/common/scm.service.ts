@@ -1,6 +1,6 @@
-import { Injectable } from '@ali/common-di';
-import { Event, Emitter, equals, getDebugLogger } from '@ali/ide-core-common';
-import { IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
+import { Injectable } from '@ide-framework/common-di';
+import { Event, Emitter, equals, getDebugLogger } from '@ide-framework/ide-core-common';
+import { IDisposable, toDisposable } from '@ide-framework/ide-core-common/lib/disposable';
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
 import { observable, computed, action } from 'mobx';
 

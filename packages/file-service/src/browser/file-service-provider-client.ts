@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux } from '@ide-framework/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, DiskFileServicePath, FileSystemProvider, DidFilesChangedParams, FileChange,
 } from '../common';

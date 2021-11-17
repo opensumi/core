@@ -1,1 +1,1 @@
-export * from '@ali/ide-core-common/lib/utils/paths';
+export * from '@ide-framework/ide-core-common/lib/utils/paths';

@@ -1,5 +1,5 @@
 {
-  "name": "@ali/ide-i18n",
+  "name": "@ide-framework/ide-i18n",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -17,16 +17,13 @@
     "type": "git",
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
-  },
   "dependencies": {
-    "@ali/ide-core-common": "2.12.0",
-    "@ali/ide-core-node": "2.12.0"
+    "@ide-framework/ide-core-common": "2.12.0",
+    "@ide-framework/ide-core-node": "2.12.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.12.0",
-    "@ali/ide-dev-tool": "^1.1.0",
+    "@ide-framework/ide-core-browser": "2.12.0",
+    "@ide-framework/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

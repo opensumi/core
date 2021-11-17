@@ -1,8 +1,8 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import IModel = monaco.editor.IModel;
 import IMarkerData = monaco.editor.IMarkerData;
 import { DiagnosticCollection, Diagnostic, asDiagnostics } from '../../common';
-import { DisposableCollection, Disposable, IDisposable } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, IDisposable } from '@ide-framework/ide-core-common';
 
 export class MonacoDiagnosticCollection implements DiagnosticCollection {
 

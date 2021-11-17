@@ -1,8 +1,8 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { PreferenceService } from '@ali/ide-core-browser';
-import { Disposable, Emitter, Event, getDebugLogger, Uri } from '@ali/ide-core-common';
-import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
-import { ISplice } from '@ali/ide-core-common/lib/sequence';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { Disposable, Emitter, Event, getDebugLogger, Uri } from '@ide-framework/ide-core-common';
+import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { ISplice } from '@ide-framework/ide-core-common/lib/sequence';
 import { action, observable } from 'mobx';
 
 import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';

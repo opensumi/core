@@ -1,11 +1,11 @@
-import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { MainThreadKaitianAPIIdentifier } from '../../../../src/common/kaitian';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
+import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { createWindowApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
-import { IWindowInfo } from '@ali/ide-kaitian-extension/lib/common/kaitian/window';
+import { createWindowApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
+import { IWindowInfo } from '@ide-framework/ide-kaitian-extension/lib/common/kaitian/window';
 
 const mockMainThreadIDEWindowProxy = {
   $createWebviewWindow: jest.fn(async () => {

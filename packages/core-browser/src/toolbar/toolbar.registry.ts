@@ -1,7 +1,7 @@
 
 import { IToolbarRegistry, IToolbarActionGroup, IToolbarAction, IToolbarActionGroupForRender, IToolbarActionPosition, ToolbarActionsChangedEvent, ToolBarActionContribution, ToolbarActionGroupsChangedEvent, ToolbarRegistryReadyEvent } from './types';
-import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { ClientAppContribution } from '../common';
 import { PreferenceService } from '../preferences';
 

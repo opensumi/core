@@ -1,27 +1,27 @@
 /* istanbul ignore file */
-import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
+import { LayoutConfig, SlotLocation } from '@ide-framework/ide-core-browser';
 
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
-    modules: ['@ali/ide-menu-bar'],
+    modules: ['@ide-framework/ide-menu-bar'],
   },
   [SlotLocation.action]: {
-    modules: ['@ali/ide-toolbar-action'],
+    modules: ['@ide-framework/ide-toolbar-action'],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-extension-manager', '@ali/ide-debug'],
+    modules: ['@ide-framework/ide-explorer', '@ide-framework/ide-search', '@ide-framework/ide-scm', '@ide-framework/ide-extension-manager', '@ide-framework/ide-debug'],
   },
   [SlotLocation.right]: {
     modules: [],
   },
   [SlotLocation.main]: {
-    modules: ['@ali/ide-editor'],
+    modules: ['@ide-framework/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ali/ide-terminal-next', '@ali/ide-output', 'debug-console', '@ali/ide-markers', '@ali/ide-refactor-preview'],
+    modules: ['@ide-framework/ide-terminal-next', '@ide-framework/ide-output', 'debug-console', '@ide-framework/ide-markers', '@ide-framework/ide-refactor-preview'],
   },
   [SlotLocation.statusBar]: {
-    modules: ['@ali/ide-status-bar'],
+    modules: ['@ide-framework/ide-status-bar'],
   },
   [SlotLocation.extra]: {
     modules: ['breadcrumb-menu'],

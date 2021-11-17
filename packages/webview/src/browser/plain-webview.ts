@@ -1,5 +1,5 @@
 import { IPlainWebview } from './types';
-import { Disposable, DomListener, electronEnv, Emitter, Deferred, Event } from '@ali/ide-core-browser';
+import { Disposable, DomListener, electronEnv, Emitter, Deferred, Event } from '@ide-framework/ide-core-browser';
 
 export class IframePlainWebview extends Disposable implements IPlainWebview {
 

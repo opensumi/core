@@ -1,4 +1,4 @@
-// Modify from @ali/ide-core-common/src/process.ts
+// Modify from @ide-framework/ide-core-common/src/process.ts
 import { isWindows, isOSX } from './os';
 
 interface IProcess {

@@ -1,14 +1,14 @@
-import { Provider } from '@ali/common-di';
+import { Provider } from '@ide-framework/common-di';
 import { IFileTreeAPI, IFileTreeService } from '../common';
 import { FileTreeAPI } from './services/file-tree-api.service';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
-import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
-import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
+import { BrowserModule, EffectDomain, ModuleDependencies } from '@ide-framework/ide-core-browser';
+import { WorkspaceModule } from '@ide-framework/ide-workspace/lib/browser';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { WindowDialogServiceImpl } from './dialog/window-dialog.service';
-import { IWindowDialogService } from '@ali/ide-overlay';
+import { IWindowDialogService } from '@ide-framework/ide-overlay';
 
 const pkgJson = require('../../package.json');
 

@@ -1,6 +1,6 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IDebugService, IDebugServiceContributionPoint } from '../common';
-import { IJSONSchema, Event, Emitter } from '@ali/ide-core-browser';
+import { IJSONSchema, Event, Emitter } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class DebugService implements IDebugService {

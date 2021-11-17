@@ -1,7 +1,7 @@
-import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-common';
-import { IDisposable } from '@ali/ide-core-common/lib/disposable';
-import { Event } from '@ali/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional } from '@ali/common-di';
+import { CommandRegistry, CommandService, Command, isOSX } from '@ide-framework/ide-core-common';
+import { IDisposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Event } from '@ide-framework/ide-core-common/lib/event';
+import { Autowired, Injectable, Optional } from '@ide-framework/common-di';
 
 import { IContextKeyService } from '../../context-key';
 import { ISubmenuItem, MenuNode, IMenuActionDisplayType, IComponentMenuItem, IComponentMenuItemProps } from './base';

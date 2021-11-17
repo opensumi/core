@@ -1,15 +1,15 @@
-import { Injector } from '@ali/common-di';
-import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
-import { CommandService, CommandServiceImpl } from '@ali/ide-core-common/lib/command';
-import { mockService } from '@ali/ide-dev-tool/src/mock-injector';
-import { ILogger } from '@ali/ide-logs/lib/common';
-import { IDialogService } from '@ali/ide-overlay/lib/common';
-import { IStatusBarService } from '@ali/ide-status-bar';
-import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
-import { MergedEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariableCollection';
-import { IWorkspaceStorageService } from '@ali/ide-workspace/lib/common';
+import { Injector } from '@ide-framework/common-di';
+import { LayoutState } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { CommandService, CommandServiceImpl } from '@ide-framework/ide-core-common/lib/command';
+import { mockService } from '@ide-framework/ide-dev-tool/src/mock-injector';
+import { ILogger } from '@ide-framework/ide-logs/lib/common';
+import { IDialogService } from '@ide-framework/ide-overlay/lib/common';
+import { IStatusBarService } from '@ide-framework/ide-status-bar';
+import { StatusBarService } from '@ide-framework/ide-status-bar/lib/browser/status-bar.service';
+import { EnvironmentVariableServiceToken } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
+import { MergedEnvironmentVariableCollection } from '@ide-framework/ide-terminal-next/lib/common/environmentVariableCollection';
+import { IWorkspaceStorageService } from '@ide-framework/ide-workspace/lib/common';
 import { TerminalEnvironmentService } from '../../src/browser/terminal.environment.service';
 
 const mockData = [

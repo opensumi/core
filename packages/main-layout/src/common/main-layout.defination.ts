@@ -1,11 +1,11 @@
-import { BasicEvent, IDisposable, SlotLocation } from '@ali/ide-core-browser';
-import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { BasicEvent, IDisposable, SlotLocation } from '@ide-framework/ide-core-browser';
+import { ViewContainerOptions, View, SideStateManager } from '@ide-framework/ide-core-browser/lib/layout';
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
-import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { Deferred, Event } from '@ali/ide-core-common';
-import { IContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Deferred, Event } from '@ide-framework/ide-core-common';
+import { IContextKeyExpression } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ComponentCollection {
   views?: View[];

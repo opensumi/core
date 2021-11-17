@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { NodeModule } from '@ali/ide-core-node';
+import { Injectable } from '@ide-framework/common-di';
+import { NodeModule } from '@ide-framework/ide-core-node';
 import { FileSearchService } from './file-search.service';
 import { IFileSearchService, FileSearchServicePath } from '../common';
 

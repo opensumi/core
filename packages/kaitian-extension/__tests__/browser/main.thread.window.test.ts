@@ -1,8 +1,8 @@
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter } from '@ide-framework/ide-core-common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWebviewService, IPlainWebviewWindow } from '@ali/ide-webview';
-import { MainThreadIDEWindow } from '@ali/ide-kaitian-extension/lib/browser/kaitian/main.thread.window';
+import { IWebviewService, IPlainWebviewWindow } from '@ide-framework/ide-webview';
+import { MainThreadIDEWindow } from '@ide-framework/ide-kaitian-extension/lib/browser/kaitian/main.thread.window';
 
 const onMessageEmitter = new Emitter<string>();
 const onClosedEmitter = new Emitter<void>();

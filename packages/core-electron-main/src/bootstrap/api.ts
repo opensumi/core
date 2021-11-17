@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IDisposable, Disposable, getDebugLogger } from '@ali/ide-core-common';
-import { IElectronURLService, IURLHandler } from '@ali/ide-core-common/lib/electron';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { IDisposable, Disposable, getDebugLogger } from '@ide-framework/ide-core-common';
+import { IElectronURLService, IURLHandler } from '@ide-framework/ide-core-common/lib/electron';
 import { ElectronMainApiRegistry, ElectronURLHandlerRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
 
 @Injectable()

@@ -1,7 +1,7 @@
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 /**
- * 基于 @ali/monaco-editor-core@0.20.1-patch.19 版本
+ * 基于 @ide-framework/monaco-editor-core@0.20.1-patch.19 版本
  * 可用的 services 均来自 https://code.alipay.com/kaitian/monaco-editor-core/blob/feat/monaco-20-patch/src/vs/editor/standalone/browser/standaloneServices.ts
  * 后续版本更新可能会有新增的内置 service
  */

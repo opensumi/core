@@ -1,20 +1,20 @@
 import { CONTEXT_DEBUGGERS_AVAILABLE, CONTEXT_IN_DEBUG_MODE, CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../common/constants';
-import { URI } from '@ali/ide-core-common';
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, IJSONSchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration, ComponentContribution, ComponentRegistry, KeybindingRegistry, getIcon, PreferenceService, IPreferenceSettingsService } from '@ali/ide-core-browser';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI } from '@ide-framework/ide-core-common';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, IJSONSchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration, ComponentContribution, ComponentRegistry, KeybindingRegistry, getIcon, PreferenceService, IPreferenceSettingsService } from '@ide-framework/ide-core-browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugCallStackView } from './view/frames/debug-call-stack.view';
 import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
-import { IMainLayoutService, IViewsRegistry } from '@ali/ide-main-layout';
-import { Autowired } from '@ali/common-di';
+import { IMainLayoutService, IViewsRegistry } from '@ide-framework/ide-main-layout';
+import { Autowired } from '@ide-framework/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
-import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ide-framework/ide-core-browser/lib/layout';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
 import { DebugViewModel } from './view/debug-view-model';
@@ -24,14 +24,14 @@ import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME, DEBUG_WELCOME_ID, DEBUG_SCHEME } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
-import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry, IEditor } from '@ali/ide-editor/lib/browser';
+import { MenuContribution, MenuId, IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry, IEditor } from '@ide-framework/ide-editor/lib/browser';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
-import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
-import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { WelcomeView } from '@ide-framework/ide-main-layout/lib/browser/welcome.view';
+import { IFileServiceClient, IShadowFileProvider } from '@ide-framework/ide-file-service';
+import { FileServiceClient } from '@ide-framework/ide-file-service/lib/browser/file-service-client';
 import { DebugProgressService } from './debug-progress.service';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 
@@ -278,7 +278,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-debug', [
+    registry.register('@ide-framework/ide-debug', [
       {
         component: DebugWatchView,
         id: DEBUG_WATCH_ID,

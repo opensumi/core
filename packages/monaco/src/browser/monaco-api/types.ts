@@ -1,19 +1,19 @@
-export type { Position, IPosition } from '@ali/monaco-editor-core/esm/vs/editor/common/core/position';
+export type { Position, IPosition } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/position';
 export {
   ITextModel,
   EndOfLineSequence,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-export type { Event } from '@ali/monaco-editor-core/esm/vs/base/common/event';
-export type { ICodeEditor, IDiffEditor } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-export { Emitter } from '@ali/monaco-editor-core/esm/vs/base/common/event';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+export type { Event } from '@ide-framework/monaco-editor-core/esm/vs/base/common/event';
+export type { ICodeEditor, IDiffEditor } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+export { Emitter } from '@ide-framework/monaco-editor-core/esm/vs/base/common/event';
 export {
   LanguageConfiguration,
   FoldingRules,
   IndentationRule,
   IAutoClosingPairConditional,
   IAutoClosingPair,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
-export { CodeActionTriggerType } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
+export { CodeActionTriggerType } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IDisposable {
   dispose(): void;

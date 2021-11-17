@@ -1,5 +1,5 @@
-import { Event, OS } from '@ali/ide-core-common';
-import { IProcessEnvironment } from '@ali/ide-core-common/lib/platform';
+import { Event, OS } from '@ide-framework/ide-core-common';
+import { IProcessEnvironment } from '@ide-framework/ide-core-common/lib/platform';
 
 export const EnvironmentVariableServiceToken = Symbol(
   'EnvironmentVariableServiceToken',

@@ -1,12 +1,12 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as textModel from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as model from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { OverviewRulerLane } from '@ali/ide-editor';
-import { IChange } from '@ali/ide-core-common';
-import { Disposable } from '@ali/ide-core-common/lib/disposable';
-import { themeColorFromId } from '@ali/ide-theme';
-import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as model from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { Autowired, Injectable, Optional } from '@ide-framework/common-di';
+import { OverviewRulerLane } from '@ide-framework/ide-editor';
+import { IChange } from '@ide-framework/ide-core-common';
+import { Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { themeColorFromId } from '@ide-framework/ide-theme';
+import { IEditorDocumentModel } from '@ide-framework/ide-editor/lib/browser';
 
 import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
 import { SCMPreferences } from '../scm-preference';

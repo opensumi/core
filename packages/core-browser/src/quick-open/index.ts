@@ -1,6 +1,6 @@
 import React from 'react';
-import { VALIDATE_TYPE } from '@ali/ide-components';
-import { URI, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
+import { VALIDATE_TYPE } from '@ide-framework/ide-components';
+import { URI, MaybePromise, IDisposable, Event } from '@ide-framework/ide-core-common';
 import { observable } from 'mobx';
 import { Keybinding } from '../keybinding';
 

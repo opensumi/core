@@ -1,7 +1,7 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as mime from '@ali/monaco-editor-core/esm/vs/base/common/mime';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMimeService, CorePreferences, MimeAssociation } from '@ali/ide-core-browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as mime from '@ide-framework/monaco-editor-core/esm/vs/base/common/mime';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMimeService, CorePreferences, MimeAssociation } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class MonacoMimeService implements IMimeService {

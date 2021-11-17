@@ -1,14 +1,14 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { Autowired, Injectable, Optinal } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
-import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
-import { extname } from '@ali/ide-core-common/lib/path';
-import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
-import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { Autowired, Injectable, Optinal } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IReporterService, PreferenceService } from '@ide-framework/ide-core-browser';
+import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ide-framework/ide-core-common';
+import { extname } from '@ide-framework/ide-core-common/lib/path';
+import { ICallHierarchyService } from '@ide-framework/ide-monaco/lib/browser/contrib/callHierarchy';
+import { IEvaluatableExpressionService } from '@ide-framework/ide-debug/lib/browser/editor/evaluatable-expression';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, RangeSuggestDataDto, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
@@ -17,12 +17,12 @@ import { ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, Sema
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from './../../../common/vscode/model.api';
-import { ILanguageService } from '@ali/ide-editor';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { ILanguageService } from '@ide-framework/ide-editor';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
 import { CancellationToken } from 'vscode';
-import { InlineValueContext, InlineValuesProvider, InlineValue } from '@ali/ide-debug/lib/common/inline-values';
-import { InlineValuesProviderRegistry } from '@ali/ide-debug/lib/browser/editor/inline-values';
+import { InlineValueContext, InlineValuesProvider, InlineValue } from '@ide-framework/ide-debug/lib/common/inline-values';
+import { InlineValuesProviderRegistry } from '@ide-framework/ide-debug/lib/browser/editor/inline-values';
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {

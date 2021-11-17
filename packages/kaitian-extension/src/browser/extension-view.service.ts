@@ -1,12 +1,12 @@
-import { warning } from '@ali/ide-components/lib/utils/warning';
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IRPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
+import { warning } from '@ide-framework/ide-components/lib/utils/warning';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { IRPCProtocol, ProxyIdentifier } from '@ide-framework/ide-connection';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IBrowserRequireInterceptorArgs, IExtension, IRequireInterceptorService, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER, RequireInterceptorContribution } from '../common';
-import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
-import { AppConfig, IToolbarPopoverRegistry } from '@ali/ide-core-browser';
+import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@ide-framework/ide-core-common';
+import { AppConfig, IToolbarPopoverRegistry } from '@ide-framework/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
-import { Path, posix } from '@ali/ide-core-common/lib/path';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { Path, posix } from '@ide-framework/ide-core-common/lib/path';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { retargetEvents } from './retargetEvents';

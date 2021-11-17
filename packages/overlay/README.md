@@ -33,7 +33,7 @@ message 主要指定了消息体，可以是一个普通的文本消息，也可
 ###### Example
 
 ```ts
-import { IMessageService } from '@ali/ide-overlay';
+import { IMessageService } from '@ide-framework/ide-overlay';
 
 @Injectable()
 export class MessageDemo {
@@ -53,7 +53,7 @@ buttons 为弹窗右下角按钮，按照从左向右的顺序依次渲染，用
 ###### Example
 
 ```ts
-import { IMessageService } from '@ali/ide-overlay';
+import { IMessageService } from '@ide-framework/ide-overlay';
 
 @Injectable()
 export class MessageDemo {
@@ -117,7 +117,7 @@ Dialog 接口与消息一致，不过弹窗为模态
 ### Example
 
 ```ts
-import { IDialogService } from '@ali/ide-overlay';
+import { IDialogService } from '@ide-framework/ide-overlay';
 
 @Injectable()
 export class MessageDemo {

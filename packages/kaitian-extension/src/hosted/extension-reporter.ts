@@ -1,4 +1,4 @@
-import { IReporter, PerformanceData, PointData, Emitter, ReporterProcessMessage, REPORT_TYPE } from '@ali/ide-core-common';
+import { IReporter, PerformanceData, PointData, Emitter, ReporterProcessMessage, REPORT_TYPE } from '@ide-framework/ide-core-common';
 
 export class ExtensionReporter implements IReporter {
 

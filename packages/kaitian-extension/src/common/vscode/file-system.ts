@@ -1,6 +1,6 @@
-import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@ali/ide-core-common';
-import { FileSystemProviderCapabilities, FileChange } from '@ali/ide-file-service';
-import { FileOperation } from '@ali/ide-workspace-edit';
+import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@ide-framework/ide-core-common';
+import { FileSystemProviderCapabilities, FileChange } from '@ide-framework/ide-file-service';
+import { FileOperation } from '@ide-framework/ide-workspace-edit';
 
 import { Disposable } from './ext-types';
 import { UriComponents } from './models';

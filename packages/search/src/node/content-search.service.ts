@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
-import { rgPath } from '@ali/vscode-ripgrep';
-import { FileUri, replaceAsarInPath } from '@ali/ide-core-node';
-import { RPCService } from '@ali/ide-connection';
-import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IProcessFactory, IProcess, ProcessOptions } from '@ide-framework/ide-process';
+import { rgPath } from 'vscode-ripgrep';
+import { FileUri, replaceAsarInPath } from '@ide-framework/ide-core-node';
+import { RPCService } from '@ide-framework/ide-connection';
+import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ide-framework/ide-logs/lib/node';
 import {
   IContentSearchServer,
   ContentSearchOptions,

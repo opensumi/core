@@ -1,0 +1,81 @@
+.extension_item {
+  height: 62px;
+  font-size: 12px;
+  display: flex;
+  box-sizing: border-box;
+  padding: 0 0 0 16px;
+  overflow: hidden;
+  align-items: center;
+  max-width: 100%;
+
+  &:hover {
+    background: var(--list-hoverBackground);
+  }
+
+  .icon {
+    position: relative;
+    height: 42px;
+    width: 42px;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding-right: 14px;
+  }
+
+  .extension_detail {
+    flex: 1;
+    padding: 4px 0;
+    padding-right: 10px;
+    max-width: calc(100% - 42px);
+
+    .base_info {
+      line-height: 19px;
+      display: flex;
+      overflow: hidden;
+      justify-content: space-between;
+      white-space: nowrap;
+
+      .display_name {
+        font-size: 13px;
+        font-weight: bold;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .version {
+        margin-left: 6px;
+        font-size: 12px;
+        flex: 1;
+        color: var(--descriptionForeground);
+      }
+
+      .download_count {
+        margin: 0px 6px;
+        color: var(--descriptionForeground);
+      }
+    }
+
+    .description {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: block;
+      max-width: calc(100% - 42px);
+    }
+
+    .footer {
+      display: flex;
+      height: 19px;
+
+      .namespace {
+        font-weight: bold;
+        flex: 1;
+      }
+
+      button {
+        height: 19px;
+        line-height: 19px;
+      }
+    }
+  }
+}

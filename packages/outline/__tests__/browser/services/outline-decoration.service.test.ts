@@ -1,8 +1,8 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { MarkerManager, URI, MarkerSeverity } from '@ali/ide-core-common';
-import { OutlineRoot, OutlineCompositeTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
-import { OutlineDecorationService } from '@ali/ide-outline/lib/browser/services/outline-decoration.service';
-import { IThemeService } from '@ali/ide-theme';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { MarkerManager, URI, MarkerSeverity } from '@ide-framework/ide-core-common';
+import { OutlineRoot, OutlineCompositeTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
+import { OutlineDecorationService } from '@ide-framework/ide-outline/lib/browser/services/outline-decoration.service';
+import { IThemeService } from '@ide-framework/ide-theme';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 
 describe('OutlineDecorationService', () => {

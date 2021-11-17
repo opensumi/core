@@ -1,6 +1,6 @@
 import { IExtensionStorageService, IExtensionStoragePathServer, IExtensionStorageServer } from '../common';
-import { Provider, Autowired } from '@ali/common-di';
-import { BrowserModule, EffectDomain, ClientAppContribution, Domain } from '@ali/ide-core-browser';
+import { Provider, Autowired } from '@ide-framework/common-di';
+import { BrowserModule, EffectDomain, ClientAppContribution, Domain } from '@ide-framework/ide-core-browser';
 import { ExtensionStorageService } from './storage.service';
 import { ExtensionStoragePathServer } from './storage-path';
 import { ExtensionStorageServer } from './storage';

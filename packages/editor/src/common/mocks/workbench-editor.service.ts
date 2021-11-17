@@ -1,6 +1,6 @@
 import { WorkbenchEditorService, IResourceOpenOptions, IUntitledOptions, IOpenResourceResult } from '../editor';
-import { URI, Emitter, MaybeNull, Event } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { URI, Emitter, MaybeNull, Event } from '@ide-framework/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
 import { IResource } from '../resource';
 import { IEditorGroup } from '../../browser';
 

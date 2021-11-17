@@ -1,18 +1,18 @@
-import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@ali/ide-core-common';
+import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@ide-framework/ide-core-common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { LabelService } from '@ali/ide-core-browser/src';
-import { MainThreadDebug } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.debug';
-import { BreakpointManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@ali/ide-debug/lib/browser';
-import { IDebugSessionManager, IDebugService, IDebugServer } from '@ali/ide-debug';
-import { DebugConsoleModelService } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { WorkbenchEditorService } from '@ali/ide-editor/src';
-import { IMessageService } from '@ali/ide-overlay';
-import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
-import { ITerminalApiService } from '@ali/ide-terminal-next';
-import { ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { MainThreadConnection } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.connection';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { LabelService } from '@ide-framework/ide-core-browser/src';
+import { MainThreadDebug } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.debug';
+import { BreakpointManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@ide-framework/ide-debug/lib/browser';
+import { IDebugSessionManager, IDebugService, IDebugServer } from '@ide-framework/ide-debug';
+import { DebugConsoleModelService } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor/src';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { DebugConfigurationManager } from '@ide-framework/ide-debug/lib/browser';
+import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
+import { ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { MainThreadConnection } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 
 const map = new Map();
 

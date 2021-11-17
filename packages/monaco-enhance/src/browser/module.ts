@@ -1,5 +1,5 @@
-import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, Domain, ClientAppContribution } from '@ali/ide-core-browser';
+import { Provider, Injectable } from '@ide-framework/common-di';
+import { BrowserModule, Domain, ClientAppContribution } from '@ide-framework/ide-core-browser';
 
 @Domain(ClientAppContribution)
 class MonacoEnhanceContribution implements ClientAppContribution {

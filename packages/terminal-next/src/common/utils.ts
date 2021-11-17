@@ -1,4 +1,4 @@
-import { uuid } from '@ali/ide-core-common';
+import { uuid } from '@ide-framework/ide-core-common';
 
 let i = 0;
 function count() {

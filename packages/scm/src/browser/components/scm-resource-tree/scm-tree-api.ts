@@ -1,7 +1,7 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { PreferenceService } from '@ali/ide-core-browser';
-import { Disposable } from '@ali/ide-core-common';
-import * as paths from '@ali/ide-core-common/lib/path';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { Disposable } from '@ide-framework/ide-core-common';
+import * as paths from '@ide-framework/ide-core-common/lib/path';
 
 import { ViewModelContext } from '../../scm-model';
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';

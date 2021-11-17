@@ -1,4 +1,4 @@
-import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@ali/common-di';
+import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@ide-framework/common-di';
 
 @Injectable({ multiple: true })
 export class SplitPanelService {

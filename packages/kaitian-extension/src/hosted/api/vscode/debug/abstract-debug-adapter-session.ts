@@ -1,11 +1,11 @@
-import { Disposable, DisposableCollection, Event } from '@ali/ide-core-common';
+import { Disposable, DisposableCollection, Event } from '@ide-framework/ide-core-common';
 import {
   DebugStreamConnection,
-} from '@ali/ide-debug';
+} from '@ide-framework/ide-debug';
 import type vscode from 'vscode';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { IWebSocket } from '@ali/ide-connection';
-import { getSequenceId } from '@ali/ide-debug';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { IWebSocket } from '@ide-framework/ide-connection';
+import { getSequenceId } from '@ide-framework/ide-debug';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 

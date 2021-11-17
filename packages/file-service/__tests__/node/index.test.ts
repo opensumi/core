@@ -1,7 +1,7 @@
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import { FileServiceModule, FileService } from '../../src/node';
 import { IFileService, FileChangeType } from '../../src/common';
-import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
+import { URI, FileUri, AppConfig } from '@ide-framework/ide-core-node';
 import { isWindows } from '../../../core-common';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';

@@ -1,9 +1,9 @@
 import { DebugSession } from './../../debug-session';
 import { CONTEXT_STACK_FRAME_SUPPORTS_RESTART, CONTEXT_CALLSTACK_ITEM_TYPE } from './../../../common/constants';
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
-import { IContextKey } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextKey } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { DebugStackFrame, DebugThread } from '../../model';
 
 @Injectable()

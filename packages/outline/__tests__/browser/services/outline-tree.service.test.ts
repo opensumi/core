@@ -1,12 +1,12 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { StorageProvider } from '@ali/ide-core-common';
-import { DocumentSymbolStore } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
-import { OutlineTreeService } from '@ali/ide-outline/lib/browser/services/outline-tree.service';
-import { OutlineSortOrder } from '@ali/ide-outline';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
-import { IContextKeyService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { StorageProvider } from '@ide-framework/ide-core-common';
+import { DocumentSymbolStore } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { IEditorDocumentModelService, WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
+import { OutlineTreeService } from '@ide-framework/ide-outline/lib/browser/services/outline-tree.service';
+import { OutlineSortOrder } from '@ide-framework/ide-outline';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
 
 describe('OutlineTreeService', () => {
   let outlineTreeService: OutlineTreeService;

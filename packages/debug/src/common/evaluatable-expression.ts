@@ -1,6 +1,6 @@
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IRange, Position } from '@ali/ide-core-common/lib/types';
-import { CancellationToken } from '@ali/ide-core-common';
+import type { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { IRange, Position } from '@ide-framework/ide-core-common/lib/types';
+import { CancellationToken } from '@ide-framework/ide-core-common';
 
 /**
  * An evaluatable expression represents additional information for an expression in a document. Evaluatable expressions are

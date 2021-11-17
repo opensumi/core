@@ -1,9 +1,9 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IEventBus, EventBusImpl } from '@ali/ide-core-common';
-import { DocumentSymbolChangedEvent } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { OutlineEventService } from '@ali/ide-outline/lib/browser/services/outline-event.service';
-import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
-import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { IEventBus, EventBusImpl } from '@ide-framework/ide-core-common';
+import { DocumentSymbolChangedEvent } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { OutlineEventService } from '@ide-framework/ide-outline/lib/browser/services/outline-event.service';
+import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@ide-framework/ide-editor/lib/browser';
+import { MockInjector } from '@ide-framework/ide-dev-tool/src/mock-injector';
 
 describe('OutlineEventService', () => {
   let outlineEventService: OutlineEventService;

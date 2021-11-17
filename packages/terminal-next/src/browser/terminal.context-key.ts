@@ -1,6 +1,6 @@
-import { Optional, Injectable, Autowired } from '@ali/common-di';
-import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { IsTerminalFocused, IsTerminalViewInitialized } from '@ali/ide-core-browser/lib/contextkey';
+import { Optional, Injectable, Autowired } from '@ide-framework/common-di';
+import { IContextKeyService, IContextKey } from '@ide-framework/ide-core-browser';
+import { IsTerminalFocused, IsTerminalViewInitialized } from '@ide-framework/ide-core-browser/lib/contextkey';
 
 @Injectable()
 export class TerminalContextKey {

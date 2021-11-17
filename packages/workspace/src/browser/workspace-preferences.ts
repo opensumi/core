@@ -1,10 +1,10 @@
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import {
   createPreferenceProxy,
   PreferenceProxy,
   PreferenceService,
   PreferenceSchema,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 
 export const workspacePreferenceSchema: PreferenceSchema = {
   type: 'object',

@@ -1,7 +1,7 @@
 {
-  "name": "@ali/ide-dev-tool",
+  "name": "@ide-framework/ide-dev-tool",
   "version": "1.3.1",
-  "description": "@ali/ide-dev-tool",
+  "description": "@ide-framework/ide-dev-tool",
   "repository": {
     "type": "git",
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
@@ -39,9 +39,6 @@
     "webpack-cli": "^3.3.1",
     "webpack-dev-server": "^3.3.1",
     "webpack-merge": "^4.2.2"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9"
 }

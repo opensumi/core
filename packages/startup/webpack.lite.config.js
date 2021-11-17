@@ -1,6 +1,6 @@
 const path = require('path');
 
-const { createWebpackConfig } = require('@ali/ide-dev-tool/src/webpack');
+const { createWebpackConfig } = require('@ide-framework/ide-dev-tool/src/webpack');
 const webpack = require('webpack');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;

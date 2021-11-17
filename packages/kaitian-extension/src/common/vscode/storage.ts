@@ -1,4 +1,4 @@
-import { ExtensionStorageUri } from '@ali/ide-extension-storage';
+import { ExtensionStorageUri } from '@ide-framework/ide-extension-storage';
 export interface KeysToAnyValues { [key: string]: any; }
 export interface KeysToKeysToAnyValue { [key: string]: KeysToAnyValues; }
 

@@ -1,8 +1,8 @@
 import type vscode from 'vscode';
 
-import { Emitter, Event, IExtensionProps } from '@ali/ide-core-common';
+import { Emitter, Event, IExtensionProps } from '@ide-framework/ide-core-common';
 import { ExtensionIdentifier, IExtHostSecret, IMainThreadSecret, MainThreadAPIIdentifier } from '../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 
 export class ExtensionSecrets implements vscode.SecretStorage {
 

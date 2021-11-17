@@ -15,12 +15,12 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/model/debug-source.ts
 
-import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { URI, Uri, IRange } from '@ali/ide-core-browser';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
-import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { URI, Uri, IRange } from '@ide-framework/ide-core-browser';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@ide-framework/ide-editor';
+import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service';
 import { DebugStackFrame } from './debug-stack-frame';
 import { DebugModelManager } from '../editor';
 

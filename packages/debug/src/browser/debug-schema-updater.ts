@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { deepClone, IJSONSchema, IJSONSchemaRegistry } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { deepClone, IJSONSchema, IJSONSchemaRegistry } from '@ide-framework/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchemaUri } from '../common';

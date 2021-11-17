@@ -1,15 +1,15 @@
-import { ResourceService, IResource, IEditorOpenType } from '@ali/ide-editor';
-import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@ali/ide-core-browser';
-import { Autowired } from '@ali/common-di';
-import { getLanguageIdFromMonaco } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { ResourceService, IResource, IEditorOpenType } from '@ide-framework/ide-editor';
+import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { getLanguageIdFromMonaco } from '@ide-framework/ide-core-browser/lib/services';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
 
 import { ImagePreview, VideoPreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME } from '../common';
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
-import { UntitledSchemeResourceProvider, UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
+import { UntitledSchemeResourceProvider, UntitledSchemeDocumentProvider } from '@ide-framework/ide-editor/lib/browser/untitled-resource';
 import { LargeFilePrevent } from './prevent.view';
 
 const VIDEO_PREVIEW_COMPONENT_ID = 'video-preview';

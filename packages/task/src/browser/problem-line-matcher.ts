@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-abstract-line-matcher.ts
 
-import { isWindows, ProblemLocationKind, ProblemPattern, ProblemMatcher, ProblemMatch, ProblemMatchData, Severity, FileLocationKind, URI, WatchingPattern } from '@ali/ide-core-common';
+import { isWindows, ProblemLocationKind, ProblemPattern, ProblemMatcher, ProblemMatch, ProblemMatchData, Severity, FileLocationKind, URI, WatchingPattern } from '@ide-framework/ide-core-common';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
 
 const endOfLine: string = isWindows ? '\r\n' : '\n';

@@ -1,9 +1,9 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import {
   IJSONSchema,
   IJSONSchemaMap,
-} from '@ali/ide-core-common/lib/json-schema';
-import { localize } from '@ali/ide-core-common/lib/localize';
+} from '@ide-framework/ide-core-common/lib/json-schema';
+import { localize } from '@ide-framework/ide-core-common/lib/localize';
 import {
   fontStylePattern,
   getStylingSchemeEntry,

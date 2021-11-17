@@ -1,6 +1,6 @@
 import { ChildProcess } from 'child_process';
 import stream from 'stream';
-import { Event } from '@ali/ide-core-common';
+import { Event } from '@ide-framework/ide-core-common';
 
 export const IProcessFactory = Symbol('IProcessFactory');
 export const IProcessManage = Symbol('IProcessManage');

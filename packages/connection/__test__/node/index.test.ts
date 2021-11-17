@@ -18,7 +18,7 @@ import { RPCService } from '../../src';
 import { WSChannel } from '../../src/common/ws-channel';
 import { parse } from '../../src/common/utils';
 
-import { Emitter, Uri } from '@ali/ide-core-common';
+import { Emitter, Uri } from '@ide-framework/ide-core-common';
 
 import ws from 'ws';
 import http from 'http';

@@ -1,10 +1,10 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import {
   Domain,
   ClientAppContribution,
-} from '@ali/ide-core-browser';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+} from '@ide-framework/ide-core-browser';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { FileServiceClient } from '@ide-framework/ide-file-service/lib/browser/file-service-client';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 
 @Domain(ClientAppContribution)

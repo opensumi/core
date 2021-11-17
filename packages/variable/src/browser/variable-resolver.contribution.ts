@@ -1,5 +1,5 @@
-import { Autowired } from '@ali/common-di';
-import { ClientAppContribution, ContributionProvider, Command, CommandContribution, CommandRegistry, Domain, VariableRegistry, VariableContribution, localize } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { ClientAppContribution, ContributionProvider, Command, CommandContribution, CommandRegistry, Domain, VariableRegistry, VariableContribution, localize } from '@ide-framework/ide-core-browser';
 import { VariableQuickOpenService } from './variable-quick-open.service';
 
 export const LIST_VARIABLES: Command = {

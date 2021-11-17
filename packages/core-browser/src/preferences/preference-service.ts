@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 
-import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, isEmptyObject, LRUMap, deepClone } from '@ali/ide-core-common';
+import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, isEmptyObject, LRUMap, deepClone } from '@ide-framework/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';

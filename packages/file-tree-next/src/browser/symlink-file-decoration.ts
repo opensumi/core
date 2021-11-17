@@ -1,6 +1,6 @@
-import { Optinal } from '@ali/common-di';
-import { IDecorationsProvider, IDecorationData } from '@ali/ide-decoration';
-import { Uri, Emitter, localize } from '@ali/ide-core-browser';
+import { Optinal } from '@ide-framework/common-di';
+import { IDecorationsProvider, IDecorationData } from '@ide-framework/ide-decoration';
+import { Uri, Emitter, localize } from '@ide-framework/ide-core-browser';
 import { FileTreeService } from './file-tree.service';
 
 export class SymlinkDecorationsProvider implements IDecorationsProvider {

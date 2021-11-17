@@ -1,6 +1,6 @@
 import { observable, computed } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Disposable, Event } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Emitter, Disposable, Event } from '@ide-framework/ide-core-browser';
 import { ITerminalGroupViewService, IWidget, ITerminalInternalService, userActionViewUuid, IWidgetGroup } from '../common';
 
 export class Widget extends Disposable implements IWidget {

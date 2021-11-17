@@ -1,5 +1,5 @@
-import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@ali/ide-core-node';
+import { Provider, Injectable, Autowired } from '@ide-framework/common-di';
+import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@ide-framework/ide-core-node';
 import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService, ExtensionHostProfilerServicePath, ExtensionHostProfilerServiceToken, IExtensionHostManager } from '../common';
 import { ExtensionNodeServiceImpl } from './extension.service';
 import { ExtensionServiceClientImpl } from './extension.service.client';

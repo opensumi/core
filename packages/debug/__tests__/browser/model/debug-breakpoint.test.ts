@@ -1,8 +1,8 @@
 import { join } from 'path';
-import { URI, uuid } from '@ali/ide-core-browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
-import { BreakpointManager, DebugBreakpoint, isRuntimeBreakpoint, isDebugBreakpoint, DebugDecorator } from '@ali/ide-debug/lib/browser';
+import { URI, uuid } from '@ide-framework/ide-core-browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
+import { BreakpointManager, DebugBreakpoint, isRuntimeBreakpoint, isDebugBreakpoint, DebugDecorator } from '@ide-framework/ide-debug/lib/browser';
 
 describe('Debug Breakpoints', () => {
   const mockInjector = createBrowserInjector([

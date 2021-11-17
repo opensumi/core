@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-common';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Disposable } from '@ide-framework/ide-core-common';
+import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateMergedCtxMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { memoize, IContextKeyService } from '@ide-framework/ide-core-browser';
 import { MenuId } from '../common/menu';
 import { ITerminalController } from '../common';
 

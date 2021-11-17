@@ -1,5 +1,5 @@
-import { IMainThreadExtensionLog } from '@ali/ide-kaitian-extension/lib/common/extension-log';
-import { LogLevel } from '@ali/ide-core-common';
+import { IMainThreadExtensionLog } from '@ide-framework/ide-kaitian-extension/lib/common/extension-log';
+import { LogLevel } from '@ide-framework/ide-core-common';
 
 export class MainThreadExtensionLog implements IMainThreadExtensionLog {
 

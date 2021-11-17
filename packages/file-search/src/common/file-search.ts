@@ -1,4 +1,4 @@
-import { CancellationToken } from '@ali/ide-core-common';
+import { CancellationToken } from '@ide-framework/ide-core-common';
 
 export const FileSearchServicePath = 'FileSearchServicePath';
 

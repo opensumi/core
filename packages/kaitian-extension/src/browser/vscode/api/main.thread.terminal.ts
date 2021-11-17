@@ -1,10 +1,10 @@
 import type vscode from 'vscode';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { ILogger, Disposable, PreferenceService, IDisposable } from '@ali/ide-core-browser';
-import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@ali/ide-terminal-next';
-import { IEnvironmentVariableService, SerializableEnvironmentVariableCollection, EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
-import { deserializeEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
+import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { ILogger, Disposable, PreferenceService, IDisposable } from '@ide-framework/ide-core-browser';
+import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@ide-framework/ide-terminal-next';
+import { IEnvironmentVariableService, SerializableEnvironmentVariableCollection, EnvironmentVariableServiceToken } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
+import { deserializeEnvironmentVariableCollection } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 @Injectable({ multiple: true })

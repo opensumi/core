@@ -1,6 +1,6 @@
 import path from 'path';
 import type vscode from 'vscode';
-import { Uri } from '@ali/ide-core-common/lib/uri';
+import { Uri } from '@ide-framework/ide-core-common/lib/uri';
 
 import { IExtHostTerminal } from '../../../common/vscode';
 import { KTExtension, KTWorkerExtension } from '../../vscode.extension';

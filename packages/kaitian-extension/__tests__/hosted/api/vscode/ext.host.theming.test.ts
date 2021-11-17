@@ -1,11 +1,11 @@
-import { Emitter } from '@ali/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { RPCProtocol } from '@ali/ide-connection';
-import { ExtHostTheming } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.theming';
-import { MainThreadTheming } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.theming';
+import { Emitter } from '@ide-framework/ide-core-common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { RPCProtocol } from '@ide-framework/ide-connection';
+import { ExtHostTheming } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.theming';
+import { MainThreadTheming } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.theming';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { IThemeService, ThemeType } from '@ali/ide-theme';
-import { ColorThemeKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { IThemeService, ThemeType } from '@ide-framework/ide-theme';
+import { ColorThemeKind } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

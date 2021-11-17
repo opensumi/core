@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { registerColor, transparent, lighten, darken } from '../color-registry';
 import { foreground } from './base';
 import { editorBackground, editorWidgetBackground } from './editor';

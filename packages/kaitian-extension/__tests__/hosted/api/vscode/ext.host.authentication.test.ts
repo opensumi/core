@@ -1,19 +1,19 @@
-import { ExtHostAuthentication, createAuthenticationApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.authentication';
-import { RPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadAuthentication, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { ExtHostAuthentication, createAuthenticationApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.authentication';
+import { RPCProtocol } from '@ide-framework/ide-connection';
+import { MainThreadAPIIdentifier, IMainThreadAuthentication, ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { Emitter, ILoggerManagerClient, StorageProvider, IAuthenticationService, CommandRegistry } from '@ali/ide-core-common';
+import { Emitter, ILoggerManagerClient, StorageProvider, IAuthenticationService, CommandRegistry } from '@ide-framework/ide-core-common';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import type vscode from 'vscode';
-import { MainThreadAuthentication } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.authentication';
-import { Injector } from '@ali/common-di';
-import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
-import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
+import { MainThreadAuthentication } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.authentication';
+import { Injector } from '@ide-framework/common-di';
+import { ActivationEventServiceImpl } from '@ide-framework/ide-kaitian-extension/lib/browser/activation.service';
+import { IActivationEventService } from '@ide-framework/ide-kaitian-extension/lib/browser/types';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
-import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
-import { IMessageService } from '@ali/ide-overlay';
-import { QuickPickService } from '@ali/ide-quick-open';
+import { MockedStorageProvider } from '@ide-framework/ide-core-browser/__mocks__/storage';
+import { IMenuRegistry, MenuId, IMenuItem } from '@ide-framework/ide-core-browser/src/menu/next';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { QuickPickService } from '@ide-framework/ide-quick-open';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts', () => {
   let injector: Injector;

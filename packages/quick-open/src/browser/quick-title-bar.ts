@@ -1,11 +1,11 @@
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 import { observable, computed, action } from 'mobx';
-import { Emitter, Event, isUndefined, URI } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Emitter, Event, isUndefined, URI } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 
-import { QuickTitleButton, QuickTitleButtonSide } from '@ali/ide-core-browser/lib/quick-open';
+import { QuickTitleButton, QuickTitleButtonSide } from '@ide-framework/ide-core-browser/lib/quick-open';
 import './quick-title-bar.less';
-import { IconType, IIconService, IThemeService } from '@ali/ide-theme';
+import { IconType, IIconService, IThemeService } from '@ide-framework/ide-theme';
 
 @Injectable()
 export class QuickTitleBar {

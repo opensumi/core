@@ -1,8 +1,8 @@
-import { Injector } from '@ali/common-di';
-import { Emitter, Deferred, IExtensionProps, Uri, IReporterService, ReporterService, REPORT_HOST, IReporter, REPORT_NAME } from '@ali/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
+import { Emitter, Deferred, IExtensionProps, Uri, IReporterService, ReporterService, REPORT_HOST, IReporter, REPORT_NAME } from '@ide-framework/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
-} from '@ali/ide-connection';
+} from '@ide-framework/ide-connection';
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionIdentifier, KaitianWorkerExtensionService } from '../common/vscode';

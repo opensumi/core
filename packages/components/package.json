@@ -1,7 +1,7 @@
 {
-  "name": "@ali/ide-components",
+  "name": "@ide-framework/ide-components",
   "version": "2.12.0",
-  "description": "@ali/ide-components",
+  "description": "@ide-framework/ide-components",
   "main": "lib/index.js",
   "files": [
     "lib",
@@ -17,9 +17,6 @@
   "license": "ISC",
   "devDependencies": {
     "optimize-css-assets-webpack-plugin": "^5.0.3"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",

@@ -1,7 +1,7 @@
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@ali/ide-core-browser';
+import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@ide-framework/ide-core-browser';
 import { IActivationEventService } from '../../types';
 
 class ExtennsionUrlHandler {

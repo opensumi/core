@@ -12,8 +12,8 @@ import {
   ILogger,
   IClipboardService,
   PreferenceScope,
-} from '@ali/ide-core-browser';
-import { Autowired } from '@ali/common-di';
+} from '@ide-framework/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
 import {
   ITerminalController,
   ITerminalRestore,

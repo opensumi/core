@@ -1,4 +1,4 @@
-import { Emitter } from '@ali/ide-core-common/lib/event';
+import { Emitter } from '@ide-framework/ide-core-common/lib/event';
 
 const emitters: Map<string, Emitter<any>> = new Map();
 

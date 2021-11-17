@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Uri as URI } from '@ali/ide-core-common';
+import { Uri as URI } from '@ide-framework/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { ColorPresentation, RawColorInfo } from '../../../../common/vscode/model.api';

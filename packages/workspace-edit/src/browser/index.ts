@@ -1,8 +1,8 @@
-import { Provider, Injectable, Autowired } from '@ali/common-di';
-import type { IBulkEditOptions, ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { Provider, Injectable, Autowired } from '@ide-framework/common-di';
+import type { IBulkEditOptions, ResourceEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
-import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
-import { CommandRegistry } from '@ali/ide-core-common';
+import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
+import { CommandRegistry } from '@ide-framework/ide-core-common';
 
 import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '../common';
 import { WorkspaceEditServiceImpl } from './workspace-edit.service';

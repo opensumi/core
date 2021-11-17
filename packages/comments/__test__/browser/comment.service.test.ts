@@ -1,17 +1,17 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { CommentsModule } from '../../src/browser';
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import { ICommentsService, CommentMode } from '../../src/common';
-import { URI, positionToRange, Disposable } from '@ali/ide-core-common';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { URI, positionToRange, Disposable } from '@ide-framework/ide-core-common';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { IIconService } from '@ali/ide-theme';
-import { IconService } from '@ali/ide-theme/lib/browser';
-import { IEditor, EditorCollectionService, ResourceService } from '@ali/ide-editor';
-import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
+import { IIconService } from '@ide-framework/ide-theme';
+import { IconService } from '@ide-framework/ide-theme/lib/browser';
+import { IEditor, EditorCollectionService, ResourceService } from '@ide-framework/ide-editor';
+import { ResourceServiceImpl } from '@ide-framework/ide-editor/lib/browser/resource.service';
+import { IEditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser';
 
 describe('comment service test', () => {
   let injector: MockInjector;

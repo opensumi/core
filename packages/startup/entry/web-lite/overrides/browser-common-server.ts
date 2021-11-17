@@ -1,6 +1,6 @@
-import { Injectable } from '@ali/common-di';
-import { ICommonServer, OS, isWindows, isLinux } from '@ali/ide-core-common';
-import {  } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { ICommonServer, OS, isWindows, isLinux } from '@ide-framework/ide-core-common';
+import {  } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class BrowserCommonServer implements ICommonServer {

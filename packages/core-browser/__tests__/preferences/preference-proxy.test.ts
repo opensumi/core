@@ -1,6 +1,6 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createPreferenceProxy, DefaultPreferenceProvider, ILogger, PreferenceChangeEvent, PreferenceConfigurations, PreferenceContribution, PreferenceProvider, PreferenceProviderProvider, PreferenceProxy, PreferenceProxyOptions, PreferenceSchema, PreferenceSchemaProvider, PreferenceScope, PreferenceService, PreferenceServiceImpl } from '@ali/ide-core-browser';
+import { createPreferenceProxy, DefaultPreferenceProvider, ILogger, PreferenceChangeEvent, PreferenceConfigurations, PreferenceContribution, PreferenceProvider, PreferenceProviderProvider, PreferenceProxy, PreferenceProxyOptions, PreferenceSchema, PreferenceSchemaProvider, PreferenceScope, PreferenceService, PreferenceServiceImpl } from '@ide-framework/ide-core-browser';
 import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
 import { MockLogger } from '../../__mocks__/logger';
 

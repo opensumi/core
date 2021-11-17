@@ -1,11 +1,11 @@
 import React from 'react';
-import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@ali/ide-core-browser';
-import { Icon } from '@ali/ide-components';
-import { getIcon } from '@ali/ide-core-browser';
+import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@ide-framework/ide-core-browser';
+import { Icon } from '@ide-framework/ide-components';
+import { getIcon } from '@ide-framework/ide-core-browser';
 
 import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Scroll, IScrollDelegate } from './component/scroll/scroll';

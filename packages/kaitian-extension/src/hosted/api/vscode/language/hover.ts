@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
-import { Uri } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
-import { IPosition } from '@ali/ide-core-common';
+import { IPosition } from '@ide-framework/ide-core-common';
 import { Range } from '../../../../common/vscode/ext-types';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 

@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler, Uri } from '@ali/ide-core-common';
-import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler, Uri } from '@ide-framework/ide-core-common';
+import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service';
 import { ExtensionStorageUri, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME, IExtensionStorageTask } from '../common/';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {

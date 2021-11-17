@@ -2,8 +2,8 @@ import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, IIncomingCallDto, IOutgoingCallDto, ICallHierarchyItemDto } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
-import { Uri, CancellationToken } from '@ali/ide-core-common';
-import { IdGenerator } from '@ali/ide-core-common/lib/id-generator';
+import { Uri, CancellationToken } from '@ide-framework/ide-core-common';
+import { IdGenerator } from '@ide-framework/ide-core-common/lib/id-generator';
 
 export class CallHierarchyAdapter {
 

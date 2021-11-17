@@ -1,10 +1,10 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 
 // tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
-import { Disposable, Emitter, Event } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event } from '@ide-framework/ide-core-common';
 import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
-import { IValidEditOperation } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import { IValidEditOperation } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
 
 let id = 1;
 

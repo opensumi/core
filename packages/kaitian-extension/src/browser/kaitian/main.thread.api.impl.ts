@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Injector } from '@ali/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Injector } from '@ide-framework/common-di';
 import { MainThreaLifeCycle } from './main.thread.lifecycle';
 import { MainThreadKaitianAPIIdentifier } from '../../common/kaitian';
 import { MainThreadLayout } from './main.thread.layout';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable } from '@ide-framework/ide-core-common';
 import { MainThreadTheme } from './main.thread.theme';
 import { MainThreadCommon } from './main.thread.common';
 import { MainThreadToolbar } from './main.thread.toolbar';

@@ -1,6 +1,6 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { MockedStandaloneCodeEditor } from './code-editor';
-import { Disposable, Event } from '@ali/ide-core-common';
+import { Disposable, Event } from '@ide-framework/ide-core-common';
 
 export class MockedDiffEditor extends Disposable implements monaco.editor.IStandaloneDiffEditor {
 

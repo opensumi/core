@@ -1,18 +1,18 @@
 // @ts-nocheck
-import { Injector, Injectable } from '@ali/common-di';
-import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@ali/ide-core-common';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { Injector, Injectable } from '@ide-framework/common-di';
+import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@ide-framework/ide-core-common';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { createEnvApiFactory, ExtHostEnv, envValue } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
-import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
-import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
-import { MainThreadStorage } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.storage';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
-import { LoggerManagerClient } from '@ali/ide-logs/lib/browser/log-manage';
-import { AppConfig } from '@ali/ide-core-browser';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
+import { createEnvApiFactory, ExtHostEnv, envValue } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
+import { ExtHostTerminal } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { ExtHostStorage } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
+import { MainThreadEnv } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
+import { MainThreadStorage } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.storage';
+import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import ExtensionHostServiceImpl from '@ide-framework/ide-kaitian-extension/lib/hosted/ext.host';
+import { LoggerManagerClient } from '@ide-framework/ide-logs/lib/browser/log-manage';
+import { AppConfig } from '@ide-framework/ide-core-browser';
+import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

@@ -1,5 +1,5 @@
-import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
-import { URI, Uri, Event, Emitter } from '@ali/ide-core-common';
+import { Sequence, ISplice } from '@ide-framework/ide-core-common/lib/sequence';
+import { URI, Uri, Event, Emitter } from '@ide-framework/ide-core-common';
 
 import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
 

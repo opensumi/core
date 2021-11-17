@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
-import { Autowired, Injectable } from '@ali/common-di';
-import { BasicEvent, getDebugLogger, IEventBus, MaybeNull } from '@ali/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { BasicEvent, getDebugLogger, IEventBus, MaybeNull } from '@ide-framework/ide-core-common';
 import { IMenu, IContextMenu } from '../menu/next';
 import { useInjectable } from '../react-hooks';
 import React = require('react');

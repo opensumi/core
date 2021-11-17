@@ -1,7 +1,7 @@
 import { QuickOpenOptions, QuickOpenService, QuickOpenModel } from '../';
-import { HideReason } from '@ali/ide-core-browser/lib/quick-open';
-import { Injectable } from '@ali/common-di';
-import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
+import { HideReason } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { Injectable } from '@ide-framework/common-di';
+import { VALIDATE_TYPE } from '@ide-framework/ide-core-browser/lib/components';
 
 @Injectable()
 export class MockQuickOpenService implements QuickOpenService {

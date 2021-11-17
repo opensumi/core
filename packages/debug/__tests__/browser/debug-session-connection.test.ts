@@ -1,10 +1,10 @@
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { CancellationToken, CancellationTokenSource, Disposable } from '@ali/ide-core-common';
-import { IDebugSessionManager } from '@ali/ide-debug';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { CancellationToken, CancellationTokenSource, Disposable } from '@ide-framework/ide-core-common';
+import { IDebugSessionManager } from '@ide-framework/ide-debug';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugSessionConnection } from '@ali/ide-debug/lib/browser';
-import { Emitter } from '@ali/ide-core-browser';
+import { DebugSessionConnection } from '@ide-framework/ide-debug/lib/browser';
+import { Emitter } from '@ide-framework/ide-core-browser';
 
 describe('DebugSessionConnection', () => {
   let debugSessionConnection: DebugSessionConnection;

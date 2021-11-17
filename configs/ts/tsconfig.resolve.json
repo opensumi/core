@@ -3,340 +3,340 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-      "@ali/ide-core-common": [
+      "@ide-framework/ide-core-common": [
         "../packages/core-common/src/index.ts"
       ],
-      "@ali/ide-core-common/lib/*": [
+      "@ide-framework/ide-core-common/lib/*": [
         "../packages/core-common/src/*"
       ],
-      "@ali/ide-core-browser": [
+      "@ide-framework/ide-core-browser": [
         "../packages/core-browser/src/index.ts"
       ],
-      "@ali/ide-core-browser/lib/*": [
+      "@ide-framework/ide-core-browser/lib/*": [
         "../packages/core-browser/src/*"
       ],
-      "@ali/ide-core-node": [
+      "@ide-framework/ide-core-node": [
         "../packages/core-node/src/index.ts"
       ],
-      "@ali/ide-core-node/lib/*": [
+      "@ide-framework/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
       ],
-      "@ali/ide-components": [
+      "@ide-framework/ide-components": [
         "../packages/components/src/index.ts"
       ],
-      "@ali/ide-components/lib/*": [
+      "@ide-framework/ide-components/lib/*": [
         "../packages/components/src/*"
       ],
-      "@ali/ide-logs": [
+      "@ide-framework/ide-logs": [
         "../packages/logs-core/src/index.ts"
       ],
-      "@ali/ide-logs/lib/*": [
+      "@ide-framework/ide-logs/lib/*": [
         "../packages/logs-core/src/*"
       ],
-      "@ali/ide-doc-model": [
+      "@ide-framework/ide-doc-model": [
         "../packages/doc-model/src/index.ts"
       ],
-      "@ali/ide-doc-model/lib/*": [
+      "@ide-framework/ide-doc-model/lib/*": [
         "../packages/doc-model/src/*"
       ],
-      "@ali/ide-file-service": [
+      "@ide-framework/ide-file-service": [
         "../packages/file-service/src/index.ts"
       ],
-      "@ali/ide-file-service/lib/*": [
+      "@ide-framework/ide-file-service/lib/*": [
         "../packages/file-service/src/*"
       ],
-      "@ali/ide-main-layout": [
+      "@ide-framework/ide-main-layout": [
         "../packages/main-layout/src/index.ts"
       ],
-      "@ali/ide-main-layout/lib/*": [
+      "@ide-framework/ide-main-layout/lib/*": [
         "../packages/main-layout/src/*"
       ],
-      "@ali/ide-menu-bar": [
+      "@ide-framework/ide-menu-bar": [
         "../packages/menu-bar/src/index.ts"
       ],
-      "@ali/ide-menu-bar/lib/*": [
+      "@ide-framework/ide-menu-bar/lib/*": [
         "../packages/menu-bar/src/*"
       ],
-      "@ali/ide-monaco": [
+      "@ide-framework/ide-monaco": [
         "../packages/monaco/src/index.ts"
       ],
-      "@ali/ide-monaco/lib/*": [
+      "@ide-framework/ide-monaco/lib/*": [
         "../packages/monaco/src/*"
       ],
-      "@ali/ide-editor": [
+      "@ide-framework/ide-editor": [
         "../packages/editor/src/index.ts"
       ],
-      "@ali/ide-editor/lib/*": [
+      "@ide-framework/ide-editor/lib/*": [
         "../packages/editor/src/*"
       ],
-      "@ali/ide-connection": [
+      "@ide-framework/ide-connection": [
         "../packages/connection/src/index.ts"
       ],
-      "@ali/ide-connection/lib/*": [
+      "@ide-framework/ide-connection/lib/*": [
         "../packages/connection/src/*"
       ],
-      "@ali/ide-i18n": [
+      "@ide-framework/ide-i18n": [
         "../packages/i18n/src/index.ts"
       ],
-      "@ali/ide-i18n/lib/*": [
+      "@ide-framework/ide-i18n/lib/*": [
         "../packages/i18n/src/*"
       ],
-      "@ali/ide-status-bar": [
+      "@ide-framework/ide-status-bar": [
         "../packages/status-bar/src/index.ts"
       ],
-      "@ali/ide-status-bar/lib/*": [
+      "@ide-framework/ide-status-bar/lib/*": [
         "../packages/status-bar/src/*"
       ],
-      "@ali/ide-static-resource": [
+      "@ide-framework/ide-static-resource": [
         "../packages/static-resource/src/index.ts"
       ],
-      "@ali/ide-static-resource/lib/*": [
+      "@ide-framework/ide-static-resource/lib/*": [
         "../packages/static-resource/src/*"
       ],
-      "@ali/ide-express-file-server": [
+      "@ide-framework/ide-express-file-server": [
         "../packages/express-file-server/src/index.ts"
       ],
-      "@ali/ide-express-file-server/lib/*": [
+      "@ide-framework/ide-express-file-server/lib/*": [
         "../packages/express-file-server/src/*"
       ],
-      "@ali/ide-language": [
+      "@ide-framework/ide-language": [
         "../packages/language/src/index.ts"
       ],
-      "@ali/ide-language/lib/*": [
+      "@ide-framework/ide-language/lib/*": [
         "../packages/language/src/*"
       ],
-      "@ali/ide-file-search": [
+      "@ide-framework/ide-file-search": [
         "../packages/file-search/src/index.ts"
       ],
-      "@ali/ide-file-search/lib/*": [
+      "@ide-framework/ide-file-search/lib/*": [
         "../packages/file-search/src/*"
       ],
-      "@ali/ide-search": [
+      "@ide-framework/ide-search": [
         "../packages/search/src/index.ts"
       ],
-      "@ali/ide-search/lib/*": [
+      "@ide-framework/ide-search/lib/*": [
         "../packages/search/src/*"
       ],
-      "@ali/ide-language-server": [
+      "@ide-framework/ide-language-server": [
         "../packages/language-server/src/index.ts"
       ],
-      "@ali/ide-language-server/lib/*": [
+      "@ide-framework/ide-language-server/lib/*": [
         "../packages/language-server/src/*"
       ],
-      "@ali/ide-file-scheme": [
+      "@ide-framework/ide-file-scheme": [
         "../packages/file-scheme/src/index.ts"
       ],
-      "@ali/ide-file-scheme/lib/*": [
+      "@ide-framework/ide-file-scheme/lib/*": [
         "../packages/file-scheme/src/*"
       ],
-      "@ali/ide-output": [
+      "@ide-framework/ide-output": [
         "../packages/output/src/index.ts"
       ],
-      "@ali/ide-output/lib/*": [
+      "@ide-framework/ide-output/lib/*": [
         "../packages/output/src/*"
       ],
-      "@ali/ide-explorer": [
+      "@ide-framework/ide-explorer": [
         "../packages/explorer/src/index.ts"
       ],
-      "@ali/ide-explorer/lib/*": [
+      "@ide-framework/ide-explorer/lib/*": [
         "../packages/explorer/src/*"
       ],
-      "@ali/ide-quick-open": [
+      "@ide-framework/ide-quick-open": [
         "../packages/quick-open/src/index.ts"
       ],
-      "@ali/ide-quick-open/lib/*": [
+      "@ide-framework/ide-quick-open/lib/*": [
         "../packages/quick-open/src/*"
       ],
-      "@ali/ide-vscode-extension": [
+      "@ide-framework/ide-vscode-extension": [
         "../packages/vscode-extension/src/index.ts"
       ],
-      "@ali/ide-vscode-extension/lib/*": [
+      "@ide-framework/ide-vscode-extension/lib/*": [
         "../packages/vscode-extension/src/*"
       ],
-      "@ali/ide-theme": [
+      "@ide-framework/ide-theme": [
         "../packages/theme/src/index.ts"
       ],
-      "@ali/ide-theme/lib/*": [
+      "@ide-framework/ide-theme/lib/*": [
         "../packages/theme/src/*"
       ],
-      "@ali/ide-process": [
+      "@ide-framework/ide-process": [
         "../packages/process/src/index.ts"
       ],
-      "@ali/ide-process/lib/*": [
+      "@ide-framework/ide-process/lib/*": [
         "../packages/process/src/*"
       ],
-      "@ali/ide-preferences": [
+      "@ide-framework/ide-preferences": [
         "../packages/preferences/src/index.ts"
       ],
-      "@ali/ide-preferences/lib/*": [
+      "@ide-framework/ide-preferences/lib/*": [
         "../packages/preferences/src/*"
       ],
-      "@ali/ide-variable": [
+      "@ide-framework/ide-variable": [
         "../packages/variable/src/index.ts"
       ],
-      "@ali/ide-variable/lib/*": [
+      "@ide-framework/ide-variable/lib/*": [
         "../packages/variable/src/*"
       ],
-      "@ali/ide-workspace": [
+      "@ide-framework/ide-workspace": [
         "../packages/workspace/src/index.ts"
       ],
-      "@ali/ide-workspace/lib/*": [
+      "@ide-framework/ide-workspace/lib/*": [
         "../packages/workspace/src/*"
       ],
-      "@ali/ide-userstorage": [
+      "@ide-framework/ide-userstorage": [
         "../packages/userstorage/src/index.ts"
       ],
-      "@ali/ide-userstorage/lib/*": [
+      "@ide-framework/ide-userstorage/lib/*": [
         "../packages/userstorage/src/*"
       ],
-      "@ali/ide-core-electron-main": [
+      "@ide-framework/ide-core-electron-main": [
         "../packages/core-electron-main/src/index.ts"
       ],
-      "@ali/ide-core-electron-main/lib/*": [
+      "@ide-framework/ide-core-electron-main/lib/*": [
         "../packages/core-electron-main/src/*"
       ],
-      "@ali/ide-electron-basic": [
+      "@ide-framework/ide-electron-basic": [
         "../packages/electron-basic/src/index.ts"
       ],
-      "@ali/ide-electron-basic/lib/*": [
+      "@ide-framework/ide-electron-basic/lib/*": [
         "../packages/electron-basic/src/*"
       ],
-      "@ali/ide-toolbar": [
+      "@ide-framework/ide-toolbar": [
         "../packages/toolbar/src/index.ts"
       ],
-      "@ali/ide-toolbar/lib/*": [
+      "@ide-framework/ide-toolbar/lib/*": [
         "../packages/toolbar/src/*"
       ],
-      "@ali/ide-markers": [
+      "@ide-framework/ide-markers": [
         "../packages/markers/src/index.ts"
       ],
-      "@ali/ide-markers/lib/*": [
+      "@ide-framework/ide-markers/lib/*": [
         "../packages/markers/src/*"
       ],
-      "@ali/ide-startup": [
+      "@ide-framework/ide-startup": [
         "../packages/startup/src/index.ts"
       ],
-      "@ali/ide-startup/lib/*": [
+      "@ide-framework/ide-startup/lib/*": [
         "../packages/startup/src/*"
       ],
-      "@ali/ide-overlay": [
+      "@ide-framework/ide-overlay": [
         "../packages/overlay/src/index.ts"
       ],
-      "@ali/ide-overlay/lib/*": [
+      "@ide-framework/ide-overlay/lib/*": [
         "../packages/overlay/src/*"
       ],
-      "@ali/ide-extension-storage": [
+      "@ide-framework/ide-extension-storage": [
         "../packages/extension-storage/src/index.ts"
       ],
-      "@ali/ide-extension-storage/lib/*": [
+      "@ide-framework/ide-extension-storage/lib/*": [
         "../packages/extension-storage/src/*"
       ],
-      "@ali/ide-storage": [
+      "@ide-framework/ide-storage": [
         "../packages/storage/src/index.ts"
       ],
-      "@ali/ide-storage/lib/*": [
+      "@ide-framework/ide-storage/lib/*": [
         "../packages/storage/src/*"
       ],
-      "@ali/ide-webview": [
+      "@ide-framework/ide-webview": [
         "../packages/webview/src/index.ts"
       ],
-      "@ali/ide-webview/lib/*": [
+      "@ide-framework/ide-webview/lib/*": [
         "../packages/webview/src/*"
       ],
-      "@ali/ide-opened-editor": [
+      "@ide-framework/ide-opened-editor": [
         "../packages/opened-editor/src/index.ts"
       ],
-      "@ali/ide-opened-editor/lib/*": [
+      "@ide-framework/ide-opened-editor/lib/*": [
         "../packages/opened-editor/src/*"
       ],
-      "@ali/ide-markdown": [
+      "@ide-framework/ide-markdown": [
         "../packages/markdown/src/index.ts"
       ],
-      "@ali/ide-markdown/lib/*": [
+      "@ide-framework/ide-markdown/lib/*": [
         "../packages/markdown/src/*"
       ],
-      "@ali/ide-workspace-edit": [
+      "@ide-framework/ide-workspace-edit": [
         "../packages/workspace-edit/src/index.ts"
       ],
-      "@ali/ide-workspace-edit/lib/*": [
+      "@ide-framework/ide-workspace-edit/lib/*": [
         "../packages/workspace-edit/src/*"
       ],
-      "@ali/ide-kaitian-extension": [
+      "@ide-framework/ide-kaitian-extension": [
         "../packages/kaitian-extension/src/index.ts"
       ],
-      "@ali/ide-kaitian-extension/lib/*": [
+      "@ide-framework/ide-kaitian-extension/lib/*": [
         "../packages/kaitian-extension/src/*"
       ],
-      "@ali/ide-monaco-enhance": [
+      "@ide-framework/ide-monaco-enhance": [
         "../packages/monaco-enhance/src/index.ts"
       ],
-      "@ali/ide-monaco-enhance/lib/*": [
+      "@ide-framework/ide-monaco-enhance/lib/*": [
         "../packages/monaco-enhance/src/*"
       ],
-      "@ali/ide-decoration": [
+      "@ide-framework/ide-decoration": [
         "../packages/decoration/src/index.ts"
       ],
-      "@ali/ide-decoration/lib/*": [
+      "@ide-framework/ide-decoration/lib/*": [
         "../packages/decoration/src/*"
       ],
-      "@ali/ide-scm": [
+      "@ide-framework/ide-scm": [
         "../packages/scm/src/index.ts"
       ],
-      "@ali/ide-scm/lib/*": [
+      "@ide-framework/ide-scm/lib/*": [
         "../packages/scm/src/*"
       ],
-      "@ali/ide-debug": [
+      "@ide-framework/ide-debug": [
         "../packages/debug/src/index.ts"
       ],
-      "@ali/ide-debug/lib/*": [
+      "@ide-framework/ide-debug/lib/*": [
         "../packages/debug/src/*"
       ],
-      "@ali/ide-extension-manager": [
+      "@ide-framework/ide-extension-manager": [
         "../packages/extension-manager/src/index.ts"
       ],
-      "@ali/ide-extension-manager/lib/*": [
+      "@ide-framework/ide-extension-manager/lib/*": [
         "../packages/extension-manager/src/*"
       ],
-      "@ali/ide-keymaps": [
+      "@ide-framework/ide-keymaps": [
         "../packages/keymaps/src/index.ts"
       ],
-      "@ali/ide-keymaps/lib/*": [
+      "@ide-framework/ide-keymaps/lib/*": [
         "../packages/keymaps/src/*"
       ],
-      "@ali/ide-outline": [
+      "@ide-framework/ide-outline": [
         "../packages/outline/src/index.ts"
       ],
-      "@ali/ide-outline/lib/*": [
+      "@ide-framework/ide-outline/lib/*": [
         "../packages/outline/src/*"
       ],
-      "@ali/ide-terminal-next": [
+      "@ide-framework/ide-terminal-next": [
         "../packages/terminal-next/src/index.ts"
       ],
-      "@ali/ide-terminal-next/lib/*": [
+      "@ide-framework/ide-terminal-next/lib/*": [
         "../packages/terminal-next/src/*"
       ],
-      "@ali/ide-addons": [
+      "@ide-framework/ide-addons": [
         "../packages/addons/src/index.ts"
       ],
-      "@ali/ide-addons/lib/*": [
+      "@ide-framework/ide-addons/lib/*": [
         "../packages/addons/src/*"
       ],
-      "@ali/ide-comments": [
+      "@ide-framework/ide-comments": [
         "../packages/comments/src/index.ts"
       ],
-      "@ali/ide-comments/lib/*": [
+      "@ide-framework/ide-comments/lib/*": [
         "../packages/comments/src/*"
       ],
-      "@ali/ide-file-tree-next": [
+      "@ide-framework/ide-file-tree-next": [
         "../packages/file-tree-next/src/index.ts"
       ],
-      "@ali/ide-file-tree-next/lib/*": [
+      "@ide-framework/ide-file-tree-next/lib/*": [
         "../packages/file-tree-next/src/*"
       ],
-      "@ali/ide-task": [
+      "@ide-framework/ide-task": [
         "../packages/task/src/index.ts"
       ],
-      "@ali/ide-task/lib/*": [
+      "@ide-framework/ide-task/lib/*": [
         "../packages/task/src/*"
       ]
     }

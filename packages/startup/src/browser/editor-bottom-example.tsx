@@ -1,5 +1,5 @@
 import React from 'react';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
+import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
 
 export const ExampleEditorBottomWidget: ReactEditorComponent<any> = ({resource}) => {
   return <div style={{

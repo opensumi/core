@@ -1,5 +1,5 @@
 import React from 'react';
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { IExtensionOwnedEnvironmentVariableMutator, IMergedEnvironmentVariableCollectionDiff, mutatorTypeLabel } from '../../common/environmentVariable';
 
 import styles from './variable.module.less';

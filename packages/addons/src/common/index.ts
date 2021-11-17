@@ -1,4 +1,4 @@
-import { FileTreeDropEvent } from '@ali/ide-core-common';
+import { FileTreeDropEvent } from '@ide-framework/ide-core-common';
 
 export const FileDropServicePath = 'FileFropServicePath';
 

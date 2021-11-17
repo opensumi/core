@@ -1,13 +1,13 @@
-import { Injectable, Autowired, Optional } from '@ali/common-di';
+import { Injectable, Autowired, Optional } from '@ide-framework/common-di';
 import {
   URI,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 import { IFileTreeAPI, IFileTreeService } from '../../common';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ali/ide-components';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ide-framework/ide-components';
 import { Directory } from '../../common/file-tree-node.define';
-import { FileStat } from '@ali/ide-file-service';
+import { FileStat } from '@ide-framework/ide-file-service';
 
 @Injectable({multiple: true})
 export class FileTreeDialogService extends Tree implements IFileTreeService {

@@ -1,4 +1,4 @@
-import { CancellationToken, IDisposable, UriComponents, IThemeColor } from '@ali/ide-core-common';
+import { CancellationToken, IDisposable, UriComponents, IThemeColor } from '@ide-framework/ide-core-common';
 import type vscode from 'vscode';
 
 export interface DecorationRequest {

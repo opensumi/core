@@ -1,11 +1,11 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { IThemeColor } from '@ali/ide-core-common';
-import { Injectable, Autowired, Optional } from '@ali/common-di';
-import { CommandService, Disposable, IAccessibilityInformation } from '@ali/ide-core-browser';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IThemeColor } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, Optional } from '@ide-framework/common-di';
+import { CommandService, Disposable, IAccessibilityInformation } from '@ide-framework/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ide-framework/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
-import { getCodiconAriaLabel } from '@ali/monaco-editor-core/esm/vs/base/common/codicons';
+import { getCodiconAriaLabel } from '@ide-framework/monaco-editor-core/esm/vs/base/common/codicons';
 
 @Injectable({multiple: true})
 export class MainThreadStatusBar implements IMainThreadStatusBar {

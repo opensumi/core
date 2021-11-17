@@ -1,15 +1,15 @@
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs, ElectronURLHandlerRegistry } from './types';
 import { CodeWindow } from './window';
-import { Injector, ConstructorOf } from '@ali/common-di';
+import { Injector, ConstructorOf } from '@ide-framework/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, ExtensionCandidate, IEventBus, EventBusImpl, asExtensionCandidate } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, ExtensionCandidate, IEventBus, EventBusImpl, asExtensionCandidate } from '@ide-framework/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
 import { argv } from 'yargs';
 import { WindowDestroyedEvent, WindowCreatedEvent } from './services/events';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainLifeCycleService } from '@ide-framework/ide-core-common/lib/electron';
 
 export interface IWindowOpenOptions {
   windowId: number;

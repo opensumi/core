@@ -1,6 +1,6 @@
-import { DebugSessionContribution, DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
-import { IDisposable, ContributionProvider, Disposable } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { DebugSessionContribution, DebugSessionContributionRegistry } from '@ide-framework/ide-debug/lib/browser';
+import { IDisposable, ContributionProvider, Disposable } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 
 export interface ExtensionDebugSessionContributionRegistrator {
   /**

@@ -1,6 +1,6 @@
 import { AbstractKaitianBrowserContributionRunner, IRunTimeParams } from '../types';
-import { IDisposable, Disposable } from '@ali/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { IDisposable, Disposable } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 import { TabbarBrowserContributionRunner } from './tabbar';
 import { EditorBrowserContributionRunner } from './editor';
 import { ToolBarBrowserContributionRunner } from './toolbar';

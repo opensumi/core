@@ -1,16 +1,16 @@
 import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
-import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { Badge, Icon } from '@ali/ide-components';
-import { ComponentRegistryInfo, useInjectable, KeybindingRegistry } from '@ali/ide-core-browser';
+import { Layout } from '@ide-framework/ide-core-browser/lib/components/layout/layout';
+import { Badge, Icon } from '@ide-framework/ide-components';
+import { ComponentRegistryInfo, useInjectable, KeybindingRegistry } from '@ide-framework/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
-import { getIcon } from '@ali/ide-core-browser';
+import { getIcon } from '@ide-framework/ide-core-browser';
 import { IMainLayoutService } from '../../common';
-import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
 
 function splitVisibleTabs(containers: ComponentRegistryInfo[], tabSize: number, availableSize: number) {
   const visibleCount = Math.floor(availableSize / tabSize);

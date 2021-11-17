@@ -1,4 +1,4 @@
-import { IJSONSchema, localize } from '@ali/ide-core-browser';
+import { IJSONSchema, localize } from '@ide-framework/ide-core-browser';
 export const taskSchemaUri = 'vscode://schemas/task';
 
 export const schema: IJSONSchema = {

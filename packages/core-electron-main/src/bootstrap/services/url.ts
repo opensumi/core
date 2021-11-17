@@ -1,8 +1,8 @@
 import { app, BrowserWindow } from 'electron';
-import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Domain } from '@ali/ide-core-common';
+import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ide-framework/common-di';
+import { Disposable, Domain } from '@ide-framework/ide-core-common';
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, ElectronURLHandlerRegistry } from '../types';
-import { IElectronURLService, IURLHandler } from '@ali/ide-core-common/lib/electron';
+import { IElectronURLService, IURLHandler } from '@ide-framework/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronURLService extends Disposable implements IElectronURLService {

@@ -3,7 +3,7 @@ import {
   Emitter,
   DisposableCollection,
   URI,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 import {
   IFileServiceClient,
   IFileServiceWatcher,

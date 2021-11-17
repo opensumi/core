@@ -1,9 +1,9 @@
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { Domain, localize } from '@ali/ide-core-common';
-import { Autowired } from '@ali/common-di';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { Domain, localize } from '@ide-framework/ide-core-common';
+import { Autowired } from '@ide-framework/common-di';
 import { IMarkdownService } from '../common';
 import { MarkdownEditorComponent } from './editor.markdown';
-import { PreferenceService } from '@ali/ide-core-browser';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
 
 export const MARKDOWN_EDITOR_COMPONENT_ID: string = 'MARKDOWN_EDITOR_COMPONENT_ID';
 

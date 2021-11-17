@@ -42,7 +42,7 @@ module.exports = {
           'node-pty',
           'nsfw',
           'spdlog',
-          '@ali/vscode-ripgrep',
+          'vscode-ripgrep',
           'canvas',
         ].indexOf(request) !== -1
       ) {

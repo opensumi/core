@@ -1,8 +1,8 @@
 import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { Deferred, URI, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { Deferred, URI, Emitter, Event, ILogger } from '@ide-framework/ide-core-common';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 
 @Injectable()
 export abstract class StorageServer implements IStorageServer {

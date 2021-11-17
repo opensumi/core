@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
-import { Domain, ClientAppContribution } from '@ali/ide-core-browser';
-import { MainLayoutContribution } from '@ali/ide-main-layout';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain, ClientAppContribution } from '@ide-framework/ide-core-browser';
+import { MainLayoutContribution } from '@ide-framework/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../../common';
 import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
 import { TerminalKeyBoardInputService } from '../terminal.input';

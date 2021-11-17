@@ -2,7 +2,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { GlobalBrowserStorageService } from '../../src/services';
-import { ILoggerManagerClient } from '@ali/ide-core-common';
+import { ILoggerManagerClient } from '@ide-framework/ide-core-common';
 
 describe('test for core-browser/src/services/storage-service.ts', () => {
   let injector: MockInjector;

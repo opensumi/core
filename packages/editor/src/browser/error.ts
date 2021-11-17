@@ -1,4 +1,4 @@
-import { ConstructorOf } from '@ali/ide-core-common';
+import { ConstructorOf } from '@ide-framework/ide-core-common';
 
 export class EditorError extends Error {
 

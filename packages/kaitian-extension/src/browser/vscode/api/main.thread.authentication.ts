@@ -1,9 +1,9 @@
 import { IMainThreadAuthentication, ExtHostAPIIdentifier, IExtHostAuthentication } from '../../../common/vscode';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, QuickPickService, localize, formatLocalize, ILogger } from '@ali/ide-core-browser';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Disposable, QuickPickService, localize, formatLocalize, ILogger } from '@ide-framework/ide-core-browser';
+import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession } from '@ide-framework/ide-core-common';
 import { IActivationEventService } from '../../types';
 
 @Injectable({ multiple: true })

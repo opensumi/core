@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize } from '@ali/ide-core-browser';
-import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
-import { Button, Dialog as DialogView } from '@ali/ide-components';
+import { useInjectable, localize } from '@ide-framework/ide-core-browser';
+import { mnemonicButtonLabel } from '@ide-framework/ide-core-common/lib/utils/strings';
+import { Button, Dialog as DialogView } from '@ide-framework/ide-components';
 
 import { IDialogService } from '../common';
 

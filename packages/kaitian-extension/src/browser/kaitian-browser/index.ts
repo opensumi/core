@@ -1,13 +1,13 @@
 
-import { URI, localize, getIcon, IReporterService, format } from '@ali/ide-core-browser';
-import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
-import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
-import { PlainWebview } from '@ali/ide-webview';
-import { ToolBarPosition } from '@ali/ide-toolbar';
-import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
-import { Injector } from '@ali/common-di';
-import { IThemeService, getColorRegistry } from '@ali/ide-theme';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { URI, localize, getIcon, IReporterService, format } from '@ide-framework/ide-core-browser';
+import { Scroll } from '@ide-framework/ide-editor/lib/browser/component/scroll/scroll';
+import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ide-framework/ide-core-browser/lib/components';
+import { PlainWebview } from '@ide-framework/ide-webview';
+import { ToolBarPosition } from '@ide-framework/ide-toolbar';
+import { EditorComponentRenderMode } from '@ide-framework/ide-editor/lib/browser';
+import { Injector } from '@ide-framework/common-di';
+import { IThemeService, getColorRegistry } from '@ide-framework/ide-theme';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 
 import { createBrowserCommandsApiFactory } from './commands';
 import { createBrowserComponents } from './components';

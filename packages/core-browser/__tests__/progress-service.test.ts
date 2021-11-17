@@ -2,7 +2,7 @@ import { ProgressService } from '../src/progress/progress.service';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { IProgressService } from '../src/progress';
-import { ProgressLocation, CommandRegistry } from '@ali/ide-core-common';
+import { ProgressLocation, CommandRegistry } from '@ide-framework/ide-core-common';
 import { StatusBarEntry } from '../src/services';
 
 // https://stackoverflow.com/questions/52177631/jest-timer-and-promise-dont-work-well-settimeout-and-async-function

@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IStoragePathServer } from '../common';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@ide-framework/ide-core-common';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 
 @Injectable()
 export class StoragePathServer implements IStoragePathServer {

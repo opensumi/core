@@ -1,8 +1,8 @@
 // tslint:disable:no-console
 import net from 'net';
-import { RPCService, RPCServiceCenter, createSocketConnection, getRPCService, IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
+import { RPCService, RPCServiceCenter, createSocketConnection, getRPCService, IRPCProtocol, RPCProtocol } from '@ide-framework/ide-connection';
 import { IExtHostProxyRPCService, IExtHostProxy, IExtHostProxyOptions, EXT_HOST_PROXY_PROTOCOL, EXT_HOST_PROXY_IDENTIFIER, IExtServerProxyRPCService, EXT_SERVER_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common/ext.host.proxy';
-import { Emitter, Disposable, IDisposable } from '@ali/ide-core-node';
+import { Emitter, Disposable, IDisposable } from '@ide-framework/ide-core-node';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 import { IExtensionHostManager } from '../common';
 import type { ForkOptions } from 'child_process';

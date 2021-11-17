@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService, ISettingGroup, IPreferenceSettingsService, ISettingSection, getIcon, URI, LabelService } from '@ali/ide-core-browser';
+import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
+import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService, ISettingGroup, IPreferenceSettingsService, ISettingSection, getIcon, URI, LabelService } from '@ide-framework/ide-core-browser';
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
-import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
-import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@ali/ide-components';
+import { Scroll } from '@ide-framework/ide-editor/lib/browser/component/scroll/scroll';
+import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@ide-framework/ide-components';
 import { ISectionItemData, toNormalCase } from '../common';
 import { NextPreferenceItem } from './preferenceItem.view';
 import './index.less';

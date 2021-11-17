@@ -1,7 +1,7 @@
-import * as ideCoreCommon from '@ali/ide-core-common';
-import { Injectable, Injector } from '@ali/common-di';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference';
+import * as ideCoreCommon from '@ide-framework/ide-core-common';
+import { Injectable, Injector } from '@ide-framework/common-di';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { OutputPreferences } from '@ide-framework/ide-output/lib/browser/output-preference';
 import * as types from '../../src/common/vscode/ext-types';
 import { createExtensionsApiFactory } from '../../src/hosted/api/vscode/ext.host.extensions';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -11,30 +11,30 @@ import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../src/common/
 import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
 import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log';
 import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { IContextKeyService, AppConfig } from '@ali/ide-core-browser';
-import { AppConfig as NodeAppConfig } from '@ali/ide-core-node';
+import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
+import { IContextKeyService, AppConfig } from '@ide-framework/ide-core-browser';
+import { AppConfig as NodeAppConfig } from '@ide-framework/ide-core-node';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { IGlobalStorageServer } from '@ali/ide-storage';
+import { IGlobalStorageServer } from '@ide-framework/ide-storage';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
 import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
-import { FileSearchServicePath } from '@ali/ide-file-search';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { IThemeService, IIconService } from '@ali/ide-theme';
-import { IconService } from '@ali/ide-theme/lib/browser';
-import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
-import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { IWebviewService } from '@ali/ide-webview';
+import { MockedStorageProvider } from '@ide-framework/ide-core-browser/__mocks__/storage';
+import { FileSearchServicePath } from '@ide-framework/ide-file-search';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { WorkspaceService } from '@ide-framework/ide-workspace/lib/browser/workspace-service';
+import { IThemeService, IIconService } from '@ide-framework/ide-theme';
+import { IconService } from '@ide-framework/ide-theme/lib/browser';
+import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks';
+import { WorkspacePreferences } from '@ide-framework/ide-workspace/lib/browser/workspace-preferences';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { IWebviewService } from '@ide-framework/ide-webview';
 import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
-import { IReporter, DefaultReporter } from '@ali/ide-core-common';
+import { IReporter, DefaultReporter } from '@ide-framework/ide-core-common';
 
 @Injectable()
 class MockLoggerManagerClient {

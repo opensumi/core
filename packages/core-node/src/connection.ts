@@ -1,8 +1,8 @@
 import http from 'http';
 import net from 'net';
 import { NodeModule } from './node-module';
-import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ali/ide-connection';
-import { Injector, ClassCreator, FactoryCreator } from '@ali/common-di';
+import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ide-framework/ide-connection';
+import { Injector, ClassCreator, FactoryCreator } from '@ide-framework/common-di';
 import ws from 'ws';
 
 import {
@@ -12,8 +12,8 @@ import {
   initRPCService,
   RPCServiceCenter,
   createSocketConnection,
-} from '@ali/ide-connection';
-import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
+} from '@ide-framework/ide-connection';
+import { createWebSocketConnection } from '@ide-framework/ide-connection/lib/common/message';
 import { INodeLogger } from './logger/node-logger';
 
 export { RPCServiceCenter };

@@ -1,15 +1,15 @@
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { ElectronBasicContribution } from '../src/browser';
-import { AppConfig, SlotLocation, IElectronMainMenuService, ComponentRegistry, CommandRegistry, KeybindingRegistry, addElement, electronEnv } from '@ali/ide-core-browser';
-import { IElectronMenuBarService } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
-import { IMessageService } from '@ali/ide-overlay/lib/common';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
-import { IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { AppConfig, SlotLocation, IElectronMainMenuService, ComponentRegistry, CommandRegistry, KeybindingRegistry, addElement, electronEnv } from '@ide-framework/ide-core-browser';
+import { IElectronMenuBarService } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
+import { IMessageService } from '@ide-framework/ide-overlay/lib/common';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
+import { IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { ElectronNativeDialogService } from '../src/browser/dialog';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { WorkbenchEditorService, ResourceService } from '@ali/ide-editor';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { WorkbenchEditorService, ResourceService } from '@ide-framework/ide-editor';
 import { WelcomeContribution } from '../src/browser/welcome/contribution';
-import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -33,7 +33,7 @@ describe('electron basic contribution test', () => {
       useValue: {
         layoutConfig: {
           [SlotLocation.top]: {
-            modules: ['@ali/ide-menu-bar'],
+            modules: ['@ide-framework/ide-menu-bar'],
           },
         },
       },

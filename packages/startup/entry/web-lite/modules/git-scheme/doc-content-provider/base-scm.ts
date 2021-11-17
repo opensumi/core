@@ -1,5 +1,5 @@
-import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
-import { Emitter, Event, URI } from '@ali/ide-core-common';
+import { IEditorDocumentModelContentProvider } from '@ide-framework/ide-editor/lib/browser';
+import { Emitter, Event, URI } from '@ide-framework/ide-core-common';
 
 // 目前只实现了只读模式
 export abstract class AbstractSCMDocContentProvider implements IEditorDocumentModelContentProvider {

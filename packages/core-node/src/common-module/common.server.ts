@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { ICommonServer, OS } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { ICommonServer, OS } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class CommonServer implements ICommonServer {

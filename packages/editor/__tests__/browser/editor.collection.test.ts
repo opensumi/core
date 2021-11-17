@@ -1,15 +1,15 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { monaco as monacoAPI } from '@ali/ide-monaco/lib/browser/monaco-api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { monaco as monacoAPI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedMonacoService } from '@ali/ide-monaco/__mocks__/monaco.service.mock';
-import { MonacoService, Emitter, URI } from '@ali/ide-core-browser';
-import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ali/ide-editor/lib/browser/editor-collection.service';
-import { EditorCollectionService, EditorType } from '@ali/ide-editor';
+import { MockedMonacoService } from '@ide-framework/ide-monaco/__mocks__/monaco.service.mock';
+import { MonacoService, Emitter, URI } from '@ide-framework/ide-core-browser';
+import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ide-framework/ide-editor/lib/browser/editor-collection.service';
+import { EditorCollectionService, EditorType } from '@ide-framework/ide-editor';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { Injectable } from '@ali/common-di';
-import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
-import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
-import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { Injectable } from '@ide-framework/common-di';
+import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { EditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser/editor.decoration.service';
+import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 describe('editor collection service test', () => {
 

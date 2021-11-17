@@ -2,8 +2,8 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { CredentialService } from '../../src/common-module/credential.server';
-import { INativeCredentialService, isLinux } from '@ali/ide-core-common';
-import { AppConfig } from '@ali/ide-core-node';
+import { INativeCredentialService, isLinux } from '@ide-framework/ide-core-common';
+import { AppConfig } from '@ide-framework/ide-core-node';
 
 describe('test for core-browser/src/services/credentials-service.ts', () => {
   let injector: MockInjector;

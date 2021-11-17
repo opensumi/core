@@ -1,10 +1,10 @@
-import { PreferenceProviderProvider, PreferenceScope, PreferenceService, PreferenceSchemaProvider, URI } from '@ali/ide-core-browser';
+import { PreferenceProviderProvider, PreferenceScope, PreferenceService, PreferenceSchemaProvider, URI } from '@ide-framework/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from '@ali/ide-preferences/lib/browser/preference-settings.service';
-import { PREFERENCE_COMMANDS } from '@ali/ide-preferences/lib/browser/preference-contribution';
-import { PreferenceSettingId } from '@ali/ide-preferences';
+import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from '@ide-framework/ide-preferences/lib/browser/preference-settings.service';
+import { PREFERENCE_COMMANDS } from '@ide-framework/ide-preferences/lib/browser/preference-contribution';
+import { PreferenceSettingId } from '@ide-framework/ide-preferences';
 
 describe('PreferenceSettingService should be work', () => {
   let injector: MockInjector;

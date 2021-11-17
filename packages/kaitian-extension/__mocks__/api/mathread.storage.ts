@@ -1,4 +1,4 @@
-import { IMainThreadStorage, KeysToAnyValues } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { IMainThreadStorage, KeysToAnyValues } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
 
 export class MainThreadStorage implements IMainThreadStorage {
   private storages: Map<string, any>;

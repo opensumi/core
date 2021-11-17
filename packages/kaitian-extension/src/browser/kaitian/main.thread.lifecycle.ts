@@ -1,8 +1,8 @@
-import { Injectable, Injector } from '@ali/common-di';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { isElectronRenderer, ExtensionCandidate } from '@ali/ide-core-common';
-import { electronEnv } from '@ali/ide-core-browser';
+import { Injectable, Injector } from '@ide-framework/common-di';
+import { IElectronMainLifeCycleService } from '@ide-framework/ide-core-common/lib/electron';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { isElectronRenderer, ExtensionCandidate } from '@ide-framework/ide-core-common';
+import { electronEnv } from '@ide-framework/ide-core-browser';
 
 import { IMainThreadLifeCycle } from '../../common/kaitian/lifecycle';
 

@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, DisposableCollection } from '@ali/ide-core-browser';
-import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, DisposableCollection } from '@ide-framework/ide-core-browser';
+import { PreferenceScope, PreferenceProvider } from '@ide-framework/ide-core-browser/lib/preferences';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-preference-provider';
 
 @Injectable()

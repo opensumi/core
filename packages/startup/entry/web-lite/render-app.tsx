@@ -1,6 +1,6 @@
-import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts, LogServiceForClientPath, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@ali/ide-core-browser';
-import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
+import { Injector } from '@ide-framework/common-di';
+import { ClientApp, IClientAppOpts, LogServiceForClientPath, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@ide-framework/ide-core-browser';
+import { ensureDir } from '@ide-framework/ide-core-common/lib/browser-fs/ensure-dir';
 import BrowserFS from 'browserfs';
 import path from 'path';
 
@@ -16,8 +16,8 @@ BrowserFS.configure({
   options: {},
 }, (e) => {});
 
-import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/common';
-import { FileSearchServicePath } from '@ali/ide-file-search';
+import { ExtensionNodeServiceServerPath } from '@ide-framework/ide-kaitian-extension/lib/common';
+import { FileSearchServicePath } from '@ide-framework/ide-file-search';
 import { ExtensionClientService } from './overrides/mock-extension-server';
 import { MockFileSearch } from './overrides/mock-file-search';
 import { AbstractHttpFileService, BROWSER_HOME_DIR } from './modules/file-provider/browser-fs-provider';

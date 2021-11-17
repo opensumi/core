@@ -1,5 +1,5 @@
-import { NodeModule } from '@ali/ide-core-node';
-import { Injectable, Injector } from '@ali/common-di';
+import { NodeModule } from '@ide-framework/ide-core-node';
+import { Injectable, Injector } from '@ide-framework/common-di';
 import { IFileService, IDiskFileProvider, ShadowFileServicePath, FileServicePath, IShadowFileProvider, FileSystemProvider, DiskFileServicePath } from '../common';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';

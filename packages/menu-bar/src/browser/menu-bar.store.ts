@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Disposable } from '@ide-framework/ide-core-browser';
 import { observable, action } from 'mobx';
-import { AbstractMenubarService, IMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenubarService, IMenubarItem, MenuNode } from '@ide-framework/ide-core-browser/lib/menu/next';
 import debounce = require('lodash.debounce');
 
 export abstract class AbstractMenubarStore extends Disposable {

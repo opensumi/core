@@ -1,4 +1,4 @@
-import { PreferenceSchema } from '@ali/ide-core-browser';
+import { PreferenceSchema } from '@ide-framework/ide-core-browser';
 import { taskSchemaUri } from './task.schema';
 
 export const taskPreferencesSchema: PreferenceSchema = {

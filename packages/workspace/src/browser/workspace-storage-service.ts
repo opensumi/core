@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { GlobalBrowserStorageService } from '@ide-framework/ide-core-browser/lib/services';
 import { IWorkspaceService, IWorkspaceStorageService } from '../common';
-import { FileStat } from '@ali/ide-file-service';
+import { FileStat } from '@ide-framework/ide-file-service';
 
 /*
  * 为存在 Browser (LocalStorage) 的数据添加命名空间

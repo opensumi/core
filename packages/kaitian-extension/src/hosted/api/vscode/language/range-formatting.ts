@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import type vscode from 'vscode';
-import { Uri as URI } from '@ali/ide-core-common';
+import { Uri as URI } from '@ide-framework/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { FormattingOptions, Range, SingleEditOperation } from '../../../../common/vscode/model.api';

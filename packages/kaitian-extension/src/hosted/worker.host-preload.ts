@@ -1,8 +1,8 @@
 import path from 'path';
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
 import { setPerformance } from './api/vscode/language/util';
-import { DefaultReporter, IReporter } from '@ali/ide-core-common';
+import { DefaultReporter, IReporter } from '@ide-framework/ide-core-common';
 
 setPerformance(self.performance);
 // make sure Worker cors

@@ -1,26 +1,26 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import os from 'os';
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
 import { mockExtensionProps } from '../../__mocks__/extensions';
-import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ali/ide-core-common';
-import { ExtensionWillContributeEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
-import { IJSONSchemaRegistry } from '@ali/ide-monaco';
-import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
-import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
-import { ISchemaStore, PreferenceService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ide-framework/ide-core-common';
+import { ExtensionWillContributeEvent } from '@ide-framework/ide-kaitian-extension/lib/browser/types';
+import { IJSONSchemaRegistry } from '@ide-framework/ide-monaco';
+import { SchemaRegistry, SchemaStore } from '@ide-framework/ide-monaco/lib/browser/schema-registry';
+import { IExtensionStoragePathServer } from '@ide-framework/ide-extension-storage';
+import { ISchemaStore, PreferenceService } from '@ide-framework/ide-core-browser';
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
-import { MockLogger, MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
-import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/common';
+import { MockLogger, MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { ExtensionNodeServiceServerPath } from '@ide-framework/ide-kaitian-extension/lib/common';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
-import { IIconService, IThemeService } from '@ali/ide-theme';
-import { IconService } from '@ali/ide-theme/lib/browser';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { ITextmateTokenizer } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
-import { MonacoService } from '@ali/ide-core-browser/lib/monaco';
+import { IIconService, IThemeService } from '@ide-framework/ide-theme';
+import { IconService } from '@ide-framework/ide-theme/lib/browser';
+import { WorkbenchThemeService } from '@ide-framework/ide-theme/lib/browser/workbench.theme.service';
+import { ITextmateTokenizer } from '@ide-framework/ide-monaco/lib/browser/contrib/tokenizer';
+import { MonacoService } from '@ide-framework/ide-core-browser/lib/monaco';
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
-import { TextmateService } from '@ali/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
+import { TextmateService } from '@ide-framework/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
 const extension = {
   ...mockExtensionProps,

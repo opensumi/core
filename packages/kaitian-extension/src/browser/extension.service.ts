@@ -1,15 +1,15 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { IIconService, IThemeService } from '@ali/ide-theme';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { localize, OnEvent, WithEventBus, ProgressLocation } from '@ali/ide-core-common';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IIconService, IThemeService } from '@ide-framework/ide-theme';
+import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
+import { localize, OnEvent, WithEventBus, ProgressLocation } from '@ide-framework/ide-core-common';
+import { FileSearchServicePath, IFileSearchService } from '@ide-framework/ide-file-search/lib/common';
 import {
   AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
   getPreferenceLanguageId, IClientApp, ILogger,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 
 import { Extension } from './extension';
 import { ActivatedExtension } from '../common/activator';

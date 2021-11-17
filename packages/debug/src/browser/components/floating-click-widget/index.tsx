@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from './index.module.less';
-import { localize } from '@ali/ide-core-browser';
-import { Button } from '@ali/ide-components';
-import { useInjectable } from '@ali/ide-core-browser';
+import { localize } from '@ide-framework/ide-core-browser';
+import { Button } from '@ide-framework/ide-components';
+import { useInjectable } from '@ide-framework/ide-core-browser';
 import { DebugConfigurationService } from '../../view/configuration/debug-configuration.service';
 
 export const FloatingClickWidget = ({}: React.HtmlHTMLAttributes<HTMLDivElement>) => {

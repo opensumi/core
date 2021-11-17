@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import { IWorkspaceService } from '../common';
-import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
 
 @Domain(VariableContribution)
 export class WorkspaceVariableContribution implements VariableContribution {

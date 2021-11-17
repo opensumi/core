@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { Deferred } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { Deferred } from '@ide-framework/ide-core-common';
 import { ActivatedExtensionJSON } from './activator';
 
 import { IExtension } from './index';

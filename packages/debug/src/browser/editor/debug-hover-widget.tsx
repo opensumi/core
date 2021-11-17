@@ -1,9 +1,9 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { Injectable, Autowired } from '@ali/common-di';
-import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@ali/ide-core-browser';
+import type { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@ide-framework/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugEditor, IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
 import { DebugExpressionProvider } from './debug-expression-provider';

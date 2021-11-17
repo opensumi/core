@@ -1,6 +1,6 @@
 import stream from 'stream';
 import path from 'path';
-import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
 import { ProcessErrorEvent, IProcessStartEvent } from '../../src/common';
 import { ProcessModule, IProcessManage, IProcessFactory } from '../../src/';
 

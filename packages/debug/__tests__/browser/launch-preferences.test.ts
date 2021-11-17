@@ -1,26 +1,26 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI, IContextKeyService } from '@ali/ide-core-browser';
-import { AppConfig } from '@ali/ide-core-node';
+import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { AppConfig } from '@ide-framework/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IMessageService } from '@ali/ide-overlay';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
-import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
-import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
-import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { UserStorageContribution, UserStorageServiceImpl } from '@ali/ide-preferences/lib/browser/userstorage';
-import { IUserStorageService } from '@ali/ide-preferences';
-import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
-import { DebugContribution, DebugModule } from '@ali/ide-debug/lib/browser';
-import { EditorCollectionService } from '@ali/ide-editor/lib/browser';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { PreferencesModule } from '@ide-framework/ide-preferences/lib/browser';
+import { WorkspaceService } from '@ide-framework/ide-workspace/lib/browser/workspace-service';
+import { IFileServiceClient, IDiskFileProvider } from '@ide-framework/ide-file-service';
+import { FileServiceContribution } from '@ide-framework/ide-file-service/lib/browser/file-service-contribution';
+import { WorkspacePreferences } from '@ide-framework/ide-workspace/lib/browser/workspace-preferences';
+import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
+import { UserStorageContribution, UserStorageServiceImpl } from '@ide-framework/ide-preferences/lib/browser/userstorage';
+import { IUserStorageService } from '@ide-framework/ide-preferences';
+import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
+import { DebugContribution, DebugModule } from '@ide-framework/ide-debug/lib/browser';
+import { EditorCollectionService } from '@ide-framework/ide-editor/lib/browser';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class MockLoggerManagerClient {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useEffect, createRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
-import { Select, Option } from '@ali/ide-components';
-import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { useInjectable, isElectronRenderer, ViewState } from '@ide-framework/ide-core-browser';
+import { Select, Option } from '@ide-framework/ide-components';
+import { Select as NativeSelect } from '@ide-framework/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
 import styles from './output.module.less';
 

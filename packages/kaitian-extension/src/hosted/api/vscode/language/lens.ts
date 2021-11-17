@@ -16,11 +16,11 @@
 
 import type vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import { Uri as URI, Cache, CancellationToken } from '@ali/ide-core-common';
+import { Uri as URI, Cache, CancellationToken } from '@ide-framework/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { CodeLens, ICodeLensListDto } from '../../../../common/vscode/model.api';
 import { CommandsConverter } from '../ext.host.command';
-import { DisposableStore } from '@ali/ide-core-common';
+import { DisposableStore } from '@ide-framework/ide-core-common';
 
 /** Adapts the calls from main to extension thread for providing/resolving the code lenses. */
 export class CodeLensAdapter {

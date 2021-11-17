@@ -1,7 +1,7 @@
 import {
   LogLevel,
   SupportLogNamespace,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 
 export const ILogServiceForClient = Symbol('LogServiceForClient');
 

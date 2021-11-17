@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable } from '@ide-framework/ide-core-browser';
 import { IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtHostIDEWindow, IWindowInfo } from '../../common/kaitian/window';
-import { IPlainWebviewWindow, IWebviewService } from '@ali/ide-webview';
+import { IPlainWebviewWindow, IWebviewService } from '@ide-framework/ide-webview';
 
 // 与MainThreadWindow 做一下区分，用于拓展kaitian下的ideWindow API
 @Injectable({ multiple: true })

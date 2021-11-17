@@ -1,13 +1,13 @@
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { URI } from '@ali/ide-core-browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat } from '@ali/ide-file-service';
-import { FileTreeDialogService } from '@ali/ide-file-tree-next/lib/browser/dialog/file-dialog.service';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { URI } from '@ide-framework/ide-core-browser';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { FileTreeDialogService } from '@ide-framework/ide-file-tree-next/lib/browser/dialog/file-dialog.service';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 import { Directory, File } from '../../../src/common/file-tree-node.define';
 import { IFileTreeAPI } from '../../../src/common';
-import { TreeNodeType } from '@ali/ide-components';
+import { TreeNodeType } from '@ide-framework/ide-components';
 
 class TempDirectory {}
 class TempFile {}

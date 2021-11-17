@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import type vscode from 'vscode';
-import { Uri } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';

@@ -1,19 +1,19 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred, Event } from '@ali/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ide-framework/ide-components';
+import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred, Event } from '@ide-framework/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 import { OpenedEditorService } from './opened-editor-tree.service';
 import { OpenedEditorModel } from './opened-editor-model';
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import pSeries = require('p-series');
 import styles from '../opened-editor-node.module.less';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import { OpenedEditorEventService } from './opened-editor-event.service';
-import { WorkbenchEditorService, IEditorGroup, IResource } from '@ali/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
+import { WorkbenchEditorService, IEditorGroup, IResource } from '@ide-framework/ide-editor/lib/browser';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { ExplorerContainerId } from '@ide-framework/ide-explorer/lib/browser/explorer-contribution';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

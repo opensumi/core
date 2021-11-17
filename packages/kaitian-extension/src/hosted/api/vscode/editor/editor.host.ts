@@ -1,12 +1,12 @@
 import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAPIIdentifier } from '../../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import type vscode from 'vscode';
 import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle } from '../../../../common/vscode/ext-types';
-import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ali/ide-core-common';
+import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ide-framework/ide-core-common';
 import * as TypeConverts from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
-import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
+import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ide-framework/ide-editor';
 import debounce = require('lodash.debounce');
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
 

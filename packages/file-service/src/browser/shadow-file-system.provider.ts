@@ -1,16 +1,16 @@
-import { Uri, FileSystemProviderCapabilities } from '@ali/ide-core-common';
+import { Uri, FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
 import {
   Event,
   Emitter,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 import {
     FileChangeEvent,
     FileStat,
     FileType,
     FileSystemProvider,
   } from '../common';
-import { Injectable } from '@ali/common-di';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { Injectable } from '@ide-framework/common-di';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {

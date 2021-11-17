@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI } from '@ide-framework/ide-core-common';
 import { IDocPersistentCacheProvider, IDocStatus, IDocCache, parseCacheValueFrom } from '../../common/doc-cache';
-import { IWorkspaceStorageService } from '@ali/ide-workspace';
+import { IWorkspaceStorageService } from '@ide-framework/ide-workspace';
 
 /**
  * 使用 LocalStorage 实现的文档缓存对象

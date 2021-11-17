@@ -1,13 +1,13 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes, Schemas } from '@ali/ide-core-common';
-import { Optional, Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { PreferenceService } from '@ali/ide-core-browser';
-import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@ali/ide-editor/lib/browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes, Schemas } from '@ide-framework/ide-core-common';
+import { Optional, Injectable, Autowired } from '@ide-framework/common-di';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@ide-framework/ide-editor/lib/browser';
 
 import { OutputPreferences } from './output-preference';
 import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
-import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 const DEFAULT_MAX_CHANNEL_LINE = 50000;
 

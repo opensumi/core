@@ -1,9 +1,9 @@
 import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/progress';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Autowired, Injectable, Optinal } from '@ali/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Autowired, Injectable, Optinal } from '@ide-framework/common-di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@ali/ide-core-common';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@ide-framework/ide-core-common';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
 import { IExtension } from '../../../common';
 
 @Injectable({ multiple: true })

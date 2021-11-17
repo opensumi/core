@@ -1,5 +1,5 @@
 {
-  "name": "@ali/ide-output",
+  "name": "@ide-framework/ide-output",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -17,22 +17,19 @@
     "type": "git",
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
-  },
   "dependencies": {
-    "@ali/ide-core-browser": "2.12.0",
-    "@ali/ide-core-common": "2.12.0",
-    "@ali/ide-main-layout": "2.12.0",
-    "@ali/ide-components": "2.12.0",
-    "@ali/ide-editor": "2.12.0",
-    "@ali/ide-monaco": "2.12.0",
-    "@ali/ide-workspace": "2.12.0",
+    "@ide-framework/ide-core-browser": "2.12.0",
+    "@ide-framework/ide-core-common": "2.12.0",
+    "@ide-framework/ide-main-layout": "2.12.0",
+    "@ide-framework/ide-components": "2.12.0",
+    "@ide-framework/ide-editor": "2.12.0",
+    "@ide-framework/ide-monaco": "2.12.0",
+    "@ide-framework/ide-workspace": "2.12.0",
     "escape-carriage": "^1.3.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.12.0",
-    "@ali/ide-dev-tool": "^1.1.0",
+    "@ide-framework/ide-core-browser": "2.12.0",
+    "@ide-framework/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

@@ -1,1 +1,1 @@
-export { IStatusBarService} from '@ali/ide-core-browser/lib/services';
+export { IStatusBarService} from '@ide-framework/ide-core-browser/lib/services';

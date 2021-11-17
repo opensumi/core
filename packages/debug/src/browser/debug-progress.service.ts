@@ -2,14 +2,14 @@
 *  Copyright (c) Microsoft Corporation. All rights reserved.
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
-import { IProgress, IProgressStep } from '@ali/ide-core-common';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { ProgressLocation } from '@ali/ide-core-common';
+import { IProgress, IProgressStep } from '@ide-framework/ide-core-common';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { ProgressLocation } from '@ide-framework/ide-core-common';
 import { DebugSession } from './debug-session';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { DebugState, IDebugSessionManager } from '../common/debug-session';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
-import { Event, IDisposable } from '@ali/ide-core-browser';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { Event, IDisposable } from '@ide-framework/ide-core-browser';
 import { IDebugProgress } from '../common/debug-progress';
 
 @Injectable()

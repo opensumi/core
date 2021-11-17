@@ -1,8 +1,8 @@
 import type vscode from 'vscode';
-import { Uri, UriUtils } from '@ali/ide-core-common';
+import { Uri, UriUtils } from '@ide-framework/ide-core-common';
 import { illegalArgument } from './utils';
 import { FileOperationOptions } from './model.api';
-import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ali/ide-core-common';
+import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ide-framework/ide-core-common';
 import { escapeCodicons } from './models/html-content';
 
 export { UriComponents } from './models/uri';

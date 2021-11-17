@@ -1,7 +1,7 @@
-import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@ide-framework/ide-core-common';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
-import { AppConfig } from '@ali/ide-core-browser';
+import { AppConfig } from '@ide-framework/ide-core-browser';
 
 enum StorageState {
   None,

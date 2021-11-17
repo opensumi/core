@@ -1,5 +1,5 @@
-import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
+import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@ide-framework/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
 
 let mockedStorage: MockedStorage | null = null;
 

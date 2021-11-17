@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
-import { URI } from '@ali/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { IEditorDocumentModelContentProvider } from '@ide-framework/ide-editor/lib/browser';
+import { URI } from '@ide-framework/ide-core-common';
 
 import { AbstractSCMDocContentProvider } from './base-scm';
 

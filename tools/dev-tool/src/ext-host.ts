@@ -1,5 +1,5 @@
-import { extProcessInit, IBuiltInCommand } from '@ali/ide-kaitian-extension/lib/hosted/ext.process-base';
-import { LogLevel } from '@ali/ide-core-common';
+import { extProcessInit, IBuiltInCommand } from '@ide-framework/ide-kaitian-extension/lib/hosted/ext.process-base';
+import { LogLevel } from '@ide-framework/ide-core-common';
 
 const builtinCommands: IBuiltInCommand[] = [
   {

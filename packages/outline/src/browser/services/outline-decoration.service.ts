@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, MarkerManager, MarkerSeverity, IMarker } from '@ali/ide-core-browser';
-import { IThemeService, listErrorForeground, listWarningForeground } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, MarkerManager, MarkerSeverity, IMarker } from '@ide-framework/ide-core-browser';
+import { IThemeService, listErrorForeground, listWarningForeground } from '@ide-framework/ide-theme';
 import { IOutlineMarker } from '../../common';
 import { OutlineTreeNode } from '../outline-node.define';
 

@@ -1,6 +1,6 @@
-import { URI, memoize } from '@ali/ide-core-browser';
-import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
-import * as paths from '@ali/ide-core-common/lib/path';
+import { URI, memoize } from '@ide-framework/ide-core-browser';
+import { TreeNode, CompositeTreeNode, ITree } from '@ide-framework/ide-components';
+import * as paths from '@ide-framework/ide-core-common/lib/path';
 
 import { SCMTreeService } from './scm-tree.service';
 import { ISCMResourceGroup, ISCMResource } from '../../../common';

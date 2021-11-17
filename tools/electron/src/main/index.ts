@@ -1,10 +1,10 @@
 import { app } from 'electron';
-import { ElectronMainApp } from '@ali/ide-core-electron-main';
-import { URI } from '@ali/ide-core-common';
+import { ElectronMainApp } from '@ide-framework/ide-core-electron-main';
+import { URI } from '@ide-framework/ide-core-common';
 import { join } from 'path';
 import { MainModule } from './services';
-import { WebviewElectronMainModule } from '@ali/ide-webview/lib/electron-main';
-// import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
+import { WebviewElectronMainModule } from '@ide-framework/ide-webview/lib/electron-main';
+// import { ElectronMainWorkspaceModule } from '@ide-framework/ide-workspace/lib/electron-main';
 
 const getExtensionDir = () => {
   const appPath = app.getAppPath();

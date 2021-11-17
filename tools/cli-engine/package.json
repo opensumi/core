@@ -1,5 +1,5 @@
 {
-  "name": "@ali/kaitian-cli-engine",
+  "name": "@ide-framework/kaitian-cli-engine",
   "version": "2.11.2",
   "description": "Integration engine runtime for kaitian-cli and kaitian extension",
   "main": "",
@@ -16,7 +16,7 @@
     "build:node": "tsc -p configs/tsconfig.node.json || echo 0",
     "build:webview": "webpack --config ./configs/webpack.config.webview.js --progress",
     "lint": "eslint --cache --ext .js ./",
-    "lint:fix": "tnpm run lint -- --fix",
+    "lint:fix": "npm run lint -- --fix",
     "prepublishOnly": "npm run build",
     "watch": "run-p watch:node watch:browser watch:exthost watch:webview watch:ext-worker-host",
     "watch:browser": "npm run build:browser -- --watch",
@@ -25,14 +25,14 @@
     "watch:webview": "npm run build:webview -- --watch"
   },
   "dependencies": {
-    "@ali/common-di": "^5.0.0",
-    "@ali/ide-core-browser": "2.11.2",
-    "@ali/ide-core-common": "2.11.2",
-    "@ali/ide-core-node": "2.11.2",
-    "@ali/ide-express-file-server": "2.11.2",
-    "@ali/ide-i18n": "2.11.2",
-    "@ali/ide-kaitian-extension": "2.11.2",
-    "@ali/ide-startup": "2.11.2",
+    "@ide-framework/common-di": "^1.0.0",
+    "@ide-framework/ide-core-browser": "2.11.2",
+    "@ide-framework/ide-core-common": "2.11.2",
+    "@ide-framework/ide-core-node": "2.11.2",
+    "@ide-framework/ide-express-file-server": "2.11.2",
+    "@ide-framework/ide-i18n": "2.11.2",
+    "@ide-framework/ide-kaitian-extension": "2.11.2",
+    "@ide-framework/ide-startup": "2.11.2",
     "@koa/cors": "^3.0.0",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
@@ -88,9 +88,6 @@
   "engines": {
     "node": ">=10.15.0"
   },
-  "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
-  },
   "readme": "ERROR: No README data found!",
-  "_id": "@ali/kaitian-cli-engine@2.11.1"
+  "_id": "@ide-framework/kaitian-cli-engine@2.11.1"
 }

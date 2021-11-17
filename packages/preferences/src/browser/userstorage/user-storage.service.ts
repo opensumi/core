@@ -1,10 +1,10 @@
-import { Event, FileSystemProviderCapabilities } from '@ali/ide-core-common';
+import { Event, FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
 
-import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
-import { FileSetContentOptions } from '@ali/ide-file-service/lib/common';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { FileSetContentOptions } from '@ide-framework/ide-file-service/lib/common';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
 

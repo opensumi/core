@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Emitter } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Emitter } from '@ide-framework/ide-core-common';
 
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IExtHostTheme, IMainThreadTheme } from '../../../common/kaitian/theme';

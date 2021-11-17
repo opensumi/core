@@ -1,8 +1,8 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { DisposableCollection } from '@ali/ide-core-common';
-import { IIconService } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { DisposableCollection } from '@ide-framework/ide-core-common';
+import { IIconService } from '@ide-framework/ide-theme';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;

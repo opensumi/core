@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from '@ide-framework/ide-core-common';
 
 export interface Variable {
 

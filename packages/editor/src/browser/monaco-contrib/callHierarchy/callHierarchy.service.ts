@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { CancellationToken, IDisposable, IPosition, isNonEmptyArray, onUnexpectedExternalError, URI, Uri } from '@ali/ide-core-common';
-import { CallHierarchyItem, CallHierarchyProvider, CallHierarchyProviderRegistry, ICallHierarchyService, IncomingCall, OutgoingCall } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
-import { ITextModel, Position } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { CancellationToken, IDisposable, IPosition, isNonEmptyArray, onUnexpectedExternalError, URI, Uri } from '@ide-framework/ide-core-common';
+import { CallHierarchyItem, CallHierarchyProvider, CallHierarchyProviderRegistry, ICallHierarchyService, IncomingCall, OutgoingCall } from '@ide-framework/ide-monaco/lib/browser/contrib/callHierarchy';
+import { ITextModel, Position } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 

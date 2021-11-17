@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMenuRegistry, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
-import { localize, formatLocalize, isUndefined } from '@ali/ide-core-common';
-import { IIconService, IconType } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMenuRegistry, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { localize, formatLocalize, isUndefined } from '@ide-framework/ide-core-common';
+import { IIconService, IconType } from '@ide-framework/ide-theme';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IContributedSubmenu } from '../../../common/kaitian/extension';

@@ -1,10 +1,10 @@
-import { SymbolKind as SymbolKindEnum } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { SymbolKind as SymbolKindEnum } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/language/workspace-symbol-quickopen';
 import { ILanguageService, WorkspaceSymbolProvider, WorkspaceSymbolParams, WorkbenchEditorService } from '../../../src/common';
 import { SymbolInformation, Location } from 'vscode-languageserver-types';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
   provideWorkspaceSymbols(params: WorkspaceSymbolParams, token): Thenable<SymbolInformation[]> {

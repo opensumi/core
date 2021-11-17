@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import cls from 'classnames';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
+import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
 import styles from './keymaps.module.less';
-import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
-import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@ali/ide-core-browser';
+import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@ide-framework/ide-components';
+import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@ide-framework/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
-import { getIcon } from '@ali/ide-core-browser';
-import { RecycleList } from '@ali/ide-components';
+import { getIcon } from '@ide-framework/ide-core-browser';
+import { RecycleList } from '@ide-framework/ide-components';
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
   const {

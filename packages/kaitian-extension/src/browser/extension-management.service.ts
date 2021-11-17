@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { getPreferenceLanguageId } from '@ali/ide-core-browser';
-import { ILogger, WithEventBus } from '@ali/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { getPreferenceLanguageId } from '@ide-framework/ide-core-browser';
+import { ILogger, WithEventBus } from '@ide-framework/ide-core-common';
 
 import { AbstractExtensionManagementService, ChangeExtensionOptions, ExtensionNodeServiceServerPath, IExtensionNodeClientService, IExtensionProps, IExtraMetaData } from '../common';
 import { Extension } from './extension';

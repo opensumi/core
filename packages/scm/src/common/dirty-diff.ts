@@ -1,5 +1,5 @@
-import type { ICodeEditor as IMonacoCodeEditor, IPosition } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { IChange, Command } from '@ali/ide-core-common';
+import type { ICodeEditor as IMonacoCodeEditor, IPosition } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IChange, Command } from '@ide-framework/ide-core-common';
 
 export interface IDirtyDiffModel {
   changes: IChange[];

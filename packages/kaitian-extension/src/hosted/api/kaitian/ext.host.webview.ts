@@ -1,8 +1,8 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWebview, IExtensionDescription } from '../../../common/vscode';
-import { Disposable, Emitter } from '@ali/ide-core-common';
+import { Disposable, Emitter } from '@ide-framework/ide-core-common';
 import { IPlainWebviewHandle, IExtHostPlainWebview } from '../../../common/kaitian/webview';
-import { join } from '@ali/ide-core-common/lib/path';
+import { join } from '@ide-framework/ide-core-common/lib/path';
 
 export class KaitianExtHostWebview {
 

@@ -1,14 +1,14 @@
-import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@ali/ide-core-common';
-import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@ali/ide-file-service';
-import { IFileServiceClient, FileType, FileOperationError, FileOperationResult, FileSystemProvider, IBrowserFileSystemRegistry } from '@ali/ide-file-service/lib/common';
+import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@ide-framework/ide-core-common';
+import { ensureDir } from '@ide-framework/ide-core-common/lib/browser-fs/ensure-dir';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@ide-framework/ide-file-service';
+import { IFileServiceClient, FileType, FileOperationError, FileOperationResult, FileSystemProvider, IBrowserFileSystemRegistry } from '@ide-framework/ide-file-service/lib/common';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { IExtHostFileSystemShape, FileDeleteOptions, IMainThreadFileSystemShape, FileStat, FileSystemProviderErrorCode, FileOverwriteOptions, IExtHostFileSystemInfoShape } from '../../../common/vscode/file-system';
 import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {

@@ -1,8 +1,8 @@
-import { Injectable, Injector, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable } from '@ali/ide-core-common';
+import { Injectable, Injector, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Disposable } from '@ide-framework/ide-core-common';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { IEventBus, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { IEventBus, WithEventBus, OnEvent } from '@ide-framework/ide-core-browser';
 import { IExtHostCommon, IMainThreadCommon } from '../../common/kaitian/common';
 import { ExtHostEvent } from '../types';
 

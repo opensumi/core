@@ -1,7 +1,7 @@
-import { AbstractMessageReader, AbstractMessageWriter, createMessageConnection } from '@ali/vscode-jsonrpc/lib/common/api';
-import { MessageWriter } from '@ali/vscode-jsonrpc/lib/common/messageWriter';
-import { MessageReader, DataCallback } from '@ali/vscode-jsonrpc/lib/common/messageReader';
-import { Disposable } from '@ali/vscode-jsonrpc/lib/common/disposable';
+import { AbstractMessageReader, AbstractMessageWriter, createMessageConnection } from '@ide-framework/vscode-jsonrpc/lib/common/api';
+import { MessageWriter } from '@ide-framework/vscode-jsonrpc/lib/common/messageWriter';
+import { MessageReader, DataCallback } from '@ide-framework/vscode-jsonrpc/lib/common/messageReader';
+import { Disposable } from '@ide-framework/vscode-jsonrpc/lib/common/disposable';
 
 export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';

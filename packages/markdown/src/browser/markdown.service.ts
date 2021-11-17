@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IMarkdownService } from '../common';
 import marked from 'marked';
 import { markdownCss } from './mardown.style';
-import { IWebviewService } from '@ali/ide-webview';
-import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@ali/ide-core-browser';
-import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
+import { IWebviewService } from '@ide-framework/ide-webview';
+import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@ide-framework/ide-core-browser';
+import { HttpOpener } from '@ide-framework/ide-core-browser/lib/opener/http-opener';
 
 @Injectable()
 export class MarkdownServiceImpl implements IMarkdownService {

@@ -1,16 +1,16 @@
 import { ExtHostStatusBar } from '../../../../src/hosted/api/vscode/ext.host.statusbar';
-import { Emitter, ILoggerManagerClient, uuid } from '@ali/ide-core-common';
+import { Emitter, ILoggerManagerClient, uuid } from '@ide-framework/ide-core-common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@ali/ide-connection';
+import { RPCProtocol, WSChannelHandler } from '@ide-framework/ide-connection';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { IContextKeyService, IStatusBarService } from '@ali/ide-core-browser';
-import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { IContextKeyService, IStatusBarService } from '@ide-framework/ide-core-browser';
+import { StatusBarService } from '@ide-framework/ide-status-bar/lib/browser/status-bar.service';
 import { ThemeColor } from '../../../../src/common/vscode/ext-types';
 import { mockExtensionDescription } from '../../../../__mocks__/extensions';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

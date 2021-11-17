@@ -1,5 +1,5 @@
 import path from 'path';
-import { Uri } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/ide-core-common';
 import { IExtension, IExtensionProps } from '../src/common';
 import { IExtensionDescription, ExtensionIdentifier } from '../src/common/vscode';
 

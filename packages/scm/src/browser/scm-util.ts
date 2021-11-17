@@ -1,4 +1,4 @@
-import { basename } from '@ali/ide-core-common/lib/path';
+import { basename } from '@ide-framework/ide-core-common/lib/path';
 import { ISCMResourceGroup, ISCMResource, ISCMRepository } from '../common';
 
 export function isSCMResource(element: ISCMResourceGroup | ISCMResource): element is ISCMResource {

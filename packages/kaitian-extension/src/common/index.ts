@@ -1,14 +1,14 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@ali/ide-core-common';
-import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
+import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@ide-framework/ide-core-common';
+import { createExtHostContextProxyIdentifier } from '@ide-framework/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
-import { Emitter, IExtensionProps } from '@ali/ide-core-common';
+import { Emitter, IExtensionProps } from '@ide-framework/ide-core-common';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
 import { IKaitianExtensionContributions } from './kaitian/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
-import { typeAndModifierIdPattern } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
+import { typeAndModifierIdPattern } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
 
-export { IExtensionProps } from '@ali/ide-core-common';
+export { IExtensionProps } from '@ide-framework/ide-core-common';
 
 export * from './ext.host.proxy';
 export * from './require-interceptor';

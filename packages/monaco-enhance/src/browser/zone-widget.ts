@@ -1,7 +1,7 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@ali/ide-core-common';
-import { DomListener } from '@ali/ide-core-browser';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@ide-framework/ide-core-common';
+import { DomListener } from '@ide-framework/ide-core-browser';
 // import styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {

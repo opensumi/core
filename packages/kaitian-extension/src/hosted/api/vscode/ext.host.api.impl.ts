@@ -1,6 +1,6 @@
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService, IExtensionDescription } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService } from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
@@ -11,13 +11,13 @@ import { ViewColumn } from '../../../common/vscode/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtensionHostEditorService } from './editor/editor.host';
-import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
+import { CancellationTokenSource, Emitter, Event } from '@ide-framework/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
 import { ExtHostFileSystem } from './ext.host.file-system';
-import { OverviewRulerLane } from '@ali/ide-editor';
+import { OverviewRulerLane } from '@ide-framework/ide-editor';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostTreeViews } from './ext.host.treeview';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';

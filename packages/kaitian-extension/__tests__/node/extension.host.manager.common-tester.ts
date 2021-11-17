@@ -1,8 +1,8 @@
-import { Provider } from '@ali/common-di';
+import { Provider } from '@ide-framework/common-di';
 import { IExtensionHostManager } from '../../src';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { INodeLogger, MaybePromise } from '@ali/ide-core-node';
+import { INodeLogger, MaybePromise } from '@ide-framework/ide-core-node';
 import path from 'path';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -1,7 +1,7 @@
-import { Uri } from '@ali/ide-core-common';
+import { Uri } from '@ide-framework/ide-core-common';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadUrls, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IMainThreadUrls, MainThreadAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
 import { ExtHostUrls } from '../../../../src/hosted/api/vscode/ext.host.urls';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {

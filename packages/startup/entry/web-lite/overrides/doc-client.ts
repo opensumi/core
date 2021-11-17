@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@ali/ide-file-scheme';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@ali/ide-core-browser';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@ide-framework/ide-file-scheme';
+import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@ide-framework/ide-core-browser';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 import { Range } from 'vscode-languageserver-types';
 
 /**

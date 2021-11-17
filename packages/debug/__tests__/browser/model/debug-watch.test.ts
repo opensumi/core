@@ -1,11 +1,11 @@
-import { IReporterService } from '@ali/ide-core-common';
-import { DebugWatch, DebugThread } from '@ali/ide-debug/lib/browser';
-import { ILogger } from '@ali/ide-core-browser';
-import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
+import { IReporterService } from '@ide-framework/ide-core-common';
+import { DebugWatch, DebugThread } from '@ide-framework/ide-debug/lib/browser';
+import { ILogger } from '@ide-framework/ide-core-browser';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
-import { IDebugSessionManager } from '@ali/ide-debug';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { IDebugSessionManager } from '@ide-framework/ide-debug';
 
 describe('DebugWatch Model', () => {
   describe('DebugWatch should be work after init', () => {

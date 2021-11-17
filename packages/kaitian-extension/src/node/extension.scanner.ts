@@ -1,7 +1,7 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
-import { getDebugLogger, getNodeRequire, Uri } from '@ali/ide-core-node';
+import { getDebugLogger, getNodeRequire, Uri } from '@ide-framework/ide-core-node';
 import semver from 'semver';
 
 import { IExtensionMetaData, IExtraMetaData } from '../common';

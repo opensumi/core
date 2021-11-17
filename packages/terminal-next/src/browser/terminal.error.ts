@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { ITerminalErrorService, ITerminalError, ITerminalService, ITerminalGroupViewService, ITerminalController, IPtyExitEvent } from '../common';
 
 @Injectable()

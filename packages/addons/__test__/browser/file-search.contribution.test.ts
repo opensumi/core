@@ -1,13 +1,13 @@
-import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { CommandService, CommandServiceImpl, CommandRegistryImpl, CommandRegistry, DisposableCollection } from '@ali/ide-core-common';
-import { KeybindingRegistry, KeybindingRegistryImpl, RecentFilesManager, ILogger, PreferenceService } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { PrefixQuickOpenService } from '@ali/ide-quick-open';
-import { QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { DocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { CommandService, CommandServiceImpl, CommandRegistryImpl, CommandRegistry, DisposableCollection } from '@ide-framework/ide-core-common';
+import { KeybindingRegistry, KeybindingRegistryImpl, RecentFilesManager, ILogger, PreferenceService } from '@ide-framework/ide-core-browser';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { PrefixQuickOpenService } from '@ide-framework/ide-quick-open';
+import { QuickOpenHandlerRegistry } from '@ide-framework/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { FileSearchServicePath } from '@ide-framework/ide-file-search/lib/common';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { DocumentSymbol } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { equalsIgnoreCase, IExtensionProps } from '@ali/ide-core-common';
-import type { Uri } from '@ali/ide-core-common';
+import { equalsIgnoreCase, IExtensionProps } from '@ide-framework/ide-core-common';
+import type { Uri } from '@ide-framework/ide-core-common';
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
 export const USER_MANIFEST_CACHE_FILE = 'user';

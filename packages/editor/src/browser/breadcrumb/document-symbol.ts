@@ -1,10 +1,10 @@
-import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource, Deferred, CancellationToken } from '@ali/ide-core-browser';
+import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource, Deferred, CancellationToken } from '@ide-framework/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
-import { DocumentSymbol, SymbolTag } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { DocumentSymbol, SymbolTag } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 
 @Injectable()
 export class DocumentSymbolStore extends WithEventBus {

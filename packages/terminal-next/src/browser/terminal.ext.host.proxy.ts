@@ -1,4 +1,4 @@
-import { Disposable, Emitter, Event } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event } from '@ide-framework/ide-core-common';
 import { ITerminalController, ITerminalChildProcess, ITerminalProcessExtHostProxy, ITerminalDimensionsOverride, ITerminalLaunchError, ITerminalDimensions } from '../common';
 
 export class TerminalProcessExtHostProxy extends Disposable implements ITerminalChildProcess, ITerminalProcessExtHostProxy {

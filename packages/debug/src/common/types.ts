@@ -1,4 +1,4 @@
-import { IJSONSchemaSnippet } from '@ali/ide-core-common';
+import { IJSONSchemaSnippet } from '@ide-framework/ide-core-common';
 
 export interface CallStackContext {
   sessionId: string;

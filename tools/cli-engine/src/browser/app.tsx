@@ -1,5 +1,5 @@
-import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { Injector } from '@ali/common-di';
+import { ClientApp, IClientAppOpts } from '@ide-framework/ide-core-browser';
+import { Injector } from '@ide-framework/common-di';
 
 export async function renderApp(opts: IClientAppOpts) {
   const { hostname } = window.location;

@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, BrowserKeyboardLayoutImpl, Key } from '@ali/ide-core-browser';
+import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, BrowserKeyboardLayoutImpl, Key } from '@ide-framework/ide-core-browser';
 import { MockLogger } from '../../__mocks__/logger';
 
 describe('BrowserKeyboardLayoutService should be work', () => {

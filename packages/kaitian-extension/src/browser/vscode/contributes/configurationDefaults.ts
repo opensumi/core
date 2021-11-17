@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { PreferenceSchemaProperties, OVERRIDE_PROPERTY_PATTERN, PreferenceProvider, PreferenceScope } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { PreferenceSchemaProperties, OVERRIDE_PROPERTY_PATTERN, PreferenceProvider, PreferenceScope } from '@ide-framework/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {

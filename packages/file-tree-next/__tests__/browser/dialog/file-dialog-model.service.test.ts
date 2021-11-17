@@ -1,9 +1,9 @@
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { URI, CorePreferences, Disposable } from '@ali/ide-core-browser';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { URI, CorePreferences, Disposable } from '@ide-framework/ide-core-browser';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 import { Directory, File } from '../../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@ali/ide-components';
+import { TreeNodeType } from '@ide-framework/ide-components';
 import { FileTreeDialogModel } from '../../../src/browser/dialog/file-dialog-model.service';
 import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
 import styles from '../../../src/browser/file-tree-node.modules.less';

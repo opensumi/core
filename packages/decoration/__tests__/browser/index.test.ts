@@ -1,5 +1,5 @@
 // tslint:disable:new-parens
-import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@ali/ide-core-common';
+import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@ide-framework/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

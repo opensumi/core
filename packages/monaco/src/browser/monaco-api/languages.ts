@@ -26,8 +26,8 @@ import {
   registerDeclarationProvider,
   registerSelectionRangeProvider,
   registerCompletionItemProvider,
-} from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLanguages';
-import { FoldingRangeKind } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLanguages';
+import { FoldingRangeKind } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 
 export function createMonacoLanguageApi() {
   return Object.freeze({

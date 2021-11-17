@@ -1,22 +1,22 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS, Emitter } from '@ali/ide-core-browser';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS, Emitter } from '@ide-framework/ide-core-browser';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@ali/ide-components';
-import { FileTreeModelService } from '@ali/ide-file-tree-next/lib/browser/services/file-tree-model.service';
+import { TreeNodeType } from '@ide-framework/ide-components';
+import { FileTreeModelService } from '@ide-framework/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import styles from '../../src/browser/file-tree-node.modules.less';
-import { IFileTreeService } from '@ali/ide-file-tree-next';
-import { IFileTreeAPI } from '@ali/ide-file-tree-next';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IFileTreeService } from '@ide-framework/ide-file-tree-next';
+import { IFileTreeAPI } from '@ide-framework/ide-file-tree-next';
+import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
 import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
-import { IThemeService } from '@ali/ide-theme';
-import { IDecorationsService } from '@ali/ide-decoration';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { IDecorationsService } from '@ide-framework/ide-decoration';
+import { ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { FileContextKey } from '@ali/ide-file-tree-next/lib/browser/file-contextkey';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
+import { FileContextKey } from '@ide-framework/ide-file-tree-next/lib/browser/file-contextkey';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
 
 class TempDirectory { }
 

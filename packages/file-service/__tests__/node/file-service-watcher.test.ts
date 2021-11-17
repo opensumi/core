@@ -2,8 +2,8 @@ import temp from 'temp';
 import * as fs from 'fs-extra';
 import mv from 'mv';
 import { execSync } from 'child_process';
-import { URI } from '@ali/ide-core-common';
-import { FileUri } from '@ali/ide-core-node';
+import { URI } from '@ide-framework/ide-core-common';
+import { FileUri } from '@ide-framework/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 // tslint:disable:no-unused-expression

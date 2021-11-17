@@ -1,6 +1,6 @@
-import { Event, IDisposable, IExtensionProps } from '@ali/ide-core-common';
-import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
-import { SerializableEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
+import { Event, IDisposable, IExtensionProps } from '@ide-framework/ide-core-common';
+import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@ide-framework/ide-terminal-next';
+import { SerializableEnvironmentVariableCollection } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
 import type vscode from 'vscode';
 
 export interface IMainThreadTerminal {

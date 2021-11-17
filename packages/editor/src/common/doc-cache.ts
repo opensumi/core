@@ -1,6 +1,6 @@
-import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
-import type { IModelContentChange } from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModelEvents';
-import { URI, MaybePromise } from '@ali/ide-core-common';
+import { Range } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
+import type { IModelContentChange } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model/textModelEvents';
+import { URI, MaybePromise } from '@ide-framework/ide-core-common';
 
 interface IDocBasicCacheData {
   path: string;

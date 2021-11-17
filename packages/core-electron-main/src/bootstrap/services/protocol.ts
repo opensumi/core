@@ -1,5 +1,5 @@
 import { ElectronMainContribution } from '../types';
-import { Domain, URI, getDebugLogger } from '@ali/ide-core-common';
+import { Domain, URI, getDebugLogger } from '@ide-framework/ide-core-common';
 import { protocol } from 'electron';
 import { readFile } from 'fs-extra';
 

@@ -16,19 +16,19 @@
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-ext-impl.ts
 
 import type vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import {
   FileChangeType,
   FileStat,
   FileSystemProviderCapabilities,
   FileChange,
-} from '@ali/ide-file-service';
+} from '@ide-framework/ide-file-service';
 import {
   URI,
   IDisposable,
   Schemas,
   toDisposable,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 import {
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';

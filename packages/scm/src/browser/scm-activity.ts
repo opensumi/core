@@ -1,14 +1,14 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { Event } from '@ali/ide-core-common/lib/event';
-import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
-import { basename } from '@ali/ide-core-common/lib/path';
-import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { Event } from '@ide-framework/ide-core-common/lib/event';
+import { Disposable, IDisposable, dispose, combinedDisposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { basename } from '@ide-framework/ide-core-common/lib/path';
+import { commonPrefixLength } from '@ide-framework/ide-core-common/lib/utils/strings';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { StatusBarAlignment, IStatusBarService } from '@ide-framework/ide-core-browser/lib/services';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
 
 import { SCMService, ISCMRepository, scmContainerId } from '../common';
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 
 // 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()

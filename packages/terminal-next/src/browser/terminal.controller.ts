@@ -1,14 +1,14 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@ali/ide-core-common';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
-import { IThemeService } from '@ali/ide-theme';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@ide-framework/ide-core-common';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { TabBarHandler } from '@ide-framework/ide-main-layout/lib/browser/tabbar-handler';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
 import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalExitEvent, ITerminalExternalLinkProvider } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
-import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
+import { ResizeEvent, getSlotLocation, AppConfig } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -260,7 +260,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.addDispose(this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
       if (
         (this._tabbarHandler && this._tabbarHandler.isActivated()) &&
-        e.payload.slotLocation === getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig)
+        e.payload.slotLocation === getSlotLocation('@ide-framework/ide-terminal-next', this.config.layoutConfig)
       ) {
         this.terminalView.resize();
       }

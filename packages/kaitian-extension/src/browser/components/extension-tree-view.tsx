@@ -1,17 +1,17 @@
 import React from 'react';
 import styles from './extension-tree-view.module.less';
-import { isOSX } from '@ali/ide-core-browser';
-import { Injector } from '@ali/common-di';
+import { isOSX } from '@ide-framework/ide-core-browser';
+import { Injector } from '@ide-framework/common-di';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-core-browser';
-import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
+import { ViewState } from '@ide-framework/ide-core-browser';
+import { WelcomeView } from '@ide-framework/ide-main-layout/lib/browser/welcome.view';
 
 import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
-import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
+import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ide-framework/ide-components';
 import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
 import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
-import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
+import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;

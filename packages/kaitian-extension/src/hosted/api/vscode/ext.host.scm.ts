@@ -21,9 +21,9 @@ import {
   Event, Emitter, getDebugLogger, DisposableStore,
   MutableDisposable, Uri as URI, UriComponents,
   CancellationToken, IDisposable,
-} from '@ali/ide-core-common';
-import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { IRPCProtocol } from '@ali/ide-connection';
+} from '@ide-framework/ide-core-common';
+import { ISplice } from '@ide-framework/ide-core-common/lib/sequence';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,

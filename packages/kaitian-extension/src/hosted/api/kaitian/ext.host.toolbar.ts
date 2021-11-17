@@ -1,11 +1,11 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { ExtHostCommon } from './ext.host.common';
 import { IToolbarButtonActionHandle, IToolbarSelectActionHandle, IMainThreadToolbar, IExtHostToolbar } from '../../../common/kaitian/toolbar';
-import { Emitter, Disposable } from '@ali/ide-core-common';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Emitter, Disposable } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/kaitian/types';
-import { IToolbarPopoverStyle } from '@ali/ide-core-browser/lib/toolbar';
+import { IToolbarPopoverStyle } from '@ide-framework/ide-core-browser/lib/toolbar';
 
 export function createToolbarAPIFactory(
   extension: IExtensionDescription,

@@ -1,12 +1,12 @@
 import React from 'react';
 import clx from 'classnames';
-import { Badge, TreeNode, CompositeTreeNode, ITreeNodeRendererProps, ClasslistComposite, TreeNodeType } from '@ali/ide-components';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { useInjectable, URI, getIcon, CommandService } from '@ali/ide-core-browser';
-import { Loading } from '@ali/ide-core-browser/lib/components/loading';
-import { IThemeService, IIconTheme } from '@ali/ide-theme';
-import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
-import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { Badge, TreeNode, CompositeTreeNode, ITreeNodeRendererProps, ClasslistComposite, TreeNodeType } from '@ide-framework/ide-components';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { useInjectable, URI, getIcon, CommandService } from '@ide-framework/ide-core-browser';
+import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
+import { IThemeService, IIconTheme } from '@ide-framework/ide-theme';
+import { InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
+import { IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 import { SCMResourceNotRoot, SCMResourceFolder, SCMResourceGroup, SCMResourceFile } from './scm-tree-node';
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';

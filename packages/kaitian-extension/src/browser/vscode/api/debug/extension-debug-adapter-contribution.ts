@@ -1,5 +1,5 @@
-import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
-import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-browser';
+import { DebuggerDescription, DebugConfiguration } from '@ide-framework/ide-debug';
+import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ide-framework/ide-core-browser';
 import { IExtHostDebug } from '../../../../common/vscode';
 import { IActivationEventService } from '../../../types';
 

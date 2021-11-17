@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { registerColor } from '../color-registry';
 import { Color } from '../../common/color';
 

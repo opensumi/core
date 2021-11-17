@@ -1,8 +1,8 @@
-import { IResourceProvider, IResource } from '@ali/ide-editor/lib/browser';
-import { URI, localize } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { IResourceProvider, IResource } from '@ide-framework/ide-editor/lib/browser';
+import { URI, localize } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 
 import { getMinimalDiffPath } from '../../../utils';
 import { fromSCMUri } from '../../../utils/scm-uri';

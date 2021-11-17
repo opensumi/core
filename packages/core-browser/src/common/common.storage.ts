@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class RecentStorage {

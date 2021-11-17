@@ -1,6 +1,6 @@
 
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
 import { ColorTheme, ColorThemeKind } from '../../../common/vscode/ext-types';
 import { IExtHostTheming, IMainThreadTheming, MainThreadAPIIdentifier } from '../../../common/vscode';
 

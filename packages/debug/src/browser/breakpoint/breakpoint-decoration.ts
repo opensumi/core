@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-browser';
+import { localize } from '@ide-framework/ide-core-browser';
 import { DebugBreakpoint, isRuntimeBreakpoint } from './breakpoint-marker';
 
 export class DebugBreakpointDecoration {

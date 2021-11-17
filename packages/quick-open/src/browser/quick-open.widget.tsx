@@ -1,8 +1,8 @@
 import { observable, computed, action } from 'mobx';
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IAutoFocus, IQuickOpenCallbacks, IQuickOpenModel, IQuickOpenWidget, QuickOpenInputOptions } from './quick-open.type';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@ali/ide-core-browser';
-import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
+import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@ide-framework/ide-core-browser';
+import { VALIDATE_TYPE } from '@ide-framework/ide-core-browser/lib/components';
 
 @Injectable({ multiple: true })
 export class QuickOpenWidget implements IQuickOpenWidget {

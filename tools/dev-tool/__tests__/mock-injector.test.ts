@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { MockInjector } from '../src/mock-injector';
 import { createBrowserInjector, createNodeInjector } from '../src/injector-helper';
 

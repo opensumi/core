@@ -1,8 +1,8 @@
-import { URI, StorageProvider, IFileServiceClient } from '@ali/ide-core-browser';
-import { DebugBreakpoint, BreakpointManager, BREAKPOINT_KIND } from '@ali/ide-debug/lib/browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IWorkspaceStorageService } from '@ali/ide-workspace';
-import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
+import { URI, StorageProvider, IFileServiceClient } from '@ide-framework/ide-core-browser';
+import { DebugBreakpoint, BreakpointManager, BREAKPOINT_KIND } from '@ide-framework/ide-debug/lib/browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { IWorkspaceStorageService } from '@ide-framework/ide-workspace';
+import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks';
 
 describe('Breakpoints Manager', () => {
   const mockInjector = createBrowserInjector([]);

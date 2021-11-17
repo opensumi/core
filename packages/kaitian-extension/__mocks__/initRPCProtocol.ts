@@ -1,6 +1,6 @@
 import net from 'net';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { createSocketConnection, RPCServiceCenter, initRPCService } from '@ali/ide-connection';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { createSocketConnection, RPCServiceCenter, initRPCService } from '@ide-framework/ide-connection';
 
 import { KT_PROCESS_SOCK_OPTION_KEY } from '../src/common';
 

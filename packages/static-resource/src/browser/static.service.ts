@@ -1,6 +1,6 @@
 import { StaticResourceService, IStaticResourceProvider } from './static.definition';
-import { URI } from '@ali/ide-core-browser';
-import { Injectable } from '@ali/common-di';
+import { URI } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@ide-framework/common-di';
 
 @Injectable()
 export class StaticResourceServiceImpl implements StaticResourceService {

@@ -1,12 +1,12 @@
 import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow, IWebviewReviver } from './types';
-import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull, ILogger, addElement, Emitter, StorageProvider, IStorage, STORAGE_SCHEMA } from '@ali/ide-core-browser';
+import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull, ILogger, addElement, Emitter, StorageProvider, IStorage, STORAGE_SCHEMA } from '@ide-framework/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ide-framework/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
-import { ITheme } from '@ali/ide-theme';
-import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
-import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ali/ide-editor';
-import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { ITheme } from '@ide-framework/ide-theme';
+import { getColorRegistry } from '@ide-framework/ide-theme/lib/common/color-registry';
+import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ide-framework/ide-editor';
+import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences, EditorGroupChangeEvent } from '@ide-framework/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 import { ElectronPlainWebviewWindow } from './webview-window';

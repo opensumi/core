@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection, ProgressLocation, IProgress, IProgressStep } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection, ProgressLocation, IProgress, IProgressStep } from '@ide-framework/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
-import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { USER_STORAGE_SCHEME } from '@ide-framework/ide-preferences';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
 
 @Injectable()
 export class KeymapService implements IKeymapService {

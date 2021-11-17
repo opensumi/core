@@ -2,7 +2,7 @@
  * handle `kaitianContributes` and `contributes`
  */
 import mergeWith = require('lodash/mergeWith');
-import { asArray } from '@ali/ide-core-common';
+import { asArray } from '@ide-framework/ide-core-common';
 
 import { IExtensionContributions } from '../common/vscode/extension';
 import { IKaitianExtensionContributions } from '../common/kaitian/extension';

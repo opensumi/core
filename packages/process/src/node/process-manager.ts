@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { Disposable, getDebugLogger, Emitter, Event } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { Disposable, getDebugLogger, Emitter, Event } from '@ide-framework/ide-core-common';
 import { Process } from './process';
 import { IProcessManage } from '../common/index';
 

@@ -1,6 +1,6 @@
-import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@ali/ide-components';
-import { Injectable, Optional } from '@ali/common-di';
-import { ThrottledDelayer,  Emitter, Event } from '@ali/ide-core-browser';
+import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@ide-framework/ide-components';
+import { Injectable, Optional } from '@ide-framework/common-di';
+import { ThrottledDelayer,  Emitter, Event } from '@ide-framework/ide-core-browser';
 import { ExpressionContainer } from '../tree/debug-tree-node.define';
 
 @Injectable({multiple: true})

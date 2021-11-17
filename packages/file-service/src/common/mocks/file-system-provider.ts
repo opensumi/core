@@ -1,8 +1,8 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IDiskFileProvider, FileType } from '../';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
 import { FileChangeEvent } from '..';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFsProvider implements IDiskFileProvider {

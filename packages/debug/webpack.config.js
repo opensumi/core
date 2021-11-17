@@ -1,2 +1,2 @@
-const { createWebpackConfig } = require('@ali/ide-dev-tool/src/webpack');
+const { createWebpackConfig } = require('@ide-framework/ide-dev-tool/src/webpack');
 module.exports = createWebpackConfig(__dirname);

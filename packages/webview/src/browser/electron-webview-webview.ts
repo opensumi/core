@@ -1,7 +1,7 @@
 import { IWebview, IWebviewContentOptions } from './types';
-import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@ali/ide-core-browser';
+import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@ide-framework/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { WebviewScheme } from '../common';
 
 @Injectable({multiple: true})

@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-common';
+import { URI } from '@ide-framework/ide-core-common';
 import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../monaco-api/types';
 
 export const ITextmateTokenizer = Symbol('ITextmateTokenizer');
@@ -6,7 +6,7 @@ export const ITextmateTokenizer = Symbol('ITextmateTokenizer');
 export interface ITextmateTokenizerService {
   initialized: boolean;
   init(): void;
-  setTheme(theme: any /**应为 @ali/ide-theme#IThemeData */): void;
+  setTheme(theme: any /**应为 @ide-framework/ide-theme#IThemeData */): void;
   unregisterGrammar(grammar: GrammarsContribution): void;
   registerGrammar(grammar: GrammarsContribution, extPath: URI): Promise<void>;
   registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;

@@ -1,4 +1,4 @@
-import { Uri as URI } from '@ali/ide-core-common';
+import { Uri as URI } from '@ide-framework/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Definition, DefinitionLink, Location, Position } from '../../../../common/vscode/model.api';

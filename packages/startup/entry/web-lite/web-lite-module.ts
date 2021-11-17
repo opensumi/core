@@ -1,6 +1,6 @@
-import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
-import { CommonServerPath } from '@ali/ide-core-common';
+import { Provider, Injectable } from '@ide-framework/common-di';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { CommonServerPath } from '@ide-framework/ide-core-common';
 
 import { CommonCommandsContribution } from './modules/common-commands/index.contribution';
 import { FileProviderContribution } from './modules/file-provider/index.contribution';

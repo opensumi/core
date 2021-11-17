@@ -1,13 +1,13 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ResourceService, IResourceProvider, ResourceDecorationNeedChangeEvent, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
-import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@ali/ide-core-common';
-import { IEditorDocumentModelService, ICompareService } from '@ali/ide-editor/lib/browser';
-import { UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
-import { AppConfig, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { DiffResourceProvider, DefaultDiffEditorContribution } from '@ali/ide-editor/lib/browser/diff';
-import { CompareService } from '@ali/ide-editor/lib/browser/diff/compare';
+import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@ide-framework/ide-core-common';
+import { IEditorDocumentModelService, ICompareService } from '@ide-framework/ide-editor/lib/browser';
+import { UntitledSchemeDocumentProvider } from '@ide-framework/ide-editor/lib/browser/untitled-resource';
+import { AppConfig, EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { DiffResourceProvider, DefaultDiffEditorContribution } from '@ide-framework/ide-editor/lib/browser/diff';
+import { CompareService } from '@ide-framework/ide-editor/lib/browser/diff/compare';
 
 describe('resource service tests', () => {
 

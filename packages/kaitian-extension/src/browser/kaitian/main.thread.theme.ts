@@ -1,10 +1,10 @@
-import { Injectable, Injector, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Injectable, Injector, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IMainThreadTheme } from '../../common/kaitian/theme';
 import { IExtHostTheme } from '../../common/kaitian/theme';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { IThemeService, getColorRegistry } from '@ali/ide-theme';
-import { Disposable } from '@ali/ide-core-browser';
+import { IThemeService, getColorRegistry } from '@ide-framework/ide-theme';
+import { Disposable } from '@ide-framework/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class MainThreadTheme extends Disposable implements IMainThreadTheme {

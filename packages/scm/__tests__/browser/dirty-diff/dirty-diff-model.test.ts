@@ -1,14 +1,14 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { IDiffComputationResult } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { toDisposable, Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
-import { IDocPersistentCacheProvider } from '@ali/ide-editor';
-import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
-import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { IDiffComputationResult } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { toDisposable, Event, CommandService, positionToRange, URI } from '@ide-framework/ide-core-common';
+import { IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
+import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
+import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { EditorCollectionService } from '@ali/ide-editor';
+import { EditorCollectionService } from '@ide-framework/ide-editor';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -44,8 +44,8 @@ const mockedMonaco = createMockedMonaco();
 jest.useFakeTimers();
 
 // mock ThrottledDelayer to take it easy in unit test
-jest.mock('@ali/ide-core-common/src/async', () => ({
-  ...jest.requireActual('@ali/ide-core-common/src/async'),
+jest.mock('@ide-framework/ide-core-common/src/async', () => ({
+  ...jest.requireActual('@ide-framework/ide-core-common/src/async'),
   ThrottledDelayer: class {
     constructor() {}
     trigger(promiseFactory: () => Promise<any>) {

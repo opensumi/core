@@ -1,10 +1,10 @@
 import { IFileServiceClient } from '../file-service-client';
-import { URI, Emitter, Event, FileUri, IDisposable } from '@ali/ide-core-common';
+import { URI, Emitter, Event, FileUri, IDisposable } from '@ide-framework/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
 import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider, TextDocumentContentChangeEvent } from '../files';
 import { IFileServiceWatcher } from '../watcher';
-import { Injectable } from '@ali/common-di';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { Injectable } from '@ide-framework/common-di';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {

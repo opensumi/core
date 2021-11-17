@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@ali/common-di';
+import { Injectable, Injector } from '@ide-framework/common-di';
 import { Domain } from '../src/di-helper';
 
 describe('di-helper', () => {

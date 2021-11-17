@@ -1,4 +1,4 @@
-// Modify from @ali/ide-core-common/src/event.ts
+// Modify from @ide-framework/ide-core-common/src/event.ts
 import { IDisposable } from './disposable';
 import { LinkedList } from './linkedList';
 

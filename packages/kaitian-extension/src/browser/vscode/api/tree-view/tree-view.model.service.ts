@@ -1,13 +1,13 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@ali/ide-components';
-import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@ide-framework/ide-components';
+import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Deferred, ThrottledDelayer, CommandService } from '@ide-framework/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
 import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
 import { TreeViewDataProvider } from '../main.thread.treeview';
-import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { isUndefinedOrNull, isNumber } from '@ali/ide-core-common';
+import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { isUndefinedOrNull, isNumber } from '@ide-framework/ide-core-common';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
 

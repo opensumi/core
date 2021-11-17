@@ -1,19 +1,19 @@
-import { KeymapService } from '@ali/ide-keymaps/lib/browser/keymaps.service';
+import { KeymapService } from '@ide-framework/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable, KeybindingScope, localize, ILogger, FileUri, BrowserModule, AppConfig } from '@ali/ide-core-browser';
-import { IUserStorageService } from '@ali/ide-preferences';
-import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
-import { IDiskFileProvider, IFileServiceClient } from '@ali/ide-file-service';
-import { Injectable, Provider } from '@ali/common-di';
-import { UserStorageContribution, UserStorageServiceImpl } from '@ali/ide-preferences/lib/browser/userstorage';
+import { KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable, KeybindingScope, localize, ILogger, FileUri, BrowserModule, AppConfig } from '@ide-framework/ide-core-browser';
+import { IUserStorageService } from '@ide-framework/ide-preferences';
+import { KeymapsModule } from '@ide-framework/ide-keymaps/lib/browser';
+import { IDiskFileProvider, IFileServiceClient } from '@ide-framework/ide-file-service';
+import { Injectable, Provider } from '@ide-framework/common-di';
+import { UserStorageContribution, UserStorageServiceImpl } from '@ide-framework/ide-preferences/lib/browser/userstorage';
 import os from 'os';
 import path from 'path';
 import * as fs from 'fs-extra';
-import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
-import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
+import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
+import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
+import { FileServiceContribution } from '@ide-framework/ide-file-service/lib/browser/file-service-contribution';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class AddonModule extends BrowserModule {

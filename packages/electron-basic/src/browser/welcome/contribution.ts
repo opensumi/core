@@ -1,9 +1,9 @@
-import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from '@ali/ide-core-browser';
-import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
-import { ResourceService, IResource, WorkbenchEditorService } from '@ali/ide-editor';
+import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from '@ide-framework/ide-core-browser';
+import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRenderMode } from '@ide-framework/ide-editor/lib/browser';
+import { ResourceService, IResource, WorkbenchEditorService } from '@ide-framework/ide-editor';
 import { EditorWelcomeComponent } from './welcome';
-import { Autowired } from '@ali/common-di';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { Autowired } from '@ide-framework/common-di';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { IWelcomeMetaData } from './common';
 
 @Domain(BrowserEditorContribution, ClientAppContribution)

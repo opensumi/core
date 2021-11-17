@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Domain } from '@ali/ide-core-common';
-import { ClientAppContribution, getIcon } from '@ali/ide-core-browser';
-import { SCMService } from '@ali/ide-scm';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Domain } from '@ide-framework/ide-core-common';
+import { ClientAppContribution, getIcon } from '@ide-framework/ide-core-browser';
+import { SCMService } from '@ide-framework/ide-scm';
 
 // mock implements
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '@ali/ide-scm/__tests__/scm-test-util';
-import { IMenuRegistry, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
+import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '@ide-framework/ide-scm/__tests__/scm-test-util';
+import { IMenuRegistry, MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 @Injectable()
 @Domain(ClientAppContribution, MenuContribution)

@@ -1,7 +1,7 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { StaticResourceModule, StaticResourceService, StaticResourceContribution, StaticResourceClientAppContribution } from '@ali/ide-static-resource/lib/browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { StaticResourceModule, StaticResourceService, StaticResourceContribution, StaticResourceClientAppContribution } from '@ide-framework/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '../../src/browser';
-import { URI, createContributionProvider } from '@ali/ide-core-common';
+import { URI, createContributionProvider } from '@ide-framework/ide-core-common';
 
 describe('packages/express-file-server/__tests__/browser/index.test.ts', () => {
   const injector = createBrowserInjector([

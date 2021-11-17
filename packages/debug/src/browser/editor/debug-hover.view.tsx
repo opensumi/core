@@ -1,14 +1,14 @@
 import React from 'react';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ide-framework/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import styles from './debug-hover.module.less';
 import cls from 'classnames';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
-import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@ali/ide-components';
+import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@ide-framework/ide-components';
 import { DebugHoverModel } from './debug-hover-model';
 import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot, DebugVariable } from '../tree/debug-tree-node.define';
 import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable } from '@ide-framework/ide-core-common';
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);

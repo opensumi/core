@@ -1,15 +1,15 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import {
   Domain,
   URI,
   FsProviderContribution,
   AppConfig,
-} from '@ali/ide-core-browser';
-import { Path } from '@ali/ide-core-common/lib/path';
+} from '@ide-framework/ide-core-browser';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { StaticResourceContribution, StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser/static.definition';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
 

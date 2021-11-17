@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IOpenerService, IOpener } from '.';
-import { URI, ILogger } from '@ali/ide-core-common';
+import { URI, ILogger } from '@ide-framework/ide-core-common';
 import { DefaultOpener } from './default-opener';
 
 @Injectable()

@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { INativeCryptrService } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { INativeCryptrService } from '@ide-framework/ide-core-common';
 import crypto from 'crypto';
 
 @Injectable()

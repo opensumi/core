@@ -1,23 +1,23 @@
-import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS } from '@ali/ide-core-browser';
-import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS } from '@ide-framework/ide-core-browser';
+import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 import { FileTreeService } from './file-tree.service';
-import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@ali/ide-main-layout';
-import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
-import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
+import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@ide-framework/ide-main-layout';
+import { ExplorerContainerId } from '@ide-framework/ide-explorer/lib/browser/explorer-contribution';
+import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ide-framework/ide-workspace';
 import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-import { IDecorationsService } from '@ali/ide-decoration';
-import { MenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { IDecorationsService } from '@ide-framework/ide-decoration';
+import { MenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory } from '../common/file-tree-node.define';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
-import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ide-framework/ide-overlay';
+import { FilesExplorerFilteredContext } from '@ide-framework/ide-core-browser/lib/contextkey/explorer';
+import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ide-framework/ide-core-browser/lib/contextkey/explorer';
 import { IFileTreeService, PasteTypes } from '../common';
-import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
-import { ViewContentGroups } from '@ali/ide-main-layout/lib/browser/views-registry';
+import { TERMINAL_COMMANDS } from '@ide-framework/ide-terminal-next';
+import { ViewContentGroups } from '@ide-framework/ide-main-layout/lib/browser/views-registry';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 

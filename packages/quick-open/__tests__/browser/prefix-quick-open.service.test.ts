@@ -1,11 +1,11 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '@ali/ide-dev-tool/src/mock-injector';
-import { ILogger, localize, Deferred } from '@ali/ide-core-common';
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { QuickOpenService, QuickOpenModel, QuickOpenOptions, QuickOpenItem } from '@ali/ide-core-browser/lib/quick-open';
-import { quickFileOpen } from '@ali/ide-addons/lib/browser/file-search.contribution';
-import { IIconService, IThemeService } from '@ali/ide-theme';
-import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@ide-framework/ide-dev-tool/src/mock-injector';
+import { ILogger, localize, Deferred } from '@ide-framework/ide-core-common';
+import { EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
+import { QuickOpenService, QuickOpenModel, QuickOpenOptions, QuickOpenItem } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { quickFileOpen } from '@ide-framework/ide-addons/lib/browser/file-search.contribution';
+import { IIconService, IThemeService } from '@ide-framework/ide-theme';
+import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
 
 import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/browser/prefix-quick-open.service';
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';

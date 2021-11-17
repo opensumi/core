@@ -1,7 +1,7 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { MonacoSnippetSuggestProvider } from '@ali/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { MonacoSnippetSuggestProvider } from '@ide-framework/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 
 export interface SnippetContribution {
   path: string;

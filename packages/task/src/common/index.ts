@@ -1,9 +1,9 @@
-import { IJSONSchemaMap } from '@ali/ide-core-browser';
-import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@ali/ide-core-common';
+import { IJSONSchemaMap } from '@ide-framework/ide-core-browser';
+import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@ide-framework/ide-core-common';
 import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, TaskEvent } from './task';
-import { UriComponents } from '@ali/ide-editor';
+import { UriComponents } from '@ide-framework/ide-editor';
 import { ProblemCollector } from '../browser/problem-collector';
-import { TerminalOptions } from '@ali/ide-terminal-next/lib/common';
+import { TerminalOptions } from '@ide-framework/ide-terminal-next/lib/common';
 
 // tslint:disable-next-line: no-empty-interface
 interface TaskMap {}

@@ -1,18 +1,18 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@ali/ide-core-browser';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@ide-framework/ide-core-browser';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { IThemeService } from '@ali/ide-theme';
-import { IDecorationsService } from '@ali/ide-decoration';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { IDecorationsService } from '@ide-framework/ide-decoration';
+import { ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
 import { EditorFile } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
-import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
+import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
 import styles from '../../src/browser/file-tree-node.modules.less';
 
 describe('OpenedEditorModelService should be work', () => {

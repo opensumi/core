@@ -1,6 +1,6 @@
-import { Provider, Injectable, Injector } from '@ali/common-di';
+import { Provider, Injectable, Injector } from '@ide-framework/common-di';
 import { MainLayoutModuleContribution } from './main-layout.contribution';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '../common';
 import { TabbarServiceFactory } from './tabbar/tabbar.service';
 import { LayoutService } from './layout.service';

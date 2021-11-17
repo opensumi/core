@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { VariableRegistry } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { VariableRegistry } from '@ide-framework/ide-core-browser';
 import { VariableResolveOptions, IVariableResolverService } from '../common';
 
 @Injectable()

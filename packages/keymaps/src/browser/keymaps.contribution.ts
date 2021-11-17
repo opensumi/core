@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@ali/common-di';
+import { Autowired, Injectable } from '@ide-framework/common-di';
 import {
   ClientAppContribution,
   URI,
@@ -18,14 +18,14 @@ import {
   getKeyboardLayoutId,
   KeymapInfo,
   formatLocalize,
-} from '@ali/ide-core-browser';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
+} from '@ide-framework/ide-core-browser';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { ResourceService, IResourceProvider, IResource } from '@ide-framework/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { QuickPickItem, QuickPickService } from '@ali/ide-quick-open';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { QuickPickItem, QuickPickService } from '@ide-framework/ide-quick-open';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 

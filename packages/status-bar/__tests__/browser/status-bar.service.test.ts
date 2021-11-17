@@ -1,12 +1,12 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
-import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
-import { CommandRegistry, IContextKeyService, ILoggerManagerClient } from '@ali/ide-core-browser';
-import { MockInjector, mockService } from '@ali/ide-dev-tool/src/mock-injector';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
-import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ide-framework/ide-core-browser/lib/services';
+import { StatusBarModule } from '@ide-framework/ide-status-bar/lib/browser';
+import { CommandRegistry, IContextKeyService, ILoggerManagerClient } from '@ide-framework/ide-core-browser';
+import { MockInjector, mockService } from '@ide-framework/ide-dev-tool/src/mock-injector';
+import { MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
+import { LayoutState } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
+import { IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 describe('template test', () => {
   const EN_CODING_ENTRY_ID = 'encoding';

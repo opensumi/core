@@ -1,9 +1,9 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, ILogger, revive } from '@ali/ide-core-common';
-import { UriComponents } from '@ali/ide-editor';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, ILogger, revive } from '@ide-framework/ide-core-common';
+import { UriComponents } from '@ide-framework/ide-editor';
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';
 import { isResourceFileEdit, isResourceTextEdit } from './utils';
 

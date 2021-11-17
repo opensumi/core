@@ -1,8 +1,8 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 /* istanbul ignore file */
 // 文件没有使用
-import { Disposable } from '@ali/ide-core-common/lib/disposable';
+import { Disposable } from '@ide-framework/ide-core-common/lib/disposable';
 
 export class DirtyDiffController extends Disposable {
 

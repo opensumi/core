@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ide-framework/ide-core-browser';
 import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
 import TabItem from './tab.item';
 import { TerminalContextMenuService } from '../terminal.context-menu';

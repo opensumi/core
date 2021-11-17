@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
-import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 import { ClientAppContribution } from '../common/common.define';
 

@@ -1,5 +1,5 @@
-import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ali/common-di';
-import { CommandRegistry } from '@ali/ide-core-common';
+import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ide-framework/common-di';
+import { CommandRegistry } from '@ide-framework/ide-core-common';
 
 export class MockInjector extends Injector {
   // tslint:disable-next-line

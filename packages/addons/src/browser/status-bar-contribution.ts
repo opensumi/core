@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
-import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus, CommandService, Domain } from '@ali/ide-core-common';
-import { ClientAppContribution } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus, CommandService, Domain } from '@ide-framework/ide-core-common';
+import { ClientAppContribution } from '@ide-framework/ide-core-browser';
 
 @Domain(ClientAppContribution)
 export class StatusBarContribution extends WithEventBus implements ClientAppContribution {

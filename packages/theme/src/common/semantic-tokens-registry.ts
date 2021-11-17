@@ -1,4 +1,4 @@
-import { IJSONSchema } from '@ali/ide-core-common/lib/json-schema';
+import { IJSONSchema } from '@ide-framework/ide-core-common/lib/json-schema';
 import { Color } from './color';
 import { ITokenColorizationSetting } from './theme.service';
 

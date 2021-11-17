@@ -1,13 +1,13 @@
-import { Emitter } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference';
+import { Emitter } from '@ide-framework/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { ExtHostAPIIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { OutputPreferences } from '@ide-framework/ide-output/lib/browser/output-preference';
 import * as types from '../../src/common/vscode/ext-types';
 
 import { ExtHostOutput } from '../../src/hosted/api/vscode/ext.host.output';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
 import { MockOutputService } from '../../__mocks__/api/output.service';
 
 const emitterA = new Emitter<any>();

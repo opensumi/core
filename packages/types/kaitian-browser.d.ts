@@ -13,14 +13,14 @@ interface IComponentProps<N, W = any> {
 }
 
 declare module 'kaitian-browser' {
-  export * from '@ali/ide-components';
+  export * from '@ide-framework/ide-components';
 
   import type vscode from 'vscode';
   import React from 'react';
 
-  import { ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components';
+  import { ROTATE_TYPE, ANIM_TYPE } from '@ide-framework/ide-components';
 
-  export type { URI } from '@ali/ide-core-browser';
+  export type { URI } from '@ide-framework/ide-core-browser';
 
   export interface ScrollAreaProps {
     className?: string;

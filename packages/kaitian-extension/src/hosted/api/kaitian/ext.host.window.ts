@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Emitter, Disposable, IDisposable, DisposableCollection } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Emitter, Disposable, IDisposable, DisposableCollection } from '@ide-framework/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IExtHostIDEWindow, IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtPlainWebviewWindow, IWindowInfo } from '../../../common/kaitian/window';
 import { IExtHostCommands } from '../../../common/vscode';

@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { GrammarsContribution } from '@ali/ide-monaco';
-import { localize, URI, Disposable } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { GrammarsContribution } from '@ide-framework/ide-monaco';
+import { localize, URI, Disposable } from '@ide-framework/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { ITextmateTokenizer, ITextmateTokenizerService } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@ide-framework/ide-monaco/lib/browser/contrib/tokenizer';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 

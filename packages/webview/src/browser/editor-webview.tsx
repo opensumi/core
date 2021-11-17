@@ -1,7 +1,7 @@
 import React from 'react';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
+import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
 import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService, isWebview } from './types';
-import { Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
+import { Disposable, DomListener, useInjectable } from '@ide-framework/ide-core-browser';
 import { WebviewServiceImpl } from './webview.service';
 
 declare const ResizeObserver: any;

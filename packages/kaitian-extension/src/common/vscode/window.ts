@@ -1,9 +1,9 @@
 import type vscode from 'vscode';
 import * as types from './ext-types';
-import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
-import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
-import { Event, IThemeColor } from '@ali/ide-core-common';
-import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
+import { CancellationToken, MessageType, MaybePromise } from '@ide-framework/ide-core-common';
+import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ide-framework/ide-quick-open';
+import { Event, IThemeColor } from '@ide-framework/ide-core-common';
+import { QuickTitleButton } from '@ide-framework/ide-core-browser/lib/quick-open';
 import { UriComponents, QuickInputButton } from './ext-types';
 import { IExtensionDescription } from './extension';
 

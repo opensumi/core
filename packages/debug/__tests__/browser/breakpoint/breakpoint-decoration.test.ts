@@ -1,5 +1,5 @@
-import { URI } from '@ali/ide-core-browser';
-import { DebugDecorator, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
+import { URI } from '@ide-framework/ide-core-browser';
+import { DebugDecorator, DebugBreakpoint } from '@ide-framework/ide-debug/lib/browser';
 
 describe('Breakpoints Decoration', () => {
   const prefix = 'kaitian-debug-breakpoint';

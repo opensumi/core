@@ -1,4 +1,4 @@
-import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@ali/ide-core-common';
+import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@ide-framework/ide-core-common';
 import { ViewColumn } from './editor';
 import type vscode from 'vscode';
 

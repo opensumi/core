@@ -1,4 +1,4 @@
-import { CancellationToken, CancellationTokenSource, Deferred, Event, Uri } from '@ali/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Deferred, Event, Uri } from '@ide-framework/ide-core-common';
 // Uri: vscode 中的 uri
 // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 

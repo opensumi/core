@@ -1,4 +1,4 @@
-import { isEditorOption, getConvertedMonacoOptions } from '@ali/ide-editor/lib/browser/preference/converter';
+import { isEditorOption, getConvertedMonacoOptions } from '@ide-framework/ide-editor/lib/browser/preference/converter';
 
 describe('editor Options Converter Tests', () => {
 

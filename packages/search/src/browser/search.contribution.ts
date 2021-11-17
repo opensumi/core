@@ -1,13 +1,13 @@
-import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, DisposableCollection } from '@ali/ide-core-common';
-import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@ali/ide-core-browser';
-import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ali/ide-core-browser';
-import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
-import { MainLayoutContribution } from '@ali/ide-main-layout';
-import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { getIcon } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { CommandContribution, CommandRegistry, DisposableCollection } from '@ide-framework/ide-core-common';
+import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@ide-framework/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ide-framework/ide-core-browser';
+import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ide-framework/ide-core-browser/lib/layout';
+import { MainLayoutContribution } from '@ide-framework/ide-main-layout';
+import { MenuId, MenuContribution, IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { getIcon } from '@ide-framework/ide-core-browser';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
@@ -243,7 +243,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-search', [], {
+    registry.register('@ide-framework/ide-search', [], {
       containerId: SEARCH_CONTAINER_ID,
       iconClass: getIcon('search'),
       title: localize('search.title'),

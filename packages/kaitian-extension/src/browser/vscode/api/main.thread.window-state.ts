@@ -1,6 +1,6 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
-import { Optinal, Injectable } from '@ali/common-di';
+import { Optinal, Injectable } from '@ide-framework/common-di';
 
 @Injectable({multiple: true})
 export class MainThreadWindowState {

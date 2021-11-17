@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { getDebugLogger } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { getDebugLogger } from '@ide-framework/ide-core-common';
 
 const maxChannelHistory = 1000;
 

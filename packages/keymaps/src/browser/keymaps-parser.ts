@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
 import { KeymapItem } from '../common';

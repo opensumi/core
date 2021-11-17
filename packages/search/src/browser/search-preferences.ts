@@ -1,11 +1,11 @@
-import { Injector } from '@ali/common-di';
+import { Injector } from '@ide-framework/common-di';
 import {
   PreferenceService,
   PreferenceProxy,
   createPreferenceProxy,
   PreferenceSchema,
   localize,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 
 // 编写好 preference schema 配置
 // 包括分组和选型

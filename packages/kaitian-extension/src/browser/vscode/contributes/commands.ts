@@ -1,7 +1,7 @@
 import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, AppConfig } from '@ali/ide-core-browser';
-import { ThemeType, IIconService, IconType } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { CommandRegistry, AppConfig } from '@ide-framework/ide-core-browser';
+import { ThemeType, IIconService, IconType } from '@ide-framework/ide-theme';
 
 export interface CommandFormat {
 

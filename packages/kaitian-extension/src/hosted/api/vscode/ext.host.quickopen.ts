@@ -1,8 +1,8 @@
 import type vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
-import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise, isUndefined } from '@ali/ide-core-common';
-import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
+import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise, isUndefined } from '@ide-framework/ide-core-common';
+import { QuickPickItem, QuickPickOptions } from '@ide-framework/ide-quick-open';
 
 type Item = string | vscode.QuickPickItem;
 

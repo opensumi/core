@@ -1,6 +1,6 @@
 import React from 'react';
 import { IInputBaseProps, Input } from './Input';
-import { HistoryNavigator } from '@ali/monaco-editor-core/esm/vs/base/common/history';
+import { HistoryNavigator } from '@ide-framework/monaco-editor-core/esm/vs/base/common/history';
 
 export interface HistoryInputBoxProp extends IInputBaseProps {
   // 上层自己持久化历史记录

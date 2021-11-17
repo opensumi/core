@@ -1,8 +1,8 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IToolBarViewService } from '@ali/ide-toolbar/lib/browser';
-import { getIcon, CommandService } from '@ali/ide-core-browser';
-import { IToolbarActionService, IToolbarActionGroup } from '@ali/ide-core-browser/lib/menu/next/toolbar-action.service';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IToolBarViewService } from '@ide-framework/ide-toolbar/lib/browser';
+import { getIcon, CommandService } from '@ide-framework/ide-core-browser';
+import { IToolbarActionService, IToolbarActionGroup } from '@ide-framework/ide-core-browser/lib/menu/next/toolbar-action.service';
 
 export interface ActionContribution {
   type: 'action';

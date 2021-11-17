@@ -1,7 +1,7 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import archiver from 'archiver';
-import { toLocalISOString, getDebugLogger, Archive } from '@ali/ide-core-common';
+import { toLocalISOString, getDebugLogger, Archive } from '@ide-framework/ide-core-common';
 
 const debugLog = getDebugLogger('LogUtils');
 

@@ -1,17 +1,17 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monacoModes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ZoneWidget } from '@ali/ide-monaco-enhance';
+import { ZoneWidget } from '@ide-framework/ide-monaco-enhance';
 import { DebugEditor } from '../../common';
 import styles from './debug-breakpoint.module.less';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { Select, Option } from '@ali/ide-components';
-import { localize, Emitter, Event } from '@ali/ide-core-common';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { Select, Option } from '@ide-framework/ide-components';
+import { localize, Emitter, Event } from '@ide-framework/ide-core-common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
-import { ICodeEditor } from '@ali/ide-editor';
-import { Injectable, Autowired } from '@ali/common-di';
-import { ICSSStyleService } from '@ali/ide-theme';
+import { ICodeEditor } from '@ide-framework/ide-editor';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ICSSStyleService } from '@ide-framework/ide-theme';
 
 export interface BreakpointChangeData {
   context: DebugBreakpointZoneWidget.Context;

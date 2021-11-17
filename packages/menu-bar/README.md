@@ -1,1 +1,1 @@
-# @ali/ide-menu-bar
+# @ide-framework/ide-menu-bar

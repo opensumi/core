@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtensionCandidate } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { ExtensionCandidate } from '@ide-framework/ide-core-common';
 
 import { IExtHostLifeCycle, IMainThreadLifeCycle } from '../../../common/kaitian/lifecycle';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';

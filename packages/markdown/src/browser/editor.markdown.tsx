@@ -1,6 +1,6 @@
 import React from 'react';
-import { ReactEditorComponent, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ali/ide-core-browser';
+import { ReactEditorComponent, IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ide-framework/ide-core-browser';
 import { IMarkdownService } from '../common';
 
 export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) => {

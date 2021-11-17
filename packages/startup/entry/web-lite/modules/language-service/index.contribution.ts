@@ -1,9 +1,9 @@
-import { Autowired } from '@ali/common-di';
-import { Disposable, Domain, URI } from '@ali/ide-core-common';
-import { ClientAppContribution } from '@ali/ide-core-browser';
-import { Position } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { Autowired } from '@ide-framework/common-di';
+import { Disposable, Domain, URI } from '@ide-framework/ide-core-common';
+import { ClientAppContribution } from '@ide-framework/ide-core-browser';
+import { Position } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type vscode from 'vscode';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
 import { ILsifService } from '../../services/lsif-service/base';

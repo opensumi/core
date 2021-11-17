@@ -1,1 +1,1 @@
-# @ali/ide-core
+# @ide-framework/ide-core

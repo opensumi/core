@@ -1,6 +1,6 @@
-import { IElectronNativeDialogService, electronEnv } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IElectronNativeDialogService, electronEnv } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronNativeDialogService implements IElectronNativeDialogService {

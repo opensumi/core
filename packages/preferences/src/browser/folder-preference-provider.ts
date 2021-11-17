@@ -1,8 +1,8 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { URI, PreferenceScope } from '@ali/ide-core-browser';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { URI, PreferenceScope } from '@ide-framework/ide-core-browser';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
-import { FileStat } from '@ali/ide-file-service';
-import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { IWorkspaceService } from '@ide-framework/ide-workspace/lib/common';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
 export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;

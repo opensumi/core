@@ -1,5 +1,5 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Emitter, Event, Disposable, IDisposable } from '@ali/ide-core-common';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Emitter, Event, Disposable, IDisposable } from '@ide-framework/ide-core-common';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
   static ID = 0;

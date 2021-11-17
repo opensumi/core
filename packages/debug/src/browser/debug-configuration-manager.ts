@@ -1,10 +1,10 @@
 import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
-import { QuickPickService } from '@ali/ide-quick-open';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { QuickPickService } from '@ide-framework/ide-quick-open';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 import {
   PreferenceConfigurations,
   IContextKey,
@@ -21,16 +21,16 @@ import {
   IStorage,
   ThrottledDelayer,
   Deferred,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 import { visit } from 'jsonc-parser';
-import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
+import { WorkspaceVariableContribution } from '@ide-framework/ide-workspace/lib/browser/workspace-variable-contribution';
 import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugSessionOptions } from '../common';
-import { FileSystemError } from '@ali/ide-file-service';
+import { FileSystemError } from '@ide-framework/ide-file-service';
 import { DebugConfiguration } from '../common';
-import { WorkbenchEditorService, IOpenResourceResult } from '@ali/ide-editor';
+import { WorkbenchEditorService, IOpenResourceResult } from '@ide-framework/ide-editor';
 import { DebugPreferences } from './debug-preferences';
-import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {

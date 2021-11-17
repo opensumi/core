@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import {
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
   LogLevel,
-} from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-common';
 
-export { ILogger } from '@ali/ide-core-common';
+export { ILogger } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class Logger implements ILogServiceClient {

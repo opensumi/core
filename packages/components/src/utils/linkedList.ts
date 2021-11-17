@@ -1,4 +1,4 @@
-// Modify from @ali/ide-core-common/src/linkedList.ts
+// Modify from @ide-framework/ide-core-common/src/linkedList.ts
 import { Iterator, IteratorResult, FIN } from './iterator';
 
 class Node<E> {

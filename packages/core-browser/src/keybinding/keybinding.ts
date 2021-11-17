@@ -1,6 +1,6 @@
-import { ContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { Injectable, Autowired } from '@ali/common-di';
-import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@ali/ide-core-common';
+import { ContextKeyExpression } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@ide-framework/ide-core-common';
 import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { IContextKeyService } from '../context-key';

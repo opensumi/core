@@ -1,5 +1,5 @@
 import { PreferenceScope } from './preference-scope';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable } from '@ide-framework/ide-core-common';
 
 export interface IPreferenceSettingsService {
 

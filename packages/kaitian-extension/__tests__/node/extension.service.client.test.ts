@@ -2,17 +2,17 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
-import { Injector } from '@ali/common-di';
-import { AppConfig, INodeLogger } from '@ali/ide-core-node';
+import { Injector } from '@ide-framework/common-di';
+import { AppConfig, INodeLogger } from '@ide-framework/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
-import { IExtensionStoragePathServer } from '@ali/ide-extension-storage/lib/common';
-import { IFileService, IDiskFileProvider } from '@ali/ide-file-service/lib/common';
-import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
-import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { IExtensionStoragePathServer } from '@ide-framework/ide-extension-storage/lib/common';
+import { IFileService, IDiskFileProvider } from '@ide-framework/ide-file-service/lib/common';
+import { FileSystemNodeOptions, FileService } from '@ide-framework/ide-file-service/lib/node';
+import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
 
 describe('Extension Client Serivce', () => {
   let injector: Injector;

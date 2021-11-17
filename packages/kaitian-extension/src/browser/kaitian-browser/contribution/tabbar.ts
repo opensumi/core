@@ -1,9 +1,9 @@
 import { IRunTimeParams, AbstractKaitianBrowserContributionRunner, ITabBarViewContribution } from '../types';
-import { IDisposable, Disposable } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { getIcon } from '@ali/ide-core-browser';
-import { IIconService } from '@ali/ide-theme';
+import { IDisposable, Disposable } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { getIcon } from '@ide-framework/ide-core-browser';
+import { IIconService } from '@ide-framework/ide-theme';
 
 const SUPPORT_LOCATION = [ 'left', 'right', 'bottom', 'editor', 'toolBar' ];
 

@@ -1,11 +1,11 @@
 import crypto from 'crypto';
-import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred, StoragePaths } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { isWindows, URI, Deferred, StoragePaths } from '@ide-framework/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
-import { ILoggerManagerClient } from '@ali/ide-logs';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ide-framework/ide-workspace';
+import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service';
+import { ILoggerManagerClient } from '@ide-framework/ide-logs';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {

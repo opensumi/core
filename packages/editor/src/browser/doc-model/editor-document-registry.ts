@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@ide-framework/ide-core-browser';
 
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider, EditorDocumentModelOptionExternalUpdatedEvent, ORIGINAL_DOC_SCHEME } from './types';
 

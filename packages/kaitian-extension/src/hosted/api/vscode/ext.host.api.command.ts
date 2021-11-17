@@ -2,10 +2,10 @@ import { CommandsConverter } from './ext.host.command';
 import * as typeConverters from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
-import { Uri as URI } from '@ali/ide-core-common';
-import { isFalsyOrEmpty } from '@ali/ide-core-common/lib/arrays';
+import { Uri as URI } from '@ide-framework/ide-core-common';
+import { isFalsyOrEmpty } from '@ide-framework/ide-core-common/lib/arrays';
 import type * as vscode from 'vscode';
-import type { ITextEditorOptions } from '@ali/monaco-editor-core/esm/vs/platform/editor/common/editor';
+import type { ITextEditorOptions } from '@ide-framework/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 type IPosition = modes.Position;
 type IRange = modes.Range;

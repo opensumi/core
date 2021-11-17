@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { localize } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { localize } from '@ide-framework/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IContributeMenubarItem } from '../../../common/kaitian/extension';

@@ -1,6 +1,6 @@
-import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { Event, BasicEvent } from '@ali/ide-core-common';
+import { ContextKeyExpr, IContextKeyServiceTarget } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyService } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { Event, BasicEvent } from '@ide-framework/ide-core-common';
 
 export interface IContextKey<T> {
   set(value: T | undefined): void;

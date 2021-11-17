@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { ThemeContribution, IIconService } from '@ali/ide-theme';
-import { URI } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ThemeContribution, IIconService } from '@ide-framework/ide-theme';
+import { URI } from '@ide-framework/ide-core-common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;

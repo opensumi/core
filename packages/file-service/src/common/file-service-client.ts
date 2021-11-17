@@ -1,4 +1,4 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, FileSystemProviderCapabilities } from '@ali/ide-core-common';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
 import { FileStat,
   FileMoveOptions,
   FileDeleteOptions,
@@ -11,8 +11,8 @@ import { FileStat,
   IFileSystemProviderCapabilitiesChangeEvent,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
-import { DidFilesChangedParams, FileChangeEvent } from '@ali/ide-core-common';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { DidFilesChangedParams, FileChangeEvent } from '@ide-framework/ide-core-common';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
 
 export const IFileServiceClient = IFileServiceClientToken;
 

@@ -14,9 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IGrammarConfiguration } from 'vscode-textmate';
-import { getDebugLogger, URI } from '@ali/ide-core-common';
+import { getDebugLogger, URI } from '@ide-framework/ide-core-common';
 
 import { TokenizerOption } from './textmate-tokenizer';
 

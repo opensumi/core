@@ -1,7 +1,7 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { isMacintosh, isLinux } from '@ide-framework/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
-import { URI, IEventBus } from '@ali/ide-core-browser';
+import { URI, IEventBus } from '@ide-framework/ide-core-browser';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -9,9 +9,9 @@ import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
 import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../src/browser/doc-model/types';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
-import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EmptyDocCacheImpl } from '@ide-framework/ide-editor/lib/browser/doc-cache';
+import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;

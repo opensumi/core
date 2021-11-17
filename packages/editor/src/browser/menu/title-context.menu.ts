@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { URI } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { URI } from '@ide-framework/ide-core-common';
 import { IEditorGroup } from '../../common';
 import { EditorGroup } from '../workbench-editor.service';
-import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { ResourceContextKey } from '@ide-framework/ide-core-browser/lib/contextkey/resource';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class TabTitleMenuService {

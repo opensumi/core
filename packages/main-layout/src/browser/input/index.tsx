@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRef, useEffect } from 'react';
-import { Input } from '@ali/ide-components';
-import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
+import { Input } from '@ide-framework/ide-components';
+import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
 import { IMainLayoutService } from '../../common';
 
 export const AutoFocusedInput = ({ containerId, ...inputProps }) => {

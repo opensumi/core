@@ -2,8 +2,8 @@ import 'tsconfig-paths/register';
 import path from 'path';
 import http from 'http';
 import Koa from 'koa';
-import { Deferred } from '@ali/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
+import { Deferred } from '@ide-framework/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@ide-framework/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();

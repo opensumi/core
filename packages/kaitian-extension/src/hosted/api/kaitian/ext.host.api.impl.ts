@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { createLayoutAPIFactory, KaitianExtHostLayout } from './ext.host.layout';
 import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
-import { ReporterService, REPORT_HOST, IReporter } from '@ali/ide-core-common';
+import { ReporterService, REPORT_HOST, IReporter } from '@ide-framework/ide-core-common';
 import { KaitianExtHostWebview, createKaitianWebviewApi } from './ext.host.webview';
 import { ExtHostKaitianAPIIdentifier } from '../../../common/kaitian';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';

@@ -1,4 +1,4 @@
-import { PreferenceSchema } from '@ali/ide-core-browser';
+import { PreferenceSchema } from '@ide-framework/ide-core-browser';
 import { launchSchemaUri } from '../../common';
 
 export const launchPreferencesSchema: PreferenceSchema = {

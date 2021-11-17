@@ -1,15 +1,15 @@
-import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
-import type { languages, editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { LanguageFeatureRegistry } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
+import type { languages, editor } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 
 // 内置的api类型声明
-import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken, Event } from '@ali/ide-core-common';
-import { ISingleEditOperation } from '@ali/ide-editor';
+import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken, Event } from '@ide-framework/ide-core-common';
+import { ISingleEditOperation } from '@ide-framework/ide-editor';
 import type vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { IndentAction, SymbolKind } from './ext-types';
 import { IMarkdownString } from './models/html-content';
-import { CallHierarchyItem } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
-import type { CompletionItemLabel } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { CallHierarchyItem } from '@ide-framework/ide-monaco/lib/browser/contrib/callHierarchy';
+import type { CompletionItemLabel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
 export interface IRawColorInfo {

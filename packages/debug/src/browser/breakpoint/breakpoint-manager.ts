@@ -1,10 +1,10 @@
-import { Deferred } from '@ali/ide-core-common';
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
+import { Deferred } from '@ide-framework/ide-core-common';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ide-framework/ide-core-browser';
 import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
 import { DebugModel } from '../editor';
 import { DEBUG_REPORT_NAME } from '../../common';
 

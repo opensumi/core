@@ -1,6 +1,6 @@
-import { Optional, Injectable, Autowired } from '@ali/common-di';
-import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { RawContextKey } from '@ali/ide-core-browser/lib/raw-context-key';
+import { Optional, Injectable, Autowired } from '@ide-framework/common-di';
+import { IContextKeyService, IContextKey } from '@ide-framework/ide-core-browser';
+import { RawContextKey } from '@ide-framework/ide-core-browser/lib/raw-context-key';
 
 export const CanClearSearchResult = new RawContextKey<boolean>('canClearSearchResult', false);
 export const CanRefreshSearchResult = new RawContextKey<boolean>('canRefreshSearchResult', false);

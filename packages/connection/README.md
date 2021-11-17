@@ -38,7 +38,7 @@ export class FileServiceModule extends NodeModule {
 `packages/file-tree/src/browser/index.ts`
 ```javascript
 
-import {servicePath as FileServicePath} from '@ali/ide-file-service';
+import {servicePath as FileServicePath} from '@ide-framework/ide-file-service';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
@@ -57,7 +57,7 @@ export class FileTreeModule extends BrowserModule {
 
 `packages/file-tree/src/browser/file-tree.service.ts`
 ```javascript
-import {servicePath as FileServicePath} from '@ali/ide-file-service';
+import {servicePath as FileServicePath} from '@ide-framework/ide-file-service';
 
 @Injectable()
 export default class FileTreeService extends Disposable {
@@ -141,7 +141,7 @@ export class FileTreeModule extends BrowserModule {
 
 `packages/file-service/src/node/index.ts`
 ```javascript
-import {servicePath as FileTreeServicePath} from '@ali/ide-file-tree';
+import {servicePath as FileTreeServicePath} from '@ide-framework/ide-file-tree';
 
 @Injectable()
 export class FileServiceModule extends NodeModule {

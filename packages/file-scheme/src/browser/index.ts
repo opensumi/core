@@ -1,5 +1,5 @@
-import { Injectable, Provider } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { Injectable, Provider } from '@ide-framework/common-di';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
 
 import { FileSystemEditorResourceContribution, FileSystemEditorComponentContribution } from './file-scheme.contribution';
 import { FileSchemeDocNodeServicePath, IFileSchemeDocClient } from '../common';

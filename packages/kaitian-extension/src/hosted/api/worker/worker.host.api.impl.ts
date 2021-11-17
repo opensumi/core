@@ -1,14 +1,14 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { TextEditorCursorStyle, ViewColumn, TextEditorSelectionChangeKind, IExtensionDescription } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import * as workerExtTypes from './worker.ext-types';
-import { OverviewRulerLane } from '@ali/ide-editor';
+import { OverviewRulerLane } from '@ide-framework/ide-editor';
 import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
 import { createLanguagesApiFactory, ExtHostLanguages } from '../vscode/ext.host.language';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
-import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@ali/ide-core-common';
+import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@ide-framework/ide-core-common';
 import { createExtensionsApiFactory } from '../vscode/ext.host.extensions';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../vscode/ext.host.workspace';
 import { ExtHostMessage } from '../vscode/ext.host.message';

@@ -1,8 +1,8 @@
 // tslint:disable:no-console
 import React from 'react';
 
-import { createFromIconfontCN } from '@ali/ide-components/lib/icon/iconfont-cn';
-import { Icon } from '@ali/ide-components/lib/icon';
+import { createFromIconfontCN } from '@ide-framework/ide-components/lib/icon/iconfont-cn';
+import { Icon } from '@ide-framework/ide-components/lib/icon';
 
 type IconFontMap =
   'icon-javascript'

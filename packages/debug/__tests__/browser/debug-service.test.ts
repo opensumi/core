@@ -1,7 +1,7 @@
-import { IDebugService } from '@ali/ide-debug';
+import { IDebugService } from '@ide-framework/ide-debug';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugService } from '@ali/ide-debug/lib/browser/debug-service';
+import { DebugService } from '@ide-framework/ide-debug/lib/browser/debug-service';
 
 describe('DebugService', () => {
   let debugService: IDebugService;

@@ -1,5 +1,5 @@
-import { AllowedExtension, IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession, IAccountUsage, StorageProvider, IStorage, URI, STORAGE_SCHEMA, ILogger, IEventBus, ExtensionActivateEvent, Event, Emitter, AuthenticationProviderInformation, Disposable, SessionRequestInfo, formatLocalize, CommandRegistry, IDisposable, noAccountsId, DisposableCollection } from '@ali/ide-core-common';
-import { Autowired, Injectable } from '@ali/common-di';
+import { AllowedExtension, IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession, IAccountUsage, StorageProvider, IStorage, URI, STORAGE_SCHEMA, ILogger, IEventBus, ExtensionActivateEvent, Event, Emitter, AuthenticationProviderInformation, Disposable, SessionRequestInfo, formatLocalize, CommandRegistry, IDisposable, noAccountsId, DisposableCollection } from '@ide-framework/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
 import { IMenuRegistry, MenuId } from '../menu/next';
 
 @Injectable()

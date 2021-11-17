@@ -1,8 +1,8 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';

@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ali/ide-components';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ide-framework/ide-components';
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
-import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@ali/ide-editor';
-import { URI, formatLocalize, Emitter, Event } from '@ali/ide-core-browser';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@ide-framework/ide-editor';
+import { URI, formatLocalize, Emitter, Event } from '@ide-framework/ide-core-browser';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 
 @Injectable()
 export class OpenedEditorService extends Tree {

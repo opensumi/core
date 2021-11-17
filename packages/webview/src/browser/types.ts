@@ -1,6 +1,6 @@
-import {Event, URI, IDisposable, MaybeNull, MaybePromise } from '@ali/ide-core-common';
-import { ITheme } from '@ali/ide-theme';
-import { IEditorGroup } from '@ali/ide-editor';
+import {Event, URI, IDisposable, MaybeNull, MaybePromise } from '@ide-framework/ide-core-common';
+import { ITheme } from '@ide-framework/ide-theme';
+import { IEditorGroup } from '@ide-framework/ide-editor';
 
 export const EDITOR_WEBVIEW_SCHEME = 'editor-webview';
 /**

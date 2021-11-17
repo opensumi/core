@@ -1,9 +1,9 @@
 import path from 'path';
-import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@ali/ide-core-node';
-import { CancellationTokenSource } from '@ali/ide-core-common';
-import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ProcessModule } from '@ali/ide-process';
-import { LogServiceModule } from '@ali/ide-logs/lib/node';
+import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@ide-framework/ide-core-node';
+import { CancellationTokenSource } from '@ide-framework/ide-core-common';
+import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { ProcessModule } from '@ide-framework/ide-process';
+import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
 import { FileSearchModule, IFileSearchService } from '../../src';
 
 describe('search-service', () => {

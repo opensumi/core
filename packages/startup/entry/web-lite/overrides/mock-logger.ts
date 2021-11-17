@@ -1,6 +1,6 @@
-import { Injectable } from '@ali/common-di';
-import { LogLevel, SupportLogNamespace } from '@ali/ide-core-browser';
-import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
+import { Injectable } from '@ide-framework/common-di';
+import { LogLevel, SupportLogNamespace } from '@ide-framework/ide-core-browser';
+import { ensureDir } from '@ide-framework/ide-core-common/lib/browser-fs/ensure-dir';
 
 @Injectable()
 export class MockLogServiceForClient {

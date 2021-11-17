@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { PreferenceService } from '@ali/ide-core-browser';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
 import { ITerminalPreference, IPreferenceValue, DefaultOptions, OptionTypeName, DefaultOptionValue } from '../common/preference';
 
 @Injectable()

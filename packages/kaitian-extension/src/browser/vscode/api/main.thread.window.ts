@@ -1,8 +1,8 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions } from '../../../common/vscode';
-import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { URI } from '@ali/ide-core-browser';
-import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@ali/ide-overlay';
+import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { URI } from '@ide-framework/ide-core-browser';
+import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@ide-framework/ide-overlay';
 
 @Injectable({multiple: true})
 export class MainThreadWindow implements IMainThreadWindow {

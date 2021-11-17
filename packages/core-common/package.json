@@ -1,7 +1,7 @@
 {
-  "name": "@ali/ide-core-common",
+  "name": "@ide-framework/ide-core-common",
   "version": "2.12.0",
-  "description": "@ali/ide-core-common",
+  "description": "@ide-framework/ide-core-common",
   "files": [
     "lib"
   ],
@@ -15,12 +15,9 @@
     "prepublishOnly": "npm run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
-  },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/common-di": "^5.0.0",
+    "@ide-framework/common-di": "^1.0.0",
     "iconv-lite": "^0.6.0",
     "jschardet": "3.0.0",
     "shortid": "^2.2.14",

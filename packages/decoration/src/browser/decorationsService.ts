@@ -1,9 +1,9 @@
-import { Injectable } from '@ali/common-di';
-import { Uri, Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
-import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
-import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
-import { LinkedList } from '@ali/ide-core-common/lib/linked-list';
-import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { Uri, Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ide-framework/ide-core-common';
+import { isPromiseCanceledError } from '@ide-framework/ide-core-common/lib/errors';
+import { TernarySearchTree } from '@ide-framework/ide-core-common/lib/map';
+import { LinkedList } from '@ide-framework/ide-core-common/lib/linked-list';
+import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@ide-framework/ide-core-common';
 
 import {
   IDecorationsService, IDecoration, IResourceDecorationChangeEvent,

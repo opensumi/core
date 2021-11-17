@@ -1,11 +1,11 @@
-import { Injector } from '@ali/common-di';
-import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@ali/ide-core-common';
-import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl, CorePreferences } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IThemeService } from '@ali/ide-theme';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { Injector } from '@ide-framework/common-di';
+import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@ide-framework/ide-core-common';
+import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl, CorePreferences } from '@ide-framework/ide-core-browser';
+import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
@@ -24,8 +24,8 @@ import {
   MockEditorService,
   MockErrorService,
 } from './mock.service';
-import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
+import { MockWorkspaceService } from '@ide-framework/ide-workspace/lib/common/mocks';
+import { EnvironmentVariableServiceToken } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);

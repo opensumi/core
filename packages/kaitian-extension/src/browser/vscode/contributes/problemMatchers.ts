@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { ProblemMatcherContribution, IProblemMatcherRegistry, IJSONSchema, localize, deepClone } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ProblemMatcherContribution, IProblemMatcherRegistry, IJSONSchema, localize, deepClone } from '@ide-framework/ide-core-common';
 import { VSCodeContributePoint } from '../../../common';
 import { Contributes } from './common';
 import { PatternSchemas } from './problemPatterns';

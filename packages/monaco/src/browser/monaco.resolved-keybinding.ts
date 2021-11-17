@@ -1,10 +1,10 @@
-import { ChordKeybinding, KeybindingModifier, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
-import { AriaLabelProvider, Modifiers, UILabelProvider } from '@ali/monaco-editor-core/esm/vs/base/common/keybindingLabels';
-import { USLayoutResolvedKeybinding } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
-import { KeySequence, KeybindingRegistry, Key, isOSX, KeyModifier, KeyCode, Keystroke } from '@ali/ide-core-browser';
+import { ChordKeybinding, KeybindingModifier, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ide-framework/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { AriaLabelProvider, Modifiers, UILabelProvider } from '@ide-framework/monaco-editor-core/esm/vs/base/common/keybindingLabels';
+import { USLayoutResolvedKeybinding } from '@ide-framework/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
+import { KeySequence, KeybindingRegistry, Key, isOSX, KeyModifier, KeyCode, Keystroke } from '@ide-framework/ide-core-browser';
 import { KEY_CODE_MAP } from './monaco.keycode-map';
-import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
-import * as platform from '@ali/monaco-editor-core/esm/vs/base/common/platform';
+import { KeyCode as MonacoKeyCode } from '@ide-framework/monaco-editor-core';
+import * as platform from '@ide-framework/monaco-editor-core/esm/vs/base/common/platform';
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
 
   protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];

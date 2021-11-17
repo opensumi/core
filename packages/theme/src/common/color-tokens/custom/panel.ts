@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { registerColor, transparent, lighten, darken } from '../../color-registry';
 import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
 import { textLinkActiveForeground } from '../text';

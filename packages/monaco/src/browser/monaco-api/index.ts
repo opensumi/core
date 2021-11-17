@@ -6,5 +6,5 @@ export const monaco = Object.freeze({
   languages: createMonacoLanguageApi(),
 });
 
-export { URI } from '@ali/monaco-editor-core/esm/vs/base/common/uri';
-export { ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+export { URI } from '@ide-framework/monaco-editor-core/esm/vs/base/common/uri';
+export { ResourceEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';

@@ -1,7 +1,7 @@
-import { Autowired } from '@ali/common-di';
-import { Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
-import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain, CommandService, isWindows, isElectronRenderer } from '@ide-framework/ide-core-common';
+import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ide-framework/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TerminalContainerId, TERMINAL_COMMANDS } from '../../common';
 import { MenuId } from '../../common/menu';
 
@@ -64,7 +64,7 @@ export class TerminalMenuContribution implements MenuContribution {
     });
     /** end */
 
-    const location = getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig);
+    const location = getSlotLocation('@ide-framework/ide-terminal-next', this.config.layoutConfig);
     const tabbarCtxKey = getTabbarCtxKey(location);
     const commonMenuId = getTabbarCommonMenuId(location);
     const when = `${tabbarCtxKey} == ${TerminalContainerId}`;

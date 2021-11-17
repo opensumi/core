@@ -1,5 +1,5 @@
-import { IExtensionMetaData } from '@ali/ide-kaitian-extension/lib/common';
-import { Uri } from '@ali/ide-core-common';
+import { IExtensionMetaData } from '@ide-framework/ide-kaitian-extension/lib/common';
+import { Uri } from '@ide-framework/ide-core-common';
 
 const ktMarketBase = 'kt-ext://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/marketplace/assets';
 

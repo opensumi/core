@@ -1,16 +1,16 @@
-import { Injector } from '@ali/common-di';
-import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
-import { IDebugSessionManager } from '@ali/ide-debug';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMessageService } from '@ali/ide-overlay';
-import { IWebSocket } from '@ali/ide-connection';
-import { DebugSessionOptions } from '@ali/ide-debug';
-import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
-import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { Injector } from '@ide-framework/common-di';
+import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ide-framework/ide-debug/lib/browser';
+import { IDebugSessionManager } from '@ide-framework/ide-debug';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { IWebSocket } from '@ide-framework/ide-connection';
+import { DebugSessionOptions } from '@ide-framework/ide-debug';
+import { ITerminalApiService, TerminalOptions } from '@ide-framework/ide-terminal-next';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { OutputChannel } from '@ide-framework/ide-output/lib/browser/output.channel';
+import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(

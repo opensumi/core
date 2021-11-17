@@ -1,5 +1,5 @@
 import { IContentSearchClientService } from '../common';
-import { RecentStorage, isArray } from '@ali/ide-core-browser';
+import { RecentStorage, isArray } from '@ide-framework/ide-core-browser';
 
 export const SEARCH_WORD_SCOPE = 'SEARCH_WORD';
 

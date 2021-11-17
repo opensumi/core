@@ -1,7 +1,7 @@
 
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
 import { StaticResourceModule, StaticResourceService } from '../../src/browser/index';
-import { URI } from '@ali/ide-core-common';
+import { URI } from '@ide-framework/ide-core-common';
 
 describe('static-resource test', () => {
   const injector = createBrowserInjector([

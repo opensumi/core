@@ -6,7 +6,7 @@ const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const distDir = path.join(__dirname, '../app/dist/extension')
 
 const nodeTarget = {
-  entry: path.join(__dirname, '../src/extension/index'), //require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
+  entry: path.join(__dirname, '../src/extension/index'), //require.resolve('@ide-framework/ide-kaitian-extension/lib/hosted/ext.process.js'),
   target: "node",
   output: {
     filename: 'index.js',
@@ -55,7 +55,7 @@ const nodeTarget = {
 
 
 const workerTarget = {
-  entry: path.join(__dirname, '../src/extension/index.worker'), //require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
+  entry: path.join(__dirname, '../src/extension/index.worker'), //require.resolve('@ide-framework/ide-kaitian-extension/lib/hosted/ext.process.js'),
   target: "webworker",
   output: {
     filename: 'index.worker.js',

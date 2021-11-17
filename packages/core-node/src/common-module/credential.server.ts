@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { AppConfig } from '../bootstrap';
-import { IChunkedPassword, INativeCredentialService, isWindows } from '@ali/ide-core-common';
+import { IChunkedPassword, INativeCredentialService, isWindows } from '@ide-framework/ide-core-common';
 
 @Injectable()
 export class CredentialService implements INativeCredentialService {

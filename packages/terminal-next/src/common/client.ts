@@ -1,5 +1,5 @@
 import { Terminal } from 'xterm';
-import { IDisposable, Disposable, Event, Deferred } from '@ali/ide-core-common';
+import { IDisposable, Disposable, Event, Deferred } from '@ide-framework/ide-core-common';
 import { TerminalOptions } from './pty';
 import { IWidget } from './resize';
 

@@ -1,10 +1,10 @@
-import { WSChannelHandler } from '@ali/ide-connection';
-import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@ali/ide-core-browser';
-import { IApplicationService, uuid } from '@ali/ide-core-common';
-import { IFileTreeService } from '@ali/ide-file-tree-next';
-import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
-import { PreferenceContribution } from '@ali/ide-preferences/lib/browser/preference-contribution';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { WSChannelHandler } from '@ide-framework/ide-connection';
+import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@ide-framework/ide-core-browser';
+import { IApplicationService, uuid } from '@ide-framework/ide-core-common';
+import { IFileTreeService } from '@ide-framework/ide-file-tree-next';
+import { FileTreeContribution } from '@ide-framework/ide-file-tree-next/lib/browser/file-tree-contribution';
+import { PreferenceContribution } from '@ide-framework/ide-preferences/lib/browser/preference-contribution';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';

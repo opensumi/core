@@ -1,7 +1,7 @@
 import React from 'react';
-import { IEventBus, localize, useInjectable } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ResourceOpenTypeChangedEvent } from '@ali/ide-editor/lib/browser/types';
+import { IEventBus, localize, useInjectable } from '@ide-framework/ide-core-browser';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { ResourceOpenTypeChangedEvent } from '@ide-framework/ide-editor/lib/browser/types';
 
 import styles from './style.module.less';
 

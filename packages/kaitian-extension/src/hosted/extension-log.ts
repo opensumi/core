@@ -1,6 +1,6 @@
 import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
-import { RPCProtocol } from '@ali/ide-connection';
-import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@ali/ide-core-common';
+import { RPCProtocol } from '@ide-framework/ide-connection';
+import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@ide-framework/ide-core-common';
 
 export class ExtensionLogger implements IExtensionLogger {
   private rpcProtocol: RPCProtocol;

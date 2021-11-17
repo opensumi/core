@@ -1,10 +1,10 @@
-import { Disposable, QuickPickService, IContextKeyService, PreferenceService, URI, FileStat, StorageProvider } from '@ali/ide-core-browser';
-import { DebugConfigurationManager, DebugPreferences } from '@ali/ide-debug/lib/browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IDebugServer } from '@ali/ide-debug';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { Disposable, QuickPickService, IContextKeyService, PreferenceService, URI, FileStat, StorageProvider } from '@ide-framework/ide-core-browser';
+import { DebugConfigurationManager, DebugPreferences } from '@ide-framework/ide-debug/lib/browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IDebugServer } from '@ide-framework/ide-debug';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 describe('Debug Configuration Manager', () => {

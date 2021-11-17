@@ -1,7 +1,7 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStorage, KeysToAnyValues, IExtHostStorage } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
+import { Injectable, Autowired, Optinal } from '@ide-framework/common-di';
+import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
 
 @Injectable({multiple: true})
 export class MainThreadStorage implements IMainThreadStorage {

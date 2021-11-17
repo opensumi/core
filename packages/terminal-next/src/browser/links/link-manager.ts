@@ -1,11 +1,11 @@
 import { Terminal, ILinkProvider } from 'xterm';
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Disposable, IDisposable, DisposableCollection, isOSX, FileUri } from '@ali/ide-core-common';
-import { OperatingSystem, isWindows } from '@ali/ide-core-common/lib/platform';
-import { posix, win32, IPath } from '@ali/ide-core-common/lib/path';
-import { IOpenerService } from '@ali/ide-core-browser';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { URI, Disposable, IDisposable, DisposableCollection, isOSX, FileUri } from '@ide-framework/ide-core-common';
+import { OperatingSystem, isWindows } from '@ide-framework/ide-core-common/lib/platform';
+import { posix, win32, IPath } from '@ide-framework/ide-core-common/lib/path';
+import { IOpenerService } from '@ide-framework/ide-core-browser';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/common';
 import { TerminalProtocolLinkProvider } from './protocol-link-provider';
 import { TerminalValidatedLocalLinkProvider, lineAndColumnClause, unixLocalLinkClause, winLocalLinkClause, winDrivePrefix, winLineAndColumnMatchIndex, unixLineAndColumnMatchIndex, lineAndColumnClauseGroupCount } from './validated-local-link-provider';
 import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';

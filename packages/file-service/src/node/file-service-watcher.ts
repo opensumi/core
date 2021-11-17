@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
 import nsfw from 'nsfw';
 import paths from 'path';
-import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
-import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@ali/ide-core-common';
-import { FileUri } from '@ali/ide-core-node';
+import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
+import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@ide-framework/ide-core-common';
+import { FileUri } from '@ide-framework/ide-core-node';
 import {
   FileChangeType,
   FileSystemWatcherClient,

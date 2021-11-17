@@ -1,7 +1,7 @@
-import { formatLocalize, URI } from '@ali/ide-core-browser';
-import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
+import { formatLocalize, URI } from '@ide-framework/ide-core-browser';
+import { TreeNode, CompositeTreeNode, ITree } from '@ide-framework/ide-components';
 import { OpenedEditorService } from './services/opened-editor-tree.service';
-import { IEditorGroup, IResource } from '@ali/ide-editor';
+import { IEditorGroup, IResource } from '@ide-framework/ide-editor';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 

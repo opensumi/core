@@ -1,9 +1,9 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
-import { Event, URI, Disposable, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@ali/ide-core-browser';
-import { ITheme, IThemeService } from '@ali/ide-theme';
-import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { Event, URI, Disposable, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@ide-framework/ide-core-browser';
+import { ITheme, IThemeService } from '@ide-framework/ide-theme';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { ThemeChangedEvent } from '@ide-framework/ide-theme/lib/common/event';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
 export abstract class AbstractWebviewPanel extends Disposable implements IWebview {

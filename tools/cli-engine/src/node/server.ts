@@ -7,9 +7,9 @@ import Koa from 'koa';
 import mount from 'koa-mount';
 import cors from '@koa/cors';
 import ejs from 'ejs';
-import { Deferred, LogLevel } from '@ali/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
-import { IClientAppOpts } from '@ali/ide-core-browser';
+import { Deferred, LogLevel } from '@ide-framework/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@ide-framework/ide-core-node';
+import { IClientAppOpts } from '@ide-framework/ide-core-browser';
 
 import * as env from './env';
 import { openBrowser } from './openBrowser';
@@ -150,7 +150,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
         const pkg = await readPkgUp();
 
         const meta = {
-          ideVersion: pkg.dependencies['@ali/ide-core-common'],
+          ideVersion: pkg.dependencies['@ide-framework/ide-core-common'],
           engineVersion: pkg.version,
         };
 

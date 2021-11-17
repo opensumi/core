@@ -1,9 +1,9 @@
 import { IExtension } from '../..';
-import { ProxyIdentifier } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { IDisposable, Uri } from '@ali/ide-core-common';
-import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { ToolBarPosition } from '@ali/ide-toolbar/lib/browser';
+import { ProxyIdentifier } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { IDisposable, Uri } from '@ide-framework/ide-core-common';
+import { EditorComponentRenderMode } from '@ide-framework/ide-editor/lib/browser';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { ToolBarPosition } from '@ide-framework/ide-toolbar/lib/browser';
 
 export interface IKaitianBrowserContributions {
   [containerId: string]: {

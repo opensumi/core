@@ -1,7 +1,7 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
-import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
-import { URI, Disposable, Emitter, Event } from '@ali/ide-core-common';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service/lib/common';
+import { URI, Disposable, Emitter, Event } from '@ide-framework/ide-core-common';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { ITerminalConnection } from '../common';
 

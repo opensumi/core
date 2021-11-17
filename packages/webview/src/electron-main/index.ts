@@ -1,9 +1,9 @@
-import { ElectronMainContribution, ElectronMainModule } from '@ali/ide-core-electron-main';
-import { Domain } from '@ali/ide-core-common';
+import { ElectronMainContribution, ElectronMainModule } from '@ide-framework/ide-core-electron-main';
+import { Domain } from '@ide-framework/ide-core-common';
 import { protocol } from 'electron';
-import { ProtocolElectronMainContribution } from '@ali/ide-core-electron-main/lib/bootstrap/services/protocol';
+import { ProtocolElectronMainContribution } from '@ide-framework/ide-core-electron-main/lib/bootstrap/services/protocol';
 import { WebviewScheme } from '../common';
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 
 ProtocolElectronMainContribution.schemePrivileges.push(
   {

@@ -1,7 +1,7 @@
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ali/ide-core-common';
+import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ide-framework/ide-core-common';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
-import { Injector } from '@ali/common-di';
-import { Command } from '@ali/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
+import { Command } from '@ide-framework/ide-core-common';
 import React from 'react';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';

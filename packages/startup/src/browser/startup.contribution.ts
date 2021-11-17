@@ -1,16 +1,16 @@
 
-import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@ali/ide-core-browser';
-import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-// import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { IStatusBarService} from '@ali/ide-core-browser/lib/services';
-import { OutputService } from '@ali/ide-output/lib/browser/output.service';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { ISCMProvider } from '@ali/ide-scm';
-import { getIcon } from '@ali/ide-core-browser';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { Autowired } from '@ide-framework/common-di';
+import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@ide-framework/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@ide-framework/ide-core-browser';
+import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
+import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+// import { StatusBar, StatusBarAlignment } from '@ide-framework/ide-status-bar/lib/browser/status-bar.service';
+import { IStatusBarService} from '@ide-framework/ide-core-browser/lib/services';
+import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { ISCMProvider } from '@ide-framework/ide-scm';
+import { getIcon } from '@ide-framework/ide-core-browser';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExamplePopover } from './exmaple-popover';
 

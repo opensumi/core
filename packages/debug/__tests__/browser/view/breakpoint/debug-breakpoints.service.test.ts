@@ -1,16 +1,16 @@
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@ali/ide-core-common';
-import { IDebugSessionManager } from '@ali/ide-debug';
-import { IContextKeyService } from '@ali/ide-core-browser';
-import { DebugViewModel } from '@ali/ide-debug/lib/browser/view/debug-view-model';
-import { BreakpointManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
-import { DebugBreakpointsService } from '@ali/ide-debug/lib/browser/view/breakpoints/debug-breakpoints.service';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
-import { IWorkspaceStorageService } from '@ali/ide-workspace/lib/common/workspace-defination';
-import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@ide-framework/ide-core-common';
+import { IDebugSessionManager } from '@ide-framework/ide-debug';
+import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { DebugViewModel } from '@ide-framework/ide-debug/lib/browser/view/debug-view-model';
+import { BreakpointManager, DebugBreakpoint } from '@ide-framework/ide-debug/lib/browser';
+import { DebugBreakpointsService } from '@ide-framework/ide-debug/lib/browser/view/breakpoints/debug-breakpoints.service';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks';
+import { IWorkspaceStorageService } from '@ide-framework/ide-workspace/lib/common/workspace-defination';
+import { MockInjector } from '@ide-framework/ide-dev-tool/src/mock-injector';
+import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ide-framework/ide-workspace-edit';
 
 describe('Debug Breakpoints Service', () => {
   const mockInjector = createBrowserInjector([], new MockInjector([

@@ -1,9 +1,9 @@
-import { BrowserModule, QuickOpenService } from '@ali/ide-core-browser';
-import { Injectable, Provider } from '@ali/common-di';
+import { BrowserModule, QuickOpenService } from '@ide-framework/ide-core-browser';
+import { Injectable, Provider } from '@ide-framework/common-di';
 
 import { CoreQuickOpenContribution, QuickOpenFeatureContribution } from './quick-open.contribution';
 import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quick-open.service';
-import { PrefixQuickOpenService, QuickPickService, IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
+import { PrefixQuickOpenService, QuickPickService, IQuickInputService } from '@ide-framework/ide-core-browser/lib/quick-open';
 import { QuickPickServiceImpl } from './quick-pick.service';
 import { QuickInputService } from './quick-input-service';
 import { MonacoQuickOpenService } from './quick-open.service';

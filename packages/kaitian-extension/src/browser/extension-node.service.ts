@@ -1,13 +1,13 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
 import {
   createSocketConnection, initRPCService, IRPCProtocol, RPCProtocol,
   RPCServiceCenter, WSChannelHandler as IWSChannelHandler,
-} from '@ali/ide-connection';
-import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
+} from '@ide-framework/ide-connection';
+import { createWebSocketConnection } from '@ide-framework/ide-connection/lib/common/message';
 import {
   AppConfig, Deferred, electronEnv, Emitter, IExtensionProps,
   ILogger, isElectronEnv, IDisposable, toDisposable,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 
 import { ExtensionNodeServiceServerPath, IExtension, IExtensionHostService, IExtensionNodeClientService } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';

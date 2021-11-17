@@ -6,48 +6,48 @@ import {
   RecycleTree,
   IRecycleTreeHandle,
   INodeRendererWrapProps,
-} from '@ali/ide-components';
+} from '@ide-framework/ide-components';
 import {
   DebugConsoleModelService,
   IDebugConsoleModel,
-} from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMessageService } from '@ali/ide-overlay';
+} from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IMessageService } from '@ide-framework/ide-overlay';
 import {
   DebugPreferences,
   DebugSessionContributionRegistry,
   DebugSessionFactory,
   DefaultDebugSessionFactory,
   DebugSession,
-} from '@ali/ide-debug/lib/browser';
-import { IFileServiceClient } from '@ali/ide-core-node';
-import { ITerminalApiService } from '@ali/ide-terminal-next';
-import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+} from '@ide-framework/ide-debug/lib/browser';
+import { IFileServiceClient } from '@ide-framework/ide-core-node';
+import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
+import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
 import {
   DebugModelFactory,
   IDebugServer,
   IDebugSessionManager,
   IDebugSession,
   DebugSessionOptions,
-} from '@ali/ide-debug';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { QuickPickService } from '@ali/ide-quick-open';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { WSChannelHandler } from '@ali/ide-connection';
-import { IVariableResolverService } from '@ali/ide-variable';
-import { ITaskService } from '@ali/ide-task';
-import { DebugConsoleFilterService } from '@ali/ide-debug/lib/browser/view/console/debug-console-filter.service';
+} from '@ide-framework/ide-debug';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { QuickPickService } from '@ide-framework/ide-quick-open';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { WSChannelHandler } from '@ide-framework/ide-connection';
+import { IVariableResolverService } from '@ide-framework/ide-variable';
+import { ITaskService } from '@ide-framework/ide-task';
+import { DebugConsoleFilterService } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import {
   DebugConsoleNode,
   AnsiConsoleNode,
   DebugVariableContainer,
-} from '@ali/ide-debug/lib/browser/tree';
-import { IContextKeyService } from '@ali/ide-core-browser/src';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { Disposable } from '@ali/ide-core-common';
-import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
-import { DebugConsoleRenderedNode } from '@ali/ide-debug/lib/browser/view/console/debug-console.view';
+} from '@ide-framework/ide-debug/lib/browser/tree';
+import { IContextKeyService } from '@ide-framework/ide-core-browser/src';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { Disposable } from '@ide-framework/ide-core-common';
+import { LayoutService } from '@ide-framework/ide-main-layout/lib/browser/layout.service';
+import { DebugConsoleRenderedNode } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console.view';
 
 describe('Debug console component Test Suites', () => {
   const mockInjector = createBrowserInjector([]);

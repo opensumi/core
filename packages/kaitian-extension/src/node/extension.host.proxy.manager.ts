@@ -1,9 +1,9 @@
-import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@ali/ide-core-common';
+import { Injectable, Optional, Autowired } from '@ide-framework/common-di';
+import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@ide-framework/ide-core-common';
 import { IExtensionHostManager, Output, EXT_HOST_PROXY_PROTOCOL, EXT_SERVER_IDENTIFIER, IExtHostProxyRPCService, EXT_HOST_PROXY_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common';
 import net from 'net';
-import { RPCServiceCenter, INodeLogger } from '@ali/ide-core-node';
-import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@ali/ide-connection';
+import { RPCServiceCenter, INodeLogger } from '@ide-framework/ide-core-node';
+import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@ide-framework/ide-connection';
 
 @Injectable()
 export class ExtensionHostProxyManager implements IExtensionHostManager {

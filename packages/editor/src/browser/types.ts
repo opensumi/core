@@ -1,9 +1,9 @@
-import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { editor } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor, DragOverPosition } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
-import { IThemeColor } from '@ali/ide-core-common';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ide-framework/ide-core-browser';
+import { IThemeColor } from '@ide-framework/ide-core-common';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 export * from '../common';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentType<{resource: IResource<MetaData>}>;

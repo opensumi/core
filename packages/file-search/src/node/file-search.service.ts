@@ -1,11 +1,11 @@
 import fuzzy from 'fuzzy';
 import readline from 'readline';
 import path from 'path';
-import { rgPath } from '@ali/vscode-ripgrep';
-import { Injectable, Autowired } from '@ali/common-di';
-import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@ali/ide-core-common';
-import { URI, FileUri, INodeLogger } from '@ali/ide-core-node';
-import { IProcessFactory } from '@ali/ide-process';
+import { rgPath } from 'vscode-ripgrep';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@ide-framework/ide-core-common';
+import { URI, FileUri, INodeLogger } from '@ide-framework/ide-core-node';
+import { IProcessFactory } from '@ide-framework/ide-process';
 import { IFileSearchService } from '../common';
 
 @Injectable()

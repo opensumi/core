@@ -1,6 +1,6 @@
-import { Injectable, Injector, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { Disposable, IDisposable, ILogger } from '@ali/ide-core-common';
+import { Injectable, Injector, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { Disposable, IDisposable, ILogger } from '@ide-framework/ide-core-common';
 import { IExtension } from '..';
 
 export interface IBrowserRequireInterceptorArgs {

@@ -1,29 +1,29 @@
-import { OpenerService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/openerService';
-import { CompletionProviderRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { CodeEditorServiceImpl } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
-import * as monacoActions from '@ali/monaco-editor-core/esm/vs/platform/actions/common/actions';
-import * as monacoKeybindings from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
-import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { ContextKeyExpr, ContextKeyExprType } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import { OpenerService } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/openerService';
+import { CompletionProviderRegistry } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { CodeEditorServiceImpl } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import * as monacoActions from '@ide-framework/monaco-editor-core/esm/vs/platform/actions/common/actions';
+import * as monacoKeybindings from '@ide-framework/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
+import { EditorContextKeys } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { StandaloneCommandService } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+import { ContextKeyExpr, ContextKeyExprType } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { FormattingConflicts } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, IJSONSchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
-} from '@ali/ide-core-browser';
-import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
-import { IThemeService } from '@ali/ide-theme';
-import { URI, ILogger } from '@ali/ide-core-common';
+} from '@ide-framework/ide-core-browser';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { URI, ILogger } from '@ide-framework/ide-core-common';
 
 import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry } from './contrib/command';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
-import { ISemanticTokenRegistry, parseClassifierString, TokenStyle } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
+import { ISemanticTokenRegistry, parseClassifierString, TokenStyle } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {

@@ -1,1 +1,1 @@
-export { Badge as default } from '@ali/ide-components';
+export { Badge as default } from '@ide-framework/ide-components';

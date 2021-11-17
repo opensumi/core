@@ -1,8 +1,8 @@
-import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@ali/ide-core-common';
-import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
-import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { IDecorationsService, IDecorationData } from '@ali/ide-decoration';
+import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@ide-framework/ide-core-common';
+import { IDisposable, dispose } from '@ide-framework/ide-core-common/lib/disposable';
+import { Injectable, Optional, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IDecorationsService, IDecorationData } from '@ide-framework/ide-decoration';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {

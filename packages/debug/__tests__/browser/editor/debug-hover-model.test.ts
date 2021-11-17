@@ -1,6 +1,6 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { DebugHoverModel } from '@ali/ide-debug/lib/browser/editor/debug-hover-model';
-import { Disposable } from '@ali/ide-core-common';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { DebugHoverModel } from '@ide-framework/ide-debug/lib/browser/editor/debug-hover-model';
+import { Disposable } from '@ide-framework/ide-core-common';
 
 describe('Debug Hover Model', () => {
   const mockInjector = createBrowserInjector([]);

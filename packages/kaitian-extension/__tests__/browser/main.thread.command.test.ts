@@ -1,13 +1,13 @@
-import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@ali/ide-core-common';
+import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@ide-framework/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { Injector } from '@ali/common-di';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { Injector } from '@ide-framework/common-di';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
-import { ICommandServiceToken } from '@ali/ide-monaco/lib/browser/contrib/command';
-import { MonacoCommandService } from '@ali/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { ICommandServiceToken } from '@ide-framework/ide-monaco/lib/browser/contrib/command';
+import { MonacoCommandService } from '@ide-framework/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 describe('MainThreadCommandAPI Test Suites ', () => {
   let extHostCommands: ExtHostCommands;

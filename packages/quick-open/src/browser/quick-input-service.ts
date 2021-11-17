@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService, Mode } from '@ali/ide-core-browser/lib/quick-open';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService, Mode } from '@ide-framework/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
-import { Deferred, localize, Emitter, Event } from '@ali/ide-core-common';
-import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
+import { Deferred, localize, Emitter, Event } from '@ide-framework/ide-core-common';
+import { VALIDATE_TYPE } from '@ide-framework/ide-core-browser/lib/components';
 
 @Injectable()
 export class QuickInputService implements IQuickInputService {

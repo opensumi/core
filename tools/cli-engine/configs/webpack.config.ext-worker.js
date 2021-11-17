@@ -6,7 +6,7 @@ const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const distDir = path.join(__dirname, '../lib/browser');
 
 module.exports = {
-  entry: require.resolve('@ali/ide-kaitian-extension/lib/hosted/worker.host-preload.js'),
+  entry: require.resolve('@ide-framework/ide-kaitian-extension/lib/hosted/worker.host-preload.js'),
   output: {
     filename: 'worker-host.js',
     path: distDir,

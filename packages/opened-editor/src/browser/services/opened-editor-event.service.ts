@@ -1,7 +1,7 @@
-import { Event, Emitter, WithEventBus, OnEvent } from '@ali/ide-core-browser';
-import { IResource, IEditorGroup, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
-import { Injectable } from '@ali/common-di';
-import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { Event, Emitter, WithEventBus, OnEvent } from '@ide-framework/ide-core-browser';
+import { IResource, IEditorGroup, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ide-framework/ide-editor';
+import { Injectable } from '@ide-framework/common-di';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent } from '@ide-framework/ide-editor/lib/browser';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 export interface OpenedEditorEvent {

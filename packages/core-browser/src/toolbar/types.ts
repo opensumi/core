@@ -1,5 +1,5 @@
-import { IDisposable, BasicEvent, Event } from '@ali/ide-core-common';
-import { IDataOption, IDataOptionGroup } from '@ali/ide-components';
+import { IDisposable, BasicEvent, Event } from '@ide-framework/ide-core-common';
+import { IDataOption, IDataOptionGroup } from '@ide-framework/ide-components';
 
 export const IToolbarRegistry = Symbol('IToolbarRegistry');
 

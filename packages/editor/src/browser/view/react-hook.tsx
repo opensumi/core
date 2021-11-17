@@ -1,5 +1,5 @@
 import { EditorGroup } from '../workbench-editor.service';
-import { useUpdateOnEvent } from '@ali/ide-core-browser';
+import { useUpdateOnEvent } from '@ide-framework/ide-core-browser';
 
 export function useUpdateOnGroupTabChange(editorGroup: EditorGroup) {
 

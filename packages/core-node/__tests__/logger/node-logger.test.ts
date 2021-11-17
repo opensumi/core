@@ -1,7 +1,7 @@
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { INodeLogger, NodeLogger } from '@ali/ide-core-node';
-import { ILogServiceManager, LogLevel } from '@ali/ide-core-common';
+import { INodeLogger, NodeLogger } from '@ide-framework/ide-core-node';
+import { ILogServiceManager, LogLevel } from '@ide-framework/ide-core-common';
 
 describe('NodeLogger', () => {
   let logger: INodeLogger;

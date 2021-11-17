@@ -1,16 +1,16 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
-import { Injector } from '@ali/common-di';
-import { AppConfig, INodeLogger, IReporterService } from '@ali/ide-core-node';
+import { Injector } from '@ide-framework/common-di';
+import { AppConfig, INodeLogger, IReporterService } from '@ide-framework/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
-import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
-import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
+import { IActivationEventService } from '@ide-framework/ide-kaitian-extension/lib/browser/types';
+import { ActivationEventServiceImpl } from '@ide-framework/ide-kaitian-extension/lib/browser/activation.service';
 
 describe('Extension Serivce', () => {
   let injector: Injector;

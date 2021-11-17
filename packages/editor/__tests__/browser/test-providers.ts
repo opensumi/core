@@ -1,6 +1,6 @@
-import { IResourceProvider, IResource } from '@ali/ide-editor';
-import { URI, Emitter } from '@ali/ide-core-common';
-import { IEditorDocumentModelContentProvider, IEditorComponentResolver, IEditorComponent } from '@ali/ide-editor/lib/browser';
+import { IResourceProvider, IResource } from '@ide-framework/ide-editor';
+import { URI, Emitter } from '@ide-framework/ide-core-common';
+import { IEditorDocumentModelContentProvider, IEditorComponentResolver, IEditorComponent } from '@ide-framework/ide-editor/lib/browser';
 
 export const doNotClose: string[] = [];
 

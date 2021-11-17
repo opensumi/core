@@ -1,6 +1,6 @@
-import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { KeyCode as KeyCodeEnum } from '@ide-framework/monaco-editor-core/esm/vs/base/common/keyCodes';
 
-import { isWebKit, isMacintosh } from '@ali/ide-core-common/lib/platform';
+import { isWebKit, isMacintosh } from '@ide-framework/ide-core-common/lib/platform';
 
 export const KEY_CODE_MAP: KeyCodeEnum[] = [];
 (() => {

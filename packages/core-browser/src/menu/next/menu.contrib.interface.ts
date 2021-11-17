@@ -1,4 +1,4 @@
-import { URI, IChange } from '@ali/ide-core-common';
+import { URI, IChange } from '@ide-framework/ide-core-common';
 import type vscode from 'vscode';
 
 // explorer/context

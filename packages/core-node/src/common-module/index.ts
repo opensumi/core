@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { ICommonServer, CommonServerPath, INativeCredentialService, KeytarServicePath, INativeCryptrService, CryptrServicePath } from '@ali/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { ICommonServer, CommonServerPath, INativeCredentialService, KeytarServicePath, INativeCryptrService, CryptrServicePath } from '@ide-framework/ide-core-common';
 import { NodeModule } from '../node-module';
 import { CryptrService } from './cryptr.server';
 import { CommonServer } from './common.server';

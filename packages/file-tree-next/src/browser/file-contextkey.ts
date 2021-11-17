@@ -1,6 +1,6 @@
-import { Optional, Injectable, Autowired } from '@ali/common-di';
-import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { ExplorerResourceIsFolderContext, ExplorerViewletVisibleContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext, FilesExplorerFilteredContext, ExplorerCompressedLastFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { Optional, Injectable, Autowired } from '@ide-framework/common-di';
+import { IContextKeyService, IContextKey } from '@ide-framework/ide-core-browser';
+import { ExplorerResourceIsFolderContext, ExplorerViewletVisibleContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext, FilesExplorerFilteredContext, ExplorerCompressedLastFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext } from '@ide-framework/ide-core-browser/lib/contextkey/explorer';
 
 @Injectable()
 export class FileContextKey {

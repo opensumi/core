@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { RecentStorage } from '../common/common.storage';
 import { WithEventBus } from '..';
-import { OnEvent, FileChangeType, IPosition } from '@ali/ide-core-common';
+import { OnEvent, FileChangeType, IPosition } from '@ide-framework/ide-core-common';
 import { FilesChangeEvent } from '../fs';
 
 const OPENED_FILE = 'OPENED_FILE';

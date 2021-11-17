@@ -1,5 +1,5 @@
-import { Disposable, IDisposable } from '@ali/ide-core-common';
-import { AbstractMessageReader, DataCallback } from '@ali/vscode-jsonrpc/lib/common/messageReader';
+import { Disposable, IDisposable } from '@ide-framework/ide-core-common';
+import { AbstractMessageReader, DataCallback } from '@ide-framework/vscode-jsonrpc/lib/common/messageReader';
 
 /**
  * 支持通过RPC通道读取消息.

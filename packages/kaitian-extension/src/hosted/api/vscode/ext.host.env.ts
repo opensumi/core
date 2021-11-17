@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import address from 'address';
@@ -9,7 +9,7 @@ import {
   ExtHostEnvValues,
 } from '../../../common/vscode';
 import { LogLevel } from '../../../common/vscode/ext-types';
-import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@ali/ide-core-common';
+import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@ide-framework/ide-core-common';
 
 export class Env {
   private macMachineId: string;

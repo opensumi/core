@@ -1,5 +1,5 @@
 import React from 'react';
-import { Event, Disposable, ConstructorOf, BasicEvent, IEventBus } from '@ali/ide-core-common';
+import { Event, Disposable, ConstructorOf, BasicEvent, IEventBus } from '@ide-framework/ide-core-common';
 import { useInjectable } from './injectable-hooks';
 
 /**

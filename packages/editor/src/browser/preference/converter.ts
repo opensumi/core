@@ -1,7 +1,7 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { removeUndefined, Uri } from '@ali/ide-core-browser';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { removeUndefined, Uri } from '@ide-framework/ide-core-browser';
 import { IConvertedMonacoOptions } from '../types';
-import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { IConfigurationService } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 /**
  * 计算由ConfigurationService设置值带来的monaco编辑器的属性

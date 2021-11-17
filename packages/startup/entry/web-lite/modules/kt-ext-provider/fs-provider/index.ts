@@ -1,8 +1,8 @@
-import { Injectable } from '@ali/common-di';
-import { Uri, Event } from '@ali/ide-core-browser';
-import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
-import { FileSystemProviderCapabilities } from '@ali/ide-core-common';
-import { FileSystemProvider, FileStat, FileType, FileChangeEvent } from '@ali/ide-file-service';
+import { Injectable } from '@ide-framework/common-di';
+import { Uri, Event } from '@ide-framework/ide-core-browser';
+import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
+import { FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
+import { FileSystemProvider, FileStat, FileType, FileChangeEvent } from '@ide-framework/ide-file-service';
 
 /**
  * 解析 kt-ext:// 文件，解决前端插件加载问题

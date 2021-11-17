@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewState, getIcon, useInjectable, localize, DisposableCollection } from '@ali/ide-core-browser';
+import { ViewState, getIcon, useInjectable, localize, DisposableCollection } from '@ide-framework/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackFramesView } from './debug-call-stack-frame.view';
 import { DebugStackOperationView } from './debug-call-stack.operation';

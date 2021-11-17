@@ -1,9 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { warning } from '@ali/ide-components/lib/utils';
-import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
-import { Disposable, IDisposable, toDisposable } from '@ali/ide-core-common';
-import { posix } from '@ali/ide-core-common/lib/path';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { warning } from '@ide-framework/ide-components/lib/utils';
+import { IRPCProtocol, RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ide-framework/ide-core-browser';
+import { Disposable, IDisposable, toDisposable } from '@ide-framework/ide-core-common';
+import { posix } from '@ide-framework/ide-core-common/lib/path';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';

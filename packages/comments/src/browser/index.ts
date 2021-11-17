@@ -1,5 +1,5 @@
-import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { Provider, Injectable } from '@ide-framework/common-di';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
 import { CommentsService } from './comments.service';
 import { CommentsFeatureRegistry } from './comments-feature.registry';
 import { CommentsBrowserContribution } from './comments.contribution';

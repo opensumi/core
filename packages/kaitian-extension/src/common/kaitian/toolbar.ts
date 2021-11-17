@@ -1,4 +1,4 @@
-import { Event } from '@ali/ide-core-common';
+import { Event } from '@ide-framework/ide-core-common';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/kaitian/types';
 
 export interface IToolbarButtonActionHandle {

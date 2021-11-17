@@ -1,20 +1,20 @@
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { ContextKeyExpression, IContextKeyServiceTarget, ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { KeybindingResolver } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
-import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { ContextKeyExpression, IContextKeyServiceTarget, ContextKeyExpr } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyService } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { KeybindingResolver } from '@ide-framework/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
+import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
-import { Emitter as EventEmitter } from '@ali/monaco-editor-core/esm/vs/base/common/event';
+import { Emitter as EventEmitter } from '@ide-framework/monaco-editor-core/esm/vs/base/common/event';
 import {
   IContextKey, Event,
   IContextKeyService,
   ContextKeyChangeEvent, getDebugLogger, Emitter,
   IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope, PreferenceSchemaProvider, createPreferenceProxy,
-} from '@ali/ide-core-browser';
-import { Disposable, ILogger } from '@ali/ide-core-common';
-import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IWorkspaceFolder } from '@ali/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
-import { IWorkspaceService } from '@ali/ide-workspace';
+} from '@ide-framework/ide-core-browser';
+import { Disposable, ILogger } from '@ide-framework/ide-core-common';
+import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { IWorkspaceFolder } from '@ide-framework/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 // 新版本这个 magic string 没有导出了
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';

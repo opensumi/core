@@ -1,12 +1,12 @@
-import '@ali/ide-i18n';
-import { SlotLocation } from '@ali/ide-core-browser';
+import '@ide-framework/ide-i18n';
+import { SlotLocation } from '@ide-framework/ide-core-browser';
 import React from 'react';
 
 import { CommonBrowserModules } from './common-modules';
 import { renderApp } from './render-app';
 
 // 引入公共样式文件
-import '@ali/ide-core-browser/lib/style/index.less';
+import '@ide-framework/ide-core-browser/lib/style/index.less';
 
 import { WebLiteModule } from './web-lite-module';
 
@@ -18,22 +18,22 @@ import { LayoutComponent } from './modules/view/custom-layout-component';
 // 视图和slot插槽的对应关系
 const layoutConfig = {
   [SlotLocation.top]: {
-    modules: ['@ali/ide-menu-bar'],
+    modules: ['@ide-framework/ide-menu-bar'],
   },
   [SlotLocation.action]: {
     modules: [''],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-explorer', '@ali/ide-scm'],
+    modules: ['@ide-framework/ide-explorer', '@ide-framework/ide-scm'],
   },
   [SlotLocation.right]: {
-    modules: ['@ali/ide-dw-right'],
+    modules: ['@ide-framework/ide-dw-right'],
   },
   [SlotLocation.main]: {
-    modules: ['@ali/ide-editor'],
+    modules: ['@ide-framework/ide-editor'],
   },
   [SlotLocation.statusBar]: {
-    modules: ['@ali/ide-status-bar'],
+    modules: ['@ide-framework/ide-status-bar'],
   },
   [SlotLocation.extra]: {
     modules: [],

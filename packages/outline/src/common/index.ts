@@ -1,5 +1,5 @@
-import { MarkerSeverity, URI } from '@ali/ide-core-common';
-import { ITreeNode } from '@ali/ide-components';
+import { MarkerSeverity, URI } from '@ide-framework/ide-core-common';
+import { ITreeNode } from '@ide-framework/ide-components';
 
 export const enum OutlineSortOrder {
   ByPosition,

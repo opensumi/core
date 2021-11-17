@@ -1,4 +1,4 @@
-import { CancellationToken, IDisposable, Event } from '@ali/ide-core-common';
+import { CancellationToken, IDisposable, Event } from '@ide-framework/ide-core-common';
 
 export interface IMarkdownService {
 

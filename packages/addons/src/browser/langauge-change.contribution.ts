@@ -1,6 +1,6 @@
-import { Domain, ClientAppContribution, PreferenceService, IClientApp, localize } from '@ali/ide-core-browser';
-import { Autowired } from '@ali/common-di';
-import { IDialogService } from '@ali/ide-overlay';
+import { Domain, ClientAppContribution, PreferenceService, IClientApp, localize } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { IDialogService } from '@ide-framework/ide-overlay';
 
 @Domain(ClientAppContribution)
 export class LanguageChangeHintContribution implements ClientAppContribution {

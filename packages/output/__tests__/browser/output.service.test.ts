@@ -1,16 +1,16 @@
-import { Injector, Injectable } from '@ali/common-di';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient } from '@ali/ide-core-common';
+import { Injector, Injectable } from '@ide-framework/common-di';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { ILoggerManagerClient } from '@ide-framework/ide-core-common';
 import { OutputService } from '../../src/browser/output.service';
-import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { PreferenceService } from '@ali/ide-core-browser';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
+import { PreferenceService } from '@ide-framework/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
-import { MonacoService } from '@ali/ide-monaco';
-import { MockedMonacoService } from '@ali/ide-monaco/__mocks__/monaco.service.mock';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { MockWorkspaceService } from '@ide-framework/ide-workspace/lib/common/mocks';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/main';
+import { MonacoService } from '@ide-framework/ide-monaco';
+import { MockedMonacoService } from '@ide-framework/ide-monaco/__mocks__/monaco.service.mock';
 
 @Injectable()
 class MockLoggerManagerClient {

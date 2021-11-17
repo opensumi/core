@@ -1,7 +1,7 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
-import { Emitter, IDisposable } from '@ali/ide-core-common';
+import { Emitter, IDisposable } from '@ide-framework/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { EMIT_EXT_HOST_EVENT } from '../../../common';
 import { IExtHostCommon, IMainThreadCommon } from '../../../common/kaitian/common';
 

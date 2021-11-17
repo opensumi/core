@@ -1,21 +1,21 @@
 import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState, IMainThreadWebviewView, IWebviewExtensionDescription, IExtHostWebviewView, WebviewViewResolverRegistrationEvent, WebviewViewResolverRegistrationRemovalEvent, WebviewViewOptions } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@ali/ide-webview';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
-import { Disposable, URI, MaybeNull, IEventBus, ILogger, Schemas, IExtensionInfo, CommandRegistry, StorageProvider, STORAGE_SCHEMA, IStorage, IDisposable, addMapElement } from '@ali/ide-core-browser';
-import { EditorGroupChangeEvent, IEditorOpenType } from '@ali/ide-editor/lib/browser';
+import { Injectable, Autowired, Optinal } from '@ide-framework/common-di';
+import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@ide-framework/ide-webview';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { WorkbenchEditorService, IResource } from '@ide-framework/ide-editor';
+import { Disposable, URI, MaybeNull, IEventBus, ILogger, Schemas, IExtensionInfo, CommandRegistry, StorageProvider, STORAGE_SCHEMA, IStorage, IDisposable, addMapElement } from '@ide-framework/ide-core-browser';
+import { EditorGroupChangeEvent, IEditorOpenType } from '@ide-framework/ide-editor/lib/browser';
 import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
-import { IIconService, IconType } from '@ali/ide-theme';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { IIconService, IconType } from '@ide-framework/ide-theme';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
-import { IOpenerService } from '@ali/ide-core-browser';
-import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
-import { CommandOpener } from '@ali/ide-core-browser/lib/opener/command-opener';
+import { IOpenerService } from '@ide-framework/ide-core-browser';
+import { HttpOpener } from '@ide-framework/ide-core-browser/lib/opener/http-opener';
+import { CommandOpener } from '@ide-framework/ide-core-browser/lib/opener/command-opener';
 import throttle = require('lodash.throttle');
 import { IActivationEventService } from '../../types';
-import { CancellationToken, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { IMainLayoutService, ViewCollapseChangedEvent } from '@ali/ide-main-layout';
+import { CancellationToken, WithEventBus, OnEvent } from '@ide-framework/ide-core-common';
+import { IMainLayoutService, ViewCollapseChangedEvent } from '@ide-framework/ide-main-layout';
 import { WebviewViewShouldShowEvent } from '../../components/extension-webview-view';
 
 @Injectable({multiple: true})

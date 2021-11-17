@@ -1,5 +1,5 @@
-import { FileStat } from '@ali/ide-file-service';
-import { URI } from '@ali/ide-core-common';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { URI } from '@ide-framework/ide-core-common';
 
 // 用于为各个插件创建插件配置的存储目录
 export const IExtensionStoragePathServer = Symbol('IExtensionStoragePathServer');

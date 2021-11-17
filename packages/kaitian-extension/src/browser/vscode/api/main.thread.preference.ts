@@ -1,10 +1,10 @@
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
+import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
 import { ConfigurationTarget } from '../../../common/vscode';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@ali/ide-core-browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat } from '@ali/ide-file-service';
+import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@ide-framework/ide-core-browser';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { FileStat } from '@ide-framework/ide-file-service';
 
 export function getPreferences(preferenceProviderProvider: PreferenceProviderProvider, rootFolders: FileStat[]): PreferenceData {
   const folders = rootFolders.map((root) => root.uri.toString());

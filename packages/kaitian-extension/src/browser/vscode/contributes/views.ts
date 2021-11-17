@@ -1,8 +1,8 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
-import { DisposableCollection } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { WelcomeView } from '@ide-framework/ide-main-layout/lib/browser/welcome.view';
+import { DisposableCollection } from '@ide-framework/ide-core-browser';
 import { ExtensionWebviewView } from '../../components/extension-webview-view';
 
 export interface ViewsContribution {

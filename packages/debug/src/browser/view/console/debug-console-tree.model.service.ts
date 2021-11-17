@@ -1,9 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent, CompositeTreeNode } from '@ali/ide-components';
-import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent, CompositeTreeNode } from '@ide-framework/ide-components';
+import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection, IClipboardService } from '@ide-framework/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { DebugConsoleTreeModel } from './debug-console-model';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import { ExpressionContainer, ExpressionNode, DebugConsoleNode, DebugConsoleRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugConsoleSession } from './debug-console-session';

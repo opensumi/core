@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/editor/common/modes/linkComputer.ts
 
-import { IRange, URI, CharCode, CharacterClassifier } from '@ali/ide-core-common';
+import { IRange, URI, CharCode, CharacterClassifier } from '@ide-framework/ide-core-common';
 
 /**
  * A link inside the editor.

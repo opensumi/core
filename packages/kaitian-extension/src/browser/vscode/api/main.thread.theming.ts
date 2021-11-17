@@ -1,9 +1,9 @@
 import { IMainThreadTheming, IExtHostTheming } from '../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { Autowired, Injectable, Optinal } from '@ali/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Autowired, Injectable, Optinal } from '@ide-framework/common-di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IThemeService } from '@ali/ide-theme';
-import { IDisposable } from '@ali/ide-core-common';
+import { IThemeService } from '@ide-framework/ide-theme';
+import { IDisposable } from '@ide-framework/ide-core-common';
 
 @Injectable({ multiple: true })
 export class MainThreadTheming implements IMainThreadTheming {

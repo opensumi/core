@@ -1,12 +1,12 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as textModel from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as model from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as model from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
 import {
   INJECTOR_TOKEN,
   Injector,
   Injectable,
   Autowired,
-} from '@ali/common-di';
+} from '@ide-framework/common-di';
 import {
   Disposable,
   IRange,
@@ -20,9 +20,9 @@ import {
   IDisposable,
   positionToRange,
   Deferred,
-} from '@ali/ide-core-browser';
-import { IEditor } from '@ali/ide-editor';
-import { IEditorDecorationCollectionService, IEditorDocumentModelService, ResourceService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
+} from '@ide-framework/ide-core-browser';
+import { IEditor } from '@ide-framework/ide-editor';
+import { IEditorDecorationCollectionService, IEditorDocumentModelService, ResourceService, WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
 import {
   ICommentsService,
   ICommentsThread,
@@ -36,11 +36,11 @@ import { CommentsThread } from './comments-thread';
 import { observable, computed, action } from 'mobx';
 import flattenDeep from 'lodash.flattendeep';
 import groupBy from 'lodash.groupby';
-import { dirname } from '@ali/ide-core-common/lib/path';
-import { IIconService, IconType } from '@ali/ide-theme';
+import { dirname } from '@ide-framework/ide-core-common/lib/path';
+import { IIconService, IconType } from '@ide-framework/ide-theme';
 import { CommentsPanel } from './comments-panel.view';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { LRUCache } from '@ali/ide-core-common/lib/map';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { LRUCache } from '@ide-framework/ide-core-common/lib/map';
 import debounce = require('lodash.debounce');
 
 @Injectable()

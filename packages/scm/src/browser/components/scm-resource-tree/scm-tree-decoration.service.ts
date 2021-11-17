@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IDecorationsService } from '@ali/ide-decoration';
-import { URI, Uri, FileDecorationsProvider, IFileDecoration, Emitter, DisposableCollection } from '@ali/ide-core-browser';
-import { IThemeService } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IDecorationsService } from '@ide-framework/ide-decoration';
+import { URI, Uri, FileDecorationsProvider, IFileDecoration, Emitter, DisposableCollection } from '@ide-framework/ide-core-browser';
+import { IThemeService } from '@ide-framework/ide-theme';
 
 @Injectable()
 export class SCMTreeDecorationService implements FileDecorationsProvider {

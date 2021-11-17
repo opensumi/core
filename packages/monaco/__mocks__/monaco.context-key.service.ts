@@ -1,8 +1,8 @@
-import { ContextKeyChangeEvent, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { Event } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
-import { isFalsyOrWhitespace } from '@ali/ide-core-common';
-import { ContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyChangeEvent, IScopedContextKeyService, IContextKey } from '@ide-framework/ide-core-browser';
+import { Event } from '@ide-framework/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
+import { isFalsyOrWhitespace } from '@ide-framework/ide-core-common';
+import { ContextKeyExpression } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 class MockKeybindingContextKey<T> implements IContextKey<T> {
   private _defaultValue: T | undefined;

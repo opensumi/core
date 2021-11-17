@@ -1,12 +1,12 @@
-import { setLocale } from '@ali/ide-monaco/lib/browser/monaco-localize';
+import { setLocale } from '@ide-framework/ide-monaco/lib/browser/monaco-localize';
 // 这里建议传实际 preferences 的设置项
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
 setLocale('zh-CN');
-import '@ali/ide-i18n';
-import '@ali/ide-core-browser/lib/style/index.less';
-import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
-import { SlotLocation } from '@ali/ide-core-browser';
-import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
+import '@ide-framework/ide-i18n';
+import '@ide-framework/ide-core-browser/lib/style/index.less';
+import { ExpressFileServerModule } from '@ide-framework/ide-express-file-server/lib/browser';
+import { SlotLocation } from '@ide-framework/ide-core-browser';
+import { defaultConfig } from '@ide-framework/ide-main-layout/lib/browser/default-config';
 
 import { renderApp } from './render-app';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
@@ -23,10 +23,10 @@ renderApp({
   layoutConfig: {
     ...defaultConfig,
     ...{[SlotLocation.top]: {
-      modules: ['@ali/ide-menu-bar', 'toolbar'],
+      modules: ['@ide-framework/ide-menu-bar', 'toolbar'],
     }},
     ...{[SlotLocation.action]: {
-      modules: ['@ali/ide-toolbar-action'],
+      modules: ['@ide-framework/ide-toolbar-action'],
   }},
   },
   useCdnIcon: true,
@@ -38,7 +38,7 @@ renderApp({
     'editor.quickSuggestionsDelay': 100,
   },
   defaultPanels: {
-    'bottom': '@ali/ide-terminal-next',
+    'bottom': '@ide-framework/ide-terminal-next',
     'right': '',
   },
 });

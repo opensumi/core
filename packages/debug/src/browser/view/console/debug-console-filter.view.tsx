@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize } from '@ali/ide-core-browser';
+import { localize } from '@ide-framework/ide-core-browser';
 import styles from './debug-console.module.less';
 import debounce = require('lodash.debounce');
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ide-framework/ide-core-browser';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
-import { HistoryInputBox, IHistoryInputBoxHandler } from '@ali/ide-components/lib/input/HistoryInputBox';
-import { Key } from '@ali/ide-core-browser';
+import { HistoryInputBox, IHistoryInputBoxHandler } from '@ide-framework/ide-components/lib/input/HistoryInputBox';
+import { Key } from '@ide-framework/ide-core-browser';
 
 /**
  * 调试控制台筛选器

@@ -4,17 +4,17 @@ import {
   Injectable,
   Autowired,
   INJECTOR_TOKEN,
-} from '@ali/common-di';
+} from '@ide-framework/common-di';
 import { observable, action } from 'mobx';
 
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
 import type {
   WorkspaceFileEdit,
   WorkspaceTextEdit,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { IDialogService } from '@ali/ide-overlay';
-import { Deferred, localize, MessageType } from '@ali/ide-core-common';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import { ResourceEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { IDialogService } from '@ide-framework/ide-overlay';
+import { Deferred, localize, MessageType } from '@ide-framework/ide-core-common';
 import { RefactorPreview } from './refactor-preview';
 
 export const PreviewViewId = 'RefactorPreview';

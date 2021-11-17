@@ -1,4 +1,4 @@
-import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { ISCMResource, ISCMResourceGroup, ISCMProvider } from './scm';
 
 export interface ISCMRepositoryMenus {

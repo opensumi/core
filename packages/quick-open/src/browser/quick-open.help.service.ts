@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { QuickOpenHandler, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
-import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@ali/ide-core-browser/lib/quick-open';
-import { CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { CommandService, EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class HelpQuickOpenHandler implements QuickOpenHandler {

@@ -15,9 +15,9 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/keyboard/keys.ts
 
-import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
-import { isOSX } from '@ali/ide-core-common';
-import { isWindows } from '@ali/ide-core-common/lib/platform';
+import { KeyCode as KeyCodeEnum } from '@ide-framework/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { isOSX } from '@ide-framework/ide-core-common';
+import { isWindows } from '@ide-framework/ide-core-common/lib/platform';
 
 export type KeySequence = KeyCode[];
 

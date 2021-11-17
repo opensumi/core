@@ -1,8 +1,8 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../common/kaitian/layout';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter } from '@ide-framework/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 
 export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();

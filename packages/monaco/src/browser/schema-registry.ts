@@ -1,8 +1,8 @@
 import { ISchemaStore, JsonSchemaConfiguration } from '../common';
 import debounce = require('lodash.debounce');
-import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
-import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { IDisposable, Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 
 @Injectable()
 export class SchemaStore implements ISchemaStore {

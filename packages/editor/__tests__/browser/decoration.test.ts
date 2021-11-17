@@ -1,11 +1,11 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@ali/ide-editor/lib/browser';
-import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
-import { URI, Emitter, IEventBus, Disposable } from '@ali/ide-core-browser';
-import { createMockedMonaco } from '@ali/ide-monaco/__mocks__/monaco';
-import { IThemeService } from '@ali/ide-theme';
+import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@ide-framework/ide-editor/lib/browser';
+import { EditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser/editor.decoration.service';
+import { URI, Emitter, IEventBus, Disposable } from '@ide-framework/ide-core-browser';
+import { createMockedMonaco } from '@ide-framework/ide-monaco/__mocks__/monaco';
+import { IThemeService } from '@ide-framework/ide-theme';
 import { MonacoEditorDecorationApplier } from '../../src/browser/decoration-applier';
-import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
+import { ICSSStyleService } from '@ide-framework/ide-theme/lib/common/style';
 
 describe('editor decoration service test', () => {
 

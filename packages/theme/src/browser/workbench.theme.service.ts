@@ -1,12 +1,12 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@ali/ide-core-common';
-import { Autowired, Injectable } from '@ali/common-di';
+import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@ide-framework/ide-core-common';
+import { Autowired, Injectable } from '@ide-framework/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
-import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ide-framework/ide-core-browser';
 import { ICSSStyleService } from '../common';
 
 const DEFAULT_THEME_ID = 'ide-dark';

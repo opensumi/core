@@ -1,6 +1,6 @@
 import { IEditorFeatureRegistry, IEditorFeatureContribution } from './types';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IDisposable, addElement, ILogger, Emitter, Event, URI } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IDisposable, addElement, ILogger, Emitter, Event, URI } from '@ide-framework/ide-core-browser';
 import { IEditor } from '../common';
 
 @Injectable()

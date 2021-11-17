@@ -4,11 +4,11 @@ import {
   WSChannelHandler,
   createSocketConnection,
   RPCMessageConnection,
- } from '@ali/ide-connection';
-import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
-import { Injector, Provider } from '@ali/common-di';
-import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@ali/ide-core-common';
-import { BackService } from '@ali/ide-core-common/lib/module';
+ } from '@ide-framework/ide-connection';
+import { createWebSocketConnection } from '@ide-framework/ide-connection/lib/common/message';
+import { Injector, Provider } from '@ide-framework/common-di';
+import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@ide-framework/ide-core-common';
+import { BackService } from '@ide-framework/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
 

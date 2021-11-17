@@ -1,10 +1,10 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import {
   Domain,
   FsProviderContribution,
   ContributionProvider,
   ClientAppContribution,
-} from '@ali/ide-core-browser';
+} from '@ide-framework/ide-core-browser';
 import { IFileServiceClient, IDiskFileProvider, FILE_SCHEME } from '../common';
 import { FileServiceClient } from './file-service-client';
 

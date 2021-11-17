@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IEditorDocumentModelContentProvider } from '@ide-framework/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, IJSONSchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
-import { IFileServiceClient } from '@ali/ide-file-service';
-import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
-import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, IJSONSchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ide-framework/ide-core-browser';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { BaseFileSystemEditorDocumentProvider } from '@ide-framework/ide-editor/lib/browser/fs-resource/fs-editor-doc';
+import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 @Injectable()
 export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProvider implements IEditorDocumentModelContentProvider {

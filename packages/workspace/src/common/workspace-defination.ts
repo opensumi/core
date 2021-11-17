@@ -1,7 +1,7 @@
-import { URI, Event } from '@ali/ide-core-common';
-import { FileStat } from '@ali/ide-file-service';
+import { URI, Event } from '@ide-framework/ide-core-common';
+import { FileStat } from '@ide-framework/ide-file-service';
 import Ajv from 'ajv';
-import { StorageService } from '@ali/ide-core-browser/lib/services';
+import { StorageService } from '@ide-framework/ide-core-browser/lib/services';
 
 export const KAITIAN_MULTI_WORKSPACE_EXT = 'kaitian-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';

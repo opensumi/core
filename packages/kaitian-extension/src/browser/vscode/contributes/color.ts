@@ -1,8 +1,8 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { ExtColorContribution, IThemeService } from '@ali/ide-theme';
-import { replaceLocalizePlaceholder, localize } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ExtColorContribution, IThemeService } from '@ide-framework/ide-theme';
+import { replaceLocalizePlaceholder, localize } from '@ide-framework/ide-core-browser';
 
 export type ColorsSchema = Array<ExtColorContribution>;
 const colorIdPattern = '^\\w+[.\\w+]*$';

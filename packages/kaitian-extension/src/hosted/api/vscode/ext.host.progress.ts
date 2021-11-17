@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { MainThreadAPIIdentifier, IExtHostProgress, IMainThreadProgress, IExtensionDescription } from '../../../common/vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { formatLocalize, CancellationToken, Progress, IProgressStep, throttle, CancellationTokenSource } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { formatLocalize, CancellationToken, Progress, IProgressStep, throttle, CancellationTokenSource } from '@ide-framework/ide-core-common';
 import { ProgressLocation } from '../../../common/vscode/converter';
 import { ProgressOptions } from 'vscode';
 

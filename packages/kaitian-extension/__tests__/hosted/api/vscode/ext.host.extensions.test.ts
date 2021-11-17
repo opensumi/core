@@ -1,7 +1,7 @@
 import path from 'path';
-import { Injector } from '@ali/common-di';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { IExtensionProps, URI } from '@ali/ide-core-common';
+import { Injector } from '@ide-framework/common-di';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { IExtensionProps, URI } from '@ide-framework/ide-core-common';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';

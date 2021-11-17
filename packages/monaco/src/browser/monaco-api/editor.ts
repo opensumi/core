@@ -20,15 +20,15 @@ import {
   defineTheme,
   setTheme,
   remeasureFonts,
-} from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
-import { AccessibilitySupport } from '@ali/monaco-editor-core/esm/vs/platform/accessibility/common/accessibility';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
+import { AccessibilitySupport } from '@ide-framework/monaco-editor-core/esm/vs/platform/accessibility/common/accessibility';
 import {
   ContentWidgetPositionPreference,
   MouseTargetType,
   OverlayWidgetPositionPreference,
   ICodeEditor,
-} from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { CursorChangeReason } from '@ali/monaco-editor-core/esm/vs/editor/common/controller/cursorEvents';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { CursorChangeReason } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/controller/cursorEvents';
 import {
   DefaultEndOfLine,
   EndOfLinePreference,
@@ -37,7 +37,7 @@ import {
   OverviewRulerLane,
   TrackedRangeStickiness,
   ITextModelUpdateOptions,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
 import {
   EditorAutoIndentStrategy,
   EditorOption,
@@ -48,18 +48,18 @@ import {
   WrappingIndent,
   IEditorOptions,
   IDiffEditorOptions,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { ScrollbarVisibility } from '@ali/monaco-editor-core/esm/vs/base/common/scrollable';
-import { ConfigurationChangedEvent, EditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { BareFontInfo, FontInfo } from '@ali/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
-import { FindMatch, TextModelResolvedOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { EditorType, ScrollType } from '@ali/monaco-editor-core/esm/vs/editor/common/editorCommon';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { ScrollbarVisibility } from '@ide-framework/monaco-editor-core/esm/vs/base/common/scrollable';
+import { ConfigurationChangedEvent, EditorOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { BareFontInfo, FontInfo } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
+import { FindMatch, TextModelResolvedOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { EditorType, ScrollType } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import type {
   IDecorationOptions,
   IModelDecorationOptions,
   IModelDeltaDecoration,
-} from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IMarkerData } from '@ali/monaco-editor-core/esm/vs/platform/markers/common/markers';
+} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
+import { IMarkerData } from '@ide-framework/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 export function createMonacoEditorApi() {
   return Object.freeze({

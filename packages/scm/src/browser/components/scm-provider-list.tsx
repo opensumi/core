@@ -1,11 +1,11 @@
 import React from 'react';
-import { useInjectable } from '@ali/ide-core-browser';
-import { ViewState } from '@ali/ide-core-browser';
-import { IStatusBarService } from '@ali/ide-status-bar';
+import { useInjectable } from '@ide-framework/ide-core-browser';
+import { ViewState } from '@ide-framework/ide-core-browser';
+import { IStatusBarService } from '@ide-framework/ide-status-bar';
 import clx from 'classnames';
-import { Badge } from '@ali/ide-components';
-import { StatusBarItem } from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
-import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { Badge } from '@ide-framework/ide-components';
+import { StatusBarItem } from '@ide-framework/ide-status-bar/lib/browser/status-bar-item.view';
+import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';

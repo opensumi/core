@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/browser/task-problem-matcher-registry.ts
 
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { IProblemPatternRegistry, ApplyToKind, FileLocationKind, Severity, ProblemPatternContribution, ProblemPattern, WatchingPattern } from './problem-pattern';
 import { DisposableCollection, Disposable, IDisposable } from './disposable';
 import { Emitter } from './event';

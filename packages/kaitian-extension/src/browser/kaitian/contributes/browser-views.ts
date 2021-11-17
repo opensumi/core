@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { getIcon } from '@ali/ide-core-browser';
-import { DisposableCollection, getDebugLogger } from '@ali/ide-core-common';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { getIcon } from '@ide-framework/ide-core-browser';
+import { DisposableCollection, getDebugLogger } from '@ide-framework/ide-core-common';
 import { ExtensionLoadingView } from '../../components';
-import { IIconService } from '@ali/ide-theme';
+import { IIconService } from '@ide-framework/ide-theme';
 
 export type KtViewLocation = 'left' | 'right' | 'bottom' | 'editor' | 'toolBar';
 

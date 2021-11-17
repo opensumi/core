@@ -1,10 +1,10 @@
-import { Provider, Injectable } from '@ali/common-di';
+import { Provider, Injectable } from '@ide-framework/common-di';
 import { StatusBarView } from './status-bar.view';
 import { StatusBarService } from './status-bar.service';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ide-framework/ide-core-browser';
 import { StatusBarContribution } from './status-bar.contribution';
 // import { IStatusBarService } from '../common';
-import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
+import { IStatusBarService } from '@ide-framework/ide-core-browser/lib/services';
 
 @Injectable()
 export class StatusBarModule extends BrowserModule {

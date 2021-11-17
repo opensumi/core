@@ -118,7 +118,7 @@ module.exports = {
     }),
     new CopyPlugin([
       { from: path.join(srcDir, './vendor'), to: distDir},
-      { from: require.resolve('@ali/ide-core-electron-main/browser-preload/index.js'), to: path.join(distDir,'preload.js')},
+      { from: require.resolve('@ide-framework/ide-core-electron-main/browser-preload/index.js'), to: path.join(distDir,'preload.js')},
     ]),
   ],
 };

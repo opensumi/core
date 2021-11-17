@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { Uri } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { Uri } from '@ide-framework/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
 
 import { IFileDropBackendService } from '../common';
 @Injectable()

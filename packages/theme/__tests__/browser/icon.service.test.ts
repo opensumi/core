@@ -2,11 +2,11 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IconService } from '../../src/browser';
 import { IIconService, IconType } from '../../src';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@ali/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/__mocks__/preference';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@ali/common-di';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@ide-framework/ide-core-browser';
+import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ide-framework/ide-core-browser/__mocks__/preference';
+import { MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { Injectable } from '@ide-framework/common-di';
+import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
 
 @Injectable()
 class MockFileServiceClient {

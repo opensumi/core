@@ -1,11 +1,11 @@
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@ali/ide-core-browser';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
 import { EditorDocumentModel } from './editor-document-model';
-import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
-import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
+import { mapToSerializable, serializableToMap } from '@ide-framework/ide-core-common/lib/map';
+import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({ scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc' });
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';

@@ -1,7 +1,7 @@
-import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode, ClientAppContribution } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode, ClientAppContribution } from '@ide-framework/ide-core-browser';
 import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme } from '../common';
-import { Autowired } from '@ali/common-di';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { Autowired } from '@ide-framework/common-di';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
 export const THEME_TOGGLE_COMMAND: Command = {

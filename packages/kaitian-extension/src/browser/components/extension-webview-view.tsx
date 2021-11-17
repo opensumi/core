@@ -1,4 +1,4 @@
-import { BasicEvent, CancellationToken, IEventBus, useInjectable, CancellationTokenSource, Disposable} from '@ali/ide-core-browser';
+import { BasicEvent, CancellationToken, IEventBus, useInjectable, CancellationTokenSource, Disposable} from '@ide-framework/ide-core-browser';
 import React from 'react';
 import { ExtensionService } from '../../common';
 

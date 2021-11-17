@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { INativeMenuTemplate, Domain, isWindows, IDisposable, IElectronMainMenuService } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { INativeMenuTemplate, Domain, isWindows, IDisposable, IElectronMainMenuService } from '@ide-framework/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
 import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 

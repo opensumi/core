@@ -1,11 +1,11 @@
-import { Autowired } from '@ali/common-di';
-import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ide-framework/ide-core-browser';
 
-import * as VSCodeBuiltinCommands from '@ali/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
-import { UriComponents } from '@ali/ide-kaitian-extension/lib/common/vscode/models';
-import { TextDocumentShowOptions, ViewColumn } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
-import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
+import * as VSCodeBuiltinCommands from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
+import { UriComponents } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/models';
+import { TextDocumentShowOptions, ViewColumn } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/converter';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@ide-framework/ide-editor';
 
 @Domain(CommandContribution)
 export class CommonCommandsContribution implements CommandContribution {

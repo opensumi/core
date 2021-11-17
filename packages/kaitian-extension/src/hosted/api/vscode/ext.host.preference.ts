@@ -26,8 +26,8 @@ import {
   IExtHostWorkspace,
   ConfigurationTarget,
 } from '../../../common/vscode';
-import { Emitter, Event, PreferenceScope, isObject, mixin } from '@ali/ide-core-common';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Emitter, Event, PreferenceScope, isObject, mixin } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 import { Uri } from '../../../common/vscode/ext-types';
 import cloneDeep = require('lodash.clonedeep');
 

@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-common';
+import { localize } from '@ide-framework/ide-core-common';
 import { registerColor } from '../../color-registry';
 
 export const ktCheckboxHoverBackground = registerColor('kt.checkbox.hoverBackground', { dark: '#00000040', light: '#FFFFFF', hc: null }, localize('ktCheckboxHoverBackground', 'Checkbox Hover Background color.'));

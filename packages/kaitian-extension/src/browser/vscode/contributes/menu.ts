@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@ali/ide-core-browser';
-import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
-import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
-import { IEditorGroup } from '@ali/ide-editor';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@ide-framework/ide-core-browser';
+import { ToolbarRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IEditorActionRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { IEditorGroup } from '@ide-framework/ide-editor';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 

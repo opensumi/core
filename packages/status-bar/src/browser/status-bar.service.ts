@@ -1,11 +1,11 @@
 import { observable, computed, action } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
-import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@ali/ide-core-browser';
-import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor, StatusBarCommand, StatusBarState } from '@ali/ide-core-browser/lib/services';
-import { CommandService, DisposableCollection, memoize } from '@ali/ide-core-common';
-import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { RawContextKey } from '@ali/ide-core-browser/lib/raw-context-key';
-import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@ide-framework/ide-core-browser';
+import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor, StatusBarCommand, StatusBarState } from '@ide-framework/ide-core-browser/lib/services';
+import { CommandService, DisposableCollection, memoize } from '@ide-framework/ide-core-common';
+import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { RawContextKey } from '@ide-framework/ide-core-browser/lib/raw-context-key';
+import { LayoutState, LAYOUT_STATE } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {

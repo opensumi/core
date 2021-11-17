@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
-import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { mnemonicButtonLabel } from '@ide-framework/ide-core-common/lib/utils/strings';
+import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@ide-framework/ide-core-common';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 import { MenuNode } from '../../base';

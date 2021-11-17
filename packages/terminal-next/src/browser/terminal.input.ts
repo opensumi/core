@@ -1,5 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { isMacintosh } from '@ali/ide-core-common/lib/platform';
+import { Injectable } from '@ide-framework/common-di';
+import { isMacintosh } from '@ide-framework/ide-core-common/lib/platform';
 
 @Injectable()
 export class TerminalKeyBoardInputService {

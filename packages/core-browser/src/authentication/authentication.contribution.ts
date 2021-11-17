@@ -1,6 +1,6 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired } from '@ide-framework/common-di';
 import { ClientAppContribution } from '../common/common.define';
-import { Domain, IAuthenticationService, CommandContribution, CommandRegistry, noAccountsId } from '@ali/ide-core-common';
+import { Domain, IAuthenticationService, CommandContribution, CommandRegistry, noAccountsId } from '@ide-framework/ide-core-common';
 
 @Domain(ClientAppContribution, CommandContribution)
 export class AuthenticationContribution implements ClientAppContribution, CommandContribution {

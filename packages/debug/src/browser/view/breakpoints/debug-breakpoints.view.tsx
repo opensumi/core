@@ -1,13 +1,13 @@
 import React from 'react';
-import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@ali/ide-core-browser';
+import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@ide-framework/ide-core-browser';
 import styles from './debug-breakpoints.module.less';
 import cls from 'classnames';
-import { CheckBox } from '@ali/ide-components';
+import { CheckBox } from '@ide-framework/ide-components';
 import { observer } from 'mobx-react-lite';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, ISourceBreakpoint } from '../../breakpoint';
-import { Badge, RecycleList } from '@ali/ide-components';
+import { Badge, RecycleList } from '@ide-framework/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager } from '../../../common';
 

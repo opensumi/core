@@ -1,8 +1,8 @@
-import { SuggestWidget } from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
-import { SuggestController } from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
-import { Autowired, Injectable } from '@ali/common-di';
-import { IEventBus } from '@ali/ide-core-common';
-import { SuggestEvent, DisposableCollection } from '@ali/ide-core-browser';
+import { SuggestWidget } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+import { SuggestController } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { IEventBus } from '@ide-framework/ide-core-common';
+import { SuggestEvent, DisposableCollection } from '@ide-framework/ide-core-browser';
 
 import { IEditorFeatureContribution } from '../types';
 import { IEditor } from '../../common';

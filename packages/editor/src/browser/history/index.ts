@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IPosition, URI, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IPosition, URI, WithEventBus, OnEvent } from '@ide-framework/ide-core-browser';
 import { EditorSelectionChangeEvent, EditorGroupChangeEvent, EditorGroupCloseEvent } from '../types';
 import { WorkbenchEditorService } from '../../common';
 

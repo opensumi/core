@@ -1,8 +1,8 @@
-import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { Injectable, Autowired } from '@ali/common-di';
-import { ButtonType } from '@ali/ide-components';
-import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, IKaitianMenuExtendInfo } from '@ali/ide-core-common';
-import { warning } from '@ali/ide-components/lib/utils';
+import { ContextKeyExpr } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ButtonType } from '@ide-framework/ide-components';
+import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, IKaitianMenuExtendInfo } from '@ide-framework/ide-core-common';
+import { warning } from '@ide-framework/ide-components/lib/utils';
 import ReactIs from 'react-is';
 
 import { MenuId } from './menu-id';

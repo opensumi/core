@@ -1,8 +1,8 @@
 import { IPlainWebviewWindow } from './types';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IElectronMainUIService, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
-import { electronEnv } from '@ali/ide-core-browser/lib/utils/electron';
-import { Emitter, Event, Disposable, URI } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IElectronMainUIService, IElectronPlainWebviewWindowOptions } from '@ide-framework/ide-core-common/lib/electron';
+import { electronEnv } from '@ide-framework/ide-core-browser/lib/utils/electron';
+import { Emitter, Event, Disposable, URI } from '@ide-framework/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebviewWindow {

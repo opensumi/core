@@ -1,14 +1,14 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, IDisposable, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@ali/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { WithEventBus, IDisposable, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@ide-framework/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { LayoutState, LAYOUT_STATE } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { Deferred } from '@ali/ide-core-common';
-import { ThemeChangedEvent } from '@ali/ide-theme';
+import { Deferred } from '@ide-framework/ide-core-common';
+import { ThemeChangedEvent } from '@ide-framework/ide-theme';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {

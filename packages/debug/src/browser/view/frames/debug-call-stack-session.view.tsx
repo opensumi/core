@@ -1,6 +1,6 @@
 import React from 'react';
 import cls from 'classnames';
-import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ali/ide-core-browser';
+import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ide-framework/ide-core-browser';
 import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackThreadView } from './debug-call-stack-thread.view';

@@ -1,15 +1,15 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 import { IThemeService } from '../../';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/__mocks__/preference';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@ali/common-di';
-import { SemanticTokenRegistryImpl } from '@ali/ide-theme/lib/browser/semantic-tokens-registry';
-import { ISemanticTokenRegistry } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
-import { Color } from '@ali/ide-theme/lib/common';
+import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@ide-framework/ide-core-browser';
+import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ide-framework/ide-core-browser/__mocks__/preference';
+import { MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { Injectable } from '@ide-framework/common-di';
+import { SemanticTokenRegistryImpl } from '@ide-framework/ide-theme/lib/browser/semantic-tokens-registry';
+import { ISemanticTokenRegistry } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
+import { Color } from '@ide-framework/ide-theme/lib/common';
 
 @Injectable()
 class MockFileServiceClient {

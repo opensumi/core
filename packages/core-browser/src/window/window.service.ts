@@ -1,7 +1,7 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
 import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
-import { isElectronRenderer, URI } from '@ali/ide-core-common';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { isElectronRenderer, URI } from '@ide-framework/ide-core-common';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
 import { IExternalUriService } from '../services';
 

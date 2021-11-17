@@ -1,25 +1,25 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { IRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IRange } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import * as paths from '@ali/ide-core-common/lib/path';
-import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser/doc-model/types';
-import { URI, Uri } from '@ali/ide-core-common/lib/uri';
-import { RecycleList } from '@ali/ide-components/lib/recycle-list';
-import { CheckBox } from '@ali/ide-components/lib/checkbox';
-import { LabelService } from '@ali/ide-core-browser/lib/services/label-service';
-import { ViewState } from '@ali/ide-core-browser/lib/layout';
+import * as paths from '@ide-framework/ide-core-common/lib/path';
+import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser/doc-model/types';
+import { URI, Uri } from '@ide-framework/ide-core-common/lib/uri';
+import { RecycleList } from '@ide-framework/ide-components/lib/recycle-list';
+import { CheckBox } from '@ide-framework/ide-components/lib/checkbox';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services/label-service';
+import { ViewState } from '@ide-framework/ide-core-browser/lib/layout';
 
 import {
   IRefactorPreviewService,
 } from './refactor-preview.service';
 import styles from './refactor_preview.module.less';
-import { localize } from '@ali/ide-core-common/lib/localize';
+import { localize } from '@ide-framework/ide-core-common/lib/localize';
 import { isResourceFileEdit } from './utils';
-import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import type { ResourceFileEdit, ResourceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import type { ResourceFileEdit, ResourceTextEdit } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 interface IRefactorNodeProps {
   data: ResourceTextEdit | ResourceFileEdit;

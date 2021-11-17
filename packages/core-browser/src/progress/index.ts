@@ -1,4 +1,4 @@
-import { IDisposable, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgress, IProgressStep, IProgressCompositeOptions } from '@ali/ide-core-common';
+import { IDisposable, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgress, IProgressStep, IProgressCompositeOptions } from '@ide-framework/ide-core-common';
 
 export interface IProgressModel {
   show: boolean;

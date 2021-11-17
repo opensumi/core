@@ -1,8 +1,8 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { ITextModelService, ITextModelContentProvider } from '@ali/monaco-editor-core/esm/vs/editor/common/services/resolverService';
+import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import { ITextModelService, ITextModelContentProvider } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/resolverService';
 /* istanbul ignore file */
-import { Autowired, Injectable } from '@ali/common-di';
-import { URI } from '@ali/ide-core-browser';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { URI } from '@ide-framework/ide-core-browser';
 import { IEditorDocumentModelService } from './types';
 
 @Injectable()

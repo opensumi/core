@@ -1,13 +1,13 @@
 import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier,
 } from '../../../common/vscode';
-import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
+import { Injectable, Optional, Autowired } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ide-framework/ide-quick-open';
 import {
   QuickTitleBar,
-} from '@ali/ide-quick-open/lib/browser/quick-title-bar';
-import { IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
-import { Disposable } from '@ali/ide-core-browser';
+} from '@ide-framework/ide-quick-open/lib/browser/quick-title-bar';
+import { IQuickInputService } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { Disposable } from '@ide-framework/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickOpen {

@@ -1,6 +1,6 @@
-import { IMenubarItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
-import { ThemeType } from '@ali/ide-theme';
-import { IKaitianMenuExtendInfo } from '@ali/ide-core-common';
+import { IMenubarItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { ThemeType } from '@ide-framework/ide-theme';
+import { IKaitianMenuExtendInfo } from '@ide-framework/ide-core-common';
 
 import { IExtensionContributions } from '../vscode/extension';
 import { ITabBarViewContribution } from '../../browser/kaitian-browser/types';

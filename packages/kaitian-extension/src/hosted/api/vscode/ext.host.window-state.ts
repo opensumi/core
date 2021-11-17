@@ -1,8 +1,8 @@
 
 import * as types from '../../../common/vscode/ext-types';
 import { IExtHostWindowState } from '../../../common/vscode';
-import { Emitter, Event } from '@ali/ide-core-common';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
 
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();

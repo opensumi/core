@@ -1,15 +1,15 @@
-import { Injectable, Autowired, Optional } from '@ali/common-di';
+import { Injectable, Autowired, Optional } from '@ide-framework/common-di';
 import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { DisposableCollection, Disposable, ILogger, WithEventBus, URI, ThrottledDelayer, FileStat } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, ILogger, WithEventBus, URI, ThrottledDelayer, FileStat } from '@ide-framework/ide-core-browser';
 import { IFileTreeAPI, IFileTreeService } from '../../common';
-import { IMessageService } from '@ali/ide-overlay';
-import { Decoration, TargetMatchMode } from '@ali/ide-components';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { IMessageService } from '@ide-framework/ide-overlay';
+import { Decoration, TargetMatchMode } from '@ide-framework/ide-components';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
 import { FileTreeService } from '../file-tree.service';
 import styles from '../file-tree.module.less';
 import treeNodeStyles from '../file-tree-node.module.less';
-import { FileTreeDropEvent } from '@ali/ide-core-common/lib/types/dnd';
+import { FileTreeDropEvent } from '@ide-framework/ide-core-common/lib/types/dnd';
 
 @Injectable()
 export class DragAndDropService extends WithEventBus {

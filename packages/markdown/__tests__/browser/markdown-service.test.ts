@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MarkdownModule } from '@ali/ide-markdown/lib/browser';
-import { IWebviewService, IWebview } from '@ali/ide-webview';
-import { CancellationTokenSource, Emitter, Disposable } from '@ali/ide-core-common';
-import { IMarkdownService } from '@ali/ide-markdown';
+import { MarkdownModule } from '@ide-framework/ide-markdown/lib/browser';
+import { IWebviewService, IWebview } from '@ide-framework/ide-webview';
+import { CancellationTokenSource, Emitter, Disposable } from '@ide-framework/ide-core-common';
+import { IMarkdownService } from '@ide-framework/ide-markdown';
 
 describe('markdown test', () => {
 

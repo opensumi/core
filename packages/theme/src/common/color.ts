@@ -5,7 +5,7 @@
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/color.ts
 
 /* tslint:disable:no-bitwise */
-import { CharCode } from '@ali/ide-core-common/lib/charCode';
+import { CharCode } from '@ide-framework/ide-core-common/lib/charCode';
 
 function roundFloat(num: number, decimalPoints: number): number {
   const decimal = Math.pow(10, decimalPoints);

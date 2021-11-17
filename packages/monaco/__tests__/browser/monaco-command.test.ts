@@ -1,14 +1,14 @@
-import { EditorAction, EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { EditorAction, EditorExtensionsRegistry } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
-import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
-import { ILoggerManagerClient, Emitter, CommandRegistry } from '@ali/ide-core-common';
-import { CommandsRegistry, ICommandEvent } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
-import { MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { WorkbenchEditorService, EditorCollectionService } from '@ide-framework/ide-editor';
+import { ILoggerManagerClient, Emitter, CommandRegistry } from '@ide-framework/ide-core-common';
+import { CommandsRegistry, ICommandEvent } from '@ide-framework/monaco-editor-core/esm/vs/platform/commands/common/commands';
+import { MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
-import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from '@ali/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from '@ide-framework/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 describe(' monaco command service test', () => {
   let injector: MockInjector;

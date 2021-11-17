@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IJSONSchemaMap, IJSONSchema } from './json-schema';
 import { IStringDictionary } from './types/string';
 import { deepClone } from './utils/objects';

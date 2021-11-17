@@ -1,7 +1,7 @@
-import { ExtHostCommands } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
-import { createCommandsApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.command';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadCommands } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { ExtHostCommands } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
+import { createCommandsApiFactory } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.command';
+import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { MainThreadAPIIdentifier, IMainThreadCommands } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
 describe('kaitian-extension/__tests__/hosted/api/kaitian/ext.host.command.test.ts', () => {

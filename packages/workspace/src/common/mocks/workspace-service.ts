@@ -1,6 +1,6 @@
-import { FileStat } from '@ali/ide-file-service';
-import { Emitter, URI, Deferred } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { Emitter, URI, Deferred } from '@ide-framework/ide-core-common';
+import { Injectable } from '@ide-framework/common-di';
 import { IWorkspaceService } from '../../common';
 
 @Injectable()

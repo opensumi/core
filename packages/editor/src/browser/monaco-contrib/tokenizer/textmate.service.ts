@@ -1,16 +1,16 @@
-import { IThemeData } from '@ali/ide-theme';
-import { Injectable, Autowired } from '@ali/common-di';
-import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
-import { URI, Disposable } from '@ali/ide-core-common';
-import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { IThemeData } from '@ide-framework/ide-theme';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { monaco } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
+import { URI, Disposable } from '@ide-framework/ide-core-common';
+import { ThemeChangedEvent } from '@ide-framework/ide-theme/lib/common/event';
 import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { ModesRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
-import type { ILanguageExtensionPoint } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { ModesRegistry } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
+import type { ILanguageExtensionPoint } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
-import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
-import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv, AppConfig } from '@ali/ide-core-browser';
+import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ide-framework/ide-monaco/lib/browser/contrib/tokenizer';
+import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv, AppConfig } from '@ide-framework/ide-core-browser';
 
 import { TextmateRegistry } from './textmate-registry';
 import { IEditorDocumentModelService } from '../../doc-model/types';

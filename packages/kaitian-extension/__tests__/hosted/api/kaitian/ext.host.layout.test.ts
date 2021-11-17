@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { MainThreadKaitianAPIIdentifier } from '../../../../src/common/kaitian';
 import { createLayoutAPIFactory, KaitianExtHostLayout } from '../../../../src/hosted/api/kaitian/ext.host.layout';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';

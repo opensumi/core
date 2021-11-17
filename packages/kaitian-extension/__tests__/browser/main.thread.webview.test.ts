@@ -1,20 +1,20 @@
-import { ExtHostWebviewViews, ExtHostWebviewService } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.api.webview';
-import { MainThreadWebview, MainThreadWebviewView } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.api.webview';
+import { ExtHostWebviewViews, ExtHostWebviewService } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import { MainThreadWebview, MainThreadWebviewView } from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/api/main.thread.api.webview';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILoggerManagerClient } from '@ali/ide-logs';
-import { Emitter, makeRandomHexString, IEventBus, Disposable, CancellationTokenSource, CommandRegistry } from '@ali/ide-core-common';
-import { IWebviewService, IWebview } from '@ali/ide-webview';
-import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
+import { ILoggerManagerClient } from '@ide-framework/ide-logs';
+import { Emitter, makeRandomHexString, IEventBus, Disposable, CancellationTokenSource, CommandRegistry } from '@ide-framework/ide-core-common';
+import { IWebviewService, IWebview } from '@ide-framework/ide-webview';
+import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
 import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
-import { WebviewViewShouldShowEvent } from '@ali/ide-kaitian-extension/lib/browser/components/extension-webview-view';
-import { WebviewViewProvider, WebviewView } from '@ali/ide-kaitian-extension/lib/common/vscode/webview';
-import { IExtensionDescription, ExtensionIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
-import { IIconService } from '@ali/ide-theme';
-import { StaticResourceService } from '@ali/ide-static-resource';
-import { IOpenerService } from '@ali/ide-core-browser/lib/opener';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { WebviewViewShouldShowEvent } from '@ide-framework/ide-kaitian-extension/lib/browser/components/extension-webview-view';
+import { WebviewViewProvider, WebviewView } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/webview';
+import { IExtensionDescription, ExtensionIdentifier } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/common';
+import { IIconService } from '@ide-framework/ide-theme';
+import { StaticResourceService } from '@ide-framework/ide-static-resource';
+import { IOpenerService } from '@ide-framework/ide-core-browser/lib/opener';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
 import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 
 async function delay(ms: number) {

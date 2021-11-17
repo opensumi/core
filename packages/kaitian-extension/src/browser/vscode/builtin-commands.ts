@@ -1,6 +1,6 @@
-import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
-import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { DEBUG_COMMANDS } from '@ali/ide-debug/lib/browser/debug-contribution';
+import { TERMINAL_COMMANDS } from '@ide-framework/ide-terminal-next';
+import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
+import { DEBUG_COMMANDS } from '@ide-framework/ide-debug/lib/browser/debug-contribution';
 
 /**
  * 插件进程内置 command 的命名空间

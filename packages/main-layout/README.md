@@ -26,7 +26,7 @@ main-layout 模块负责 IDE 的基础布局划分，将整个窗口划分为形
 ```js
 // 关联视图信息到token
 registerComponent(registry: ComponentRegistry) {
-  registry.register('@ali/ide-debug-console', {
+  registry.register('@ide-framework/ide-debug-console', {
     id: DEBUG_CONSOLE_VIEW_ID,
     component: DebugConsoleView,
   }, {
@@ -38,7 +38,7 @@ registerComponent(registry: ComponentRegistry) {
 }
 // 映射token到视图Slot
 const LayoutConfig = {
-  [SlotLocation.left]: {modules: ['@ali/ide-debug-console']}
+  [SlotLocation.left]: {modules: ['@ide-framework/ide-debug-console']}
 }
 ```
 

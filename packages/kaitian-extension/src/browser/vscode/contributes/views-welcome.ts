@@ -1,9 +1,9 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { DEBUG_WELCOME_ID } from '@ali/ide-debug';
-import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@ali/ide-main-layout';
-import { DisposableCollection, localize } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { DEBUG_WELCOME_ID } from '@ide-framework/ide-debug';
+import { ContextKeyExpr } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@ide-framework/ide-main-layout';
+import { DisposableCollection, localize } from '@ide-framework/ide-core-browser';
 
 export enum ViewsWelcomeExtensionPointFields {
   view = 'view',

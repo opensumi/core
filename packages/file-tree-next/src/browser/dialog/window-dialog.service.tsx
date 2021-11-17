@@ -1,13 +1,13 @@
 import React from 'react';
-import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { isElectronRenderer, electronEnv, URI, MessageType, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
-import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@ide-framework/ide-overlay';
+import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { isElectronRenderer, electronEnv, URI, MessageType, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ide-framework/ide-core-browser';
+import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
 import { FileDialog } from './file-dialog.view';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileTreeDialogService } from './file-dialog.service';
-import { isMacintosh } from '@ali/ide-core-common/lib/platform';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { isMacintosh } from '@ide-framework/ide-core-common/lib/platform';
+import { IFileServiceClient } from '@ide-framework/ide-file-service';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {

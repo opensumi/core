@@ -1,4 +1,4 @@
-import { MaybePromise } from '@ali/ide-core-common';
+import { MaybePromise } from '@ide-framework/ide-core-common';
 import { IClientApp } from '../browser-module';
 
 export const ClientAppContribution = Symbol('ClientAppContribution');

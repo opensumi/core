@@ -1,5 +1,5 @@
-import { Provider, Injectable } from '@ali/common-di';
-import { NodeModule } from '@ali/ide-core-node';
+import { Provider, Injectable } from '@ide-framework/common-di';
+import { NodeModule } from '@ide-framework/ide-core-node';
 import { TerminalServiceImpl } from './terminal.service';
 import { TerminalServiceClientImpl } from './terminal.service.client';
 import { ITerminalNodeService, ITerminalServiceClient, ITerminalServicePath } from '../common';

@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { URI, getDebugLogger } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { URI, getDebugLogger } from '@ide-framework/ide-core-common';
 
 import { ThemeData } from './theme-data';
 import { ThemeContribution, getThemeId } from '../common/theme.service';

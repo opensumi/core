@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { QuickOpenService, QuickOpenModel, QuickOpenItem, Mode } from '@ali/ide-quick-open';
-import { VariableRegistry, localize } from '@ali/ide-core-browser';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { QuickOpenService, QuickOpenModel, QuickOpenItem, Mode } from '@ide-framework/ide-quick-open';
+import { VariableRegistry, localize } from '@ide-framework/ide-core-browser';
 
 @Injectable()
 export class VariableQuickOpenService implements QuickOpenModel {

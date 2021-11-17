@@ -1,17 +1,17 @@
-import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@ali/ide-editor';
-import { Injectable, Autowired } from '@ali/common-di';
+import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@ide-framework/ide-editor';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@ali/ide-core-browser';
+import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@ide-framework/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
+import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ide-framework/ide-workspace-edit';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
 import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY } from '../../../common';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {

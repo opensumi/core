@@ -1,7 +1,7 @@
-import { Autowired, Injectable } from '@ali/common-di';
-import { Domain } from '@ali/ide-core-common';
-import { IResource } from '@ali/ide-editor/lib/common';
-import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution, ResourceService } from '@ali/ide-editor/lib/browser';
+import { Autowired, Injectable } from '@ide-framework/common-di';
+import { Domain } from '@ide-framework/ide-core-common';
+import { IResource } from '@ide-framework/ide-editor/lib/common';
+import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution, ResourceService } from '@ide-framework/ide-editor/lib/browser';
 
 import { GitDocContentProvider } from './doc-content-provider/git';
 import { GitResourceProvider } from './resource-provider/git';

@@ -1,12 +1,12 @@
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable } from '@ali/ide-core-common';
-import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager } from '@ali/ide-debug';
-import { DebugWatchNode } from '@ali/ide-debug/lib/browser/tree';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
-import { DebugWatchModelService } from '@ali/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
-import { IContextKeyService, StorageProvider } from '@ali/ide-core-browser';
-import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
+import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { Disposable } from '@ide-framework/ide-core-common';
+import { DebugHoverSource } from '@ide-framework/ide-debug/lib/browser/editor/debug-hover-source';
+import { IDebugSessionManager } from '@ide-framework/ide-debug';
+import { DebugWatchNode } from '@ide-framework/ide-debug/lib/browser/tree';
+import { ICtxMenuRenderer, AbstractContextMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { DebugWatchModelService } from '@ide-framework/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
+import { IContextKeyService, StorageProvider } from '@ide-framework/ide-core-browser';
+import { MockedStorageProvider } from '@ide-framework/ide-core-browser/__mocks__/storage';
 import styles from '../../../../src/browser/view/watch/debug-watch.module.less';
 
 describe('Debug Watch Tree Model', () => {

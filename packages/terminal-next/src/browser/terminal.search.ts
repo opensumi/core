@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Emitter, Event } from '@ide-framework/ide-core-common';
 import { ITerminalSearchService, ITerminalGroupViewService, ITerminalController } from '../common';
 
 @Injectable()

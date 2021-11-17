@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ali/ide-core-browser';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ide-framework/ide-core-browser';
+import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { IExtensionStoragePathServer } from '@ide-framework/ide-extension-storage';
 
 import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';

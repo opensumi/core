@@ -1,4 +1,4 @@
-import { Event } from '@ali/ide-core-common';
+import { Event } from '@ide-framework/ide-core-common';
 import { TerminalOptions, ITerminalInfo } from './pty';
 import { ITerminalExternalClient } from './controller';
 import { ITerminalExitEvent } from './client';

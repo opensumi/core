@@ -1,10 +1,10 @@
 import { IRunTimeParams, AbstractKaitianBrowserContributionRunner, IEditorViewContribution } from '../types';
-import { IDisposable, Disposable, URI } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IIconService, IconType } from '@ali/ide-theme';
-import { ResourceService } from '@ali/ide-editor';
-import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { IDisposable, Disposable, URI } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@ide-framework/common-di';
+import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { IIconService, IconType } from '@ide-framework/ide-theme';
+import { ResourceService } from '@ide-framework/ide-editor';
+import { EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
 
 @Injectable({multiple: true})
 export class EditorBrowserContributionRunner extends AbstractKaitianBrowserContributionRunner {

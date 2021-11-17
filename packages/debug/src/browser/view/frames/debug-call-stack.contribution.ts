@@ -4,9 +4,9 @@ import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugSessionManager } from './../../debug-session-manager';
 import { CallStackContext } from './../../../common/types';
 import { CONTEXT_CALLSTACK_ITEM_TYPE, CONTEXT_RESTART_FRAME_SUPPORTED, CONTEXT_STACK_FRAME_SUPPORTS_RESTART } from './../../../common/constants';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { Autowired } from '@ali/common-di';
-import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@ali/ide-core-browser';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Autowired } from '@ide-framework/common-di';
+import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@ide-framework/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 
 function isStackFrameContext(obj: any): obj is CallStackContext {

@@ -1,6 +1,6 @@
-import { URI } from '@ali/ide-core-browser';
-import { FileStat } from '@ali/ide-file-service';
-import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
+import { URI } from '@ide-framework/ide-core-browser';
+import { FileStat } from '@ide-framework/ide-file-service';
+import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@ide-framework/ide-components';
 import { IFileTreeService } from './index';
 
 export class Directory extends CompositeTreeNode {

@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { EditorModule } from '@ali/ide-editor/lib/browser';
-import { EditorContribution } from '@ali/ide-editor/lib/browser/editor.contribution';
+import { EditorModule } from '@ide-framework/ide-editor/lib/browser';
+import { EditorContribution } from '@ide-framework/ide-editor/lib/browser/editor.contribution';
 
 describe('Editor contribution should be work', () => {
   let mockInjector: MockInjector;

@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable } from '@ide-framework/ide-core-common';
 import { UriComponents } from './ext-types';
 
 export interface IMainThreadUrls extends IDisposable {

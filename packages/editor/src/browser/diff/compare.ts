@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ide-framework/common-di';
 import { ICompareService, CompareResult } from '../types';
-import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS, CommandContribution, CommandRegistry } from '@ide-framework/ide-core-browser';
+import { getIcon } from '@ide-framework/ide-core-browser';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class CompareService implements ICompareService {

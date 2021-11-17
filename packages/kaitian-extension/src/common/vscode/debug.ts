@@ -1,8 +1,8 @@
-import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ali/ide-core-common';
+import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ide-framework/ide-core-common';
 import { Breakpoint } from './models';
 import type vscode from 'vscode';
-import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@ali/ide-debug';
+import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@ide-framework/ide-debug';
 import { WorkspaceFolder } from './models';
 
 export type DebugSessionUUID = string;

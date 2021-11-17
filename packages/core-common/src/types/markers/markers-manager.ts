@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './markers';
 import { IDisposable } from '../../disposable';
 import { Emitter, MapMap, Event, WithEventBus } from '../../index';

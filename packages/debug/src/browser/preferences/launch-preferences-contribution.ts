@@ -1,4 +1,4 @@
-import { PreferenceContribution, PreferenceSchema, Domain, PreferenceConfiguration } from '@ali/ide-core-browser';
+import { PreferenceContribution, PreferenceSchema, Domain, PreferenceConfiguration } from '@ide-framework/ide-core-browser';
 import { launchPreferencesSchema } from './launch-preferences';
 
 @Domain(PreferenceContribution, PreferenceConfiguration)

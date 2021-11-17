@@ -1,7 +1,7 @@
 import { IWorkspaceStorageService } from '../common';
 import { WorkspaceContribution } from './workspace-contribution';
-import { Provider } from '@ali/common-di';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { Provider } from '@ide-framework/common-di';
+import { BrowserModule, EffectDomain } from '@ide-framework/ide-core-browser';
 import { injectWorkspacePreferences } from './workspace-preferences';
 import { IWorkspaceService } from '../common';
 import { WorkspaceService } from './workspace-service';

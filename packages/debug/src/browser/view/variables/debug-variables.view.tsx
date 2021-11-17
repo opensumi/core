@@ -1,13 +1,13 @@
 import React from 'react';
-import { useInjectable, getIcon } from '@ali/ide-core-browser';
+import { useInjectable, getIcon } from '@ide-framework/ide-core-browser';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ali/ide-components';
+import { ViewState } from '@ide-framework/ide-core-browser';
+import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ide-framework/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import styles from './debug-variables.module.less';
 import cls from 'classnames';
-import { Loading } from '@ali/ide-core-browser/lib/components/loading';
+import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
 
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 

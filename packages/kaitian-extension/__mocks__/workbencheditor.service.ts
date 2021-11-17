@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable } from '@ide-framework/common-di';
 
 @Injectable()
 export class MockWorkbenchEditorService {

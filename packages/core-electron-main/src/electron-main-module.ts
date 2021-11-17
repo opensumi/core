@@ -1,4 +1,4 @@
-import { BasicModule } from '@ali/ide-core-common';
+import { BasicModule } from '@ide-framework/ide-core-common';
 
 export class ElectronMainModule extends BasicModule {
 

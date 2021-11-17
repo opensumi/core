@@ -1,12 +1,12 @@
 import type vscode from 'vscode';
-import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
-import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
+import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { IRPCProtocol, WSChannelHandler } from '@ide-framework/ide-connection';
+import { ILoggerManagerClient } from '@ide-framework/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
-import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@ali/ide-core-browser';
-import { getLanguageId, URI, isElectronEnv, firstSessionDateStorageKey } from '@ali/ide-core-common';
-import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
+import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@ide-framework/ide-core-browser';
+import { getLanguageId, URI, isElectronEnv, firstSessionDateStorageKey } from '@ide-framework/ide-core-common';
+import { HttpOpener } from '@ide-framework/ide-core-browser/lib/opener/http-opener';
 import { MainThreadStorage } from './main.thread.storage';
 
 @Injectable({ multiple: true })

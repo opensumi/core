@@ -1,7 +1,7 @@
 import React from 'react';
-import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@ali/ide-core-browser';
-import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
-import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
+import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@ide-framework/ide-core-browser';
+import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ide-framework/ide-components';
+import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -9,7 +9,7 @@ import { Directory, File } from '../common/file-tree-node.define';
 import cls from 'classnames';
 import styles from './file-tree.module.less';
 import { IFileTreeService } from '../common';
-import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
+import { WelcomeView } from '@ide-framework/ide-main-layout/lib/browser/welcome.view';
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FILTER_DELAY = 500;
