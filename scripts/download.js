@@ -57,7 +57,7 @@ async function downloadExtension(url, namespace, extensionName) {
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const data = await got.stream(url);
+  const data = await got.default.stream(url, { timeout: 10000 });
 
   data.pipe(tmpStream);
   await Promise.race([awaitEvent(data, 'end'), awaitEvent(data, 'error')]);
@@ -176,7 +176,7 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 
 const installExtension = async (namespace, name, version) => {
   const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
-  const res = await urllib.request(`${api}${path}`, { dataType: 'json' });
+  const res = await urllib.request(`${api}${path}`, { dataType: 'json', timeout: 10000 });
   if (res.data.files && res.data.files.download) {
     const { targetDirName, tmpZipFile} = await downloadExtension(res.data.files.download, namespace, name);
     // 解压插件
