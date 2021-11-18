@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ide-framework/common-di';
 import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
+import { debounce } from '@ide-framework/ide-core-common';
 import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@ide-framework/ide-core-browser';
 import { ExtensionService } from '@ide-framework/ide-kaitian-extension/lib/common';
 
@@ -95,21 +96,21 @@ export class VSXExtensionService implements IVSXExtensionService {
     this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}`), { preview: true });
   }
 
+  @debounce(500)
   async search(keyword: string): Promise<void> {
     const param: VSXSearchParam = {
-      query: 'javascript',
+      query: keyword,
     };
 
     const res = await this.backService.search(param);
     if (res.extensions) {
-      for (const ext of res.extensions) {
-        this.extensions.push({
-          ...ext,
-          iconUrl: ext.files.icon,
-          downloadUrl: ext.files.download,
-          readme: ext.files.readme,
-        });
-      }
+      this.extensions = res.extensions.map((ext) => ({
+        ...ext,
+        publisher: ext.namespace,
+        iconUrl: ext.files.icon,
+        downloadUrl: ext.files.download,
+        readme: ext.files.readme,
+      }));
     }
   }
 }
