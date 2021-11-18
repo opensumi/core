@@ -7,7 +7,8 @@ import { mapToSerializable, serializableToMap } from '@ide-framework/ide-core-co
 import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
 
-export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({ scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc' });
+export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = new URI('editor-doc').withScheme(STORAGE_SCHEMA.SCOPE);
+
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
 
 @Injectable()
