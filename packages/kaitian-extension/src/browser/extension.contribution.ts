@@ -267,7 +267,7 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
             options.groupIndex = columnOrOptions;
           } else {
             options.groupIndex = columnOrOptions.viewColumn;
-            options.preserveFocus = columnOrOptions.preserveFocus;
+            options.focus = options.preserveFocus = columnOrOptions.preserveFocus;
             // 这个range 可能是 vscode.range， 因为不会经过args转换
             if (columnOrOptions.selection && isLikelyVscodeRange(columnOrOptions.selection)) {
               columnOrOptions.selection = fromRange(columnOrOptions.selection);
