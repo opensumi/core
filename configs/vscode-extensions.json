@@ -1,7 +1,7 @@
 {
   "version": "3.0.0",
   "extensions": {
-    "vscode-extensions": [
+    "vscode": [
       {
         "name": "typescript-language-features"
       },
@@ -64,6 +64,9 @@
       },
       {
         "name": "hlsl"
+      },
+      {
+        "name": "git"
       },
       {
         "name": "html"
@@ -202,18 +205,6 @@
       },
       {
         "name": "yaml"
-      }
-    ],
-    "kaitian": [
-      {
-        "name": "git",
-        "version": "1.50.1-patch.4"
-      },
-      {
-        "name": "vscode-language-pack-zh-hans"
-      },
-      {
-        "name": "ide-dark-theme"
       }
     ]
   }
