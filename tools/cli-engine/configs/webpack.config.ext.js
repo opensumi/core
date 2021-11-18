@@ -40,7 +40,7 @@ module.exports = {
   externals: [
     function(context, request, callback) {
       if (
-        ['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(
+        ['node-pty', 'nsfw', 'spdlog'].indexOf(
           request,
         ) !== -1
       ) {
