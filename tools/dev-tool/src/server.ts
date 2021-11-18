@@ -15,7 +15,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     ],
     use: app.use.bind(app),
     marketplace: {
-      endpoint: "https://open-vsx.org/api",
+      endpoint: 'https://open-vsx.org/api',
       showBuiltinExtensions: true,
     },
     processCloseExitThreshold: 5 * 60 * 1000,
