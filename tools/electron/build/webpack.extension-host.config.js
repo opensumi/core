@@ -36,7 +36,7 @@ const nodeTarget = {
   },
   externals: [
     function (context, request, callback) {
-      if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
+      if (['node-pty', 'nsfw', 'spdlog'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
       callback();
@@ -83,7 +83,7 @@ const workerTarget = {
   },
   externals: [
     function (context, request, callback) {
-      if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
+      if (['node-pty', 'nsfw', 'spdlog'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
       callback();
