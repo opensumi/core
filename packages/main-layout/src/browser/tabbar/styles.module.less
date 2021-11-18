@@ -159,8 +159,7 @@
   user-select: none;
   height: 28px;
   align-items: center;
-  border-bottom: 1px solid var(--sideBar-border);
-  border-top: 1 px solid var(--sideBar-border);
+  border-bottom: 1px solid var(--kt-panelTab-border);;
   box-sizing: border-box;
   h1 {
     margin: 0;
@@ -261,6 +260,8 @@
 .kt_right_tab {
   background-color: var(--activityBar-background);
   width: 40px;
+  border-left: 1px solid var(--activityBar-border);
+  border-top: 1px solid var(--activityBar-border);
   &:global(.on-drag-over) {
     background-color: var(--activityBar-dropBackground);
   }
@@ -311,7 +312,6 @@
   flex: 1;
   display: flex;
   align-items: center;
-  overflow: hidden;
 }
 .panel_toolbar_container {
   display: flex;

@@ -24,7 +24,7 @@ export function ToolbarActionBasedLayout() {
 
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer color={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2}/>
-    <SplitPanel overflow='hidden' id='main-horizontal' flex={1}>
+    <SplitPanel id='main-horizontal' flex={1}>
       <SlotRenderer color={colors.sideBarBackground} slot='left' isTabbar={true} defaultSize={layout.left?.currentId ? (layout.left?.size || 310) : 49}  minResize={204} minSize={49} />
       <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
         <SlotRenderer color={colors.editorBackground}  flex={2} flexGrow={1} minResize={200} slot='main' />

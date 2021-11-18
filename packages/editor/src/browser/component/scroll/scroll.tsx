@@ -303,9 +303,10 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
       [styles.scroll] : true,
       [styles['hide-thumb']]: this.shouldHideThumb && !this.dragging,
     });
-    const cls = {
-      [this.props.atTopClassName || '']: this.isAtTop,
-    };
+    const cls = {};
+    if (this.props.atTopClassName) {
+      cls[this.props.atTopClassName] = this.isAtTop;
+    }
     if (this.props.className) {
       cls[this.props.className] = true;
     }
