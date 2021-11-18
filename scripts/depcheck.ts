@@ -1,7 +1,7 @@
 
 import { join, resolve, relative } from 'path';
-import * as depcheck from 'depcheck';
-import * as chalk from 'chalk';
+import depcheck from 'depcheck';
+import chalk from 'chalk';
 import { readdirSync, existsSync } from 'fs-extra';
 import { argv } from 'yargs';
 
