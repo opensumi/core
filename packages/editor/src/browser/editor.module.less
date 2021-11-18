@@ -59,16 +59,17 @@
   }
   .kt_editor_tabs {
     display:flex;
+    border-top: 1px solid var(--tab-border);
     .editor_actions{
       flex-shrink: 0;
-      height: calc(@TAB_HEIGHT + 1px);
+      height: @TAB_HEIGHT;
+      box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
       padding:0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
       border-bottom: 1px solid var(--tab-border);
-      border-top: 1px solid var(--tab-border);
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -98,7 +99,6 @@
   .kt_editor_tabs_scroll_wrapper {
     flex-grow:1;
     width:10px;
-    border-top: 1px solid var(--activityBar-border);
   }
 
   .kt_editor_tabs_scroll {
@@ -175,7 +175,7 @@
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
       border-bottom: 1px solid var(--tab-border);
-      border-top: 1px solid transparent;
+      box-sizing: border-box;
       z-index: 1;
       .tab_loading {
         display: block;

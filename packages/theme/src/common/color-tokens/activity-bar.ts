@@ -3,6 +3,7 @@ import { registerColor, transparent } from '../color-registry';
 import { Color } from '../../common/color';
 import { contrastBorder } from './base';
 import { hcActiveBorderColor } from './basic-color';
+import { SIDE_BAR_BORDER } from './sidebar';
 
 // < --- Activity Bar --- >
 
@@ -25,9 +26,9 @@ export const ACTIVITY_BAR_INACTIVE_FOREGROUND = registerColor('activityBar.inact
 }, localize('activityBarInActiveForeground', 'Activity bar item foreground color when it is inactive. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'));
 
 export const ACTIVITY_BAR_BORDER = registerColor('activityBar.border', {
-  dark: null,
-  light: null,
-  hc: contrastBorder,
+  dark: SIDE_BAR_BORDER,
+  light: SIDE_BAR_BORDER,
+  hc: SIDE_BAR_BORDER,
 }, localize('activityBarBorder', 'Activity bar border color separating to the side bar. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'));
 
 export const ACTIVITY_BAR_DRAG_AND_DROP_BACKGROUND = registerColor('activityBar.dropBackground', {

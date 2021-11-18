@@ -6,6 +6,7 @@ import { TAB_INACTIVE_BACKGROUND } from '../tab';
 import { foreground } from '../base';
 import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER } from '../activity-bar';
+import { SIDE_BAR_BORDER } from '../sidebar';
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
