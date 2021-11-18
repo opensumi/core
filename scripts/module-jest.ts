@@ -62,9 +62,6 @@ function createJestConfig(module: string) {
       '/packages/startup/entry',
       '/packages/quick-open/entry',
     ],
-    transform: {
-      '^.+\\.(css|less)$': '<rootDir>/mocks/style-mock.js',
-     },
     testMatch: [ `**/packages/${module}/**/` + '__tests__/**/*.test.[jt]s?(x)', `**/packages/${module}/` + '**/?(*.)+(spec|test).[jt]s?(x)' ],
     coverageThreshold: {
       global: {

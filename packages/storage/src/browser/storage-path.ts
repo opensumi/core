@@ -18,7 +18,7 @@ export class StoragePathServer implements IStoragePathServer {
   private workspaceStoragePathInitialized: boolean;
   private globalStoragePathInitialized: boolean;
 
-  private ensureStorageDirPromisies: Map<string, Promise<void>> = new Map();
+  private ensureStorageDirPromises: Map<string, Promise<void>> = new Map();
 
   private _userHome: Promise<string>;
 
@@ -46,14 +46,12 @@ export class StoragePathServer implements IStoragePathServer {
   }
 
   async ensureStorageDir(uri: string) {
-    let promise = this.ensureStorageDirPromisies.get(uri);
-    if (promise) {
-      return await promise;
-    } else {
-      promise = this.doEnsureStorageDir(uri);
-      this.ensureStorageDirPromisies.set(uri, promise);
-      return await promise;
+    if (this.ensureStorageDirPromises.has(uri)) {
+      return await this.ensureStorageDirPromises.get(uri);
     }
+    const promise = this.doEnsureStorageDir(uri);
+    this.ensureStorageDirPromises.set(uri, promise);
+    return await promise;
   }
 
   private async doEnsureStorageDir(uri: string) {
@@ -64,7 +62,6 @@ export class StoragePathServer implements IStoragePathServer {
     } catch (e) {
       this.logger.error(e);
     }
-    this.ensureStorageDirPromisies.delete(uri);
   }
 
   async provideWorkspaceStorageDirPath(storageDirName: string): Promise<string | undefined> {

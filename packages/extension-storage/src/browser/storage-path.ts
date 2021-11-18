@@ -37,7 +37,11 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     if (!parentLogsDir) {
       throw new Error('Unable to get parent log directory');
     }
-    await this.fileSystem.createFolder(URI.file(parentLogsDir).toString());
+    const extensionDirPath = parentLogsDir;
+    const logFsPath = URI.file(extensionDirPath).toString();
+    if (!await this.fileSystem.access(logFsPath)) {
+      await this.fileSystem.createFolder(logFsPath);
+    }
     return new URI(parentLogsDir);
   }
 

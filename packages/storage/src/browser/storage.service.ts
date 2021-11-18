@@ -9,6 +9,8 @@ export abstract class StorageServer implements IStorageServer {
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: IFileServiceClient;
 
+  private storageExistPromises: Map<string, Promise<boolean>> = new Map();
+
   @Autowired(IStoragePathServer)
   protected readonly dataStoragePathServer: IStoragePathServer;
 
@@ -31,6 +33,17 @@ export abstract class StorageServer implements IStorageServer {
 
   async close(recovery?: () => Map<string, string>) {
     // do nothing
+  }
+
+  protected async asAccess(storagePath: string, force?: boolean) {
+    if (force) {
+      return await this.fileSystem.access(storagePath);
+    }
+    if (!this.storageExistPromises.has(storagePath)) {
+      const promise = this.fileSystem.access(storagePath);
+      this.storageExistPromises.set(storagePath, promise);
+    }
+    return await this.storageExistPromises.get(storagePath);
   }
 }
 
@@ -80,7 +93,7 @@ export class WorkspaceStorageServer extends StorageServer {
       this.logger.error(`Storage [${storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
-      if (await this.fileSystem.access(uriString)) {
+      if (await this.asAccess(uriString, true)) {
         const data = await this.fileSystem.readFile(uriString);
         try {
           items = JSON.parse(data.content.toString());
@@ -185,7 +198,7 @@ export class GlobalStorageServer extends StorageServer {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
       const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!await this.fileSystem.access(uriString)) {
+      if (!await this.asAccess(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
@@ -202,10 +215,10 @@ export class GlobalStorageServer extends StorageServer {
       this.logger.error(`Storage [${storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
-      if (await this.fileSystem.access(uriString)) {
-        const data = await this.fileSystem.resolveContent(uriString);
+      if (await this.asAccess(uriString, true)) {
+        const data = await this.fileSystem.readFile(uriString);
         try {
-          items = JSON.parse(data.content);
+          items = JSON.parse(data.content.toString());
         } catch (error) {
           this.logger.error(`Storage [${storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};
