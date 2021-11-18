@@ -2,7 +2,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ide-framework/common-di';
 import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME, IFileSystemProviderRegistrationEvent, IFileSystemProviderCapabilitiesChangeEvent } from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities, Deferred } from '@ide-framework/ide-core-common';
 import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
 import { Uri } from '@ide-framework/ide-core-common';
 import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
@@ -81,12 +81,29 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
+  private userHomeDeferred: Deferred<FileStat | undefined> = new Deferred();
+
   public options = {
     encoding: 'utf8',
     overwrite: false,
     recursive: true,
     moveToTrash: true,
   };
+
+  constructor() {
+    this.onDidChangeFileSystemProviderRegistrations((e) => {
+      // 只支持 file
+      if (e.added && e.scheme === FILE_SCHEME) {
+        this.doGetCurrentUserHome();
+      }
+    });
+  }
+
+  private async doGetCurrentUserHome() {
+    const provider = await this.getProvider(FILE_SCHEME);
+    const userHome = provider.getCurrentUserHome();
+    this.userHomeDeferred.resolve(userHome);
+  }
 
   corePreferences: CorePreferences;
 
@@ -422,8 +439,7 @@ export class FileServiceClient implements IFileServiceClient {
 
   // FIXME: file scheme only?
   async getCurrentUserHome() {
-    const provider = await this.getProvider(FILE_SCHEME);
-    return provider.getCurrentUserHome();
+    return this.userHomeDeferred.promise;
   }
 
   private getErrorProvideNotSupport(scheme: string, funName: string): string {

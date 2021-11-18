@@ -25,18 +25,37 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
+  private storageExistPromises: Map<string, Promise<boolean>> = new Map();
+
   public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStorageUri> {
     this.storageDelayer = new ThrottledDelayer(ExtensionStorageServer.DEFAULT_FLUSH_DELAY);
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
   }
 
+  private async asAccess(storagePath: string, force?: boolean) {
+    if (force) {
+      return await this.fileSystem.access(storagePath);
+    }
+    if (!this.storageExistPromises.has(storagePath)) {
+      const promise = this.fileSystem.access(storagePath);
+      this.storageExistPromises.set(storagePath, promise);
+    }
+    return await this.storageExistPromises.get(storagePath);
+  }
+
   private async setupDirectories(workspace, roots, extensionStorageDirName): Promise<ExtensionStorageUri> {
     const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath(extensionStorageDirName);
-    await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
+    const wsDataFsPath = URI.file(workspaceDataDirPath).toString();
+    if (!await this.fileSystem.access(wsDataFsPath)) {
+      await this.fileSystem.createFolder(wsDataFsPath);
+    }
     this.workspaceDataDirPath = workspaceDataDirPath;
 
     this.globalDataPath = new Path(this.workspaceDataDirPath).join(StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR).toString();
-    await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
+    const globalFsPath = URI.file(this.globalDataPath).toString();
+    if (!await this.fileSystem.access(globalFsPath)) {
+      await this.fileSystem.createFolder(globalFsPath);
+    }
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
@@ -88,7 +107,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   async get(key: string, isGlobal: boolean): Promise<KeysToAnyValues> {
     const dataPath = await this.getDataPath(isGlobal);
     if (!dataPath) {
-    return {};
+      return {};
     }
     const data = await this.readFromFile(dataPath);
     return data[key];
@@ -120,7 +139,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
     const target = URI.file(pathToFile);
-    const existed = await this.fileSystem.access(target.toString());
+    const existed = await this.asAccess(pathToFile, true);
     if (!existed) {
       return {};
     }
@@ -135,7 +154,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): Promise<void> {
     const target = URI.file(pathToFile);
-    const existed = await this.fileSystem.access(target.parent.toString());
+    const existed = await this.asAccess(target.parent.toString());
     if (!existed) {
       await this.fileSystem.createFolder(target.parent.toString());
     }

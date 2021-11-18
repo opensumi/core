@@ -64,9 +64,6 @@ module.exports = {
     // 后续统一至 @ide-framework/ide-utils 模块
     '/packages/components/src/utils',
   ],
-  transform: {
-    "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js"
-  },
   testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
   coverageThreshold: {
     global: {
