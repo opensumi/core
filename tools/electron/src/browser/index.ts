@@ -51,7 +51,7 @@ import { VariableModule } from '@ide-framework/ide-variable/lib/browser';
 import { KeymapsModule } from '@ide-framework/ide-keymaps/lib/browser';
 import { MonacoEnhanceModule } from '@ide-framework/ide-monaco-enhance/lib/browser/module';
 
-import { ExtensionManagerModule } from '@ide-framework/ide-extension-manager/lib/browser';
+import { OpenVsxExtensionManagerModule } from '@ide-framework/ide-extension-manager/lib/browser';
 import { TerminalNextModule } from '@ide-framework/ide-terminal-next/lib/browser';
 import { CommentsModule } from '@ide-framework/ide-comments/lib/browser';
 
@@ -101,7 +101,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   // Extension Modules
   KaitianExtensionModule,
   // FeatureExtensionModule,
-  ExtensionManagerModule,
+  OpenVsxExtensionManagerModule,
   MonacoEnhanceModule,
 
   // addons

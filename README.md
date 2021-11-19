@@ -21,7 +21,7 @@ $ npm run start
 By default, the `tools/workspace` folder in the project would be opened, or you can run the project by specifying the directory in the following way:
 
 ```bash
-$ MY_WORKSPAC={local_path} npm run start
+$ MY_WORKSPACE={local_path} npm run start
 ```
 
 ## Contributing

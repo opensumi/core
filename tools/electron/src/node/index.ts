@@ -11,7 +11,7 @@ import { SearchModule } from '@ide-framework/ide-search';
 import { TerminalNodePtyModule } from '@ide-framework/ide-terminal-next/lib/node';
 import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
 import { KaitianExtensionModule } from '@ide-framework/ide-kaitian-extension';
-import { ExtensionManagerModule } from '@ide-framework/ide-extension-manager';
+import { OpenVsxExtensionManagerModule } from '@ide-framework/ide-extension-manager';
 import { FileSchemeNodeModule } from '@ide-framework/ide-file-scheme/lib/node';
 import { AddonsModule } from '@ide-framework/ide-addons/lib/node';
 import { TopBarModule } from 'modules/topbar';
@@ -26,7 +26,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   TerminalNodePtyModule,
 
   KaitianExtensionModule,
-  ExtensionManagerModule,
+  OpenVsxExtensionManagerModule,
   FileSchemeNodeModule,
 
   // TopBarModule, // Topbar demo
