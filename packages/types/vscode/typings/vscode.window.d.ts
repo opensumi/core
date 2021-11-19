@@ -244,18 +244,6 @@ declare module 'vscode' {
   export namespace window {
 
     /**
-		 * When true, the user has explicitly trusted the contents of the workspace.
-     * TODO: 内部无此类需求，先空实现，等有需求再做
-		 */
-		export const isTrusted: boolean;
-
-    /**
-		 * Event that fires when the current workspace has been trusted.
-     * TODO: 内部无此类需求，先空实现，等有需求再做
-		 */
-		export const onDidGrantWorkspaceTrust: Event<void>;
-
-    /**
      * Set a message to the status bar. This is a short hand for the more powerful
      * status bar [items](#window.createStatusBarItem).
      *

@@ -36,6 +36,19 @@ declare module 'vscode' {
   export namespace workspace {
     export const fs: FileSystem;
 
+
+    /**
+		 * When true, the user has explicitly trusted the contents of the workspace.
+     * TODO: 内部无此类需求，先空实现，等有需求再做
+		 */
+		export const isTrusted: boolean;
+
+    /**
+		 * Event that fires when the current workspace has been trusted.
+     * TODO: 内部无此类需求，先空实现，等有需求再做
+		 */
+		export const onDidGrantWorkspaceTrust: Event<void>;
+
     /**
      * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
      * * returns `undefined` when the given uri doesn't match any workspace folder

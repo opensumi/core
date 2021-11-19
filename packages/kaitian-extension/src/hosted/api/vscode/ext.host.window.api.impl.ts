@@ -4,7 +4,7 @@ import {
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
   IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls, WebviewViewProvider,
 } from '../../../common/vscode';
-import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo, Event } from '@ide-framework/ide-core-common';
+import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@ide-framework/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
@@ -98,10 +98,6 @@ export function createWindowApiFactory(
     get visibleTextEditors() {
       return extHostEditors.visibleEditors;
     },
-    get isTrusted() {
-      return true;
-    },
-    onDidGrantWorkspaceTrust: Event.None,
     onDidChangeActiveTextEditor: extHostEditors.onDidChangeActiveTextEditor,
     onDidChangeVisibleTextEditors: extHostEditors.onDidChangeVisibleTextEditors,
     onDidChangeTextEditorSelection: extHostEditors.onDidChangeTextEditorSelection,
