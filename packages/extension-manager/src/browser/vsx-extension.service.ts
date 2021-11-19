@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ide-framework/common-di';
 import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
 import { debounce } from '@ide-framework/ide-core-common';
 import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@ide-framework/ide-core-browser';
-import { ExtensionService } from '@ide-framework/ide-kaitian-extension/lib/common';
+import { ExtensionManagementService } from '@ide-framework/ide-kaitian-extension/lib/browser/extension-management.service';
 
 import { IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
@@ -17,7 +17,7 @@ export class VSXExtensionService implements IVSXExtensionService {
   private readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired()
-  protected extensionService: ExtensionService;
+  protected extensionManagementService: ExtensionManagementService;
 
   @observable
   public extensions: VSXExtension[] = [];
@@ -69,8 +69,7 @@ export class VSXExtensionService implements IVSXExtensionService {
     task.then((res) => {
       this.tasks.delete(id);
       this.updateStatusBar();
-      // FIXME: @柳千 安装后不会激活插件
-      // this.extensionService.postChangedExtension(false, res);
+      this.extensionManagementService.postChangedExtension(false, res);
     });
     return task;
   }
