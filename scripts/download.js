@@ -59,7 +59,7 @@ async function downloadExtension(url, namespace, extensionName) {
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const data = await got.default.stream(url, { timeout: 10000 });
+  const data = await got.default.stream(url, { timeout: 100000 });
 
   data.pipe(tmpStream);
   await Promise.race([awaitEvent(data, "end"), awaitEvent(data, "error")]);
@@ -184,7 +184,7 @@ const installExtension = async (namespace, name, version) => {
     : `${namespace}/${name}`;
   const res = await urllib.request(`${api}${path}`, {
     dataType: "json",
-    timeout: 10000,
+    timeout: 100000,
   });
   if (res.data.files && res.data.files.download) {
     const { targetDirName, tmpZipFile } = await downloadExtension(
