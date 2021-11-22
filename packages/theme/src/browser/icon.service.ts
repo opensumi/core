@@ -192,16 +192,25 @@ export class IconService implements IIconService {
         },
       },
     }, true);
-    const map = {};
-    this.getAvailableThemeInfos().forEach((info) => {
-      map[info.themeId] = info.name;
-    });
-    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, map);
+
+    const themeMap = this.getAvailableThemeInfos().reduce(
+      (pre: Map<string, string>, cur: IconThemeInfo) => {
+        if (!pre.has(cur.themeId)) {
+          pre.set(cur.themeId, cur.name);
+        }
+        return pre;
+      },
+      new Map(),
+    );
+
+    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, Object.fromEntries(themeMap.entries()));
     // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
-    if (!this.currentTheme && Object.keys(map).length <= 1) {
-      if (!preferencesIcon || !map[preferencesIcon]) {
-        const themeId = Object.keys(map)[0];
-        this.applyTheme(themeId);
+    if (!this.currentTheme && themeMap.size <= 1) {
+      if (!preferencesIcon || !themeMap.has(preferencesIcon)) {
+        const themeId = Array.from(themeMap.keys())[0];
+        if (themeId) {
+          this.applyTheme(themeId);
+        }
       }
     }
   }

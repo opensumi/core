@@ -218,18 +218,28 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         },
       },
     }, true);
-    const map = {};
-    this.getAvailableThemeInfos().forEach((info) => {
-      map[info.themeId] = info.name;
-    });
+
+    const themeMap = this.getAvailableThemeInfos().reduce(
+      (pre: Map<string, string>, cur: ThemeInfo) => {
+        if (!pre.has(cur.themeId)) {
+          pre.set(cur.themeId, cur.name);
+        }
+        return pre;
+      },
+      new Map(),
+    );
 
     const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
-    if (themeId && themeId !== DEFAULT_THEME_ID && map[themeId]) {
+    if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId)) {
       this.applyTheme(themeId);
     } else {
       this.applyTheme(DEFAULT_THEME_ID);
     }
-    this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, map);
+
+    this.preferenceSettings.setEnumLabels(
+      COLOR_THEME_SETTING,
+      Object.fromEntries(themeMap.entries()),
+    );
   }
 
   private get colorCustomizations(): IColorCustomizations {
