@@ -37,7 +37,6 @@ export class IconService implements IIconService {
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
-  protected extensionReady = false;
 
   private iconMap: Map<string, string> = new Map();
 
@@ -64,7 +63,7 @@ export class IconService implements IIconService {
 
   private listen() {
     this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === 'general.icon' && this.extensionReady) {
+      if (e.preferenceName === 'general.icon') {
         await this.applyTheme(this.preferenceService.get<string>('general.icon')!);
       }
     });
@@ -174,8 +173,13 @@ export class IconService implements IIconService {
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: URI) {
+    const preferencesIcon = this.preferenceService.get<string>('general.icon');
     for (const contribution of iconContributions) {
-      this.iconContributionRegistry.set(getThemeId(contribution), { contribution, basePath });
+      const themeId = getThemeId(contribution);
+      this.iconContributionRegistry.set(themeId, { contribution, basePath });
+      if (preferencesIcon && preferencesIcon === themeId) {
+        this.applyTheme(preferencesIcon);
+      }
     }
     this.preferenceSchemaProvider.setSchema({
       properties: {
@@ -191,11 +195,10 @@ export class IconService implements IIconService {
       map[info.themeId] = info.name;
     });
     this.preferenceSettings.setEnumLabels('general.icon', map);
-
-    // 可能只有一个主题，同时当前没有主题，将第一个注册主题设置为当前主题
-    if (Object.keys(map).length <= 1) {
-      const themeId = Object.keys(map)[0];
-      if (!this.currentTheme || !this.preferenceService.get<string>('general.icon')) {
+    // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
+    if (!this.currentTheme && Object.keys(map).length <= 1) {
+      if (!preferencesIcon) {
+        const themeId = Object.keys(map)[0];
         this.applyTheme(themeId);
       }
     }
@@ -229,10 +232,7 @@ export class IconService implements IIconService {
     return;
   }
 
-  async applyTheme(themeId?: string, fromExtension?: boolean) {
-    if (fromExtension) {
-      this.extensionReady = true;
-    }
+  async applyTheme(themeId?: string) {
     this.toggleIconVisible(true);
     if (!themeId) {
       themeId = this.preferenceService.get<string>('general.icon')!;

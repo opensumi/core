@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@ide-framework/common-di';
 import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { IIconService, IThemeService } from '@ide-framework/ide-theme';
+import { IThemeService } from '@ide-framework/ide-theme';
 import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
 import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
 import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
@@ -53,9 +53,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(IThemeService)
   private readonly themeService: IThemeService;
-
-  @Autowired(IIconService)
-  private readonly iconService: IIconService;
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
@@ -209,7 +206,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    */
   private async initThemeAndColor() {
     await this.themeService.applyTheme(undefined, true);
-    await this.iconService.applyTheme(undefined, true);
   }
 
   private async doActivate() {
