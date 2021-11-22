@@ -132,8 +132,9 @@ describe('color theme service test', () => {
     service = injector.get(IThemeService);
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(0);
-    await service.applyTheme();
+    await service.applyTheme('ide-dark');
     expect(service.getCurrentThemeSync()).toBeDefined();
+    expect(service.getCurrentThemeSync().themeData.id).toBe('Default Dark+');
     done();
   });
 
