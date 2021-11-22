@@ -34,9 +34,8 @@ export interface IIconService {
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param themeId 主题ID
-   * @param fromExtension 是否来源于插件（内部参数）
-   */
-  applyTheme(themeId?: string, fromExtension?: boolean): Promise<void>;
+   * */
+  applyTheme(themeId: string): Promise<void>;
   /**
    * 将 codicon 的 id 转换为 codicon 的 class
    * @param str codicon id eg. $(add), $(add~sync)
@@ -82,9 +81,8 @@ export interface IThemeService {
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param id 主题ID
-   * @param fromExtension 是否来源于插件（内部参数）
    */
-  applyTheme(id?: string, fromExtension?: boolean): Promise<void>;
+  applyTheme(id: string): Promise<void>;
   getAvailableThemeInfos(): ThemeInfo[];
   getCurrentTheme(): Promise<ITheme>;
   getCurrentThemeSync(): ITheme;

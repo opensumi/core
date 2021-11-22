@@ -17,7 +17,7 @@ export class MockThemeService implements IThemeService {
       dispose: () => {},
     };
   }
-  async applyTheme(id?: string) {
+  async applyTheme(id: string) {
     throw new Error('Method not implemented.');
   }
 
