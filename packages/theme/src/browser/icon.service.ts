@@ -7,6 +7,8 @@ import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';
 
+export const ICON_THEME_SETTING = 'general.icon';
+
 @Injectable()
 export class IconService implements IIconService {
   @Autowired()
@@ -63,8 +65,8 @@ export class IconService implements IIconService {
 
   private listen() {
     this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === 'general.icon') {
-        await this.applyTheme(this.preferenceService.get<string>('general.icon')!);
+      if (e.preferenceName === ICON_THEME_SETTING) {
+        await this.applyTheme(this.preferenceService.get<string>(ICON_THEME_SETTING)!);
       }
     });
   }
@@ -173,7 +175,7 @@ export class IconService implements IIconService {
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: URI) {
-    const preferencesIcon = this.preferenceService.get<string>('general.icon');
+    const preferencesIcon = this.preferenceService.get<string>(ICON_THEME_SETTING);
     for (const contribution of iconContributions) {
       const themeId = getThemeId(contribution);
       this.iconContributionRegistry.set(themeId, { contribution, basePath });
@@ -183,7 +185,7 @@ export class IconService implements IIconService {
     }
     this.preferenceSchemaProvider.setSchema({
       properties: {
-        'general.icon': {
+        [ICON_THEME_SETTING]: {
           type: 'string',
           default: 'vscode-icons',
           enum: this.getAvailableThemeInfos().map((info) => info.themeId),
@@ -194,10 +196,10 @@ export class IconService implements IIconService {
     this.getAvailableThemeInfos().forEach((info) => {
       map[info.themeId] = info.name;
     });
-    this.preferenceSettings.setEnumLabels('general.icon', map);
+    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, map);
     // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
     if (!this.currentTheme && Object.keys(map).length <= 1) {
-      if (!preferencesIcon) {
+      if (!preferencesIcon || !map[preferencesIcon]) {
         const themeId = Object.keys(map)[0];
         this.applyTheme(themeId);
       }
@@ -232,11 +234,8 @@ export class IconService implements IIconService {
     return;
   }
 
-  async applyTheme(themeId?: string) {
+  async applyTheme(themeId: string) {
     this.toggleIconVisible(true);
-    if (!themeId) {
-      themeId = this.preferenceService.get<string>('general.icon')!;
-    }
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
