@@ -36,7 +36,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public currentThemeId: string;
   private currentTheme?: Theme;
-  private themeIdNotFound?: string;
 
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: URI }> = new Map();
@@ -73,20 +72,21 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
     const disposables = new DisposableCollection();
     disposables.push({
-      dispose: () => this.doSetPrefrenceSchema(),
+      dispose: () => this.doSetPreferenceSchema(),
     });
+
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
       const themeId = getThemeId(contribution);
+
       this.themeContributionRegistry.set(themeId, themeExtContribution);
-      if (this.themeIdNotFound && themeId === this.themeIdNotFound) {
-        this.applyTheme(themeId);
-      }
+
       disposables.push({
         dispose: () => {
           this.themeContributionRegistry.delete(themeId);
         },
       });
+
       disposables.push({
         dispose: () => {
           if (this.currentThemeId === themeId) {
@@ -95,36 +95,29 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         },
       });
     });
-    this.doSetPrefrenceSchema();
+
+    this.doSetPreferenceSchema();
+
     return disposables;
   }
 
-  public async applyTheme(themeId?: string, fromExtension?: boolean) {
-    if (fromExtension) {
-      this.extensionReady = true;
-    }
-    if (!themeId) {
-      themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING)!;
-    }
-    const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
-    if (!existedTheme) {
-      this.themeIdNotFound = themeId;
-      themeId = DEFAULT_THEME_ID;
-    } else {
-      this.themeIdNotFound = '';
-    }
-
+  public async applyTheme(themeId: string) {
     if (this.currentThemeId === themeId) {
       return;
     }
+
     const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
+
     const theme = await this.getTheme(themeId);
     const themeType = getThemeType(theme.base);
+
     this.currentTheme = new Theme(themeType, theme);
     this.currentTheme.setCustomColors(this.colorCustomizations);
     this.currentTheme.setCustomTokenColors(this.tokenColorCustomizations);
+
     const currentThemeType = this.currentTheme.type;
+
     this.toggleBaseThemeClass(prevThemeType, currentThemeType);
     this.doApplyTheme(this.currentTheme);
   }
@@ -215,7 +208,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return themeInfos;
   }
 
-  protected doSetPrefrenceSchema() {
+  protected doSetPreferenceSchema() {
     this.preferenceSchemaProvider.setSchema({
       properties: {
         [COLOR_THEME_SETTING]: {
@@ -229,6 +222,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.getAvailableThemeInfos().forEach((info) => {
       map[info.themeId] = info.name;
     });
+
+    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
+    if (themeId && themeId !== DEFAULT_THEME_ID && map[themeId]) {
+      this.applyTheme(themeId);
+    } else {
+      this.applyTheme(DEFAULT_THEME_ID);
+    }
     this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, map);
   }
 
@@ -251,20 +251,27 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         (_, e) => e,
         50,
       )(async (e) => {
-        if (e.preferenceName === COLOR_THEME_SETTING && this.extensionReady) {
+        if (e.preferenceName === COLOR_THEME_SETTING) {
           await this.applyTheme(e.newValue);
         }
+
         if (this.currentTheme) {
-          if (e.preferenceName === CUSTOM_WORKBENCH_COLORS_SETTING) {
-            this.currentTheme.setCustomColors(e.newValue);
-            this.doApplyTheme(this.currentTheme);
-          } else if (e.preferenceName === CUSTOM_EDITOR_COLORS_SETTING) {
-            this.currentTheme.setCustomTokenColors(e.newValue);
-            this.eventBus.fire(
-              new ThemeChangedEvent({
-                theme: this.currentTheme,
-              }),
-            );
+          switch (e.preferenceName) {
+            case CUSTOM_WORKBENCH_COLORS_SETTING: {
+              this.currentTheme.setCustomColors(e.newValue);
+              this.doApplyTheme(this.currentTheme);
+              break;
+            }
+            case CUSTOM_EDITOR_COLORS_SETTING: {
+              this.currentTheme.setCustomTokenColors(e.newValue);
+              this.eventBus.fire(
+                new ThemeChangedEvent({
+                  theme: this.currentTheme,
+                }),
+              );
+              break;
+            }
+            default: break;
           }
         }
       }),

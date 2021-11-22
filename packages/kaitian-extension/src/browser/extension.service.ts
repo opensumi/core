@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@ide-framework/common-di';
 import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { IThemeService } from '@ide-framework/ide-theme';
 import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
 import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
 import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
@@ -50,9 +49,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(IProgressService)
   private readonly progressService: IProgressService;
-
-  @Autowired(IThemeService)
-  private readonly themeService: IThemeService;
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
@@ -155,7 +151,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
     await this.runExtensionContributes();
-    await this.initThemeAndColor();
     this.doActivate();
   }
 
@@ -199,13 +194,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.nodeExtensionService.updateExtensionData(extensionInstanceList);
     this.workerExtensionService.updateExtensionData(extensionInstanceList);
     this.viewExtensionService.initExtension(extensionInstanceList);
-  }
-
-  /**
-   * 初始化 Theme 和 Icon Theme
-   */
-  private async initThemeAndColor() {
-    await this.themeService.applyTheme(undefined, true);
   }
 
   private async doActivate() {
