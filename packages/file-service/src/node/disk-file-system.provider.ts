@@ -339,13 +339,16 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
           const pathStr = uri.path.toString();
           return !this.watchFileExcludesMatcherList.some((match) => match(pathStr));
         });
-        this.fileChangeEmitter.fire(filteredChange);
-        if (Array.isArray(this.rpcClient)) {
-          this.rpcClient.forEach((client) => {
-            client.onDidFilesChanged({
-              changes: filteredChange,
+
+        if (filteredChange.length > 0) {
+          this.fileChangeEmitter.fire(filteredChange);
+          if (Array.isArray(this.rpcClient)) {
+            this.rpcClient.forEach((client) => {
+              client.onDidFilesChanged({
+                changes: filteredChange,
+              });
             });
-          });
+          }
         }
       },
     });
