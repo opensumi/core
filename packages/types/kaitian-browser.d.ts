@@ -10,6 +10,10 @@ interface IComponentProps<N, W = any> {
     node: N;
     worker: W;
   };
+  viewState: {
+    width: number;
+    height: number;
+  };
 }
 
 declare module 'kaitian-browser' {
