@@ -10,8 +10,9 @@ import { FileSearchModule } from '@ide-framework/ide-file-search';
 import { SearchModule } from '@ide-framework/ide-search';
 import { TerminalNodePtyModule } from '@ide-framework/ide-terminal-next/lib/node';
 import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
-import { KaitianExtensionModule } from '@ide-framework/ide-kaitian-extension';
+import { ExtensionModule } from '@ide-framework/ide-extension';
 import { OpenVsxExtensionManagerModule } from '@ide-framework/ide-extension-manager';
+
 import { FileSchemeNodeModule } from '@ide-framework/ide-file-scheme/lib/node';
 import { AddonsModule } from '@ide-framework/ide-addons/lib/node';
 import { TopBarModule } from 'modules/topbar';
@@ -25,7 +26,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   SearchModule,
   TerminalNodePtyModule,
 
-  KaitianExtensionModule,
+  ExtensionModule,
   OpenVsxExtensionManagerModule,
   FileSchemeNodeModule,
 

@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ide-framework/common-di';
 import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
 import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@ide-framework/ide-core-browser';
-import { ExtensionManagementService } from '@ide-framework/ide-kaitian-extension/lib/browser/extension-management.service';
+import { ExtensionManagementService } from '@ide-framework/ide-extension/lib/browser/extension-management.service';
 
 import { IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';

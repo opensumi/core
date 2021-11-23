@@ -91,11 +91,11 @@ package-lock.json
 
 tools/workspace
 
-packages/kaitian-extension/hosted
+packages/extension/hosted
 packages/feature-extension/test/init/node_modules
 packages/vscode-extension/test/init/node_modules
 packages/vscode-extension/test/fixture/init/out
-packages/kaitian-extension/hosted
+packages/extension/hosted
 !tools/extensions/*/dist
 # tools/extensions/**/out
 

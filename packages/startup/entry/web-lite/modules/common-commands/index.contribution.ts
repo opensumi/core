@@ -1,10 +1,10 @@
 import { Autowired } from '@ide-framework/common-di';
 import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ide-framework/ide-core-browser';
 
-import * as VSCodeBuiltinCommands from '@ide-framework/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
-import { UriComponents } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/models';
-import { TextDocumentShowOptions, ViewColumn } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
-import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/converter';
+import * as VSCodeBuiltinCommands from '@ide-framework/ide-extension/lib/browser/vscode/builtin-commands';
+import { UriComponents } from '@ide-framework/ide-extension/lib/common/vscode/models';
+import { TextDocumentShowOptions, ViewColumn } from '@ide-framework/ide-extension/lib/common/vscode';
+import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ide-framework/ide-extension/lib/common/vscode/converter';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ide-framework/ide-editor';
 
 @Domain(CommandContribution)

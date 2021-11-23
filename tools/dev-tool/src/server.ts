@@ -22,7 +22,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     terminalPtyCloseThreshold: 5 * 60 * 1000,
     staticAllowOrigin: '*',
     staticAllowPath: [
-      path.join(__dirname, '../../../packages/kaitian-extension'),
+      path.join(__dirname, '../../../packages/extension'),
       '/',
     ],
     extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
@@ -30,7 +30,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
      * 集成时可使用自定义的 extHost 入口传入内置 command
      *  extHost: path.join(__dirname, './ext-host.js') || process.env.EXTENSION_HOST_ENTRY,
      */
-    extHost: path.join(__dirname, '../../../packages/kaitian-extension/lib/hosted/ext.process.js') || process.env.EXTENSION_HOST_ENTRY,
+    extHost: path.join(__dirname, '../../../packages/extension/lib/hosted/ext.process.js') || process.env.EXTENSION_HOST_ENTRY,
     onDidCreateExtensionHostProcess: (extProcess) => {
       console.log('onDidCreateExtensionHostProcess extProcess.pid', extProcess.pid);
     },

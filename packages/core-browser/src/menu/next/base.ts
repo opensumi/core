@@ -1,7 +1,7 @@
 import { ContextKeyExpr } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ide-framework/common-di';
 import { ButtonType } from '@ide-framework/ide-components';
-import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, IKaitianMenuExtendInfo } from '@ide-framework/ide-core-common';
+import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, ISumiMenuExtendInfo } from '@ide-framework/ide-core-common';
 import { warning } from '@ide-framework/ide-components/lib/utils';
 import ReactIs from 'react-is';
 
@@ -38,7 +38,7 @@ interface ICoreMenuItem {
    * 决定是否在视图层展示
    */
   when?: string | ContextKeyExpr;
-  // 以下为 kaitian 拓展的属性
+  // 以下为 sumi 拓展的属性
   /**
    * 单独变更此 menu action 的 args
    */
@@ -92,7 +92,7 @@ export interface IComponentMenuItem extends IInternalComponentMenuItem {
 
 export interface IMenuItem extends IBaseMenuItem {
   command: string | MenuCommandDesc;
-  // 以下为 kaitian 拓展的属性
+  // 以下为 sumi 拓展的属性
   /**
    * 单个 menu 支持传入额外参数
    */
@@ -133,7 +133,7 @@ export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
 
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
-  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<IKaitianMenuExtendInfo>);
+  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>);
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): IDisposable;
   abstract unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>): IDisposable;
@@ -161,7 +161,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
 
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>>();
-  private readonly _menuExtendInfo = new Map<string, Array<IKaitianMenuExtendInfo>>();
+  private readonly _menuExtendInfo = new Map<string, Array<ISumiMenuExtendInfo>>();
 
   private readonly _onDidChangeMenu = new Emitter<string>();
   readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
@@ -219,7 +219,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     }, [] as IMenubarItem[]);
   }
 
-  registerMenuExtendInfo(menuId: MenuId | string, item: Array<IKaitianMenuExtendInfo>): IDisposable {
+  registerMenuExtendInfo(menuId: MenuId | string, item: Array<ISumiMenuExtendInfo>): IDisposable {
     this._menuExtendInfo.set(menuId, item);
 
     return Disposable.create(() => this._menuExtendInfo.delete(menuId));
@@ -347,7 +347,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     });
   }
 
-  private convertToMenuExtendInfo(extendInfoArr: IKaitianMenuExtendInfo[], result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>) {
+  private convertToMenuExtendInfo(extendInfoArr: ISumiMenuExtendInfo[], result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>) {
     return result.map((menuItem) => {
       if (!isIMenuItem(menuItem)) {
         return menuItem;
