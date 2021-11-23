@@ -4,7 +4,7 @@ import type vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import * as debugModel from '@opensumi/ide-debug';
-import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor } from '@opensumi/ide-core-common';
+import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor, isDefined } from '@opensumi/ide-core-common';
 import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness, EditorGroupColumn } from '@opensumi/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
@@ -21,6 +21,9 @@ import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
+import { CoverageDetails, DetailType, ICoveredCount, IFileCoverage, ISerializedTestResults, ITestErrorMessage, ITestItem, ITestItemContext, ITestTag, SerializedTestErrorMessage, SerializedTestResultItem, TestMessageType } from '@opensumi/ide-testing/lib/common/testCollection';
+import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
+import { TestId } from '@opensumi/ide-testing/lib/common';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;
@@ -1736,3 +1739,186 @@ export namespace CodeActionTriggerKind {
     }
   }
 }
+
+//#region Test Adapter
+
+export namespace TestMessage {
+  export function from(message: vscode.TestMessage): SerializedTestErrorMessage {
+    return {
+      message: MarkdownString.fromStrict(message.message) || '',
+      type: TestMessageType.Error,
+      expected: message.expectedOutput,
+      actual: message.actualOutput,
+      location: message.location ? location.from(message.location) as any : undefined,
+    };
+  }
+
+  export function to(item: SerializedTestErrorMessage): vscode.TestMessage {
+    const message = new types.TestMessage(typeof item.message === 'string' ? item.message : MarkdownString.to(item.message));
+    message.actualOutput = item.actual;
+    message.expectedOutput = item.expected;
+    message.location = item.location ? location.to(item.location) : undefined;
+    return message;
+  }
+}
+
+export namespace TestTag {
+  const enum Constants {
+    Delimiter = '\0',
+  }
+
+  export const namespace = (ctrlId: string, tagId: string) =>
+    ctrlId + Constants.Delimiter + tagId;
+
+  export const denamespace = (namespaced: string) => {
+    const index = namespaced.indexOf(Constants.Delimiter);
+    return { ctrlId: namespaced.slice(0, index), tagId: namespaced.slice(index + 1) };
+  };
+}
+
+export namespace TestItem {
+  export type Raw = vscode.TestItem;
+
+  export function from(item: TestItemImpl): ITestItem {
+    const ctrlId = getPrivateApiFor(item).controllerId;
+    return {
+      extId: TestId.fromExtHostTestItem(item, ctrlId).toString(),
+      label: item.label,
+      uri: item.uri,
+      tags: item.tags.map((t) => TestTag.namespace(ctrlId, t.id)),
+      range: Range.from(item.range) || null,
+      description: item.description || null,
+      error: item.error ? (MarkdownString.fromStrict(item.error) || null) : null,
+    };
+  }
+
+  export function toPlain(item: ITestItem): Omit<vscode.TestItem, 'children' | 'invalidate' | 'discoverChildren'> {
+    return {
+      parent: undefined,
+      error: undefined,
+      id: TestId.fromString(item.extId).localId,
+      label: item.label,
+      uri: URI.revive(item.uri),
+      tags: (item.tags || []).map((t) => {
+        const { tagId } = TestTag.denamespace(t);
+        return new types.TestTag(tagId);
+      }),
+      range: Range.to(item.range || undefined),
+      invalidateResults: () => undefined,
+      canResolveChildren: false,
+      busy: false,
+      description: item.description || undefined,
+    };
+  }
+
+  function to(item: ITestItem): TestItemImpl {
+    const testId = TestId.fromString(item.extId);
+    const testItem = new TestItemImpl(testId.controllerId, testId.localId, item.label, URI.revive(item.uri));
+    testItem.range = Range.to(item.range || undefined);
+    testItem.description = item.description || undefined;
+    return testItem;
+  }
+
+  export function toItemFromContext(context: ITestItemContext): TestItemImpl {
+    let node: TestItemImpl | undefined;
+    for (const test of context.tests) {
+      const next = to(test.item);
+      getPrivateApiFor(next).parent = node;
+      node = next;
+    }
+
+    return node!;
+  }
+}
+
+export namespace TestTag {
+  export function from(tag: vscode.TestTag): ITestTag {
+    return { id: tag.id };
+  }
+
+  export function to(tag: ITestTag): vscode.TestTag {
+    return new types.TestTag(tag.id);
+  }
+}
+
+export namespace TestResults {
+  const convertTestResultItem = (item: SerializedTestResultItem, byInternalId: Map<string, SerializedTestResultItem>): vscode.TestResultSnapshot => {
+    const snapshot: vscode.TestResultSnapshot = ({
+      ...TestItem.toPlain(item.item),
+      parent: undefined,
+      taskStates: item.tasks.map((t) => ({
+        state: t.state as number as types.TestResultState,
+        duration: t.duration,
+        messages: t.messages
+          .filter((m): m is ITestErrorMessage => m.type === TestMessageType.Error)
+          .map(TestMessage.to),
+      })),
+      children: item.children
+        .map((c) => byInternalId.get(c))
+        .filter(isDefined)
+        .map((c) => convertTestResultItem(c, byInternalId)),
+    });
+
+    for (const child of snapshot.children) {
+      (child as any).parent = snapshot;
+    }
+
+    return snapshot;
+  };
+
+  export function to(serialized: ISerializedTestResults): vscode.TestRunResult {
+    const roots: SerializedTestResultItem[] = [];
+    const byInternalId = new Map<string, SerializedTestResultItem>();
+    for (const item of serialized.items) {
+      byInternalId.set(item.item.extId, item);
+      if (serialized.request.targets.some((t) => t.controllerId === item.controllerId && t.testIds.includes(item.item.extId))) {
+        roots.push(item);
+      }
+    }
+
+    return {
+      completedAt: serialized.completedAt,
+      results: roots.map((r) => convertTestResultItem(r, byInternalId)),
+    };
+  }
+}
+
+export namespace TestCoverage {
+  function fromCoveredCount(count: vscode.CoveredCount): ICoveredCount {
+    return { covered: count.covered, total: count.covered };
+  }
+
+  function fromLocation(location: vscode.Range | vscode.Position) {
+    return 'line' in location ? Position.from(location) : Range.from(location);
+  }
+
+  export function fromDetailed(coverage: vscode.DetailedCoverage): CoverageDetails {
+    if ('branches' in coverage) {
+      return {
+        count: coverage.executionCount,
+        location: fromLocation(coverage.location),
+        type: DetailType.Statement,
+        branches: coverage.branches.length
+          ? coverage.branches.map((b) => ({ count: b.executionCount, location: b.location && fromLocation(b.location) }))
+          : undefined,
+      };
+    } else {
+      return {
+        type: DetailType.Function,
+        count: coverage.executionCount,
+        location: fromLocation(coverage.location),
+      };
+    }
+  }
+
+  export function fromFile(coverage: vscode.FileCoverage): IFileCoverage {
+    return {
+      uri: coverage.uri,
+      statement: fromCoveredCount(coverage.statementCoverage),
+      branch: coverage.branchCoverage && fromCoveredCount(coverage.branchCoverage),
+      function: coverage.functionCoverage && fromCoveredCount(coverage.functionCoverage),
+      details: coverage.detailedCoverage?.map(fromDetailed),
+    };
+  }
+}
+//#endregion

@@ -2975,3 +2975,50 @@ export class InlayHint {
 }
 
 //#endregion InlayHint
+
+//#region Test Adapter
+export enum TestResultState {
+  Queued = 1,
+  Running = 2,
+  Passed = 3,
+  Failed = 4,
+  Skipped = 5,
+  Errored = 6,
+}
+
+export enum TestRunProfileKind {
+  Run = 1,
+  Debug = 2,
+  Coverage = 3,
+}
+
+@es5ClassCompat
+export class TestRunRequest implements vscode.TestRunRequest {
+  constructor(
+    public readonly include: vscode.TestItem[] | undefined,
+    public readonly exclude: vscode.TestItem[] | undefined,
+    public readonly profile: vscode.TestRunProfile | undefined,
+  ) {}
+}
+
+@es5ClassCompat
+export class TestMessage implements vscode.TestMessage {
+  public expectedOutput?: string;
+  public actualOutput?: string;
+  public location?: vscode.Location;
+
+  public static diff(message: string | vscode.MarkdownString, expected: string, actual: string) {
+    const msg = new TestMessage(message);
+    msg.expectedOutput = expected;
+    msg.actualOutput = actual;
+    return msg;
+  }
+
+  constructor(public message: string | vscode.MarkdownString) { }
+}
+
+@es5ClassCompat
+export class TestTag implements vscode.TestTag {
+  constructor(public readonly id: string) { }
+}
+//#endregion

@@ -18,6 +18,7 @@
 /// <reference path='./vscode/typings/vscode.env.d.ts' />
 /// <reference path='./vscode/typings/vscode.editor.d.ts' />
 /// <reference path='./vscode/typings/vscode.authentication.d.ts' />
+/// <reference path='./vscode/typings/vscode.tests.d.ts' />
 
 /// <reference path='./vscode/typings-pending/vscode.d.ts' />
 /// <reference path='./vscode/typings-pending/vscode.proposed.d.ts' />

@@ -12,7 +12,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.wsPath = process.env.WS_PATH || 'ws://127.0.0.1:8000';
 
-  opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
+  // opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
   const anotherHostName = process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost');
   opts.webviewEndpoint = `http://${anotherHostName}:8899`;
   opts.editorBackgroundImage = 'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';

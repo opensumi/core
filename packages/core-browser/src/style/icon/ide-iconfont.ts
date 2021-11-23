@@ -1,4 +1,4 @@
-export const IDE_ICONFONT_CN_CSS = '//at.alicdn.com/t/font_1432262_qwu5r5q6rd.css';
+export const IDE_ICONFONT_CN_CSS = '//at.alicdn.com/t/font_1432262_10kox0x8teb.css';
 
 export const IDE_ICONFONT_CN_JS = IDE_ICONFONT_CN_CSS.replace(/\.css$/, '.js');
 

@@ -61,6 +61,7 @@
     "@opensumi/ide-toolbar": "2.12.0",
     "@opensumi/ide-workspace": "2.12.0",
     "@opensumi/ide-workspace-edit": "2.12.0",
+    "@opensumi/ide-testing": "2.12.0",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }

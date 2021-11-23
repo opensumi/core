@@ -18,3 +18,19 @@ export interface Iterator<T> {
   next(): IteratorResult<T>;
 }
 
+export function filter<T, R extends T>(iterable: Iterable<T>, predicate: (t: T) => t is R): Iterable<R>;
+export function filter<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): Iterable<T>;
+export function* filter<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): Iterable<T> {
+  for (const element of iterable) {
+    if (predicate(element)) {
+      yield element;
+    }
+  }
+}
+
+export function* map<T, R>(iterable: Iterable<T>, fn: (t: T, index: number) => R): Iterable<R> {
+  let index = 0;
+  for (const element of iterable) {
+    yield fn(element, index++);
+  }
+}
