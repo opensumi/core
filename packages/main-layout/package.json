@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@code.alipay.com:kaitian/ide-framework.git"
+    "url": "git@github.com:opensumi/core.git"
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {

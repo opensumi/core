@@ -5,7 +5,7 @@
   "typings": "index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git@code.alipay.com:kaitian/ide-framework.git"
+    "url": "git@github.com:opensumi/core.git"
   },
   "scripts": {
     "prepublishOnly": "npm run build",

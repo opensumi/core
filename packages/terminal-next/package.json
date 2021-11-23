@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@code.alipay.com:kaitian/ide-framework.git"
+    "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
     "@ide-framework/ide-components": "2.12.0",
