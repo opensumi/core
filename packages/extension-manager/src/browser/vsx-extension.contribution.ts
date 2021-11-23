@@ -9,9 +9,7 @@ import { IVSXExtensionService, VSXExtensionServiceToken } from '../common';
 import { VSXExtensionView } from './vsx-extension.view';
 import { ExtensionOverview } from './extension-overview';
 import { VSXExtensionRaw } from '../common/vsx-registry-types';
-
-const OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID = 'extension';
-export const EXTENSION_SCHEME = 'extension';
+import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './const';
 
 @Domain(ClientAppContribution, ComponentContribution, BrowserEditorContribution)
 export class VSXExtensionContribution implements ClientAppContribution, ComponentContribution, BrowserEditorContribution {

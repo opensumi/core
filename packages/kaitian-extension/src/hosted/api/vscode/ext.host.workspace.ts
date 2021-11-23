@@ -46,6 +46,10 @@ export function createWorkspaceApiFactory(
     onDidChangeConfiguration: (listener, thisArgs?, disposables?) => {
       return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);
     },
+    get isTrusted() {
+      return true;
+    },
+    onDidGrantWorkspaceTrust: Event.None,
     openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
     onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
     onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument.bind(extHostDocument),

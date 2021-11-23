@@ -387,6 +387,7 @@ export class WorkspaceService implements IWorkspaceService {
 
   private async getGlobalRecentStorage() {
     this.recentGlobalStorage = this.recentGlobalStorage || await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
+    await this.recentGlobalStorage.whenReady;
     return this.recentGlobalStorage;
   }
 

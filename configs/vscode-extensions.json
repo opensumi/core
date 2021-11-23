@@ -1,219 +1,274 @@
 {
   "version": "3.0.0",
   "extensions": {
-    "vscode-extensions": [
+    "vscode": [
       {
-        "name": "typescript-language-features"
+        "name": "typescript-language-features",
+        "version": "1.60.0"
       },
       {
-        "name": "bat"
+        "name": "bat",
+        "version": "1.55.2"
       },
       {
-        "name": "clojure"
+        "name": "clojure",
+        "version": "1.55.2"
       },
       {
-        "name": "coffeescript"
+        "name": "coffeescript",
+        "version": "1.55.2"
       },
       {
-        "name": "configuration-editing"
+        "name": "configuration-editing",
+        "version": "1.55.2"
       },
       {
-        "name": "cpp"
+        "name": "cpp",
+        "version": "1.55.2"
       },
       {
-        "name": "csharp"
+        "name": "csharp",
+        "version": "1.55.2"
       },
       {
-        "name": "css"
+        "name": "css",
+        "version": "1.55.2"
       },
       {
-        "name": "css-language-features"
+        "name": "css-language-features",
+        "version": "1.55.2"
       },
       {
-        "name": "debug-auto-launch"
+        "name": "debug-auto-launch",
+        "version": "1.55.2"
       },
       {
-        "name": "docker"
+        "name": "docker",
+        "version": "1.55.2"
       },
       {
-        "name": "emmet"
+        "name": "emmet",
+        "version": "1.55.2"
       },
       {
-        "name": "extension-editing"
+        "name": "fsharp",
+        "version": "1.55.2"
       },
       {
-        "name": "fsharp"
+        "name": "git-ui",
+        "version": "1.55.2"
       },
       {
-        "name": "git-ui"
+        "name": "go",
+        "version": "1.55.2"
       },
       {
-        "name": "go"
+        "name": "groovy",
+        "version": "1.55.2"
       },
       {
-        "name": "groovy"
+        "name": "grunt",
+        "version": "1.55.2"
       },
       {
-        "name": "grunt"
+        "name": "gulp",
+        "version": "1.55.2"
       },
       {
-        "name": "gulp"
+        "name": "handlebars",
+        "version": "1.55.2"
       },
       {
-        "name": "handlebars"
+        "name": "hlsl",
+        "version": "1.55.2"
       },
-      {
-        "name": "hlsl"
-      },
-      {
-        "name": "html"
-      },
-      {
-        "name": "html-language-features"
-      },
-      {
-        "name": "ini"
-      },
-      {
-        "name": "jake"
-      },
-      {
-        "name": "java"
-      },
-      {
-        "name": "javascript"
-      },
-      {
-        "name": "json"
-      },
-      {
-        "name": "json-language-features"
-      },
-      {
-        "name": "less"
-      },
-      {
-        "name": "log"
-      },
-      {
-        "name": "lua"
-      },
-      {
-        "name": "make"
-      },
-      {
-        "name": "markdown-basics"
-      },
-      {
-        "name": "merge-conflict"
-      },
-      {
-        "name": "objective-c"
-      },
-      {
-        "name": "perl"
-      },
-      {
-        "name": "php"
-      },
-      {
-        "name": "php-language-features"
-      },
-      {
-        "name": "powershell"
-      },
-      {
-        "name": "pug"
-      },
-      {
-        "name": "python"
-      },
-      {
-        "name": "r"
-      },
-      {
-        "name": "razor"
-      },
-      {
-        "name": "ruby"
-      },
-      {
-        "name": "rust"
-      },
-      {
-        "name": "scss"
-      },
-      {
-        "name": "search-result"
-      },
-      {
-        "name": "shaderlab"
-      },
-      {
-        "name": "shellscript"
-      },
-      {
-        "name": "sql"
-      },
-      {
-        "name": "swift"
-      },
-      {
-        "name": "theme-abyss"
-      },
-      {
-        "name": "theme-defaults"
-      },
-      {
-        "name": "theme-kimbie-dark"
-      },
-      {
-        "name": "theme-monokai"
-      },
-      {
-        "name": "theme-monokai-dimmed"
-      },
-      {
-        "name": "theme-quietlight"
-      },
-      {
-        "name": "theme-red"
-      },
-      {
-        "name": "theme-solarized-dark"
-      },
-      {
-        "name": "theme-solarized-light"
-      },
-      {
-        "name": "theme-tomorrow-night-blue"
-      },
-      {
-        "name": "typescript-basics"
-      },
-      {
-        "name": "vb"
-      },
-      {
-        "name": "vscode-theme-seti"
-      },
-      {
-        "name": "xml"
-      },
-      {
-        "name": "yaml"
-      }
-    ],
-    "kaitian": [
       {
         "name": "git",
-        "version": "1.50.1-patch.4"
+        "version": "1.55.2"
       },
       {
-        "name": "vscode-language-pack-zh-hans"
+        "name": "html",
+        "version": "1.55.2"
       },
       {
-        "name": "ide-dark-theme"
+        "name": "html-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "ini",
+        "version": "1.55.2"
+      },
+      {
+        "name": "jake",
+        "version": "1.55.2"
+      },
+      {
+        "name": "java",
+        "version": "1.55.2"
+      },
+      {
+        "name": "javascript",
+        "version": "1.60.0"
+      },
+      {
+        "name": "json",
+        "version": "1.55.2"
+      },
+      {
+        "name": "json-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "less",
+        "version": "1.55.2"
+      },
+      {
+        "name": "log",
+        "version": "1.55.2"
+      },
+      {
+        "name": "lua",
+        "version": "1.55.2"
+      },
+      {
+        "name": "make",
+        "version": "1.55.2"
+      },
+      {
+        "name": "markdown-basics",
+        "version": "1.55.2"
+      },
+      {
+        "name": "merge-conflict",
+        "version": "1.55.2"
+      },
+      {
+        "name": "objective-c",
+        "version": "1.55.2"
+      },
+      {
+        "name": "perl",
+        "version": "1.55.2"
+      },
+      {
+        "name": "php",
+        "version": "1.55.2"
+      },
+      {
+        "name": "php-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "powershell",
+        "version": "1.55.2"
+      },
+      {
+        "name": "pug",
+        "version": "1.55.2"
+      },
+      {
+        "name": "python",
+        "version": "1.55.2"
+      },
+      {
+        "name": "r",
+        "version": "1.55.2"
+      },
+      {
+        "name": "razor",
+        "version": "1.55.2"
+      },
+      {
+        "name": "ruby",
+        "version": "1.55.2"
+      },
+      {
+        "name": "rust",
+        "version": "1.55.2"
+      },
+      {
+        "name": "scss",
+        "version": "1.55.2"
+      },
+      {
+        "name": "search-result",
+        "version": "1.55.2"
+      },
+      {
+        "name": "shaderlab",
+        "version": "1.55.2"
+      },
+      {
+        "name": "shellscript",
+        "version": "1.55.2"
+      },
+      {
+        "name": "sql",
+        "version": "1.55.2"
+      },
+      {
+        "name": "swift",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-abyss",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-defaults",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-kimbie-dark",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-monokai",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-monokai-dimmed",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-quietlight",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-red",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-solarized-dark",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-solarized-light",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-tomorrow-night-blue",
+        "version": "1.55.2"
+      },
+      {
+        "name": "typescript-basics",
+        "version": "1.60.0"
+      },
+      {
+        "name": "vb",
+        "version": "1.55.2"
+      },
+      {
+        "name": "vscode-theme-seti",
+        "version": "1.55.2"
+      },
+      {
+        "name": "xml",
+        "version": "1.55.2"
+      },
+      {
+        "name": "yaml",
+        "version": "1.55.2"
       }
     ]
   }

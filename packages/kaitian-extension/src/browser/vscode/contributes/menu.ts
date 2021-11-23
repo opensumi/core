@@ -1,6 +1,8 @@
 import { Injectable, Autowired } from '@ide-framework/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@ide-framework/ide-core-browser';
 import { ToolbarRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import { ThemeType } from '@ide-framework/ide-theme';
+import { IconType, IIconService } from '@ide-framework/ide-theme/lib/common/theme.service';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ide-framework/ide-editor/lib/browser';
 import { IEditorGroup } from '@ide-framework/ide-editor';
@@ -29,6 +31,7 @@ export interface MenusSchema {
 export type SubmenusSchema = Array<{
   id: string;
   label: string;
+  icon?: { [index in ThemeType]: string } | string;
 }>;
 
 export function parseMenuId(value: string): MenuId | string {
@@ -127,7 +130,6 @@ const _submenuDescRegistry = new Map<string /* submenu id */, SubmenusSchema>();
 @Injectable()
 @Contributes('submenus')
 export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSchema> {
-  // TODO: add json schema validation
   schema = {};
 
   contribute() {
@@ -160,6 +162,9 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
+
   protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
     const command = menu.command;
     let id = prefix + command;
@@ -169,6 +174,20 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       index++;
     }
     return id;
+  }
+
+  static VAR_REGEXP = /\$\(.*?\)/g;
+
+  private toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
+    if (typeof iconContrib === 'object') {
+      const iconClass = this.iconService.fromIcon(this.extension.path, iconContrib, IconType.Background);
+      return iconClass;
+    }
+    const parsedName = MenusContributionPoint.VAR_REGEXP.exec(iconContrib);
+    if (parsedName && parsedName[1]) {
+      return this.iconService.fromString(parsedName[1]);
+    }
+    return this.iconService.fromString(iconContrib);
   }
 
   contribute() {
@@ -254,6 +273,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               when: item.when,
               group,
               order,
+              iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon),
             } as ISubmenuItem,
           ));
         }
