@@ -81,7 +81,7 @@ const workerTarget = {
       options: {
         configFile: tsConfigPath,
         compilerOptions: {
-          target: 'es5'
+          target: 'es2019'
         }
       }
     },
