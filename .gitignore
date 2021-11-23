@@ -1,4 +1,5 @@
 .DS_Store
+yarn.lock
 
 # 由 https://github.com/msfeldstein/gitignore 自动生成
 # Logs

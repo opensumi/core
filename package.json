@@ -11,7 +11,7 @@
     "init:deps": "ts-node ./scripts/bootstrap",
     "init": "npm run init:deps && npm run clean && npm run build:all",
     "start": "node ./scripts/rebuild-native.js && cross-env NODE_ENV=development ts-node ./scripts/start",
-    "start:electron": "cd tools/electron && tnpm i &&  npm run link-local && npm run rebuild-native && npm run build && npm run start",
+    "start:electron": "cd tools/electron && npm i && npm run link-local && npm run rebuild-native && npm run build && npm run start",
     "build:components": "cd packages/components && npm run build:dist",
     "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
     "prod:lite": "ts-node ./scripts/start --script=prod:lite",

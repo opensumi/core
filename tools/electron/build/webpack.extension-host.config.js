@@ -30,9 +30,6 @@ const nodeTarget = {
       loader: 'ts-loader',
       options: {
         configFile: tsConfigPath,
-        compilerOptions: {
-          target: 'es5'
-        }
       }
     },
     ],
@@ -80,9 +77,6 @@ const workerTarget = {
       loader: 'ts-loader',
       options: {
         configFile: tsConfigPath,
-        compilerOptions: {
-          target: 'es5'
-        }
       }
     },
     ],

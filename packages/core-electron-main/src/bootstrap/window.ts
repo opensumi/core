@@ -16,6 +16,7 @@ let windowClientCount = 0;
 
 const defaultWebPreferences = {
   webviewTag: true,
+  contextIsolation: false,
 };
 
 @Injectable({ multiple: true })
