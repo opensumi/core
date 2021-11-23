@@ -6,7 +6,7 @@ import { ToolbarActionBasedLayout } from '@ide-framework/ide-core-browser/lib/co
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
-  opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
+  opts.workspaceDir = '/Users/liuqian/Work/Github/vscode' || opts.workspaceDir || process.env.WORKSPACE_DIR;
 
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;

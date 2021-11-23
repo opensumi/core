@@ -1,20 +1,73 @@
-import * as React from 'react';
+import React from 'react';
 import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
 import { Icon, getKaitianIcon, Button, Tabs } from '@ide-framework/ide-components';
 import { localize } from '@ide-framework/ide-core-common';
+import { Markdown } from '@ide-framework/ide-markdown';
 
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 import * as styles from './overview.module.less';
 import { VSXExtension } from '../../common';
+import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
+
+enum TabActiveKey {
+  details = 'Details',
+  changelog = 'ChangeLog',
+  deps = 'Dependencies',
+}
 
 const tabMap = [
-  'readme',
-  'changelog',
+  TabActiveKey.details,
+  TabActiveKey.changelog,
+  TabActiveKey.deps,
 ];
 
+interface IExtensionMetadata {
+  readme?: string;
+  changelog?: string;
+}
+
 export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtension> = ({ resource }) => {
+  const files = React.useMemo(() => {
+    return resource.metadata?.files;
+  }, [resource]);
+  const [loading, setLoading] = React.useState(true);
+  const [activateKey, setActivateKey] = React.useState(TabActiveKey.details);
+  const [metadata, setMetadata] = React.useState<IExtensionMetadata>({});
+  const tabs: TabActiveKey[] = React.useMemo(() => {
+    const res: TabActiveKey[] = [];
+    if (resource.metadata?.files.readme) {
+      res.push(TabActiveKey.details);
+    }
+    if (resource.metadata?.files.changelog) {
+      res.push(TabActiveKey.changelog);
+    }
+    return res;
+  }, [resource]);
+
+  const onDidTabChange = React.useCallback((index: number) => {
+    const activeKey = tabMap[index];
+    if (activeKey) {
+      setActivateKey(activeKey);
+    }
+  }, []);
+
+  const initExtensionMetadata = React.useCallback(async () => {
+    const tasks = [
+      files?.readme && fetch(files.readme).then((res) => res.text()),
+      files?.changelog && fetch(files.changelog).then((res) => res.text()),
+    ];
+    const [readme, changelog] = await Promise.all(tasks);
+    setMetadata({ readme, changelog });
+    setLoading(false);
+  }, [files]);
+
+  React.useEffect(() => {
+    initExtensionMetadata();
+  }, [files]);
+
   return (
-    <div>
+    <div className={styles.extension_overview_container}>
+      <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
         <img src={resource.metadata?.files.icon || 'https://open-vsx.org/default-icon.png'} alt={resource.metadata?.displayName} />
         <div className={styles.extension_detail}>
@@ -70,15 +123,12 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
       <div className={styles.extension_overview_body}>
         <Tabs
           className={styles.tabs}
-          value={'readme'}
-          onChange={(index: number) => {
-            const activeKey = tabMap[index];
-            if (activeKey) {
-              // setActiveKey(activeKey);
-            }
-          }}
-          tabs={['Details', 'Changelog', 'Dependencies']}
+          value={activateKey}
+          onChange={onDidTabChange}
+          tabs={tabs}
         />
+        {activateKey === TabActiveKey.details && metadata.readme && (<Markdown content={metadata.readme} />)}
+        {activateKey === TabActiveKey.changelog && metadata.changelog && (<Markdown content={metadata.changelog} />)}
       </div>
     </div>
   );
