@@ -118,7 +118,9 @@ export interface VSXUser {
 export interface VSXExtensionRawFiles {
   download: string;
   readme?: string;
+  manifest?: string;
   license?: string;
+  changelog?: string;
   icon?: string;
 }
 

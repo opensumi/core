@@ -1,7 +1,7 @@
 import { Autowired } from '@ide-framework/common-di';
 import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@ide-framework/ide-core-browser';
 import { Domain, localize, URI } from '@ide-framework/ide-core-common';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ide-framework/ide-main-layout';
 import { BrowserEditorContribution, EditorComponentRegistry, IResource, ResourceService } from '@ide-framework/ide-editor/lib/browser';
 import { IIconService, IconType } from '@ide-framework/ide-theme';
 
@@ -11,8 +11,8 @@ import { ExtensionOverview } from './extension-overview';
 import { VSXExtensionRaw } from '../common/vsx-registry-types';
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './const';
 
-@Domain(ClientAppContribution, ComponentContribution, BrowserEditorContribution)
-export class VSXExtensionContribution implements ClientAppContribution, ComponentContribution, BrowserEditorContribution {
+@Domain(ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution)
+export class VSXExtensionContribution implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
 
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
