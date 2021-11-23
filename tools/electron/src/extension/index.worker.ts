@@ -1,1 +1,1 @@
-import '@ide-framework/ide-kaitian-extension/lib/hosted/worker.host-preload';
+import '@ide-framework/ide-extension/lib/hosted/worker.host-preload';

@@ -24,7 +24,7 @@ export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' |
 
 export const IElectronMainMenuService = 'IElectronMainMenuService';
 
-export interface IKaitianMenuExtendInfo {
+export interface ISumiMenuExtendInfo {
   command: string;
   extraDesc?: string;
 }

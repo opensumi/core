@@ -16,7 +16,7 @@ BrowserFS.configure({
   options: {},
 }, (e) => {});
 
-import { ExtensionNodeServiceServerPath } from '@ide-framework/ide-kaitian-extension/lib/common';
+import { ExtensionNodeServiceServerPath } from '@ide-framework/ide-extension/lib/common';
 import { FileSearchServicePath } from '@ide-framework/ide-file-search';
 import { ExtensionClientService } from './overrides/mock-extension-server';
 import { MockFileSearch } from './overrides/mock-file-search';

@@ -49,7 +49,7 @@
     "@ide-framework/ide-file-service": "2.12.0",
     "@ide-framework/ide-file-tree-next": "2.12.0",
     "@ide-framework/ide-i18n": "2.12.0",
-    "@ide-framework/ide-kaitian-extension": "2.12.0",
+    "@ide-framework/ide-extension": "2.12.0",
     "@ide-framework/ide-logs": "2.12.0",
     "@ide-framework/ide-main-layout": "2.12.0",
     "@ide-framework/ide-markdown": "2.12.0",

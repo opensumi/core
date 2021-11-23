@@ -22,7 +22,7 @@ import { SCMModule } from '@ide-framework/ide-scm/lib/browser';
 import { StaticResourceModule } from '@ide-framework/ide-static-resource/lib/browser';
 import { WorkspaceEditModule } from '@ide-framework/ide-workspace-edit/lib/browser';
 import { KeymapsModule } from '@ide-framework/ide-keymaps/lib/browser';
-import { KaitianExtensionModule } from '@ide-framework/ide-kaitian-extension/lib/browser';
+import { ExtensionModule } from '@ide-framework/ide-extension/lib/browser';
 import { CommentsModule } from '@ide-framework/ide-comments/lib/browser';
 import { WebviewModule } from '@ide-framework/ide-webview/lib/browser';
 import { OutputModule } from '@ide-framework/ide-output/lib/browser';
@@ -58,5 +58,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   OutputModule,
   // browser custom modules
   BrowserFileSchemeModule,
-  KaitianExtensionModule,
+  ExtensionModule,
 ];

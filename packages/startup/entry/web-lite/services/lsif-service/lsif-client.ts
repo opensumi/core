@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 import { Autowired, Injectable } from '@ide-framework/common-di';
 import { URI, Uri } from '@ide-framework/ide-core-common';
-import { Position, Range, Location } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { Position, Range, Location } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
 import { IWorkspaceService } from '@ide-framework/ide-workspace';
 
 import { ILsifPayload } from './base';

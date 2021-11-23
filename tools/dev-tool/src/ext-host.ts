@@ -1,4 +1,4 @@
-import { extProcessInit, IBuiltInCommand } from '@ide-framework/ide-kaitian-extension/lib/hosted/ext.process-base';
+import { extProcessInit, IBuiltInCommand } from '@ide-framework/ide-extension/lib/hosted/ext.process-base';
 import { LogLevel } from '@ide-framework/ide-core-common';
 
 const builtinCommands: IBuiltInCommand[] = [

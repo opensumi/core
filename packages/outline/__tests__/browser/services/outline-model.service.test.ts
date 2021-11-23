@@ -10,7 +10,7 @@ import { IOutlineDecorationService } from '@ide-framework/ide-outline';
 import styles from '../../../../src/browser/outline-node.module.less';
 import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { SymbolKind } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/worker/worker.ext-types';
+import { SymbolKind } from '@ide-framework/ide-extension/lib/hosted/api/worker/worker.ext-types';
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;

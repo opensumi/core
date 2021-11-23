@@ -33,7 +33,7 @@ import { MarkdownModule } from '@ide-framework/ide-markdown';
 
 import { LogModule } from '@ide-framework/ide-logs/lib/browser';
 import { WorkspaceEditModule } from '@ide-framework/ide-workspace-edit/lib/browser';
-import { KaitianExtensionModule } from '@ide-framework/ide-kaitian-extension/lib/browser';
+import { ExtensionModule } from '@ide-framework/ide-extension/lib/browser';
 import { DecorationModule } from '@ide-framework/ide-decoration/lib/browser';
 import { DebugModule } from '@ide-framework/ide-debug/lib/browser';
 import { VariableModule } from '@ide-framework/ide-variable/lib/browser';
@@ -85,7 +85,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     TerminalNextModule,
 
     // Extension Modules
-    KaitianExtensionModule,
+    ExtensionModule,
     // FeatureExtensionModule,
     OpenVsxExtensionManagerModule,
     MonacoEnhanceModule,

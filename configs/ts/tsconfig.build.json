@@ -145,7 +145,7 @@
       "path": "./references/tsconfig.comments.json"
     },
     {
-      "path": "./references/tsconfig.kaitian-extension.json"
+      "path": "./references/tsconfig.extension.json"
     },
     {
       "path": "./references/tsconfig.extension-manager.json"

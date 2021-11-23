@@ -171,7 +171,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
         'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
         'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
-        'process.env.EXTENSION_WORKER_HOST': JSON.stringify( process.env.EXTENSION_WORKER_HOST || ('http://127.0.0.1:8080/assets' +  path.join(__dirname, '../../../packages/kaitian-extension/lib/worker-host.js')) ),
+        'process.env.EXTENSION_WORKER_HOST': JSON.stringify( process.env.EXTENSION_WORKER_HOST || ('http://127.0.0.1:8080/assets' +  path.join(__dirname, '../../../packages/extension/lib/worker-host.js')) ),
         'process.env.WS_PATH': JSON.stringify(process.env.WS_PATH || 'ws://127.0.0.1:8000'),
         'process.env.WEBVIEW_HOST': JSON.stringify(process.env.WEBVIEW_HOST || '127.0.0.1'),
         'process.env.STATIC_SERVER_PATH': JSON.stringify(process.env.STATIC_SERVER_PATH || 'http://127.0.0.1:8000/')

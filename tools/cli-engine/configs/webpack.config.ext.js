@@ -6,7 +6,7 @@ const distDir = path.join(__dirname, '../lib/hosted');
 
 module.exports = {
   entry: require.resolve(
-    '@ide-framework/ide-kaitian-extension/lib/hosted/ext.process.js',
+    '@ide-framework/ide-extension/lib/hosted/ext.process.js',
   ),
   target: 'node',
   output: {

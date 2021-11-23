@@ -31,7 +31,7 @@
     "@ide-framework/ide-core-node": "2.11.2",
     "@ide-framework/ide-express-file-server": "2.11.2",
     "@ide-framework/ide-i18n": "2.11.2",
-    "@ide-framework/ide-kaitian-extension": "2.11.2",
+    "@ide-framework/ide-extension": "2.11.2",
     "@ide-framework/ide-startup": "2.11.2",
     "@koa/cors": "^3.0.0",
     "chalk": "^4.0.0",

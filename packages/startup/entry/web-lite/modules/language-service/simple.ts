@@ -10,22 +10,22 @@ import {
   DefinitionLink,
   ReferenceContext,
   Location,
-} from '@ide-framework/ide-kaitian-extension/lib/common/vscode/model.api';
-import { ExtensionDocumentDataManager, IExtHostLanguages } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
+} from '@ide-framework/ide-extension/lib/common/vscode/model.api';
+import { ExtensionDocumentDataManager, IExtHostLanguages } from '@ide-framework/ide-extension/lib/common/vscode';
 import { Uri, URI, LRUMap, DisposableCollection } from '@ide-framework/ide-core-common';
-import { Disposable } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { Disposable } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
 
-import { DefinitionAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/definition';
-import { HoverAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/hover';
-import { ReferenceAdapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/language/reference';
-import { Adapter } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.language';
+import { DefinitionAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/definition';
+import { HoverAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/hover';
+import { ReferenceAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/reference';
+import { Adapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.language';
 
-import { ExtHostDocumentData } from '@ide-framework/ide-kaitian-extension/lib/hosted/api/vscode/doc/ext-data.host';
+import { ExtHostDocumentData } from '@ide-framework/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
 import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { fromLanguageSelector } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/converter';
-import { MonacoModelIdentifier, testGlob } from '@ide-framework/ide-kaitian-extension/lib/common/vscode';
-import { LanguageSelector } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/model.api';
+import { fromLanguageSelector } from '@ide-framework/ide-extension/lib/common/vscode/converter';
+import { MonacoModelIdentifier, testGlob } from '@ide-framework/ide-extension/lib/common/vscode';
+import { LanguageSelector } from '@ide-framework/ide-extension/lib/common/vscode/model.api';
 import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()

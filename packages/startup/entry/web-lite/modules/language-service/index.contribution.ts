@@ -1,7 +1,7 @@
 import { Autowired } from '@ide-framework/common-di';
 import { Disposable, Domain, URI } from '@ide-framework/ide-core-common';
 import { ClientAppContribution } from '@ide-framework/ide-core-browser';
-import { Position } from '@ide-framework/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { Position } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
 import type vscode from 'vscode';
 import { IWorkspaceService } from '@ide-framework/ide-workspace';
 

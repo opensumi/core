@@ -261,11 +261,11 @@
       "@ide-framework/ide-workspace-edit/lib/*": [
         "../packages/workspace-edit/src/*"
       ],
-      "@ide-framework/ide-kaitian-extension": [
-        "../packages/kaitian-extension/src/index.ts"
+      "@ide-framework/ide-extension": [
+        "../packages/extension/src/index.ts"
       ],
-      "@ide-framework/ide-kaitian-extension/lib/*": [
-        "../packages/kaitian-extension/src/*"
+      "@ide-framework/ide-extension/lib/*": [
+        "../packages/extension/src/*"
       ],
       "@ide-framework/ide-monaco-enhance": [
         "../packages/monaco-enhance/src/index.ts"
