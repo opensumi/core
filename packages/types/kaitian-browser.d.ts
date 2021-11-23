@@ -20,7 +20,7 @@ declare module 'kaitian-browser' {
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@ide-framework/ide-components';
 
-  export type { URI } from '@ide-framework/ide-core-browser';
+  export { URI } from '@ide-framework/ide-core-browser';
 
   export interface ScrollAreaProps {
     className?: string;
