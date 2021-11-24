@@ -1,4 +1,3 @@
-declare module 'kaitian-worker';
 declare module 'sumi-worker' {
   /**
    * Represents a text document, such as a source file. Text documents have

@@ -1,4 +1,3 @@
-declare module 'kaitian-worker';
 declare module 'sumi-worker' {
   /**
    * Represents sources that can cause [selection change events](#window.onDidChangeTextEditorSelection).

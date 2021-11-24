@@ -1,5 +1,10 @@
 /* tslint:disable callable-types */
-declare module 'kaitian';
+/**
+ * @deprecated `kaitian` was deprecated, Please use `sumi` instead.
+ */
+declare module 'kaitian' {
+  export * from 'sumi';
+}
 declare module 'sumi' {
   export * from 'vscode';
 

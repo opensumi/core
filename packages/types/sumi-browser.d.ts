@@ -16,7 +16,13 @@ interface IComponentProps<N, W = any> {
   };
 }
 
-declare module 'kaitian-browser';
+/**
+ * @deprecated `katian-browser` is deprecated. Please use `sumi-browser` instead.
+ */
+declare module 'kaitian-browser' {
+  export * from 'sumi-browser';
+}
+
 declare module 'sumi-browser' {
   export * from '@ide-framework/ide-components';
 
@@ -102,6 +108,10 @@ declare module 'sumi-browser' {
     RIGHT = 3,
   }
 
+  export type ISumiBrowserConfig = IKaitianBrowserConfig;
+  /**
+   * @deprecated `IKaitianBrowserConfig` was renamed to `ISumiBrowserConfig`, use that instead.
+   */
   export interface IKaitianBrowserConfig {
     left?: {
       component: ITabBarComponentContribution[];
