@@ -22,7 +22,7 @@ if (target === 'electron') {
 
   console.log('rebuilding native for electron version ' + version);
 
-  commands = [require('os').arch === 'win32' ? 'set HOME=~/.electron-gyp':'HOME=~/.electron-gyp','node-gyp','rebuild',`--target=${version}`,'--arch=x64','--dist-url=https://electronjs.org/headers']
+  commands = [require('os').arch === 'win32' ? 'set HOME=~/.electron-gyp':'HOME=~/.electron-gyp','node-gyp','rebuild',`--target=${version}`,'--arch=x64','--dist-url=https://electronjs.org/headers', 'openssl_fips=X']
 
 } else if (target === 'node') {
 
