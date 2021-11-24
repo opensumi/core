@@ -714,7 +714,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private updateContextKeyWhenDiffEditorChangesFocus() {
-    if (this.updateContextKeyWhenEditorChangesFocusDisposer) {
+    if (this.updateContextKeyWhenEditorChangesFocusDisposer || !this.diffEditor) {
       return;
     }
     const emitIfNoEditorFocused = () => {
