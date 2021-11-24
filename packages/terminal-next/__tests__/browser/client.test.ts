@@ -109,7 +109,7 @@ describe('Terminal Client', () => {
 
   it('Terminal getSelection', async () => {
     await client.attached.promise;
-    client.sendText('pwd\r');
+    await client.sendText('pwd\r');
     await delay(500);
     client.selectAll();
     const selection = client.getSelection();
