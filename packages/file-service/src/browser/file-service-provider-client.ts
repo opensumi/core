@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux } from '@ide-framework/ide-core-common';
+import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux, debounce } from '@ide-framework/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, DiskFileServicePath, FileSystemProvider, DidFilesChangedParams, FileChange,
 } from '../common';
@@ -85,6 +85,7 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
     return this._capabilities;
   }
 
+  @debounce(100)
   setWatchFileExcludes(excludes: string[]) {
     return this.fileServiceProvider.setWatchFileExcludes(excludes);
   }
