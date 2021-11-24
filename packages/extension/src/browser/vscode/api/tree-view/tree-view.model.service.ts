@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@opensumi/ide-components';
 import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Deferred, ThrottledDelayer, CommandService } from '@opensumi/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';

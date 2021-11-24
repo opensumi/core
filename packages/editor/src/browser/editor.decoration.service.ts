@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
 import { URI , IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';

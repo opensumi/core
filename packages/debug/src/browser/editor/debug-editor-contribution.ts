@@ -7,7 +7,7 @@ import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
 import { IDisposable, Disposable, RunOnceScheduler, CancellationTokenSource, onUnexpectedExternalError, Position, createMemoizer, Emitter, Event } from '@opensumi/ide-core-common';
 import { flatten } from '@opensumi/ide-core-common/lib/arrays';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, PreferenceService, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 import { InlineValuesProviderRegistry } from './inline-values';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';

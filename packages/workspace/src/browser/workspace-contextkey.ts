@@ -1,4 +1,4 @@
-import { Optional, Injectable, Autowired } from '@opensumi/common-di';
+import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
 import { WorkbenchState, WorkspaceFolderCount } from '@opensumi/ide-core-browser/lib/contextkey';
 

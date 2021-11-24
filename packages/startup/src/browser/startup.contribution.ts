@@ -1,5 +1,5 @@
 
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';

@@ -1,6 +1,6 @@
 import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension } from '../src/common';
 import { mockExtensionProps } from './extensions';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 
 const mockExtensions: IExtension[] = [{
   ...mockExtensionProps,

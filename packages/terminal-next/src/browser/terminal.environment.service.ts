@@ -1,5 +1,5 @@
 import React from 'react';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { CommandService, Emitter, Event, ILogger, localize } from '@opensumi/ide-core-common';
 import {
   deserializeEnvironmentVariableCollection,

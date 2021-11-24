@@ -1,6 +1,6 @@
 import { StaticResourceService, IStaticResourceProvider } from './static.definition';
 import { URI } from '@opensumi/ide-core-browser';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 
 @Injectable()
 export class StaticResourceServiceImpl implements StaticResourceService {

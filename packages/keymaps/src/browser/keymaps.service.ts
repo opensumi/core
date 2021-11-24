@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
 import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection, ProgressLocation, IProgress, IProgressStep } from '@opensumi/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';

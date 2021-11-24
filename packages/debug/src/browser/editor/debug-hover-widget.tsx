@@ -2,7 +2,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@opensumi/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugEditor, IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';

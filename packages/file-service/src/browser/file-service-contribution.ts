@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import {
   Domain,
   FsProviderContribution,

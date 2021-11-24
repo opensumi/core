@@ -20,7 +20,7 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugThread } from '../model/debug-thread';
 import { DebugStackFrame } from '../model/debug-stack-frame';
 import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DebugState, IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()

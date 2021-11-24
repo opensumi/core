@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { URI, Uri, FileDecorationsProvider, IFileDecoration, Emitter, DisposableCollection } from '@opensumi/ide-core-browser';
 import { IThemeService } from '@opensumi/ide-theme';

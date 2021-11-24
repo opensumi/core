@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { KeybindingRegistry, OS, Keybinding, KeybindingWeight } from '@opensumi/ide-core-browser';

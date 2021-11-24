@@ -3,7 +3,7 @@ import path from 'path';
 import util from 'util';
 import * as fs from 'fs-extra';
 import type cp from 'child_process';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
 import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter, WSChannel } from '@opensumi/ide-connection';

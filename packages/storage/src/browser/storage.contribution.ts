@@ -1,5 +1,5 @@
 import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution, STORAGE_SCHEMA, AppConfig } from '@opensumi/ide-core-browser';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Storage } from './storage';
 import { IStorageServer, IWorkspaceStorageServer, IGlobalStorageServer } from '../common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

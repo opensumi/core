@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { getPreferenceLanguageId } from '@opensumi/ide-core-browser';
 import { ILogger, WithEventBus } from '@opensumi/ide-core-common';
 

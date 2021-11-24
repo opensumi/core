@@ -1,4 +1,4 @@
-import { Injector, Injectable } from '@opensumi/common-di';
+import { Injector, Injectable } from '@opensumi/di';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LogModule } from '../../src/browser';
 import {

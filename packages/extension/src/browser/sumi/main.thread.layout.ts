@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadLayout, IExtHostLayout } from '../../common/sumi/layout';
 import { IMainLayoutService, TabBarRegistrationEvent } from '@opensumi/ide-main-layout';

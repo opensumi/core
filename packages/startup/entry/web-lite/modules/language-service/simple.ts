@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable, ConstructorOf } from '@opensumi/common-di';
+import { Autowired, Injectable, ConstructorOf } from '@opensumi/di';
 import type vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
 import {

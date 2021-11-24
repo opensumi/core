@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@opensumi/ide-core-browser';

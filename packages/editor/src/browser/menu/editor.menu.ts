@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorActionRegistry } from '../types';
 import { IDisposable, Disposable, IContextKeyService, ILogger } from '@opensumi/ide-core-browser';
 import { IEditorGroup } from '../../common';

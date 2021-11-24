@@ -1,7 +1,7 @@
 import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow, IWebviewReviver } from './types';
 import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull, ILogger, addElement, Emitter, StorageProvider, IStorage, STORAGE_SCHEMA } from '@opensumi/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';

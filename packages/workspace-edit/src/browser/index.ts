@@ -1,4 +1,4 @@
-import { Provider, Injectable, Autowired } from '@opensumi/common-di';
+import { Provider, Injectable, Autowired } from '@opensumi/di';
 import type { IBulkEditOptions, ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';

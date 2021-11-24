@@ -1,5 +1,5 @@
 
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME, IFileSystemProviderRegistrationEvent, IFileSystemProviderCapabilitiesChangeEvent } from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
 import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities, Deferred } from '@opensumi/ide-core-common';

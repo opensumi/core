@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@opensumi/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
 import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';

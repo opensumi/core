@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 

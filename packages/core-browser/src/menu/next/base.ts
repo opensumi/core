@@ -1,5 +1,5 @@
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ButtonType } from '@opensumi/ide-components';
 import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 import { warning } from '@opensumi/ide-components/lib/utils';

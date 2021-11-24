@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
 import { Deferred, localize, Emitter, Event } from '@opensumi/ide-core-common';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import omit from 'lodash.omit';
 
 import { MenuNode } from '../../base';

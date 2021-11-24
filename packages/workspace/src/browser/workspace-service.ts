@@ -1,5 +1,5 @@
 
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   KAITIAN_MULTI_WORKSPACE_EXT,
   IWorkspaceService,

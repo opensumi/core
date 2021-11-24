@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@opensumi/ide-core-browser';
 import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle, SwitchCommandReaction, ICommentsThread, CommentReactionPayload, CommentReactionClick } from '../common';
 import { IEditor } from '@opensumi/ide-editor';

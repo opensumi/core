@@ -4,7 +4,7 @@ import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-servic
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { Injectable, Provider } from '@opensumi/common-di';
+import { Injectable, Provider } from '@opensumi/di';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import os from 'os';

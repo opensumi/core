@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@opensumi/ide-core-browser';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';

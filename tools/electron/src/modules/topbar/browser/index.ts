@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule, Domain } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ITopbarService, TopbarNodeServerPath } from '../common';

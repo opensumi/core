@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@opensumi/ide-core-common';
 
 @Injectable()

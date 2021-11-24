@@ -6,7 +6,7 @@ import {
   RPCMessageConnection,
  } from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
-import { Injector, Provider } from '@opensumi/common-di';
+import { Injector, Provider } from '@opensumi/di';
 import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 

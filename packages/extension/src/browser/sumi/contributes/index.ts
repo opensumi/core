@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@opensumi/ide-core-browser';
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';

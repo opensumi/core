@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { MonacoDiagnosticCollection } from './diagnostic-collection';
 import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@opensumi/ide-core-common';
 import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';

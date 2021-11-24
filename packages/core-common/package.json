@@ -17,7 +17,7 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@opensumi/common-di": "^1.0.0",
+    "@opensumi/di": "^1.0.0",
     "iconv-lite": "^0.6.0",
     "jschardet": "3.0.0",
     "shortid": "^2.2.14",

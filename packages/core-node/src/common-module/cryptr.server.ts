@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { INativeCryptrService } from '@opensumi/ide-core-common';
 import crypto from 'crypto';
 

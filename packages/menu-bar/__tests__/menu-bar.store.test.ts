@@ -1,6 +1,6 @@
 import { Disposable } from '@opensumi/ide-core-common';
 import { Event, Emitter } from '@opensumi/ide-core-browser';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';

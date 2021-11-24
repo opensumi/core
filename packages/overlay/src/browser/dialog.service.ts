@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IDialogService, AbstractMessageService, Icon} from '../common';
 import { observable, action } from 'mobx';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';

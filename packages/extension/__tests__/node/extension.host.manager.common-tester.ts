@@ -1,4 +1,4 @@
-import { Provider } from '@opensumi/common-di';
+import { Provider } from '@opensumi/di';
 import { IExtensionHostManager } from '../../src';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from '@opensumi/ide-core-common';
 
 export interface Variable {

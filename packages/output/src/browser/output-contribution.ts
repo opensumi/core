@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@opensumi/ide-core-common';
 import { ClientAppContribution, getIcon, PreferenceContribution } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';

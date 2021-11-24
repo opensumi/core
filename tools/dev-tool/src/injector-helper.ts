@@ -1,5 +1,5 @@
 import { ConstructorOf, ILoggerManagerClient } from '@opensumi/ide-core-common';
-import { Injector, Injectable } from '@opensumi/common-di';
+import { Injector, Injectable } from '@opensumi/di';
 import { BrowserModule, ClientApp } from '@opensumi/ide-core-browser';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
 import { MockInjector } from './mock-injector';

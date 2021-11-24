@@ -1,5 +1,5 @@
 import path from 'path';
-import { Injector, Injectable } from '@opensumi/common-di';
+import { Injector, Injectable } from '@opensumi/di';
 import { ILoggerManagerClient, Uri } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';

@@ -1,7 +1,7 @@
 import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@opensumi/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';

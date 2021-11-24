@@ -1,4 +1,4 @@
-import { Provider, Injector, Injectable } from '@opensumi/common-di';
+import { Provider, Injector, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';

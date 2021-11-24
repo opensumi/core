@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
-import { Injector, Injectable, Autowired } from '@opensumi/common-di';
+import { Injector, Injectable, Autowired } from '@opensumi/di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { BreakpointManager } from '../breakpoint';

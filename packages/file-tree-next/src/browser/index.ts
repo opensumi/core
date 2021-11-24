@@ -1,4 +1,4 @@
-import { Provider } from '@opensumi/common-di';
+import { Provider } from '@opensumi/di';
 import { IFileTreeAPI, IFileTreeService } from '../common';
 import { FileTreeAPI } from './services/file-tree-api.service';
 import { FileTreeService } from './file-tree.service';

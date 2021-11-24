@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, ProblemMatcher, isString, deepClone, removeAnsiEscapeCodes, Emitter, DisposableCollection } from '@opensumi/ide-core-common';
 
 import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { createElectronMainApi } from '@opensumi/ide-core-browser';
 import { ElectronBasicModule } from '@opensumi/ide-electron-basic/lib/browser';
 import { IHelloService } from '../../../common/types';

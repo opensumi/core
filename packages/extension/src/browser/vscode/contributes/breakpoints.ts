@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 
 export interface BreakpointsContributionScheme {

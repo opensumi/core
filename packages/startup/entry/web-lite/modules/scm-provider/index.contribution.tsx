@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import { ClientAppContribution, getIcon } from '@opensumi/ide-core-browser';
 import { SCMService } from '@opensumi/ide-scm';

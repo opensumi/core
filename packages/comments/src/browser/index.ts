@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { CommentsService } from './comments.service';
 import { CommentsFeatureRegistry } from './comments-feature.registry';

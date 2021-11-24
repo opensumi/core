@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Uri, Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@opensumi/ide-core-common';
 import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';

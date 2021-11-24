@@ -1,5 +1,5 @@
 import { Terminal, ILinkProvider } from 'xterm';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Disposable, IDisposable, DisposableCollection, isOSX, FileUri } from '@opensumi/ide-core-common';
 import { OperatingSystem, isWindows } from '@opensumi/ide-core-common/lib/platform';
 import { posix, win32, IPath } from '@opensumi/ide-core-common/lib/path';

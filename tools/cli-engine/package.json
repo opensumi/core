@@ -25,7 +25,7 @@
     "watch:webview": "npm run build:webview -- --watch"
   },
   "dependencies": {
-    "@opensumi/common-di": "^1.0.0",
+    "@opensumi/di": "^1.0.0",
     "@opensumi/ide-core-browser": "2.11.2",
     "@opensumi/ide-core-common": "2.11.2",
     "@opensumi/ide-core-node": "2.11.2",

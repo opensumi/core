@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import { IFileSchemeDocNodeService, FileSchemeDocNodeServicePath } from '../common';

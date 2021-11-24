@@ -1,5 +1,5 @@
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 
 import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@opensumi/ide-monaco/lib/browser/contrib/command';

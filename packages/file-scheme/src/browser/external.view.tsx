@@ -3,7 +3,7 @@ import { localize, useInjectable, isElectronRenderer } from '@opensumi/ide-core-
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import styles from './style.module.less';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { INJECTOR_TOKEN } from '@opensumi/common-di';
+import { INJECTOR_TOKEN } from '@opensumi/di';
 
 export const BinaryEditorComponent: ReactEditorComponent<null> = (props) => {
   const srcPath = props.resource.uri.codeUri.fsPath;

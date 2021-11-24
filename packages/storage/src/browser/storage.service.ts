@@ -1,5 +1,5 @@
 import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { Deferred, URI, Emitter, Event, ILogger } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';

@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 import { ITopbarNodeServer, TopbarNodeServerPath } from '../common';
 import { TopbarNodeServer } from './topbar-node-server';

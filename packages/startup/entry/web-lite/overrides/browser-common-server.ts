@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { ICommonServer, OS, isWindows, isLinux } from '@opensumi/ide-core-common';
 import {  } from '@opensumi/ide-core-common';
 

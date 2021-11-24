@@ -1,6 +1,6 @@
 import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
 import { QuickPickService } from '@opensumi/ide-quick-open';

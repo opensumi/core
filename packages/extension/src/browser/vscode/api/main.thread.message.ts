@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IMainThreadMessage, IExtHostMessage, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MessageType } from '@opensumi/ide-core-common';
 

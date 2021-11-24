@@ -1,6 +1,6 @@
 import { ResourceService, IResource, IEditorOpenType } from '@opensumi/ide-editor';
 import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@opensumi/ide-core-browser';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { getLanguageIdFromMonaco } from '@opensumi/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';

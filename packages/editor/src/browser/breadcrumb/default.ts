@@ -1,5 +1,5 @@
 import debounce = require('lodash.debounce');
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';

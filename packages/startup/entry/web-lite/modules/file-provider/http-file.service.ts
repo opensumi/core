@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI, Uri, AppConfig } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { AbstractHttpFileService } from './browser-fs-provider';

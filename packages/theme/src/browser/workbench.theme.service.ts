@@ -1,6 +1,6 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
 import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@opensumi/ide-core-common';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';

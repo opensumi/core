@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceSchemaProperties, OVERRIDE_PROPERTY_PATTERN, PreferenceProvider, PreferenceScope } from '@opensumi/ide-core-browser';
 
 export interface ConfigurationSnippets {

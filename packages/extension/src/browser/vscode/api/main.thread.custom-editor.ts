@@ -1,5 +1,5 @@
 
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IMainThreadCustomEditor, IExtHostCustomEditor, CustomEditorType, ICustomEditorOptions, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@opensumi/ide-core-common';

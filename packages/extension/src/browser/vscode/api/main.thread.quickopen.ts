@@ -1,6 +1,6 @@
 import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier,
 } from '../../../common/vscode';
-import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
 import {

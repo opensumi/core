@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';

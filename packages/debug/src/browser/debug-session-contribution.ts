@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { ContributionProvider } from '@opensumi/ide-core-browser';
 import { DebugSession } from './debug-session';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

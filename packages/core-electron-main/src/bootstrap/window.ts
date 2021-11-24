@@ -1,5 +1,5 @@
 import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';

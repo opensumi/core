@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, URI, AppConfig, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';

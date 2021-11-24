@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI, Uri } from '@opensumi/ide-core-common';
 import { Position, Range, Location } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

@@ -7,7 +7,7 @@ import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { ContextKeyExpr, ContextKeyExprType } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { FormattingConflicts } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, IJSONSchemaRegistry, Disposable,

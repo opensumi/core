@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@opensumi/ide-core-browser';
 
 import * as VSCodeBuiltinCommands from '@opensumi/ide-extension/lib/browser/vscode/builtin-commands';

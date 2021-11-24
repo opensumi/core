@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';

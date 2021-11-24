@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { ExtHostComments, createCommentsApiFactory, ExtHostCommentThread } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadComments, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';

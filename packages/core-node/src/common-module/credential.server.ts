@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '../bootstrap';
 import { IChunkedPassword, INativeCredentialService, isWindows } from '@opensumi/ide-core-common';
 

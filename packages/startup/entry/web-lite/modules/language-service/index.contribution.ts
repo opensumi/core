@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Disposable, Domain, URI } from '@opensumi/ide-core-common';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { Position } from '@opensumi/ide-extension/lib/common/vscode/ext-types';

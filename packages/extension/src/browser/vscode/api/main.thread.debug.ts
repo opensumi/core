@@ -1,4 +1,4 @@
-import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService, IStartDebuggingOptions } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@opensumi/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@opensumi/ide-debug';

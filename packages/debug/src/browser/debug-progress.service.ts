@@ -6,7 +6,7 @@ import { IProgress, IProgressStep } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { ProgressLocation } from '@opensumi/ide-core-common';
 import { DebugSession } from './debug-session';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DebugState, IDebugSessionManager } from '../common/debug-session';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Event, IDisposable } from '@opensumi/ide-core-browser';

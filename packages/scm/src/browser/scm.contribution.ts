@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@opensumi/ide-core-common';
 import { ClientAppContribution, PreferenceContribution, PreferenceService, getExternalIcon } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';

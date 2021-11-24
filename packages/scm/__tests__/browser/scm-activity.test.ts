@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/common-di';
+import { Injectable, Injector } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { MaybeNull, Uri, URI, Event, Emitter } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';

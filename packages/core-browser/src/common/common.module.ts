@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { BrowserModule } from '../browser-module';
 import { ClientCommonContribution } from './common.contribution';
 import { OpenerContribution } from '../opener';

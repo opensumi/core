@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
 import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';

@@ -1,7 +1,7 @@
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Event, IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';

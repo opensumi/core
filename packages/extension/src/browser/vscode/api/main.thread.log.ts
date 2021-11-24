@@ -1,4 +1,4 @@
-import { Injectable, Injector, Autowired } from '@opensumi/common-di';
+import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { LogLevel } from '@opensumi/ide-core-common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, WatchEvent, TreeNodeEvent } from '@opensumi/ide-components';
 import { Emitter, Deferred, Event, DisposableCollection } from '@opensumi/ide-core-browser';
 import { DebugHoverModel } from './debug-hover-model';

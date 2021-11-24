@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IMarkdownService } from '../common';
 import marked from 'marked';
 import { markdownCss } from './mardown.style';

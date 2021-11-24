@@ -1,6 +1,6 @@
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent, DidApplyEditorDecorationFromProvider } from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, IEventBus } from '@opensumi/ide-core-common';

@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts, LogServiceForClientPath, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@opensumi/ide-core-browser';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import BrowserFS from 'browserfs';

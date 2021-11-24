@@ -1,5 +1,5 @@
 import { Terminal } from 'xterm';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@opensumi/ide-core-common';
 import { OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';

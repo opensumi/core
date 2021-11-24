@@ -1,6 +1,6 @@
 console.time('Render');
 import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
-import { Injector, Domain } from '@opensumi/common-di';
+import { Injector, Domain } from '@opensumi/di';
 import { createSocketConnection } from '@opensumi/ide-connection';
 
 // 引入公共样式文件

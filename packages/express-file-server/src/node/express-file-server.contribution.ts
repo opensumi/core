@@ -1,5 +1,5 @@
 import { ServerAppContribution, Domain, IServerApp, AppConfig } from '@opensumi/ide-core-node';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { ALLOW_MIME } from '../common';
 import mount from 'koa-mount';
 import fs from 'fs';

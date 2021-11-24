@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import * as paths from '@opensumi/ide-core-common/lib/path';

@@ -1,6 +1,6 @@
 import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
 import { IDisposable, Disposable } from '@opensumi/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { TabbarBrowserContributionRunner } from './tabbar';
 import { EditorBrowserContributionRunner } from './editor';
 import { ToolBarBrowserContributionRunner } from './toolbar';

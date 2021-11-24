@@ -1,7 +1,7 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import type { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, ILogger, revive } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';

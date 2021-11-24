@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
 import { KeymapItem } from '../common';

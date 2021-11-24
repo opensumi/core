@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
 import { ThemeType, IIconService, IconType } from '@opensumi/ide-theme';
 

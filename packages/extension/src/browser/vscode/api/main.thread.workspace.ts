@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { FileStat } from '@opensumi/ide-file-service';
 import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';

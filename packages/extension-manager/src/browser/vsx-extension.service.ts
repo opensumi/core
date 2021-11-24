@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@opensumi/ide-core-browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';

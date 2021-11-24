@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
 import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@opensumi/ide-editor';

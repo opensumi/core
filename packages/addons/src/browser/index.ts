@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { FileSearchContribution } from './file-search.contribution';
 import { StatusBarContribution } from './status-bar-contribution';

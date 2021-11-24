@@ -1,7 +1,7 @@
 import { IWebview, IWebviewContentOptions } from './types';
 import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@opensumi/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { WebviewScheme } from '../common';
 
 @Injectable({multiple: true})

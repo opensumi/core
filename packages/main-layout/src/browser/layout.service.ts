@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { WithEventBus, IDisposable, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@opensumi/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
 import { TabBarHandler } from './tabbar-handler';

@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService, IReporter, REPORT_NAME } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';

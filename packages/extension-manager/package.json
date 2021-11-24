@@ -19,7 +19,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@opensumi/common-di": "^1.0.0",
+    "@opensumi/di": "^1.0.0",
     "@opensumi/ide-components": "2.12.0",
     "@opensumi/ide-core-common": "2.12.0",
     "@opensumi/ide-core-node": "2.12.0",

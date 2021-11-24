@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { IFileServiceClient, IBrowserFileSystemRegistry, IDiskFileProvider, IShadowFileProvider, DiskFileServicePath } from '../common/index';
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from './file-service-client';
 import { BrowserModule } from '@opensumi/ide-core-browser';

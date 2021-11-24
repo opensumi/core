@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import os from 'os';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { mockExtensionProps } from '../../__mocks__/extensions';

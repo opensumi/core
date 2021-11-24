@@ -32,7 +32,7 @@ import {
   FileAccess,
   FileSystemProviderCapabilities,
 } from '../common/';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import fileType from 'file-type';
 import { ParsedPattern, parse } from '@opensumi/ide-core-common/lib/utils/glob';

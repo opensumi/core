@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import path from 'path';
 import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
 import os from 'os';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import { Disposable } from '@opensumi/ide-core-browser';

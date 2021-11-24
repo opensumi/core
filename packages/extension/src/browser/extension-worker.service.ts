@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';

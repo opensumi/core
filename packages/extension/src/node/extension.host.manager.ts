@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { MaybePromise, Event, findFreePort } from '@opensumi/ide-core-common';
 import { IExtensionHostManager, Output, OutputType } from '../common';
 import assert from 'assert';

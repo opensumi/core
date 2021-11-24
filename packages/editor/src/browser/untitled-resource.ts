@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@opensumi/ide-core-browser';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';

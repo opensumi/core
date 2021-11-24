@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { OUTLINE_COMMANDS, Domain, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
 import { OutlinePanel } from './outline';
 import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';

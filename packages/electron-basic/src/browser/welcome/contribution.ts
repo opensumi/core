@@ -2,7 +2,7 @@ import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from
 import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { ResourceService, IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorWelcomeComponent } from './welcome';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWelcomeMetaData } from './common';
 

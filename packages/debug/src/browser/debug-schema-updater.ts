@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { deepClone, IJSONSchema, IJSONSchemaRegistry } from '@opensumi/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { DebugConfigurationManager } from './debug-configuration-manager';

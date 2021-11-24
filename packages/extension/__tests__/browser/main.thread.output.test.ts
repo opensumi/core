@@ -1,5 +1,5 @@
 import { Emitter } from '@opensumi/ide-core-common';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';

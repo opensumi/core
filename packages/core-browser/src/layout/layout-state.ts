@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { StorageProvider, IStorage, STORAGE_NAMESPACE, DisposableCollection, ILogger } from '@opensumi/ide-core-common';
 import debounce = require('lodash.debounce');
 import { PreferenceService } from '../preferences';

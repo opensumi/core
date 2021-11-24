@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IThemeColor } from '@opensumi/ide-core-common';
-import { Injectable, Autowired, Optional } from '@opensumi/common-di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { CommandService, Disposable, IAccessibilityInformation } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';

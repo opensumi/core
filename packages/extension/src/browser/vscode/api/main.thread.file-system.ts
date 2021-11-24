@@ -1,6 +1,6 @@
 import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@opensumi/ide-core-common';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient, FileType, FileOperationError, FileOperationResult, FileSystemProvider, IBrowserFileSystemRegistry } from '@opensumi/ide-file-service/lib/common';

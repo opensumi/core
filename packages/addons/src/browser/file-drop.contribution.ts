@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import { IFileDropFrontendService, IFileDropFrontendServiceToken } from '../common';
 import { OnEvent, FileTreeDropEvent, WithEventBus } from '@opensumi/ide-core-common';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';
 import { IDocPersistentCacheProvider, IDocStatus } from '../../common/doc-cache';
 

@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@opensumi/ide-core-browser';
 import { Domain, localize, URI } from '@opensumi/ide-core-common';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';

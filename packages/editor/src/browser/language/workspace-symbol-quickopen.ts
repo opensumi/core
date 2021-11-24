@@ -1,5 +1,5 @@
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon, getIcon } from '@opensumi/ide-core-browser';
 import { WorkspaceSymbolProvider, ILanguageService, WorkspaceSymbolParams, WorkbenchEditorService, EditorGroupSplitAction } from '../../common';
 import type { SymbolInformation, Range } from 'vscode-languageserver-types';

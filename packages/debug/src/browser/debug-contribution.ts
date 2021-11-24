@@ -7,7 +7,7 @@ import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugCallStackView } from './view/frames/debug-call-stack.view';
 import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';

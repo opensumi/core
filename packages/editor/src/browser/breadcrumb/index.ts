@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
 import { IDisposable, URI, addElement, MaybeNull, Emitter } from '@opensumi/ide-core-browser';
 import { DefaultBreadCrumbProvider } from './default';

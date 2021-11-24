@@ -5,7 +5,7 @@ import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core
 import { PlainWebview } from '@opensumi/ide-webview';
 import { ToolBarPosition } from '@opensumi/ide-toolbar';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 

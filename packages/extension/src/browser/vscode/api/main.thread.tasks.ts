@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   IMainThreadTasks, IExtHostTasks, RunOptionsDTO, TaskPresentationOptionsDTO, TaskDefinitionDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecution2DTO, CustomExecutionDTO,

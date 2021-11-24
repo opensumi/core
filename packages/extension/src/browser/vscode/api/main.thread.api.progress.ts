@@ -1,6 +1,6 @@
 import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/progress';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Autowired, Injectable, Optinal } from '@opensumi/common-di';
+import { Autowired, Injectable, Optinal } from '@opensumi/di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@opensumi/ide-core-common';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';

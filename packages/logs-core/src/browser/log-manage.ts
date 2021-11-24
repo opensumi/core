@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
 import { LogServiceClient } from './log.service';
 import {

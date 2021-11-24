@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, DisposableCollection } from '@opensumi/ide-core-browser';
 import { PreferenceScope, PreferenceProvider } from '@opensumi/ide-core-browser/lib/preferences';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

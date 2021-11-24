@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions } from '../../../common/vscode';
-import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';
 import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 

@@ -6,7 +6,7 @@ import { MonacoService, Emitter, URI } from '@opensumi/ide-core-browser';
 import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { EditorCollectionService, EditorType } from '@opensumi/ide-editor';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
 import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';

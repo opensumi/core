@@ -2,7 +2,7 @@ import http from 'http';
 import net from 'net';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@opensumi/ide-connection';
-import { Injector, ClassCreator, FactoryCreator } from '@opensumi/common-di';
+import { Injector, ClassCreator, FactoryCreator } from '@opensumi/di';
 import ws from 'ws';
 
 import {

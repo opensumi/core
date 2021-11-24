@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 
 import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, isEmptyObject, LRUMap, deepClone } from '@opensumi/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';

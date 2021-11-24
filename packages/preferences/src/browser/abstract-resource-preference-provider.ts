@@ -1,5 +1,5 @@
 import * as jsoncparser from 'jsonc-parser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler, FileChange } from '@opensumi/ide-core-browser';
 import {
   PreferenceProvider,

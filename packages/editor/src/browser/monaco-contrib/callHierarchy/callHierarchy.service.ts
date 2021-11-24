@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken, IDisposable, IPosition, isNonEmptyArray, onUnexpectedExternalError, URI, Uri } from '@opensumi/ide-core-common';
 import { CallHierarchyItem, CallHierarchyProvider, CallHierarchyProviderRegistry, ICallHierarchyService, IncomingCall, OutgoingCall } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';

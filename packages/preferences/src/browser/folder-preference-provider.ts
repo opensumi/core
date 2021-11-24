@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI, PreferenceScope } from '@opensumi/ide-core-browser';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { FileStat } from '@opensumi/ide-file-service';

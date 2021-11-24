@@ -3,7 +3,7 @@ import { URI, Emitter, Event, FileUri, IDisposable } from '@opensumi/ide-core-co
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
 import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider, TextDocumentContentChangeEvent } from '../files';
 import { IFileServiceWatcher } from '../watcher';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable()

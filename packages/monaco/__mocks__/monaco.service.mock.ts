@@ -1,6 +1,6 @@
 import { Deferred, Emitter } from '@opensumi/ide-core-common';
 import { createMockedMonaco } from './monaco';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { MonacoService, ServiceNames } from '../src/common';
 
 @Injectable()

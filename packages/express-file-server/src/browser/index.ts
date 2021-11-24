@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { ExpressFileServerContribution } from './file-server.contribution';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 

@@ -1,7 +1,7 @@
 import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
 
 import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';

@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
 import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@opensumi/ide-core-common/lib/utils/strings';
 import { format } from '@opensumi/ide-core-common/lib/utils/strings';

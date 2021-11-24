@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-browser';
 import { DebugConsoleFilterModel } from './debug-console-filter.model';
 import * as strings from '@opensumi/ide-core-common';

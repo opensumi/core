@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IMenuRegistry, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize, formatLocalize, isUndefined } from '@opensumi/ide-core-common';
 import { IIconService, IconType } from '@opensumi/ide-theme';

@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@opensumi/di';
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle, IToolbarPopoverRegistry } from '../types';
 import { useInjectable } from '../../react-hooks';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';

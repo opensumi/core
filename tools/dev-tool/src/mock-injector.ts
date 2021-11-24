@@ -1,4 +1,4 @@
-import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@opensumi/common-di';
+import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@opensumi/di';
 import { CommandRegistry } from '@opensumi/ide-core-common';
 
 export class MockInjector extends Injector {

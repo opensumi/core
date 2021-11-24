@@ -1,6 +1,6 @@
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs, ElectronURLHandlerRegistry } from './types';
 import { CodeWindow } from './window';
-import { Injector, ConstructorOf } from '@opensumi/common-di';
+import { Injector, ConstructorOf } from '@opensumi/di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI, ExtensionCandidate, IEventBus, EventBusImpl, asExtensionCandidate } from '@opensumi/ide-core-common';

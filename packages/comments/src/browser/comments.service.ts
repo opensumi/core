@@ -6,7 +6,7 @@ import {
   Injector,
   Injectable,
   Autowired,
-} from '@opensumi/common-di';
+} from '@opensumi/di';
 import {
   Disposable,
   IRange,

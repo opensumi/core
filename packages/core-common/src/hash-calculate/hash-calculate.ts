@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { lockedCreate } from './lockedCreate';
 import { Mutex } from './mutex';
 

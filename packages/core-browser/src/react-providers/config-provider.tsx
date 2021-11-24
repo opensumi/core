@@ -1,5 +1,5 @@
 import React from 'react';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { ExtensionCandidate, ExtensionConnectOption } from '@opensumi/ide-core-common';
 import { IPreferences, LayoutConfig } from '../bootstrap';
 

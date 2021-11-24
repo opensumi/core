@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Injector, Optional } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, Optional } from '@opensumi/di';
 import { ILogger, CommandRegistry, IExtensionInfo } from '@opensumi/ide-core-common';
 import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { IExtension } from '../../common';

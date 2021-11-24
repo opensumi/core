@@ -1,4 +1,4 @@
-import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable, CancellationToken } from '@opensumi/ide-core-common';
 import { Sequence, ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@opensumi/ide-connection';

@@ -1,6 +1,6 @@
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';

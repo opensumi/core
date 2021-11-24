@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, ContributionProvider, Command, CommandContribution, CommandRegistry, Domain, VariableRegistry, VariableContribution, localize } from '@opensumi/ide-core-browser';
 import { VariableQuickOpenService } from './variable-quick-open.service';
 

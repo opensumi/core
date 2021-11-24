@@ -1,5 +1,5 @@
 import path from 'path';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IExtensionProps, URI } from '@opensumi/ide-core-common';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';

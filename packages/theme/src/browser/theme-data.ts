@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IRawThemeSetting } from 'vscode-textmate';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {

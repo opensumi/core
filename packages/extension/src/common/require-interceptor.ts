@@ -1,4 +1,4 @@
-import { Injectable, Injector, Autowired } from '@opensumi/common-di';
+import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Disposable, IDisposable, ILogger } from '@opensumi/ide-core-common';
 import { IExtension } from '..';

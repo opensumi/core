@@ -1,5 +1,5 @@
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';

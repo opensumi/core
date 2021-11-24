@@ -1,6 +1,6 @@
 import { IResourceProvider, IResource } from '@opensumi/ide-editor/lib/browser';
 import { URI, localize } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 

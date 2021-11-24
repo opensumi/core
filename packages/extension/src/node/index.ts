@@ -1,4 +1,4 @@
-import { Provider, Injectable, Autowired } from '@opensumi/common-di';
+import { Provider, Injectable, Autowired } from '@opensumi/di';
 import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@opensumi/ide-core-node';
 import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService, ExtensionHostProfilerServicePath, ExtensionHostProfilerServiceToken, IExtensionHostManager } from '../common';
 import { ExtensionNodeServiceImpl } from './extension.service';

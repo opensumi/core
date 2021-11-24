@@ -1,5 +1,5 @@
 import { CancellationToken } from '@opensumi/ide-core-common';
-import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import {
   Event,

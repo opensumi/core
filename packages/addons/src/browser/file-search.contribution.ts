@@ -4,7 +4,7 @@ import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/fi
  * 用于快速打开，检索文件
  */
 import fuzzy from 'fuzzy';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   CommandContribution,
   CommandRegistry,

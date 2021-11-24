@@ -1,5 +1,5 @@
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource, Deferred, CancellationToken } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';

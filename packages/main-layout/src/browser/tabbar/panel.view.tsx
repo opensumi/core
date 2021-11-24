@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
-import { INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';

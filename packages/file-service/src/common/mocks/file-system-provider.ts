@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IDiskFileProvider, FileType } from '../';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 import { FileChangeEvent } from '..';

@@ -1,5 +1,5 @@
 import { CommentThread, CommentInput, CommentReaction as CoreCommentReaction, CommentMode as CoreCommentMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { UriComponents, CommentThreadCollapsibleState, Comment as CoreComment, CommentThreadChanges } from '../../../common/vscode/models';
 import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable, WithEventBus, OnEvent } from '@opensumi/ide-core-common';
 import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';

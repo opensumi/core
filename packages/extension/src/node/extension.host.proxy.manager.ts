@@ -1,4 +1,4 @@
-import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { IExtensionHostManager, Output, EXT_HOST_PROXY_PROTOCOL, EXT_SERVER_IDENTIFIER, IExtHostProxyRPCService, EXT_HOST_PROXY_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common';
 import net from 'net';

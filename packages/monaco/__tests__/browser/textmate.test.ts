@@ -4,7 +4,7 @@ import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IEventBus, EventBusImpl, URI } from '@opensumi/ide-core-browser';
 import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';

@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from 'electron';
-import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/common-di';
+import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
 import { Disposable, Domain } from '@opensumi/ide-core-common';
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, ElectronURLHandlerRegistry } from '../types';
 import { IElectronURLService, IURLHandler } from '@opensumi/ide-core-common/lib/electron';

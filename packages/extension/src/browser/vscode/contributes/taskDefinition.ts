@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
 import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@opensumi/ide-core-browser';
 import { VSCodeContributePoint, Contributes } from '../../../common';

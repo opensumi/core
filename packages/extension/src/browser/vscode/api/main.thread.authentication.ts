@@ -1,5 +1,5 @@
 import { IMainThreadAuthentication, ExtHostAPIIdentifier, IExtHostAuthentication } from '../../../common/vscode';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, QuickPickService, localize, formatLocalize, ILogger } from '@opensumi/ide-core-browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';

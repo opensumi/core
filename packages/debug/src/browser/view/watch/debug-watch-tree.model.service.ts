@@ -1,7 +1,7 @@
 import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@opensumi/ide-components';
 import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey, IReporterService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';

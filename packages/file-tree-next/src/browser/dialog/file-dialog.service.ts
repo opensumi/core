@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Optional } from '@opensumi/common-di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import {
   URI,
 } from '@opensumi/ide-core-browser';

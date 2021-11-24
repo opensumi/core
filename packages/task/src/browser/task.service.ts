@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@opensumi/ide-core-common';
 import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString, Mode } from '@opensumi/ide-core-browser';
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';

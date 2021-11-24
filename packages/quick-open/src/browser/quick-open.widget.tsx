@@ -1,5 +1,5 @@
 import { observable, computed, action } from 'mobx';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IAutoFocus, IQuickOpenCallbacks, IQuickOpenModel, IQuickOpenWidget, QuickOpenInputOptions } from './quick-open.type';
 import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';

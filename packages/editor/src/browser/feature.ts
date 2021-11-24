@@ -1,5 +1,5 @@
 import { IEditorFeatureRegistry, IEditorFeatureContribution } from './types';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IDisposable, addElement, ILogger, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { IEditor } from '../common';
 

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, MarkerManager, MarkerSeverity, IMarker } from '@opensumi/ide-core-browser';
 import { IThemeService, listErrorForeground, listWarningForeground } from '@opensumi/ide-theme';
 import { IOutlineMarker } from '../../common';

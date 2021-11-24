@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { DisposableCollection } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';

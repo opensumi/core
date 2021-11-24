@@ -4,7 +4,7 @@ import { Domain, URI, CommandContribution, CommandRegistry } from '@opensumi/ide
 import { isElectronRenderer, localize } from '@opensumi/ide-core-common';
 import { ResourceService, IResource } from '@opensumi/ide-editor';
 import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData, isWebview } from './types';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { WebviewServiceImpl } from './webview.service';
 
 const WEBVIEW_DEVTOOLS_COMMAND = {

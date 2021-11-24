@@ -1,4 +1,4 @@
-import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { ClientAppContribution } from '../common/common.define';
 import { Domain, ContributionProvider, isElectronRenderer } from '@opensumi/ide-core-common';
 import { OpenerContribution, IOpenerService } from '.';

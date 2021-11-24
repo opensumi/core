@@ -1,5 +1,5 @@
 import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
 import { Path } from '@opensumi/ide-core-common/lib/path';

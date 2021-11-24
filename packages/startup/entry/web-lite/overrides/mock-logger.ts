@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { LogLevel, SupportLogNamespace } from '@opensumi/ide-core-browser';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 

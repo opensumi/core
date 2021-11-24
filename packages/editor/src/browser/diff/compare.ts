@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ICompareService, CompareResult } from '../types';
 import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS, CommandContribution, CommandRegistry } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';

@@ -1,4 +1,4 @@
-import { Provider, Injectable, Injector } from '@opensumi/common-di';
+import { Provider, Injectable, Injector } from '@opensumi/di';
 import { MainLayoutModuleContribution } from './main-layout.contribution';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '../common';

@@ -6,7 +6,7 @@ import { IThemeService } from '../../';
 import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
 import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { Color } from '@opensumi/ide-theme/lib/common';

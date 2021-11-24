@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 

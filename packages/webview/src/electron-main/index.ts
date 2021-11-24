@@ -3,7 +3,7 @@ import { Domain } from '@opensumi/ide-core-common';
 import { protocol } from 'electron';
 import { ProtocolElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/services/protocol';
 import { WebviewScheme } from '../common';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 
 ProtocolElectronMainContribution.schemePrivileges.push(
   {

@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize, IJSONSchemaMap } from '@opensumi/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';

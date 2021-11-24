@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@opensumi/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IMarkerService, MARKER_CONTAINER_ID } from '../common';

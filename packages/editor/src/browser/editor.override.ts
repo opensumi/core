@@ -10,7 +10,7 @@ import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
 import { URI, IRange } from '@opensumi/ide-core-common';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { BrowserCodeEditor } from './editor-collection.service';
 
 @Injectable()

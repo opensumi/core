@@ -1,6 +1,6 @@
 
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';

@@ -1,7 +1,7 @@
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { isEqual } from 'lodash';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@opensumi/ide-components';
 import { Emitter, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';

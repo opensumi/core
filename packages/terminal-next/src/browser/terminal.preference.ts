@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 import { ITerminalPreference, IPreferenceValue, DefaultOptions, OptionTypeName, DefaultOptionValue } from '../common/preference';

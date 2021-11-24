@@ -1,6 +1,6 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
 import { replaceLocalizePlaceholder, localize } from '@opensumi/ide-core-browser';
 
