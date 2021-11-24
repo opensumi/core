@@ -33,8 +33,8 @@ export interface IExtHostDebug {
   $sessionDidDestroy(sessionId: string): void;
   $sessionDidChange(sessionId: string | undefined): void;
   $provideDebugConfigurations(debugType: string, workspaceFolder: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration[]>;
-  $resolveDebugConfigurations(debugConfiguration: vscode.DebugConfiguration, workspaceFolder: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined>;
-  $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: vscode.DebugConfiguration, workspaceFolder: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined>;
+  $resolveDebugConfigurations(debugConfiguration: vscode.DebugConfiguration, workspaceFolder: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null>;
+  $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: vscode.DebugConfiguration, workspaceFolder: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null>;
   $getSupportedLanguages(debugType: string): Promise<string[]>;
   $getSchemaAttributes(debugType: string): Promise<IJSONSchema[]>;
   $getConfigurationSnippets(debugType: string): Promise<IJSONSchemaSnippet[]>;

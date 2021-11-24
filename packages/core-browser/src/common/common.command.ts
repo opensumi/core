@@ -259,6 +259,10 @@ export namespace COMMON_COMMANDS {
     id: 'core.keymaps.open',
     label: '%common.keymaps.open%',
   };
+
+  export const OPEN_LAUNCH_CONFIGURATION: Command = {
+    id: 'core.launchConfiguration.open',
+  };
 }
 
 export namespace EDITOR_COMMANDS {

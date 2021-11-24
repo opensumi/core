@@ -1,6 +1,6 @@
 import { CONTEXT_DEBUGGERS_AVAILABLE, CONTEXT_IN_DEBUG_MODE, CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../common/constants';
 import { URI } from '@ide-framework/ide-core-common';
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, IJSONSchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration, ComponentContribution, ComponentRegistry, KeybindingRegistry, getIcon, PreferenceService, IPreferenceSettingsService } from '@ide-framework/ide-core-browser';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, IJSONSchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration, ComponentContribution, ComponentRegistry, KeybindingRegistry, getIcon, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS } from '@ide-framework/ide-core-browser';
 import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
@@ -397,53 +397,58 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION, {
+      execute: () => {
+        this.debugConfigurationService.openConfiguration();
+      },
+    });
     commands.registerCommand(DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS, {
-      execute: (data) => {
+      execute: () => {
         this.debugBreakpointsService.removeAllBreakpoints();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.START, {
-      execute: (data) => {
+      execute: () => {
         this.debugConfigurationService.start();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.STOP, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doStop();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.NEXT, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doStepIn();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.PREV, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doStepOut();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.CONTINUE, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doContinue();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.PAUSE, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doPause();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.OVER, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doStepOver();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.RESTART, {
-      execute: (data) => {
+      execute: () => {
         this.debugToolbarService.doRestart();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
-      execute: (data) => {
+      execute: () => {
         this.debugBreakpointsService.toggleBreakpoints();
       },
     });

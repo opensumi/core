@@ -22,31 +22,31 @@ export class ExtensionDebugAdapterContribution {
   }
 
   async getSchemaAttributes(): Promise<IJSONSchema[]> {
-    return this.extDebug.$getSchemaAttributes(this.type);
+    return await this.extDebug.$getSchemaAttributes(this.type);
   }
 
   async getConfigurationSnippets(): Promise<IJSONSchemaSnippet[]> {
-    return this.extDebug.$getConfigurationSnippets(this.type);
+    return await this.extDebug.$getConfigurationSnippets(this.type);
   }
 
   async provideDebugConfigurations(workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]> {
-    return this.extDebug.$provideDebugConfigurations(this.type, workspaceFolderUri);
+    return await this.extDebug.$provideDebugConfigurations(this.type, workspaceFolderUri);
   }
 
-  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined> {
-    return this.extDebug.$resolveDebugConfigurations(config, workspaceFolderUri);
+  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+    return await this.extDebug.$resolveDebugConfigurations(config, workspaceFolderUri);
   }
 
-  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined> {
-    return this.extDebug.$resolveDebugConfigurationWithSubstitutedVariables(config, workspaceFolderUri);
+  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+    return await this.extDebug.$resolveDebugConfigurationWithSubstitutedVariables(config, workspaceFolderUri);
   }
 
   async createDebugSession(config: DebugConfiguration): Promise<string> {
     await this.activationEventService.fireEvent('onDebugAdapterProtocolTracker', config.type);
-    return this.extDebug.$createDebugSession(config);
+    return await this.extDebug.$createDebugSession(config);
   }
 
   async terminateDebugSession(sessionId: string): Promise<void> {
-    this.extDebug.$terminateDebugSession(sessionId);
+    await this.extDebug.$terminateDebugSession(sessionId);
   }
 }

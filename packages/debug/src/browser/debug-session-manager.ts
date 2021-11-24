@@ -17,7 +17,7 @@
 
 import { Injectable, Autowired } from '@ide-framework/common-di';
 import { DebugSession } from './debug-session';
-import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ide-framework/ide-core-browser';
+import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid, localize, COMMON_COMMANDS, CommandService } from '@ide-framework/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -135,6 +135,9 @@ export class DebugSessionManager implements IDebugSessionManager {
 
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
   constructor() {
     this.init();
@@ -273,7 +276,9 @@ export class DebugSessionManager implements IDebugSessionManager {
       const timeStart = this.reportTime(DEBUG_REPORT_NAME.DEBUG_SESSION_START_TIME, extra);
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
-      if (resolved.configuration.preLaunchTask) {
+      if (!resolved) {
+        return;
+      } else if (resolved.configuration.preLaunchTask) {
         this.debugProgressService.onDebugServiceStateChange(DebugState.Initializing);
         const workspaceFolderUri = Uri.parse(resolved.workspaceFolderUri!);
         const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
@@ -296,17 +301,17 @@ export class DebugSessionManager implements IDebugSessionManager {
         sessionId,
       });
       if (!sessionId) {
-        this.messageService.error(`The debug session type "${resolved.configuration.type}" is not supported.`);
+        this.messageService.error(formatLocalize('debug.launch.typeNotSupported', resolved.configuration.type));
         return;
       }
       return this.doStart(sessionId, resolved, extra);
     } catch (e) {
       if (DebugError.NotFound.is(e)) {
-        this.messageService.error(`The debug session type "${e.data.type}" is not supported.`);
+        this.messageService.error(formatLocalize('debug.launch.typeNotSupported', e.data.type));
         return;
       }
 
-      this.messageService.error('There was an error starting the debug session, check the logs for more details.');
+      this.messageService.error(localize('debug.launch.catchError'));
       throw e;
     }
   }
@@ -316,14 +321,30 @@ export class DebugSessionManager implements IDebugSessionManager {
   }
 
   protected configurationIds = new Map<string, number>();
-  async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions> {
+  async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions | undefined> {
     if (InternalDebugSessionOptions.is(options)) {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl, compact } = options;
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     let configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
+    if (!configuration) {
+      // 当返回值为 `undefined` 或 `null` 时，中断调试
+      if (configuration === null) {
+        // 当返回值为 `null` 时，打开配置文件
+        this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
+      }
+      return ;
+    }
     configuration = await this.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
+    if (!configuration) {
+      // 当返回值为 `undefined` 或 `null` 时，中断调试
+      if (configuration === null) {
+        // 当返回值为 `null` 时，打开配置文件
+        this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
+      }
+      return ;
+    }
     const key = configuration.name + workspaceFolderUri;
     const id = this.configurationIds.has(key) ? this.configurationIds.get(key)! + 1 : 0;
     this.configurationIds.set(key, id);
@@ -339,12 +360,12 @@ export class DebugSessionManager implements IDebugSessionManager {
     };
   }
 
-  async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
+  async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
     await this.fireWillResolveDebugConfiguration(configuration.type);
     return this.debug.resolveDebugConfiguration(configuration, workspaceFolderUri);
   }
 
-  protected async resolveDebugConfigurationWithSubstitutedVariables(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
+  protected async resolveDebugConfigurationWithSubstitutedVariables(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
     return this.debug.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
   }
 

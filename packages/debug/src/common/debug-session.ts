@@ -25,8 +25,8 @@ export const IDebugSession = Symbol('DebugSession');
 export const IDebugSessionManager = Symbol('DebugSessionManager');
 export interface IDebugSessionManager {
   fireWillStartDebugSession(): Promise<void>;
-  resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions>;
-  resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration>;
+  resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions | undefined>;
+  resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null>;
   fireWillResolveDebugConfiguration(debugType: string): Promise<void>;
   report(name: string, msg: string | undefined, extra?: any): void;
   reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number;

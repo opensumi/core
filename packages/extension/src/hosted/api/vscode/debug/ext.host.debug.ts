@@ -341,7 +341,6 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   async $provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration[]> {
     let result: DebugConfiguration[] = [];
-
     const providers = this.configurationProviders.get(debugType);
     if (providers) {
       for (const provider of providers) {
@@ -350,57 +349,40 @@ export class ExtHostDebug implements IExtHostDebugService {
         }
       }
     }
-
     return result;
   }
 
-  async $resolveDebugConfigurations(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined> {
-    let current = debugConfiguration;
-
-    for (const providers of [this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]) {
-      if (providers) {
-        for (const provider of providers) {
-          if (provider.resolveDebugConfiguration) {
-            try {
-              const next = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current, token);
-              if (next) {
-                current = next;
-              } else {
-                return current;
-              }
-            } catch (e) {
-              // console.error(e);
-            }
-          }
+  async $resolveDebugConfigurations(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null> {
+    const current: DebugConfiguration | undefined | null = debugConfiguration;
+    const providers = this.configurationProviders.get(debugConfiguration.type);
+    if (providers) {
+      for (const provider of providers) {
+        if (provider.resolveDebugConfiguration) {
+          const next = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current!, token);
+          // 对齐 VS Code 实现，当 resolveDebugConfiguration 返回值为 `undefined` 时，中断调试进程
+          // 当返回值是 `null` 时，中断调试进程并打开 `launch.json` 文件
+          // ref: https://code.visualstudio.com/api/references/vscode-api#DebugConfigurationProvider
+          return next;
         }
       }
     }
-
     return current;
   }
 
-  async $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken) {
-    let current = debugConfiguration;
-
-    for (const providers of [this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]) {
-      if (providers) {
-        for (const provider of providers) {
-          if (provider.resolveDebugConfigurationWithSubstitutedVariables) {
-            try {
-              const next = await provider.resolveDebugConfigurationWithSubstitutedVariables(this.toWorkspaceFolder(workspaceFolderUri), current, token);
-              if (next) {
-                current = next;
-              } else {
-                return current;
-              }
-            } catch (e) {
-              // console.error(e);
-            }
-          }
+  async $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null> {
+    const current: DebugConfiguration | undefined = debugConfiguration;
+    const providers = this.configurationProviders.get(debugConfiguration.type);
+    if (providers) {
+      for (const provider of providers) {
+        if (provider.resolveDebugConfigurationWithSubstitutedVariables) {
+          const next = await provider.resolveDebugConfigurationWithSubstitutedVariables(this.toWorkspaceFolder(workspaceFolderUri), current, token);
+          // 对齐 VS Code 实现，当 resolveDebugConfigurationWithSubstitutedVariables 返回值为 `undefined` 时，中断调试进程
+          // 当返回值是 `null` 时，中断调试进程并打开 `launch.json` 文件
+          // ref: https://code.visualstudio.com/api/references/vscode-api#DebugConfigurationProvider
+          return next;
         }
       }
     }
-
     return current;
   }
 
