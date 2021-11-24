@@ -1,4 +1,4 @@
-import { URI } from '@ide-framework/ide-core-browser';
+import { URI } from '@opensumi/ide-core-browser';
 
 export interface VariableResolveOptions {
   context?: URI;

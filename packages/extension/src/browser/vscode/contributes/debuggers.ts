@@ -1,9 +1,9 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { replaceLocalizePlaceholder } from '@ide-framework/ide-core-browser';
-import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize, IJSONSchemaMap } from '@ide-framework/ide-core-common';
-import { IDebugService, IDebuggerContribution } from '@ide-framework/ide-debug';
-import { DebugConfigurationManager, DebugSchemaUpdater } from '@ide-framework/ide-debug/lib/browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
+import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize, IJSONSchemaMap } from '@opensumi/ide-core-common';
+import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
+import { DebugConfigurationManager, DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser';
 
 const INTERNAL_CONSOLE_OPTIONS_SCHEMA = {
   enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart'],

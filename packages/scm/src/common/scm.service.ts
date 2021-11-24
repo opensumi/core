@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { Event, Emitter, equals, getDebugLogger } from '@ide-framework/ide-core-common';
-import { IDisposable, toDisposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Injectable } from '@opensumi/common-di';
+import { Event, Emitter, equals, getDebugLogger } from '@opensumi/ide-core-common';
+import { IDisposable, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
 import { observable, computed, action } from 'mobx';
 

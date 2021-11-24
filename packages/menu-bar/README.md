@@ -1,1 +1,1 @@
-# @ide-framework/ide-menu-bar
+# @opensumi/ide-menu-bar

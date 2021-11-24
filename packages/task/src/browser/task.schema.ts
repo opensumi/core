@@ -1,4 +1,4 @@
-import { IJSONSchema, localize } from '@ide-framework/ide-core-browser';
+import { IJSONSchema, localize } from '@opensumi/ide-core-browser';
 export const taskSchemaUri = 'vscode://schemas/task';
 
 export const schema: IJSONSchema = {

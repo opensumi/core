@@ -4,11 +4,11 @@ import {
   WSChannelHandler,
   createSocketConnection,
   RPCMessageConnection,
- } from '@ide-framework/ide-connection';
-import { createWebSocketConnection } from '@ide-framework/ide-connection/lib/common/message';
-import { Injector, Provider } from '@ide-framework/common-di';
-import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@ide-framework/ide-core-common';
-import { BackService } from '@ide-framework/ide-core-common/lib/module';
+ } from '@opensumi/ide-connection';
+import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
+import { Injector, Provider } from '@opensumi/common-di';
+import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@opensumi/ide-core-common';
+import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
 

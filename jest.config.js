@@ -43,8 +43,8 @@ module.exports = {
     '/packages/terminal-next/__tests__/browser/render.test.ts',
     // ci 环境可能无法正常创建 pty 后端，需要 mock 一下 service
     // '/packages/terminal-next/__tests__/browser/client.test.ts',
-    // componets下的 utils 均引用自 @ide-framework/ide-core-common 模块，无须重复测试
-    // 后续统一至 @ide-framework/ide-utils 模块
+    // componets下的 utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
+    // 后续统一至 @opensumi/ide-utils 模块
     '/packages/components/src/utils',
   ],
   modulePathIgnorePatterns: [
@@ -60,8 +60,8 @@ module.exports = {
     '/packages/status-bar/entry',
     '/packages/startup/entry',
     '/packages/quick-open/entry',
-    // componets下的 utils 均引用自 @ide-framework/ide-core-common 模块，无须重复测试
-    // 后续统一至 @ide-framework/ide-utils 模块
+    // componets下的 utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
+    // 后续统一至 @opensumi/ide-utils 模块
     '/packages/components/src/utils',
   ],
   testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],

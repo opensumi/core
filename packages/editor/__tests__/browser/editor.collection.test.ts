@@ -1,15 +1,15 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { monaco as monacoAPI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedMonacoService } from '@ide-framework/ide-monaco/__mocks__/monaco.service.mock';
-import { MonacoService, Emitter, URI } from '@ide-framework/ide-core-browser';
-import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ide-framework/ide-editor/lib/browser/editor-collection.service';
-import { EditorCollectionService, EditorType } from '@ide-framework/ide-editor';
+import { MockedMonacoService } from '@opensumi/ide-monaco/__mocks__/monaco.service.mock';
+import { MonacoService, Emitter, URI } from '@opensumi/ide-core-browser';
+import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { EditorCollectionService, EditorType } from '@opensumi/ide-editor';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { Injectable } from '@ide-framework/common-di';
-import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { EditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser/editor.decoration.service';
-import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { Injectable } from '@opensumi/common-di';
+import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
+import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 describe('editor collection service test', () => {
 

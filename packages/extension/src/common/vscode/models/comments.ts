@@ -1,9 +1,9 @@
-import { Event, IRange } from '@ide-framework/ide-core-common';
+import { Event, IRange } from '@opensumi/ide-core-common';
 import {
   CommentThread, CommentReaction, CommentingRanges,
   Comment, CommentThreadChangedEvent,  CommentInput,
   CommentMode, CommentThreadCollapsibleState,
-} from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { ICommand } from './command';
 

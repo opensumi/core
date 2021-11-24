@@ -1,10 +1,10 @@
 // tslint:disable:no-console
-import { Autowired } from '@ide-framework/common-di';
-import { Disposable, IEventBus } from '@ide-framework/ide-core-common';
-import { ClientAppContribution, IContextKey, IContextKeyService, CommandRegistry, CommandContribution, Domain, getIcon } from '@ide-framework/ide-core-browser';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { EditorGroupChangeEvent } from '@ide-framework/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { Autowired } from '@opensumi/common-di';
+import { Disposable, IEventBus } from '@opensumi/ide-core-common';
+import { ClientAppContribution, IContextKey, IContextKeyService, CommandRegistry, CommandContribution, Domain, getIcon } from '@opensumi/ide-core-browser';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { EditorGroupChangeEvent } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 class WebSCMCommands {
   static Edit = {

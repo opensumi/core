@@ -1,5 +1,5 @@
 // 输出所有 common 里面会有的内容
-export * from '@ide-framework/ide-core-common';
+export * from '@opensumi/ide-core-common';
 
 // 输出 node 中特有的内容
 export * from './node-module';

@@ -1,5 +1,5 @@
-import { IDiffComputationResult } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
-import { Uri } from '@ide-framework/ide-core-common';
+import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import { Uri } from '@opensumi/ide-core-common';
 
 import { createMockedMonacoEditorApi } from './editor';
 import { MockedMonacoUri } from './common/uri';

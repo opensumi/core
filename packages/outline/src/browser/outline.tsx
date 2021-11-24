@@ -1,8 +1,8 @@
 import React from 'react';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
-import { ViewState } from '@ide-framework/ide-core-browser';
-import { localize } from '@ide-framework/ide-core-browser';
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@ide-framework/ide-components';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { ViewState } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-browser';
+import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import styles from './outline.module.less';
 import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
 import { OutlineModelService } from './services/outline-model.service';

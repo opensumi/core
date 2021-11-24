@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/kaitian-cli-engine",
+  "name": "@opensumi/kaitian-cli-engine",
   "version": "2.11.2",
   "description": "Integration engine runtime for kaitian-cli and kaitian extension",
   "main": "",
@@ -25,14 +25,14 @@
     "watch:webview": "npm run build:webview -- --watch"
   },
   "dependencies": {
-    "@ide-framework/common-di": "^1.0.0",
-    "@ide-framework/ide-core-browser": "2.11.2",
-    "@ide-framework/ide-core-common": "2.11.2",
-    "@ide-framework/ide-core-node": "2.11.2",
-    "@ide-framework/ide-express-file-server": "2.11.2",
-    "@ide-framework/ide-i18n": "2.11.2",
-    "@ide-framework/ide-extension": "2.11.2",
-    "@ide-framework/ide-startup": "2.11.2",
+    "@opensumi/common-di": "^1.0.0",
+    "@opensumi/ide-core-browser": "2.11.2",
+    "@opensumi/ide-core-common": "2.11.2",
+    "@opensumi/ide-core-node": "2.11.2",
+    "@opensumi/ide-express-file-server": "2.11.2",
+    "@opensumi/ide-i18n": "2.11.2",
+    "@opensumi/ide-extension": "2.11.2",
+    "@opensumi/ide-startup": "2.11.2",
     "@koa/cors": "^3.0.0",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
@@ -89,5 +89,5 @@
     "node": ">=10.15.0"
   },
   "readme": "ERROR: No README data found!",
-  "_id": "@ide-framework/kaitian-cli-engine@2.11.1"
+  "_id": "@opensumi/kaitian-cli-engine@2.11.1"
 }

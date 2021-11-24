@@ -1,9 +1,9 @@
-import { parse, IExpression, ParsedExpression } from '@ide-framework/ide-core-common/lib/utils/glob';
-import { TernarySearchTree } from '@ide-framework/ide-core-common/lib/map';
-import { Schemas } from '@ide-framework/ide-core-common/lib/network';
-import { equalsIgnoreCase, URI, isWindows, isLinux } from '@ide-framework/ide-core-common';
-import * as paths from '@ide-framework/ide-core-common/lib/path';
-import * as extpath from '@ide-framework/ide-core-common/lib/utils/paths';
+import { parse, IExpression, ParsedExpression } from '@opensumi/ide-core-common/lib/utils/glob';
+import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
+import { Schemas } from '@opensumi/ide-core-common/lib/network';
+import { equalsIgnoreCase, URI, isWindows, isLinux } from '@opensumi/ide-core-common';
+import * as paths from '@opensumi/ide-core-common/lib/path';
+import * as extpath from '@opensumi/ide-core-common/lib/utils/paths';
 
 export class ResourceGlobMatcher {
 

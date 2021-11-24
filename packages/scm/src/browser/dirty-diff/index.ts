@@ -1,12 +1,12 @@
-import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { Event, IEventBus, CommandService, positionToRange } from '@ide-framework/ide-core-common';
-import { Disposable, DisposableStore, DisposableCollection } from '@ide-framework/ide-core-common/lib/disposable';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IEditorDocumentModel } from '@ide-framework/ide-editor/lib/browser';
-import { IMonacoImplEditor } from '@ide-framework/ide-editor/lib/browser/editor-collection.service';
+import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Event, IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
+import { Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-common/lib/disposable';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
+import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IDirtyDiffWorkbenchController } from '../../common';
 
 import { SCMPreferences } from '../scm-preference';

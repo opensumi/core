@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';
-import { IContextKeyService, IReporterService } from '@ide-framework/ide-core-browser';
-import { AbstractContextMenuService, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
 
 @Injectable()

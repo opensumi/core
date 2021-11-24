@@ -1,9 +1,9 @@
 import type vscode from 'vscode';
-import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IMainThreadMessage, IExtHostMessage, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { MessageType } from '@ide-framework/ide-core-common';
+import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { MessageType } from '@opensumi/ide-core-common';
 
 @Injectable({ multiple: true })
 export class MainThreadMessage implements IMainThreadMessage {

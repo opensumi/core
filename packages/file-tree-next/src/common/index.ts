@@ -1,6 +1,6 @@
-import { URI, BasicEvent, IDisposable } from '@ide-framework/ide-core-common';
-import { ITree, ITreeNode } from '@ide-framework/ide-components';
-import { FileStat } from '@ide-framework/ide-file-service';
+import { URI, BasicEvent, IDisposable } from '@opensumi/ide-core-common';
+import { ITree, ITreeNode } from '@opensumi/ide-components';
+import { FileStat } from '@opensumi/ide-file-service';
 import { Directory, File } from './file-tree-node.define';
 
 export const IFileTreeAPI = Symbol('IFileTreeAPI');

@@ -1,1 +1,1 @@
-# @ide-framework/ide-core
+# @opensumi/ide-core

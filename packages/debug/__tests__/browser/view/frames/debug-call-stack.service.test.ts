@@ -1,13 +1,13 @@
-import { ContextKeyService } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { IContextKeyServiceTarget } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { URI } from '@ide-framework/ide-core-common';
-import { Disposable } from '@ide-framework/ide-core-common';
-import { ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { DebugCallStackService } from '@ide-framework/ide-debug/lib/browser/view/frames/debug-call-stack.service';
-import { DebugStackFrame } from '@ide-framework/ide-debug/lib/browser';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { AbstractContextMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { URI } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
+import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { DebugCallStackService } from '@opensumi/ide-debug/lib/browser/view/frames/debug-call-stack.service';
+import { DebugStackFrame } from '@opensumi/ide-debug/lib/browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 
 describe('Debug Call Frames Service', () => {
   const mockInjector = createBrowserInjector([]);

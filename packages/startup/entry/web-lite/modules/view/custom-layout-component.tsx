@@ -1,6 +1,6 @@
 import React from 'react';
-import { SlotRenderer } from '@ide-framework/ide-core-browser';
-import { BoxPanel, SplitPanel } from '@ide-framework/ide-core-browser/lib/components';
+import { SlotRenderer } from '@opensumi/ide-core-browser';
+import { BoxPanel, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
 // 插槽的划分
 export function LayoutComponent() {

@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { URI } from '@ide-framework/ide-core-browser';
-import { PreferenceScope } from '@ide-framework/ide-core-browser/lib/preferences';
+import { Injectable } from '@opensumi/common-di';
+import { URI } from '@opensumi/ide-core-browser';
+import { PreferenceScope } from '@opensumi/ide-core-browser/lib/preferences';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { USER_STORAGE_SCHEME } from '../common';
 

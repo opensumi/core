@@ -1,4 +1,4 @@
-import { uuid } from '@ide-framework/ide-core-common';
+import { uuid } from '@opensumi/ide-core-common';
 
 let i = 0;
 function count() {

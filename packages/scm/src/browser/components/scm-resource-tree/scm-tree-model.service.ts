@@ -1,12 +1,12 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@ide-framework/ide-components';
-import { CommandService, CorePreferences, Deferred, DisposableCollection, Emitter, Event, URI, PreferenceService, EDITOR_COMMANDS, ILogger } from '@ide-framework/ide-core-browser';
-import { ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IIconService, IIconTheme } from '@ide-framework/ide-theme';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
+import { CommandService, CorePreferences, Deferred, DisposableCollection, Emitter, Event, URI, PreferenceService, EDITOR_COMMANDS, ILogger } from '@opensumi/ide-core-browser';
+import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IIconService, IIconTheme } from '@opensumi/ide-theme';
 import { observable } from 'mobx';
 import pSeries from 'p-series';
 
@@ -18,7 +18,7 @@ import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot, 
 import { SCMTreeService } from './scm-tree.service';
 
 import styles from './scm-tree-node.module.less';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

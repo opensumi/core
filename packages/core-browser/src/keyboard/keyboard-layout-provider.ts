@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@ide-framework/ide-core-common';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidationInput, IKeymapInfo, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, KeymapInfo, getKeyboardLayoutId } from '@ide-framework/ide-core-common/lib/keyboard';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@opensumi/ide-core-common';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidationInput, IKeymapInfo, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, KeymapInfo, getKeyboardLayoutId } from '@opensumi/ide-core-common/lib/keyboard';
 import { GlobalBrowserStorageService } from '../services';
 import { KeyCode } from './keys';
 import { KeyboardLayoutContribution, requireRegister } from './layouts/layout.contribution';

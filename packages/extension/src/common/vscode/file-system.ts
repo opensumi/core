@@ -1,6 +1,6 @@
-import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@ide-framework/ide-core-common';
-import { FileSystemProviderCapabilities, FileChange } from '@ide-framework/ide-file-service';
-import { FileOperation } from '@ide-framework/ide-workspace-edit';
+import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@opensumi/ide-core-common';
+import { FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
+import { FileOperation } from '@opensumi/ide-workspace-edit';
 
 import { Disposable } from './ext-types';
 import { UriComponents } from './models';

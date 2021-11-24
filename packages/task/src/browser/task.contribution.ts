@@ -1,5 +1,5 @@
-import { Autowired } from '@ide-framework/common-di';
-import { CommandContribution, CommandRegistry, Domain, Command, JsonSchemaContribution, IJSONSchemaRegistry } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { CommandContribution, CommandRegistry, Domain, Command, JsonSchemaContribution, IJSONSchemaRegistry } from '@opensumi/ide-core-browser';
 import { ITaskService } from '../common';
 import { schema, taskSchemaUri } from './task.schema';
 

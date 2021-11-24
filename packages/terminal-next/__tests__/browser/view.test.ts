@@ -1,4 +1,4 @@
-import { uuid } from '@ide-framework/ide-core-common';
+import { uuid } from '@opensumi/ide-core-common';
 import { injector } from './inject';
 import { ITerminalGroupViewService } from '../../src/common';
 import { Widget, WidgetGroup } from '../../src/browser/terminal.view';

@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { IDebugService, IDebugServiceContributionPoint } from '../common';
-import { IJSONSchema, Event, Emitter } from '@ide-framework/ide-core-browser';
+import { IJSONSchema, Event, Emitter } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class DebugService implements IDebugService {

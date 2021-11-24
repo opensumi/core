@@ -1,6 +1,6 @@
 import { mockService } from '../../../tools/dev-tool/src/mock-injector';
 import { EventEmitter } from 'events';
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 
 const mockedWindows = new Map<number, any>();
 

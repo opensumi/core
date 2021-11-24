@@ -1,7 +1,7 @@
-import { Injector } from '@ide-framework/common-di';
-import { Deferred, DefaultReporter, IReporter } from '@ide-framework/ide-core-common';
-import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
-import { ProxyIdentifier } from '@ide-framework/ide-connection';
+import { Injector } from '@opensumi/common-di';
+import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { ProxyIdentifier } from '@opensumi/ide-connection';
 import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
 import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
 import { initMockRPCProtocol } from '../../__mocks__/initRPCProtocol';

@@ -1,6 +1,6 @@
-import { Domain } from '@ide-framework/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-browser';
 import { BrowserEditorContribution } from '../types';
-import { Autowired } from '@ide-framework/common-di';
+import { Autowired } from '@opensumi/common-di';
 import { FileSystemResourceProvider } from './fs-resource';
 import { ResourceService } from '../../common';
 import { IEditorDocumentModelContentRegistry } from '../doc-model/types';

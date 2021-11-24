@@ -1,4 +1,4 @@
-import { Uri as URI } from '@ide-framework/ide-core-common';
+import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Location, Position, ReferenceContext } from '../../../../common/vscode/model.api';

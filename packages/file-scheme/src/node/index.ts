@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { NodeModule } from '@ide-framework/ide-core-node';
+import { Injectable } from '@opensumi/common-di';
+import { NodeModule } from '@opensumi/ide-core-node';
 
 import { IFileSchemeDocNodeService, FileSchemeDocNodeServicePath } from '../common';
 import { FileSchemeDocNodeServiceImpl } from './file-scheme-doc.service';

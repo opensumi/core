@@ -1,5 +1,5 @@
 import React from 'react';
-import { localize, useInjectable } from '@ide-framework/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { DebugAction } from '../../components';
 import { DebugToolbarService } from '../configuration/debug-toolbar.service';
 import styles from './debug-call-stack.module.less';

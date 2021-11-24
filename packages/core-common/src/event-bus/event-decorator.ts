@@ -4,7 +4,7 @@ import { IEventBus } from './event-bus-types';
 
 const EVENT_TOKEN = Symbol('EVENT_TOKEN');
 
-import { Autowired } from '@ide-framework/common-di'
+import { Autowired } from '@opensumi/common-di'
 import { Disposable } from '../disposable';
 
 export class WithEventBus extends Disposable {

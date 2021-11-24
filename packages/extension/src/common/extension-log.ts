@@ -1,4 +1,4 @@
-import { createMainContextProxyIdentifier } from '@ide-framework/ide-connection';
+import { createMainContextProxyIdentifier } from '@opensumi/ide-connection';
 
 export interface IMainThreadExtensionLog {
   $verbose(...args: any[]): Promise<void>;

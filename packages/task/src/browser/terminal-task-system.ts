@@ -1,13 +1,13 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, ProblemMatcher, isString, deepClone, removeAnsiEscapeCodes, Emitter, DisposableCollection } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, ProblemMatcher, isString, deepClone, removeAnsiEscapeCodes, Emitter, DisposableCollection } from '@opensumi/ide-core-common';
 
 import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';
 import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind, RuntimeType } from '../common/task';
-import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService } from '@ide-framework/ide-terminal-next/lib/common';
+import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService } from '@opensumi/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
-import { IVariableResolverService } from '@ide-framework/ide-variable';
+import { IVariableResolverService } from '@opensumi/ide-variable';
 import { ProblemCollector } from './problem-collector';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 
 enum TaskStatus {
   PROCESS_INIT,

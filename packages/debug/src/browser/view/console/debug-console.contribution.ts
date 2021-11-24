@@ -1,16 +1,16 @@
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
-import { Autowired } from '@ide-framework/common-di';
-import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
+import { Autowired } from '@opensumi/common-di';
+import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugConsoleView } from './debug-console.view';
 import { DebugConsoleInputDocumentProvider, DebugConsoleService } from './debug-console.service';
-import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { DebugConsoleFilterView } from './debug-console-filter.view';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
-import { IMenuRegistry, MenuContribution, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '../../tree';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';

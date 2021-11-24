@@ -1,4 +1,4 @@
-import { FileTreeDropEvent } from '@ide-framework/ide-core-common';
+import { FileTreeDropEvent } from '@opensumi/ide-core-common';
 
 export const FileDropServicePath = 'FileFropServicePath';
 

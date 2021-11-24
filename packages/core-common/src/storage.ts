@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { Event } from './event';
 import { IDisposable } from './disposable';
 import { MaybePromise } from './async';

@@ -1,13 +1,13 @@
-import { Autowired } from '@ide-framework/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@ide-framework/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@ide-framework/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
+import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '../common';
-import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { LayoutState } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { IMenuRegistry, MenuCommandDesc, MenuContribution as MenuContribution, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, MenuCommandDesc, MenuContribution as MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {

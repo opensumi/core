@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { ExtensionCandidate } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { ExtensionCandidate } from '@opensumi/ide-core-common';
 
 import { IExtHostLifeCycle, IMainThreadLifeCycle } from '../../../common/sumi/lifecycle';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';

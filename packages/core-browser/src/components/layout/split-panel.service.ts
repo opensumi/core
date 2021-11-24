@@ -1,4 +1,4 @@
-import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@ide-framework/common-di';
+import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@opensumi/common-di';
 
 @Injectable({ multiple: true })
 export class SplitPanelService {

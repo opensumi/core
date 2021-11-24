@@ -1,4 +1,4 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { IEventBus, IEventListener, IEventFireOpts, IAsyncEventFireOpts } from './event-bus-types';
 import { Emitter, IAsyncResult, Event } from '../event';
 import { BasicEvent } from './basic-event';

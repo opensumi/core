@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter, IScopedContextKeyService } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter, IScopedContextKeyService } from '@opensumi/ide-core-browser';
 import { action, observable } from 'mobx';
-import { SplitPanelManager, SplitPanelService } from '@ide-framework/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { RESIZE_LOCK } from '@ide-framework/ide-core-browser/lib/components';
-import { LayoutState, LAYOUT_STATE } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { SplitPanelManager, SplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
+import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ViewCollapseChangedEvent } from '../../common';
 import { debounce } from 'lodash';
 

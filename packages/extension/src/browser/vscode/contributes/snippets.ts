@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { MonacoSnippetSuggestProvider } from '@ide-framework/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 
 export interface SnippetContribution {
   path: string;

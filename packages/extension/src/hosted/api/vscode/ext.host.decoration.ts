@@ -1,10 +1,10 @@
 import type vscode from 'vscode';
-import { Uri } from '@ide-framework/ide-core-common';
-import { CancellationToken } from '@ide-framework/ide-core-common';
-import { toDisposable } from '@ide-framework/ide-core-common/lib/disposable';
-import { asArray } from '@ide-framework/ide-core-common/lib/utils/arrays';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { getDebugLogger } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
+import { CancellationToken } from '@opensumi/ide-core-common';
+import { toDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { asArray } from '@opensumi/ide-core-common/lib/utils/arrays';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 
 import {
   IMainThreadDecorationsShape, DecorationRequest, DecorationReply,

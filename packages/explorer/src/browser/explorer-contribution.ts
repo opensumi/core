@@ -1,6 +1,6 @@
-import { localize, Domain } from '@ide-framework/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { getIcon } from '@ide-framework/ide-core-browser';
+import { localize, Domain } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { getIcon } from '@opensumi/ide-core-browser';
 
 export const ExplorerContainerId = 'explorer';
 
@@ -8,7 +8,7 @@ export const ExplorerContainerId = 'explorer';
 export class ExplorerContribution implements ComponentContribution {
   // Explorer 只注册容器
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-explorer', [], {
+    registry.register('@opensumi/ide-explorer', [], {
       iconClass: getIcon('explorer'),
       title: localize('explorer.title'),
       priority: 10,

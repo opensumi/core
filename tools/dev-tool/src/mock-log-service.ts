@@ -1,6 +1,6 @@
 
-import { IServerAppOpts, ServerApp, NodeModule } from '@ide-framework/ide-core-node';
-import { ILogService, ILogServiceOptions, LogLevel } from '@ide-framework/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+import { ILogService, ILogServiceOptions, LogLevel } from '@opensumi/ide-core-common';
 
 export default class LogServiceClass {
   constructor(args: ILogServiceOptions) {

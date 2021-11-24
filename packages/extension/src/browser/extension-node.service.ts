@@ -1,13 +1,13 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
 import {
   createSocketConnection, initRPCService, IRPCProtocol, RPCProtocol,
   RPCServiceCenter, WSChannelHandler as IWSChannelHandler,
-} from '@ide-framework/ide-connection';
-import { createWebSocketConnection } from '@ide-framework/ide-connection/lib/common/message';
+} from '@opensumi/ide-connection';
+import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   AppConfig, Deferred, electronEnv, Emitter, IExtensionProps,
   ILogger, isElectronEnv, IDisposable, toDisposable,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 
 import { ExtensionNodeServiceServerPath, IExtension, IExtensionHostService, IExtensionNodeClientService } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';

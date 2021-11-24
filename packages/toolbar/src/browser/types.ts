@@ -1,6 +1,6 @@
 
-import { Injectable } from '@ide-framework/common-di';
-import { IDisposable } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 @Injectable()
 export abstract class IToolBarViewService {

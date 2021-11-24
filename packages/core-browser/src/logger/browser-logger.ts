@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import {
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
   LogLevel,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 
-export { ILogger } from '@ide-framework/ide-core-common';
+export { ILogger } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class Logger implements ILogServiceClient {

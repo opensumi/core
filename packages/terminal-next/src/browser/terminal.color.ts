@@ -1,5 +1,5 @@
-import { localize } from '@ide-framework/ide-core-common';
-import { registerColor, PANEL_BACKGROUND, PANEL_BORDER, ColorIdentifier, ColorDefaults } from '@ide-framework/ide-theme';
+import { localize } from '@opensumi/ide-core-common';
+import { registerColor, PANEL_BACKGROUND, PANEL_BORDER, ColorIdentifier, ColorDefaults } from '@opensumi/ide-theme';
 
 // copied from vscode terminal color registry
 

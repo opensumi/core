@@ -1,6 +1,6 @@
-import { DebugSource } from '@ide-framework/ide-debug/lib/browser';
-import { URI } from '@ide-framework/ide-core-browser';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
+import { DebugSource } from '@opensumi/ide-debug/lib/browser';
+import { URI } from '@opensumi/ide-core-browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 describe('DebugSource Model', () => {
   describe('DebugSource should be work after init', () => {

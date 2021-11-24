@@ -1,7 +1,7 @@
-import { Injectable, Optional, Autowired } from '@ide-framework/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceNlsField } from '@ide-framework/ide-core-common';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceNlsField } from '@opensumi/ide-core-common';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
 

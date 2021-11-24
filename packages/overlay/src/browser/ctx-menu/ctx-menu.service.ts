@@ -1,8 +1,8 @@
 import { observable, action } from 'mobx';
-import { Injectable } from '@ide-framework/common-di';
-import { MenuNode } from '@ide-framework/ide-core-browser/lib/menu/next/base';
-import { CtxMenuRenderParams } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { IBrowserCtxMenu } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { Injectable } from '@opensumi/common-di';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import { CtxMenuRenderParams } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 
 @Injectable()
 export class BrowserCtxMenuService implements IBrowserCtxMenu {

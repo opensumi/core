@@ -1,4 +1,4 @@
-import { IChange } from '@ide-framework/ide-core-common';
+import { IChange } from '@opensumi/ide-core-common';
 
 export function compareChanges(a: IChange, b: IChange): number {
   let result = a.modifiedStartLineNumber - b.modifiedStartLineNumber;

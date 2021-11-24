@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide",
+  "name": "@opensumi/ide",
   "version": "2.12.0",
   "resolution": {
     "webpack": "4.39.3"

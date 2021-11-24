@@ -1,9 +1,9 @@
 import { IRunTimeParams, AbstractSumiBrowserContributionRunner } from '../types';
-import { IDisposable, Disposable, ILogger } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { IIconService } from '@ide-framework/ide-theme';
-import { IToolBarViewService, ToolBarPosition } from '@ide-framework/ide-toolbar/lib/browser';
+import { IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IIconService } from '@opensumi/ide-theme';
+import { IToolBarViewService, ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 
 @Injectable({multiple: true})
 export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {

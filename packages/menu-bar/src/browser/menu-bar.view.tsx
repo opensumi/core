@@ -1,13 +1,13 @@
 import React from 'react';
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, SlotRenderer, ComponentRegistry } from '@ide-framework/ide-core-browser';
-import { MenuActionList } from '@ide-framework/ide-core-browser/lib/components/actions';
-import { IMenubarItem } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { ClickOutside } from '@ide-framework/ide-core-browser/lib/components/click-outside';
-import { Deprecated } from '@ide-framework/ide-components/lib/utils/deprecated';
+import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
+import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ClickOutside } from '@opensumi/ide-core-browser/lib/components/click-outside';
+import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 
-import { Dropdown } from '@ide-framework/ide-components/lib/dropdown';
+import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
 
 import { MenubarStore } from './menu-bar.store';
 import styles from './menu-bar.module.less';
@@ -81,7 +81,7 @@ export const MenuBar = observer(() => {
     setFocusMode(false);
   }, [focusMode]);
 
-  const LogoIcon = componentRegistry.getComponentRegistryInfo('@ide-framework/ide-menu-bar-logo')?.views[0].component;
+  const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
   return (
     <ClickOutside

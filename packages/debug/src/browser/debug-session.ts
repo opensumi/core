@@ -9,23 +9,23 @@ import {
   IPosition,
   Mutable,
   canceled,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from './debug-session-connection';
 import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState } from '../common';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
-import { IMessageService } from '@ide-framework/ide-overlay';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBreakpoint } from './breakpoint';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { CancellationTokenSource, CancellationToken, Disposable } from '@ide-framework/ide-core-common';
-import { ITerminalApiService, TerminalOptions } from '@ide-framework/ide-terminal-next';
+import { CancellationTokenSource, CancellationToken, Disposable } from '@opensumi/ide-core-common';
+import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
 import { DebugEditor } from './../common/debug-editor';
 

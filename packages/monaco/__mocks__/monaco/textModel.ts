@@ -1,5 +1,5 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import * as textModel from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 // copied from https://github.com/microsoft/vscode/blob/master/src/vs/editor/common/model/textModel.ts
 

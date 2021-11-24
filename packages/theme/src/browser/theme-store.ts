@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { URI, getDebugLogger } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { ThemeData } from './theme-data';
 import { ThemeContribution, getThemeId } from '../common/theme.service';

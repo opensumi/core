@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { ClientAppContribution, Domain } from '@ide-framework/ide-core-browser';
-import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@ide-framework/ide-core-common';
-import { FileOperation, WorkspaceFileEvent, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@ide-framework/ide-workspace-edit';
-import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@ide-framework/ide-core-browser';
-import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@ide-framework/ide-editor/lib/browser';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
+import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { FileOperation, WorkspaceFileEvent, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@opensumi/ide-core-browser';
+import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 enum ContentUpdateOperation {
   /**

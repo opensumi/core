@@ -1,7 +1,7 @@
 import path from 'path';
 import type vscode from 'vscode';
-import { isWindows, isOSX } from '@ide-framework/ide-core-common';
-import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@ide-framework/ide-debug';
+import { isWindows, isOSX } from '@opensumi/ide-core-common';
+import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@opensumi/ide-debug';
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 
 export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: IDebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {

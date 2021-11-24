@@ -1,5 +1,5 @@
 import React from 'react';
-import { useInjectable, localize } from '@ide-framework/ide-core-browser';
+import { useInjectable, localize } from '@opensumi/ide-core-browser';
 import { ITerminalGroupViewService, IWidget, ITerminalError, ITerminalErrorService } from '../../common';
 
 import styles from './terminal.module.less';

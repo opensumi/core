@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { ICommonServer, OS } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { ICommonServer, OS } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class CommonServer implements ICommonServer {

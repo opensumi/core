@@ -3,11 +3,11 @@
 ## 添加 Menu Logo Icon 的方法
 在 ComponentContribution 中添加对应的 containerId ,就会在 Menubar 中显示一个 logoIcon。
 ```typescript
-registry.register('@ide-framework/ide-menu-bar-logo', {
-  id: '@ide-framework/ide-menu-bar-logo',
+registry.register('@opensumi/ide-menu-bar-logo', {
+  id: '@opensumi/ide-menu-bar-logo',
   component: LogoIcon,
 }, {
-  containerId: '@ide-framework/ide-menu-bar-logo',
+  containerId: '@opensumi/ide-menu-bar-logo',
 });
 ```
 
@@ -15,7 +15,7 @@ registry.register('@ide-framework/ide-menu-bar-logo', {
 ```typescript
 import React from 'react';
 import cls from 'classnames';
-import { getIcon } from '@ide-framework/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
 import styles from './logo.module.less';
 
 export const LogoIcon = () => <div className={cls(styles.logoIcon, getIcon('logo'))}></div>;

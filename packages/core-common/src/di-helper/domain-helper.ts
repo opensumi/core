@@ -1,4 +1,4 @@
-import { markInjectable, getInjectableOpts, Domain } from '@ide-framework/common-di';
+import { markInjectable, getInjectableOpts, Domain } from '@opensumi/common-di';
 import { ConstructorOf } from '../declare';
 
 /**

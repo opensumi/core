@@ -1,7 +1,7 @@
-import { LogServiceManager } from '@ide-framework/ide-logs/lib/node/log-manager';
-import { Injector } from '@ide-framework/common-di';
-import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel, IExtensionLogger } from '@ide-framework/ide-core-common';
-import { AppConfig } from '@ide-framework/ide-core-node/lib/bootstrap/app';
+import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
+import { Injector } from '@opensumi/common-di';
+import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel, IExtensionLogger } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 
 export class ExtensionLogger2 implements IExtensionLogger {
 

@@ -1,5 +1,5 @@
-import { localize } from '@ide-framework/ide-core-common';
-import { registerColor, Color, RGBA } from '@ide-framework/ide-theme';
+import { localize } from '@opensumi/ide-core-common';
+import { registerColor, Color, RGBA } from '@opensumi/ide-theme';
 
 // 这里都是 scm 相关颜色变量注册
 /* istanbul ignore file */

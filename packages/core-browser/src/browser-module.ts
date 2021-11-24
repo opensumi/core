@@ -1,6 +1,6 @@
-import { BasicModule, CommandRegistry, Deferred } from '@ide-framework/ide-core-common';
+import { BasicModule, CommandRegistry, Deferred } from '@opensumi/ide-core-common';
 import { AppConfig } from './react-providers';
-import { Injector, Autowired } from '@ide-framework/common-di';
+import { Injector, Autowired } from '@opensumi/common-di';
 
 export const IClientApp = Symbol('CLIENT_APP_TOKEN');
 

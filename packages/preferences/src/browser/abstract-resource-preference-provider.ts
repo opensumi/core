@@ -1,15 +1,15 @@
 import * as jsoncparser from 'jsonc-parser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler, FileChange } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler, FileChange } from '@opensumi/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceProviderDataChange,
   PreferenceConfigurations,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { IPreferenceTask, USER_STORAGE_SCHEME } from '../common';
-import { FILE_SCHEME, IFileServiceClient } from '@ide-framework/ide-file-service';
+import { FILE_SCHEME, IFileServiceClient } from '@opensumi/ide-file-service';
 
 // vscode 对语言的setting是根据这种格式来的
 // "[json]": { "editor.formatter": "xxxx" }

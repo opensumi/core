@@ -1,15 +1,15 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { TextmateService } from '@ide-framework/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
-import { Injectable } from '@ide-framework/common-di';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { IEventBus, EventBusImpl, URI } from '@ide-framework/ide-core-browser';
-import { ITextmateTokenizer } from '@ide-framework/ide-monaco/lib/browser/contrib/tokenizer';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser/doc-model/types';
-import { EditorDocumentModelServiceImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/editor-document-model-service';
+import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
+import { Injectable } from '@opensumi/common-di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IEventBus, EventBusImpl, URI } from '@opensumi/ide-core-browser';
+import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/editor-document-model-service';
 
 @Injectable()
 class MockFileServiceClient {

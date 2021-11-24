@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { WithEventBus } from '@ide-framework/ide-core-common/lib';
-import { Uri, formatLocalize } from '@ide-framework/ide-core-browser/lib';
-import { FileTreeDropEvent } from '@ide-framework/ide-core-common/lib/types/dnd';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ide-framework/ide-core-browser/lib/services';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { WithEventBus } from '@opensumi/ide-core-common/lib';
+import { Uri, formatLocalize } from '@opensumi/ide-core-browser/lib';
+import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
 import { IFileDropFrontendService, IFileDropBackendService, FileDropServicePath, IWebkitDataTransfer, IWebkitDataTransferItemEntry } from '../common';
-import { Path } from '@ide-framework/ide-components/lib/utils/path';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { Path } from '@opensumi/ide-components/lib/utils/path';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 @Injectable()
 export class FileDropService extends WithEventBus implements IFileDropFrontendService {

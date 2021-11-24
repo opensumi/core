@@ -1,6 +1,6 @@
 
 import { Disposable } from './ext-types';
-import { IExtensionInfo, IDisposable } from '@ide-framework/ide-core-common';
+import { IExtensionInfo, IDisposable } from '@opensumi/ide-core-common';
 
 export interface IMainThreadCommands {
   $registerCommand(id: string): void;

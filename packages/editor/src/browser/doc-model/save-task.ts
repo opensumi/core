@@ -1,5 +1,5 @@
-import { URI, Deferred, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ide-framework/ide-core-browser';
-import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { URI, Deferred, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IEditorDocumentModelService } from './types';
 
 export interface IEditorDocumentModelServiceImpl extends IEditorDocumentModelService {

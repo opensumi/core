@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-core-electron-main",
+  "name": "@opensumi/ide-core-electron-main",
   "version": "2.12.0",
   "files": [
     "lib",
@@ -19,7 +19,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
     "tree-kill": "^1.2.2"
   },
   "peerDependencies": {

@@ -3,7 +3,7 @@ import {
   Emitter,
   DisposableCollection,
   URI,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 import {
   IFileServiceClient,
   IFileServiceWatcher,

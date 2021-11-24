@@ -1,14 +1,14 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IResourceTextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
-import { URI, IEventBus, isWindows, isUndefined } from '@ide-framework/ide-core-browser';
-import { FileSystemError } from '@ide-framework/ide-file-service/lib/common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { URI, IEventBus, isWindows, isUndefined } from '@opensumi/ide-core-browser';
+import { FileSystemError } from '@opensumi/ide-file-service/lib/common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { runInAction } from 'mobx';
-import { IEditorDocumentModelService, IResource, isDiffResource } from '@ide-framework/ide-editor/lib/browser';
-import { EditorGroup } from '@ide-framework/ide-editor/lib/browser/workbench-editor.service';
-import { Range } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/range';
-import { EndOfLineSequence, EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IEditorDocumentModelService, IResource, isDiffResource } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroup } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import { EndOfLineSequence, EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 type WorkspaceEdit = ResourceTextEditTask | ResourceFileEdit;
 

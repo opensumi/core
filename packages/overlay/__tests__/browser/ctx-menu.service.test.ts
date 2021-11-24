@@ -1,10 +1,10 @@
-import { Injector } from '@ide-framework/common-di';
-import { MenuNode } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Injector } from '@opensumi/common-di';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { IBrowserCtxMenu } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { BrowserCtxMenuService } from '../../src/browser/ctx-menu/ctx-menu.service';
 
 jest.useFakeTimers();

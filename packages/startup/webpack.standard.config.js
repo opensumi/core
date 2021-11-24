@@ -1,4 +1,4 @@
-const { createWebpackConfig } = require('@ide-framework/ide-dev-tool/src/webpack');
+const { createWebpackConfig } = require('@opensumi/ide-dev-tool/src/webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = createWebpackConfig(

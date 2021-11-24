@@ -1,6 +1,6 @@
-import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@ide-framework/ide-components';
-import { Injectable, Optional, Autowired} from '@ide-framework/common-di';
-import { ThrottledDelayer, Emitter, Event } from '@ide-framework/ide-core-browser';
+import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
+import { Injectable, Optional, Autowired} from '@opensumi/common-di';
+import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMResourceFolder, SCMResourceRoot } from './scm-tree-node';

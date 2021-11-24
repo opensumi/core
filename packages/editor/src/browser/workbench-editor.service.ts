@@ -1,15 +1,15 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger, ReadyEvent, IDisposable, Disposable } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger, ReadyEvent, IDisposable, Disposable } from '@opensumi/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent, CodeEditorDidVisibleEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
-import { makeRandomHexString } from '@ide-framework/ide-core-common/lib/functional';
-import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ide-framework/ide-core-browser';
+import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
+import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
-import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@ide-framework/ide-core-common';
-import { ResourceContextKey } from '@ide-framework/ide-core-browser/lib/contextkey/resource';
-import { IMessageService } from '@ide-framework/ide-overlay';
+import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@opensumi/ide-core-common';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { EditorTabChangedError, isEditorError } from './error';
 
 @Injectable()
@@ -572,7 +572,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   constructor(public readonly name: string) {
     super();
     this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-      if (e.payload.slotLocation === getSlotLocation('@ide-framework/ide-editor', this.config.layoutConfig)) {
+      if (e.payload.slotLocation === getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)) {
         this.doLayoutEditors();
       }
     });

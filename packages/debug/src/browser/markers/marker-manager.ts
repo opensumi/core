@@ -15,10 +15,10 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/markers/src/browser/marker-manager.ts
 
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Event, Emitter, URI } from '@ide-framework/ide-core-browser';
-import { FileChangeEvent, FileChangeType } from '@ide-framework/ide-file-service';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Event, Emitter, URI } from '@opensumi/ide-core-browser';
+import { FileChangeEvent, FileChangeType } from '@opensumi/ide-file-service';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { Marker } from './marker';
 
 /*

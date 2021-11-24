@@ -1,4 +1,4 @@
-import { OS } from '@ide-framework/ide-core-common';
+import { OS } from '@opensumi/ide-core-common';
 import { MergedEnvironmentVariableCollection } from '../../src/common/environmentVariableCollection';
 
 describe('MergedEnvironmentVariableCollection', () => {

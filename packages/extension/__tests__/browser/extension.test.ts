@@ -1,13 +1,13 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Uri, setLanguageId } from '@ide-framework/ide-core-browser';
+import { URI, Uri, setLanguageId } from '@opensumi/ide-core-browser';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionMetaData } from '../../src/common';
 import paths from 'path';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
 import { ExtensionService } from '../../src/common';
 import { Extension } from '../../src/browser/extension';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
-import '@ide-framework/ide-i18n';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import '@opensumi/ide-i18n';
 
 const mockExtension: IExtensionMetaData = {
   id: 'test.kaitian-extension',

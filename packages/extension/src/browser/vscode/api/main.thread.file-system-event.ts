@@ -1,16 +1,16 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Disposable, URI, CancellationTokenSource, raceCancellation, ProgressLocation, localize, ILogger, formatLocalize } from '@ide-framework/ide-core-common';
-import { IFileServiceClient, FileChangeType } from '@ide-framework/ide-file-service';
-import { IBulkEditServiceShape, FileOperation, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@ide-framework/ide-workspace-edit';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
-import { PreferenceService } from '@ide-framework/ide-core-browser';
-import { IDialogService } from '@ide-framework/ide-overlay';
-import { MessageType } from '@ide-framework/ide-components';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Disposable, URI, CancellationTokenSource, raceCancellation, ProgressLocation, localize, ILogger, formatLocalize } from '@opensumi/ide-core-common';
+import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
+import { IBulkEditServiceShape, FileOperation, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { MessageType } from '@opensumi/ide-components';
 
 import { IExtHostFileSystemEvent, FileSystemEvents } from '../../../common/vscode/file-system';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ResourceEdit } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
+import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystemEvent extends Disposable {

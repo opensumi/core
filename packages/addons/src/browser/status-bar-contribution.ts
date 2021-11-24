@@ -1,6 +1,6 @@
-import { Autowired } from '@ide-framework/common-di';
-import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus, CommandService, Domain } from '@ide-framework/ide-core-common';
-import { ClientAppContribution } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus, CommandService, Domain } from '@opensumi/ide-core-common';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
 
 @Domain(ClientAppContribution)
 export class StatusBarContribution extends WithEventBus implements ClientAppContribution {

@@ -1,6 +1,6 @@
 import net from 'net';
 import type vscode from 'vscode';
-import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ide-framework/ide-debug';
+import { DebugStreamConnection, DebugAdapterForkExecutable } from '@opensumi/ide-debug';
 import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
 import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';
 import { DirectDebugAdapter } from './abstract-debug-adapter-session';

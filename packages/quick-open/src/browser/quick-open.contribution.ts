@@ -1,8 +1,8 @@
-import { Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@ide-framework/ide-core-browser';
-import { ClientAppContribution } from '@ide-framework/ide-core-browser';
-import { MenuId, MenuContribution, IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { PrefixQuickOpenService } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@opensumi/ide-core-browser';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ToolbarLocation } from '@ide-framework/ide-core-browser';
+import { ToolbarLocation } from '@opensumi/ide-core-browser';
 
 import styles from './toolbar-action.module.less';
 import classnames from 'classnames';

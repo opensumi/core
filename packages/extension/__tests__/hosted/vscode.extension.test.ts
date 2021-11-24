@@ -1,4 +1,4 @@
-import { KTExtension } from '@ide-framework/ide-extension/lib/hosted/vscode.extension';
+import { KTExtension } from '@opensumi/ide-extension/lib/hosted/vscode.extension';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('extension/__tests__/hosted/vscode.extension.test.ts', () => {

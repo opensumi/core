@@ -1,7 +1,7 @@
-import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 /**
- * 基于 @ide-framework/monaco-editor-core@0.20.1-patch.19 版本
+ * 基于 @opensumi/monaco-editor-core@0.20.1-patch.19 版本
  * 可用的 services 均来自 https://github.com/opensumi/monaco-editor-core/blob/master/src/vs/editor/standalone/browser/standaloneServices.ts
  * 后续版本更新可能会有新增的内置 service
  */

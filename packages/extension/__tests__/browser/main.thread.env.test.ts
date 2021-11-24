@@ -1,18 +1,18 @@
 // @ts-nocheck
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@ide-framework/ide-core-common';
-import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { createEnvApiFactory, ExtHostEnv, envValue } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.env';
-import { ExtHostTerminal } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { ExtHostStorage } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.storage';
-import { MainThreadEnv } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.env';
-import { MainThreadStorage } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.storage';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@ide-framework/ide-extension/lib/common/vscode';
-import ExtensionHostServiceImpl from '@ide-framework/ide-extension/lib/hosted/ext.host';
-import { LoggerManagerClient } from '@ide-framework/ide-logs/lib/browser/log-manage';
-import { AppConfig } from '@ide-framework/ide-core-browser';
-import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
+import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
+import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
+import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
+import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@opensumi/ide-extension/lib/common/vscode';
+import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
+import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
+import { AppConfig } from '@opensumi/ide-core-browser';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
-import { IIconService, IconType } from '@ide-framework/ide-theme';
+import { IIconService, IconType } from '@opensumi/ide-theme';
 import { EMIT_EXT_HOST_EVENT } from '../../common';
-import { Disposable } from '@ide-framework/ide-core-browser';
+import { Disposable } from '@opensumi/ide-core-browser';
 import { IMainThreadToolbar } from '../../common/sumi/toolbar';
 import { ExtensionLoadingView } from '../components';
 

@@ -1,13 +1,13 @@
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@ide-framework/ide-core-common';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
 import { OutputChannel } from '../../src/browser/output.channel';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
-import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
-import { EditorDocumentModelServiceImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/main';
-import { ContentChangeEvent, ContentChangeType } from '@ide-framework/ide-output/lib/common';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { ContentChangeEvent, ContentChangeType } from '@opensumi/ide-output/lib/common';
 
 @Injectable()
 class MockLoggerManagerClient {

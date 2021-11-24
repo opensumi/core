@@ -1,9 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { positionToRange, URI, CommandService } from '@ide-framework/ide-core-common';
-import { IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
-import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@ide-framework/ide-editor/src/browser/';
-import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { positionToRange, URI, CommandService } from '@opensumi/ide-core-common';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -35,8 +35,8 @@ const mockedMonaco = createMockedMonaco();
 jest.useFakeTimers();
 
 // mock ThrottledDelayer to take it easy in unit test
-jest.mock('@ide-framework/ide-core-common/src/async', () => ({
-  ...jest.requireActual('@ide-framework/ide-core-common/src/async'),
+jest.mock('@opensumi/ide-core-common/src/async', () => ({
+  ...jest.requireActual('@opensumi/ide-core-common/src/async'),
   ThrottledDelayer: class {
     constructor() {}
     trigger(value) {

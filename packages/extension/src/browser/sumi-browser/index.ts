@@ -1,13 +1,13 @@
 
-import { URI, localize, getIcon, IReporterService, format } from '@ide-framework/ide-core-browser';
-import { Scroll } from '@ide-framework/ide-editor/lib/browser/component/scroll/scroll';
-import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ide-framework/ide-core-browser/lib/components';
-import { PlainWebview } from '@ide-framework/ide-webview';
-import { ToolBarPosition } from '@ide-framework/ide-toolbar';
-import { EditorComponentRenderMode } from '@ide-framework/ide-editor/lib/browser';
-import { Injector } from '@ide-framework/common-di';
-import { IThemeService, getColorRegistry } from '@ide-framework/ide-theme';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { URI, localize, getIcon, IReporterService, format } from '@opensumi/ide-core-browser';
+import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
+import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
+import { PlainWebview } from '@opensumi/ide-webview';
+import { ToolBarPosition } from '@opensumi/ide-toolbar';
+import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
+import { Injector } from '@opensumi/common-di';
+import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 
 import { createBrowserCommandsApiFactory } from './commands';
 import { createBrowserComponents } from './components';

@@ -1,6 +1,6 @@
-import { Domain, ClientAppContribution, PreferenceService, IClientApp, localize } from '@ide-framework/ide-core-browser';
-import { Autowired } from '@ide-framework/common-di';
-import { IDialogService } from '@ide-framework/ide-overlay';
+import { Domain, ClientAppContribution, PreferenceService, IClientApp, localize } from '@opensumi/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { IDialogService } from '@opensumi/ide-overlay';
 
 @Domain(ClientAppContribution)
 export class LanguageChangeHintContribution implements ClientAppContribution {

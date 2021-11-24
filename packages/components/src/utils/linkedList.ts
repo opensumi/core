@@ -1,4 +1,4 @@
-// Modify from @ide-framework/ide-core-common/src/linkedList.ts
+// Modify from @opensumi/ide-core-common/src/linkedList.ts
 import { Iterator, IteratorResult, FIN } from './iterator';
 
 class Node<E> {

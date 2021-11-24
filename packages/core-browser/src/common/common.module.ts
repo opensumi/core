@@ -1,9 +1,9 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { BrowserModule } from '../browser-module';
 import { ClientCommonContribution } from './common.contribution';
 import { OpenerContribution } from '../opener';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
-import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@ide-framework/ide-core-common';
+import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
 import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 

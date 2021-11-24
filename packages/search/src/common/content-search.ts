@@ -1,6 +1,6 @@
-import { endsWith, startsWith, Command, URI } from '@ide-framework/ide-core-common';
-import { TreeNode, ValidateMessage } from '@ide-framework/ide-core-browser/lib/components';
-import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
+import { endsWith, startsWith, Command, URI } from '@opensumi/ide-core-common';
+import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
+import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 

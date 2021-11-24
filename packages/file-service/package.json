@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-file-service",
+  "name": "@opensumi/ide-file-service",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -18,9 +18,9 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-connection": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
+    "@opensumi/ide-connection": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
     "iconv-lite": "^0.6.0",
@@ -34,8 +34,8 @@
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "@types/mv": "^2.1.0",
     "@types/uuid": "^3.4.4",
     "npm-run-all": "^4.1.5",

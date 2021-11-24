@@ -1,20 +1,20 @@
 import { startServer } from './server';
 
-import { NodeModule, ConstructorOf } from '@ide-framework/ide-core-node';
-import { ServerCommonModule } from '@ide-framework/ide-core-node';
-import { FileServiceModule } from '@ide-framework/ide-file-service/lib/node';
+import { NodeModule, ConstructorOf } from '@opensumi/ide-core-node';
+import { ServerCommonModule } from '@opensumi/ide-core-node';
+import { FileServiceModule } from '@opensumi/ide-file-service/lib/node';
 
-import { ProcessModule } from '@ide-framework/ide-process';
+import { ProcessModule } from '@opensumi/ide-process';
 
-import { FileSearchModule } from '@ide-framework/ide-file-search';
-import { SearchModule } from '@ide-framework/ide-search';
-import { TerminalNodePtyModule } from '@ide-framework/ide-terminal-next/lib/node';
-import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
-import { ExtensionModule } from '@ide-framework/ide-extension';
-import { OpenVsxExtensionManagerModule } from '@ide-framework/ide-extension-manager';
+import { FileSearchModule } from '@opensumi/ide-file-search';
+import { SearchModule } from '@opensumi/ide-search';
+import { TerminalNodePtyModule } from '@opensumi/ide-terminal-next/lib/node';
+import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
+import { ExtensionModule } from '@opensumi/ide-extension';
+import { OpenVsxExtensionManagerModule } from '@opensumi/ide-extension-manager';
 
-import { FileSchemeNodeModule } from '@ide-framework/ide-file-scheme/lib/node';
-import { AddonsModule } from '@ide-framework/ide-addons/lib/node';
+import { FileSchemeNodeModule } from '@opensumi/ide-file-scheme/lib/node';
+import { AddonsModule } from '@opensumi/ide-addons/lib/node';
 import { TopBarModule } from 'modules/topbar';
 
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [

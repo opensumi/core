@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@ide-framework/common-di';
+import { Injectable, Injector } from '@opensumi/common-di';
 
 import { IHashCalculateService, HashCalculateServiceImpl } from '../src/hash-calculate/hash-calculate';
 

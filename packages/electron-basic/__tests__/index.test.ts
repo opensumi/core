@@ -1,15 +1,15 @@
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { ElectronBasicContribution } from '../src/browser';
-import { AppConfig, SlotLocation, IElectronMainMenuService, ComponentRegistry, CommandRegistry, KeybindingRegistry, addElement, electronEnv } from '@ide-framework/ide-core-browser';
-import { IElectronMenuBarService } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
-import { IMessageService } from '@ide-framework/ide-overlay/lib/common';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { AppConfig, SlotLocation, IElectronMainMenuService, ComponentRegistry, CommandRegistry, KeybindingRegistry, addElement, electronEnv } from '@opensumi/ide-core-browser';
+import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
+import { IMessageService } from '@opensumi/ide-overlay/lib/common';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ElectronNativeDialogService } from '../src/browser/dialog';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { WorkbenchEditorService, ResourceService } from '@ide-framework/ide-editor';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkbenchEditorService, ResourceService } from '@opensumi/ide-editor';
 import { WelcomeContribution } from '../src/browser/welcome/contribution';
-import { EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -33,7 +33,7 @@ describe('electron basic contribution test', () => {
       useValue: {
         layoutConfig: {
           [SlotLocation.top]: {
-            modules: ['@ide-framework/ide-menu-bar'],
+            modules: ['@opensumi/ide-menu-bar'],
           },
         },
       },

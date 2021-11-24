@@ -1,4 +1,4 @@
-// Modify from @ide-framework/ide-core-common/src/disposable.ts
+// Modify from @opensumi/ide-core-common/src/disposable.ts
 import { Event, Emitter } from './event';
 
 export interface IDisposable {

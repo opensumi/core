@@ -1,1 +1,1 @@
-export * from '@ide-framework/monaco-editor-core/esm/vs/nls';
+export * from '@opensumi/monaco-editor-core/esm/vs/nls';

@@ -1,10 +1,10 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@opensumi/ide-core-browser';
 import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle, SwitchCommandReaction, ICommentsThread, CommentReactionPayload, CommentReactionClick } from '../common';
-import { IEditor } from '@ide-framework/ide-editor';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { IMenuRegistry, MenuId, MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IEditor } from '@opensumi/ide-editor';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMenuRegistry, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution)
 export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution {

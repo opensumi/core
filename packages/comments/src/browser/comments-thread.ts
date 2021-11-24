@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import { observable, computed, autorun } from 'mobx';
 import {
   IRange,
@@ -7,11 +7,11 @@ import {
   IContextKeyService,
   uuid,
   localize,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
 import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment, ICommentsZoneWidget } from '../common';
-import { IEditor, EditorCollectionService } from '@ide-framework/ide-editor';
-import { ResourceContextKey } from '@ide-framework/ide-core-browser/lib/contextkey/resource';
+import { IEditor, EditorCollectionService } from '@opensumi/ide-editor';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {

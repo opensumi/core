@@ -1,11 +1,11 @@
 import MonacoServiceImpl from './monaco.service';
-import { Provider, Injectable } from '@ide-framework/common-di';
-import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, IJSONSchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
+import { Provider, Injectable } from '@opensumi/common-di';
+import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, IJSONSchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 import { MonacoClientContribution } from './monaco.contribution';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 import { MonacoMimeService } from './monaco-mime';
 import { MonacoContextKeyService } from './monaco.context-key.service';
-import { IConfigurationService } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import { ConfigurationService } from './monaco.context-key.service';
 import { MonacoOverrideServiceRegistryImpl } from './override.service.registry';
 

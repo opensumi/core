@@ -1,5 +1,5 @@
-import { Provider, Injectable } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { Provider, Injectable } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { ThemeServicePath, IThemeService, IIconService } from '../common/theme.service';
 import { WorkbenchThemeService } from './workbench.theme.service';
 import { ICSSStyleService } from '../common/style';

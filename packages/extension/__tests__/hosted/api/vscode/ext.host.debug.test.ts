@@ -1,10 +1,10 @@
 import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
 import { ExtHostConnection } from '../../../../src/hosted/api/vscode/ext.host.connection';
-import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { URI } from '@ide-framework/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import path from 'path';
 import { DebugAdapterServer, DebugAdapterExecutable, DebugAdapterInlineImplementation } from '../../../../src/common/vscode/ext-types';
 

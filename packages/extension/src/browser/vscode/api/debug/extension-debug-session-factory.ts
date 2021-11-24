@@ -1,16 +1,16 @@
-import { Injector } from '@ide-framework/common-di';
-import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ide-framework/ide-debug/lib/browser';
-import { IDebugSessionManager } from '@ide-framework/ide-debug';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IMessageService } from '@ide-framework/ide-overlay';
-import { IWebSocket } from '@ide-framework/ide-connection';
-import { DebugSessionOptions } from '@ide-framework/ide-debug';
-import { ITerminalApiService, TerminalOptions } from '@ide-framework/ide-terminal-next';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
-import { OutputChannel } from '@ide-framework/ide-output/lib/browser/output.channel';
-import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
+import { Injector } from '@opensumi/common-di';
+import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@opensumi/ide-debug/lib/browser';
+import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IWebSocket } from '@opensumi/ide-connection';
+import { DebugSessionOptions } from '@opensumi/ide-debug';
+import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(

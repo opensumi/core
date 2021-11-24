@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Emitter } from '@opensumi/ide-core-common';
 import { LogServiceClient } from './log.service';
 import {
   LogServiceForClientPath,

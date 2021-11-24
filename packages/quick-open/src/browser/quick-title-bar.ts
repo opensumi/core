@@ -1,11 +1,11 @@
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { observable, computed, action } from 'mobx';
-import { Emitter, Event, isUndefined, URI } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Emitter, Event, isUndefined, URI } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
 
-import { QuickTitleButton, QuickTitleButtonSide } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
 import './quick-title-bar.less';
-import { IconType, IIconService, IThemeService } from '@ide-framework/ide-theme';
+import { IconType, IIconService, IThemeService } from '@opensumi/ide-theme';
 
 @Injectable()
 export class QuickTitleBar {

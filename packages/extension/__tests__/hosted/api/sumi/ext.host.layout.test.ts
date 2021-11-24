@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { createLayoutAPIFactory, ExtHostLayout } from '../../../../src/hosted/api/sumi/ext.host.layout';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';

@@ -1,18 +1,18 @@
 
 import React from 'react';
-import { useInjectable, useUpdateOnEvent, useUpdateOnEventBusEvent } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { useInjectable, useUpdateOnEvent, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
 import styles from './editor.module.less';
 import classnames from 'classnames';
-import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, Disposable, DomListener, PreferenceService, DisposableCollection, Event } from '@ide-framework/ide-core-browser';
+import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, Disposable, DomListener, PreferenceService, DisposableCollection, Event } from '@opensumi/ide-core-browser';
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
-import { InlineActionBar } from '@ide-framework/ide-core-browser/lib/components/actions';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
-import { Icon } from '@ide-framework/ide-components';
-import { IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Icon } from '@opensumi/ide-components';
+import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 const pkgName = require('../../package.json').name;
 

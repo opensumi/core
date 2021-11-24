@@ -1,8 +1,8 @@
-import { ReactEditorComponent, IResource } from '@ide-framework/ide-editor/lib/browser';
+import { ReactEditorComponent, IResource } from '@opensumi/ide-editor/lib/browser';
 import React from 'react';
 import styles from './style.module.less';
-import { useInjectable, Disposable, DomListener } from '@ide-framework/ide-core-browser';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { useInjectable, Disposable, DomListener } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 const useResource = (resource: IResource) => {
   const staticService = useInjectable<StaticResourceService>(StaticResourceService);

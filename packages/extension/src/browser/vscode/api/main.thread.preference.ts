@@ -1,10 +1,10 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
+import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
 import { ConfigurationTarget } from '../../../common/vscode';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@ide-framework/ide-core-browser';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { FileStat } from '@ide-framework/ide-file-service';
+import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { FileStat } from '@opensumi/ide-file-service';
 
 export function getPreferences(preferenceProviderProvider: PreferenceProviderProvider, rootFolders: FileStat[]): PreferenceData {
   const folders = rootFolders.map((root) => root.uri.toString());

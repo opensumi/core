@@ -1,16 +1,16 @@
-import { RenderLineNumbersType } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
 import type vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
-import * as debugModel from '@ide-framework/ide-debug';
-import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor } from '@ide-framework/ide-core-common';
-import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ide-framework/ide-editor/lib/common';
-import { IEvaluatableExpression } from '@ide-framework/ide-debug/lib/common/evaluatable-expression';
+import * as debugModel from '@opensumi/ide-debug';
+import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor } from '@opensumi/ide-core-common';
+import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@opensumi/ide-editor/lib/common';
+import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
-import { FileStat, FileType } from '@ide-framework/ide-file-service';
+import { FileStat, FileType } from '@opensumi/ide-file-service';
 import {
   isMarkdownString,
   IMarkdownString,
@@ -18,8 +18,8 @@ import {
 } from './models';
 import marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
-import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
-import { EndOfLineSequence, CodeActionTriggerType } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {

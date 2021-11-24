@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { getDebugLogger, URI, parseWithComments, formatLocalize } from '@ide-framework/ide-core-common';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { getDebugLogger, URI, parseWithComments, formatLocalize } from '@opensumi/ide-core-common';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IIconTheme } from '../common';
 
 @Injectable({ multiple: true })

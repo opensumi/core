@@ -1,5 +1,5 @@
 import { Terminal as XTerm } from 'xterm';
-import { Uri } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 import { WindowsShellType } from './shell';
 
 export const ITerminalServicePath = 'ITerminalServicePath';

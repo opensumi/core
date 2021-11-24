@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-terminal-next",
+  "name": "@opensumi/ide-terminal-next",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -26,19 +26,19 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-components": "2.12.0",
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-connection": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
-    "@ide-framework/ide-editor": "2.12.0",
-    "@ide-framework/ide-file-service": "2.12.0",
-    "@ide-framework/ide-main-layout": "2.12.0",
-    "@ide-framework/ide-theme": "2.12.0",
-    "@ide-framework/ide-workspace": "2.12.0",
-    "@ide-framework/ide-variable": "2.12.0",
-    "@ide-framework/ide-status-bar": "2.12.0",
-    "@ide-framework/ide-overlay": "2.12.0",
+    "@opensumi/ide-components": "2.12.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-connection": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
+    "@opensumi/ide-editor": "2.12.0",
+    "@opensumi/ide-file-service": "2.12.0",
+    "@opensumi/ide-main-layout": "2.12.0",
+    "@opensumi/ide-theme": "2.12.0",
+    "@opensumi/ide-workspace": "2.12.0",
+    "@opensumi/ide-variable": "2.12.0",
+    "@opensumi/ide-status-bar": "2.12.0",
+    "@opensumi/ide-overlay": "2.12.0",
     "os-locale": "^4.0.0",
     "lodash.omit": "^4.1.1",
     "event-kit": "^2.5.3",
@@ -48,7 +48,7 @@
     "xterm-addon-search": "^0.9.0-beta.3"
   },
   "devDependencies": {
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
     "@types/puppeteer": "^2.0.0",

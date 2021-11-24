@@ -1,12 +1,12 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
-import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ide-framework/ide-components';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
+import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
-import { TitleActionList } from '@ide-framework/ide-core-browser/lib/components/actions';
-import { MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 export interface ITreeViewNodeProps {
   item: ExtensionTreeNode | ExtensionCompositeTreeNode;

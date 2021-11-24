@@ -1,5 +1,5 @@
 
-import { localize } from '@ide-framework/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor, transparent } from '../../color-registry';
 import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from '../editor';

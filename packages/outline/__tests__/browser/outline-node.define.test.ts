@@ -1,7 +1,7 @@
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
-import { OutlineTreeService } from '@ide-framework/ide-outline/lib/browser/services/outline-tree.service';
-import { INormalizedDocumentSymbol } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { SymbolKind } from '@ide-framework/ide-extension/lib/hosted/api/worker/worker.ext-types';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
 
 describe('OutlineCompositeTreeNode', () => {
   let rootNode: OutlineRoot;

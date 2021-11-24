@@ -1,16 +1,16 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { CodeEditorServiceImpl } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
-import { ICodeEditorService } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
-import { SimpleLayoutService } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { ContextViewService } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
+import { SimpleLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
 
 /* istanbul ignore file */
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
-import { URI, IRange } from '@ide-framework/ide-core-common';
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import { URI, IRange } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
 
 @Injectable()

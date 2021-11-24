@@ -1,4 +1,4 @@
-import { ExpressionContainer, ExpressionNode, DebugVariable, DebugVariableContainer, DebugScope, DebugWatchNode, DebugConsoleNode, DebugConsoleVariableContainer, DebugConsoleRoot, DebugWatchRoot, DebugVariableRoot, DebugHoverVariableRoot } from '@ide-framework/ide-debug/lib/browser/tree';
+import { ExpressionContainer, ExpressionNode, DebugVariable, DebugVariableContainer, DebugScope, DebugWatchNode, DebugConsoleNode, DebugConsoleVariableContainer, DebugConsoleRoot, DebugWatchRoot, DebugVariableRoot, DebugHoverVariableRoot } from '@opensumi/ide-debug/lib/browser/tree';
 
 describe('ExpressionContainer', () => {
   let rootNode: ExpressionContainer;

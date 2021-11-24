@@ -1,14 +1,14 @@
 import type vscode from 'vscode';
 import paths from 'path';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
 import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { UriComponents } from '../../../common/vscode/models';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
-import { CancellationToken, Emitter, Event, MessageType } from '@ide-framework/ide-core-common';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { FileStat } from '@ide-framework/ide-file-service';
+import { CancellationToken, Emitter, Event, MessageType } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileStat } from '@opensumi/ide-file-service';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';

@@ -1,5 +1,5 @@
-import { URI, FileStat } from '@ide-framework/ide-core-browser';
-import { KAITIAN_MULTI_WORKSPACE_EXT, WorkspaceData } from '@ide-framework/ide-workspace';
+import { URI, FileStat } from '@opensumi/ide-core-browser';
+import { KAITIAN_MULTI_WORKSPACE_EXT, WorkspaceData } from '@opensumi/ide-workspace';
 
 describe('WorkspaceData methods', () => {
 

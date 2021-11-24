@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { IDisposable } from '@ide-framework/ide-core-common/lib/disposable';
-import { MaybePromise } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { MaybePromise } from '@opensumi/ide-core-common';
 import pm from 'picomatch';
 
 import { IActivationEventService } from './types';

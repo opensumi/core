@@ -1,11 +1,11 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@opensumi/ide-core-browser';
 
-import * as VSCodeBuiltinCommands from '@ide-framework/ide-extension/lib/browser/vscode/builtin-commands';
-import { UriComponents } from '@ide-framework/ide-extension/lib/common/vscode/models';
-import { TextDocumentShowOptions, ViewColumn } from '@ide-framework/ide-extension/lib/common/vscode';
-import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ide-framework/ide-extension/lib/common/vscode/converter';
-import { WorkbenchEditorService, IResourceOpenOptions } from '@ide-framework/ide-editor';
+import * as VSCodeBuiltinCommands from '@opensumi/ide-extension/lib/browser/vscode/builtin-commands';
+import { UriComponents } from '@opensumi/ide-extension/lib/common/vscode/models';
+import { TextDocumentShowOptions, ViewColumn } from '@opensumi/ide-extension/lib/common/vscode';
+import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@opensumi/ide-extension/lib/common/vscode/converter';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@opensumi/ide-editor';
 
 @Domain(CommandContribution)
 export class CommonCommandsContribution implements CommandContribution {

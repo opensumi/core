@@ -1,1 +1,1 @@
-export { Badge as default } from '@ide-framework/ide-components';
+export { Badge as default } from '@opensumi/ide-components';

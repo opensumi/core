@@ -1,10 +1,10 @@
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
-import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco, EncodingRegistry } from '@ide-framework/ide-core-browser';
-import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@ide-framework/ide-core-common/lib/encoding';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco, EncodingRegistry } from '@opensumi/ide-core-browser';
+import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@opensumi/ide-core-common/lib/encoding';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EditorPreferences } from '../preference/schema';
-import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface ReadEncodingOptions {
 

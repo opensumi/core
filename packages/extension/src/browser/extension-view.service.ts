@@ -1,12 +1,12 @@
-import { warning } from '@ide-framework/ide-components/lib/utils/warning';
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { IRPCProtocol, ProxyIdentifier } from '@ide-framework/ide-connection';
+import { warning } from '@opensumi/ide-components/lib/utils/warning';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IBrowserRequireInterceptorArgs, IExtension, IRequireInterceptorService, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER, RequireInterceptorContribution } from '../common';
-import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@ide-framework/ide-core-common';
-import { AppConfig, IToolbarPopoverRegistry } from '@ide-framework/ide-core-browser';
+import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
-import { Path, posix } from '@ide-framework/ide-core-common/lib/path';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { Path, posix } from '@opensumi/ide-core-common/lib/path';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { retargetEvents } from './retargetEvents';

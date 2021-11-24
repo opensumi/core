@@ -1,13 +1,13 @@
-import { Injectable, Autowired, Optional } from '@ide-framework/common-di';
+import { Injectable, Autowired, Optional } from '@opensumi/common-di';
 import {
   URI,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { IFileTreeAPI, IFileTreeService } from '../../common';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ide-framework/ide-components';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import { Directory } from '../../common/file-tree-node.define';
-import { FileStat } from '@ide-framework/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 
 @Injectable({multiple: true})
 export class FileTreeDialogService extends Tree implements IFileTreeService {

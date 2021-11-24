@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { observable, action } from 'mobx';
-import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, Event, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@ide-framework/ide-core-browser';
+import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, Event, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@opensumi/ide-core-browser';
 import { toPreferenceReadableName, PreferenceSettingId } from '../common';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { IRecycleListHandler } from '@ide-framework/ide-components';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IRecycleListHandler } from '@opensumi/ide-components';
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 @Injectable()

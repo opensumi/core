@@ -6,7 +6,7 @@ const distDir = path.join(__dirname, '../lib/hosted');
 
 module.exports = {
   entry: require.resolve(
-    '@ide-framework/ide-extension/lib/hosted/ext.process.js',
+    '@opensumi/ide-extension/lib/hosted/ext.process.js',
   ),
   target: 'node',
   output: {

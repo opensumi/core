@@ -1,6 +1,6 @@
 import { Terminal, ILink } from 'xterm';
-import { URI } from '@ide-framework/ide-core-common';
-import { OperatingSystem } from '@ide-framework/ide-core-common/lib/platform';
+import { URI } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { TerminalValidatedLocalLinkProvider } from '../../../src/browser/links/validated-local-link-provider';
 
 const unixLinks = [

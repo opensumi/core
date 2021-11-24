@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { IStoragePathServer } from '../common';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@ide-framework/ide-core-common';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
 export class StoragePathServer implements IStoragePathServer {

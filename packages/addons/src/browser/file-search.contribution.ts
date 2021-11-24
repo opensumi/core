@@ -1,10 +1,10 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { matchesFuzzy } from '@ide-framework/monaco-editor-core/esm/vs/base/common/filters';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
 /**
  * 用于快速打开，检索文件
  */
 import fuzzy from 'fuzzy';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import {
   CommandContribution,
   CommandRegistry,
@@ -15,7 +15,7 @@ import {
   IRange,
   IReporterService,
   REPORT_NAME,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 import {
   localize,
   formatLocalize,
@@ -28,18 +28,18 @@ import {
   getSymbolIcon,
   Highlight,
   Mode,
-} from '@ide-framework/ide-core-browser';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ide-framework/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ide-framework/ide-quick-open';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { EditorGroupSplitAction, WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { DocumentSymbolStore, IDummyRoot, INormalizedDocumentSymbol } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { FileSearchServicePath, IFileSearchService } from '@ide-framework/ide-file-search/lib/common';
-import { RecentFilesManager } from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { KeybindingContribution, KeybindingRegistry, ILogger } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@opensumi/ide-quick-open';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { EditorGroupSplitAction, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { DocumentSymbolStore, IDummyRoot, INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { RecentFilesManager } from '@opensumi/ide-core-browser';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 

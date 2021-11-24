@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { ProfilingSession, Profile } from 'v8-inspect-profiler';
 
 import { IExtensionHostProfilerService, IExtensionNodeService } from '../common';
 import { writeFile } from 'fs-extra';
-import { INodeLogger } from '@ide-framework/ide-core-node/lib/logger/node-logger';
+import { INodeLogger } from '@opensumi/ide-core-node/lib/logger/node-logger';
 
 export enum ProfileSessionState {
   None = 0,

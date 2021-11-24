@@ -1,4 +1,4 @@
-import { IFileService, FileStat } from '@ide-framework/ide-file-service';
+import { IFileService, FileStat } from '@opensumi/ide-file-service';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSchemeNodeModule } from '../../src/node';
@@ -7,9 +7,9 @@ import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.ser
 import { tmpdir } from 'os';
 import { join, dirname } from 'path';
 import { ensureDir, writeFile, readFile } from 'fs-extra';
-import { URI } from '@ide-framework/ide-core-common';
-import { encode, decode } from '@ide-framework/ide-file-service/lib/node/encoding';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { URI } from '@opensumi/ide-core-common';
+import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('node file doc service test', () => {
 

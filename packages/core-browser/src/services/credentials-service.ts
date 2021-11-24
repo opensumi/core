@@ -1,6 +1,6 @@
-import { Emitter, ICredentialsChangeEvent, INativeCredentialService, KeytarServicePath } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Event } from '@ide-framework/ide-core-common';
+import { Emitter, ICredentialsChangeEvent, INativeCredentialService, KeytarServicePath } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Event } from '@opensumi/ide-core-common';
 
 export const ICredentialsService = Symbol('ICredentialsService');
 

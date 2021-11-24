@@ -1,10 +1,10 @@
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { FileUri } from '@ide-framework/ide-core-common';
-import { UTF8 } from '@ide-framework/ide-core-common/lib/encoding';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { FileUri } from '@opensumi/ide-core-common';
+import { UTF8 } from '@opensumi/ide-core-common/lib/encoding';
 import { FileServiceClientModule } from '../../src/browser';
 import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
-import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
-import { FileService } from '@ide-framework/ide-file-service/lib/node';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { FileService } from '@opensumi/ide-file-service/lib/node';
 import temp from 'temp';
 import fs from 'fs-extra';
 

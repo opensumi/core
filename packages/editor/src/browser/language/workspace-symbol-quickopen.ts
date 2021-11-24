@@ -1,11 +1,11 @@
-import { SymbolKind as SymbolKindEnum } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon, getIcon } from '@ide-framework/ide-core-browser';
+import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon, getIcon } from '@opensumi/ide-core-browser';
 import { WorkspaceSymbolProvider, ILanguageService, WorkspaceSymbolParams, WorkbenchEditorService, EditorGroupSplitAction } from '../../common';
 import type { SymbolInformation, Range } from 'vscode-languageserver-types';
-import { ILogger, localize, IReporterService, REPORT_NAME } from '@ide-framework/ide-core-common';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { QuickOpenBaseAction, QuickOpenActionProvider } from '@ide-framework/ide-quick-open';
+import { ILogger, localize, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { QuickOpenBaseAction, QuickOpenActionProvider } from '@opensumi/ide-quick-open';
 
 @Injectable()
 class WorkspaceSymbolOpenSideAction extends QuickOpenBaseAction {

@@ -1,6 +1,6 @@
-import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBoundary, IEventBus, MaybeNull, PreferenceService, URI, useDisposable, View } from '@ide-framework/ide-core-browser';
-import { IResizeHandleDelegate, ResizeFlexMode, ResizeHandleHorizontal, ResizeHandleVertical } from '@ide-framework/ide-core-browser/lib/components';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBoundary, IEventBus, MaybeNull, PreferenceService, URI, useDisposable, View } from '@opensumi/ide-core-browser';
+import { IResizeHandleDelegate, ResizeFlexMode, ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import classnames from 'classnames';
 import React from 'react';
 import ReactIs from 'react-is';

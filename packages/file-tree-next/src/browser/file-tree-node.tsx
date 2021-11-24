@@ -1,14 +1,14 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from './file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ide-framework/ide-components';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { getIcon, URI } from '@ide-framework/ide-core-browser';
+import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@opensumi/ide-components';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { getIcon, URI } from '@opensumi/ide-core-browser';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
-import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 
 export interface IFileTreeNodeProps {
   item: any;

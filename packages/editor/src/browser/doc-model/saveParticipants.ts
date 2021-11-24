@@ -1,12 +1,12 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import * as modes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
-import { CodeActionKind } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
-import { getCodeActions, CodeActionItem } from '@ide-framework/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
-import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry, Progress } from '@ide-framework/ide-core-browser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
+import { getCodeActions, CodeActionItem } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
+import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry, Progress } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 export class CodeActionOnSaveParticipant extends WithEventBus {

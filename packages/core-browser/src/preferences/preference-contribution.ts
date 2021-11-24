@@ -1,11 +1,11 @@
 import Ajv from 'ajv';
-import { Injectable, Autowired, Injector } from '@ide-framework/common-di';
-import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, Injector } from '@opensumi/common-di';
+import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
 import {
   PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType,
-} from '@ide-framework/ide-core-common/lib/preferences/preference-schema';
+} from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
 import { AppConfig } from '../react-providers';
 

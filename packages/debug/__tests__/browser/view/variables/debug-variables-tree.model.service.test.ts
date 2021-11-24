@@ -1,13 +1,13 @@
 import { DebugContextKey } from './../../../../src/browser/contextkeys/debug-contextkey.service';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { Disposable } from '@ide-framework/ide-core-common';
-import { DebugHoverSource } from '@ide-framework/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager } from '@ide-framework/ide-debug';
-import { DebugConsoleNode } from '@ide-framework/ide-debug/lib/browser/tree';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { DebugVariablesModelService } from '@ide-framework/ide-debug/lib/browser/view/variables/debug-variables-tree.model.service';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { DebugViewModel } from '@ide-framework/ide-debug/lib/browser/view/debug-view-model';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { Disposable } from '@opensumi/ide-core-common';
+import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
+import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
+import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { DebugVariablesModelService } from '@opensumi/ide-debug/lib/browser/view/variables/debug-variables-tree.model.service';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
 import styles from '../../../../src/browser/view/variables/debug-variables.module.less';
 
 describe('Debug Variables Tree Model', () => {

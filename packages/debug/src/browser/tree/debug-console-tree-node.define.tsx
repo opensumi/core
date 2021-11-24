@@ -1,6 +1,6 @@
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
-import { MessageType } from '@ide-framework/ide-core-browser';
-import { TreeNode, ITree, CompositeTreeNode } from '@ide-framework/ide-components';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+import { MessageType } from '@opensumi/ide-core-browser';
+import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
 import debugConsoleStyles from '../view/console/debug-console.module.less';
 import React from 'react';
 import ReactDOM from 'react-dom';

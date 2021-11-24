@@ -1,12 +1,12 @@
-import { HideReason, IContextKeyService } from '@ide-framework/ide-core-browser';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '@ide-framework/ide-dev-tool/src/mock-injector';
-import { MonacoContextKeyService } from '@ide-framework/ide-monaco/lib/browser/monaco.context-key.service';
+import { HideReason, IContextKeyService } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenModule } from '../../src/browser';
 import { QuickOpenItem, QuickOpenModel, QuickOpenService } from '../../src/common';
-import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
-import { VALIDATE_TYPE } from '@ide-framework/ide-components';
+import { VALIDATE_TYPE } from '@opensumi/ide-components';
 
 describe(__filename, () => {
 

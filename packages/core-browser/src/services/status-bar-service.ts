@@ -1,4 +1,4 @@
-import { IDisposable, IThemeColor } from '@ide-framework/ide-core-common';
+import { IDisposable, IThemeColor } from '@opensumi/ide-core-common';
 import { IMenu } from '../menu/next';
 
 export const IStatusBarService = Symbol('IStatusBarService');

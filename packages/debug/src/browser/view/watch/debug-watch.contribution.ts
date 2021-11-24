@@ -1,11 +1,11 @@
 import { CONTEXT_IN_DEBUG_MODE, CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
-import { MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ide-framework/ide-core-browser';
+import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DEBUG_WATCH_ID } from '../../../common';
 import { DebugWatchModelService } from './debug-watch-tree.model.service';
-import { MenuId, IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
 @Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution)

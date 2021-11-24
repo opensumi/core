@@ -1,4 +1,4 @@
-import { localize } from '@ide-framework/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';

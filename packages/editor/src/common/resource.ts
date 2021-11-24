@@ -1,4 +1,4 @@
-import { URI, BasicEvent, MaybePromise, IDisposable, Event } from '@ide-framework/ide-core-common';
+import { URI, BasicEvent, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
 
 export interface IResourceProvider {
 

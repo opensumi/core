@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
-import { IDisposable, Event } from '@ide-framework/ide-core-common';
+import { IDisposable, Event } from '@opensumi/ide-core-common';
 import { Uri } from './ext-types';
-import { SaveReason, IEditorDocumentModelContentChange } from '@ide-framework/ide-editor';
+import { SaveReason, IEditorDocumentModelContentChange } from '@opensumi/ide-editor';
 
 export interface IModelChangedEvent {
   /**

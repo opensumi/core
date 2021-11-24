@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 import { Terminal } from 'xterm';
-import { uuid, URI, Emitter } from '@ide-framework/ide-core-common';
-import { OS } from '@ide-framework/ide-core-common/lib/platform';
-import { Disposable } from '@ide-framework/ide-core-browser';
+import { uuid, URI, Emitter } from '@opensumi/ide-core-common';
+import { OS } from '@opensumi/ide-core-common/lib/platform';
+import { Disposable } from '@opensumi/ide-core-browser';
 import { ITerminalService, ITerminalConnection, ITerminalError } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';

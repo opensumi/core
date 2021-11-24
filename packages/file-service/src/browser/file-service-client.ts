@@ -1,11 +1,11 @@
 
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
 import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME, IFileSystemProviderRegistrationEvent, IFileSystemProviderCapabilitiesChangeEvent } from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities, Deferred } from '@ide-framework/ide-core-common';
-import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
-import { Uri } from '@ide-framework/ide-core-common';
-import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities, Deferred } from '@opensumi/ide-core-common';
+import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
+import { Uri } from '@opensumi/ide-core-common';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
   DidFilesChangedParams,
@@ -18,10 +18,10 @@ import {
   TextDocumentContentChangeEvent,
 } from '../common';
 import { FileSystemWatcher } from './watcher';
-import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { FilesChangeEvent, ExtensionActivateEvent } from '@ide-framework/ide-core-browser';
-import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
-import { Iterable } from '@ide-framework/monaco-editor-core/esm/vs/base/common/iterator';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { FilesChangeEvent, ExtensionActivateEvent } from '@opensumi/ide-core-browser';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {

@@ -1,13 +1,13 @@
 import React from 'react';
-import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
-import { Icon, getKaitianIcon, Button, Tabs } from '@ide-framework/ide-components';
-import { localize } from '@ide-framework/ide-core-common';
-import { Markdown } from '@ide-framework/ide-markdown';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
+import { localize } from '@opensumi/ide-core-common';
+import { Markdown } from '@opensumi/ide-markdown';
 
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 import * as styles from './overview.module.less';
 import { VSXExtension } from '../../common';
-import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 
 enum TabActiveKey {
   details = 'Details',

@@ -1,7 +1,7 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Disposable, DisposableCollection } from '@ide-framework/ide-core-common';
-import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
-import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@ide-framework/ide-core-browser';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Disposable, DisposableCollection } from '@opensumi/ide-core-common';
+import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@opensumi/ide-core-browser';
 
 import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
 

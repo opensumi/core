@@ -2,7 +2,7 @@ import { IExtensionHostManager } from '../../src';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { extensionHostManagerTester } from './extension.host.manager.common-tester';
-import { Event } from '@ide-framework/ide-core-common';
+import { Event } from '@opensumi/ide-core-common';
 
 const PROXY_PORT = 10297;
 let extHostProxy: ExtHostProxy;

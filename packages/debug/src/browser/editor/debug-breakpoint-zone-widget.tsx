@@ -1,17 +1,17 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import * as monacoModes from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ZoneWidget } from '@ide-framework/ide-monaco-enhance';
+import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { DebugEditor } from '../../common';
 import styles from './debug-breakpoint.module.less';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
-import { Select, Option } from '@ide-framework/ide-components';
-import { localize, Emitter, Event } from '@ide-framework/ide-core-common';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { Select, Option } from '@opensumi/ide-components';
+import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
-import { ICodeEditor } from '@ide-framework/ide-editor';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { ICSSStyleService } from '@ide-framework/ide-theme';
+import { ICodeEditor } from '@opensumi/ide-editor';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { ICSSStyleService } from '@opensumi/ide-theme';
 
 export interface BreakpointChangeData {
   context: DebugBreakpointZoneWidget.Context;

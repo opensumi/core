@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@ide-framework/ide-core-browser';
-import * as path from '@ide-framework/ide-core-common/lib/path';
-import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@opensumi/ide-core-browser';
+import * as path from '@opensumi/ide-core-common/lib/path';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IResourceProvider, WorkbenchEditorService } from '../common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';

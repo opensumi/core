@@ -1,9 +1,9 @@
 import React from 'react';
 import clx from 'classnames';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { observer } from 'mobx-react-lite';
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@ide-framework/ide-components';
-import { isOSX } from '@ide-framework/ide-core-common';
+import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
+import { isOSX } from '@opensumi/ide-core-common';
 
 import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
 import { SCMTreeModelService } from './scm-tree-model.service';

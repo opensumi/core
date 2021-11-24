@@ -1,9 +1,9 @@
-import { Autowired } from '@ide-framework/common-di';
-import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@ide-framework/ide-core-browser';
-import { Domain, localize, URI } from '@ide-framework/ide-core-common';
-import { IMainLayoutService, MainLayoutContribution } from '@ide-framework/ide-main-layout';
-import { BrowserEditorContribution, EditorComponentRegistry, IResource, ResourceService } from '@ide-framework/ide-editor/lib/browser';
-import { IIconService, IconType } from '@ide-framework/ide-theme';
+import { Autowired } from '@opensumi/common-di';
+import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@opensumi/ide-core-browser';
+import { Domain, localize, URI } from '@opensumi/ide-core-common';
+import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { BrowserEditorContribution, EditorComponentRegistry, IResource, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { IVSXExtensionService, VSXExtensionServiceToken } from '../common';
 import { VSXExtensionView } from './vsx-extension.view';
@@ -72,7 +72,7 @@ export class VSXExtensionContribution implements ClientAppContribution, MainLayo
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('@ide-framework/ide-extension-manager', [], {
+    registry.register('@opensumi/ide-extension-manager', [], {
       iconClass: getIcon('extension'),
       title: localize('marketplace.extension.container'),
       priority: 5,

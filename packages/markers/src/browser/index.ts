@@ -1,5 +1,5 @@
-import { Injectable, Provider } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { Injectable, Provider } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { IMarkerService } from '../common';
 import { MarkersContribution } from './markers-contribution';
 import { MarkerService } from './markers-service';

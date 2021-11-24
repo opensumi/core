@@ -1,5 +1,5 @@
 import { IExtHostWorkspace } from '../../../../common/vscode';
-import { Uri, isObject } from '@ide-framework/ide-core-common';
+import { Uri, isObject } from '@opensumi/ide-core-common';
 import cloneDeep = require('lodash.clonedeep');
 
 export class Configuration {

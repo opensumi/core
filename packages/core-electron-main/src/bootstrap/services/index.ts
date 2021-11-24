@@ -1,4 +1,4 @@
-import { Provider } from '@ide-framework/common-di';
+import { Provider } from '@opensumi/common-di';
 import { MenuElectronMainContribution } from './menu';
 import { UIElectronMainContribution } from './ui';
 import { ProtocolElectronMainContribution } from './protocol';

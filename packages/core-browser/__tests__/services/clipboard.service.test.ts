@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IClipboardService } from '../../src/services';
-import { ILoggerManagerClient } from '@ide-framework/ide-core-common';
+import { ILoggerManagerClient } from '@opensumi/ide-core-common';
 
 describe(__filename, () => {
   let injector: MockInjector;

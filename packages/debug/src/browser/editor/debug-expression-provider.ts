@@ -1,8 +1,8 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { IEvaluatableExpressionService } from './evaluatable-expression';
-import { CancellationTokenSource, coalesce, IRange } from '@ide-framework/ide-core-common';
+import { CancellationTokenSource, coalesce, IRange } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class DebugExpressionProvider {

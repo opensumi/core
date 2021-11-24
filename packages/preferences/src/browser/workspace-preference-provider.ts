@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { URI, DisposableCollection } from '@ide-framework/ide-core-browser';
-import { PreferenceScope, PreferenceProvider } from '@ide-framework/ide-core-browser/lib/preferences';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { URI, DisposableCollection } from '@opensumi/ide-core-browser';
+import { PreferenceScope, PreferenceProvider } from '@opensumi/ide-core-browser/lib/preferences';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-preference-provider';
 
 @Injectable()

@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IMenuRegistry } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { ISumiMenuExtendInfo } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IContributeMenubarItem } from '../../../common/sumi/extension';

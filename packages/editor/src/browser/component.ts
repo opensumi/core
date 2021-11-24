@@ -1,7 +1,7 @@
 import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent } from './types';
-import { ExtensionActivateEvent, IDisposable, IEventBus } from '@ide-framework/ide-core-common';
+import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import ReactDOM from 'react-dom';
 
 type SchemeKey = string;

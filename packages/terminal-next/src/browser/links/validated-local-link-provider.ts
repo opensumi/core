@@ -5,8 +5,8 @@
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
 
 import type { Terminal, IBufferLine } from 'xterm';
-import { URI } from '@ide-framework/ide-core-common';
-import { OperatingSystem } from '@ide-framework/ide-core-common/lib/platform';
+import { URI } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import type { TerminalClient } from '../terminal.client';
 import { TerminalLink } from './link';
 import { XtermLinkMatcherHandler } from './link-manager';

@@ -1,8 +1,8 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import { IExtension } from '../common';
-import { Disposable, ILogger } from '@ide-framework/ide-core-browser';
+import { Disposable, ILogger } from '@opensumi/ide-core-browser';
 import { IActivationEventService } from './types';
-import { IEventBus, ExtensionEnabledEvent } from '@ide-framework/ide-core-common';
+import { IEventBus, ExtensionEnabledEvent } from '@opensumi/ide-core-common';
 import { VSCodeContributeRunner } from './vscode/contributes';
 import { SumiContributesRunner } from './sumi/contributes';
 

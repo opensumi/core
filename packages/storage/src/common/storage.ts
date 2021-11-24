@@ -1,4 +1,4 @@
-import { Event } from '@ide-framework/ide-core-common';
+import { Event } from '@opensumi/ide-core-common';
 
 export interface IUpdateRequest {
   insert?: StringKeyToAnyValue;

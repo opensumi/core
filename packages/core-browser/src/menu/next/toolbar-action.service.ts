@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IDisposable, Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
 import { IToolbarRegistry, createToolbarActionBtn } from '../../toolbar';
 import { createToolbarActionSelect } from '../../toolbar/components/select';
 

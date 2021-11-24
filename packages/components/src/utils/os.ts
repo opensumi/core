@@ -1,4 +1,4 @@
-// Modify from @ide-framework/ide-core-common/src/os.ts
+// Modify from @opensumi/ide-core-common/src/os.ts
 function is(userAgent: string, platform: string): boolean {
   if (global.hasOwnProperty('platform')) {
     return ((global as any).platform === platform);

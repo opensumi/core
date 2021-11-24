@@ -1,13 +1,13 @@
 import React from 'react';
-import { useInjectable, getIcon, DisposableCollection, Disposable } from '@ide-framework/ide-core-browser';
+import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ide-framework/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@ide-framework/ide-components';
+import { ViewState } from '@opensumi/ide-core-browser';
+import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@opensumi/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
 import styles from './debug-watch.module.less';
 import cls from 'classnames';
-import { Loading } from '@ide-framework/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 

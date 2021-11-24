@@ -1,16 +1,16 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
-import { URI, StorageProvider, Disposable, ILoggerManagerClient } from '@ide-framework/ide-core-common';
-import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@ide-framework/ide-core-browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { URI, StorageProvider, Disposable, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@opensumi/ide-core-browser';
 import { WorkspaceModule } from '../../src/browser';
-import { FileStat, DiskFileServicePath } from '@ide-framework/ide-file-service';
+import { FileStat, DiskFileServicePath } from '@opensumi/ide-file-service';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
-import { MockedStorageProvider } from '@ide-framework/ide-core-browser/__mocks__/storage';
-import { WorkspaceService } from '@ide-framework/ide-workspace/lib/browser/workspace-service';
-import { MockFsProvider } from '@ide-framework/ide-file-service/lib/common/mocks';
-import { MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
+import { MockFsProvider } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 
 describe('WorkspaceService should be work while workspace was a single directory', () => {
   let workspaceService: WorkspaceService;

@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { CryptrServicePath } from '@ide-framework/ide-core-common';
+import { CryptrServicePath } from '@opensumi/ide-core-common';
 import { CryptrService, ICryptrService } from '../../src';
 
 describe('test for core-browser/src/services/cryptr-service.ts', () => {

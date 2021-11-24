@@ -1,9 +1,9 @@
 import type vscode from 'vscode';
-import { Uri as URI, MutableDisposable, DisposableStore, IRange, Emitter, debounce, asPromise, CancellationToken } from '@ide-framework/ide-core-common';
+import { Uri as URI, MutableDisposable, DisposableStore, IRange, Emitter, debounce, asPromise, CancellationToken } from '@opensumi/ide-core-common';
 import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostCommands, ExtensionDocumentDataManager, IExtensionDescription } from '../../../common/vscode';
-import type { UriComponents } from '@ide-framework/ide-core-common';
+import type { UriComponents } from '@opensumi/ide-core-common';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import * as models from '../../../common/vscode/models';
 import * as types from '../../../common/vscode/ext-types';

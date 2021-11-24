@@ -1,8 +1,8 @@
 import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { Deferred, URI, Emitter, Event, ILogger } from '@ide-framework/ide-core-common';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { Deferred, URI, Emitter, Event, ILogger } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
 export abstract class StorageServer implements IStorageServer {

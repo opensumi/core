@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import { getDebugLogger } from '@ide-framework/ide-core-common';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
 import { ConfigContext } from './config-provider';
-import { Button } from '@ide-framework/ide-components';
+import { Button } from '@opensumi/ide-components';
 import { IClientApp } from '../browser-module';
 
 const logger = getDebugLogger();

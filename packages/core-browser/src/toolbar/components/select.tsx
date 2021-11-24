@@ -1,7 +1,7 @@
 import React from 'react';
 import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
-import { Select, SelectOptionsList, ISelectOptionsListProps, IDataOption, IDataOptionGroup, isDataOptionGroups } from '@ide-framework/ide-components';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { Select, SelectOptionsList, ISelectOptionsListProps, IDataOption, IDataOptionGroup, isDataOptionGroups } from '@opensumi/ide-components';
+import { Emitter } from '@opensumi/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../../style/icon/icon';
 

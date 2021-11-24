@@ -1,17 +1,17 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { CommentsModule } from '../../src/browser';
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 import { ICommentsService, CommentMode } from '../../src/common';
-import { URI, positionToRange, Disposable } from '@ide-framework/ide-core-common';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { URI, positionToRange, Disposable } from '@opensumi/ide-core-common';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { IIconService } from '@ide-framework/ide-theme';
-import { IconService } from '@ide-framework/ide-theme/lib/browser';
-import { IEditor, EditorCollectionService, ResourceService } from '@ide-framework/ide-editor';
-import { ResourceServiceImpl } from '@ide-framework/ide-editor/lib/browser/resource.service';
-import { IEditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser';
+import { IIconService } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { IEditor, EditorCollectionService, ResourceService } from '@opensumi/ide-editor';
+import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
+import { IEditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser';
 
 describe('comment service test', () => {
   let injector: MockInjector;

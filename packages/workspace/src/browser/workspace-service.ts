@@ -1,5 +1,5 @@
 
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import {
   KAITIAN_MULTI_WORKSPACE_EXT,
   IWorkspaceService,
@@ -22,13 +22,13 @@ import {
   AppConfig,
   IClientApp,
   IWindowService,
-} from '@ide-framework/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@ide-framework/ide-core-common';
-import { FileStat } from '@ide-framework/ide-file-service';
-import { FileChangeEvent } from '@ide-framework/ide-file-service/lib/common';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+} from '@opensumi/ide-core-browser';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@opensumi/ide-core-common';
+import { FileStat } from '@opensumi/ide-file-service';
+import { FileChangeEvent } from '@opensumi/ide-file-service/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { WorkspacePreferences } from './workspace-preferences';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()

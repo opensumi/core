@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@ide-framework/ide-core-node';
-import { IFileService } from '@ide-framework/ide-file-service';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@opensumi/ide-core-node';
+import { IFileService } from '@opensumi/ide-file-service';
 
 import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
 import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
-import { encode, decode } from '@ide-framework/ide-file-service/lib/node/encoding';
-import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 @Injectable()
 export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {

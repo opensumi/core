@@ -1,5 +1,5 @@
 import type { IBufferRange, ILink, ILinkDecorations, Terminal } from 'xterm';
-import { Disposable, DisposableCollection, Emitter, Event, isOSX } from '@ide-framework/ide-core-common';
+import { Disposable, DisposableCollection, Emitter, Event, isOSX } from '@opensumi/ide-core-common';
 
 export class TerminalLink extends Disposable implements ILink {
   decorations: ILinkDecorations;

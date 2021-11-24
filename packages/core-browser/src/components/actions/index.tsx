@@ -1,10 +1,10 @@
 import React from 'react';
 import clsx from 'classnames';
-import { mnemonicButtonLabel } from '@ide-framework/ide-core-common/lib/utils/strings';
+import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
 
-import { ClickParam, Menu } from '@ide-framework/ide-components/lib/menu';
+import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 
-import { Button, CheckBox, Icon } from '@ide-framework/ide-components';
+import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
   IContextMenu, IMenu, IMenuSeparator, MenuId,

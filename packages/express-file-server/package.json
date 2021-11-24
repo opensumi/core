@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-express-file-server",
+  "name": "@opensumi/ide-express-file-server",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -18,14 +18,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
-    "@ide-framework/ide-static-resource": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
+    "@opensumi/ide-static-resource": "2.12.0",
     "koa-mount": "^4.0.0"
   },
   "devDependencies": {
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "koa": "^2.11.0",
     "npm-run-all": "^4.1.5",
     "superagent": "^5.1.0",

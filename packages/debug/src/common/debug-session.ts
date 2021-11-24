@@ -1,5 +1,5 @@
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
-import { IDisposable } from '@ide-framework/ide-core-browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { IDisposable } from '@opensumi/ide-core-browser';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
 import { DebugEventTypes } from '../browser';

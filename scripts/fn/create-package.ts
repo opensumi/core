@@ -37,7 +37,7 @@ export async function createPackage(name: string) {
 
   const filePaths = glob.sync(templatePattern);
   const replaceList = [
-    createReplaceTuple('template-name', `@ide-framework/ide-${name}`),
+    createReplaceTuple('template-name', `@opensumi/ide-${name}`),
     createReplaceTuple('TemplateUpperName', upperFirst(camelCase(name))),
   ];
 
@@ -68,8 +68,8 @@ export async function createPackage(name: string) {
   const resolveJsonPath = path.join(__dirname, '../../configs/ts/tsconfig.resolve.json');
   const resolveTsConfig = require(resolveJsonPath);
   const extendPaths = {
-    [`@ide-framework/ide-${name}`]: [`../packages/${name}/src/index.ts`],
-    [`@ide-framework/ide-${name}/lib/*`]: [`../packages/${name}/src/*`],
+    [`@opensumi/ide-${name}`]: [`../packages/${name}/src/index.ts`],
+    [`@opensumi/ide-${name}/lib/*`]: [`../packages/${name}/src/*`],
   };
   Object.assign(resolveTsConfig.compilerOptions.paths, extendPaths);
   await fs.writeFile(resolveJsonPath, JSON.stringify(resolveTsConfig, null, 2) + '\n');

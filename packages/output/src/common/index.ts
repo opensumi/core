@@ -1,4 +1,4 @@
-import { BasicEvent } from '@ide-framework/ide-core-common';
+import { BasicEvent } from '@opensumi/ide-core-common';
 
 export enum ContentChangeType {
   appendLine,

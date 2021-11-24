@@ -1,6 +1,6 @@
 import React from 'react';
 import clx from 'classnames';
-import { getIcon } from '@ide-framework/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
 import { ItemProps, ItemType } from '../../common';
 import debouce = require('lodash.debounce');
 

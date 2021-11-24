@@ -1,6 +1,6 @@
 
-import { Injectable } from '@ide-framework/common-di';
-import { Disposable } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { Disposable } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class MockContextKeyService extends Disposable {

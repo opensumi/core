@@ -1,4 +1,4 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig, ICommentProviderFeature } from '../common';
 
 @Injectable()

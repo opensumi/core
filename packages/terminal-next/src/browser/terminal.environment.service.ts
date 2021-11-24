@@ -1,6 +1,6 @@
 import React from 'react';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { CommandService, Emitter, Event, ILogger, localize } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { CommandService, Emitter, Event, ILogger, localize } from '@opensumi/ide-core-common';
 import {
   deserializeEnvironmentVariableCollection,
   IEnvironmentVariableCollectionWithPersistence,
@@ -11,10 +11,10 @@ import {
   mutatorTypeLabel,
   serializeEnvironmentVariableCollection,
 } from '../common/environmentVariable';
-import { IWorkspaceStorageService } from '@ide-framework/ide-workspace/lib/common';
-import { IStatusBarService } from '@ide-framework/ide-status-bar/lib/common';
-import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@ide-framework/ide-core-browser';
-import { IDialogService } from '@ide-framework/ide-overlay/lib/common';
+import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
+import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
+import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
+import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 
 import { MergedEnvironmentVariableCollection } from '../common/environmentVariableCollection';
 import { TERMINAL_COMMANDS } from '../common/commands';

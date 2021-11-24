@@ -1,9 +1,9 @@
 import path from 'path';
-import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@ide-framework/ide-core-node';
-import { CancellationTokenSource } from '@ide-framework/ide-core-common';
-import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { ProcessModule } from '@ide-framework/ide-process';
-import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
+import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+import { CancellationTokenSource } from '@opensumi/ide-core-common';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { ProcessModule } from '@opensumi/ide-process';
+import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { FileSearchModule, IFileSearchService } from '../../src';
 
 describe('search-service', () => {

@@ -1,12 +1,12 @@
 import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@ide-framework/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey, IReporterService } from '@ide-framework/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@opensumi/ide-components';
+import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey, IReporterService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugWatchModel } from './debug-watch-model';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugWatch } from '../../model';

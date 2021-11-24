@@ -1,20 +1,20 @@
-import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import { RenderLineNumbersType } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired, Optinal } from '@ide-framework/common-di';
+import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired, Optinal } from '@opensumi/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../common/vscode';
-import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ide-framework/ide-editor';
-import { WorkbenchEditorServiceImpl } from '@ide-framework/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ide-framework/ide-core-common';
-import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, IDiffResource } from '@ide-framework/ide-editor/lib/browser';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ide-framework/ide-editor/lib/browser/editor-collection.service';
+import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@opensumi/ide-core-common';
+import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, IDiffResource } from '@opensumi/ide-editor/lib/browser';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
-import { EndOfLineSequence } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {

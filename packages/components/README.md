@@ -1,4 +1,4 @@
-# @ide-framework/ide-components
+# @opensumi/ide-components
 
 ## Usage
 
@@ -6,8 +6,8 @@
 ```tsx
 import React from 'react';
 
-import { createFromIconfontCN } from '@ide-framework/ide-components/lib/icon/iconfont-cn';
-import { Icon } from '@ide-framework/ide-components/lib/icon';
+import { createFromIconfontCN } from '@opensumi/ide-components/lib/icon/iconfont-cn';
+import { Icon } from '@opensumi/ide-components/lib/icon';
 
 type IconFontMap =
   'icon-javascript'
@@ -58,8 +58,8 @@ renderApp({
   * 不包含对 ide-framework runtime 依赖
   * 不包含对 ide-framework 其他包的依赖
   * 自己的依赖自己管理
-* 脱离 ide-fw 去单独使用 `@ide-framework/ide-components` 时，应手动 import 字体文件
+* 脱离 ide-fw 去单独使用 `@opensumi/ide-components` 时，应手动 import 字体文件
 
   ```less
-  @import '~@ide-framework/ide-components/lib/icon/iconfont/iconfont.css';
+  @import '~@opensumi/ide-components/lib/icon/iconfont/iconfont.css';
   ```

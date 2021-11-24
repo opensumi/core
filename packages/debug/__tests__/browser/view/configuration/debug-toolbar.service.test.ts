@@ -1,8 +1,8 @@
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { IEventBus, EventBusImpl } from '@ide-framework/ide-core-common';
-import { DebugViewModel } from '@ide-framework/ide-debug/lib/browser/view/debug-view-model';
-import { MockInjector } from '@ide-framework/ide-dev-tool/src/mock-injector';
-import { DebugToolbarService } from '@ide-framework/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { DebugToolbarService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
 
 describe('Debug Configuration Service', () => {
   const mockInjector = createBrowserInjector([], new MockInjector([

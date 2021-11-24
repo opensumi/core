@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import { Autowired, Injectable } from '@opensumi/common-di';
 
 import {
   ClientAppContribution,
@@ -28,15 +28,15 @@ import {
   getIcon,
   isString,
   ISettingSection,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry, IResourceOpenResult, WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
-import { ResourceService, IResourceProvider, IResource } from '@ide-framework/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { BrowserEditorContribution, EditorComponentRegistry, IResourceOpenResult, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
 import { PREF_SCHEME, SettingContribution } from '../common';
 import { PreferenceView } from './preferences.view';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference-settings.service';
 import * as jsoncparser from 'jsonc-parser';
 

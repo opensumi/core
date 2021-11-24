@@ -1,10 +1,10 @@
 import vscode from 'vscode';
 
-import { asPromise, CancellationToken } from '@ide-framework/ide-core-common';
+import { asPromise, CancellationToken } from '@opensumi/ide-core-common';
 import { Position } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { IEvaluatableExpression } from '@ide-framework/ide-debug/lib/common/evaluatable-expression';
+import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 
 export class EvaluatableExpressionAdapter {
 

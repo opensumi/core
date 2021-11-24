@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import path from 'path';
-import { uuid, INodeLogger, Uri } from '@ide-framework/ide-core-node';
+import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
 import os from 'os';
 import { createHash } from 'crypto';
 
 import { IExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';
-import { RPCService } from '@ide-framework/ide-connection';
+import { RPCService } from '@opensumi/ide-connection';
 import * as lp from './languagePack';
-import { IFileService } from '@ide-framework/ide-file-service';
+import { IFileService } from '@opensumi/ide-file-service';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
 

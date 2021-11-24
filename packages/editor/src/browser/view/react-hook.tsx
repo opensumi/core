@@ -1,5 +1,5 @@
 import { EditorGroup } from '../workbench-editor.service';
-import { useUpdateOnEvent } from '@ide-framework/ide-core-browser';
+import { useUpdateOnEvent } from '@opensumi/ide-core-browser';
 
 export function useUpdateOnGroupTabChange(editorGroup: EditorGroup) {
 

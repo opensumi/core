@@ -1,13 +1,13 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from './styles.module.less';
-import { getIcon, ErrorBoundary, useViewState } from '@ide-framework/ide-core-browser';
-import { Layout, PanelContext } from '@ide-framework/ide-core-browser/lib/components';
-import { useInjectable } from '@ide-framework/ide-core-browser';
-import { InlineActionBar, InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
-import { isIMenu, IMenu, IContextMenu } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
-import { ProgressBar } from '@ide-framework/ide-core-browser/lib/progress/progress-bar';
+import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
+import { Layout, PanelContext } from '@opensumi/ide-core-browser/lib/components';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题

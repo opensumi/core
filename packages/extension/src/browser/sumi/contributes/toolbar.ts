@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IToolbarButtonContribution, IToolbarSelectContribution, IToolbarActionBasicContribution } from '../types';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
-import { IToolbarRegistry } from '@ide-framework/ide-core-browser';
+import { IToolbarRegistry } from '@opensumi/ide-core-browser';
 
 export interface KtToolbarSchema {
   actions?: Array< IToolbarButtonContribution | IToolbarSelectContribution>;

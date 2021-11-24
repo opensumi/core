@@ -1,6 +1,6 @@
-import { matchesFuzzy } from '@ide-framework/ide-core-common/lib/filters';
-import { Injectable } from '@ide-framework/common-di';
-import { splitGlobAware } from '@ide-framework/ide-core-common/lib/utils/glob';
+import { matchesFuzzy } from '@opensumi/ide-core-common/lib/filters';
+import { Injectable } from '@opensumi/common-di';
+import { splitGlobAware } from '@opensumi/ide-core-common/lib/utils/glob';
 
 interface ParsedQuery {
   type: 'include' | 'exclude';

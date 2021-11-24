@@ -1,5 +1,5 @@
-import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@ide-framework/ide-core-common';
-import { Injector } from '@ide-framework/common-di';
+import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@opensumi/ide-core-common';
+import { Injector } from '@opensumi/common-di';
 
 let mockedStorage: MockedStorage | null = null;
 

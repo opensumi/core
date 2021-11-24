@@ -1,4 +1,4 @@
-import { IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ide-framework/ide-core-common';
+import { IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-common';
 
 export const FILE_SCHEME = 'file';
 export const FILE_ON_DISK_SCHEME = 'fileOnDisk';

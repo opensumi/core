@@ -1,16 +1,16 @@
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { Disposable, URI, MarkerManager, Emitter } from '@ide-framework/ide-core-common';
-import { OutlineModelService } from '@ide-framework/ide-outline/lib/browser/services/outline-model.service';
-import { OutlineTreeService } from '@ide-framework/ide-outline/lib/browser/services/outline-tree.service';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
-import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { OutlineEventService } from '@ide-framework/ide-outline/lib/browser/services/outline-event.service';
-import { IOutlineDecorationService } from '@ide-framework/ide-outline';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { Disposable, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
+import { OutlineModelService } from '@opensumi/ide-outline/lib/browser/services/outline-model.service';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { OutlineEventService } from '@opensumi/ide-outline/lib/browser/services/outline-event.service';
+import { IOutlineDecorationService } from '@opensumi/ide-outline';
 import styles from '../../../../src/browser/outline-node.module.less';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { SymbolKind } from '@ide-framework/ide-extension/lib/hosted/api/worker/worker.ext-types';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;

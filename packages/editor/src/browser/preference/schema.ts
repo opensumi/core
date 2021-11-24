@@ -1,4 +1,4 @@
-import { localize, isOSX, isLinux, PreferenceSchema, PreferenceSchemaProperties, PreferenceProxy } from '@ide-framework/ide-core-browser';
+import { localize, isOSX, isLinux, PreferenceSchema, PreferenceSchemaProperties, PreferenceProxy } from '@opensumi/ide-core-browser';
 
 export const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';
 

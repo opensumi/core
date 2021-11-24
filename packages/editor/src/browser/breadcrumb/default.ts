@@ -1,11 +1,11 @@
 import debounce = require('lodash.debounce');
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus } from '@ide-framework/ide-core-browser';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { FileStat } from '@ide-framework/ide-file-service/lib/common';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common/file-service-client';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileStat } from '@opensumi/ide-file-service/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IEditor } from '../../common';
 import { EditorSelectionChangeEvent, IBreadCrumbPart, IBreadCrumbProvider } from '../types';

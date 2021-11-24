@@ -1,5 +1,5 @@
-import { URI } from '@ide-framework/ide-core-browser';
-import { WorkerExtProcessService } from '@ide-framework/ide-extension/lib/browser/extension-worker.service';
+import { URI } from '@opensumi/ide-core-browser';
+import { WorkerExtProcessService } from '@opensumi/ide-extension/lib/browser/extension-worker.service';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../src/common';

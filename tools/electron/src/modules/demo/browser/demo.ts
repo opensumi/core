@@ -1,7 +1,7 @@
-import { Autowired } from '@ide-framework/common-di';
-import { ClientAppContribution } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common';
-import { IElectronMainApi } from '@ide-framework/ide-core-common/lib/electron';
+import { Autowired } from '@opensumi/common-di';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common';
+import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import { IHelloService } from '../../../common/types';
 
 interface IHelloMainService extends IElectronMainApi<string>, IHelloService { }

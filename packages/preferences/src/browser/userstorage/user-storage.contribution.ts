@@ -1,10 +1,10 @@
-import { Autowired } from '@ide-framework/common-di';
+import { Autowired } from '@opensumi/common-di';
 import {
   Domain,
   ClientAppContribution,
-} from '@ide-framework/ide-core-browser';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { FileServiceClient } from '@ide-framework/ide-file-service/lib/browser/file-service-client';
+} from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 
 @Domain(ClientAppContribution)

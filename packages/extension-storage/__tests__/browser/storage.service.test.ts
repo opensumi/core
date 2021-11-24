@@ -1,10 +1,10 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IExtensionStorageService, IExtensionStorageServer } from '../../src/common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { AppConfig } from '@ide-framework/ide-core-browser';
-import { MockWorkspaceService } from '@ide-framework/ide-workspace/lib/common/mocks';
-import { ExtensionStorageService } from '@ide-framework/ide-extension-storage/lib/browser';
+import { AppConfig } from '@opensumi/ide-core-browser';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+import { ExtensionStorageService } from '@opensumi/ide-extension-storage/lib/browser';
 
 describe('ExtensionStorage service should be work', () => {
   let injector: MockInjector;

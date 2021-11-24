@@ -1,6 +1,6 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, ClientAppContribution } from '@ide-framework/ide-core-browser';
-import { MainLayoutContribution } from '@ide-framework/ide-main-layout';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../../common';
 import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
 import { TerminalKeyBoardInputService } from '../terminal.input';

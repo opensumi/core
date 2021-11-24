@@ -1,7 +1,7 @@
-import { Injectable } from '@ide-framework/common-di';
-import { Option, Select } from '@ide-framework/ide-components';
-import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@ide-framework/ide-core-browser';
-import { Select as NativeSelect } from '@ide-framework/ide-core-browser/lib/components/select';
+import { Injectable } from '@opensumi/common-di';
+import { Option, Select } from '@opensumi/ide-components';
+import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -13,7 +13,7 @@ import { isExtensionHostDebugging } from '../../debugUtils';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
 import styles from './debug-configuration.module.less';
-import { InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { DebugState } from '../../../common';
 
 @Injectable()

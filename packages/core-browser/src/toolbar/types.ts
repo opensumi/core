@@ -1,5 +1,5 @@
-import { IDisposable, BasicEvent, Event } from '@ide-framework/ide-core-common';
-import { IDataOption, IDataOptionGroup } from '@ide-framework/ide-components';
+import { IDisposable, BasicEvent, Event } from '@opensumi/ide-core-common';
+import { IDataOption, IDataOptionGroup } from '@opensumi/ide-components';
 
 export const IToolbarRegistry = Symbol('IToolbarRegistry');
 

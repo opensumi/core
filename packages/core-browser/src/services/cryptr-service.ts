@@ -1,5 +1,5 @@
-import { INativeCryptrService, CryptrServicePath } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { INativeCryptrService, CryptrServicePath } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
 
 export const ICryptrService = Symbol('ICryptrService');
 

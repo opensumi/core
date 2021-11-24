@@ -1,17 +1,17 @@
-import type { ICodeEditor as IMonacoCodeEditor, IDiffEditor as IMonacoDiffEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@ide-framework/ide-core-common';
+import type { ICodeEditor as IMonacoCodeEditor, IDiffEditor as IMonacoDiffEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@opensumi/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationNeedChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
-import { IRange, MonacoService, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService, IEditorDocumentModel } from './doc-model/types';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { Emitter } from '@opensumi/ide-core-common';
 import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption, isDiffEditorOption } from './preference/converter';
-import { ResourceContextKey } from '@ide-framework/ide-core-browser/lib/contextkey';
-import { IConfigurationService } from '@ide-framework/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
+import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {

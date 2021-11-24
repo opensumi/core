@@ -1,7 +1,7 @@
 import path from 'path';
-import { Injector } from '@ide-framework/common-di';
-import { RPCProtocol, ProxyIdentifier } from '@ide-framework/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@ide-framework/ide-core-common';
+import { Injector } from '@opensumi/common-di';
+import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@opensumi/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -9,7 +9,7 @@ import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.ap
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
-import { AppConfig } from '@ide-framework/ide-core-node/lib/bootstrap/app';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 

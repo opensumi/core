@@ -1,4 +1,4 @@
-import type { IPosition, IRange } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IPosition, IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 /**
  * position 转换 range

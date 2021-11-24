@@ -1,4 +1,4 @@
-import { Command } from '@ide-framework/ide-core-common';
+import { Command } from '@opensumi/ide-core-common';
 
 export namespace QUICK_OPEN_COMMANDS {
   export const OPEN: Command = {
@@ -9,5 +9,5 @@ export namespace QUICK_OPEN_COMMANDS {
   };
 }
 
-export * from '@ide-framework/ide-core-browser/lib/quick-open';
+export * from '@opensumi/ide-core-browser/lib/quick-open';
 export * from '../browser/quick-open-action-provider';

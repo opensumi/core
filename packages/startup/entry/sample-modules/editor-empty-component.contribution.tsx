@@ -1,13 +1,13 @@
 import React from 'react';
 import { useMemo, useState } from 'react';
-import { Domain, ComponentContribution, ComponentRegistry, EDITOR_COMMANDS, SEARCH_COMMANDS } from '@ide-framework/ide-core-browser';
-import { KeybindingRegistry } from '@ide-framework/ide-core-browser/lib/keybinding/keybinding';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
-import { KeybindingView } from '@ide-framework/ide-quick-open/lib/browser/components/keybinding';
-import { QUICK_OPEN_COMMANDS } from '@ide-framework/ide-quick-open/lib/common';
-import { Disposable, localize, registerLocalizationBundle } from '@ide-framework/ide-core-common';
-import { IKeymapService } from '@ide-framework/ide-keymaps/lib/common/keymaps';
-import { ThrottledDelayer } from '@ide-framework/ide-core-common/lib/async';
+import { Domain, ComponentContribution, ComponentRegistry, EDITOR_COMMANDS, SEARCH_COMMANDS } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
+import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open/lib/common';
+import { Disposable, localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
+import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
+import { ThrottledDelayer } from '@opensumi/ide-core-common/lib/async';
 
 import styles from './editor-empty-component.module.less';
 

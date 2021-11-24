@@ -2,8 +2,8 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import temp from 'temp';
-import { Injector } from '@ide-framework/common-di';
-import { URI, AppConfig, FileUri } from '@ide-framework/ide-core-node';
+import { Injector } from '@opensumi/common-di';
+import { URI, AppConfig, FileUri } from '@opensumi/ide-core-node';
 import { IFileService } from '../../../src/common';
 import { createNodeInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { FileServiceModule } from '../../../src/node';

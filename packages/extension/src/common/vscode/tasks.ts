@@ -1,7 +1,7 @@
-import { IDisposable } from '@ide-framework/ide-core-node';
+import { IDisposable } from '@opensumi/ide-core-node';
 import type vscode from 'vscode';
 import { IExtensionProps } from '../index';
-import { UriComponents } from '@ide-framework/ide-editor/lib/common';
+import { UriComponents } from '@opensumi/ide-editor/lib/common';
 
 export interface TaskHandlerData {
   type: string;

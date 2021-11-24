@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-monaco",
+  "name": "@opensumi/ide-monaco",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -14,17 +14,17 @@
     "start:server": "ts-node -P ../../tsconfig.json ./example/server.ts"
   },
   "dependencies": {
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
-    "@ide-framework/ide-file-service": "2.12.0",
-    "@ide-framework/ide-workspace": "2.12.0",
-    "@ide-framework/ide-theme": "2.12.0",
-    "@ide-framework/monaco-editor-core": "0.29.1-patch.1",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
+    "@opensumi/ide-file-service": "2.12.0",
+    "@opensumi/ide-workspace": "2.12.0",
+    "@opensumi/ide-theme": "2.12.0",
+    "@opensumi/monaco-editor-core": "0.29.1-patch.1",
     "vscode-oniguruma": "1.5.1"
   },
   "devDependencies": {
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

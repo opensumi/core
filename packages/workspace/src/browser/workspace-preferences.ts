@@ -1,10 +1,10 @@
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 import {
   createPreferenceProxy,
   PreferenceProxy,
   PreferenceService,
   PreferenceSchema,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 
 export const workspacePreferenceSchema: PreferenceSchema = {
   type: 'object',

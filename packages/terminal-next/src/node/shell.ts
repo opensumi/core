@@ -1,4 +1,4 @@
-import { normalize } from '@ide-framework/ide-core-common';
+import { normalize } from '@opensumi/ide-core-common';
 import fs from 'fs';
 
 export const WINDOWS_GIT_BASH_PATHS = [

@@ -1,6 +1,6 @@
 import type * as net from 'net';
-import { ProxyIdentifier } from '@ide-framework/ide-connection';
-import { Event } from '@ide-framework/ide-core-common';
+import { ProxyIdentifier } from '@opensumi/ide-connection';
+import { Event } from '@opensumi/ide-core-common';
 
 /**
  * 代理服务监听的端口，可以通过 constructor 修改参数

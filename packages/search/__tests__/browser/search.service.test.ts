@@ -1,12 +1,12 @@
 import path from 'path';
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { ILoggerManagerClient, Uri } from '@ide-framework/ide-core-common';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient } from '@ide-framework/ide-logs/src/browser/log-manage';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { EditorDocumentModelServiceImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/main';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { ILoggerManagerClient, Uri } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
@@ -20,7 +20,7 @@ import {
 } from '../../src/common';
 import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
-import { CorePreferences } from '@ide-framework/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser';
 
 const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
 

@@ -1,7 +1,7 @@
-import { URI } from '@ide-framework/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../browser/monaco-api/types';
 
-export * from '@ide-framework/ide-core-browser/lib/monaco';
+export * from '@opensumi/ide-core-browser/lib/monaco';
 
 export interface LanguagesContribution {
   id: string;

@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, Key, KeyboardLayoutService, KeyCode, ILinuxKeyboardLayoutInfo, isOSX } from '@ide-framework/ide-core-browser';
+import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, Key, KeyboardLayoutService, KeyCode, ILinuxKeyboardLayoutInfo, isOSX } from '@opensumi/ide-core-browser';
 import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
 import { MockLogger } from '../../__mocks__/logger';
 

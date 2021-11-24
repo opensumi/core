@@ -1,9 +1,9 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import {
   IJSONSchema,
   IJSONSchemaMap,
-} from '@ide-framework/ide-core-common/lib/json-schema';
-import { localize } from '@ide-framework/ide-core-common/lib/localize';
+} from '@opensumi/ide-core-common/lib/json-schema';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
 import {
   fontStylePattern,
   getStylingSchemeEntry,

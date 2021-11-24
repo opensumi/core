@@ -1,8 +1,8 @@
-import { Injectable, Injector } from '@ide-framework/common-di';
-import { IElectronMainLifeCycleService } from '@ide-framework/ide-core-common/lib/electron';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { isElectronRenderer, ExtensionCandidate } from '@ide-framework/ide-core-common';
-import { electronEnv } from '@ide-framework/ide-core-browser';
+import { Injectable, Injector } from '@opensumi/common-di';
+import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { isElectronRenderer, ExtensionCandidate } from '@opensumi/ide-core-common';
+import { electronEnv } from '@opensumi/ide-core-browser';
 
 import { IMainThreadLifeCycle } from '../../common/sumi/lifecycle';
 

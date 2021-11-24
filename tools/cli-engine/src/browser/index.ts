@@ -1,10 +1,10 @@
-import '@ide-framework/ide-i18n';
-import { CommonBrowserModules } from '@ide-framework/ide-startup/lib/browser/common-modules';
-import { BrowserModule, ConstructorOf, SlotLocation, IClientAppOpts } from '@ide-framework/ide-core-browser';
-import { ExpressFileServerModule } from '@ide-framework/ide-express-file-server/lib/browser';
-import '@ide-framework/ide-core-browser/lib/style/index.less';
+import '@opensumi/ide-i18n';
+import { CommonBrowserModules } from '@opensumi/ide-startup/lib/browser/common-modules';
+import { BrowserModule, ConstructorOf, SlotLocation, IClientAppOpts } from '@opensumi/ide-core-browser';
+import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
+import '@opensumi/ide-core-browser/lib/style/index.less';
 // 只有本地 ide 需要引入该文件
-// import '@ide-framework/ide-core-browser/lib/style/icon.less';
+// import '@opensumi/ide-core-browser/lib/style/icon.less';
 
 import { renderApp } from './app';
 import './style.less';
@@ -16,25 +16,25 @@ export const modules: ConstructorOf<BrowserModule>[] = [
 
 const layoutConfig = {
   [SlotLocation.top]: {
-    modules: ['@ide-framework/ide-menu-bar', 'toolbar'],
+    modules: ['@opensumi/ide-menu-bar', 'toolbar'],
   },
   [SlotLocation.left]: {
-    modules: ['@ide-framework/ide-explorer', '@ide-framework/ide-search', '@ide-framework/ide-scm', '@ide-framework/ide-extension-manager', '@ide-framework/ide-debug'],
+    modules: ['@opensumi/ide-explorer', '@opensumi/ide-search', '@opensumi/ide-scm', '@opensumi/ide-extension-manager', '@opensumi/ide-debug'],
   },
   [SlotLocation.action]: {
-    modules: ['@ide-framework/ide-toolbar-action'],
+    modules: ['@opensumi/ide-toolbar-action'],
   },
   [SlotLocation.right]: {
     modules: [],
   },
   [SlotLocation.main]: {
-    modules: ['@ide-framework/ide-editor'],
+    modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ide-framework/ide-terminal-next', '@ide-framework/ide-output', 'debug-console', '@ide-framework/ide-markers'],
+    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
   },
   [SlotLocation.statusBar]: {
-    modules: ['@ide-framework/ide-status-bar'],
+    modules: ['@opensumi/ide-status-bar'],
   },
   [SlotLocation.extra]: {
     modules: ['breadcrumb-menu'],

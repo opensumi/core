@@ -1,8 +1,8 @@
-import { FileStat } from '@ide-framework/ide-file-service';
-import { AppConfig } from '@ide-framework/ide-core-browser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { firstSessionDateStorageKey } from '@ide-framework/ide-core-common';
+import { FileStat } from '@opensumi/ide-file-service';
+import { AppConfig } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 
 import { ExtensionStorageUri, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
 

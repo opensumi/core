@@ -1,8 +1,8 @@
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { IDiskFileProvider, FileType } from '../';
-import { Emitter, Event } from '@ide-framework/ide-core-common';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 import { FileChangeEvent } from '..';
-import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFsProvider implements IDiskFileProvider {

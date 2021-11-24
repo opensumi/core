@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
-import { localize } from '@ide-framework/ide-core-common';
-import { Button, Icon, getKaitianIcon } from '@ide-framework/ide-components';
+import { localize } from '@opensumi/ide-core-common';
+import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
 
 import { VSXExtension } from '../../common';
 

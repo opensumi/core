@@ -1,7 +1,7 @@
-import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
-import { IServerApp, AppConfig } from '@ide-framework/ide-core-node';
+import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
 import Koa from 'koa';
 import superagent from 'superagent';
 import http from 'http';

@@ -1,14 +1,14 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import { monaco as monacoAPI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@ide-framework/ide-core-common';
-import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
-import { PreferenceChange } from '@ide-framework/ide-core-browser';
-import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
-import { WorkbenchEditorServiceImpl } from '@ide-framework/ide-editor/src/browser/workbench-editor.service';
-import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@ide-framework/ide-editor/src/browser/';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { PreferenceChange } from '@opensumi/ide-core-browser';
+import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/src/browser/workbench-editor.service';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';

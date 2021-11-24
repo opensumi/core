@@ -1,6 +1,6 @@
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@ide-framework/ide-core-common';
-import { isFalsyOrEmpty, mergeSort } from '@ide-framework/ide-core-common/lib/arrays';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@opensumi/ide-core-common';
+import { isFalsyOrEmpty, mergeSort } from '@opensumi/ide-core-common/lib/arrays';
 import { observable } from 'mobx';
 import { IMarkerService, IRenderableMarkerModel, MarkerModelBuilder } from '../common';
 import { Filter, FilterOptions } from './markers-filter.model';

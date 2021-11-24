@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import {
   ILogServiceManager,
   SupportLogNamespace,
   ILogService,
   LogLevel,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 
 // tslint:disable-next-line:no-empty-interface
 export interface INodeLogger extends ILogService {}

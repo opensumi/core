@@ -1,10 +1,10 @@
-import { Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { WSChannelHandler } from '@ide-framework/ide-connection/lib/browser/ws-channel-handler';
-import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenItem, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@ide-framework/ide-core-browser';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ide-framework/ide-core-browser/lib/services/status-bar-service';
-import { IWindowDialogService } from '@ide-framework/ide-overlay';
-import { IWebviewService } from '@ide-framework/ide-webview';
-import { IResourceOpenOptions, WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenItem, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@opensumi/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
+import { IWindowDialogService } from '@opensumi/ide-overlay';
+import { IWebviewService } from '@opensumi/ide-webview';
+import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
 import type vscode from 'vscode';
 
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';

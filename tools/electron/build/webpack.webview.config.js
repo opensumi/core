@@ -9,7 +9,7 @@ const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const distDir = path.join(__dirname, '../app/dist/webview')
 
 module.exports = {
-  entry: require.resolve('@ide-framework/ide-webview/lib/electron-webview/host-preload.js'),
+  entry: require.resolve('@opensumi/ide-webview/lib/electron-webview/host-preload.js'),
   target: "node",
   output: {
     filename: 'host-preload.js',
@@ -52,7 +52,7 @@ module.exports = {
   },
   plugins: [
     new CopyPlugin([
-      { from: require.resolve('@ide-framework/ide-webview/lib/electron-webview/plain-preload.js'), to: path.join(distDir,'plain-preload.js')},
+      { from: require.resolve('@opensumi/ide-webview/lib/electron-webview/plain-preload.js'), to: path.join(distDir,'plain-preload.js')},
     ]),
   ]
 };

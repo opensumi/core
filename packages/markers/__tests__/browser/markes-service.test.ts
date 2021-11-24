@@ -1,10 +1,10 @@
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { IThemeService } from '@ide-framework/ide-theme';
-import { WorkbenchEditorService, IEditorGroup } from '@ide-framework/ide-editor';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
-import { Uri, URI, MarkerManager, Emitter } from '@ide-framework/ide-core-common';
-import { EditorGroupCloseEvent, IResource } from '@ide-framework/ide-editor/lib/browser';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IThemeService } from '@opensumi/ide-theme';
+import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { Uri, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
+import { EditorGroupCloseEvent, IResource } from '@opensumi/ide-editor/lib/browser';
 import { MarkerService } from '../../src/browser/markers-service';
 import { MarkerSeverity } from '../../../core-common/src/types/markers/markers';
 

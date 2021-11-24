@@ -1,18 +1,18 @@
-import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus, ILoggerManagerClient } from '@ide-framework/ide-core-browser';
+import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus, ILoggerManagerClient } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IFileServiceClient, IDiskFileProvider } from '@ide-framework/ide-file-service';
+import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { PreferencesModule } from '@ide-framework/ide-preferences/lib/browser';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { Injectable, Provider } from '@ide-framework/common-di';
-import { FileServiceContribution } from '@ide-framework/ide-file-service/lib/browser/file-service-contribution';
-import { DiskFileSystemProvider } from '@ide-framework/ide-file-service/lib/node/disk-file-system.provider';
+import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { Injectable, Provider } from '@opensumi/common-di';
+import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import os from 'os';
 import path from 'path';
 import * as fs from 'fs-extra';
-import { UserStorageContribution } from '@ide-framework/ide-preferences/lib/browser/userstorage';
-import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
-import { MockLoggerManageClient } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { UserStorageContribution } from '@opensumi/ide-preferences/lib/browser/userstorage';
+import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
+import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class AddonModule extends BrowserModule {

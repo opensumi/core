@@ -1,12 +1,12 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { URI, IEventBus } from '@ide-framework/ide-core-browser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI, IEventBus } from '@opensumi/ide-core-browser';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/main';
-import { useMockStorage } from '@ide-framework/ide-core-browser/__mocks__/storage';
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent } from '@ide-framework/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent } from '@opensumi/ide-editor/lib/browser';
 import { TestEditorDocumentProvider } from '../test-providers';
-import { IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 
 describe('EditorDocumentModelService', () => {
   let injector: MockInjector;

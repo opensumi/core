@@ -1,7 +1,7 @@
-import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@ide-framework/ide-core-common';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
-import { AppConfig } from '@ide-framework/ide-core-browser';
+import { AppConfig } from '@opensumi/ide-core-browser';
 
 enum StorageState {
   None,

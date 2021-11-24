@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { ITaskDefinitionRegistry } from '@ide-framework/ide-core-common';
-import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
+import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@opensumi/ide-core-browser';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export const taskDefinitionSchema: IJSONSchema = {

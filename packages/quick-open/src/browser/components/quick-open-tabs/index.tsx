@@ -1,5 +1,5 @@
 import React from 'react';
-import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@ide-framework/ide-core-browser';
+import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
 import clx from 'classnames';
 import { KeybindingView } from '../keybinding';
 
