@@ -116,44 +116,28 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     }
   }
 
-  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
-    let resolved = config;
-    // 处理请求类型为 `*` 的情况
-    for (const contributor of this.contributors.values()) {
-      if (contributor) {
-        try {
-          const next = await contributor.resolveDebugConfiguration(resolved, workspaceFolderUri);
-          if (next) {
-            resolved = next;
-          } else {
-            return resolved;
-          }
-        } catch (e) {
-          this.logger.error(e);
-        }
+  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+    const contributor = this.contributors.get(config.type);
+    if (contributor) {
+      try {
+        const next = await contributor.resolveDebugConfiguration(config, workspaceFolderUri);
+        return next;
+      } catch (e) {
+        this.logger.error(e);
       }
     }
-    return resolved;
   }
 
-  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
-    let resolved = config;
-    // 处理请求类型为 `*` 的情况
-    for (const contributor of this.contributors.values()) {
-      if (contributor) {
-        try {
-          const next = await contributor.resolveDebugConfigurationWithSubstitutedVariables(resolved, workspaceFolderUri);
-          if (next) {
-            resolved = next;
-          } else {
-            return resolved;
-          }
-        } catch (e) {
-          this.logger.error(e);
-        }
+  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+    const contributor = this.contributors.get(config.type);
+    if (contributor) {
+      try {
+        const next = await contributor.resolveDebugConfigurationWithSubstitutedVariables(config, workspaceFolderUri);
+        return next;
+      } catch (e) {
+        this.logger.error(e);
       }
     }
-    return resolved;
   }
 
   async getDebuggersForLanguage(language: string): Promise<DebuggerDescription[]> {
