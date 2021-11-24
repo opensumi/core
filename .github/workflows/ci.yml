@@ -5,7 +5,7 @@ on:
     types: [labeled]
 
 jobs:
-  build:
+  coverage:
     runs-on: ubuntu-latest
 
     strategy:

@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Init
+    - name: Build
       run: |
         npm i
         npm run init
@@ -30,7 +30,3 @@ jobs:
     - name: Lint
       run: |
         npm run lint
-
-    - name: Build
-      run: |
-        npm run build
