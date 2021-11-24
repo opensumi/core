@@ -1,5 +1,10 @@
 
-declare module 'kaitian-worker';
+/**
+ * @deprecated `kaitian-worker` was deprecated, Please use `sumi-worker` instead.
+ */
+declare module 'kaitian-worker' {
+  export * from 'sumi-worker';
+}
 declare module 'sumi-worker' {
   /**
    * Accessibility information which controls screen reader behavior.

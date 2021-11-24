@@ -1,4 +1,3 @@
-declare module 'kaitian-worker';
 declare module 'sumi-worker' {
   /**
    * Represents a reference to a command. Provides a title which

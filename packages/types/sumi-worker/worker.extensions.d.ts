@@ -1,4 +1,3 @@
-declare module 'kaitian-worker';
 declare module 'sumi-worker' {
   /**
    * Namespace for dealing with installed extensions. Extensions are represented

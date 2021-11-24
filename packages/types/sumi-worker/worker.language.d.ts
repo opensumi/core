@@ -1,4 +1,3 @@
-declare module 'kaitian-worker';
 declare module 'sumi-worker' {
   export namespace languages {
     /**
