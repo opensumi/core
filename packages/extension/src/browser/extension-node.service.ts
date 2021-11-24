@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   createSocketConnection, initRPCService, IRPCProtocol, RPCProtocol,
   RPCServiceCenter, WSChannelHandler as IWSChannelHandler,

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@opensumi/ide-core-browser';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ThemeType } from '@opensumi/ide-theme';

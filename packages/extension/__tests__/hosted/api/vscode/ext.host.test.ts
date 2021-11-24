@@ -1,5 +1,5 @@
 import { Deferred, IReporter } from '@opensumi/ide-core-common';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
 import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';

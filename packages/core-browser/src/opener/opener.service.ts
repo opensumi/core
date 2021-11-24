@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IOpenerService, IOpener } from '.';
 import { URI, ILogger } from '@opensumi/ide-core-common';
 import { DefaultOpener } from './default-opener';

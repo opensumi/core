@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IContextKeyService } from '../../context-key';
 import { Emitter } from '@opensumi/ide-core-common';
 

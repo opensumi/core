@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import { ElectronMainApiProvider, ElectronMainApiRegistry, ElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/types';
 import { IHelloService } from 'common/types';

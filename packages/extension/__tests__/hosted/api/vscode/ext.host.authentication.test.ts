@@ -6,7 +6,7 @@ import { Emitter, ILoggerManagerClient, StorageProvider, IAuthenticationService,
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import type vscode from 'vscode';
 import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';

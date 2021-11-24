@@ -1,7 +1,7 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
-import { Autowired, Injectable, Optional } from '@opensumi/common-di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@opensumi/ide-core-common';
 import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
 import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';

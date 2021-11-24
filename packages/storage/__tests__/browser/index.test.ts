@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/common-di';
+import { Injectable, Injector } from '@opensumi/di';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
 import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@opensumi/ide-core-node';
 import temp from 'temp';

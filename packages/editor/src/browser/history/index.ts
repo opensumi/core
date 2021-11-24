@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IPosition, URI, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { EditorSelectionChangeEvent, EditorGroupChangeEvent, EditorGroupCloseEvent } from '../types';
 import { WorkbenchEditorService } from '../../common';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';

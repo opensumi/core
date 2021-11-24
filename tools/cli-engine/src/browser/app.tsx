@@ -1,5 +1,5 @@
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 
 export async function renderApp(opts: IClientAppOpts) {
   const { hostname } = window.location;

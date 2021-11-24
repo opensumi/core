@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@opensumi/ide-debug/lib/browser';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

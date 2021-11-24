@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';

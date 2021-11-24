@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 
 @Injectable()
 export class MockWorkbenchEditorService {

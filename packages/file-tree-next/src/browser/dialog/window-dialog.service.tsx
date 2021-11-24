@@ -1,6 +1,6 @@
 import React from 'react';
 import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { isElectronRenderer, electronEnv, URI, MessageType, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { FileDialog } from './file-dialog.view';

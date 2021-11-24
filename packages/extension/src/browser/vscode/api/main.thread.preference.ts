@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired } from '@opensumi/di';
 import { ConfigurationTarget } from '../../../common/vscode';
 import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

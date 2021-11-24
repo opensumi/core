@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService, getLanguageIdFromMonaco, QuickPickItem } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';

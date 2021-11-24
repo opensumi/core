@@ -1,5 +1,5 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Injectable, Optional} from '@opensumi/common-di';
+import { Injectable, Optional} from '@opensumi/di';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { OutlineCompositeTreeNode } from '../outline-node.define';
 

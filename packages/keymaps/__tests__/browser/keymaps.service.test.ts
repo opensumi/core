@@ -5,7 +5,7 @@ import { KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable
 import { IUserStorageService } from '@opensumi/ide-preferences';
 import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
-import { Injectable, Provider } from '@opensumi/common-di';
+import { Injectable, Provider } from '@opensumi/di';
 import { UserStorageContribution, UserStorageServiceImpl } from '@opensumi/ide-preferences/lib/browser/userstorage';
 import os from 'os';
 import path from 'path';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { VariableRegistry } from '@opensumi/ide-core-browser';
 import { VariableResolveOptions, IVariableResolverService } from '../common';
 

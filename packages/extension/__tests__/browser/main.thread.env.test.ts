@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Injector, Injectable } from '@opensumi/common-di';
+import { Injector, Injectable } from '@opensumi/di';
 import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

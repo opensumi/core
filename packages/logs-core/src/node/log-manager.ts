@@ -1,4 +1,4 @@
-import { Injectable, Autowired, ConstructorOf } from '@opensumi/common-di';
+import { Injectable, Autowired, ConstructorOf } from '@opensumi/di';
 import path from 'path';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 import { Emitter } from '@opensumi/ide-core-common';

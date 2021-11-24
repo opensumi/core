@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
 import { rgPath } from 'vscode-ripgrep';
 import { FileUri, replaceAsarInPath } from '@opensumi/ide-core-node';

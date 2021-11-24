@@ -1,5 +1,5 @@
 import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@opensumi/ide-core-browser';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';

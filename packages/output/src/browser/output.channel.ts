@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes, Schemas } from '@opensumi/ide-core-common';
-import { Optional, Injectable, Autowired } from '@opensumi/common-di';
+import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';

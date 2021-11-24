@@ -1,5 +1,5 @@
 import { URI } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '../react-providers';
 
 export const IExternalUriService = Symbol('IExternalUriService');

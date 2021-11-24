@@ -3,7 +3,7 @@ import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';

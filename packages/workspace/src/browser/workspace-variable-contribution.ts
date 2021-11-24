@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '../common';
 import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 

@@ -4,7 +4,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
  */
 import React from 'react';
 import { createRef } from 'react';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
 import * as arrays from '@opensumi/ide-core-common/lib/arrays';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';

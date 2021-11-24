@@ -1,4 +1,4 @@
-import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { Injectable, Optinal, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@opensumi/ide-core-browser';

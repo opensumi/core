@@ -1,7 +1,7 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { AppConfig, INodeLogger, IReporterService } from '@opensumi/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { ICommonServer, CommonServerPath, INativeCredentialService, KeytarServicePath, INativeCryptrService, CryptrServicePath } from '@opensumi/ide-core-common';
 import { NodeModule } from '../node-module';
 import { CryptrService } from './cryptr.server';

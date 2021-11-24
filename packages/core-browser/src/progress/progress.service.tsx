@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { localize, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format, CommandService, Disposable, Emitter, Event, toDisposable, dispose } from '@opensumi/ide-core-common';
 import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
 import { timeout, IDisposable } from '..';

@@ -1,6 +1,6 @@
 import { IRunTimeParams, AbstractSumiBrowserContributionRunner } from '../types';
 import { IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 import { IToolBarViewService, ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';

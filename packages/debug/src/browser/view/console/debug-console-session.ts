@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Optional } from '@opensumi/common-di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
 import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';

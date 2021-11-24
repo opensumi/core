@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@opensumi/common-di';
+import { Injectable, Autowired, Optinal } from '@opensumi/di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@opensumi/ide-core-browser';
 import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@opensumi/ide-core-common';
 import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ThemeContribution, IThemeService } from '@opensumi/ide-theme';
 import { URI } from '@opensumi/ide-core-common';
 import { VSCodeContributePoint, Contributes } from '../../../common';

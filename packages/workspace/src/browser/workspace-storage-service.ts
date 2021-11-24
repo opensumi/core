@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services';
 import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 import { FileStat } from '@opensumi/ide-file-service';

@@ -4,7 +4,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { URI } from '@opensumi/ide-core-common';
 import { DebugSessionManager } from './../debug-session-manager';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IDebugSessionManager, DebugState } from './../../common/debug-session';
 
 @Injectable()

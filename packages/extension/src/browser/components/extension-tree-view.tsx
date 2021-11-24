@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './extension-tree-view.module.less';
 import { isOSX } from '@opensumi/ide-core-browser';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';

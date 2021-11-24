@@ -1,7 +1,7 @@
 import vscode from 'vscode';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { ConstructorOf } from '@opensumi/common-di';
+import { ConstructorOf } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import {

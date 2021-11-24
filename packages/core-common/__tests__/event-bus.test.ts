@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/common-di';
+import { Injectable, Injector } from '@opensumi/di';
 import { EventBusImpl, BasicEvent, WithEventBus, OnEvent, IEventBus } from '../src/event-bus';
 
 describe('event-bus', () => {

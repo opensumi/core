@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule, Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
 
 @Domain(ClientAppContribution)

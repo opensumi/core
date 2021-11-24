@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Schemas, isElectronRenderer } from '@opensumi/ide-core-common';
 import { IOpener } from '.';
 import { IWindowService } from '../window';

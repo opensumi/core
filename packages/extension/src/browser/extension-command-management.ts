@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { ExtensionHostType, IExtCommandManagement } from '../common';

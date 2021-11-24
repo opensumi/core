@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations, ILogger } from '@opensumi/ide-core-browser';
 import { FolderPreferenceProvider, FolderPreferenceProviderFactory, FolderPreferenceProviderOptions } from './folder-preference-provider';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

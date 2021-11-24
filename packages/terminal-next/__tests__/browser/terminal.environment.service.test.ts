@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { CommandService, CommandServiceImpl } from '@opensumi/ide-core-common/lib/command';

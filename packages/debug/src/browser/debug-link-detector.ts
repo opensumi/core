@@ -5,7 +5,7 @@
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Schemas, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
 import { URI, IRange } from '@opensumi/ide-core-common';
 import * as osPath from '@opensumi/ide-core-common/lib/path';

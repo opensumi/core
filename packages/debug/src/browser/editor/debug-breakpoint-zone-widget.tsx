@@ -10,7 +10,7 @@ import { Select, Option } from '@opensumi/ide-components';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 import { ICodeEditor } from '@opensumi/ide-editor';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 
 export interface BreakpointChangeData {

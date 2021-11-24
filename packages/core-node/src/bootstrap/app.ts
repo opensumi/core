@@ -1,4 +1,4 @@
-import { Injector, ConstructorOf } from '@opensumi/common-di';
+import { Injector, ConstructorOf } from '@opensumi/di';
 import Koa from 'koa';
 import http from 'http';
 import https from 'https';

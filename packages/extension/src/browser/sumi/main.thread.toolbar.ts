@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
 import { IIconService, IconType } from '@opensumi/ide-theme';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, IJSONSchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@opensumi/ide-core-browser';

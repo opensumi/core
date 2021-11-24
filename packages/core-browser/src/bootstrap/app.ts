@@ -3,7 +3,7 @@
  * 并且 editor.main 也包含对 editor.all 的导入
  */
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
-import { Injector, ConstructorOf } from '@opensumi/common-di';
+import { Injector, ConstructorOf } from '@opensumi/di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';

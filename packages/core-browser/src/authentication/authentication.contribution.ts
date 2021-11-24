@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { ClientAppContribution } from '../common/common.define';
 import { Domain, IAuthenticationService, CommandContribution, CommandRegistry, noAccountsId } from '@opensumi/ide-core-common';
 

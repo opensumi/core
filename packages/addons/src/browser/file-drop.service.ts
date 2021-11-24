@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { WithEventBus } from '@opensumi/ide-core-common/lib';
 import { Uri, formatLocalize } from '@opensumi/ide-core-browser/lib';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';

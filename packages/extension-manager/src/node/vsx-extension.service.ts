@@ -6,7 +6,7 @@ import os from 'os';
 import fs from 'fs-extra';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node';
 
 import { IVSXExtensionBackService, IExtensionInstallParam } from '../common';

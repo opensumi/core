@@ -1,7 +1,7 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
 import { Event, URI, Disposable, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@opensumi/ide-core-browser';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 

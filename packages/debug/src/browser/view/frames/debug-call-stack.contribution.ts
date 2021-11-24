@@ -5,7 +5,7 @@ import { DebugSessionManager } from './../../debug-session-manager';
 import { CallStackContext } from './../../../common/types';
 import { CONTEXT_CALLSTACK_ITEM_TYPE, CONTEXT_RESTART_FRAME_SUPPORTED, CONTEXT_STACK_FRAME_SUPPORTS_RESTART } from './../../../common/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 

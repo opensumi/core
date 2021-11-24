@@ -5,7 +5,7 @@ import { IIconService, IconType } from '../../src';
 import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@opensumi/ide-core-browser';
 import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 @Injectable()

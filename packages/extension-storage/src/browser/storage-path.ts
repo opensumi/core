@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';

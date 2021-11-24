@@ -1,5 +1,5 @@
 import { IMainThreadOutput } from '../../../common/vscode';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

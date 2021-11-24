@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, Disposable, getPreferenceLanguageId, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
 import { ExtensionCandidate as ExtensionCandidate } from '@opensumi/ide-core-common';
 

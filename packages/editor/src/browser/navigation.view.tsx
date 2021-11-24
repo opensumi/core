@@ -5,7 +5,7 @@ import { getIcon } from '@opensumi/ide-core-browser';
 
 import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Scroll, IScrollDelegate } from './component/scroll/scroll';

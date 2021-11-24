@@ -2,7 +2,7 @@
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';

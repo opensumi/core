@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

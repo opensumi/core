@@ -1,5 +1,5 @@
 import { IThemeData } from '@opensumi/ide-theme';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { URI, Disposable } from '@opensumi/ide-core-common';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';

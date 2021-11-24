@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { FileOperation, WorkspaceFileEvent, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';

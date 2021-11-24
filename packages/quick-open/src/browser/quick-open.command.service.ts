@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { CommandRegistry, Command, CommandService, Deferred, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';

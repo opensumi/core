@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { renderInfoItem, renderAddItem } from './component/tab.item';
 import { ITerminalRenderProvider } from '../common';
 

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickPickService, QuickPickOptions, QuickPickItem, HideReason, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import { getIcon, getIconClass, getExternalIcon } from '@opensumi/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';

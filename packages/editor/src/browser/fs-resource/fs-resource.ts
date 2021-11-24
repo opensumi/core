@@ -1,6 +1,6 @@
 import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
 import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@opensumi/ide-core-browser';
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { Path } from '@opensumi/ide-core-common/lib/path';

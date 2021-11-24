@@ -1,5 +1,5 @@
 
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 @Injectable()

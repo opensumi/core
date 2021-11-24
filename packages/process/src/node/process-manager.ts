@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Disposable, getDebugLogger, Emitter, Event } from '@opensumi/ide-core-common';
 import { Process } from './process';
 import { IProcessManage } from '../common/index';

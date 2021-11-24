@@ -1,6 +1,6 @@
 import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer, REPORT_NAME } from './types/reporter';
 import { getDebugLogger } from './log';
-import { Injectable, Inject } from '@opensumi/common-di';
+import { Injectable, Inject } from '@opensumi/di';
 import { IDisposable } from './disposable';
 
 class ReporterTimer implements IReporterTimer {

@@ -1,6 +1,6 @@
 import { IMainThreadTheming, IExtHostTheming } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Autowired, Injectable, Optinal } from '@opensumi/common-di';
+import { Autowired, Injectable, Optinal } from '@opensumi/di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IThemeService } from '@opensumi/ide-theme';
 import { IDisposable } from '@opensumi/ide-core-common';

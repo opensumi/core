@@ -1,5 +1,5 @@
 import React from 'react';
-import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/common-di';
+import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import styles from './comments.module.less';

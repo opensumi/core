@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable, URI, CancellationTokenSource, raceCancellation, ProgressLocation, localize, ILogger, formatLocalize } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
 import { IBulkEditServiceShape, FileOperation, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';

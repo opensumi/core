@@ -4,7 +4,7 @@ import spdlog from 'spdlog';
 import process from 'process';
 import os from 'os';
 import { RPCService } from '@opensumi/ide-connection';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   ILogService,
   ILogServiceOptions,

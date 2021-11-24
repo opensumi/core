@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/common-di';
+import { Injectable, Injector } from '@opensumi/di';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { isElectronRenderer, ExtensionCandidate } from '@opensumi/ide-core-common';

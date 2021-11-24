@@ -1,4 +1,4 @@
-import { Provider, Injector } from '@opensumi/common-di';
+import { Provider, Injector } from '@opensumi/di';
 import {
   IEventBus,
   EventBusImpl,

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { DebugServer, DebuggerDescription, IDebugSessionManager } from '@opensumi/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@opensumi/ide-core-browser';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@opensumi/ide-components';
 import { MessageType, uuid, localize } from '@opensumi/ide-core-common';

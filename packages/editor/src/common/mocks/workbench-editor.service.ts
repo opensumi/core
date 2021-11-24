@@ -1,6 +1,6 @@
 import { WorkbenchEditorService, IResourceOpenOptions, IUntitledOptions, IOpenResourceResult } from '../editor';
 import { URI, Emitter, MaybeNull, Event } from '@opensumi/ide-core-common';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IResource } from '../resource';
 import { IEditorGroup } from '../../browser';
 

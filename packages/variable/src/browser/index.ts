@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { VariableResolverContribution } from './variable-resolver.contribution';
 import { VariableQuickOpenService } from './variable-quick-open.service';

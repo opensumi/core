@@ -1,5 +1,5 @@
 import * as ideCoreCommon from '@opensumi/ide-core-common';
-import { Injectable, Injector } from '@opensumi/common-di';
+import { Injectable, Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import * as types from '../../src/common/vscode/ext-types';

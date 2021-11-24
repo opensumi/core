@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as mime from '@opensumi/monaco-editor-core/esm/vs/base/common/mime';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IMimeService, CorePreferences, MimeAssociation } from '@opensumi/ide-core-browser';
 
 @Injectable()

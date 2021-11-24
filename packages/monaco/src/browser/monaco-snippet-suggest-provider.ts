@@ -1,7 +1,7 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
 import * as jsoncparser from 'jsonc-parser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IRange, Uri, localize, ILogger, Disposable, IDisposable, DisposableCollection } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';

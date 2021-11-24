@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Optional } from '@opensumi/common-di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { DisposableCollection, Disposable, ILogger, WithEventBus, URI, ThrottledDelayer, FileStat } from '@opensumi/ide-core-browser';

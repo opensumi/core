@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
 import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';

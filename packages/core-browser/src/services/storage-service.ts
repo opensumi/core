@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { isUndefinedOrNull } from '@opensumi/ide-core-common';
 

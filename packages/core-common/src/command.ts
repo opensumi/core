@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { MaybePromise } from './async';
 import { ContributionProvider } from './contribution-provider';
 import { Disposable, IDisposable } from './disposable';

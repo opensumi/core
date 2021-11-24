@@ -1,5 +1,5 @@
 import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Emitter, Event, URI, IThemeColor } from '@opensumi/ide-core-common';
 
 @Injectable()

@@ -4,7 +4,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IHistoryNavigationWidget } from '@opensumi/monaco-editor-core/esm/vs/base/browser/history';
 import { HistoryNavigator } from '@opensumi/monaco-editor-core/esm/vs/base/common/history';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Schemas, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';

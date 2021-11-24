@@ -1,4 +1,4 @@
-import { Optinal } from '@opensumi/common-di';
+import { Optinal } from '@opensumi/di';
 import { IDecorationsProvider, IDecorationData } from '@opensumi/ide-decoration';
 import { Uri, Emitter, localize } from '@opensumi/ide-core-browser';
 import { FileTreeService } from './file-tree.service';

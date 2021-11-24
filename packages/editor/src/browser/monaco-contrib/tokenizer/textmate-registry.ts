@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { IGrammarConfiguration } from 'vscode-textmate';
 import { getDebugLogger, URI } from '@opensumi/ide-core-common';
 

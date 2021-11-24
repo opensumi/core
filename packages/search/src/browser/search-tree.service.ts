@@ -3,7 +3,7 @@ import React from 'react';
 import { action } from 'mobx';
 import { LabelService } from '@opensumi/ide-core-browser';
 import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@opensumi/ide-editor';

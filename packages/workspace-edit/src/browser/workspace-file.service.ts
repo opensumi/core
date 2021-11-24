@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@opensumi/ide-core-common';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';

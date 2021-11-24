@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
 

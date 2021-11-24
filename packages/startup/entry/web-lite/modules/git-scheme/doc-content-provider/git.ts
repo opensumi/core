@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
 import { URI } from '@opensumi/ide-core-common';
 

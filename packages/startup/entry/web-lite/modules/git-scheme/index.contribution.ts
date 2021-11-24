@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import { IResource } from '@opensumi/ide-editor/lib/common';
 import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution, ResourceService } from '@opensumi/ide-editor/lib/browser';

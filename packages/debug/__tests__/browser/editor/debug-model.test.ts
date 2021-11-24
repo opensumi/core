@@ -6,7 +6,7 @@ import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../sr
 import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);

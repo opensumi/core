@@ -1,4 +1,4 @@
-import { Injectable, Provider } from '@opensumi/common-di';
+import { Injectable, Provider } from '@opensumi/di';
 import path from 'path';
 import fs from 'fs';
 import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService, RequireInterceptorService, RequireInterceptorContribution } from '../../../src/common';

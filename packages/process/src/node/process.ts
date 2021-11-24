@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ChildProcess, spawn, fork } from 'child_process';
 import stream from 'stream';
 import { Disposable, Emitter } from '@opensumi/ide-core-common';

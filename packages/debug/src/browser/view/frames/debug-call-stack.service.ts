@@ -2,7 +2,7 @@ import { DebugSession } from './../../debug-session';
 import { CONTEXT_STACK_FRAME_SUPPORTS_RESTART, CONTEXT_CALLSTACK_ITEM_TYPE } from './../../../common/constants';
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { IContextKey } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugStackFrame, DebugThread } from '../../model';
 

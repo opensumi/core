@@ -4,7 +4,7 @@ import {
   Injectable,
   Autowired,
   INJECTOR_TOKEN,
-} from '@opensumi/common-di';
+} from '@opensumi/di';
 import { observable, action } from 'mobx';
 
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

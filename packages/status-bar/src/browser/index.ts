@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { StatusBarView } from './status-bar.view';
 import { StatusBarService } from './status-bar.service';
 import { BrowserModule } from '@opensumi/ide-core-browser';

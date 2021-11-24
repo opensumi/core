@@ -1,6 +1,6 @@
 import { CONTEXT_IN_DEBUG_MODE, CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DEBUG_WATCH_ID } from '../../../common';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
 import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, Event, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@opensumi/ide-core-browser';
 import { toPreferenceReadableName, PreferenceSettingId } from '../common';

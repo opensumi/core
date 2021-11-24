@@ -1,5 +1,5 @@
 import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState, IMainThreadWebviewView, IWebviewExtensionDescription, IExtHostWebviewView, WebviewViewResolverRegistrationEvent, WebviewViewResolverRegistrationRemovalEvent, WebviewViewOptions } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@opensumi/common-di';
+import { Injectable, Autowired, Optinal } from '@opensumi/di';
 import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@opensumi/ide-webview';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';

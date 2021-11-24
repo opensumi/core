@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../../common';

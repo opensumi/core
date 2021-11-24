@@ -1,5 +1,5 @@
 import { BrowserModule, QuickOpenService } from '@opensumi/ide-core-browser';
-import { Injectable, Provider } from '@opensumi/common-di';
+import { Injectable, Provider } from '@opensumi/di';
 
 import { CoreQuickOpenContribution, QuickOpenFeatureContribution } from './quick-open.contribution';
 import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quick-open.service';

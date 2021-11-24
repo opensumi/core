@@ -1,4 +1,4 @@
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { ProxyIdentifier } from '@opensumi/ide-connection';

@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
 import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';

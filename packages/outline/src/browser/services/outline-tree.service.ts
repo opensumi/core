@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { OutlineCompositeTreeNode, OutlineTreeNode, OutlineRoot } from '../outline-node.define';
 import { URI, Emitter, MaybeNull, IdleValue, compareRangesUsingStarts, getSymbolIcon, Event, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@opensumi/ide-core-browser';

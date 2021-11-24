@@ -1,5 +1,5 @@
 import { BrowserWindowConstructorOptions } from 'electron';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { ConstructorOf, ExtensionCandidate } from '@opensumi/ide-core-common';
 import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { IURLHandler } from '@opensumi/ide-core-common/lib/electron';

@@ -1,7 +1,7 @@
 import { IWebview, IWebviewContentOptions } from './types';
 import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig } from '@opensumi/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 
 @Injectable({multiple: true})
 export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview {

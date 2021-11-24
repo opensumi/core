@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, ComponentContribution, ComponentRegistry, getIcon, CommandContribution, CommandRegistry, ClientAppContribution, Command, URI, CommandService } from '@opensumi/ide-core-browser';
 import { IMetaService } from '../services/meta-service/base';
 import { toSCMUri } from '../utils/scm-uri';

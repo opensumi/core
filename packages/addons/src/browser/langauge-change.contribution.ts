@@ -1,5 +1,5 @@
 import { Domain, ClientAppContribution, PreferenceService, IClientApp, localize } from '@opensumi/ide-core-browser';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 @Domain(ClientAppContribution)

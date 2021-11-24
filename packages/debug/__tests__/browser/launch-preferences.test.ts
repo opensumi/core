@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';

@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/common-di';
+import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { LogServiceForClientPath, ILoggerManagerClient } from '../common/';
 import { LoggerManagerClient } from './log-manage';

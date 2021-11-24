@@ -1,4 +1,4 @@
-import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import drivelist from 'drivelist';
 import paths from 'path';
 import * as fs from 'fs-extra';

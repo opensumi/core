@@ -1,5 +1,5 @@
 import { warning } from '@opensumi/ide-components/lib/utils/warning';
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IBrowserRequireInterceptorArgs, IExtension, IRequireInterceptorService, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER, RequireInterceptorContribution } from '../common';
 import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';

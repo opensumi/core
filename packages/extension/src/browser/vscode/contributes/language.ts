@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { localize, URI } from '@opensumi/ide-core-common';
 

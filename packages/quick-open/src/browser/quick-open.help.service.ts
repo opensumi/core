@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { QuickOpenHandler, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import { CommandService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter } from '@opensumi/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
 

@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, CommandContribution, CommandRegistry, Event, IContextKeyService, IContextKey, Uri } from '@opensumi/ide-core-browser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';

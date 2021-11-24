@@ -1,5 +1,5 @@
 import { observable, action } from 'mobx';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { CtxMenuRenderParams } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';

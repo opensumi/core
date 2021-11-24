@@ -1,5 +1,5 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { ICustomEditorOptions } from '../../../common/vscode';
 import React = require('react');

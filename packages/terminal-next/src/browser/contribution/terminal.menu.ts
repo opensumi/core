@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Domain, CommandService, isWindows, isElectronRenderer } from '@opensumi/ide-core-common';
 import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@opensumi/ide-core-browser';

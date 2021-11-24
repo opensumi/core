@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import { Injectable, Autowired, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, Injector } from '@opensumi/di';
 import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';

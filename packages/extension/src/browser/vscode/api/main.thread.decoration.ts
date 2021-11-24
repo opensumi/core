@@ -1,6 +1,6 @@
 import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@opensumi/ide-core-common';
 import { IDisposable, dispose } from '@opensumi/ide-core-common/lib/disposable';
-import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IDecorationsService, IDecorationData } from '@opensumi/ide-decoration';
 

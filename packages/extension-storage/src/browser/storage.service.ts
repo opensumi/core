@@ -1,6 +1,6 @@
 import { FileStat } from '@opensumi/ide-file-service';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 

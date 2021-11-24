@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell, webContents } from 'electron';
 import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';

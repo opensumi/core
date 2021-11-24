@@ -1,7 +1,7 @@
 import { CommandRegistry, CommandService, Command, isOSX } from '@opensumi/ide-core-common';
 import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { Event } from '@opensumi/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional } from '@opensumi/common-di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 
 import { IContextKeyService } from '../../context-key';
 import { ISubmenuItem, MenuNode, IMenuActionDisplayType, IComponentMenuItem, IComponentMenuItemProps } from './base';

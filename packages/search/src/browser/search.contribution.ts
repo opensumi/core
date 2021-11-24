@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
 import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@opensumi/ide-core-browser';
 import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@opensumi/ide-core-browser';

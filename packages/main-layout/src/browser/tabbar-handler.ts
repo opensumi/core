@@ -1,5 +1,5 @@
 import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMainLayoutService } from '../common';
 

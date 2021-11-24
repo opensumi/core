@@ -1,4 +1,4 @@
-import { Injector, Injectable } from '@opensumi/common-di';
+import { Injector, Injectable } from '@opensumi/di';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
 import { OutputChannel } from '../../src/browser/output.channel';

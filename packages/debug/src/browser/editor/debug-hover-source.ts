@@ -1,6 +1,6 @@
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugVariable, DebugScope, DebugVariableContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IDebugSessionManager } from '../../common';
 import { Event, Emitter } from '@opensumi/ide-core-browser';
 

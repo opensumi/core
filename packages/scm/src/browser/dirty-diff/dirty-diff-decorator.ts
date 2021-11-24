@@ -1,7 +1,7 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Autowired, Injectable, Optional } from '@opensumi/common-di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 import { IChange } from '@opensumi/ide-core-common';
 import { Disposable } from '@opensumi/ide-core-common/lib/disposable';

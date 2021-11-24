@@ -12,7 +12,7 @@ import {
   IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope, PreferenceSchemaProvider, createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
 import { Disposable, ILogger } from '@opensumi/ide-core-common';
-import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 

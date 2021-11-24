@@ -1,5 +1,5 @@
 import { IPlainWebviewWindow } from './types';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IElectronMainUIService, IElectronPlainWebviewWindowOptions } from '@opensumi/ide-core-common/lib/electron';
 import { electronEnv } from '@opensumi/ide-core-browser/lib/utils/electron';
 import { Emitter, Event, Disposable, URI } from '@opensumi/ide-core-browser';

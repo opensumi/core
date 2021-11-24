@@ -1,5 +1,5 @@
 import React from 'react';
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common';

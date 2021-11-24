@@ -1,7 +1,7 @@
 import net from 'net';
 import Stream from 'stream';
 import { performance } from 'perf_hooks';
-import { ConstructorOf, Injector } from '@opensumi/common-di';
+import { ConstructorOf, Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
 import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId, ILogService } from '@opensumi/ide-core-common';

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 
 import { StatusBarAlignment, IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';

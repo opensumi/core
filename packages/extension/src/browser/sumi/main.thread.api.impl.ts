@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { MainThreadLifeCycle } from './main.thread.lifecycle';
 import { MainThreadSumiAPIIdentifier } from '../../common/sumi';
 import { MainThreadLayout } from './main.thread.layout';

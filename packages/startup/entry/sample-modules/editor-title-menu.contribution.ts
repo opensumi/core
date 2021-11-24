@@ -1,5 +1,5 @@
 // tslint:disable:no-console
-import { Autowired } from '@opensumi/common-di';
+import { Autowired } from '@opensumi/di';
 import { Disposable, IEventBus } from '@opensumi/ide-core-common';
 import { ClientAppContribution, IContextKey, IContextKeyService, CommandRegistry, CommandContribution, Domain, getIcon } from '@opensumi/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';

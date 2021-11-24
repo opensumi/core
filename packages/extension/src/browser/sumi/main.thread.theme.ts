@@ -1,4 +1,4 @@
-import { Injectable, Injector, Autowired } from '@opensumi/common-di';
+import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadTheme } from '../../common/sumi/theme';
 import { IExtHostTheme } from '../../common/sumi/theme';

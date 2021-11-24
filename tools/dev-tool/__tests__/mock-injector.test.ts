@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { MockInjector } from '../src/mock-injector';
 import { createBrowserInjector, createNodeInjector } from '../src/injector-helper';
 

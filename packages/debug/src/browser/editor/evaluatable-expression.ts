@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IDisposable } from '@opensumi/ide-core-common';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';

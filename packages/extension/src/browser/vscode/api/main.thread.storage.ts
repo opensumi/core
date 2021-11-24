@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStorage, KeysToAnyValues, IExtHostStorage } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@opensumi/common-di';
+import { Injectable, Autowired, Optinal } from '@opensumi/di';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 
 @Injectable({multiple: true})

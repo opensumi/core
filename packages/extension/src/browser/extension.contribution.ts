@@ -1,4 +1,4 @@
-import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenItem, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services/status-bar-service';

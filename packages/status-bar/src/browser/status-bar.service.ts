@@ -1,5 +1,5 @@
 import { observable, computed, action } from 'mobx';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor, StatusBarCommand, StatusBarState } from '@opensumi/ide-core-browser/lib/services';
 import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-core-common';

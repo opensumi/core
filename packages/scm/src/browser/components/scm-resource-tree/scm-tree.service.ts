@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/common-di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter, Event, PreferenceScope } from '@opensumi/ide-core-common';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { PreferenceService } from '@opensumi/ide-core-browser';

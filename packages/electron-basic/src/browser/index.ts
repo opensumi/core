@@ -1,4 +1,4 @@
-import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize, IEventBus } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ElectronHeaderBar } from './header';

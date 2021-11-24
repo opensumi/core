@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';

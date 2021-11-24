@@ -1,5 +1,5 @@
 import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
-import { Injector } from '@opensumi/common-di';
+import { Injector } from '@opensumi/di';
 import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel, IExtensionLogger } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 

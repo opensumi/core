@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable, IToolbarRegistry, createToolbarActionBtn, ToolbarActionBtnClickEvent } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 import React from 'react';

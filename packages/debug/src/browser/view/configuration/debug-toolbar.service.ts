@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';

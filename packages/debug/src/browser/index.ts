@@ -1,4 +1,4 @@
-import { Injectable, Injector, Provider } from '@opensumi/common-di';
+import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
 import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
 

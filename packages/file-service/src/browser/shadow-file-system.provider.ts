@@ -9,7 +9,7 @@ import {
     FileType,
     FileSystemProvider,
   } from '../common';
-import { Injectable } from '@opensumi/common-di';
+import { Injectable } from '@opensumi/di';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable()

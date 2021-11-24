@@ -3,7 +3,7 @@ import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes'
 import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
 import { getCodeActions, CodeActionItem } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
 import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry, Progress } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/common-di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
