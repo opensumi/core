@@ -1,8 +1,8 @@
 import { BrowserWindowConstructorOptions } from 'electron';
-import { Injector } from '@ide-framework/common-di';
-import { ConstructorOf, ExtensionCandidate } from '@ide-framework/ide-core-common';
-import { IDisposable } from '@ide-framework/ide-core-common/lib/disposable';
-import { IURLHandler } from '@ide-framework/ide-core-common/lib/electron';
+import { Injector } from '@opensumi/common-di';
+import { ConstructorOf, ExtensionCandidate } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { IURLHandler } from '@opensumi/ide-core-common/lib/electron';
 import { ElectronMainModule } from '../electron-main-module';
 
 export interface ElectronAppConfig {

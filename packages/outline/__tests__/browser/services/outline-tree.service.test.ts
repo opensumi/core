@@ -1,12 +1,12 @@
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { StorageProvider } from '@ide-framework/ide-core-common';
-import { DocumentSymbolStore } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { IEditorDocumentModelService, WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
-import { OutlineTreeService } from '@ide-framework/ide-outline/lib/browser/services/outline-tree.service';
-import { OutlineSortOrder } from '@ide-framework/ide-outline';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ide-framework/ide-outline/lib/browser/outline-node.define';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { StorageProvider } from '@opensumi/ide-core-common';
+import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { OutlineSortOrder } from '@opensumi/ide-outline';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 
 describe('OutlineTreeService', () => {
   let outlineTreeService: OutlineTreeService;

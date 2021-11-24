@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import { Autowired, Injectable } from '@opensumi/common-di';
 import {
   ClientAppContribution,
   URI,
@@ -18,14 +18,14 @@ import {
   getKeyboardLayoutId,
   KeymapInfo,
   formatLocalize,
-} from '@ide-framework/ide-core-browser';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { ResourceService, IResourceProvider, IResource } from '@ide-framework/ide-editor';
+} from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { QuickPickItem, QuickPickService } from '@ide-framework/ide-quick-open';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 

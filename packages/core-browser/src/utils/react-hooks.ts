@@ -1,5 +1,5 @@
 import { useState, useEffect, DependencyList } from 'react';
-import { DisposableStore, IDisposable } from '@ide-framework/ide-core-common';
+import { DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../menu/next/base';
 import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';

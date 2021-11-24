@@ -1,21 +1,21 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@ide-framework/ide-core-browser';
-import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
-import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '@ide-framework/ide-workspace';
-import { MockWorkspaceService } from '@ide-framework/ide-workspace/lib/common/mocks';
-import { IFileServiceClient, FileChangeType } from '@ide-framework/ide-file-service';
+import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
-import { IDecorationsService } from '@ide-framework/ide-decoration';
-import { IMainLayoutService, IViewsRegistry } from '@ide-framework/ide-main-layout';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IWindowDialogService, IDialogService, IMessageService } from '@ide-framework/ide-overlay';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IWindowDialogService, IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
-import { IThemeService, IIconService } from '@ide-framework/ide-theme';
+import { IThemeService, IIconService } from '@opensumi/ide-theme';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@ide-framework/ide-components';
-import { ViewsRegistry } from '@ide-framework/ide-main-layout/lib/browser/views-registry';
+import { TreeNodeType } from '@opensumi/ide-components';
+import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 
 class TempDirectory {}
 class TempFile {}

@@ -1,5 +1,5 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { ElectronMainModule } from '@ide-framework/ide-core-electron-main/lib/electron-main-module';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { ElectronMainModule } from '@opensumi/ide-core-electron-main/lib/electron-main-module';
 import { IHelloService } from 'common/types';
 import { HelloContribution, HelloService } from './hello';
 

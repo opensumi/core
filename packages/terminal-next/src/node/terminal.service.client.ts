@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { RPCService } from '@ide-framework/ide-connection';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { RPCService } from '@opensumi/ide-connection';
 import { ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
-import { INodeLogger } from '@ide-framework/ide-core-node';
+import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
 

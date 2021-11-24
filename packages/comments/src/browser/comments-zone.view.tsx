@@ -1,18 +1,18 @@
 import React from 'react';
-import { INJECTOR_TOKEN, Injectable, Autowired } from '@ide-framework/common-di';
+import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/common-di';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import styles from './comments.module.less';
-import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@ide-framework/ide-core-browser';
+import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry, ICommentsThread } from '../common';
 import clx from 'classnames';
-import { InlineActionBar } from '@ide-framework/ide-core-browser/lib/components/actions';
-import { ResizeZoneWidget } from '@ide-framework/ide-monaco-enhance';
-import { IEditor } from '@ide-framework/ide-editor';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
+import { IEditor } from '@opensumi/ide-editor';
 import { CommentsZoneService } from './comments-zone.service';
-import { MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 export interface ICommentProps {
   thread: ICommentsThread;

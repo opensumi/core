@@ -1,13 +1,13 @@
 import React from 'react';
 import styles from './debug-configuration.module.less';
 import cls from 'classnames';
-import { useInjectable, localize, isElectronRenderer, URI } from '@ide-framework/ide-core-browser';
+import { useInjectable, localize, isElectronRenderer, URI } from '@opensumi/ide-core-browser';
 import { DebugAction } from '../../components';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarView } from './debug-toolbar.view';
-import { Select, Option } from '@ide-framework/ide-components';
-import { Select as NativeSelect } from '@ide-framework/ide-core-browser/lib/components/select';
+import { Select, Option } from '@opensumi/ide-components';
+import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_NO_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_INDEX_SEPARATOR, DEFAULT_CONFIGURATION_NAME_SEPARATOR } from '../../../common';
 
 export const DebugConfigurationView = observer(() => {

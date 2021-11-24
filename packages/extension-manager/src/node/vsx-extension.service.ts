@@ -6,8 +6,8 @@ import os from 'os';
 import fs from 'fs-extra';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { AppConfig } from '@ide-framework/ide-core-node';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { AppConfig } from '@opensumi/ide-core-node';
 
 import { IVSXExtensionBackService, IExtensionInstallParam } from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';

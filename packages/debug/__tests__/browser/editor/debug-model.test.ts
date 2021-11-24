@@ -1,12 +1,12 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { URI, IContextKeyService, Disposable } from '@ide-framework/ide-core-browser';
-import { DebugBreakpoint, BreakpointManager } from '@ide-framework/ide-debug/lib/browser';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI, IContextKeyService, Disposable } from '@opensumi/ide-core-browser';
+import { DebugBreakpoint, BreakpointManager } from '@opensumi/ide-debug/lib/browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
-import { ICtxMenuRenderer, AbstractMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IDebugModel, IDebugSessionManager } from '@ide-framework/ide-debug';
+import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);

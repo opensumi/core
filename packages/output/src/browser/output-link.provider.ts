@@ -1,12 +1,12 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Uri, URI } from '@ide-framework/ide-core-common/lib/uri';
-import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@ide-framework/ide-core-common/lib/utils/strings';
-import { format } from '@ide-framework/ide-core-common/lib/utils/strings';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { join } from '@ide-framework/ide-core-common/lib/path';
-import { Disposable } from '@ide-framework/ide-core-common/lib';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
+import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@opensumi/ide-core-common/lib/utils/strings';
+import { format } from '@opensumi/ide-core-common/lib/utils/strings';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { join } from '@opensumi/ide-core-common/lib/path';
+import { Disposable } from '@opensumi/ide-core-common/lib';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IResourceCreator {
   toResource: (folderRelativePath: string) => string | undefined;

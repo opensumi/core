@@ -3,7 +3,7 @@
  */
 import WebSocket from 'ws';
 import httpProxy from 'http-proxy';
-import { Disposable, FileUri, URI } from '@ide-framework/ide-core-common';
+import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import {
   defaultName,
@@ -11,11 +11,11 @@ import {
 import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 import { delay } from './utils';
 import { injector } from './inject';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import os from 'os';
 import path from 'path';
 import * as fs from 'fs-extra';
-import { EnvironmentVariableServiceToken } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 function createDOMContainer() {
   const div = document.createElement('div');

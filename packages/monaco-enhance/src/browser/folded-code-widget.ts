@@ -1,7 +1,7 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { orderBy } from 'lodash';
-import { Disposable } from '@ide-framework/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 import { ZoneWidget } from './zone-widget';
 import { IFoldedCodeWidgetContentProvider } from '../common';
 

@@ -1,10 +1,10 @@
-import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
-import { normalizedIpcHandlerPath } from '@ide-framework/ide-core-common/lib/utils/ipc';
-import { ExtensionCandidate } from '@ide-framework/ide-core-common';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
 import qs from 'querystring';

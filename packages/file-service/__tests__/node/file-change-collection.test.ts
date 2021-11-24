@@ -1,4 +1,4 @@
-import { FileUri } from '@ide-framework/ide-core-node';
+import { FileUri } from '@opensumi/ide-core-node';
 import { FileChangeCollection } from '../../src/node/file-change-collection';
 import { FileChangeType } from '../../src/common';
 

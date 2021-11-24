@@ -1,11 +1,11 @@
 import crypto from 'crypto';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { isWindows, URI, Deferred, StoragePaths } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ide-framework/ide-workspace';
-import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service';
-import { ILoggerManagerClient } from '@ide-framework/ide-logs';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
+import { ILoggerManagerClient } from '@opensumi/ide-logs';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {

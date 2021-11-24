@@ -1,8 +1,8 @@
-import { Injectable, Autowired, Injector, Optional } from '@ide-framework/common-di';
-import { ILogger, CommandRegistry, IExtensionInfo } from '@ide-framework/ide-core-common';
-import { ICommandServiceToken, IMonacoCommandService } from '@ide-framework/ide-monaco/lib/browser/contrib/command';
+import { Injectable, Autowired, Injector, Optional } from '@opensumi/common-di';
+import { ILogger, CommandRegistry, IExtensionInfo } from '@opensumi/ide-core-common';
+import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { IExtension } from '../../common';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IExtHostCommands } from '../../common/vscode/command';
 import { ExtHostAPIIdentifier } from '../../common/vscode';
 

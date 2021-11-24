@@ -1,12 +1,12 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { Emitter } from '@opensumi/ide-core-common';
 import { ExtHostSumiAPIIdentifier, MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 
-import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@ide-framework/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
-import { ExtHostCommon } from '@ide-framework/ide-extension/lib/hosted/api/sumi/ext.host.common';
+import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
+import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
 import { mockExtensions } from '../../../../__mocks__/extensions';
 
 const actionMaps: Map<string, any> = new Map();

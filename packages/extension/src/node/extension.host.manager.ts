@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { MaybePromise, Event, findFreePort } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { MaybePromise, Event, findFreePort } from '@opensumi/ide-core-common';
 import { IExtensionHostManager, Output, OutputType } from '../common';
 import assert from 'assert';
 import cp from 'child_process';

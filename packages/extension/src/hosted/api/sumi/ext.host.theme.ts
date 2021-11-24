@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Emitter } from '@opensumi/ide-core-common';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostTheme, IMainThreadTheme } from '../../../common/sumi/theme';

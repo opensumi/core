@@ -1,15 +1,15 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   IMainThreadTasks, IExtHostTasks, RunOptionsDTO, TaskPresentationOptionsDTO, TaskDefinitionDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecution2DTO, CustomExecutionDTO,
   TaskDTO, ShellExecutionOptionsDTO, TaskSourceDTO, TaskFilterDTO, TaskExecutionDTO, TaskHandleDTO, TaskProcessStartedDTO, TaskProcessEndedDTO,
 } from '../../../common/vscode/tasks';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ILogger, IDisposable, uuid, formatLocalize, Uri, withNullAsUndefined, ITaskDefinitionRegistry, isString, URI, Disposable } from '@ide-framework/ide-core-common';
-import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@ide-framework/ide-task/lib/common';
-import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@ide-framework/ide-task/lib/common/task';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { PresentationOptions, RunOptions, CommandOptions, CommandConfiguration, RuntimeType, TaskSource, TaskSourceKind, ExtensionTaskSource, TaskScope, Task, ConfiguringTask, CustomTask, ContributedTask } from '@ide-framework/ide-task/lib/common/task';
+import { ILogger, IDisposable, uuid, formatLocalize, Uri, withNullAsUndefined, ITaskDefinitionRegistry, isString, URI, Disposable } from '@opensumi/ide-core-common';
+import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-task/lib/common';
+import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@opensumi/ide-task/lib/common/task';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { PresentationOptions, RunOptions, CommandOptions, CommandConfiguration, RuntimeType, TaskSource, TaskSourceKind, ExtensionTaskSource, TaskScope, Task, ConfiguringTask, CustomTask, ContributedTask } from '@opensumi/ide-task/lib/common/task';
 
 namespace TaskHandleDTO {
   export function is(value: any): value is TaskHandleDTO {

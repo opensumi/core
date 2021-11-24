@@ -1,8 +1,8 @@
-import { Injectable, Injector } from '@ide-framework/common-di';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { MaybeNull, Uri, URI, Event, Emitter } from '@ide-framework/ide-core-common';
-import { WorkbenchEditorService, IResource } from '@ide-framework/ide-editor';
-import { StatusBarAlignment, IStatusBarService } from '@ide-framework/ide-core-browser/lib/services';
+import { Injectable, Injector } from '@opensumi/common-di';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { MaybeNull, Uri, URI, Event, Emitter } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -16,8 +16,8 @@ import { SCMModule } from '../../src/browser';
 jest.useFakeTimers();
 
 // mock localize
-jest.mock('@ide-framework/ide-core-common/src/localize', () => ({
-  ...jest.requireActual('@ide-framework/ide-core-common/src/localize'),
+jest.mock('@opensumi/ide-core-common/src/localize', () => ({
+  ...jest.requireActual('@opensumi/ide-core-common/src/localize'),
   localize: (symbol: string, defaultValue?: string) => defaultValue || symbol,
 }));
 

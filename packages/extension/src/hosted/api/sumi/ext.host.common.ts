@@ -1,7 +1,7 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
-import { Emitter, IDisposable } from '@ide-framework/ide-core-common';
+import { Emitter, IDisposable } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { EMIT_EXT_HOST_EVENT } from '../../../common';
 import { IExtHostCommon, IMainThreadCommon } from '../../../common/sumi/common';
 

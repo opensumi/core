@@ -1,16 +1,16 @@
-import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { DebugModel, DebugModelManager } from '@ide-framework/ide-debug/lib/browser/editor';
-import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@ide-framework/ide-debug/lib/browser';
-import { DebugSessionOptions, IDebugSessionManager } from '@ide-framework/ide-debug';
-import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks';
-import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { IMessageService } from '@ide-framework/ide-overlay';
+import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
+import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@opensumi/ide-debug/lib/browser';
+import { DebugSessionOptions, IDebugSessionManager } from '@opensumi/ide-debug';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
 process.on('unhandledRejection', (reason, promise) => {
   // console.error(reason);

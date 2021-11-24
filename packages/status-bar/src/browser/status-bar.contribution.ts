@@ -1,11 +1,11 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandContribution } from '@ide-framework/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { CommandRegistry } from '@ide-framework/ide-core-common';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandContribution } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { CommandRegistry } from '@opensumi/ide-core-common';
 
 import { StatusBarView } from './status-bar.view';
 import { IStatusBarService } from '../common';
-import { StatusBarEntry, StatusBarCommand } from '@ide-framework/ide-core-browser/lib/services';
+import { StatusBarEntry, StatusBarCommand } from '@opensumi/ide-core-browser/lib/services';
 
 @Domain(ComponentContribution, CommandContribution)
 export class StatusBarContribution implements ComponentContribution, CommandContribution {
@@ -13,7 +13,7 @@ export class StatusBarContribution implements ComponentContribution, CommandCont
   statusBarService: IStatusBarService;
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-status-bar', {
+    registry.register('@opensumi/ide-status-bar', {
       component: StatusBarView,
       id: 'ide-status-bar',
     }, {

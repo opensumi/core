@@ -1,7 +1,7 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@ide-framework/ide-components';
-import { INormalizedDocumentSymbol } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { OutlineTreeService } from './services/outline-tree.service';
-import { MaybeNull, URI } from '@ide-framework/ide-core-common';
+import { MaybeNull, URI } from '@opensumi/ide-core-common';
 export class OutlineRoot extends CompositeTreeNode {
 
   static is(node: OutlineCompositeTreeNode | OutlineRoot): node is OutlineRoot {

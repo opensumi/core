@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, isEmptyObject, FileStat } from '@ide-framework/ide-core-common';
-import { PreferenceScope } from '@ide-framework/ide-core-common/lib/preferences/preference-scope';
+import { Injectable } from '@opensumi/common-di';
+import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, isEmptyObject, FileStat } from '@opensumi/ide-core-common';
+import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/preference-scope';
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {
   default: {[key: string]: any};

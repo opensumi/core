@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadLayout, IExtHostLayout } from '../../common/sumi/layout';
-import { IMainLayoutService, TabBarRegistrationEvent } from '@ide-framework/ide-main-layout';
-import { TabBarHandler } from '@ide-framework/ide-main-layout/lib/browser/tabbar-handler';
+import { IMainLayoutService, TabBarRegistrationEvent } from '@opensumi/ide-main-layout';
+import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
-import { IEventBus, Disposable, ILogger } from '@ide-framework/ide-core-browser';
-import { IconType, IconShape, IIconService } from '@ide-framework/ide-theme';
+import { IEventBus, Disposable, ILogger } from '@opensumi/ide-core-browser';
+import { IconType, IconShape, IIconService } from '@opensumi/ide-theme';
 
 @Injectable({ multiple: true })
 export class MainThreadLayout extends Disposable implements IMainThreadLayout {

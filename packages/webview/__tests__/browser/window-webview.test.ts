@@ -1,8 +1,8 @@
-import { mockElectronRenderer } from '@ide-framework/ide-core-common/lib/mocks/electron/browserMock';
+import { mockElectronRenderer } from '@opensumi/ide-core-common/lib/mocks/electron/browserMock';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { ElectronPlainWebviewWindow } from '@ide-framework/ide-webview/lib/browser/webview-window';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { ElectronPlainWebviewWindow } from '@opensumi/ide-webview/lib/browser/webview-window';
+import { Emitter } from '@opensumi/ide-core-common';
 
 describe('webview-window-test', () => {
 

@@ -1,14 +1,14 @@
-import { Emitter, IEventBus, URI, CancellationTokenSource} from '@ide-framework/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ide-framework/ide-extension/lib/common/vscode';
-import { RPCProtocol } from '@ide-framework/ide-connection';
+import { Emitter, IEventBus, URI, CancellationTokenSource} from '@opensumi/ide-core-common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { RPCProtocol } from '@opensumi/ide-connection';
 import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtHostCustomEditor, CustomEditorType, CustomEditorOptionChangeEvent, CustomEditorShouldDisplayEvent, CustomEditorShouldEditEvent, CustomEditorShouldSaveEvent, CustomEditorShouldRevertEvent } from '@ide-framework/ide-extension/lib/common/vscode/custom-editor';
-import { MainThreadWebview } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
-import { MainThreadCustomEditor } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.custom-editor';
-import { IWebviewService } from '@ide-framework/ide-webview/lib/browser/types';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
-import { ResourceDecorationNeedChangeEvent } from '@ide-framework/ide-editor/lib/browser/types';
+import { IExtHostCustomEditor, CustomEditorType, CustomEditorOptionChangeEvent, CustomEditorShouldDisplayEvent, CustomEditorShouldEditEvent, CustomEditorShouldSaveEvent, CustomEditorShouldRevertEvent } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
+import { MainThreadWebview } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
+import { MainThreadCustomEditor } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.custom-editor';
+import { IWebviewService } from '@opensumi/ide-webview/lib/browser/types';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import { ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

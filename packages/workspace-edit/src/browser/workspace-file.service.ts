@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@ide-framework/ide-core-common';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@opensumi/ide-core-common';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { FileOperation, FILE_OPERATION_TIMEOUT, IWorkspaceFileOperationParticipant, IWorkspaceFileService, SourceTargetPair, WorkspaceFileEvent } from '..';
 
 @Injectable()

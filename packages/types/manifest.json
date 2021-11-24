@@ -1,6 +1,6 @@
 {
   "meta": {
-    "@ide-framework/ide-addons": {
+    "@opensumi/ide-addons": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -8,75 +8,75 @@
         "common"
       ]
     },
-    "@ide-framework/ide-comments": {
+    "@opensumi/ide-comments": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-components": {
+    "@opensumi/ide-components": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-connection": {
+    "@opensumi/ide-connection": {
       "version": "2.12.0",
       "entry": [
         "node"
       ]
     },
-    "@ide-framework/ide-core-browser": {
+    "@opensumi/ide-core-browser": {
       "version": "2.12.0",
       "entry": [
         "common"
       ]
     },
-    "@ide-framework/ide-core-common": {
+    "@opensumi/ide-core-common": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-core-electron-main": {
+    "@opensumi/ide-core-electron-main": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-core-node": {
+    "@opensumi/ide-core-node": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-debug": {
+    "@opensumi/ide-debug": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-decoration": {
+    "@opensumi/ide-decoration": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-editor": {
+    "@opensumi/ide-editor": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-electron-basic": {
+    "@opensumi/ide-electron-basic": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-explorer": {
+    "@opensumi/ide-explorer": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-express-file-server": {
+    "@opensumi/ide-express-file-server": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -84,7 +84,7 @@
         "common"
       ]
     },
-    "@ide-framework/ide-extension-manager": {
+    "@opensumi/ide-extension-manager": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -92,14 +92,14 @@
         "common"
       ]
     },
-    "@ide-framework/ide-extension-storage": {
+    "@opensumi/ide-extension-storage": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-file-scheme": {
+    "@opensumi/ide-file-scheme": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -107,36 +107,14 @@
         "common"
       ]
     },
-    "@ide-framework/ide-file-search": {
+    "@opensumi/ide-file-search": {
       "version": "2.12.0",
       "entry": [
         "node",
         "common"
       ]
     },
-    "@ide-framework/ide-file-service": {
-      "version": "2.12.0",
-      "entry": [
-        "node",
-        "browser",
-        "common"
-      ]
-    },
-    "@ide-framework/ide-file-tree-next": {
-      "version": "2.12.0",
-      "entry": [
-        "browser",
-        "common"
-      ]
-    },
-    "@ide-framework/ide-i18n": {
-      "version": "2.12.0",
-      "entry": [
-        "browser",
-        "common"
-      ]
-    },
-    "@ide-framework/ide-extension": {
+    "@opensumi/ide-file-service": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -144,14 +122,21 @@
         "common"
       ]
     },
-    "@ide-framework/ide-keymaps": {
+    "@opensumi/ide-file-tree-next": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-logs": {
+    "@opensumi/ide-i18n": {
+      "version": "2.12.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@opensumi/ide-extension": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -159,103 +144,118 @@
         "common"
       ]
     },
-    "@ide-framework/ide-main-layout": {
+    "@opensumi/ide-keymaps": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-markdown": {
+    "@opensumi/ide-logs": {
+      "version": "2.12.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@opensumi/ide-main-layout": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-markers": {
+    "@opensumi/ide-markdown": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-menu-bar": {
+    "@opensumi/ide-markers": {
+      "version": "2.12.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@opensumi/ide-menu-bar": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-monaco": {
+    "@opensumi/ide-monaco": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-monaco-enhance": {
+    "@opensumi/ide-monaco-enhance": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-opened-editor": {
+    "@opensumi/ide-opened-editor": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-outline": {
+    "@opensumi/ide-outline": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-output": {
+    "@opensumi/ide-output": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-overlay": {
+    "@opensumi/ide-overlay": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-preferences": {
+    "@opensumi/ide-preferences": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-process": {
+    "@opensumi/ide-process": {
       "version": "2.12.0",
       "entry": [
         "node",
         "common"
       ]
     },
-    "@ide-framework/ide-quick-open": {
+    "@opensumi/ide-quick-open": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-scm": {
+    "@opensumi/ide-scm": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-search": {
+    "@opensumi/ide-search": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -263,41 +263,33 @@
         "common"
       ]
     },
-    "@ide-framework/ide-startup": {
+    "@opensumi/ide-startup": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-static-resource": {
+    "@opensumi/ide-static-resource": {
       "version": "2.12.0",
       "entry": [
         "browser"
       ]
     },
-    "@ide-framework/ide-status-bar": {
+    "@opensumi/ide-status-bar": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-storage": {
+    "@opensumi/ide-storage": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-task": {
-      "version": "2.12.0",
-      "entry": [
-        "node",
-        "browser",
-        "common"
-      ]
-    },
-    "@ide-framework/ide-terminal-next": {
+    "@opensumi/ide-task": {
       "version": "2.12.0",
       "entry": [
         "node",
@@ -305,50 +297,58 @@
         "common"
       ]
     },
-    "@ide-framework/ide-theme": {
+    "@opensumi/ide-terminal-next": {
+      "version": "2.12.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@opensumi/ide-theme": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-toolbar": {
+    "@opensumi/ide-toolbar": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/kaitian": {
+    "@opensumi/kaitian": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-userstorage": {
+    "@opensumi/ide-userstorage": {
       "version": "2.12.0",
       "entry": []
     },
-    "@ide-framework/ide-variable": {
+    "@opensumi/ide-variable": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-webview": {
+    "@opensumi/ide-webview": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-workspace": {
+    "@opensumi/ide-workspace": {
       "version": "2.12.0",
       "entry": [
         "browser",
         "common"
       ]
     },
-    "@ide-framework/ide-workspace-edit": {
+    "@opensumi/ide-workspace-edit": {
       "version": "2.12.0",
       "entry": [
         "browser",
@@ -357,58 +357,58 @@
     }
   },
   "packages": {
-    "@ide-framework/ide-addons": "2.12.0",
-    "@ide-framework/ide-comments": "2.12.0",
-    "@ide-framework/ide-components": "2.12.0",
-    "@ide-framework/ide-connection": "2.12.0",
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-electron-main": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
-    "@ide-framework/ide-debug": "2.12.0",
-    "@ide-framework/ide-decoration": "2.12.0",
-    "@ide-framework/ide-editor": "2.12.0",
-    "@ide-framework/ide-electron-basic": "2.12.0",
-    "@ide-framework/ide-explorer": "2.12.0",
-    "@ide-framework/ide-express-file-server": "2.12.0",
-    "@ide-framework/ide-extension-manager": "2.12.0",
-    "@ide-framework/ide-extension-storage": "2.12.0",
-    "@ide-framework/ide-file-scheme": "2.12.0",
-    "@ide-framework/ide-file-search": "2.12.0",
-    "@ide-framework/ide-file-service": "2.12.0",
-    "@ide-framework/ide-file-tree-next": "2.12.0",
-    "@ide-framework/ide-i18n": "2.12.0",
-    "@ide-framework/ide-extension": "2.12.0",
-    "@ide-framework/ide-keymaps": "2.12.0",
-    "@ide-framework/ide-logs": "2.12.0",
-    "@ide-framework/ide-main-layout": "2.12.0",
-    "@ide-framework/ide-markdown": "2.12.0",
-    "@ide-framework/ide-markers": "2.12.0",
-    "@ide-framework/ide-menu-bar": "2.12.0",
-    "@ide-framework/ide-monaco": "2.12.0",
-    "@ide-framework/ide-monaco-enhance": "2.12.0",
-    "@ide-framework/ide-opened-editor": "2.12.0",
-    "@ide-framework/ide-outline": "2.12.0",
-    "@ide-framework/ide-output": "2.12.0",
-    "@ide-framework/ide-overlay": "2.12.0",
-    "@ide-framework/ide-preferences": "2.12.0",
-    "@ide-framework/ide-process": "2.12.0",
-    "@ide-framework/ide-quick-open": "2.12.0",
-    "@ide-framework/ide-scm": "2.12.0",
-    "@ide-framework/ide-search": "2.12.0",
-    "@ide-framework/ide-startup": "2.12.0",
-    "@ide-framework/ide-static-resource": "2.12.0",
-    "@ide-framework/ide-status-bar": "2.12.0",
-    "@ide-framework/ide-storage": "2.12.0",
-    "@ide-framework/ide-task": "2.12.0",
-    "@ide-framework/ide-terminal-next": "2.12.0",
-    "@ide-framework/ide-theme": "2.12.0",
-    "@ide-framework/ide-toolbar": "2.12.0",
-    "@ide-framework/kaitian": "2.12.0",
-    "@ide-framework/ide-userstorage": "2.12.0",
-    "@ide-framework/ide-variable": "2.12.0",
-    "@ide-framework/ide-webview": "2.12.0",
-    "@ide-framework/ide-workspace": "2.12.0",
-    "@ide-framework/ide-workspace-edit": "2.12.0"
+    "@opensumi/ide-addons": "2.12.0",
+    "@opensumi/ide-comments": "2.12.0",
+    "@opensumi/ide-components": "2.12.0",
+    "@opensumi/ide-connection": "2.12.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-electron-main": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
+    "@opensumi/ide-debug": "2.12.0",
+    "@opensumi/ide-decoration": "2.12.0",
+    "@opensumi/ide-editor": "2.12.0",
+    "@opensumi/ide-electron-basic": "2.12.0",
+    "@opensumi/ide-explorer": "2.12.0",
+    "@opensumi/ide-express-file-server": "2.12.0",
+    "@opensumi/ide-extension-manager": "2.12.0",
+    "@opensumi/ide-extension-storage": "2.12.0",
+    "@opensumi/ide-file-scheme": "2.12.0",
+    "@opensumi/ide-file-search": "2.12.0",
+    "@opensumi/ide-file-service": "2.12.0",
+    "@opensumi/ide-file-tree-next": "2.12.0",
+    "@opensumi/ide-i18n": "2.12.0",
+    "@opensumi/ide-extension": "2.12.0",
+    "@opensumi/ide-keymaps": "2.12.0",
+    "@opensumi/ide-logs": "2.12.0",
+    "@opensumi/ide-main-layout": "2.12.0",
+    "@opensumi/ide-markdown": "2.12.0",
+    "@opensumi/ide-markers": "2.12.0",
+    "@opensumi/ide-menu-bar": "2.12.0",
+    "@opensumi/ide-monaco": "2.12.0",
+    "@opensumi/ide-monaco-enhance": "2.12.0",
+    "@opensumi/ide-opened-editor": "2.12.0",
+    "@opensumi/ide-outline": "2.12.0",
+    "@opensumi/ide-output": "2.12.0",
+    "@opensumi/ide-overlay": "2.12.0",
+    "@opensumi/ide-preferences": "2.12.0",
+    "@opensumi/ide-process": "2.12.0",
+    "@opensumi/ide-quick-open": "2.12.0",
+    "@opensumi/ide-scm": "2.12.0",
+    "@opensumi/ide-search": "2.12.0",
+    "@opensumi/ide-startup": "2.12.0",
+    "@opensumi/ide-static-resource": "2.12.0",
+    "@opensumi/ide-status-bar": "2.12.0",
+    "@opensumi/ide-storage": "2.12.0",
+    "@opensumi/ide-task": "2.12.0",
+    "@opensumi/ide-terminal-next": "2.12.0",
+    "@opensumi/ide-theme": "2.12.0",
+    "@opensumi/ide-toolbar": "2.12.0",
+    "@opensumi/kaitian": "2.12.0",
+    "@opensumi/ide-userstorage": "2.12.0",
+    "@opensumi/ide-variable": "2.12.0",
+    "@opensumi/ide-webview": "2.12.0",
+    "@opensumi/ide-workspace": "2.12.0",
+    "@opensumi/ide-workspace-edit": "2.12.0"
   }
 }

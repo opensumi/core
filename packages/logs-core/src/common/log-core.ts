@@ -1,7 +1,7 @@
 import {
   LogLevel,
   SupportLogNamespace,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 
 export const ILogServiceForClient = Symbol('LogServiceForClient');
 

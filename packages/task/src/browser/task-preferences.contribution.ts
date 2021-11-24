@@ -1,4 +1,4 @@
-import { PreferenceContribution, PreferenceSchema, Domain, PreferenceConfiguration } from '@ide-framework/ide-core-browser';
+import { PreferenceContribution, PreferenceSchema, Domain, PreferenceConfiguration } from '@opensumi/ide-core-browser';
 import { taskPreferencesSchema } from './task-preferences';
 
 @Domain(PreferenceContribution, PreferenceConfiguration)

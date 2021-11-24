@@ -1,7 +1,7 @@
-import { Injectable } from '@ide-framework/common-di';
-import { Emitter, Event } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { Emitter, Event } from '@opensumi/ide-core-browser';
 import { DebugConsoleFilterModel } from './debug-console-filter.model';
-import * as strings from '@ide-framework/ide-core-common';
+import * as strings from '@opensumi/ide-core-common';
 import { matchAll } from '../../debugUtils';
 const Ansi = require('anser');
 

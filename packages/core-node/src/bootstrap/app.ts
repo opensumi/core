@@ -1,4 +1,4 @@
-import { Injector, ConstructorOf } from '@ide-framework/common-di';
+import { Injector, ConstructorOf } from '@opensumi/common-di';
 import Koa from 'koa';
 import http from 'http';
 import https from 'https';
@@ -6,11 +6,11 @@ import net from 'net';
 import cp from 'child_process';
 import os from 'os';
 import path from 'path';
-import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ide-framework/ide-core-common';
+import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@opensumi/ide-core-common';
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
-import { WebSocketHandler } from '@ide-framework/ide-connection/lib/node';
-import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ide-framework/ide-core-common';
+import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
+import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@opensumi/ide-core-common';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;

@@ -1,15 +1,15 @@
-import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize, IEventBus } from '@ide-framework/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize, IEventBus } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
-import { IMenuRegistry, MenuContribution, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IElectronMenuBarService } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { IMessageService } from '@ide-framework/ide-overlay/lib/common';
-import { EditorGroupFileDropEvent, DragOverPosition, getSplitActionFromDragDrop } from '@ide-framework/ide-editor/lib/browser';
-import { IResourceOpenOptions } from '@ide-framework/ide-editor';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { IMessageService } from '@opensumi/ide-overlay/lib/common';
+import { EditorGroupFileDropEvent, DragOverPosition, getSplitActionFromDragDrop } from '@opensumi/ide-editor/lib/browser';
+import { IResourceOpenOptions } from '@opensumi/ide-editor';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -94,7 +94,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   registerComponent(registry: ComponentRegistry) {
     const top = this.config.layoutConfig[SlotLocation.top];
     if (top && top.modules) {
-      const index = top.modules.indexOf('@ide-framework/ide-menu-bar');
+      const index = top.modules.indexOf('@opensumi/ide-menu-bar');
       if (index !== -1) {
         top.modules.splice(index, 1, 'electron-header');
       }

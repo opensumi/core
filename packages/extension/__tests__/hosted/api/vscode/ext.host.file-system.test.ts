@@ -1,11 +1,11 @@
 // tslint:disable
-import { URI } from '@ide-framework/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import {
   FileChangeType,
   FileType,
   FileStat,
-} from '@ide-framework/ide-file-service/lib/common';
-import { convertToVSCFileStat, ExtHostFileSystem } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
+} from '@opensumi/ide-file-service/lib/common';
+import { convertToVSCFileStat, ExtHostFileSystem } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
 
 describe('convertToVSCFileStat', () => {
   it('Should return normal conversion to VSCode format results.', () => {

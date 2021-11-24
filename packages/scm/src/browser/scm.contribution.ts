@@ -1,19 +1,19 @@
-import { Autowired } from '@ide-framework/common-di';
-import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@ide-framework/ide-core-common';
-import { ClientAppContribution, PreferenceContribution, PreferenceService, getExternalIcon } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { IViewsRegistry, MainLayoutContribution } from '@ide-framework/ide-main-layout';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Autowired } from '@opensumi/common-di';
+import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@opensumi/ide-core-common';
+import { ClientAppContribution, PreferenceContribution, PreferenceService, getExternalIcon } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 
 import { SCMViewContainer } from './scm-view-container';
 import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE, scmResourceViewId, SET_SCM_TREE_VIEW_MODE, SET_SCM_LIST_VIEW_MODE, SCMViewModelMode } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ide-framework/ide-editor/lib/common';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
 
 export const SCM_ACCEPT_INPUT: Command = {
@@ -129,7 +129,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-scm', [], {
+    registry.register('@opensumi/ide-scm', [], {
       iconClass: getIcon('scm'),
       title: localize('scm.title'),
       priority: 8,

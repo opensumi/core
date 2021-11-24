@@ -3,8 +3,8 @@ import path from 'path';
 import spdlog from 'spdlog';
 import process from 'process';
 import os from 'os';
-import { RPCService } from '@ide-framework/ide-connection';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { RPCService } from '@opensumi/ide-connection';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import {
   ILogService,
   ILogServiceOptions,

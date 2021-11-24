@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@ide-framework/common-di';
-import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ide-framework/ide-core-browser';
-import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@ide-framework/ide-core-common';
-import { ICommandServiceToken, IMonacoCommandService } from '@ide-framework/ide-monaco/lib/browser/contrib/command';
+import { Injectable, Autowired, Optinal } from '@opensumi/common-di';
+import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@opensumi/ide-core-browser';
+import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@opensumi/ide-core-common';
+import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 
 export interface IExtCommandHandler extends IDisposable {
   execute: (...args: any[]) => Promise<any>;

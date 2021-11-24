@@ -5,11 +5,11 @@ import styles from './markers-filter.module.less';
 import { MarkerService } from './markers-service';
 import Messages from './messages';
 import debounce = require('lodash.debounce');
-import { useDisposable } from '@ide-framework/ide-core-browser/lib/utils/react-hooks';
-import { AutoFocusedInput } from '@ide-framework/ide-main-layout/lib/browser/input';
+import { useDisposable } from '@opensumi/ide-core-browser/lib/utils/react-hooks';
+import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
 import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
-import { useInjectable } from '@ide-framework/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 
 /**
  * Marker过滤面板

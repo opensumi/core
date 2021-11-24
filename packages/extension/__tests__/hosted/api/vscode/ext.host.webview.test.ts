@@ -1,8 +1,8 @@
-import { Uri, IExtensionInfo } from '@ide-framework/ide-core-common';
+import { Uri, IExtensionInfo } from '@opensumi/ide-core-common';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MainThreadAPIIdentifier, IMainThreadWebview } from '@ide-framework/ide-extension/lib/common/vscode';
-import { ExtHostWebviewService } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
-import { ExtHostWebview } from '@ide-framework/ide-extension/lib/hosted/api/sumi/ext.host.webview';
+import { MainThreadAPIIdentifier, IMainThreadWebview } from '@opensumi/ide-extension/lib/common/vscode';
+import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import { ExtHostWebview } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.webview';
 describe('vscode extHostWebview Test', () => {
 
   const map = new Map();

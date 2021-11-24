@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { ChildProcess, spawn, fork } from 'child_process';
 import stream from 'stream';
-import { Disposable, Emitter } from '@ide-framework/ide-core-common';
+import { Disposable, Emitter } from '@opensumi/ide-core-common';
 import { DevNullStream } from './dev-null-stream';
 import { ProcessManage } from './process-manager';
 import {

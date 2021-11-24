@@ -1,6 +1,6 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { Domain } from '@ide-framework/ide-core-common';
-import { ElectronMainApiProvider, ElectronMainApiRegistry, ElectronMainContribution } from '@ide-framework/ide-core-electron-main/lib/bootstrap/types';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Domain } from '@opensumi/ide-core-common';
+import { ElectronMainApiProvider, ElectronMainApiRegistry, ElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/types';
 import { IHelloService } from 'common/types';
 
 @Injectable()

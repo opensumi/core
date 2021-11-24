@@ -1,4 +1,4 @@
-import { Uri } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 
 export function getRelatedFilePath(uri: string | undefined, projectRoot: string | undefined) {
   if (projectRoot) {

@@ -4,11 +4,11 @@
 import path from 'path';
 import temp from 'temp';
 import fs from 'fs';
-import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@ide-framework/ide-core-node';
-import { isWindows } from '@ide-framework/ide-core-common';
-import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { ProcessModule } from '@ide-framework/ide-process';
-import { LogServiceModule } from '@ide-framework/ide-logs/lib/node';
+import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+import { isWindows } from '@opensumi/ide-core-common';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { ProcessModule } from '@opensumi/ide-process';
+import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { SearchModule, IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
 
 // Allow creating temporary files, but remove them when we are done.

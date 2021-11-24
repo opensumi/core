@@ -16,12 +16,12 @@ const options = {
     'lib',
   ],
   ignoreMatches: [
-    '@ide-framework/ide-core-browser',
-    '@ide-framework/ide-core-common',
-    '@ide-framework/ide-core-node',
-    '@ide-framework/ide-components',
+    '@opensumi/ide-core-browser',
+    '@opensumi/ide-core-common',
+    '@opensumi/ide-core-node',
+    '@opensumi/ide-components',
     // devtool related
-    '@ide-framework/ide-dev-tool',
+    '@opensumi/ide-dev-tool',
     'npm-run-all',
     'ts-node',
     'webpack-dev-server',

@@ -1,5 +1,5 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable, ConstructorOf } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable, ConstructorOf } from '@opensumi/common-di';
 import type vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
 import {
@@ -10,23 +10,23 @@ import {
   DefinitionLink,
   ReferenceContext,
   Location,
-} from '@ide-framework/ide-extension/lib/common/vscode/model.api';
-import { ExtensionDocumentDataManager, IExtHostLanguages } from '@ide-framework/ide-extension/lib/common/vscode';
-import { Uri, URI, LRUMap, DisposableCollection } from '@ide-framework/ide-core-common';
-import { Disposable } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
+} from '@opensumi/ide-extension/lib/common/vscode/model.api';
+import { ExtensionDocumentDataManager, IExtHostLanguages } from '@opensumi/ide-extension/lib/common/vscode';
+import { Uri, URI, LRUMap, DisposableCollection } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 
-import { DefinitionAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/definition';
-import { HoverAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/hover';
-import { ReferenceAdapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/language/reference';
-import { Adapter } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.language';
+import { DefinitionAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/definition';
+import { HoverAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/hover';
+import { ReferenceAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/reference';
+import { Adapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.language';
 
-import { ExtHostDocumentData } from '@ide-framework/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
+import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { fromLanguageSelector } from '@ide-framework/ide-extension/lib/common/vscode/converter';
-import { MonacoModelIdentifier, testGlob } from '@ide-framework/ide-extension/lib/common/vscode';
-import { LanguageSelector } from '@ide-framework/ide-extension/lib/common/vscode/model.api';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { fromLanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/converter';
+import { MonacoModelIdentifier, testGlob } from '@opensumi/ide-extension/lib/common/vscode';
+import { LanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/model.api';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 class LiteDocumentDataManager implements Partial<ExtensionDocumentDataManager> {

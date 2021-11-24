@@ -1,4 +1,4 @@
-import {  IEventBus, EventBusImpl, BrowserConnectionErrorEvent } from '@ide-framework/ide-core-common';
+import {  IEventBus, EventBusImpl, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 

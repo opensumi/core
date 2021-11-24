@@ -1,4 +1,4 @@
-// Modify from @ide-framework/ide-core-common/src/process.ts
+// Modify from @opensumi/ide-core-common/src/process.ts
 import { isWindows, isOSX } from './os';
 
 interface IProcess {

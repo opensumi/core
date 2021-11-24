@@ -1,9 +1,9 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { IModeService } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/modeService';
-import type { IModelService } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/modelService';
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { URI, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ide-framework/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { URI, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@opensumi/ide-core-common';
 import { getIcon } from '../style/icon/icon';
 import classnames from 'classnames';
 

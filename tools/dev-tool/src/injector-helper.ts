@@ -1,7 +1,7 @@
-import { ConstructorOf, ILoggerManagerClient } from '@ide-framework/ide-core-common';
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { BrowserModule, ClientApp } from '@ide-framework/ide-core-browser';
-import { NodeModule, INodeLogger } from '@ide-framework/ide-core-node';
+import { ConstructorOf, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { BrowserModule, ClientApp } from '@opensumi/ide-core-browser';
+import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
 

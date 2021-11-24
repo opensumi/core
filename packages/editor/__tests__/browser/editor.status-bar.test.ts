@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { WorkbenchEditorService, ILanguageService, CursorStatus } from '@ide-framework/ide-editor';
-import { EditorStatusBarService } from '@ide-framework/ide-editor/lib/browser/editor.status-bar.service';
-import { Emitter } from '@ide-framework/ide-core-common';
-import { IStatusBarService } from '@ide-framework/ide-status-bar/lib/common';
+import { WorkbenchEditorService, ILanguageService, CursorStatus } from '@opensumi/ide-editor';
+import { EditorStatusBarService } from '@opensumi/ide-editor/lib/browser/editor.status-bar.service';
+import { Emitter } from '@opensumi/ide-core-common';
+import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
 
 describe('editor status bar item test', () => {
 

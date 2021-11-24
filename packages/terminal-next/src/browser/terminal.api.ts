@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Event, Emitter } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Event, Emitter } from '@opensumi/ide-core-common';
 import { capitalize } from 'lodash';
 import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork, ITerminalExitEvent } from '../common';
 

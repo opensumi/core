@@ -1,6 +1,6 @@
-import { Uri, URI, IRange, BasicEvent, FileStat, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@ide-framework/ide-core-common';
-import { EndOfLineSequence } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import type { IBulkEditService } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { Uri, URI, IRange, BasicEvent, FileStat, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@opensumi/ide-core-common';
+import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { IBulkEditService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 // 对文件位置(添加，删除，移动, 复制)
 export interface IResourceFileEdit {

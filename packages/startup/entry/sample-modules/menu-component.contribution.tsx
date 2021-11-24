@@ -1,6 +1,6 @@
 // tslint:disable:no-console
-import { Domain } from '@ide-framework/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId, IComponentMenuItemProps } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Domain } from '@opensumi/ide-core-browser';
+import { MenuContribution, IMenuRegistry, MenuId, IComponentMenuItemProps } from '@opensumi/ide-core-browser/lib/menu/next';
 import React from 'react';
 
 const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {

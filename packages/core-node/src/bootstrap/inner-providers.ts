@@ -1,7 +1,7 @@
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 import { INodeLogger, NodeLogger } from '../logger/node-logger';
-import { IReporter, DefaultReporter, IReporterService, ReporterService, ReporterMetadata, REPORT_HOST } from '@ide-framework/ide-core-common';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IReporter, DefaultReporter, IReporterService, ReporterService, ReporterMetadata, REPORT_HOST } from '@opensumi/ide-core-common';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export function injectInnerProviders(injector: Injector) {
   injector.addProviders(

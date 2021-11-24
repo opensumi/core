@@ -1,7 +1,7 @@
-import { Disposable } from '@ide-framework/ide-core-common';
-import { Event, Emitter } from '@ide-framework/ide-core-browser';
-import { Injectable } from '@ide-framework/common-di';
-import { AbstractMenubarService, IMenubarItem, MenuNode } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common';
+import { Event, Emitter } from '@opensumi/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';

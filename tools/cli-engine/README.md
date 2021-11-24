@@ -1,4 +1,4 @@
-# @ide-framework/kaitian-cli-engine
+# @opensumi/kaitian-cli-engine
 
 
 ## Development

@@ -1,8 +1,8 @@
 // tslint:disable no-console
 console.time('Render');
-import { Injector } from '@ide-framework/common-di';
-import { ClientApp, IClientAppOpts } from '@ide-framework/ide-core-browser';
-import { ToolbarActionBasedLayout } from '@ide-framework/ide-core-browser/lib/components';
+import { Injector } from '@opensumi/common-di';
+import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
+import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();

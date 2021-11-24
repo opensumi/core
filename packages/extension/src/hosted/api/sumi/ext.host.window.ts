@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Emitter, Disposable, IDisposable, DisposableCollection } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Emitter, Disposable, IDisposable, DisposableCollection } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostIDEWindow, IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtPlainWebviewWindow, IWindowInfo } from '../../../common/sumi/window';
 import { IExtHostCommands } from '../../../common/vscode';

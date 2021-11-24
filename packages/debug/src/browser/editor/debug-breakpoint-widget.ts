@@ -1,8 +1,8 @@
-import { IContextKey, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
 import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, positionToRange } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, positionToRange } from '@opensumi/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import { DebugEditor } from '../../common';
 import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';

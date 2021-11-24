@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IProcessFactory, IProcess, ProcessOptions } from '@ide-framework/ide-process';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
 import { rgPath } from 'vscode-ripgrep';
-import { FileUri, replaceAsarInPath } from '@ide-framework/ide-core-node';
-import { RPCService } from '@ide-framework/ide-connection';
-import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ide-framework/ide-logs/lib/node';
+import { FileUri, replaceAsarInPath } from '@opensumi/ide-core-node';
+import { RPCService } from '@opensumi/ide-connection';
+import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
 import {
   IContentSearchServer,
   ContentSearchOptions,

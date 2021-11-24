@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux, debounce } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux, debounce } from '@opensumi/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, DiskFileServicePath, FileSystemProvider, DidFilesChangedParams, FileChange,
 } from '../common';

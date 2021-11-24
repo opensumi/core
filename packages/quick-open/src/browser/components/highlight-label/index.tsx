@@ -1,6 +1,6 @@
 import React from 'react';
-import { escape } from '@ide-framework/ide-core-common';
-import { Highlight } from '@ide-framework/ide-core-browser/lib/quick-open';
+import { escape } from '@opensumi/ide-core-common';
+import { Highlight } from '@opensumi/ide-core-browser/lib/quick-open';
 
 export interface HighlightLabelProp {
   text?: string;

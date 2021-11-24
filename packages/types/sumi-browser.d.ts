@@ -24,14 +24,14 @@ declare module 'kaitian-browser' {
 }
 
 declare module 'sumi-browser' {
-  export * from '@ide-framework/ide-components';
+  export * from '@opensumi/ide-components';
 
   import type vscode from 'vscode';
   import React from 'react';
 
-  import { ROTATE_TYPE, ANIM_TYPE } from '@ide-framework/ide-components';
+  import { ROTATE_TYPE, ANIM_TYPE } from '@opensumi/ide-components';
 
-  export { URI } from '@ide-framework/ide-core-browser';
+  export { URI } from '@opensumi/ide-core-browser';
 
   export interface ScrollAreaProps {
     className?: string;

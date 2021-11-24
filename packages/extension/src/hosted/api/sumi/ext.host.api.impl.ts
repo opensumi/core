@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { createLayoutAPIFactory, ExtHostLayout } from './ext.host.layout';
 import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
-import { ReporterService, REPORT_HOST, IReporter } from '@ide-framework/ide-core-common';
+import { ReporterService, REPORT_HOST, IReporter } from '@opensumi/ide-core-common';
 import { ExtHostWebview, createWebviewApi } from './ext.host.webview';
 import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';

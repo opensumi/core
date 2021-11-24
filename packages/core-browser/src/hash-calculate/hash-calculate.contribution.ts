@@ -1,6 +1,6 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { Autowired } from '@opensumi/common-di';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 import { ClientAppContribution } from '../common/common.define';
 

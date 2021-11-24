@@ -5,7 +5,7 @@ import os from 'os';
 import * as pty from 'node-pty';
 import WebSocket from 'ws';
 import httpProxy from 'http-proxy';
-import { uuid } from '@ide-framework/ide-core-browser';
+import { uuid } from '@opensumi/ide-core-browser';
 
 function getRandomInt(min: number, max: number) {
   min = Math.ceil(min);

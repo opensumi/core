@@ -4,7 +4,7 @@ import styles from './styles.module.less';
 import { Layout } from './layout';
 import { useInjectable } from '../../react-hooks';
 import { IResizeHandleDelegate, ResizeFlexMode } from '../resize/resize';
-import { IEventBus } from '@ide-framework/ide-core-common';
+import { IEventBus } from '@opensumi/ide-core-common';
 import { ResizeEvent } from '../../layout';
 import { SplitPanelManager } from './split-panel.service';
 

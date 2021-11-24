@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { ILogger } from '@ide-framework/ide-core-common';
-import { ISemanticTokenRegistry } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { ILogger } from '@opensumi/ide-core-common';
+import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { VSCodeContributePoint, Contributes, SemanticTokenModifierSchema, validateTypeOrModifier } from '../../../common';
 
 @Injectable()

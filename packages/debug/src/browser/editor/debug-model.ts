@@ -1,6 +1,6 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@ide-framework/ide-core-common';
-import { Injector, Injectable, Autowired } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
+import { Injector, Injectable, Autowired } from '@opensumi/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { BreakpointManager } from '../breakpoint';
@@ -12,8 +12,8 @@ import * as options from './debug-styles';
 import { DebugStackFrame } from '../model';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { IDebugModel, DEBUG_REPORT_NAME } from '../../common';
-import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { DomListener, IContextKeyService, IReporterService } from '@ide-framework/ide-core-browser';
+import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
 import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
 

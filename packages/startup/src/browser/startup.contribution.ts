@@ -1,16 +1,16 @@
 
-import { Autowired } from '@ide-framework/common-di';
-import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@ide-framework/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-// import { StatusBar, StatusBarAlignment } from '@ide-framework/ide-status-bar/lib/browser/status-bar.service';
-import { IStatusBarService} from '@ide-framework/ide-core-browser/lib/services';
-import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { ISCMProvider } from '@ide-framework/ide-scm';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { Autowired } from '@opensumi/common-di';
+import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+// import { StatusBar, StatusBarAlignment } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
+import { IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ISCMProvider } from '@opensumi/ide-scm';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExamplePopover } from './exmaple-popover';
 

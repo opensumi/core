@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import {
   CommandService,
   IContextKeyService,
@@ -12,19 +12,19 @@ import {
   Emitter,
   OS,
   IApplicationService,
-} from '@ide-framework/ide-core-browser';
-import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
+} from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, IFileTreeService } from '../common';
-import { FileChange, IFileServiceClient, FileChangeType, FileStat, IFileServiceWatcher } from '@ide-framework/ide-file-service/lib/common';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@ide-framework/ide-components';
+import { FileChange, IFileServiceClient, FileChangeType, FileStat, IFileServiceWatcher } from '@opensumi/ide-file-service/lib/common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@opensumi/ide-components';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
-import { IIconService } from '@ide-framework/ide-theme';
+import { IIconService } from '@opensumi/ide-theme';
 export interface IMoveChange {
   source: FileChange;
   target: FileChange;

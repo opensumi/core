@@ -1,10 +1,10 @@
 import React from 'react';
-import { Autowired } from '@ide-framework/common-di';
-import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@ide-framework/ide-core-browser';
-import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { CommandContribution, CommandRegistry, CommandService } from '@ide-framework/ide-core-common';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { ISCMProvider } from '@ide-framework/ide-scm';
+import { Autowired } from '@opensumi/common-di';
+import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { ISCMProvider } from '@opensumi/ide-scm';
 
 @Domain(CommandContribution, MenuContribution)
 export class SelectMenuContribution implements CommandContribution, MenuContribution {

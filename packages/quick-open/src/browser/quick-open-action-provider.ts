@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/quick-open/quick-open-action-provider.ts
 
-import { QuickOpenAction, QuickOpenActionOptions, QuickOpenItem } from '@ide-framework/ide-core-browser';
+import { QuickOpenAction, QuickOpenActionOptions, QuickOpenItem } from '@opensumi/ide-core-browser';
 
 export abstract class QuickOpenBaseAction implements QuickOpenAction {
   constructor(protected options: QuickOpenActionOptions) {

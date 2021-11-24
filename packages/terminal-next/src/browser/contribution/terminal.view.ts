@@ -5,7 +5,7 @@ import {
   ComponentRegistry,
   ComponentContribution,
   TabBarToolbarContribution,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { TERMINAL_COMMANDS, TerminalContainerId } from '../../common';
 import TerminalView from '../component/terminal.view';
 import TerminalTabs from '../component/tab.view';
@@ -42,7 +42,7 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-terminal-next', {
+    registry.register('@opensumi/ide-terminal-next', {
       component: TerminalView,
       id: 'ide-terminal-next',
     }, {

@@ -1,7 +1,7 @@
-import { Injectable, Autowired, ConstructorOf } from '@ide-framework/common-di';
+import { Injectable, Autowired, ConstructorOf } from '@opensumi/common-di';
 import path from 'path';
-import { AppConfig } from '@ide-framework/ide-core-node/lib/bootstrap/app';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+import { Emitter } from '@opensumi/ide-core-common';
 import {
   ILogService,
   LogLevel,

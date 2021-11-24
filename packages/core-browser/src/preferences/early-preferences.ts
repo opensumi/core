@@ -1,5 +1,5 @@
 import { PreferenceScope } from './preference-scope';
-import { PreferenceItem, Event } from '@ide-framework/ide-core-common';
+import { PreferenceItem, Event } from '@opensumi/ide-core-common';
 import { IPreferences } from '../bootstrap';
 import { PreferenceProvider } from './preference-provider';
 

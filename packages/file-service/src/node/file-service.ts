@@ -1,10 +1,10 @@
-import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
 import drivelist from 'drivelist';
 import paths from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
 import fileType from 'file-type';
-import { Uri } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 import { TextDocument } from 'vscode-languageserver-types';
 import {
   URI,
@@ -15,9 +15,9 @@ import {
   DisposableCollection,
   isArray,
   isEmptyObject,
-} from '@ide-framework/ide-core-common';
-import { FileUri, INodeLogger, AppConfig } from '@ide-framework/ide-core-node';
-import { parse, ParsedPattern, match } from '@ide-framework/ide-core-common/lib/utils/glob';
+} from '@opensumi/ide-core-common';
+import { FileUri, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+import { parse, ParsedPattern, match } from '@opensumi/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import { FileSystemManage } from './file-system-manage';
 import { getEncodingInfo, decode, encode, UTF8 } from './encoding';

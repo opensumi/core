@@ -1,6 +1,6 @@
-import { ILogger } from '@ide-framework/ide-logs/lib/common';
-import { SemanticTokenRegistryImpl } from '@ide-framework/ide-theme/lib/browser/semantic-tokens-registry';
-import { getStylingSchemeEntry, ISemanticTokenRegistry } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
+import { ILogger } from '@opensumi/ide-logs/lib/common';
+import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
+import { getStylingSchemeEntry, ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 

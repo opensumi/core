@@ -1,7 +1,7 @@
-import { Uri } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { IMainThreadUrls, MainThreadAPIIdentifier } from '@ide-framework/ide-extension/lib/common/vscode';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IMainThreadUrls, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { ExtHostUrls } from '../../../../src/hosted/api/vscode/ext.host.urls';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {

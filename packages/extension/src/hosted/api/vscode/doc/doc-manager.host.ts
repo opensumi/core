@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { CancellationTokenSource, Emitter, IDisposable } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { CancellationTokenSource, Emitter, IDisposable } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 
 import { ExtensionDocumentDataManager, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadDocumentsShape, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../../common/vscode';
@@ -7,8 +7,8 @@ import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscod
 import { TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
-import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
-import { isUTF8 } from '@ide-framework/ide-core-common/lib/encoding';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { isUTF8 } from '@opensumi/ide-core-common/lib/encoding';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 

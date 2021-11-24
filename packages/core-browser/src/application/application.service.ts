@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {

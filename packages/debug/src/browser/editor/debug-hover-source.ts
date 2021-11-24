@@ -1,8 +1,8 @@
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugVariable, DebugScope, DebugVariableContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { IDebugSessionManager } from '../../common';
-import { Event, Emitter } from '@ide-framework/ide-core-browser';
+import { Event, Emitter } from '@opensumi/ide-core-browser';
 
 export type ExpressionVariable = DebugHoverVariableRoot | DebugVariable | DebugVariableContainer | undefined;
 

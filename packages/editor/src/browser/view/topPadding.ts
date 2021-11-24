@@ -1,4 +1,4 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IEditorFeatureContribution } from '../types';
 import { IEditor } from '../../common';
 

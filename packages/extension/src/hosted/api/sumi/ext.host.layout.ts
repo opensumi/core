@@ -1,8 +1,8 @@
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../common/sumi/layout';
-import { Emitter } from '@ide-framework/ide-core-common';
+import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 
 export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();

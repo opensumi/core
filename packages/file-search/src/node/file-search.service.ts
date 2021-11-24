@@ -2,10 +2,10 @@ import fuzzy from 'fuzzy';
 import readline from 'readline';
 import path from 'path';
 import { rgPath } from 'vscode-ripgrep';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@ide-framework/ide-core-common';
-import { URI, FileUri, INodeLogger } from '@ide-framework/ide-core-node';
-import { IProcessFactory } from '@ide-framework/ide-process';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@opensumi/ide-core-common';
+import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
+import { IProcessFactory } from '@opensumi/ide-process';
 import { IFileSearchService } from '../common';
 
 @Injectable()

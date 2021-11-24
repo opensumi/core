@@ -21,9 +21,9 @@ import {
   Event, Emitter, getDebugLogger, DisposableStore,
   MutableDisposable, Uri as URI, UriComponents,
   CancellationToken, IDisposable,
-} from '@ide-framework/ide-core-common';
-import { ISplice } from '@ide-framework/ide-core-common/lib/sequence';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+} from '@opensumi/ide-core-common';
+import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,

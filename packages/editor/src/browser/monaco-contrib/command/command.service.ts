@@ -1,10 +1,10 @@
-import { URI } from '@ide-framework/ide-monaco/lib/browser/monaco-api';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
+import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 
-import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@ide-framework/ide-monaco/lib/browser/contrib/command';
-import { StaticServices } from '@ide-framework/ide-monaco/lib/browser/monaco-api/services';
-import { Event, ICodeEditor, IEvent } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import { StaticServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { Event, ICodeEditor, IEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
 
 /**

@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-logs",
+  "name": "@opensumi/ide-logs",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -18,15 +18,15 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-connection": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
+    "@opensumi/ide-connection": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
     "archiver": "^3.1.1",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "@types/debug": "^4.1.5",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

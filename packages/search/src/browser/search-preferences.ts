@@ -1,11 +1,11 @@
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 import {
   PreferenceService,
   PreferenceProxy,
   createPreferenceProxy,
   PreferenceSchema,
   localize,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 
 // 编写好 preference schema 配置
 // 包括分组和选型

@@ -1,22 +1,22 @@
-import { Injector } from '@ide-framework/common-di';
-import { ExtHostComments, createCommentsApiFactory, ExtHostCommentThread } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.comments';
-import { RPCProtocol } from '@ide-framework/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadComments, ExtHostAPIIdentifier } from '@ide-framework/ide-extension/lib/common/vscode';
+import { Injector } from '@opensumi/common-di';
+import { ExtHostComments, createCommentsApiFactory, ExtHostCommentThread } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { MainThreadAPIIdentifier, IMainThreadComments, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { Uri, Emitter, Disposable, IEventBus, URI } from '@ide-framework/ide-core-common';
-import * as types from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
+import { Uri, Emitter, Disposable, IEventBus, URI } from '@opensumi/ide-core-common';
+import * as types from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import type vscode from 'vscode';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { MainthreadComments } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.comments';
-import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from '@ide-framework/ide-comments';
-import { CommentsService } from '@ide-framework/ide-comments/lib/browser/comments.service';
-import { CommentsFeatureRegistry } from '@ide-framework/ide-comments/lib/browser/comments-feature.registry';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { LayoutService } from '@ide-framework/ide-main-layout/lib/browser/layout.service';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { MainthreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
+import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from '@opensumi/ide-comments';
+import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
+import { CommentsFeatureRegistry } from '@opensumi/ide-comments/lib/browser/comments-feature.registry';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { WorkbenchEditorServiceImpl } from '@ide-framework/ide-editor/lib/browser/workbench-editor.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,9 +1,9 @@
 import { IRunTimeParams, AbstractSumiBrowserContributionRunner, ITabBarViewContribution } from '../types';
-import { IDisposable, Disposable } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { IIconService } from '@ide-framework/ide-theme';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { IIconService } from '@opensumi/ide-theme';
 
 const SUPPORT_LOCATION = [ 'left', 'right', 'bottom', 'editor', 'toolBar' ];
 

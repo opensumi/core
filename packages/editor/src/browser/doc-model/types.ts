@@ -1,8 +1,8 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@ide-framework/ide-core-browser';
+import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
-import { EndOfLineSequence, EOL, ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { EndOfLineSequence, EOL, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */

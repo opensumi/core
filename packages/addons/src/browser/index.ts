@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { FileSearchContribution } from './file-search.contribution';
 import { StatusBarContribution } from './status-bar-contribution';
 import { ToolbarCustomizeContribution } from './toolbar-customize/toolbar-customize.contribution';

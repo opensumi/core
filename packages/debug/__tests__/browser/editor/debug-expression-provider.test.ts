@@ -1,8 +1,8 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { DebugExpressionProvider } from '@ide-framework/ide-debug/lib/browser/editor';
-import type { ITextModel } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/model';
-import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ide-framework/ide-debug/lib/browser/editor/evaluatable-expression';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { DebugExpressionProvider } from '@opensumi/ide-debug/lib/browser/editor';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 
 describe('Debug Expression Provider', () => {
   const mockInjector = createBrowserInjector([]);

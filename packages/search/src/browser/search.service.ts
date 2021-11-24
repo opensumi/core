@@ -1,13 +1,13 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 /**
  * 用于文件内容搜索
  */
 import React from 'react';
 import { createRef } from 'react';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@ide-framework/ide-core-common';
-import * as arrays from '@ide-framework/ide-core-common/lib/arrays';
-import { parse, ParsedPattern } from '@ide-framework/ide-core-common/lib/utils/glob';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
+import * as arrays from '@opensumi/ide-core-common/lib/arrays';
+import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import {
   Key,
   URI,
@@ -17,20 +17,20 @@ import {
   COMMON_COMMANDS,
   RecentStorage,
   PreferenceService,
-} from '@ide-framework/ide-core-browser';
-import { GlobalBrowserStorageService } from '@ide-framework/ide-core-browser/lib/services/storage-service';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+} from '@opensumi/ide-core-browser';
+import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
   IEditorDocumentModelContentChangedEventPayload,
-} from '@ide-framework/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
-import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
-import { IWorkspaceEditService } from '@ide-framework/ide-workspace-edit';
-import { VALIDATE_TYPE, ValidateMessage } from '@ide-framework/ide-components';
+} from '@opensumi/ide-editor/lib/browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
+import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,

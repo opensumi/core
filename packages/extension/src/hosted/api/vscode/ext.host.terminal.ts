@@ -1,11 +1,11 @@
 import type vscode from 'vscode';
-import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred, Disposable, CancellationTokenSource } from '@ide-framework/ide-core-common';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent, ITerminalLinkDto } from '@ide-framework/ide-terminal-next';
+import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred, Disposable, CancellationTokenSource } from '@opensumi/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent, ITerminalLinkDto } from '@opensumi/ide-terminal-next';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 import { userInfo } from 'os';
 import { IExtension } from '../../../common';
-import { EnvironmentVariableMutatorType, ISerializableEnvironmentVariableCollection } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
+import { EnvironmentVariableMutatorType, ISerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 const debugLog = getDebugLogger();
 

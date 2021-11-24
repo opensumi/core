@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ide-framework/common-di';
-import { ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/common-di';
+import { ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@opensumi/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 

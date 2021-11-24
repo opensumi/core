@@ -1,6 +1,6 @@
-import { IMenubarItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { ThemeType } from '@ide-framework/ide-theme';
-import { ISumiMenuExtendInfo } from '@ide-framework/ide-core-common';
+import { IMenubarItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ThemeType } from '@opensumi/ide-theme';
+import { ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 
 import { IExtensionContributions } from '../vscode/extension';
 import { ITabBarViewContribution } from '../../browser/sumi-browser/types';

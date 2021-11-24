@@ -1,6 +1,6 @@
 import React from 'react';
-import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
-import { formatLocalize } from '@ide-framework/ide-core-browser';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { formatLocalize } from '@opensumi/ide-core-browser';
 import styles from './extension-tree-view.module.less';
 
 export const ExtensionLoadingView = ({ style }: { style?: React.CSSProperties }) => {

@@ -1,17 +1,17 @@
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
-import { URI } from '@ide-framework/ide-core-common';
-import { ContextKeyExpr } from '@ide-framework/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { EditorContextKeys } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { URI } from '@opensumi/ide-core-common';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE, CONTEXT_SET_VARIABLE_SUPPORTED } from './../../../common/constants';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ide-framework/ide-core-browser';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@opensumi/ide-core-browser';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
-import { IMessageService } from '@ide-framework/ide-overlay';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { DEBUG_REPORT_NAME } from '../../../common';
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 @Domain(MenuContribution, CommandContribution)
 export class VariablesPanelContribution implements MenuContribution, CommandContribution {
   @Autowired(IQuickInputService)

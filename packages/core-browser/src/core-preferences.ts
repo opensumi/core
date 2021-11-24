@@ -1,6 +1,6 @@
-import { Injector } from '@ide-framework/common-di';
-import { localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@ide-framework/ide-core-common';
-import { SUPPORTED_ENCODINGS } from '@ide-framework/ide-core-common/lib/const';
+import { Injector } from '@opensumi/common-di';
+import { localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
+import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 

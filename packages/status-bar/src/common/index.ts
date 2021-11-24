@@ -1,1 +1,1 @@
-export { IStatusBarService} from '@ide-framework/ide-core-browser/lib/services';
+export { IStatusBarService} from '@opensumi/ide-core-browser/lib/services';

@@ -1,5 +1,5 @@
 {
-  "name": "@ide-framework/ide-workspace-edit",
+  "name": "@opensumi/ide-workspace-edit",
   "version": "2.12.0",
   "files": [
     "lib"
@@ -18,18 +18,18 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ide-framework/ide-core-common": "2.12.0",
-    "@ide-framework/ide-core-node": "2.12.0",
-    "@ide-framework/ide-editor": "2.12.0",
-    "@ide-framework/ide-file-service": "2.12.0",
-    "@ide-framework/ide-overlay": "2.12.0",
-    "@ide-framework/ide-main-layout": "2.12.0",
-    "@ide-framework/ide-components": "2.12.0",
-    "@ide-framework/ide-monaco": "2.12.0"
+    "@opensumi/ide-core-common": "2.12.0",
+    "@opensumi/ide-core-node": "2.12.0",
+    "@opensumi/ide-editor": "2.12.0",
+    "@opensumi/ide-file-service": "2.12.0",
+    "@opensumi/ide-overlay": "2.12.0",
+    "@opensumi/ide-main-layout": "2.12.0",
+    "@opensumi/ide-components": "2.12.0",
+    "@opensumi/ide-monaco": "2.12.0"
   },
   "devDependencies": {
-    "@ide-framework/ide-core-browser": "2.12.0",
-    "@ide-framework/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { mnemonicButtonLabel } from '@ide-framework/ide-core-common/lib/utils/strings';
-import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
+import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 import { MenuNode } from '../../base';

@@ -1,4 +1,4 @@
-import { BasicEvent } from '@ide-framework/ide-core-common';
+import { BasicEvent } from '@opensumi/ide-core-common';
 import { ICodeWindow } from '../types';
 
 export class WindowCreatedEvent extends BasicEvent<ICodeWindow> {}

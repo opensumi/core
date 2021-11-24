@@ -6,48 +6,48 @@ import {
   RecycleTree,
   IRecycleTreeHandle,
   INodeRendererWrapProps,
-} from '@ide-framework/ide-components';
+} from '@opensumi/ide-components';
 import {
   DebugConsoleModelService,
   IDebugConsoleModel,
-} from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IMessageService } from '@ide-framework/ide-overlay';
+} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IMessageService } from '@opensumi/ide-overlay';
 import {
   DebugPreferences,
   DebugSessionContributionRegistry,
   DebugSessionFactory,
   DefaultDebugSessionFactory,
   DebugSession,
-} from '@ide-framework/ide-debug/lib/browser';
-import { IFileServiceClient } from '@ide-framework/ide-core-node';
-import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
-import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
+} from '@opensumi/ide-debug/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-core-node';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import {
   DebugModelFactory,
   IDebugServer,
   IDebugSessionManager,
   IDebugSession,
   DebugSessionOptions,
-} from '@ide-framework/ide-debug';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { QuickPickService } from '@ide-framework/ide-quick-open';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
-import { WSChannelHandler } from '@ide-framework/ide-connection';
-import { IVariableResolverService } from '@ide-framework/ide-variable';
-import { ITaskService } from '@ide-framework/ide-task';
-import { DebugConsoleFilterService } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-filter.service';
+} from '@opensumi/ide-debug';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { QuickPickService } from '@opensumi/ide-quick-open';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { WSChannelHandler } from '@opensumi/ide-connection';
+import { IVariableResolverService } from '@opensumi/ide-variable';
+import { ITaskService } from '@opensumi/ide-task';
+import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import {
   DebugConsoleNode,
   AnsiConsoleNode,
   DebugVariableContainer,
-} from '@ide-framework/ide-debug/lib/browser/tree';
-import { IContextKeyService } from '@ide-framework/ide-core-browser/src';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { Disposable } from '@ide-framework/ide-core-common';
-import { LayoutService } from '@ide-framework/ide-main-layout/lib/browser/layout.service';
-import { DebugConsoleRenderedNode } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console.view';
+} from '@opensumi/ide-debug/lib/browser/tree';
+import { IContextKeyService } from '@opensumi/ide-core-browser/src';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { Disposable } from '@opensumi/ide-core-common';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { DebugConsoleRenderedNode } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.view';
 
 describe('Debug console component Test Suites', () => {
   const mockInjector = createBrowserInjector([]);

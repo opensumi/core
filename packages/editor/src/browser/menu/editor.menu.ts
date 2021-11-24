@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { IEditorActionRegistry } from '../types';
-import { IDisposable, Disposable, IContextKeyService, ILogger } from '@ide-framework/ide-core-browser';
+import { IDisposable, Disposable, IContextKeyService, ILogger } from '@opensumi/ide-core-browser';
 import { IEditorGroup } from '../../common';
-import { MenuId, IMenu, AbstractMenuService } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MenuId, IMenu, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()

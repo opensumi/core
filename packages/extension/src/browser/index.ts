@@ -1,8 +1,8 @@
-import { Injectable, Provider } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
-import { IDebugServer } from '@ide-framework/ide-debug';
-import { DebugSessionContributionRegistry } from '@ide-framework/ide-debug/lib/browser';
-import { FileSearchServicePath } from '@ide-framework/ide-file-search/lib/common';
+import { Injectable, Provider } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
+import { IDebugServer } from '@opensumi/ide-debug';
+import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
+import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 
 import { ExtensionHostProfilerServicePath, ExtensionNodeServiceServerPath, ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, RequireInterceptorContribution, IRequireInterceptorService, RequireInterceptorService } from '../common';
 import { AbstractNodeExtProcessService, AbstractWorkerExtProcessService, AbstractViewExtProcessService } from '../common/extension.service';

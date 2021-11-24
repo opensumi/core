@@ -3,10 +3,10 @@ import {
   UriComponents,
   ICommand,
 } from './models';
-import { Event, IDisposable, IAccessibilityInformation } from '@ide-framework/ide-core-common';
+import { Event, IDisposable, IAccessibilityInformation } from '@opensumi/ide-core-common';
 import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
-import { ThemeType } from '@ide-framework/ide-theme';
-import type { CancellationToken } from '@ide-framework/ide-core-common/lib/cancellation';
+import { ThemeType } from '@opensumi/ide-theme';
+import type { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
 
 export interface ITreeViewRevealOptions {
   select?: boolean;

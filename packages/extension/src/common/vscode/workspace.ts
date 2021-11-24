@@ -1,10 +1,10 @@
 import type vscode from 'vscode';
-import { URI, IDisposable, IRange, CancellationToken } from '@ide-framework/ide-core-common';
+import { URI, IDisposable, IRange, CancellationToken } from '@opensumi/ide-core-common';
 import { Uri, UriComponents } from './ext-types';
-import { FileStat } from '@ide-framework/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 import type * as model from './model.api';
-import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ide-framework/ide-workspace-edit';
-import { EndOfLineSequence } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@opensumi/ide-workspace-edit';
+import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;

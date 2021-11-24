@@ -1,8 +1,8 @@
 import React from 'react';
-import { Injectable } from '@ide-framework/common-di';
+import { Injectable } from '@opensumi/common-di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
-import { notification, open } from '@ide-framework/ide-components';
-import { MessageType, uuid, localize } from '@ide-framework/ide-core-common';
+import { notification, open } from '@opensumi/ide-components';
+import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {

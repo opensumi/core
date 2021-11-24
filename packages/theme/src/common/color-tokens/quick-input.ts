@@ -1,4 +1,4 @@
-import { localize } from '@ide-framework/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { Color, RGBA } from '../color';
 import { registerColor } from '../color-registry';
 import { editorWidgetBackground, editorWidgetForeground } from './editor';

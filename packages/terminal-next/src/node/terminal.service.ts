@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { PtyService, IPty } from './pty';
 import { ITerminalNodeService, TerminalOptions, ITerminalServiceClient } from '../common';
-import { INodeLogger, AppConfig, isDevelopment } from '@ide-framework/ide-core-node';
+import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
 
 /**
  * terminal service 的具体实现

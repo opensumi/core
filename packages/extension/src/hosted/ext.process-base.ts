@@ -1,25 +1,25 @@
 import net from 'net';
 import Stream from 'stream';
 import { performance } from 'perf_hooks';
-import { ConstructorOf, Injector } from '@ide-framework/common-di';
-import { AppConfig } from '@ide-framework/ide-core-node/lib/bootstrap/app';
-import { isPromiseCanceledError } from '@ide-framework/ide-core-common/lib/errors';
-import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId, ILogService } from '@ide-framework/ide-core-common';
+import { ConstructorOf, Injector } from '@opensumi/common-di';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
+import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId, ILogService } from '@opensumi/ide-core-common';
 import {
   RPCProtocol,
   initRPCService,
   RPCServiceCenter,
   createSocketConnection,
-} from '@ide-framework/ide-connection';
+} from '@opensumi/ide-connection';
 
 import { CommandHandler } from '../common/vscode';
 import { ExtensionLogger2 } from './extension-log2';
 import { ExtensionReporter } from './extension-reporter';
 import { setPerformance } from './api/vscode/language/util';
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
-import { locale } from '@ide-framework/ide-core-common/lib/platform';
+import { locale } from '@opensumi/ide-core-common/lib/platform';
 
-import '@ide-framework/ide-i18n';
+import '@opensumi/ide-i18n';
 
 setPerformance(performance);
 

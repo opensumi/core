@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { Uri, Cache } from '@ide-framework/ide-core-common';
+import { Uri, Cache } from '@opensumi/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import {

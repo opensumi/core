@@ -1,14 +1,14 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell, webContents } from 'electron';
-import { Domain, isWindows, IEventBus, URI } from '@ide-framework/ide-core-common';
+import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
 import semver from 'semver';
 import qs from 'querystring';
 import { WindowCreatedEvent } from './events';
-import { IElectronMainUIService, IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ide-framework/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@opensumi/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> implements IElectronMainUIServiceShape {

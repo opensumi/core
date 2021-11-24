@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { BasicEvent, IDisposable, IExtensionProps } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { BasicEvent, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
 import { IExtension, IExtensionMetaData } from '../common';
 import { Extension } from './extension';
 

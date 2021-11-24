@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { ICommonServer, OS, isWindows, isLinux } from '@ide-framework/ide-core-common';
-import {  } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { ICommonServer, OS, isWindows, isLinux } from '@opensumi/ide-core-common';
+import {  } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class BrowserCommonServer implements ICommonServer {

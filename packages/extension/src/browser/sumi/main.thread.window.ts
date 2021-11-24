@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
-import { Disposable } from '@ide-framework/ide-core-browser';
+import { Disposable } from '@opensumi/ide-core-browser';
 import { IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtHostIDEWindow, IWindowInfo } from '../../common/sumi/window';
-import { IPlainWebviewWindow, IWebviewService } from '@ide-framework/ide-webview';
+import { IPlainWebviewWindow, IWebviewService } from '@opensumi/ide-webview';
 
 // 与 MainThreadWindow 做一下区分，用于拓展 sumi 下的ideWindow API
 @Injectable({ multiple: true })

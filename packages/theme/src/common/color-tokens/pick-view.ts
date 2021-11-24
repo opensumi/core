@@ -1,6 +1,6 @@
 import { registerColor } from '../color-registry';
 import { activeContrastBorder, contrastBorder } from './base';
-import { localize } from '@ide-framework/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { Color } from '../color';
 
 export const peekViewTitleBackground = registerColor('peekViewTitle.background', { dark: '#1E1E1E', light: '#FFFFFF', hc: '#0C141F' }, localize('peekViewTitleBackground', 'Background color of the peek view title area.'));

@@ -1,4 +1,4 @@
-// Modify from @ide-framework/ide-core-common/src/path.ts
+// Modify from @opensumi/ide-core-common/src/path.ts
 import { Process } from './process';
 import { isWindows } from './os';
 

@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { getDebugLogger } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 
 const maxChannelHistory = 1000;
 

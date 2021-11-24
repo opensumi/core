@@ -15,20 +15,20 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/debug-session-manager.ts
 
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { DebugSession } from './debug-session';
-import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid, localize, COMMON_COMMANDS, CommandService } from '@ide-framework/ide-core-browser';
+import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid, localize, COMMON_COMMANDS, CommandService } from '@opensumi/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
-import { IMessageService } from '@ide-framework/ide-overlay';
-import { IVariableResolverService } from '@ide-framework/ide-variable';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IVariableResolverService } from '@opensumi/ide-variable';
 import { DebugThread } from './model/debug-thread';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITaskService } from '@ide-framework/ide-task/lib/common';
+import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { isRemoteAttach } from './debugUtils';
 import { IDebugProgress } from '../common/debug-progress';
 import { DebugContextKey } from './contextkeys/debug-contextkey.service';

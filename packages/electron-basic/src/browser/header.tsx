@@ -3,12 +3,12 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import cls from 'classnames';
 import styles from './header.module.less';
-import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ide-framework/ide-core-browser';
-import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { WorkbenchEditorService, IResource } from '@ide-framework/ide-editor';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { localize } from '@ide-framework/ide-core-common';
-import { basename } from '@ide-framework/ide-core-common/lib/utils/paths';
+import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@opensumi/ide-core-browser';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-common';
+import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
 
 const useFullScreen = () => {
   const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
@@ -78,7 +78,7 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
     };
 
     return <>
-      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ide-framework/ide-menu-bar')!.views[0].component!} initialProps={initialProps} />
+      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!} initialProps={initialProps} />
     </>;
   };
 

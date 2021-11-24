@@ -1,10 +1,10 @@
 import { IRunTimeParams, AbstractSumiBrowserContributionRunner, IEditorViewContribution } from '../types';
-import { IDisposable, Disposable, URI } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { IIconService, IconType } from '@ide-framework/ide-theme';
-import { ResourceService } from '@ide-framework/ide-editor';
-import { EditorComponentRegistry } from '@ide-framework/ide-editor/lib/browser';
+import { IDisposable, Disposable, URI } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+import { ResourceService } from '@opensumi/ide-editor';
+import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 
 @Injectable({multiple: true})
 export class EditorBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {

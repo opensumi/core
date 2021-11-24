@@ -1,8 +1,8 @@
-import { Injectable, Injector, Autowired } from '@ide-framework/common-di';
-import { LogLevel } from '@ide-framework/ide-core-common';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Injectable, Injector, Autowired } from '@opensumi/common-di';
+import { LogLevel } from '@opensumi/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ide-framework/ide-logs/lib/browser';
+import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
 
 @Injectable()
 export class MainThreadExtensionLog implements IMainThreadExtensionLog {

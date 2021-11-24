@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { IOpenerService, IOpener } from '.';
-import { URI, ILogger } from '@ide-framework/ide-core-common';
+import { URI, ILogger } from '@opensumi/ide-core-common';
 import { DefaultOpener } from './default-opener';
 
 @Injectable()

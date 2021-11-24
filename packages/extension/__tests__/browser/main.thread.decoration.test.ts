@@ -1,13 +1,13 @@
 // tslint:disable:new-parens
-import { Injector } from '@ide-framework/common-di';
-import { RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
-import { createWindowApiFactory } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
-import { MainThreadDecorations } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.decoration';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ide-framework/ide-extension/lib/common/vscode';
-import { FileDecorationsService } from '@ide-framework/ide-decoration/lib/browser/decorationsService';
-import { IDecorationsService } from '@ide-framework/ide-decoration';
+import { Injector } from '@opensumi/common-di';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
+import { MainThreadDecorations } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.decoration';
+import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
+import { IDecorationsService } from '@opensumi/ide-decoration';
 import type vscode from 'vscode';
-import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@ide-framework/ide-core-common';
+import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 

@@ -1,17 +1,17 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@opensumi/common-di';
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource } from '@ide-framework/ide-core-browser';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
+import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource } from '@opensumi/ide-core-browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
-import { IIconService, IconType, IThemeService } from '@ide-framework/ide-theme';
+import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@ide-framework/ide-components';
-import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
+import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {

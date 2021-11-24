@@ -1,10 +1,10 @@
-import { Event, FileSystemProviderCapabilities } from '@ide-framework/ide-core-common';
+import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
 
-import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@ide-framework/ide-core-browser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
-import { FileSetContentOptions } from '@ide-framework/ide-file-service/lib/common';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
 

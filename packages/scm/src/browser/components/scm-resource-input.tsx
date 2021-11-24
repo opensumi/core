@@ -1,10 +1,10 @@
 import React from 'react';
-import { useInjectable } from '@ide-framework/ide-core-browser';
-import { isOSX, CommandService, DisposableStore } from '@ide-framework/ide-core-common';
-import { format } from '@ide-framework/ide-core-common/lib/utils/strings';
-import { useHotKey } from '@ide-framework/ide-core-browser/lib/react-hooks/hot-key';
-import { InlineMenuBar } from '@ide-framework/ide-core-browser/lib/components/actions';
-import { AutoFocusedInput } from '@ide-framework/ide-main-layout/lib/browser/input';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { isOSX, CommandService, DisposableStore } from '@opensumi/ide-core-common';
+import { format } from '@opensumi/ide-core-common/lib/utils/strings';
+import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
 import {
   ISCMRepository,

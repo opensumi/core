@@ -1,11 +1,11 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@ide-framework/ide-editor/lib/browser';
-import { EditorDecorationCollectionService } from '@ide-framework/ide-editor/lib/browser/editor.decoration.service';
-import { URI, Emitter, IEventBus, Disposable } from '@ide-framework/ide-core-browser';
-import { createMockedMonaco } from '@ide-framework/ide-monaco/__mocks__/monaco';
-import { IThemeService } from '@ide-framework/ide-theme';
+import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@opensumi/ide-editor/lib/browser';
+import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
+import { URI, Emitter, IEventBus, Disposable } from '@opensumi/ide-core-browser';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
+import { IThemeService } from '@opensumi/ide-theme';
 import { MonacoEditorDecorationApplier } from '../../src/browser/decoration-applier';
-import { ICSSStyleService } from '@ide-framework/ide-theme/lib/common/style';
+import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 
 describe('editor decoration service test', () => {
 

@@ -1,8 +1,8 @@
-import { Injectable, Injector, Autowired } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Disposable } from '@ide-framework/ide-core-common';
+import { Injectable, Injector, Autowired } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Disposable } from '@opensumi/ide-core-common';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
-import { IEventBus, WithEventBus, OnEvent } from '@ide-framework/ide-core-browser';
+import { IEventBus, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { IExtHostCommon, IMainThreadCommon } from '../../common/sumi/common';
 import { ExtHostEvent } from '../types';
 

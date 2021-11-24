@@ -1,11 +1,11 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from './outline-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType } from '@ide-framework/ide-components';
-import { URI, getIcon, CommandService } from '@ide-framework/ide-core-browser';
+import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType } from '@opensumi/ide-components';
+import { URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
 import { IOutlineDecorationService } from '../common';
-import { SymbolTag } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 export interface IOutlineNodeProps {
   item: any;

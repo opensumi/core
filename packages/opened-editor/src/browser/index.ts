@@ -1,5 +1,5 @@
-import { Provider, Injectable } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { Provider, Injectable } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { OpenedEditorContribution } from './opened-editor.contribution';
 import { OpenedEditorDecorationService } from './services/opened-editor-decoration.service';
 import { OpenedEditorService } from './services/opened-editor-tree.service';

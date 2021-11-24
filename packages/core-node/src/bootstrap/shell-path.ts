@@ -1,4 +1,4 @@
-import { isWindows, stripAnsi } from '@ide-framework/ide-core-common';
+import { isWindows, stripAnsi } from '@opensumi/ide-core-common';
 import { spawn } from 'child_process';
 
 // 成功过一次后，取 PATH 的超时时间

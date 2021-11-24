@@ -1,4 +1,4 @@
-import { AuthenticationSessionsChangeEvent, AuthenticationSession, AuthenticationProviderInformation } from '@ide-framework/ide-core-common';
+import { AuthenticationSessionsChangeEvent, AuthenticationSession, AuthenticationProviderInformation } from '@opensumi/ide-core-common';
 
 export interface IMainThreadAuthentication {
   $registerAuthenticationProvider(id: string, label: string, supportsMultipleAccounts: boolean): void;

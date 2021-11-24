@@ -1,10 +1,10 @@
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { isEqual } from 'lodash';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@ide-framework/ide-components';
-import { Emitter, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@ide-framework/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@opensumi/ide-components';
+import { Emitter, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
 import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';

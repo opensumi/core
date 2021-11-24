@@ -1,9 +1,9 @@
 import os from 'os';
 import path from 'path';
 import * as fs from 'fs-extra';
-import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { AppConfig } from '@ide-framework/ide-core-node';
-import { toLocalISOString, ILogService } from '@ide-framework/ide-core-common';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { AppConfig } from '@opensumi/ide-core-node';
+import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';

@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { ThemeContribution, IThemeService } from '@ide-framework/ide-theme';
-import { URI } from '@ide-framework/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { ThemeContribution, IThemeService } from '@opensumi/ide-theme';
+import { URI } from '@opensumi/ide-core-common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;

@@ -12,7 +12,7 @@ function boot() {
   const cliEnginePkg = readPkg.sync({ cwd: cliEnginePath });
   cliEnginePkg.version = targetVersion;
   Object.keys(cliEnginePkg.dependencies)
-    .filter(n => n.startsWith('@ide-framework/ide-'))
+    .filter(n => n.startsWith('@opensumi/ide-'))
     .forEach(key => {
       cliEnginePkg.dependencies[key] = targetVersion;
     });

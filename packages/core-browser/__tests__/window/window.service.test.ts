@@ -2,8 +2,8 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExternalUriService } from '../../src/services';
 import { URI, IWindowService } from '../../src';
-import { WindowService } from '@ide-framework/ide-core-browser/lib/window/window.service';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
+import { WindowService } from '@opensumi/ide-core-browser/lib/window/window.service';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 describe(`test ${__filename} on Electron env`, () => {
   let injector: MockInjector;

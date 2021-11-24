@@ -1,14 +1,14 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { EditorComponentRegistry, ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { ICustomEditorOptions } from '../../../common/vscode';
 import React = require('react');
-import { useInjectable, IEventBus } from '@ide-framework/ide-core-browser';
+import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
 import { IActivationEventService } from '../../types';
-import { CancellationTokenSource, Disposable, ILogger } from '@ide-framework/ide-core-common';
-import { IWebviewService } from '@ide-framework/ide-webview';
+import { CancellationTokenSource, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { IWebviewService } from '@opensumi/ide-webview';
 import { CustomEditorScheme, CustomEditorShouldDisplayEvent, CustomEditorShouldHideEvent, CustomEditorOptionChangeEvent, CustomEditorShouldSaveEvent, CustomEditorShouldRevertEvent, CustomEditorShouldEditEvent } from '../../../common/vscode/custom-editor';
-import { WebviewMounter } from '@ide-framework/ide-webview/lib/browser/editor-webview';
+import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 import { match } from '../../../common/vscode/glob';
 
 @Injectable()

@@ -1,11 +1,11 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@ide-framework/ide-core-browser';
-import { Deferred, Emitter as EventEmitter, Event } from '@ide-framework/ide-core-common';
-import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { IDiffEditorConstructionOptions } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { SimpleKeybinding } from '@ide-framework/monaco-editor-core/esm/vs/base/common/keyCodes';
-import { Range } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.main';
-import { IDisposable } from '@ide-framework/monaco-editor-core/esm/vs/base/common/lifecycle';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@opensumi/ide-core-browser';
+import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
+import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
+import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor, IDiffEditor } from './monaco-api/types';

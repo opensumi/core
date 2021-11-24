@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { Disposable, IDisposable } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { ExtensionHostType, IExtCommandManagement } from '../common';
 import { IMainThreadCommands } from '../common/vscode';

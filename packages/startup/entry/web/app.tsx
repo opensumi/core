@@ -1,12 +1,12 @@
-import { setLocale } from '@ide-framework/ide-monaco/lib/browser/monaco-localize';
+import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 // 这里建议传实际 preferences 的设置项
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
 setLocale('zh-CN');
-import '@ide-framework/ide-i18n';
-import '@ide-framework/ide-core-browser/lib/style/index.less';
-import { ExpressFileServerModule } from '@ide-framework/ide-express-file-server/lib/browser';
-import { SlotLocation } from '@ide-framework/ide-core-browser';
-import { defaultConfig } from '@ide-framework/ide-main-layout/lib/browser/default-config';
+import '@opensumi/ide-i18n';
+import '@opensumi/ide-core-browser/lib/style/index.less';
+import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
+import { SlotLocation } from '@opensumi/ide-core-browser';
+import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 
 import { renderApp } from './render-app';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
@@ -23,10 +23,10 @@ renderApp({
   layoutConfig: {
     ...defaultConfig,
     ...{[SlotLocation.top]: {
-      modules: ['@ide-framework/ide-menu-bar', 'toolbar'],
+      modules: ['@opensumi/ide-menu-bar', 'toolbar'],
     }},
     ...{[SlotLocation.action]: {
-      modules: ['@ide-framework/ide-toolbar-action'],
+      modules: ['@opensumi/ide-toolbar-action'],
   }},
   },
   useCdnIcon: true,
@@ -38,7 +38,7 @@ renderApp({
     'editor.quickSuggestionsDelay': 100,
   },
   defaultPanels: {
-    'bottom': '@ide-framework/ide-terminal-next',
+    'bottom': '@opensumi/ide-terminal-next',
     'right': '',
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './index.module.less';
 import cls from 'classnames';
-import { getIcon } from '@ide-framework/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
 
 export interface DebugActionProps {
   icon: string;

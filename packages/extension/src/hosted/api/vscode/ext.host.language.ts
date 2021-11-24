@@ -1,8 +1,8 @@
 import vscode from 'vscode';
-import { InlineValue } from '@ide-framework/ide-debug/lib/common/inline-values';
-import type { CodeActionContext } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/modes';
-import { ConstructorOf } from '@ide-framework/common-di';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { ConstructorOf } from '@opensumi/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import {
   DocumentSelector,
@@ -93,7 +93,7 @@ import {
   ILinkedEditingRangesDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@ide-framework/ide-core-common';
+import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@opensumi/ide-core-common';
 import { CancellationError, Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';

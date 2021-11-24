@@ -1,6 +1,6 @@
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ide-framework/ide-core-common';
+import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';

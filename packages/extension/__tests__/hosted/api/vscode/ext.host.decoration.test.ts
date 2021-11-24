@@ -1,7 +1,7 @@
 // tslint:disable:new-parens
-import { Event, Uri, UriComponents, URI, Emitter, CancellationTokenSource, CancellationToken } from '@ide-framework/ide-core-common';
+import { Event, Uri, UriComponents, URI, Emitter, CancellationTokenSource, CancellationToken } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
-import { ExtHostDecorations } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.decoration';
+import { ExtHostDecorations } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.decoration';
 
 function URI2UriComponents(uri: URI): UriComponents {
   return {

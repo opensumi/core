@@ -6,8 +6,8 @@
 
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
 
-import { OS } from '@ide-framework/ide-core-common';
-import { IProcessEnvironment } from '@ide-framework/ide-core-common/lib/platform';
+import { OS } from '@opensumi/ide-core-common';
+import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 import { IMergedEnvironmentVariableCollection, IExtensionOwnedEnvironmentVariableMutator, IEnvironmentVariableCollection, IMergedEnvironmentVariableCollectionDiff, EnvironmentVariableMutatorType } from './environmentVariable';
 export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVariableCollection {
   readonly map: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();

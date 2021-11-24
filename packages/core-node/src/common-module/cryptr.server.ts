@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { INativeCryptrService } from '@ide-framework/ide-core-common';
+import { Injectable } from '@opensumi/common-di';
+import { INativeCryptrService } from '@opensumi/ide-core-common';
 import crypto from 'crypto';
 
 @Injectable()

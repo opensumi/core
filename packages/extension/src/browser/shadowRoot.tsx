@@ -1,7 +1,7 @@
-import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@ide-framework/ide-components';
-import { DisposableCollection, LabelService, useInjectable } from '@ide-framework/ide-core-browser';
-import { localize, URI } from '@ide-framework/ide-core-common';
-import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@ide-framework/ide-theme';
+import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@opensumi/ide-components';
+import { DisposableCollection, LabelService, useInjectable } from '@opensumi/ide-core-browser';
+import { localize, URI } from '@opensumi/ide-core-common';
+import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
 import clx from 'classnames';
 import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';

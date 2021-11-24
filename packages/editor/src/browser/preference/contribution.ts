@@ -1,4 +1,4 @@
-import { PreferenceContribution, Domain, ClientAppContribution } from '@ide-framework/ide-core-browser';
+import { PreferenceContribution, Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { editorPreferenceSchema } from './schema';
 
 @Domain(PreferenceContribution, ClientAppContribution)

@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
-import { Emitter, IExtensionProps } from '@ide-framework/ide-core-common';
+import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 
-import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ide-framework/ide-connection';
+import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';

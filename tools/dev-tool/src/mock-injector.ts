@@ -1,5 +1,5 @@
-import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ide-framework/common-di';
-import { CommandRegistry } from '@ide-framework/ide-core-common';
+import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@opensumi/common-di';
+import { CommandRegistry } from '@opensumi/ide-core-common';
 
 export class MockInjector extends Injector {
   // tslint:disable-next-line

@@ -1,11 +1,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './status-bar.module.less';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarItem } from './status-bar-item.view';
-import { IStatusBarService} from '@ide-framework/ide-core-browser/lib/services';
+import { IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
 import cls from 'classnames';
-import { generateCtxMenu, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { generateCtxMenu, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 
 export const StatusBarView = observer(() => {
 

@@ -101,7 +101,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
 
     warning(
       !controls,
-      '[@ide-framework/ide-components Input]: `controls` was deprecated, please use `addonAfter` instead',
+      '[@opensumi/ide-components Input]: `controls` was deprecated, please use `addonAfter` instead',
     );
 
     const inputRef = React.useRef<HTMLInputElement | null>(null);

@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import { Autowired, Injectable } from '@opensumi/common-di';
 import { ILogger } from '../logger';
 
 export const IClipboardService = Symbol('IClipboardService');

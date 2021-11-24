@@ -1,7 +1,7 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { Emitter, Event, PreferenceScope } from '@ide-framework/ide-core-common';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@ide-framework/ide-components';
-import { PreferenceService } from '@ide-framework/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { Emitter, Event, PreferenceScope } from '@opensumi/ide-core-common';
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 
 import { SCMResourceRoot, SCMResourceGroup, SCMResourceFile, SCMResourceFolder, SCMResourceNotRoot, SCMResourceNotFile, SCMResourceItem } from './scm-tree-node';
 import { SCMTreeAPI, ISCMTreeNodeDescription } from './scm-tree-api';

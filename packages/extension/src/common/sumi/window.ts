@@ -1,4 +1,4 @@
-import { IDisposable, Event } from '@ide-framework/ide-core-common';
+import { IDisposable, Event } from '@opensumi/ide-core-common';
 
 export interface IWindowInfo {
   windowId: number;

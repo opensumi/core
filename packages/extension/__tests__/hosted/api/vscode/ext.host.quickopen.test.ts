@@ -1,13 +1,13 @@
 
-import { Emitter, Disposable } from '@ide-framework/ide-core-common';
+import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { RPCProtocol } from '@ide-framework/ide-connection';
+import { RPCProtocol } from '@opensumi/ide-connection';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { ExtHostQuickOpen } from '../../../../src/hosted/api/vscode/ext.host.quickopen';
 import { MainThreadQuickOpen } from '../../../../src/browser/vscode/api/main.thread.quickopen';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { QuickPickService } from '@ide-framework/ide-quick-open';
-import { QuickTitleBar } from '@ide-framework/ide-quick-open/lib/browser/quick-title-bar';
+import { QuickPickService } from '@opensumi/ide-quick-open';
+import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

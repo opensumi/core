@@ -1,14 +1,14 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
-import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
-import { localize, OnEvent, WithEventBus, ProgressLocation } from '@ide-framework/ide-core-common';
-import { FileSearchServicePath, IFileSearchService } from '@ide-framework/ide-file-search/lib/common';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { localize, OnEvent, WithEventBus, ProgressLocation } from '@opensumi/ide-core-common';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import {
   AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
   getPreferenceLanguageId, IClientApp, ILogger,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 
 import { Extension } from './extension';
 import { ActivatedExtension } from '../common/activator';

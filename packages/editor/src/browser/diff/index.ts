@@ -1,7 +1,7 @@
 import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
-import { URI, Domain, WithEventBus, OnEvent } from '@ide-framework/ide-core-browser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { URI, Domain, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { BrowserEditorContribution, EditorComponentRegistry } from '../types';
 
 // diff URI:

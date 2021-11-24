@@ -1,5 +1,5 @@
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
-import { Event, Emitter } from '@ide-framework/ide-core-browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+import { Event, Emitter } from '@opensumi/ide-core-browser';
 import { DebugSession } from '../debug-session';
 import { DebugStackFrame } from './debug-stack-frame';
 import { DEBUG_REPORT_NAME } from '../../common';

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@opensumi/ide-core-browser';
 
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider, EditorDocumentModelOptionExternalUpdatedEvent, ORIGINAL_DOC_SCHEME } from './types';
 

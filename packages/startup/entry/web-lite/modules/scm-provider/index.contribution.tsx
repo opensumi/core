@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Domain } from '@ide-framework/ide-core-common';
-import { ClientAppContribution, getIcon } from '@ide-framework/ide-core-browser';
-import { SCMService } from '@ide-framework/ide-scm';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Domain } from '@opensumi/ide-core-common';
+import { ClientAppContribution, getIcon } from '@opensumi/ide-core-browser';
+import { SCMService } from '@opensumi/ide-scm';
 
 // mock implements
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '@ide-framework/ide-scm/__tests__/scm-test-util';
-import { IMenuRegistry, MenuContribution } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '@opensumi/ide-scm/__tests__/scm-test-util';
+import { IMenuRegistry, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable()
 @Domain(ClientAppContribution, MenuContribution)

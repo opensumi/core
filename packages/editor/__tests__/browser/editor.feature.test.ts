@@ -1,16 +1,16 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@ide-framework/ide-core-common';
-import { EditorFeatureRegistryImpl } from '@ide-framework/ide-editor/lib/browser/feature';
-import { IEditor } from '@ide-framework/ide-editor';
-import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@ide-framework/ide-editor/lib/browser';
-import { EditorTopPaddingContribution } from '@ide-framework/ide-editor/lib/browser/view/topPadding';
-import { QuickPickService, PreferenceService, IContextKeyService } from '@ide-framework/ide-core-browser';
-import { FormattingSelector } from '@ide-framework/ide-editor/lib/browser/format/formatterSelect';
-import { EditorHistoryService } from '@ide-framework/ide-editor/lib/browser/history';
-import { AbstractContextMenuService, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { EditorContextMenuBrowserEditorContribution } from '@ide-framework/ide-editor/lib/browser/menu/editor.context';
-import { TabTitleMenuService } from '@ide-framework/ide-editor/lib/browser/menu/title-context.menu';
+import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@opensumi/ide-core-common';
+import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
+import { IEditor } from '@opensumi/ide-editor';
+import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
+import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
+import { QuickPickService, PreferenceService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
+import { EditorHistoryService } from '@opensumi/ide-editor/lib/browser/history';
+import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { EditorContextMenuBrowserEditorContribution } from '@opensumi/ide-editor/lib/browser/menu/editor.context';
+import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 Error.stackTraceLimit = 100;

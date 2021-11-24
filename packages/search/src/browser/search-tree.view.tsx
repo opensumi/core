@@ -1,9 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ConfigContext, localize } from '@ide-framework/ide-core-browser';
-import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@ide-framework/ide-core-browser/lib/components';
-import { ViewState } from '@ide-framework/ide-core-browser';
-import { getIcon, getExternalIcon } from '@ide-framework/ide-core-browser';
+import { ConfigContext, localize } from '@opensumi/ide-core-browser';
+import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@opensumi/ide-core-browser/lib/components';
+import { ViewState } from '@opensumi/ide-core-browser';
+import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchClientService } from './search.service';

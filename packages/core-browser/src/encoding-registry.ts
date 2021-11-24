@@ -20,9 +20,9 @@
 
 // based on https://github.com/microsoft/vscode/blob/04c36be045a94fee58e5f8992d3e3fd980294a84/src/vs/workbench/services/textfile/browser/textFileService.ts#L491
 
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { URI, Disposable, IDisposable } from '@ide-framework/ide-core-common';
-import { UTF8, encodingExists } from '@ide-framework/ide-core-common/lib/encoding';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { URI, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { UTF8, encodingExists } from '@opensumi/ide-core-common/lib/encoding';
 import { PreferenceService } from './preferences';
 import { getLanguageIdFromMonaco } from './services/label-service';
 

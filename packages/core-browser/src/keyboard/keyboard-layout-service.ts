@@ -15,9 +15,9 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/keyboard/keyboard-layout-service.ts
 
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { isWindows, Emitter, Event } from '@ide-framework/ide-core-common';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeymapInfo, IWindowsKeyMapping } from '@ide-framework/ide-core-common/lib/keyboard';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { isWindows, Emitter, Event } from '@opensumi/ide-core-common';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeymapInfo, IWindowsKeyMapping } from '@opensumi/ide-core-common/lib/keyboard';
 import { KeyValidator } from './keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 

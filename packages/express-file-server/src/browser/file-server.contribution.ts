@@ -1,6 +1,6 @@
-import { Domain, URI, AppConfig } from '@ide-framework/ide-core-browser';
-import { Autowired } from '@ide-framework/common-di';
-import { StaticResourceContribution, StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser/static.definition';
+import { Domain, URI, AppConfig } from '@opensumi/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { StaticResourceContribution, StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { EXPRESS_SERVER_PATH } from '../common';
 
 @Domain(StaticResourceContribution)

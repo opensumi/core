@@ -1,10 +1,10 @@
-import { Autowired } from '@ide-framework/common-di';
-import { OUTLINE_COMMANDS, Domain, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { OUTLINE_COMMANDS, Domain, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
 import { OutlinePanel } from './outline';
-import { ExplorerContainerId } from '@ide-framework/ide-explorer/lib/browser/explorer-contribution';
-import { MainLayoutContribution, IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { getIcon } from '@ide-framework/ide-core-browser';
-import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@ide-framework/ide-core-browser/lib/contextkey';
+import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { MainLayoutContribution, IMainLayoutService } from '@opensumi/ide-main-layout';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@opensumi/ide-core-browser/lib/contextkey';
 import { OutlineTreeService } from './services/outline-tree.service';
 import { OutlineModelService } from './services/outline-model.service';
 import { OutlineSortOrder } from '../common';

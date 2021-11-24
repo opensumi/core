@@ -1,9 +1,9 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired } from '@ide-framework/common-di';
-import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@ide-framework/ide-core-common';
-import { ClientAppContribution, getIcon, PreferenceContribution } from '@ide-framework/ide-core-browser';
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired } from '@opensumi/common-di';
+import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@opensumi/ide-core-common';
+import { ClientAppContribution, getIcon, PreferenceContribution } from '@opensumi/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 
 import { Output, ChannelSelector } from './output.view';
 import { OutputService } from './output.service';
@@ -49,7 +49,7 @@ export class OutputContribution extends Disposable implements CommandContributio
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-output', {
+    registry.register('@opensumi/ide-output', {
       id: OUTPUT_CONTAINER_ID,
       component: Output,
     }, {

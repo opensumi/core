@@ -1,20 +1,20 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, TreeModel, IRecycleTreeFilterHandle } from '@ide-framework/ide-components';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, TreeModel, IRecycleTreeFilterHandle } from '@opensumi/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, Deferred, OS, IApplicationService } from '@ide-framework/ide-core-browser';
-import { ResourceContextKey } from '@ide-framework/ide-core-browser/lib/contextkey/resource';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, Deferred, OS, IApplicationService } from '@opensumi/ide-core-browser';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
-import { IDialogService, IMessageService } from '@ide-framework/ide-overlay';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import styles from '../file-tree-node.module.less';
-import { FileStat, FileChangeType } from '@ide-framework/ide-file-service';
-import { ISerializableState, TreeStateWatcher } from '@ide-framework/ide-components/lib/recycle-tree/tree/model/treeState';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
+import { ISerializableState, TreeStateWatcher } from '@opensumi/ide-components/lib/recycle-tree/tree/model/treeState';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
 
 export interface IParseStore {

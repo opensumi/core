@@ -1,6 +1,6 @@
-import { Injectable, Injector, Provider } from '@ide-framework/common-di';
-import { BrowserModule, IContextKeyService } from '@ide-framework/ide-core-browser';
-import { FolderPreferenceProvider } from '@ide-framework/ide-preferences/lib/browser/folder-preference-provider';
+import { Injectable, Injector, Provider } from '@opensumi/common-di';
+import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
+import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
 
 import { DebugEditor, DebugModelFactory, IDebugProgress, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';

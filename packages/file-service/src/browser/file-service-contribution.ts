@@ -1,10 +1,10 @@
-import { Autowired } from '@ide-framework/common-di';
+import { Autowired } from '@opensumi/common-di';
 import {
   Domain,
   FsProviderContribution,
   ContributionProvider,
   ClientAppContribution,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 import { IFileServiceClient, IDiskFileProvider, FILE_SCHEME } from '../common';
 import { FileServiceClient } from './file-service-client';
 

@@ -1,11 +1,11 @@
-import { Emitter, CancellationTokenSource, Uri } from '@ide-framework/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '@ide-framework/ide-extension/lib/common/vscode';
-import { RPCProtocol } from '@ide-framework/ide-connection';
-import { ExtHostCustomEditorImpl } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
+import { Emitter, CancellationTokenSource, Uri } from '@opensumi/ide-core-common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '@opensumi/ide-extension/lib/common/vscode';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { ExtHostCustomEditorImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IMainThreadCustomEditor, CustomTextEditorProvider, CustomEditorType, CustomEditorProvider, CustomDocument, CustomDocumentEditEvent, CustomDocumentContentChangeEvent } from '@ide-framework/ide-extension/lib/common/vscode/custom-editor';
-import { URI } from '@ide-framework/ide-core-common';
-import { ExtHostWebviewService } from '@ide-framework/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import { IMainThreadCustomEditor, CustomTextEditorProvider, CustomEditorType, CustomEditorProvider, CustomDocument, CustomDocumentEditEvent, CustomDocumentContentChangeEvent } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
+import { URI } from '@opensumi/ide-core-common';
+import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

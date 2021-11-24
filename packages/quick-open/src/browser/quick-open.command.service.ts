@@ -1,12 +1,12 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ide-framework/ide-core-browser';
-import { CommandRegistry, Command, CommandService, Deferred, IReporterService, REPORT_NAME } from '@ide-framework/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@ide-framework/ide-core-browser/lib/quick-open';
-import { KeybindingRegistry, Keybinding } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { localize, IContextKeyService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { CommandRegistry, Command, CommandService, Deferred, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
+import { KeybindingRegistry, Keybinding } from '@opensumi/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
-import { AbstractMenuService, MenuId, MenuItemNode } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { AbstractMenuService, MenuId, MenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class QuickCommandHandler implements QuickOpenHandler {

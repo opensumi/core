@@ -1,13 +1,13 @@
-import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService, Deferred } from '@ide-framework/ide-core-browser';
-import { Injectable, Autowired } from '@ide-framework/common-di';
+import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService, Deferred } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/common-di';
 import { observable, action, observe, computed } from 'mobx';
-import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
-import { ResizeHandle } from '@ide-framework/ide-core-browser/lib/components';
+import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
 import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
-import { LayoutState, LAYOUT_STATE } from '@ide-framework/ide-core-browser/lib/layout/layout-state';
-import { IProgressService } from '@ide-framework/ide-core-browser/lib/progress';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {

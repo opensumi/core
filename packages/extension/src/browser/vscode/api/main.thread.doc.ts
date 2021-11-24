@@ -1,13 +1,13 @@
-import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@ide-framework/ide-core-common';
+import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@opensumi/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
 import { Schemas } from '../../../common/vscode/ext-types';
-import { ResourceService } from '@ide-framework/ide-editor';
-import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@ide-framework/ide-editor/lib/browser';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { PreferenceService } from '@ide-framework/ide-core-browser';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { ResourceService } from '@opensumi/ide-editor';
+import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce

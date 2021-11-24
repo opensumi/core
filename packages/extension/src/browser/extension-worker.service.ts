@@ -1,9 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { warning } from '@ide-framework/ide-components/lib/utils';
-import { IRPCProtocol, RPCProtocol } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
-import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ide-framework/ide-core-browser';
-import { Disposable, IDisposable, toDisposable } from '@ide-framework/ide-core-common';
-import { posix } from '@ide-framework/ide-core-common/lib/path';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { warning } from '@opensumi/ide-components/lib/utils';
+import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
+import { Disposable, IDisposable, toDisposable } from '@opensumi/ide-core-common';
+import { posix } from '@opensumi/ide-core-common/lib/path';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';

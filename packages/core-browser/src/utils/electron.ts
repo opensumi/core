@@ -1,5 +1,5 @@
-import { IDisposable } from '@ide-framework/ide-core-common';
-import { IElectronMainApi } from '@ide-framework/ide-core-common/lib/electron';
+import { IDisposable } from '@opensumi/ide-core-common';
+import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 

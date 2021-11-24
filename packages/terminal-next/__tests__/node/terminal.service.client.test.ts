@@ -1,5 +1,5 @@
-import { Injector } from '@ide-framework/common-di';
-import { createNodeInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
+import { Injector } from '@opensumi/common-di';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
 import { IPty } from '../../src/node/pty';

@@ -1,5 +1,5 @@
 import { DebugState } from './debug-session';
-import { RawContextKey } from '@ide-framework/ide-core-browser/lib/raw-context-key';
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 
 export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console-container';
 export const DEBUG_CONTAINER_ID = 'debug';

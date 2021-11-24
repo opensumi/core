@@ -1,27 +1,27 @@
 /* istanbul ignore file */
-import { LayoutConfig, SlotLocation } from '@ide-framework/ide-core-browser';
+import { LayoutConfig, SlotLocation } from '@opensumi/ide-core-browser';
 
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
-    modules: ['@ide-framework/ide-menu-bar'],
+    modules: ['@opensumi/ide-menu-bar'],
   },
   [SlotLocation.action]: {
-    modules: ['@ide-framework/ide-toolbar-action'],
+    modules: ['@opensumi/ide-toolbar-action'],
   },
   [SlotLocation.left]: {
-    modules: ['@ide-framework/ide-explorer', '@ide-framework/ide-search', '@ide-framework/ide-scm', '@ide-framework/ide-extension-manager', '@ide-framework/ide-debug'],
+    modules: ['@opensumi/ide-explorer', '@opensumi/ide-search', '@opensumi/ide-scm', '@opensumi/ide-extension-manager', '@opensumi/ide-debug'],
   },
   [SlotLocation.right]: {
     modules: [],
   },
   [SlotLocation.main]: {
-    modules: ['@ide-framework/ide-editor'],
+    modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ide-framework/ide-terminal-next', '@ide-framework/ide-output', 'debug-console', '@ide-framework/ide-markers', '@ide-framework/ide-refactor-preview'],
+    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers', '@opensumi/ide-refactor-preview'],
   },
   [SlotLocation.statusBar]: {
-    modules: ['@ide-framework/ide-status-bar'],
+    modules: ['@opensumi/ide-status-bar'],
   },
   [SlotLocation.extra]: {
     modules: ['breadcrumb-menu'],

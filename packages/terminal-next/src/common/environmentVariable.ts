@@ -1,5 +1,5 @@
-import { Event, OS } from '@ide-framework/ide-core-common';
-import { IProcessEnvironment } from '@ide-framework/ide-core-common/lib/platform';
+import { Event, OS } from '@opensumi/ide-core-common';
+import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 
 export const EnvironmentVariableServiceToken = Symbol(
   'EnvironmentVariableServiceToken',

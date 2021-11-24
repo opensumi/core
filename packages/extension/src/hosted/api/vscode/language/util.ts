@@ -1,8 +1,8 @@
 import type vscode from 'vscode';
 import * as types from '../../../../common/vscode/ext-types';
-import { Event } from '@ide-framework/ide-core-common';
+import { Event } from '@opensumi/ide-core-common';
 import { LanguageSelector } from '../../../../common/vscode/model.api';
-import { Uri } from '@ide-framework/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 import { match as matchGlobPattern } from '../../../../common/vscode/glob';
 
 // tslint:disable-next-line:no-any

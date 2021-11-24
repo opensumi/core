@@ -23,9 +23,9 @@ import {
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { Injector } from '@ide-framework/common-di';
+import { Injector } from '@opensumi/common-di';
 import { VSCodeExtensionService } from '../../../common/vscode';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadLanguages } from './main.thread.language';
 import { MainThreadStatusBar } from './main.thread.statusbar';
 import { MainThreadMessage } from './main.thread.message';

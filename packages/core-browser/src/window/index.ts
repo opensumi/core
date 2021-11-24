@@ -1,4 +1,4 @@
-import { URI } from '@ide-framework/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 
 export const IWindowService = Symbol('WindowService');
 

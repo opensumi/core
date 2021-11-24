@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ClickOutside } from '@ide-framework/ide-core-browser/lib/components/click-outside';
-import { useInjectable } from '@ide-framework/ide-core-browser';
-import { IBrowserCtxMenu } from '@ide-framework/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { MenuActionList } from '@ide-framework/ide-core-browser/lib/components/actions';
-import placements from '@ide-framework/ide-core-browser/lib/components/actions/placements';
+import { ClickOutside } from '@opensumi/ide-core-browser/lib/components/click-outside';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import placements from '@opensumi/ide-core-browser/lib/components/actions/placements';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 import 'react-ctxmenu-trigger/assets/index.css';
 

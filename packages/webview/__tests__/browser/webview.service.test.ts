@@ -1,11 +1,11 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWebviewService } from '../../src/browser';
 import { WebviewServiceImpl } from '../../src/browser/webview.service';
-import { IThemeService, ITheme } from '@ide-framework/ide-theme';
-import { StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser';
-import { Disposable } from '@ide-framework/ide-core-common';
-import { EditorComponentRegistry, EditorPreferences } from '@ide-framework/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
+import { IThemeService, ITheme } from '@opensumi/ide-theme';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { Disposable } from '@opensumi/ide-core-common';
+import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 const injector = createBrowserInjector([]);
 

@@ -1,18 +1,18 @@
-import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@ide-framework/ide-core-common';
+import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@opensumi/ide-core-common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { LabelService } from '@ide-framework/ide-core-browser/src';
-import { MainThreadDebug } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.debug';
-import { BreakpointManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@ide-framework/ide-debug/lib/browser';
-import { IDebugSessionManager, IDebugService, IDebugServer } from '@ide-framework/ide-debug';
-import { DebugConsoleModelService } from '@ide-framework/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor/src';
-import { IMessageService } from '@ide-framework/ide-overlay';
-import { DebugConfigurationManager } from '@ide-framework/ide-debug/lib/browser';
-import { ITerminalApiService } from '@ide-framework/ide-terminal-next';
-import { ExtHostAPIIdentifier } from '@ide-framework/ide-extension/lib/common/vscode';
-import { MainThreadConnection } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.connection';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { LabelService } from '@opensumi/ide-core-browser/src';
+import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
+import { BreakpointManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@opensumi/ide-debug/lib/browser';
+import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
+import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 
 const map = new Map();
 

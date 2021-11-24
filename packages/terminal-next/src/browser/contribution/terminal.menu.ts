@@ -1,7 +1,7 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandService, isWindows, isElectronRenderer } from '@ide-framework/ide-core-common';
-import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandService, isWindows, isElectronRenderer } from '@opensumi/ide-core-common';
+import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@opensumi/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TerminalContainerId, TERMINAL_COMMANDS } from '../../common';
 import { MenuId } from '../../common/menu';
 
@@ -64,7 +64,7 @@ export class TerminalMenuContribution implements MenuContribution {
     });
     /** end */
 
-    const location = getSlotLocation('@ide-framework/ide-terminal-next', this.config.layoutConfig);
+    const location = getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig);
     const tabbarCtxKey = getTabbarCtxKey(location);
     const commonMenuId = getTabbarCommonMenuId(location);
     const when = `${tabbarCtxKey} == ${TerminalContainerId}`;

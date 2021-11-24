@@ -1,11 +1,11 @@
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { DebugEditorContribution } from '@ide-framework/ide-debug/lib/browser/editor/debug-editor-contribution';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { DebugModelFactory, IDebugServer } from '@ide-framework/ide-debug';
-import { QuickPickService } from '@ide-framework/ide-core-browser';
-import { DebugPreferences } from '@ide-framework/ide-debug/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
+import { QuickPickService } from '@opensumi/ide-core-browser';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser';
 import { IDebugSessionManager } from './../../../src/common/debug-session';
 
 describe('Editor Hover Contribution', () => {

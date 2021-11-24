@@ -1,10 +1,10 @@
-import { WSChannelHandler } from '@ide-framework/ide-connection';
-import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@ide-framework/ide-core-browser';
-import { IApplicationService, uuid } from '@ide-framework/ide-core-common';
-import { IFileTreeService } from '@ide-framework/ide-file-tree-next';
-import { FileTreeContribution } from '@ide-framework/ide-file-tree-next/lib/browser/file-tree-contribution';
-import { PreferenceContribution } from '@ide-framework/ide-preferences/lib/browser/preference-contribution';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { WSChannelHandler } from '@opensumi/ide-connection';
+import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@opensumi/ide-core-browser';
+import { IApplicationService, uuid } from '@opensumi/ide-core-common';
+import { IFileTreeService } from '@opensumi/ide-file-tree-next';
+import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
+import { PreferenceContribution } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';

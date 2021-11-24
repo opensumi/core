@@ -10,16 +10,16 @@ export { Select as NativeSelect } from './select';
  * re exports from ide-components
  * Don't export recycle-list for now
  */
-export * from '@ide-framework/ide-components/lib/button';
-export * from '@ide-framework/ide-components/lib/badge';
-export * from '@ide-framework/ide-components/lib/input';
-export * from '@ide-framework/ide-components/lib/checkbox';
-export * from '@ide-framework/ide-components/lib/select';
-export * from '@ide-framework/ide-components/lib/tabs';
-export * from '@ide-framework/ide-components/lib/overlay';
-export * from '@ide-framework/ide-components/lib/dialog';
-export * from '@ide-framework/ide-components/lib/icon';
-export * from '@ide-framework/ide-components/lib/notification';
-export * from '@ide-framework/ide-components/lib/popover';
-export * from '@ide-framework/ide-components/lib/message';
-export * from '@ide-framework/ide-components/lib/tooltip';
+export * from '@opensumi/ide-components/lib/button';
+export * from '@opensumi/ide-components/lib/badge';
+export * from '@opensumi/ide-components/lib/input';
+export * from '@opensumi/ide-components/lib/checkbox';
+export * from '@opensumi/ide-components/lib/select';
+export * from '@opensumi/ide-components/lib/tabs';
+export * from '@opensumi/ide-components/lib/overlay';
+export * from '@opensumi/ide-components/lib/dialog';
+export * from '@opensumi/ide-components/lib/icon';
+export * from '@opensumi/ide-components/lib/notification';
+export * from '@opensumi/ide-components/lib/popover';
+export * from '@opensumi/ide-components/lib/message';
+export * from '@opensumi/ide-components/lib/tooltip';

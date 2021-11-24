@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { MonacoOverrideServiceRegistry, ServiceNames } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class MonacoOverrideServiceRegistryImpl implements MonacoOverrideServiceRegistry {

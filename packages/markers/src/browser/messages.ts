@@ -1,4 +1,4 @@
-import { localize } from '@ide-framework/ide-core-browser';
+import { localize } from '@opensumi/ide-core-browser';
 
 export default class Messages {
   public static markerTitle = () => localize('markers.title', '问题');

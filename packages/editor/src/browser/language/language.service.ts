@@ -1,7 +1,7 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable } from '@opensumi/common-di';
 import { MonacoDiagnosticCollection } from './diagnostic-collection';
-import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ide-framework/ide-core-common';
+import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@opensumi/ide-core-common';
 import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };

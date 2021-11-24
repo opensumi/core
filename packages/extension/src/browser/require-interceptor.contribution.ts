@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Domain } from '@ide-framework/ide-core-browser';
+import { Domain } from '@opensumi/ide-core-browser';
 import { IBrowserRequireInterceptorArgs, IRequireInterceptorService, RequireInterceptorContribution } from '../common/require-interceptor';
 import { createBrowserApi } from './sumi-browser';
 

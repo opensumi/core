@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, getIcon } from '@ide-framework/ide-core-browser';
+import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
 import ResizeView, { ResizeDirection } from './resize.view';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, IWidget, ITerminalErrorService, ITerminalNetwork } from '../../common';
 import TerminalWidget from './terminal.widget';

@@ -1,18 +1,18 @@
-import { IDialogService } from '@ide-framework/ide-overlay';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { DefaultUriLabelProvider } from '@ide-framework/ide-core-browser/lib/services';
-import { Disposable, URI, localize, IJSONSchemaRegistry, ISchemaStore, OS, IApplicationService } from '@ide-framework/ide-core-browser';
-import { CommonServerPath } from '@ide-framework/ide-core-common';
-import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks/file-service-client';
-import { IEditorDocumentModelService } from '@ide-framework/ide-editor/lib/browser';
-import { FileSchemeDocNodeServicePath } from '@ide-framework/ide-file-scheme';
-import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ide-framework/ide-file-scheme/lib/browser/file-doc';
+import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
+import { Disposable, URI, localize, IJSONSchemaRegistry, ISchemaStore, OS, IApplicationService } from '@opensumi/ide-core-browser';
+import { CommonServerPath } from '@opensumi/ide-core-common';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks/file-service-client';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { FileSchemeDocNodeServicePath } from '@opensumi/ide-file-scheme';
+import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
 import { FileSchemeModule } from '../../src/browser';
-import { EditorPreferences } from '@ide-framework/ide-editor/lib/browser';
-import { FileSystemResourceProvider } from '@ide-framework/ide-editor/lib/browser/fs-resource/fs-resource';
-import { BinaryBuffer } from '@ide-framework/ide-core-common/lib/utils/buffer';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('file scheme tests', () => {
 

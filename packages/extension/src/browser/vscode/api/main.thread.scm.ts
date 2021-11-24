@@ -1,12 +1,12 @@
-import { Injectable, Optional, Autowired } from '@ide-framework/common-di';
-import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable, CancellationToken } from '@ide-framework/ide-core-common';
-import { Sequence, ISplice } from '@ide-framework/ide-core-common/lib/sequence';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { Injectable, Optional, Autowired } from '@opensumi/common-di';
+import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable, CancellationToken } from '@opensumi/ide-core-common';
+import { Sequence, ISplice } from '@opensumi/ide-core-common/lib/sequence';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup,
   ISCMResourceDecorations, IInputValidation, SCMService,
-} from '@ide-framework/ide-scm/lib/common';
-import { ILogger } from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-scm/lib/common';
+import { ILogger } from '@opensumi/ide-core-browser';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {

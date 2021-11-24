@@ -1,20 +1,20 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { ContributionProvider } from '@ide-framework/ide-core-browser';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { ContributionProvider } from '@opensumi/ide-core-browser';
 import { DebugSession } from './debug-session';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { WSChannelHandler } from '@ide-framework/ide-connection';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { WSChannelHandler } from '@opensumi/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugAdapterPath, DebugSessionOptions, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
-import { IMessageService } from '@ide-framework/ide-overlay';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { ITerminalApiService } from '@ide-framework/ide-terminal-next/lib/common';
-import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
-import { OutputChannel } from '@ide-framework/ide-output/lib/browser/output.channel';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next/lib/common';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 

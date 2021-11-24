@@ -1,6 +1,6 @@
-import { Autowired } from '@ide-framework/common-di';
-import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@ide-framework/ide-core-browser';
-import { IMainLayoutService, MainLayoutContribution } from '@ide-framework/ide-main-layout';
+import { Autowired } from '@opensumi/common-di';
+import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@opensumi/ide-core-browser';
+import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
@@ -30,7 +30,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('@ide-framework/ide-markers', {
+    registry.register('@opensumi/ide-markers', {
       id: MARKER_CONTAINER_ID,
       component: MarkerPanel,
     }, {

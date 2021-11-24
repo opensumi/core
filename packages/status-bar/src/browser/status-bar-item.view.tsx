@@ -1,13 +1,13 @@
 import cls from 'classnames';
 import React from 'react';
-import { IThemeService } from '@ide-framework/ide-theme';
-import { getExternalIcon } from '@ide-framework/ide-core-browser';
-import { IThemeColor, isThemeColor } from '@ide-framework/ide-core-common';
-import { StatusBarEntry } from '@ide-framework/ide-core-browser/lib/services';
-import { useInjectable } from '@ide-framework/ide-core-browser/lib/react-hooks';
+import { IThemeService } from '@opensumi/ide-theme';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { IThemeColor, isThemeColor } from '@opensumi/ide-core-common';
+import { StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import styles from './status-bar.module.less';
-import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ide-framework/ide-core-browser';
+import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {

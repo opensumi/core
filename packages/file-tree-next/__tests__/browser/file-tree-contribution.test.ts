@@ -1,19 +1,19 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { OutlineModule } from '@ide-framework/ide-outline/lib/browser';
-import { IMainLayoutService, IViewsRegistry } from '@ide-framework/ide-main-layout';
-import { FileTreeContribution } from '@ide-framework/ide-file-tree-next/lib/browser/file-tree-contribution';
-import { IFileTreeAPI, IFileTreeService } from '@ide-framework/ide-file-tree-next';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { Emitter, URI } from '@ide-framework/ide-core-node';
-import { ExplorerContainerId } from '@ide-framework/ide-explorer/lib/browser/explorer-contribution';
-import { IDecorationsService } from '@ide-framework/ide-decoration';
-import { MockWorkbenchEditorService } from '@ide-framework/ide-editor/lib/common/mocks/workbench-editor.service';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IDialogService, IMessageService, IWindowDialogService } from '@ide-framework/ide-overlay';
-import { IApplicationService, IClipboardService, IContextKeyService, isLinux, isWindows, OS, PreferenceService } from '@ide-framework/ide-core-browser';
-import { MockContextKeyService } from '@ide-framework/ide-core-browser/__mocks__/context-key';
-import { ViewsRegistry } from '@ide-framework/ide-main-layout/lib/browser/views-registry';
+import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
+import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
+import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
+import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { Emitter, URI } from '@opensumi/ide-core-node';
+import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
+import { IApplicationService, IClipboardService, IContextKeyService, isLinux, isWindows, OS, PreferenceService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 
 describe('FileTreeContribution', () => {
   let mockInjector: MockInjector;

@@ -1,9 +1,9 @@
 import { IExtension } from '../..';
-import { ProxyIdentifier } from '@ide-framework/ide-connection/lib/common/rpcProtocol';
-import { IDisposable, Uri } from '@ide-framework/ide-core-common';
-import { EditorComponentRenderMode } from '@ide-framework/ide-editor/lib/browser';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { ToolBarPosition } from '@ide-framework/ide-toolbar/lib/browser';
+import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IDisposable, Uri } from '@opensumi/ide-core-common';
+import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 
 export interface ISumiBrowserContributions {
   [containerId: string]: {

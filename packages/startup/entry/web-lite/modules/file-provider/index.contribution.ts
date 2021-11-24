@@ -1,15 +1,15 @@
-import { Autowired } from '@ide-framework/common-di';
+import { Autowired } from '@opensumi/common-di';
 import {
   Domain,
   URI,
   FsProviderContribution,
   AppConfig,
-} from '@ide-framework/ide-core-browser';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
+} from '@opensumi/ide-core-browser';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { StaticResourceContribution, StaticResourceService } from '@ide-framework/ide-static-resource/lib/browser/static.definition';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { StaticResourceContribution, StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
 

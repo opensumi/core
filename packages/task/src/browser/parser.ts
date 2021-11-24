@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IProblemReporter, getProblemPatternFn, getProblemMatcherFn } from './task-config';
-import { ProblemMatcher, ApplyToKind, uuid, isString, FileLocationKind, Severity, localize, NamedProblemMatcher, ProblemPattern, WatchingPattern, isBoolean, isStringArray, isUndefined, MultiLineProblemPattern, ProblemLocationKind, NamedProblemPattern, NamedMultiLineProblemPattern, isArray, mixin, isUndefinedOrNull, isNumber, deepClone } from '@ide-framework/ide-core-common';
+import { ProblemMatcher, ApplyToKind, uuid, isString, FileLocationKind, Severity, localize, NamedProblemMatcher, ProblemPattern, WatchingPattern, isBoolean, isStringArray, isUndefined, MultiLineProblemPattern, ProblemLocationKind, NamedProblemPattern, NamedMultiLineProblemPattern, isArray, mixin, isUndefinedOrNull, isNumber, deepClone } from '@opensumi/ide-core-common';
 
 export const enum ValidationState {
   OK = 0,

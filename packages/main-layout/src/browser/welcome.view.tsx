@@ -1,11 +1,11 @@
 import React from 'react';
-import { getExternalIcon, IOpenerService, useInjectable } from '@ide-framework/ide-core-browser';
+import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { ViewsController } from './views-registry';
 import { IViewContentDescriptor } from '../common';
 import styles from './accordion/styles.module.less';
-import { parseLinkedText } from '@ide-framework/ide-core-common/lib/linkedText';
-import { Button } from '@ide-framework/ide-components/lib/button';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
+import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
+import { Button } from '@opensumi/ide-components/lib/button';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
 import clsx from 'classnames';
 
 export namespace CSSIcon {

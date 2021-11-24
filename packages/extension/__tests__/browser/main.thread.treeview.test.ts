@@ -1,13 +1,13 @@
-import { Emitter, Disposable } from '@ide-framework/ide-core-common';
+import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MainThreadTreeView } from '@ide-framework/ide-extension/lib/browser/vscode/api/main.thread.treeview';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout';
-import { IMenuRegistry } from '@ide-framework/ide-core-browser/src/menu/next';
-import { IContextKeyService, PreferenceService } from '@ide-framework/ide-core-browser/src';
-import { IIconService, IThemeService } from '@ide-framework/ide-theme';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
-import { MockFileServiceClient } from '@ide-framework/ide-file-service/lib/common/mocks';
+import { MainThreadTreeView } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.treeview';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMenuRegistry } from '@opensumi/ide-core-browser/src/menu/next';
+import { IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser/src';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 
 const mockExtThreadTreeViewProxy = {
   $postMessage: jest.fn(),

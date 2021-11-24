@@ -1,14 +1,14 @@
 'use strict';
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@ide-framework/ide-core-common';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@ide-framework/ide-editor/lib/browser';
-import { ThemeType } from '@ide-framework/ide-theme';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
+import { ThemeType } from '@opensumi/ide-theme';
 import { IMarkerService } from '../common/types';
 import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
-import { Themable } from '@ide-framework/ide-theme/lib/browser/workbench.theme.service';
+import { Themable } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { observable } from 'mobx';
 import { createRef } from 'react';
 

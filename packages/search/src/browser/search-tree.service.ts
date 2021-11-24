@@ -1,16 +1,16 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import React from 'react';
 import { action } from 'mobx';
-import { LabelService } from '@ide-framework/ide-core-browser';
-import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ide-framework/ide-editor/lib/browser';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { WorkbenchEditorService, TrackedRangeStickiness } from '@ide-framework/ide-editor';
-import { IWorkspaceEditService } from '@ide-framework/ide-workspace-edit';
-import { IDialogService } from '@ide-framework/ide-overlay';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { LabelService } from '@opensumi/ide-core-browser';
+import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkbenchEditorService, TrackedRangeStickiness } from '@opensumi/ide-editor';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -20,7 +20,7 @@ import {
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import styles from './search.module.less';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 const REPLACE_PREVIEW = 'replacePreview';
 

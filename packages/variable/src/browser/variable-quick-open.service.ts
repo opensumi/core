@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { QuickOpenService, QuickOpenModel, QuickOpenItem, Mode } from '@ide-framework/ide-quick-open';
-import { VariableRegistry, localize } from '@ide-framework/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { QuickOpenService, QuickOpenModel, QuickOpenItem, Mode } from '@opensumi/ide-quick-open';
+import { VariableRegistry, localize } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class VariableQuickOpenService implements QuickOpenModel {

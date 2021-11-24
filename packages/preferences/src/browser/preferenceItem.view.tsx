@@ -1,10 +1,10 @@
 import React from 'react';
-import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider, DisposableCollection } from '@ide-framework/ide-core-browser';
+import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider, DisposableCollection } from '@opensumi/ide-core-browser';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
-import { Input, Select, Option, CheckBox, Button, ValidateInput, ValidateMessage } from '@ide-framework/ide-components';
+import { Input, Select, Option, CheckBox, Button, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import { PreferenceSettingsService } from './preference-settings.service';
-import { Select as NativeSelect } from '@ide-framework/ide-core-browser/lib/components/select';
+import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName } from '../common';
 
 interface IPreferenceItemProps {

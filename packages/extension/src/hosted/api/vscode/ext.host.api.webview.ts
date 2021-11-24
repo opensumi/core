@@ -1,7 +1,7 @@
 import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer, WebviewView, WebviewHandle, IMainThreadWebviewView, IExtHostWebviewView, IExtensionDescription, WebviewViewProvider } from '../../../common/vscode';
-import { Emitter, Event, IExtensionInfo, Disposable as IDEDisposable, CancellationToken } from '@ide-framework/ide-core-common';
+import { Emitter, Event, IExtensionInfo, Disposable as IDEDisposable, CancellationToken } from '@opensumi/ide-core-common';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 
 type IconPath = Uri | { light: Uri, dark: Uri };
 

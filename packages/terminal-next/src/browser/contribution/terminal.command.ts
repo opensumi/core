@@ -12,8 +12,8 @@ import {
   ILogger,
   IClipboardService,
   PreferenceScope,
-} from '@ide-framework/ide-core-browser';
-import { Autowired } from '@ide-framework/common-di';
+} from '@opensumi/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
 import {
   ITerminalController,
   ITerminalRestore,

@@ -1,4 +1,4 @@
-import { Provider, Injector } from '@ide-framework/common-di';
+import { Provider, Injector } from '@opensumi/common-di';
 import {
   IEventBus,
   EventBusImpl,
@@ -24,11 +24,11 @@ import {
   TaskDefinitionRegistryImpl,
   IApplicationService,
   IAuthenticationService,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ide-framework/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
@@ -37,7 +37,7 @@ import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { createElectronMainApi } from '../utils/electron';
-import { IElectronMainUIService, IElectronMainLifeCycleService, IElectronURLService } from '@ide-framework/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainLifeCycleService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 
@@ -61,7 +61,7 @@ import { IExternalUriService, ExternalUriService } from '../services/external-ur
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider

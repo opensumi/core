@@ -1,7 +1,7 @@
-import { Domain, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, AppConfig, SlotLocation, localize } from '@ide-framework/ide-core-browser';
-import { Autowired } from '@ide-framework/common-di';
+import { Domain, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, AppConfig, SlotLocation, localize } from '@opensumi/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
 import { ToolbarCustomizeComponent, ToolbarCustomizeViewService } from './toolbar-customize';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Domain(CommandContribution, ComponentContribution, MenuContribution)
 export class ToolbarCustomizeContribution implements CommandContribution, ComponentContribution, MenuContribution {

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize } from '@ide-framework/ide-core-common';
-import { useInjectable } from '@ide-framework/ide-core-browser';
-import { Tabs } from '@ide-framework/ide-components';
-import { AutoFocusedInput } from '@ide-framework/ide-main-layout/lib/browser/input';
-import { ProgressBar } from '@ide-framework/ide-core-browser/lib/components/progressbar';
+import { localize } from '@opensumi/ide-core-common';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { Tabs } from '@opensumi/ide-components';
+import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import debounce from 'lodash.debounce';
 
 import { IVSXExtensionService, TabActiveKey, VSXExtension, VSXExtensionServiceToken } from '../common';

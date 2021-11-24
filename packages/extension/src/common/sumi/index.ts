@@ -1,4 +1,4 @@
-import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ide-framework/ide-connection';
+import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import { IMainThreadLifeCycle, IExtHostLifeCycle } from './lifecycle';
 import { IExtHostTheme, IMainThreadTheme } from './theme';
 import { IMainThreadLayout, IExtHostLayout } from './layout';

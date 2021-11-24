@@ -2,8 +2,8 @@
 // tslint:disable no-console
 import net from 'net';
 import yargs from 'yargs';
-import { Deferred } from '@ide-framework/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@ide-framework/ide-core-node';
+import { Deferred } from '@opensumi/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const deferred = new Deferred<net.Server>();

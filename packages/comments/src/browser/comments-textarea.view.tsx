@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from './comments.module.less';
-import { Tabs } from '@ide-framework/ide-components';
+import { Tabs } from '@opensumi/ide-components';
 import { CommentsBody } from './comments-body';
-import { localize, useInjectable } from '@ide-framework/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { MentionsInput, Mention } from 'react-mentions';
 import { getMentionBoxStyle } from './mentions.style';
 import { ICommentsFeatureRegistry } from '../common';

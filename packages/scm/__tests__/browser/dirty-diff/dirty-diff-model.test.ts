@@ -1,14 +1,14 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import { StaticServices } from '@ide-framework/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { IDiffComputationResult } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import { toDisposable, Event, CommandService, positionToRange, URI } from '@ide-framework/ide-core-common';
-import { IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
-import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
-import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@ide-framework/ide-editor/src/browser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import { toDisposable, Event, CommandService, positionToRange, URI } from '@opensumi/ide-core-common';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { EditorCollectionService } from '@ide-framework/ide-editor';
+import { EditorCollectionService } from '@opensumi/ide-editor';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -44,8 +44,8 @@ const mockedMonaco = createMockedMonaco();
 jest.useFakeTimers();
 
 // mock ThrottledDelayer to take it easy in unit test
-jest.mock('@ide-framework/ide-core-common/src/async', () => ({
-  ...jest.requireActual('@ide-framework/ide-core-common/src/async'),
+jest.mock('@opensumi/ide-core-common/src/async', () => ({
+  ...jest.requireActual('@opensumi/ide-core-common/src/async'),
   ThrottledDelayer: class {
     constructor() {}
     trigger(promiseFactory: () => Promise<any>) {

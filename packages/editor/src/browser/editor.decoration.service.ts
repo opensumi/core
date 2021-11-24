@@ -1,10 +1,10 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { ICSSStyleService } from '@ide-framework/ide-theme/lib/common/style';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
-import { URI , IDisposable, Disposable, IEventBus } from '@ide-framework/ide-core-browser';
+import { URI , IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
 import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent} from './types';
-import { IThemeService } from '@ide-framework/ide-theme';
+import { IThemeService } from '@opensumi/ide-theme';
 @Injectable()
 export class EditorDecorationCollectionService implements IEditorDecorationCollectionService {
 

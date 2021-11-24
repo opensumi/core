@@ -1,4 +1,4 @@
-import { localize } from '@ide-framework/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { registerColor } from '../color-registry';
 
 // 全局聚焦状态边框颜色 包括 input

@@ -15,12 +15,12 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ide-framework/ide-core-common';
-import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@ide-framework/ide-core-common';
-import { FileSystemProvider, FileStat } from '@ide-framework/ide-core-common/lib/types/file';
+import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
+import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@opensumi/ide-core-common';
+import { FileSystemProvider, FileStat } from '@opensumi/ide-core-common/lib/types/file';
 import { Range } from 'vscode-languageserver-types';
-export { FileSystemProviderCapabilities, FileSystemProvider, FileType, FileStat } from '@ide-framework/ide-core-common/lib/types/file';
-export * from '@ide-framework/ide-core-common/lib/types/file-watch';
+export { FileSystemProviderCapabilities, FileSystemProvider, FileType, FileStat } from '@opensumi/ide-core-common/lib/types/file';
+export * from '@opensumi/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');
 

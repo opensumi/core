@@ -1,5 +1,5 @@
 // 快捷键相关功能为纯前端模块，这里直接从browser引入定义
-import { Keybinding, IDisposable } from '@ide-framework/ide-core-browser';
+import { Keybinding, IDisposable } from '@opensumi/ide-core-browser';
 
 export const IKeymapService = Symbol('IKeymapService');
 

@@ -1,13 +1,13 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ide-framework/common-di';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { FileStat } from '@ide-framework/ide-file-service';
-import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ide-framework/ide-core-browser';
-import { IExtensionStorageService } from '@ide-framework/ide-extension-storage';
-import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@ide-framework/ide-workspace-edit';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { FileSearchServicePath, IFileSearchService } from '@ide-framework/ide-file-search/lib/common';
+import { Injectable, Optinal, Autowired } from '@opensumi/common-di';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { FileStat } from '@opensumi/ide-file-service';
+import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
 
 @Injectable({multiple: true})

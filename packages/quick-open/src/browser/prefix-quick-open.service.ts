@@ -15,17 +15,17 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/quick-open/prefix-quick-open-service.ts
 import React from 'react';
-import { localize, QuickOpenActionProvider } from '@ide-framework/ide-core-browser';
-import { DisposableCollection, IDisposable, Disposable, ILogger } from '@ide-framework/ide-core-common';
-import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenTabConfig, QuickOpenTab, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@ide-framework/ide-core-browser/lib/quick-open';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { CorePreferences } from '@ide-framework/ide-core-browser/lib/core-preferences';
+import { localize, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
+import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenTabConfig, QuickOpenTab, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { QuickTitleBar } from './quick-title-bar';
 import { QuickOpenTabs } from './components/quick-open-tabs';
 /**
- * @deprecated import from `@ide-framework/ide-core-browser/lib/quick-open` instead
+ * @deprecated import from `@opensumi/ide-core-browser/lib/quick-open` instead
  */
-export { QuickOpenContribution, QuickOpenHandler, IQuickOpenHandlerRegistry, QuickOpenTab } from '@ide-framework/ide-core-browser/lib/quick-open';
+export { QuickOpenContribution, QuickOpenHandler, IQuickOpenHandlerRegistry, QuickOpenTab } from '@opensumi/ide-core-browser/lib/quick-open';
 
 @Injectable()
 export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHandlerRegistry {

@@ -1,7 +1,7 @@
 {
-  "name": "@ide-framework/ide-core-node",
+  "name": "@opensumi/ide-core-node",
   "version": "2.12.0",
-  "description": "@ide-framework/ide-core-node",
+  "description": "@opensumi/ide-core-node",
   "files": [
     "lib"
   ],
@@ -17,8 +17,8 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ide-framework/ide-connection": "2.12.0",
-    "@ide-framework/ide-core-common": "2.12.0",
+    "@opensumi/ide-connection": "2.12.0",
+    "@opensumi/ide-core-common": "2.12.0",
     "keytar": "^7.7.0"
   },
   "devDependencies": {

@@ -1,13 +1,13 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, ComponentContribution, ComponentRegistry, getIcon, CommandContribution, CommandRegistry, ClientAppContribution, Command, URI, CommandService } from '@ide-framework/ide-core-browser';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, ComponentContribution, ComponentRegistry, getIcon, CommandContribution, CommandRegistry, ClientAppContribution, Command, URI, CommandService } from '@opensumi/ide-core-browser';
 import { IMetaService } from '../services/meta-service/base';
 import { toSCMUri } from '../utils/scm-uri';
 import { SampleView, SampleTopView, SampleBottomView, SampleMainView } from './view/sample.view';
-import { IStatusBarService } from '@ide-framework/ide-status-bar';
-import { StatusBarAlignment, StatusBarEntryAccessor } from '@ide-framework/ide-core-browser/lib/services';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { ensureDir } from '@ide-framework/ide-core-common/lib/browser-fs/ensure-dir';
-import { IFileServiceClient } from '@ide-framework/ide-file-service';
+import { IStatusBarService } from '@opensumi/ide-status-bar';
+import { StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 const TOGGLE_REF: Command = {
   id: 'ide-s.toggleRef',
@@ -55,7 +55,7 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
 
   // 注册视图和token的绑定关系
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-dw', [
+    registry.register('@opensumi/ide-dw', [
       {
         id: 'dw-view1',
         component: SampleView,
@@ -73,7 +73,7 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
       iconClass: getIcon('explorer'),
     });
 
-    registry.register('@ide-framework/ide-dw-right', [
+    registry.register('@opensumi/ide-dw-right', [
       {
         id: 'dw-view3',
         component: SampleView,
@@ -91,17 +91,17 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
       iconClass: getIcon('debug'),
     });
 
-    registry.register('@ide-framework/ide-mock-top', {
+    registry.register('@opensumi/ide-mock-top', {
       id: 'fake-top',
       component: SampleTopView,
     });
 
-    registry.register('@ide-framework/ide-mock-bottom', {
+    registry.register('@opensumi/ide-mock-bottom', {
       id: 'fake-bottom',
       component: SampleBottomView,
     });
 
-    registry.register('@ide-framework/ide-mock-main', {
+    registry.register('@opensumi/ide-mock-main', {
       id: 'fake-main',
       component: SampleMainView,
     });

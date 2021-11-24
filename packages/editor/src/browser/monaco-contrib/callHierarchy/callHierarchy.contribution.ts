@@ -1,8 +1,8 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Domain, CommandContribution, CommandRegistry, Event, IContextKeyService, IContextKey, Uri } from '@ide-framework/ide-core-browser';
-import { Position } from '@ide-framework/monaco-editor-core/esm/vs/editor/common/core/position';
-import { RawContextKey } from '@ide-framework/ide-core-browser/lib/raw-context-key';
-import { CallHierarchyItem, CallHierarchyProviderRegistry, ICallHierarchyService } from '@ide-framework/ide-monaco/lib/browser/contrib/callHierarchy';
+import { Autowired } from '@opensumi/common-di';
+import { Domain, CommandContribution, CommandRegistry, Event, IContextKeyService, IContextKey, Uri } from '@opensumi/ide-core-browser';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
+import { CallHierarchyItem, CallHierarchyProviderRegistry, ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 
 import { BrowserEditorContribution, IEditor, IEditorFeatureRegistry } from '../../types';
 

@@ -1,7 +1,7 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@ide-framework/common-di';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable } from '@opensumi/common-di';
 import { IRawThemeSetting } from 'vscode-textmate';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   URI,
   localize,
@@ -12,7 +12,7 @@ import {
   isString,
   CharCode,
   isBoolean,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 
 import {
   ITokenThemeRule,

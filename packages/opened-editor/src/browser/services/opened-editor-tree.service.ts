@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ide-framework/ide-components';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
-import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@ide-framework/ide-editor';
-import { URI, formatLocalize, Emitter, Event } from '@ide-framework/ide-core-browser';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
+import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@opensumi/ide-editor';
+import { URI, formatLocalize, Emitter, Event } from '@opensumi/ide-core-browser';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 
 @Injectable()
 export class OpenedEditorService extends Tree {

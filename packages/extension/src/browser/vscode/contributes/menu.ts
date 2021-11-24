@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@ide-framework/ide-core-browser';
-import { ToolbarRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { ThemeType } from '@ide-framework/ide-theme';
-import { IconType, IIconService } from '@ide-framework/ide-theme/lib/common/theme.service';
-import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IEditorActionRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { IEditorGroup } from '@ide-framework/ide-editor';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@opensumi/ide-core-browser';
+import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { ThemeType } from '@opensumi/ide-theme';
+import { IconType, IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
+import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IEditorGroup } from '@opensumi/ide-editor';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 

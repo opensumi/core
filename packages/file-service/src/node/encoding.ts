@@ -3,9 +3,9 @@
 import * as fs from 'fs-extra';
 import jschardet from 'jschardet';
 import iconv from 'iconv-lite';
-import { URI } from '@ide-framework/ide-core-common';
-import { FileUri } from '@ide-framework/ide-core-node';
-import { SUPPORTED_ENCODINGS } from '@ide-framework/ide-core-common/lib/const';
+import { URI } from '@opensumi/ide-core-common';
+import { FileUri } from '@opensumi/ide-core-node';
+import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 
 import { EncodingInfo } from '../common/encoding';
 

@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { createElectronMainApi } from '@ide-framework/ide-core-browser';
-import { ElectronBasicModule } from '@ide-framework/ide-electron-basic/lib/browser';
+import { Injectable } from '@opensumi/common-di';
+import { createElectronMainApi } from '@opensumi/ide-core-browser';
+import { ElectronBasicModule } from '@opensumi/ide-electron-basic/lib/browser';
 import { IHelloService } from '../../../common/types';
 import { DemoContribution } from './demo';
 

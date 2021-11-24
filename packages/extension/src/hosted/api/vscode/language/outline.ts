@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/outline.ts
 
-import { Uri as URI } from '@ide-framework/ide-core-common';
+import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { DocumentSymbol, Range } from '../../../../common/vscode/model.api';

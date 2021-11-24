@@ -1,5 +1,5 @@
-import { IDisposable } from '@ide-framework/ide-core-common';
-import { OperatingSystem } from '@ide-framework/ide-core-common/lib/platform';
+import { IDisposable } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from './pty';

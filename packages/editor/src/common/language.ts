@@ -1,8 +1,8 @@
-import { editor } from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import type { IRelatedInformation } from '@ide-framework/monaco-editor-core/esm/vs/platform/markers/common/markers';
-import { CancellationToken } from '@ide-framework/ide-core-common';
-import { URI as Uri } from '@ide-framework/monaco-editor-core/esm/vs/base/common/uri';
-import { IDisposable, MarkerSeverity } from '@ide-framework/ide-core-common';
+import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IRelatedInformation } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
+import { CancellationToken } from '@opensumi/ide-core-common';
+import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
+import { IDisposable, MarkerSeverity } from '@opensumi/ide-core-common';
 import LSTypes from 'vscode-languageserver-types';
 
 export const ILanguageService = Symbol('ILanguageService');

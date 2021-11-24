@@ -1,13 +1,13 @@
-import { Emitter, Disposable } from '@ide-framework/ide-core-common';
-import { RPCProtocol } from '@ide-framework/ide-connection';
-import { ITerminalApiService, ITerminalController } from '@ide-framework/ide-terminal-next';
+import { Emitter, Disposable } from '@opensumi/ide-core-common';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { ITerminalApiService, ITerminalController } from '@opensumi/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { EnvironmentVariableCollection, ExtHostTerminal, Terminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtension } from '@ide-framework/ide-extension';
-import { EnvironmentVariableServiceToken } from '@ide-framework/ide-terminal-next/lib/common/environmentVariable';
+import { IExtension } from '@opensumi/ide-extension';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

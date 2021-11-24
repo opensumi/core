@@ -5,14 +5,14 @@
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
 import assert from 'assert';
-import { LinkDetector } from '@ide-framework/ide-debug/lib/browser/debug-link-detector';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@ide-framework/ide-dev-tool/src/mock-injector';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
-import { IOpenerService } from '@ide-framework/ide-core-browser';
-import { isWindows } from '@ide-framework/ide-core-browser';
-import { OpenerService } from '@ide-framework/monaco-editor-core/esm/vs/editor/browser/services/openerService';
+import { LinkDetector } from '@opensumi/ide-debug/lib/browser/debug-link-detector';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { IOpenerService } from '@opensumi/ide-core-browser';
+import { isWindows } from '@opensumi/ide-core-browser';
+import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 
 describe('Debug - Link Detector', () => {
 

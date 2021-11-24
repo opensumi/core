@@ -1,6 +1,6 @@
-import { Provider, Injectable } from '@ide-framework/common-di';
+import { Provider, Injectable } from '@opensumi/common-di';
 import { SearchContribution } from './search.contribution';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import { ContentSearchServerPath } from '../common';
 import { ContentSearchClientService } from './search.service';

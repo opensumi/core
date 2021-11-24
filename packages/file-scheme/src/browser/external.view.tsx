@@ -1,9 +1,9 @@
 import React from 'react';
-import { localize, useInjectable, isElectronRenderer } from '@ide-framework/ide-core-browser';
-import { ReactEditorComponent } from '@ide-framework/ide-editor/lib/browser';
+import { localize, useInjectable, isElectronRenderer } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import styles from './style.module.less';
-import { IElectronMainUIService } from '@ide-framework/ide-core-common/lib/electron';
-import { INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { INJECTOR_TOKEN } from '@opensumi/common-di';
 
 export const BinaryEditorComponent: ReactEditorComponent<null> = (props) => {
   const srcPath = props.resource.uri.codeUri.fsPath;

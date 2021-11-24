@@ -1,9 +1,9 @@
-import { Autowired } from '@ide-framework/common-di';
-import { Disposable, Domain, URI } from '@ide-framework/ide-core-common';
-import { ClientAppContribution } from '@ide-framework/ide-core-browser';
-import { Position } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
+import { Autowired } from '@opensumi/common-di';
+import { Disposable, Domain, URI } from '@opensumi/ide-core-common';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { Position } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import type vscode from 'vscode';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
 import { ILsifService } from '../../services/lsif-service/base';

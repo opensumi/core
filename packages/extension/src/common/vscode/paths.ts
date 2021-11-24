@@ -1,1 +1,1 @@
-export * from '@ide-framework/ide-core-common/lib/utils/paths';
+export * from '@opensumi/ide-core-common/lib/utils/paths';

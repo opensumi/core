@@ -1,4 +1,4 @@
-import { Autowired } from '@ide-framework/common-di';
+import { Autowired } from '@opensumi/common-di';
 
 import {
   CommandRegistry,
@@ -11,12 +11,12 @@ import {
   WORKSPACE_COMMANDS,
   localize,
   URI,
-} from '@ide-framework/ide-core-browser';
+} from '@opensumi/ide-core-browser';
 
 import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
-import { IWindowDialogService } from '@ide-framework/ide-overlay';
+import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { WorkspaceContextKey } from './workspace-contextkey';
 
 @Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)

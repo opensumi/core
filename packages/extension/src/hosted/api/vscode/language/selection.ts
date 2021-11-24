@@ -1,9 +1,9 @@
-import { Uri as URI } from '@ide-framework/ide-core-common';
+import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, SelectionRange } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
-import { isNonEmptyArray } from '@ide-framework/ide-core-common';
+import { isNonEmptyArray } from '@opensumi/ide-core-common';
 
 export class SelectionRangeAdapter {
 

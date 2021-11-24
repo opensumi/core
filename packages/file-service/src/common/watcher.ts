@@ -1,5 +1,5 @@
 import { IFileServiceClient } from './file-service-client';
-import { URI, Event, FileChange } from '@ide-framework/ide-core-common';
+import { URI, Event, FileChange } from '@opensumi/ide-core-common';
 
 export interface FileServiceWatcherOptions {
   fileServiceClient: IFileServiceClient;

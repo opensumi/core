@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isStringArray, isString, ProblemMatcherType, NamedProblemMatcher, deepClone, formatLocalize, isBoolean, isArray, ProblemMatcher, isUndefined, IJSONSchemaMap, uuid, IStringDictionary, KeyedTaskIdentifier, IProblemMatcherRegistry, ITaskDefinitionRegistry, IProblemPatternRegistry, NamedProblemPattern } from '@ide-framework/ide-core-common';
-import { Platform } from '@ide-framework/ide-core-common/lib/platform';
+import { isStringArray, isString, ProblemMatcherType, NamedProblemMatcher, deepClone, formatLocalize, isBoolean, isArray, ProblemMatcher, isUndefined, IJSONSchemaMap, uuid, IStringDictionary, KeyedTaskIdentifier, IProblemMatcherRegistry, ITaskDefinitionRegistry, IProblemPatternRegistry, NamedProblemPattern } from '@opensumi/ide-core-common';
+import { Platform } from '@opensumi/ide-core-common/lib/platform';
 import { IWorkspaceFolder } from '../common';
 import * as TaskTypes from '../common/task';
 import { IProblemReporterBase, ValidationStatus, ProblemMatcherParser, Config } from './parser';

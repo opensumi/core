@@ -1,13 +1,13 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@ide-framework/ide-core-common';
-import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString, Mode } from '@ide-framework/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@opensumi/ide-core-common';
+import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString, Mode } from '@opensumi/ide-core-browser';
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { OutputService } from '@ide-framework/ide-output/lib/browser/output.service';
-import { OutputChannel } from '@ide-framework/ide-output/lib/browser/output.channel';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { ConfiguringTask, TaskSet, Task, ContributedTask, CustomTask, TaskIdentifier, KeyedTaskIdentifier, TaskEvent } from '../common/task';
 import { parse, IProblemReporter, createCustomTask } from './task-config';
-import { platform } from '@ide-framework/ide-core-common/lib/platform';
+import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { ValidationState, ValidationStatus } from './parser';
 
 class ProblemReporter implements IProblemReporter {

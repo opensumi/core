@@ -1,1 +1,1 @@
-export * from '@ide-framework/ide-core-common/lib/utils/glob';
+export * from '@opensumi/ide-core-common/lib/utils/glob';

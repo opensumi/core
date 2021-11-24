@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Schemas, IOpenerService, OS, formatLocalize } from '@ide-framework/ide-core-browser';
-import { URI, IRange } from '@ide-framework/ide-core-common';
-import * as osPath from '@ide-framework/ide-core-common/lib/path';
-import * as platform from '@ide-framework/ide-core-common/lib/platform';
-import { IWorkspaceFolder } from '@ide-framework/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
-import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service/lib/common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Schemas, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
+import { URI, IRange } from '@opensumi/ide-core-common';
+import * as osPath from '@opensumi/ide-core-common/lib/path';
+import * as platform from '@opensumi/ide-core-common/lib/platform';
+import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import styles from './view/console/debug-console.module.less';
 
 const CONTROL_CODES = '\\u0000-\\u0020\\u007f-\\u009f';

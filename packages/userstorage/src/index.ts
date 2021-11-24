@@ -1,1 +1,1 @@
-throw new Error ('Package @ide-framework/ide-userstorage was deprecated.');
+throw new Error ('Package @opensumi/ide-userstorage was deprecated.');

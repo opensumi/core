@@ -1,10 +1,10 @@
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@ide-framework/common-di';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService, getLanguageIdFromMonaco, QuickPickItem } from '@ide-framework/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
-import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@ide-framework/ide-core-common';
-import { MenuContribution, IMenuRegistry, MenuId } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { SUPPORTED_ENCODINGS } from '@ide-framework/ide-core-common/lib/const';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/common-di';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService, getLanguageIdFromMonaco, QuickPickItem } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason } from '../common';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
@@ -23,7 +23,7 @@ import { EditorOpener } from './editor-opener';
 import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
 import { AUTO_SAVE_MODE } from '../common/editor';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
-import { EOL } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -88,7 +88,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   contentRegistry: IEditorDocumentModelContentRegistry;
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-editor', {
+    registry.register('@opensumi/ide-editor', {
       id: 'ide-editor',
       component: EditorView,
     });

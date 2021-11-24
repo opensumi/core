@@ -1,5 +1,5 @@
-import { CancellationToken } from '@ide-framework/vscode-jsonrpc/lib/common/cancellation';
-import type { IDisposable, UriComponents, IThemeColor } from '@ide-framework/ide-core-common';
+import { CancellationToken } from '@opensumi/vscode-jsonrpc/lib/common/cancellation';
+import type { IDisposable, UriComponents, IThemeColor } from '@opensumi/ide-core-common';
 
 import { VSCommand } from './model.api';
 

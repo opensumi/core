@@ -1,6 +1,6 @@
-import { Autowired, Injectable, Optional } from '@ide-framework/common-di';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
-import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@ide-framework/ide-core-common';
+import { Autowired, Injectable, Optional } from '@opensumi/common-di';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
 import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
 import { DebugSession } from '../../debug-session';
 import throttle = require('lodash.throttle');

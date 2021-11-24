@@ -1,5 +1,5 @@
-import { URI } from '@ide-framework/ide-core-common';
-import { DebugProtocol } from '@ide-framework/vscode-debugprotocol/lib/debugProtocol';
+import { URI } from '@opensumi/ide-core-common';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import btoa = require('btoa');
 import { Marker } from '../markers';
 

@@ -1,9 +1,9 @@
 import { uniqueId } from 'lodash';
 import { promisify } from 'util';
-import { ILoggerManagerClient, URI } from '@ide-framework/ide-core-browser';
-import { LocalStorageDocCacheImpl } from '@ide-framework/ide-editor/lib/browser/doc-cache';
-import { IHashCalculateService } from '@ide-framework/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IWorkspaceStorageService } from '@ide-framework/ide-workspace';
+import { ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
+import { LocalStorageDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';

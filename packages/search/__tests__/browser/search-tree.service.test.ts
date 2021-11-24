@@ -1,17 +1,17 @@
 import path from 'path';
-import { Injector, Injectable } from '@ide-framework/common-di';
-import { ILoggerManagerClient, Uri, URI } from '@ide-framework/ide-core-common';
-import { createBrowserInjector } from '@ide-framework/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient } from '@ide-framework/ide-logs/src/browser/log-manage';
-import { IWorkspaceService } from '@ide-framework/ide-workspace';
-import { EditorDocumentModelServiceImpl } from '@ide-framework/ide-editor/lib/browser/doc-model/main';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ide-framework/ide-editor/lib/browser';
-import { IMainLayoutService } from '@ide-framework/ide-main-layout/lib/common';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor';
-import { OverlayModule } from '@ide-framework/ide-overlay/lib/browser';
-import { IWorkspaceEditService } from '@ide-framework/ide-workspace-edit';
-import { IContextKeyService } from '@ide-framework/ide-core-browser';
-import { IFileServiceClient } from '@ide-framework/ide-file-service/lib/common';
+import { Injector, Injectable } from '@opensumi/common-di';
+import { ILoggerManagerClient, Uri, URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {

@@ -1,7 +1,7 @@
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { PreferenceService } from '@ide-framework/ide-core-browser';
-import { Disposable } from '@ide-framework/ide-core-common';
-import * as paths from '@ide-framework/ide-core-common/lib/path';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Disposable } from '@opensumi/ide-core-common';
+import * as paths from '@opensumi/ide-core-common/lib/path';
 
 import { ViewModelContext } from '../../scm-model';
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';

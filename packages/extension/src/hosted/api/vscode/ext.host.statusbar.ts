@@ -1,5 +1,5 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { formatLocalize } from '@ide-framework/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { formatLocalize } from '@opensumi/ide-core-common';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor, IExtensionDescription } from '../../../common/vscode';
 import { v4 } from 'uuid';

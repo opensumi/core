@@ -1,6 +1,6 @@
-import { IContextKeyService, URI } from '@ide-framework/ide-core-browser';
-import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { DisposableCollection, Event } from '@ide-framework/ide-core-common';
+import { IContextKeyService, URI } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
+import { DisposableCollection, Event } from '@opensumi/ide-core-common';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

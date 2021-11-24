@@ -1,10 +1,10 @@
-import { Injector, Autowired, INJECTOR_TOKEN } from '@ide-framework/common-di';
+import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/common-di';
 import { ClientAppContribution } from '../common/common.define';
-import { Domain, ContributionProvider, isElectronRenderer } from '@ide-framework/ide-core-common';
+import { Domain, ContributionProvider, isElectronRenderer } from '@opensumi/ide-core-common';
 import { OpenerContribution, IOpenerService } from '.';
 import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
-import { IElectronRendererURLService, IElectronURLService } from '@ide-framework/ide-core-common/lib/electron';
+import { IElectronRendererURLService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
 
 @Domain(OpenerContribution)

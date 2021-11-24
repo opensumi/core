@@ -1,10 +1,10 @@
 import { Terminal } from 'xterm';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ide-framework/ide-core-common';
-import { OS } from '@ide-framework/ide-core-common/lib/platform';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@opensumi/ide-core-common';
+import { OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
-import { electronEnv } from '@ide-framework/ide-core-browser';
-import { WSChannelHandler as IWSChanneHandler } from '@ide-framework/ide-connection';
+import { electronEnv } from '@opensumi/ide-core-browser';
+import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';

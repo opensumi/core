@@ -1,4 +1,4 @@
-import { IMainThreadStorage, KeysToAnyValues } from '@ide-framework/ide-extension/lib/common/vscode';
+import { IMainThreadStorage, KeysToAnyValues } from '@opensumi/ide-extension/lib/common/vscode';
 
 export class MainThreadStorage implements IMainThreadStorage {
   private storages: Map<string, any>;

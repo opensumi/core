@@ -1,6 +1,6 @@
-import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ide-framework/common-di';
-import { BrowserModule, Domain, AppConfig, ClientAppContribution, ContributionProvider, ToolBarActionContribution, IToolbarRegistry } from '@ide-framework/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/common-di';
+import { BrowserModule, Domain, AppConfig, ClientAppContribution, ContributionProvider, ToolBarActionContribution, IToolbarRegistry } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ToolBar } from './toolbar.view';
 import { IToolBarViewService, ToolBarContribution } from './types';
 import { ToolBarViewService } from './toolbar.view.service';

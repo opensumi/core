@@ -1,5 +1,5 @@
-import { Injectable } from '@ide-framework/common-di';
-import { FolderPreferenceProvider } from '@ide-framework/ide-preferences/lib/browser/folder-preference-provider';
+import { Injectable } from '@opensumi/common-di';
+import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
 
 @Injectable()
 export class LaunchFolderPreferenceProvider extends FolderPreferenceProvider {

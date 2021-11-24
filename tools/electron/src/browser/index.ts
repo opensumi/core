@@ -4,59 +4,59 @@ if (!(window as any).process) {
   (window as any).process = { browser: true, env: (window as any).env, listener: () => [] };
 }
 
-import '@ide-framework/ide-i18n';
-import { ElectronBasicModule } from '@ide-framework/ide-electron-basic/lib/browser';
+import '@opensumi/ide-i18n';
+import { ElectronBasicModule } from '@opensumi/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
-import { StartupModule } from '@ide-framework/ide-startup/lib/browser';
+import { StartupModule } from '@opensumi/ide-startup/lib/browser';
 
-import { MainLayoutModule } from '@ide-framework/ide-main-layout/lib/browser';
-import { MenuBarModule } from '@ide-framework/ide-menu-bar/lib/browser';
-import { MonacoModule } from '@ide-framework/ide-monaco/lib/browser';
-import { WorkspaceModule } from '@ide-framework/ide-workspace/lib/browser';
-import { StatusBarModule } from '@ide-framework/ide-status-bar/lib/browser';
-import { EditorModule } from '@ide-framework/ide-editor/lib/browser';
-import { ExplorerModule } from '@ide-framework/ide-explorer/lib/browser';
-import { FileTreeNextModule } from '@ide-framework/ide-file-tree-next/lib/browser';
-import { FileServiceClientModule } from '@ide-framework/ide-file-service/lib/browser';
-import { StaticResourceModule } from '@ide-framework/ide-static-resource/lib/browser';
-import { SearchModule } from '@ide-framework/ide-search/lib/browser';
-import { FileSchemeModule } from '@ide-framework/ide-file-scheme/lib/browser';
-import { OutputModule } from '@ide-framework/ide-output/lib/browser';
-import { QuickOpenModule } from '@ide-framework/ide-quick-open/lib/browser';
-import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ide-framework/ide-core-browser';
-import { ThemeModule } from '@ide-framework/ide-theme/lib/browser';
+import { MainLayoutModule } from '@opensumi/ide-main-layout/lib/browser';
+import { MenuBarModule } from '@opensumi/ide-menu-bar/lib/browser';
+import { MonacoModule } from '@opensumi/ide-monaco/lib/browser';
+import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
+import { StatusBarModule } from '@opensumi/ide-status-bar/lib/browser';
+import { EditorModule } from '@opensumi/ide-editor/lib/browser';
+import { ExplorerModule } from '@opensumi/ide-explorer/lib/browser';
+import { FileTreeNextModule } from '@opensumi/ide-file-tree-next/lib/browser';
+import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
+import { StaticResourceModule } from '@opensumi/ide-static-resource/lib/browser';
+import { SearchModule } from '@opensumi/ide-search/lib/browser';
+import { FileSchemeModule } from '@opensumi/ide-file-scheme/lib/browser';
+import { OutputModule } from '@opensumi/ide-output/lib/browser';
+import { QuickOpenModule } from '@opensumi/ide-quick-open/lib/browser';
+import { ClientCommonModule, BrowserModule, ConstructorOf } from '@opensumi/ide-core-browser';
+import { ThemeModule } from '@opensumi/ide-theme/lib/browser';
 
-import { OpenedEditorModule } from '@ide-framework/ide-opened-editor/lib/browser';
-import { OutlineModule } from '@ide-framework/ide-outline/lib/browser';
-import { PreferencesModule } from '@ide-framework/ide-preferences/lib/browser';
-import { ToolbarModule } from '@ide-framework/ide-toolbar/lib/browser';
-import { OverlayModule } from '@ide-framework/ide-overlay/lib/browser';
-import { ExtensionStorageModule } from '@ide-framework/ide-extension-storage/lib/browser';
-import { StorageModule } from '@ide-framework/ide-storage/lib/browser';
-import { SCMModule } from '@ide-framework/ide-scm/lib/browser';
+import { OpenedEditorModule } from '@opensumi/ide-opened-editor/lib/browser';
+import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
+import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
+import { ToolbarModule } from '@opensumi/ide-toolbar/lib/browser';
+import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
+import { StorageModule } from '@opensumi/ide-storage/lib/browser';
+import { SCMModule } from '@opensumi/ide-scm/lib/browser';
 
-import { MarkersModule } from '@ide-framework/ide-markers/lib/browser';
+import { MarkersModule } from '@opensumi/ide-markers/lib/browser';
 
-// import { Terminal2Module } from '@ide-framework/ide-terminal2/lib/browser';
+// import { Terminal2Module } from '@opensumi/ide-terminal2/lib/browser';
 
-import { WebviewModule } from '@ide-framework/ide-webview';
-import { MarkdownModule } from '@ide-framework/ide-markdown';
+import { WebviewModule } from '@opensumi/ide-webview';
+import { MarkdownModule } from '@opensumi/ide-markdown';
 
-import { LogModule } from '@ide-framework/ide-logs/lib/browser';
-import { WorkspaceEditModule } from '@ide-framework/ide-workspace-edit/lib/browser';
-import { KaitianExtensionModule } from '@ide-framework/ide-extension/lib/browser';
-import { DecorationModule } from '@ide-framework/ide-decoration/lib/browser';
-import { DebugModule } from '@ide-framework/ide-debug/lib/browser';
-import { VariableModule } from '@ide-framework/ide-variable/lib/browser';
-import { KeymapsModule } from '@ide-framework/ide-keymaps/lib/browser';
-import { MonacoEnhanceModule } from '@ide-framework/ide-monaco-enhance/lib/browser/module';
+import { LogModule } from '@opensumi/ide-logs/lib/browser';
+import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
+import { KaitianExtensionModule } from '@opensumi/ide-extension/lib/browser';
+import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
+import { DebugModule } from '@opensumi/ide-debug/lib/browser';
+import { VariableModule } from '@opensumi/ide-variable/lib/browser';
+import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
+import { MonacoEnhanceModule } from '@opensumi/ide-monaco-enhance/lib/browser/module';
 
-import { OpenVsxExtensionManagerModule } from '@ide-framework/ide-extension-manager/lib/browser';
-import { TerminalNextModule } from '@ide-framework/ide-terminal-next/lib/browser';
-import { CommentsModule } from '@ide-framework/ide-comments/lib/browser';
+import { OpenVsxExtensionManagerModule } from '@opensumi/ide-extension-manager/lib/browser';
+import { TerminalNextModule } from '@opensumi/ide-terminal-next/lib/browser';
+import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
 
-import { ClientAddonModule } from '@ide-framework/ide-addons/lib/browser';
-import { TaskModule } from '@ide-framework/ide-task/lib/browser';
+import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
+import { TaskModule } from '@opensumi/ide-task/lib/browser';
 import { customLayoutConfig } from './layout';
 import { DemoModule } from 'modules/demo';
 import { TopbarModule } from 'modules/topbar/browser';

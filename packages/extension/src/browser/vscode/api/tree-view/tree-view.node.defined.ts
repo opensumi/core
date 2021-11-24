@@ -1,8 +1,8 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@ide-framework/ide-components';
+import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 import { ICommand } from '../../../../common/vscode/models';
-import { MenuNode } from '@ide-framework/ide-core-browser/lib/menu/next';
-import { IAccessibilityInformation } from '@ide-framework/ide-core-common';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IAccessibilityInformation } from '@opensumi/ide-core-common';
 import { ITreeItemLabel } from '../../../../common/vscode';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {

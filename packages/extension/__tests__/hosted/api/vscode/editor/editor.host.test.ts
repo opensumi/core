@@ -1,5 +1,5 @@
-import { TextEditorData } from '@ide-framework/ide-extension/lib/hosted/api/vscode/editor/editor.host';
-import { SnippetString, Position, Range } from '@ide-framework/ide-extension/lib/common/vscode/ext-types';
+import { TextEditorData } from '@opensumi/ide-extension/lib/hosted/api/vscode/editor/editor.host';
+import { SnippetString, Position, Range } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { mockService } from '../../../../../../../tools/dev-tool/src/mock-injector';
 
 describe(__filename, () => {

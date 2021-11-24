@@ -1,10 +1,10 @@
-import { Provider, Injector, Injectable } from '@ide-framework/common-di';
-import { BrowserModule } from '@ide-framework/ide-core-browser';
+import { Provider, Injector, Injectable } from '@opensumi/common-di';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPreferenceSettingsService } from '@ide-framework/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPreferenceSettingsService } from '@opensumi/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 import { PreferenceSettingsService } from './preference-settings.service';

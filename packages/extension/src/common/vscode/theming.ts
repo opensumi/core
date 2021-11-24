@@ -1,4 +1,4 @@
-import { IDisposable } from '@ide-framework/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 export interface IExtHostTheming {
   $onColorThemeChange(themeType: string): void;

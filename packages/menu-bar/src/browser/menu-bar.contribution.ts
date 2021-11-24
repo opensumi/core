@@ -1,15 +1,15 @@
-import { Domain } from '@ide-framework/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry } from '@ide-framework/ide-core-browser/lib/layout';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 
 import { MenuBarMixToolbarAction } from './menu-bar.view';
 import { ToolbarAction } from './toolbar-action.view';
-import { ToolBarActionContribution, isElectronEnv, IToolbarRegistry } from '@ide-framework/ide-core-browser';
+import { ToolBarActionContribution, isElectronEnv, IToolbarRegistry } from '@opensumi/ide-core-browser';
 
 @Domain(ComponentContribution, ToolBarActionContribution)
 export class MenuBarContribution implements ComponentContribution, ToolBarActionContribution {
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ide-framework/ide-menu-bar', {
+    registry.register('@opensumi/ide-menu-bar', {
       id: 'ide-menu-bar',
       component: MenuBarMixToolbarAction,
     }, {
@@ -17,7 +17,7 @@ export class MenuBarContribution implements ComponentContribution, ToolBarAction
     });
 
     if (!isElectronEnv()) {
-      registry.register('@ide-framework/ide-toolbar-action', {
+      registry.register('@opensumi/ide-toolbar-action', {
         id: 'ide-toolbar-action',
         component: ToolbarAction,
       });

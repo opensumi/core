@@ -1,11 +1,11 @@
 import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
-import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@ide-framework/ide-core-browser';
-import { Autowired, Injectable } from '@ide-framework/common-di';
-import { LabelService } from '@ide-framework/ide-core-browser/lib/services';
-import { IFileServiceClient, FileStat } from '@ide-framework/ide-file-service/lib/common';
-import { Path } from '@ide-framework/ide-core-common/lib/path';
-import { FileChangeType } from '@ide-framework/ide-core-common';
-import { IDialogService } from '@ide-framework/ide-overlay';
+import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/common-di';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileChangeType } from '@opensumi/ide-core-common';
+import { IDialogService } from '@opensumi/ide-overlay';
 import { FileTreeSet } from './file-tree-set';
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { DIFF_SCHEME } from '../../common';

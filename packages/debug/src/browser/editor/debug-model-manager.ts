@@ -1,8 +1,8 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@ide-framework/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ide-framework/ide-core-common';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ide-framework/ide-editor';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, URI, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugModelFactory, IDebugModel } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';

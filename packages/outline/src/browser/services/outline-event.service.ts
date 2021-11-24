@@ -1,8 +1,8 @@
-import { Emitter, WithEventBus, OnEvent, URI, Event } from '@ide-framework/ide-core-browser';
-import { IResource, IEditorGroup } from '@ide-framework/ide-editor';
-import { Injectable } from '@ide-framework/common-di';
-import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@ide-framework/ide-editor/lib/browser';
-import { DocumentSymbolChangedEvent } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { Emitter, WithEventBus, OnEvent, URI, Event } from '@opensumi/ide-core-browser';
+import { IResource, IEditorGroup } from '@opensumi/ide-editor';
+import { Injectable } from '@opensumi/common-di';
+import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
+import { DocumentSymbolChangedEvent } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 export interface OpenedEditorEvent {

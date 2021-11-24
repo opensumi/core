@@ -1,9 +1,9 @@
-import { IRPCProtocol } from '@ide-framework/ide-connection';
-import { Injector } from '@ide-framework/common-di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Injector } from '@opensumi/common-di';
 import { MainThreadLifeCycle } from './main.thread.lifecycle';
 import { MainThreadSumiAPIIdentifier } from '../../common/sumi';
 import { MainThreadLayout } from './main.thread.layout';
-import { Disposable } from '@ide-framework/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 import { MainThreadTheme } from './main.thread.theme';
 import { MainThreadCommon } from './main.thread.common';
 import { MainThreadToolbar } from './main.thread.toolbar';

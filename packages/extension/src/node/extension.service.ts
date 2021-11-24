@@ -3,10 +3,10 @@ import path from 'path';
 import util from 'util';
 import * as fs from 'fs-extra';
 import type cp from 'child_process';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { normalizedIpcHandlerPath } from '@ide-framework/ide-core-common/lib/utils/ipc';
-import { WebSocketMessageReader, WebSocketMessageWriter } from '@ide-framework/ide-connection/lib/common/message';
-import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter, WSChannel } from '@ide-framework/ide-connection';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
+import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter, WSChannel } from '@opensumi/ide-connection';
 import {
   Deferred,
   isWindows,
@@ -21,7 +21,7 @@ import {
   PerformanceData,
   IReporterService,
   ReporterProcessMessage,
-} from '@ide-framework/ide-core-node';
+} from '@opensumi/ide-core-node';
 import {
   Event,
   Emitter,
@@ -33,7 +33,7 @@ import {
   SupportLogNamespace,
   ExtensionConnectOption,
   ExtensionConnectModeOption,
-} from '@ide-framework/ide-core-common';
+} from '@opensumi/ide-core-common';
 
 import { ExtensionScanner } from './extension.scanner';
 import {

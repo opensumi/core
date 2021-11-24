@@ -3,7 +3,7 @@ import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
 import { TerminalOptions } from '../common';
-import { getShellPath } from '@ide-framework/ide-core-node/lib/bootstrap/shell-path';
+import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 export { pty };
 

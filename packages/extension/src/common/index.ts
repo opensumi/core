@@ -1,14 +1,14 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@ide-framework/ide-core-common';
-import { createExtHostContextProxyIdentifier } from '@ide-framework/ide-connection';
+import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@opensumi/ide-core-common';
+import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
-import { Emitter, IExtensionProps } from '@ide-framework/ide-core-common';
+import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
-import { typeAndModifierIdPattern } from '@ide-framework/ide-theme/lib/common/semantic-tokens-registry';
+import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
-export { IExtensionProps } from '@ide-framework/ide-core-common';
+export { IExtensionProps } from '@opensumi/ide-core-common';
 
 export * from './ext.host.proxy';
 export * from './require-interceptor';

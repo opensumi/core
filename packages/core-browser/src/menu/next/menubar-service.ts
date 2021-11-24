@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Event, Emitter } from '@ide-framework/ide-core-common/lib/event';
-import { IDisposable, Disposable } from '@ide-framework/ide-core-common/lib/disposable';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Event, Emitter } from '@opensumi/ide-core-common/lib/event';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
 
 import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu.interface';
 import { IMenubarItem, IMenuRegistry, MenuNode } from './base';

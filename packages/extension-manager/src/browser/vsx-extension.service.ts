@@ -1,8 +1,8 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { WorkbenchEditorService } from '@ide-framework/ide-editor/lib/browser';
-import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@ide-framework/ide-core-browser';
-import { ExtensionManagementService } from '@ide-framework/ide-extension/lib/browser/extension-management.service';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@opensumi/ide-core-browser';
+import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 
 import { IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';

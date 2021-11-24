@@ -1,6 +1,6 @@
-import { Injectable } from '@ide-framework/common-di';
-import { Domain } from '@ide-framework/ide-core-common';
-import { SlotRendererContribution, SlotRendererRegistry, SlotLocation } from '@ide-framework/ide-core-browser';
+import { Injectable } from '@opensumi/common-di';
+import { Domain } from '@opensumi/ide-core-common';
+import { SlotRendererContribution, SlotRendererRegistry, SlotLocation } from '@opensumi/ide-core-browser';
 import { RightTabRenderer } from './custom-tabbar-renderer';
 
 @Injectable()

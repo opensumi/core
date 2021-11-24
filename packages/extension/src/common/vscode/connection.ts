@@ -1,10 +1,10 @@
-import { Message } from '@ide-framework/vscode-jsonrpc/lib/common/messages';
-import { MessageReader } from '@ide-framework/vscode-jsonrpc/lib/common/messageReader';
-import { MessageWriter } from '@ide-framework/vscode-jsonrpc/lib/common/messageWriter';
-import { IDisposable } from '@ide-framework/ide-core-common';
+import { Message } from '@opensumi/vscode-jsonrpc/lib/common/messages';
+import { MessageReader } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
+import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { ExtensionMessageReader } from './extension-message-reader';
 import { ExtensionMessageWriter } from './extension-message-writer';
-import { IWebSocket } from '@ide-framework/ide-connection';
+import { IWebSocket } from '@opensumi/ide-connection';
 
 export interface IMainThreadConnection {
   $createConnection(id: string): Promise<void>;

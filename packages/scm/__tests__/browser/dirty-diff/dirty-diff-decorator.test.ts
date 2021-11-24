@@ -1,9 +1,9 @@
-import { Injectable } from '@ide-framework/common-di';
-import { URI } from '@ide-framework/ide-core-common';
-import { OverviewRulerLane, IDocPersistentCacheProvider } from '@ide-framework/ide-editor';
-import { EditorDocumentModel } from '@ide-framework/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@ide-framework/ide-editor/src/browser/';
-import { EmptyDocCacheImpl } from '@ide-framework/ide-editor/src/browser';
+import { Injectable } from '@opensumi/common-di';
+import { URI } from '@opensumi/ide-core-common';
+import { OverviewRulerLane, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -11,7 +11,7 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
-import { ITextModel } from '@ide-framework/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 const fakeScmDiffDecorationsGetter = jest.fn();
 

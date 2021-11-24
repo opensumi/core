@@ -2,10 +2,10 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MonacoService, ServiceNames } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MonacoOverrideServiceRegistry } from '@ide-framework/ide-core-browser';
-import { ILogger } from '@ide-framework/ide-core-common';
+import { MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import { ILogger } from '@opensumi/ide-core-common';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
-import { MockLogger } from '@ide-framework/ide-core-browser/__mocks__/logger';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 
 let injector: MockInjector;
 

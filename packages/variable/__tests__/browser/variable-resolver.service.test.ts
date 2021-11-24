@@ -1,9 +1,9 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { VariableModule } from '@ide-framework/ide-variable/lib/browser';
-import { IVariableResolverService } from '@ide-framework/ide-variable/lib/common';
-import { QuickOpenService, VariableRegistry, Variable, URI } from '@ide-framework/ide-core-browser';
-import { MockQuickOpenService } from '@ide-framework/ide-quick-open/lib/common/mocks/quick-open.service';
+import { VariableModule } from '@opensumi/ide-variable/lib/browser';
+import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
+import { QuickOpenService, VariableRegistry, Variable, URI } from '@opensumi/ide-core-browser';
+import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 
 describe('VariableResolverService should be work', () => {
   let variableResolverService: IVariableResolverService;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
-import { Deprecated } from '@ide-framework/ide-components/lib/utils';
+import { Deprecated } from '@opensumi/ide-components/lib/utils';
 import fuzzy from 'fuzzy';
 
 export interface RecycleTreeProps extends TreeProps {
@@ -356,4 +356,4 @@ export const DeprecatedRecycleTree = (
 
 DeprecatedRecycleTree.displayName = 'DeprecatedRecycleTree';
 
-export const RecycleTree = Deprecated(DeprecatedRecycleTree, '[Deprecated warning]: The `RecycleTree` component in `@ide-framework/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@ide-framework/ide-component` instead');
+export const RecycleTree = Deprecated(DeprecatedRecycleTree, '[Deprecated warning]: The `RecycleTree` component in `@opensumi/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@opensumi/ide-component` instead');

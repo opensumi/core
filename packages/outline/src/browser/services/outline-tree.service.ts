@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@ide-framework/common-di';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@ide-framework/ide-components';
+import { Injectable, Autowired } from '@opensumi/common-di';
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { OutlineCompositeTreeNode, OutlineTreeNode, OutlineRoot } from '../outline-node.define';
-import { URI, Emitter, MaybeNull, IdleValue, compareRangesUsingStarts, getSymbolIcon, Event, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ide-framework/ide-core-browser';
-import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@ide-framework/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { URI, Emitter, MaybeNull, IdleValue, compareRangesUsingStarts, getSymbolIcon, Event, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@opensumi/ide-core-browser';
+import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { OutlineSortOrder } from '../../common';
 import { OutlineContextKeyService } from './outline-contextkey.service';
 
