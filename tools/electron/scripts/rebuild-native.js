@@ -26,6 +26,7 @@ if (target === 'electron') {
       : 'HOME=~/.electron-gyp',
     'node-gyp',
     'rebuild',
+    '--openssl_fips=X',
     `--target=${version}`,
     `--arch=${arch}`,
     '--dist-url=https://electronjs.org/headers',
