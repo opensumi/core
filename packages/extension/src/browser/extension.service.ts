@@ -231,7 +231,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     await this.progressService.withProgress({
       location: ProgressLocation.Notification,
-      title: localize('kaitianExtension.exthostRestarting.content'),
+      title: localize('extension.exthostRestarting.content'),
     }, async () => {
       try {
         await this.startExtProcess(false);
@@ -543,15 +543,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $processNotExist() {
-    const okText = localize('kaitianExtension.invalidExthostReload.confirm.ok');
+    const okText = localize('extension.invalidExthostReload.confirm.ok');
     const options = [okText];
     const ifRequiredReload = this.invalidReloadStrategy === 'ifRequired';
     if (ifRequiredReload) {
-      options.unshift(localize('kaitianExtension.invalidExthostReload.confirm.cancel'));
+      options.unshift(localize('extension.invalidExthostReload.confirm.cancel'));
     }
 
     const msg = await this.dialogService.info(
-      localize('kaitianExtension.invalidExthostReload.confirm.content'),
+      localize('extension.invalidExthostReload.confirm.content'),
       options,
       !!ifRequiredReload,
     );
@@ -570,7 +570,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     const msg = await this.messageService.info(
-      localize('kaitianExtension.crashedExthostReload.confirm'),
+      localize('extension.crashedExthostReload.confirm'),
       options,
       !!ifRequiredReload,
     );
