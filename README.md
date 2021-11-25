@@ -8,7 +8,7 @@
 
 A framework help you quickly build Cloud or Desktop IDE products.
 
-[![CI](https://github.com/ide-framework/core/actions/workflows/nodejs.yml/badge.svg?branch=main)](https://github.com/ide-framework/core/actions/workflows/nodejs.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
+[![CI](https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg)](https://github.com/opensumi/core/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
 
 ## Quickstart
 
