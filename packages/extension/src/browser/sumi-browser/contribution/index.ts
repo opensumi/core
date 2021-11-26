@@ -4,6 +4,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { TabbarBrowserContributionRunner } from './tabbar';
 import { EditorBrowserContributionRunner } from './editor';
 import { ToolBarBrowserContributionRunner } from './toolbar';
+import { EditorSideBrowserContributionRunner } from './editorSide';
 
 @Injectable({multiple: true})
 export class SumiBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
@@ -15,6 +16,7 @@ export class SumiBrowserContributionRunner extends AbstractSumiBrowserContributi
     const disposer = new Disposable();
     disposer.addDispose(this.injector.get(TabbarBrowserContributionRunner, [this.extension, this.contribution]).run(param));
     disposer.addDispose(this.injector.get(EditorBrowserContributionRunner, [this.extension, this.contribution]).run(param));
+    disposer.addDispose(this.injector.get(EditorSideBrowserContributionRunner, [this.extension, this.contribution]).run(param));
     disposer.addDispose(this.injector.get(ToolBarBrowserContributionRunner, [this.extension, this.contribution]).run(param));
     return disposer;
   }

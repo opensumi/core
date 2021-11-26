@@ -12,7 +12,7 @@ import { Scroll } from './component/scroll/scroll';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
-import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, EditorSide, IEditorComponent, CodeEditorDidVisibleEvent } from './types';
+import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, RegisterEditorSideComponentEvent, EditorSide, IEditorComponent, CodeEditorDidVisibleEvent } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import styles from './editor.module.less';
 
@@ -507,12 +507,20 @@ function removeDecorationDragOverElement(element: HTMLElement) {
 
 const EditorSideView = ({ side, resource }: { side: EditorSide, resource: IResource }) => {
   const componentRegistry: EditorComponentRegistry = useInjectable(EditorComponentRegistry);
+  const eventBus = useInjectable(IEventBus) as IEventBus;
   const widgets = componentRegistry.getSideWidgets(side, resource);
+  const [, updateState] = React.useState<any>();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
+
+  useDisposable(() => {
+    return eventBus.on(RegisterEditorSideComponentEvent, forceUpdate);
+  }, []);
+
   return <div className={classnames(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
     {
       widgets.map((widget) => {
         const C = widget.component;
-        return <C resource={resource} key={widget.id}></C>;
+        return <C resource={resource} key={widget.id} {...widget.initialProps}></C>;
       })
     }
   </div>;

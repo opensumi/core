@@ -1,4 +1,4 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent, RegisterEditorSideComponentEvent } from './types';
 import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
@@ -175,6 +175,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
   public registerEditorSideWidget(widget: IEditorSideWidget<any>): IDisposable {
     const side = widget.side || 'bottom';
     this.sideWidgets[side].add(widget);
+    this.eventBus.fire(new RegisterEditorSideComponentEvent());
     return {
       dispose: () => {
         this.sideWidgets[side].delete(widget);
