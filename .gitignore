@@ -85,7 +85,7 @@ dist
 lib
 
 .vscode/*
-.kaitian/*
+.sumi/*
 !.vscode/launch.json
 package-lock.json
 

@@ -54,8 +54,8 @@ describe(__filename, () => {
   });
 
   it('show quick-open', (done) => {
-    quickPickService.show(['kaitian', 'vscode']).then((item) => {
-      expect(item).toBe('kaitian');
+    quickPickService.show(['sumi', 'vscode']).then((item) => {
+      expect(item).toBe('sumi');
       done();
     });
     const [ item ] = widget.items;
@@ -63,11 +63,11 @@ describe(__filename, () => {
   });
 
   it('show quick-open with canPickMany', (done) => {
-    quickPickService.show(['kaitian', 'vscode'], {
+    quickPickService.show(['sumi', 'vscode'], {
       canPickMany: true,
     }).then((items) => {
       expect(items).toHaveLength(2);
-      expect(items![0]).toBe('kaitian');
+      expect(items![0]).toBe('sumi');
       expect(items![1]).toBe('vscode');
       done();
     });

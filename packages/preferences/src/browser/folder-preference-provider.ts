@@ -15,7 +15,7 @@ export interface FolderPreferenceProviderOptions {
 
 /**
  * 这玩意应该叫 FolderFilePreferenceProvider， 它代表的是一个文件夹下的 “一个” 文件读出来的配置项
- * 但是一个文件夹的配置文件夹比如 .kaitian 内可以存在多个这样的文件, 比如 settings.json, launch.json
+ * 但是一个文件夹的配置文件夹比如 .sumi 内可以存在多个这样的文件, 比如 settings.json, launch.json
  * 他们的结果会合并并且放入各自的section中。
  */
 @Injectable()

@@ -9,7 +9,7 @@ import { RPCService } from '@opensumi/ide-connection';
 import * as lp from './languagePack';
 import { IFileService } from '@opensumi/ide-file-service';
 
-export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
+export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.sumi');
 
 interface IRPCExtensionService {
   $processNotExist(id: string): void;

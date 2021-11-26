@@ -6,7 +6,7 @@
     "Themes"
   ],
   "version": "1.13.1",
-  "publisher": "kaitian",
+  "publisher": "opensumi",
   "engines": {
     "vscode": "*"
   },

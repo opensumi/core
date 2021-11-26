@@ -115,13 +115,13 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
 
     warning(
       !('onOpen' in props || 'onClose' in props),
-      '[kaitian Menu] `onOpen` and `onClose` are removed, please use `onOpenChange` instead, ' +
+      '[Menu] `onOpen` and `onClose` are removed, please use `onOpenChange` instead, ' +
         'see: https://u.ant.design/menu-on-open-change.',
     );
 
     warning(
       !('inlineCollapsed' in props && props.mode !== 'inline'),
-      '[kaitian Menu] `inlineCollapsed` should only be used when `mode` is inline.',
+      '[Menu] `inlineCollapsed` should only be used when `mode` is inline.',
     );
 
     let openKeys;
@@ -176,7 +176,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     if (openAnimation) {
       warning(
         typeof openAnimation === 'string',
-        '[kaitian Menu] `openAnimation` do not support object. Please use `motion` instead.',
+        '[Menu] `openAnimation` do not support object. Please use `motion` instead.',
       );
       return { openAnimation };
     }

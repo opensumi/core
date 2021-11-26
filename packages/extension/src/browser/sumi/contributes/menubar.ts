@@ -14,26 +14,26 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
   private readonly menuRegistry: IMenuRegistry;
 
   schema = {
-    description: localize('kaitianContributes.menubars', 'Contributes extension defined menubars'),
+    description: localize('extensionContributes.menubars', 'Contributes extension defined menubars'),
     type: 'array',
     items: {
       type: 'object',
       properties: {
         id: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.id', 'The identifier of menubar item, used as menu-id'),
+          description: localize('extensionContributes.menubars.id', 'The identifier of menubar item, used as menu-id'),
         },
         title: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.title', 'The title of menubar item'),
+          description: localize('extensionContributes.menubars.title', 'The title of menubar item'),
         },
         order: {
           type: 'number',
-          description: localize('kaitianContributes.menubars.order', 'The order of  menubar item'),
+          description: localize('extensionContributes.menubars.order', 'The order of  menubar item'),
         },
         nativeRole: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.order', 'The nativeRole of  menubar item'),
+          description: localize('extensionContributes.menubars.order', 'The nativeRole of  menubar item'),
         },
       },
     },

@@ -10,7 +10,7 @@ import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser
 import '@opensumi/ide-i18n';
 
 const mockExtension: IExtensionMetaData = {
-  id: 'test.kaitian-extension',
+  id: 'test.sumi-extension',
   path: paths.join(__dirname, '../../__mocks__/extension'),
   realPath: paths.join(__dirname, '../../__mocks__/extension'),
   uri: Uri.file(paths.join(__dirname, '../../__mocks__/extension')),

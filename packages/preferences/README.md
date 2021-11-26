@@ -7,11 +7,11 @@ Preferences 模块主要用于管理整个IDE配置的读取逻辑，
 
 配置文件的目录位置可通过配置 `AppConfig` 中的  `userPreferenceDirName` 及 `workspacePreferenceDirName`  分别配置 全局配置 和 工作区配置的 `settings.json` 读取路径。
 
-> 下面我们统一将 `.kaitian` 作为我们默认的配置文件读取路径
+> 下面我们统一将 `.sumi` 作为我们默认的配置文件读取路径
 
-对于全局配置，我们一般是从 `~/.kaitian/settings.json` 文件中读取；
+对于全局配置，我们一般是从 `~/.sumi/settings.json` 文件中读取；
 
-针对工作区的配置文件，我们一般是从 `${worksace_path}/.kaitian/settings.json` 文件中读取，但在存在多个工作区存在的`多工作区` 项目，我们则是从 `${workspace_name}.kaitian-workspace` 文件中读取；
+针对工作区的配置文件，我们一般是从 `${worksace_path}/.sumi/settings.json` 文件中读取，但在存在多个工作区存在的`多工作区` 项目，我们则是从 `${workspace_name}.sumi-workspace` 文件中读取；
 
 你可以简单的通过如下方式来进行配置文件的修改，同时监听其变化：
 

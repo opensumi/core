@@ -384,7 +384,6 @@ export namespace KeyCode {
       } else if (CODE_TO_KEY[code] === Key.OS_RIGHT && !event.shiftKey && !event.ctrlKey && !event.altKey) {
         return Key.OS_RIGHT;
       }
-      // https://code.alipay.com/kaitian/ide-framework/issues/3
       if (code.startsWith('Numpad') && event.key && event.key.length > 1) {
         const k = Key.getKey(event.key);
         if (k) {

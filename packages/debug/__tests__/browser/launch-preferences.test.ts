@@ -41,7 +41,7 @@ export class MockLoggerManagerClient {
  */
 describe('Launch Preferences', () => {
 
-  type ConfigMode = '.kaitian' | ['.kaitian'];
+  type ConfigMode = '.sumi' | ['.sumi'];
 
   const defaultLaunch = {
     'configurations': [],
@@ -354,7 +354,7 @@ describe('Launch Preferences', () => {
 
         testConfigSuite({
           ...options,
-          configMode: '.kaitian',
+          configMode: '.sumi',
         });
       }
 
@@ -433,7 +433,7 @@ describe('Launch Preferences', () => {
           {
             token: AppConfig,
             useValue: {
-              preferenceDirName: '.kaitian',
+              preferenceDirName: '.sumi',
             },
           },
           {

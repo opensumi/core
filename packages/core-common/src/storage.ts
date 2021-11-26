@@ -92,7 +92,7 @@ export namespace StoragePaths {
   export const WINDOWS_APP_DATA_DIR = 'AppData';
   export const WINDOWS_ROAMING_DIR = 'Roaming';
   // 可通过AppConfig配置替换，目前仅作为默认值使用
-  export const DEFAULT_STORAGE_DIR_NAME = '.kaitian';
+  export const DEFAULT_STORAGE_DIR_NAME = '.sumi';
   export const DEFAULT_DATA_DIR_NAME = 'datas';
   export const MARKETPLACE_DIR = 'extensions';
   export const EXTENSIONS_LOGS_DIR = 'extensions';

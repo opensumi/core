@@ -4,7 +4,7 @@ const rootPackage = require('../package.json');
 
 electronBuilder.build({
   config: {
-    productName: "KAITIAN IDE",
+    productName: "OpenSumi IDE",
     electronVersion: rootPackage.devDependencies.electron,
     files:[
       "app/dist"

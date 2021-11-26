@@ -30,7 +30,7 @@ describe('KeymapsService should be work', () => {
     command: 'editor.action.deleteLines',
     keybinding: '⌘+⇧+L',
   }];
-  const preferenceDirName = '.kaitian';
+  const preferenceDirName = '.sumi';
 
   const mockKeybindingService = {
     convert: jest.fn(),

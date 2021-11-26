@@ -80,7 +80,7 @@ describe('MainThreadWindow API Test Suite', () => {
 
   it('should able to $loadURI', async () => {
     const webviewId = 'testView';
-    mainThreadIDEWindow.$loadURL(webviewId, 'http://kaitian.com');
+    mainThreadIDEWindow.$loadURL(webviewId, 'http://opensumi.com');
     expect(mockWindow.loadURL).toBeCalledTimes(1);
   });
 

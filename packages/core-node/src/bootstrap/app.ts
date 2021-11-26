@@ -28,7 +28,7 @@ export interface MarketplaceRequest {
 export interface MarketplaceConfig {
   // 插件市场地址, 默认 https://marketplace.antfin-inc.com
   endpoint: string;
-  // 插件市场下载到本地的位置，默认 ~/.kaitian/extensions
+  // 插件市场下载到本地的位置，默认 ~/.sumi/extensions
   extensionDir: string;
   // 是否显示内置插件，默认隐藏
   showBuiltinExtensions: boolean;
@@ -52,7 +52,7 @@ interface Config {
   */
   logLevel?: LogLevel;
   /**
-   * 设置日志的目录，默认：~/.kaitian/logs
+   * 设置日志的目录，默认：~/.sumi/logs
    */
   logDir?: string;
   /**

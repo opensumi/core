@@ -194,7 +194,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
       const menuItem = transformMonacoMenuItem(item);
       /**
        * monaco 中 editor/context 是一个数字枚举值
-       * kaitian 中是一个 字符串
+       * opensumi 中是一个 字符串
        * 这里做了一层代理转换 (下方也有代理注册)
       */
       menuRegistry.registerMenuItem(MenuId.EditorContext as unknown as string, menuItem);
@@ -212,7 +212,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
       disposer.addDispose(originalAppendItem.apply(monacoMenuRegistry, [menuId, item]));
       /**
        * monaco 中 editor/context 是一个数字枚举值
-       * kaitian 中是一个 字符串
+       * opensumi 中是一个 字符串
        * 这里做了一层代理注册
       */
       if (menuId === monacoActions.MenuId.EditorContext) {

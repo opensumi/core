@@ -50,7 +50,7 @@ Output 模块的通道在 UI 层面实际实现是一个 Monaco Editor 实例，
 插件中通过 `window.createOutputChannel` 也可以创建一个输出通道，该 API 底层即是通过 Output 模块实现的。
 
 ```ts
-const channel = kaitian.window.createOutputChannel('My Extension');
+const channel = sumi.window.createOutputChannel('My Extension');
 
 channel.appendLine('some logging...');
 ```

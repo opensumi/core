@@ -200,7 +200,7 @@ describe('MainThreadExtensions Test Suites', () => {
   });
 
   it('should get a extension by extHostExtensionApi', async (done) => {
-    const extension = extHostExtension.getExtension('test.kaitian-extension');
+    const extension = extHostExtension.getExtension('test.sumi-extension');
     expect(extension).toBeDefined();
     expect(extension?.isActive).toBeFalsy();
     done();

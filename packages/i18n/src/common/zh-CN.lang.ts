@@ -714,11 +714,11 @@ export const localizationBundle = {
     'view.zoomIn': '窗口缩放放大',
     'view.zoomOut': '窗口缩放缩小',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，点击刷新后可恢复插件使用',
-    'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
-    'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
-    'kaitianExtension.exthostRestarting.content': '插件进程重启中...',
+    'extension.invalidExthostReload.confirm.content': '插件进程已失效，点击刷新后可恢复插件使用',
+    'extension.invalidExthostReload.confirm.ok': '刷新',
+    'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
+    'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
+    'extension.exthostRestarting.content': '插件进程重启中...',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
     'extension.profilingExtensionHost': '分析扩展主机',

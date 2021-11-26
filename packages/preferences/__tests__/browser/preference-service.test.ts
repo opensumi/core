@@ -56,12 +56,12 @@ describe('PreferenceService should be work', () => {
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
     await fs.ensureDir(root.path.toString());
-    await fs.ensureDir(path.join(root.path.toString(), '.kaitian'));
-    await fs.writeJSON(path.join(root.path.toString(), '.kaitian', 'settings.json'), {
+    await fs.ensureDir(path.join(root.path.toString(), '.sumi'));
+    await fs.writeJSON(path.join(root.path.toString(), '.sumi', 'settings.json'), {
       'editor.fontSize': 16,
     });
-    await fs.ensureDir(path.join(root.path.toString(), 'userhome', '.kaitian'));
-    await fs.writeJSON(path.join(root.path.toString(), 'userhome', '.kaitian', 'settings.json'), {
+    await fs.ensureDir(path.join(root.path.toString(), 'userhome', '.sumi'));
+    await fs.writeJSON(path.join(root.path.toString(), 'userhome', '.sumi', 'settings.json'), {
       'editor.fontSize': 20,
     });
 

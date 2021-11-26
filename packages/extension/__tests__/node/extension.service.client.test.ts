@@ -18,8 +18,8 @@ describe('Extension Client Serivce', () => {
   let injector: Injector;
   let extensionNodeClient: IExtensionNodeClientService;
   const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
-  const testExtId = 'kaitian.ide-dark-theme';
-  const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
+  const testExtId = 'opensumi.ide-dark-theme';
+  const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
   beforeAll(async (done) => {
@@ -56,7 +56,7 @@ describe('Extension Client Serivce', () => {
       {
         token: IExtensionStoragePathServer,
         useValue: {
-          getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.kaitian', 'workspace-storage')),
+          getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.sumi', 'workspace-storage')),
         },
       },
       {
@@ -108,7 +108,7 @@ describe('Extension Client Serivce', () => {
       const name = 'vscode-language-pack-zh-hans';
       const publisher = 'vscode-extensions';
       const version = '1.37.1';
-      const lpPath = path.join(os.homedir(), '.kaitian', 'workspace-storage', 'languagepacks.json');
+      const lpPath = path.join(os.homedir(), '.sumi', 'workspace-storage', 'languagepacks.json');
       // make sure the workspace-storage path is exist
       const extensionStorageServer = injector.get(IExtensionStoragePathServer);
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);

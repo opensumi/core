@@ -16,8 +16,8 @@ describe('Extension Serivce', () => {
   let injector: Injector;
   let extensionService: IExtensionNodeService;
   const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
-  const testExtId = 'kaitian.ide-dark-theme';
-  const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
+  const testExtId = 'opensumi.ide-dark-theme';
+  const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
   beforeAll(async (done) => {
@@ -167,7 +167,7 @@ describe('Extension Serivce', () => {
       const mockExtClientId = 'mock_id' + Math.random();
 
       const listenPath = extensionService.getElectronMainThreadListenPath2(mockExtClientId);
-      expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+      expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'sumi-ipc'));
     });
   });
 
@@ -180,7 +180,7 @@ describe('Extension Serivce', () => {
       if (port) {
         expect(typeof port).toBe('number');
       } else {
-        expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+        expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'sumi-ipc'));
       }
     });
   });

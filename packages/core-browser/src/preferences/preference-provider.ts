@@ -288,7 +288,6 @@ export abstract class PreferenceProvider implements IDisposable {
   public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} } | undefined;
 
   public async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
-    // ref: https://code.alipay.com/kaitian/ide-framework/pull_requests/108?tab=comment
     // 对于我们 workbench.colorTheme -> general.theme 这种托管，
     // 修改 workbench.colorTheme 为 'themeA' 的时候，get('general.theme')，会首先查看 workbench.colorTheme，
     // 如果有值，则采用 workbench.colorTheme， 而不管配置文件中是否 general.theme 有值，

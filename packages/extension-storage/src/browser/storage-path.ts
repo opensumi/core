@@ -15,7 +15,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   private cachedStoragePath: URI | undefined;
   // 获取最后一次生成的工作区存储路径，初始化前返回对应的Promise
   private deferredWorkspaceStoragePath: Deferred<string | undefined>;
-  // 获取顶级存储路径， 默认为 ~/.kaitian, 初始化前返回对应的Promise
+  // 获取顶级存储路径， 默认为 ~/.sumi, 初始化前返回对应的Promise
   private deferredStoragePath: Deferred<string | undefined>;
   // 当初始化完成时为true
   private storagePathInitialized: boolean;
@@ -93,7 +93,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   }
 
   /**
-   * 获取最后使用的顶级存储路径，默认为 ~/.kaitian
+   * 获取最后使用的顶级存储路径，默认为 ~/.sumi
    */
   async getLastStoragePath(): Promise<string | undefined> {
     return this.deferredStoragePath.promise;
@@ -116,7 +116,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     if (untitledWorkspace.toString() === workspace.uri) {
       // 当workspace为临时工作区时
       // 为每个workspace root创建一个临时存储路径
-      // 服务.code-workspace, 及.kaitian-workspace这种多工作区模式
+      // 服务.code-workspace, 及.sumi-workspace这种多工作区模式
       const rootsStr = roots.map((root) => root.uri).sort().join(',');
       return crypto.createHash('md5').update(rootsStr).digest('hex');
     } else {

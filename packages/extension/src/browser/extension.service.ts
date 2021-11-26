@@ -174,7 +174,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       Array.from(this.extensionScanDir),
       Array.from(this.extensionCandidatePath),
     );
-    this.logger.verbose('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
+    this.logger.verbose('ExtensionMetaDataArr', this.extensionMetaDataArr);
   }
 
   /**
