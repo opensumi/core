@@ -1,11 +1,16 @@
-import React from 'react';
-import { Injectable } from '@opensumi/di';
+import React, { RefObject, useEffect, useRef } from 'react';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@opensumi/ide-components';
 import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
+import marked from 'marked';
+import { IOpenerService } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
+
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
 
   // 上一个展示的文案
   private preMessage: string | React.ReactNode;
@@ -44,7 +49,8 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     }
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
-    const promise = open<T>(message, type, closable, key, buttons, description);
+
+    const promise = open<T>(toMarkdown(message, this.openerService), type, closable, key, buttons, description);
     return promise || Promise.resolve(undefined);
   }
 
@@ -52,3 +58,59 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     notification.destroy();
   }
 }
+
+const DATA_SET_COMMAND = 'data-command';
+
+const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) => {
+
+  const ref = useRef<HTMLDivElement | undefined>();
+  const { html, opener } = props;
+
+  useEffect(() => {
+    if (ref && ref.current) {
+      const findAllTag = html.querySelectorAll(`a[${DATA_SET_COMMAND}]`);
+      findAllTag.forEach((tag) => {
+        tag.addEventListener('click', listenClick);
+      });
+      ref.current.appendChild(html);
+    }
+    return () => {
+      ref.current?.removeChild(html);
+    };
+  }, []);
+
+  /**
+   * 拦截 a 标签的点击事件，触发 commands
+   */
+  const listenClick = (event: PointerEvent) => {
+    const target = event.target as HTMLElement;
+    const dataCommand = target.getAttribute(DATA_SET_COMMAND);
+    if (dataCommand && opener) {
+      opener.open(dataCommand);
+    }
+  };
+
+  return (
+    <div ref={ref as unknown as RefObject<HTMLDivElement>}></div>
+  );
+};
+
+const toMarkdown = (message: string | React.ReactNode, opener: IOpenerService) => {
+  const renderer = new marked.Renderer();
+
+  renderer.link = ( href, title, text ) => {
+    return `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
+  };
+
+  return typeof message !== 'string' ? message : <RenderWrapper opener={opener} html={new DOMParser().parseFromString(marked(message, {
+    gfm: true,
+    tables: true,
+    breaks: false,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false,
+    renderer,
+  }), 'text/xml').documentElement}></RenderWrapper>;
+
+};
