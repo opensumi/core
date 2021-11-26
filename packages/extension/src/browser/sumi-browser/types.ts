@@ -25,6 +25,9 @@ export interface ISumiBrowserContributions {
   editor?: {
     view: IEditorViewContribution[];
   };
+  editorSide?: {
+    view: IEditorSideViewContribution[];
+  };
   toolBar?: {
     position?: ToolBarPosition // @deprecated
     view: IToolBarViewContribution[];
@@ -171,6 +174,24 @@ export interface IEditorViewContribution {
    * 如果需要更复杂的图标Resolve，需要在 sumi node进程中注册ResourceProvider
    */
   tabIconPath?: string;
+}
+
+export interface IEditorSideViewContribution {
+  /**
+   * id
+   */
+  id: string;
+
+  /**
+  * editor组件主体
+  */
+  component: React.FC;
+
+  /**
+   * view 放置的位置，目前只支持 bottom
+   */
+  side: 'bottom';
+  when?: string;
 }
 
 export interface IRunTimeParams {

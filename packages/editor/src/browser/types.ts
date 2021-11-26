@@ -54,6 +54,10 @@ export interface IEditorSideWidget<MetaData = any> {
    */
   displaysOnResource: (resource: IResource<any>) => boolean;
 
+  /**
+   * editorSide view 组件传入的props
+   */
+  initialProps?: unknown;
 }
 
 export enum EditorComponentRenderMode {
@@ -289,6 +293,8 @@ export interface IEditorGroupIndexChangeEventPayload {
 }
 
 export class EditorGroupsResetSizeEvent extends BasicEvent<void> {}
+
+export class RegisterEditorSideComponentEvent extends BasicEvent<void> {}
 
 export interface IEditorDecorationProvider {
 

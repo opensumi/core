@@ -31,7 +31,7 @@ export interface KtViewItem {
 
 export type KtViewsSchema = Array<KtViewsContribution>;
 
-const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar'];
+const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar', 'editorSide'];
 
 @Injectable()
 @Contributes('browserViews')

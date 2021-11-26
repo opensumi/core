@@ -85,6 +85,7 @@ dist
 lib
 
 .vscode/*
+.idea/*
 .sumi/*
 !.vscode/launch.json
 package-lock.json
