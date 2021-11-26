@@ -1,4 +1,4 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations, DEFAULT_THEME_ID, colorIdPattern } from '../common/theme.service';
 import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@opensumi/ide-core-common';
 import { Autowired, Injectable } from '@opensumi/di';
 import { getColorRegistry } from '../common/color-registry';
@@ -8,10 +8,6 @@ import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
 import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@opensumi/ide-core-browser';
 import { ICSSStyleService } from '../common';
-
-const DEFAULT_THEME_ID = 'ide-dark';
-// from vscode
-const colorIdPattern = '^\\w+[.\\w+]*$';
 
 export const CUSTOM_WORKBENCH_COLORS_SETTING = 'workbench.colorCustomizations';
 export const CUSTOM_EDITOR_COLORS_SETTING = 'editor.tokenColorCustomizations';

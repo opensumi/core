@@ -1,8 +1,9 @@
 import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode, ClientAppContribution } from '@opensumi/ide-core-browser';
-import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme } from '../common';
+import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme, DEFAULT_THEME_ID } from '../common';
 import { Autowired } from '@opensumi/di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
+import { COLOR_THEME_SETTING } from './workbench.theme.service';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -38,6 +39,11 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
+
+    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
+    if (!themeId || themeId === DEFAULT_THEME_ID) {
+      this.themeService.applyTheme(DEFAULT_THEME_ID);
+    }
   }
 
   private registerDefaultTokenModifier() {
