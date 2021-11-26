@@ -42,7 +42,7 @@ export class FileDropService extends WithEventBus implements IFileDropFrontendSe
       return;
     }
 
-    const entryId = 'kaitian-upload-file-status';
+    const entryId = 'sumi-upload-file-status';
     const message = formatLocalize('workbench.uploadingFiles', this.pending.size, speed || '0 MB');
     const entry = {
       text: message,

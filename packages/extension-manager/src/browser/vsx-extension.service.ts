@@ -38,7 +38,7 @@ export class VSXExtensionService implements IVSXExtensionService {
       return;
     }
 
-    const entryId = 'kaitian-upload-file-status';
+    const entryId = 'sumi-upload-file-status';
     if (this.tasks.size === 1) {
       const message = localize('marketplace.extension.installing');
       const entry = {
