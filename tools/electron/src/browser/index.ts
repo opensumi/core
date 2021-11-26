@@ -44,7 +44,7 @@ import { MarkdownModule } from '@opensumi/ide-markdown';
 
 import { LogModule } from '@opensumi/ide-logs/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
-import { KaitianExtensionModule } from '@opensumi/ide-extension/lib/browser';
+import { ExtensionModule } from '@opensumi/ide-extension/lib/browser';
 import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { VariableModule } from '@opensumi/ide-variable/lib/browser';
@@ -99,7 +99,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   TerminalNextModule,
 
   // Extension Modules
-  KaitianExtensionModule,
+  ExtensionModule,
   // FeatureExtensionModule,
   OpenVsxExtensionManagerModule,
   MonacoEnhanceModule,
