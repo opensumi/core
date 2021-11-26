@@ -5,6 +5,10 @@ import { IRawThemeSetting } from 'vscode-textmate';
 
 export const ThemeServicePath = 'themeServicePath';
 
+export const DEFAULT_THEME_ID = 'ide-dark';
+// from vscode
+export const colorIdPattern = '^\\w+[.\\w+]*$';
+
 export interface IIconTheme {
   hasFileIcons: boolean;
   hasFolderIcons: boolean;
