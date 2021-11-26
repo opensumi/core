@@ -602,8 +602,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (!isDone) {
         return;
       }
-      // FIXME: model 为打开的情况下会保存，但是此时可能并没有同步到远端，导致此时刷新扔可能保留上次的结果
-      // 目前行为依赖 workspaceEditService，不太好修
       this.search();
     });
   }
@@ -779,13 +777,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
       // 只搜索file协议内容
       if (docModel.uri.scheme !== Schemas.file) {
-        return;
-      }
-
-      // 非激活态的忽略
-      if (!resources.some((res) => {
-        return res.uri.toString() === uriString;
-      })) {
         return;
       }
 
