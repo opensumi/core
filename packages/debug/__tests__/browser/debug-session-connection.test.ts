@@ -98,7 +98,7 @@ describe('DebugSessionConnection', () => {
   });
 
   it('send initialize command', async () => {
-    await debugSessionConnection.sendRequest('initialize', { clientID: 'kaitian', adapterID: 'node'}, {
+    await debugSessionConnection.sendRequest('initialize', { clientID: 'sumi', adapterID: 'node'}, {
       type: 'node',
       name: 'test',
       request: 'node-debug',

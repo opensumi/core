@@ -46,7 +46,7 @@ describe(`test ${__filename} on Electron env`, () => {
   });
 
   it('openNewWindow method should be work', () => {
-    windowService.openNewWindow('http://kaitian.com');
+    windowService.openNewWindow('http://opensumi.com');
     expect(mockElectronMainUIService.openExternal).toBeCalled();
   });
 
@@ -106,7 +106,7 @@ describe(`test ${__filename}`, () => {
   });
 
   it('openNewWindow method should be work', () => {
-    windowService.openNewWindow('http://kaitian.com', { external: true });
+    windowService.openNewWindow('http://opensumi.com', { external: true });
     expect(mockExternalUriService.resolveExternalUri).toBeCalled();
   });
 

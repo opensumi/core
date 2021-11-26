@@ -7,13 +7,13 @@ export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   /**
    * APP的名称
-   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `KAITIAN`
+   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OPENSUMI`
    */
   appName?: string;
   /**
    * 默认内部的 uriScheme，用于桌面版 app 的唤起
    * 同时也默认为 vscode.env.uriScheme 的值
-   * 默认值为 `ClientApp.DEFAULT_URI_SCHEME` 即 `kaitian`
+   * 默认值为 `ClientApp.DEFAULT_URI_SCHEME` 即 `sumi`
    */
   uriScheme?: string;
   /**
@@ -26,28 +26,28 @@ export interface AppConfig {
   extensionDir?: string;
   /**
    * 设置全局存储的文件夹名称
-   * 默认值为 .kaitian
+   * 默认值为 .sumi
    */
   storageDirName?: string;
   /**
    * 设置工作区配置文件的文件夹名称
-   * 默认值为 .kaitian
+   * 默认值为 .sumi
    */
   preferenceDirName?: string;
   /**
    * 更精细的项目工作区配置存储位置
-   * 即当 preferenceDirName = '.kaitian' ， workspacePreferenceDirName = '.o2'时，
-   * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {workspaceDir}/.o2/settings.json
+   * 即当 preferenceDirName = '.sumi' ， workspacePreferenceDirName = '.o2'时，
+   * 对应全局配置为 ~/.sumi/settings.json , 工作区配置为 {workspaceDir}/.o2/settings.json
    */
   workspacePreferenceDirName?: string;
   /**
    * 更精细的项目用户配置存储位置
-   * 即当 preferenceDirName = '.kaitian' ， userPreferenceDirName = '.o2'时，
-   * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {userDir}/.o2/settings.json
+   * 即当 preferenceDirName = '.sumi' ， userPreferenceDirName = '.o2'时，
+   * 对应全局配置为 ~/.sumi/settings.json , 工作区配置为 {userDir}/.o2/settings.json
    */
   userPreferenceDirName?: string;
   /**
-   * 全局插件数据存储目录名称，默认 .kaitian
+   * 全局插件数据存储目录名称，默认 .sumi
    */
   extensionStorageDirName?: string;
   /**
@@ -64,12 +64,12 @@ export interface AppConfig {
   wsPath: string;
   /**
    * 定义 IDE 各个布局区块默认加载的模块，可针对性对模块进行增删改
-   * 默认值可参考：https://code.alipay.com/kaitian/ide-framework/blob/develop/packages/main-layout/lib/browser/default-config.tsx
+   * 默认值可参考：https://github.com/opensumi/core/tree/main/packages/main-layout/lib/browser/default-config.tsx
    */
   layoutConfig: LayoutConfig;
   /**
    * 定义 IDE 的整体布局，可以通过传入自定义布局的方式定义各个区块的默认大小及缩放选项等
-   * 默认值可参考：https://code.alipay.com/kaitian/ide-framework/blob/develop/packages/startup/entry/web-lite/modules/view/custom-layout-component.tsx
+   * 默认值可参考：https://github.com/opensumi/core/tree/main/packages/startup/entry/web-lite/modules/view/custom-layout-component.tsx
    */
   layoutComponent?: React.FC;
   /**

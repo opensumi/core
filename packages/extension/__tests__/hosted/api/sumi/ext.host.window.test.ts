@@ -104,7 +104,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.window.test.ts',
     });
 
     it ('loadUrl method should be work', () => {
-      window.loadUrl('http://kaitian.com');
+      window.loadUrl('http://opensumi.com');
       expect(mockMainThreadIDEWindowProxy.$loadURL).toBeCalledTimes(1);
     });
 

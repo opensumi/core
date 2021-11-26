@@ -6,7 +6,7 @@ import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
-export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
+export const DEFAULT_USER_STORAGE_FOLDER = '.sumi';
 
 @Injectable()
 export class UserStorageServiceImpl implements IUserStorageService {
@@ -14,7 +14,7 @@ export class UserStorageServiceImpl implements IUserStorageService {
   onDidChangeCapabilities = Event.None;
   /**
    * 基于用户存储路径创建文件路径
-   * @param userStorageFolderUri 存储目录路径，如 file://home/user/
+   * @param userStorageFolderUri 存储目录路径，如 file://{home}/
    * @param fsPath 文件系统路径
    */
   public static toUserStorageUri(userStorageFolderUri: URI, rawUri: URI): URI {
@@ -24,9 +24,9 @@ export class UserStorageServiceImpl implements IUserStorageService {
 
   /**
    * 返回相对存储路径
-   * 如传入 'file://home/user/.kaitian', 'file://home/user.kaitian/settings.json',
+   * 如传入 'file://{path_to_userhome}/.sumi', 'file://{path_to_userhome}/.sumi/settings.json',
    * 则返回 'settings.json'
-   * @param userStorageFolderUri 存储目录路径，如 file://home/user/
+   * @param userStorageFolderUri 存储目录路径，如 file://{path_to_userhome}/
    * @param fileUri 文件路径
    */
   private static getRelativeUserStoragePath(userStorageFolderUri: URI, fileUri: URI): string {
@@ -36,8 +36,8 @@ export class UserStorageServiceImpl implements IUserStorageService {
 
   /**
    * 返回用户路径下的文件绝对路径
-   * @param userStorageFolderUri 存储目录路径，如 file://home/user/.kaitian
-   * @param userStorageUri 存储文件路径，如 file://home/user/.kaitian/settings.json
+   * @param userStorageFolderUri 存储目录路径，如 file://{home}/.sumi
+   * @param userStorageUri 存储文件路径，如 file://{home}/.sumi/settings.json
    */
   public static toFilesystemURI(userStorageFolderUri: URI, userStorageUri: URI): URI {
     return userStorageFolderUri.withPath(userStorageFolderUri.path.join(userStorageUri.path.toString()));

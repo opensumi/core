@@ -69,7 +69,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][1]).toBe('test.kaitian-extension.test');
+      expect($setMessage.mock.calls[0][1]).toBe('test.sumi-extension.test');
       done();
     }, 100);
   });

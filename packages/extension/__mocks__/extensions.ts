@@ -5,12 +5,12 @@ import { IExtensionDescription, ExtensionIdentifier } from '../src/common/vscode
 
 // 临时绕过
 export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
-  name: 'kaitian-extension',
-  id: 'test.kaitian-extension',
+  name: 'sumi-extension',
+  id: 'test.sumi-extension',
   activated: false,
   enabled: true,
   path: path.join(__dirname, 'extension'),
-  realPath: '/home/.kaitian/extensions/test.kaitian-extension-1.0.0',
+  realPath: '/home/.sumi/extensions/test.sumi-extension-1.0.0',
   uri: Uri.file(path.join(__dirname, 'extension')).toJSON() as Uri,
   extensionId: 'uuid-for-test-extension',
   extensionLocation: Uri.file(path.join(__dirname, 'extension')),

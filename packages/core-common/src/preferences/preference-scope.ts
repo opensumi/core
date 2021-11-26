@@ -48,4 +48,4 @@ export namespace PreferenceScope {
   }
 }
 
-export const DEFAULT_WORKSPACE_STORAGE_DIR_NAME = '.kaitian';
+export const DEFAULT_WORKSPACE_STORAGE_DIR_NAME = '.sumi';

@@ -18,4 +18,4 @@ export interface IExtensionStoragePathServer {
 }
 
 // 可配置，通过AppConfig传入extensionStorageDirName替换
-export const DEFAULT_EXTENSION_STORAGE_DIR_NAME = '.kaitian';
+export const DEFAULT_EXTENSION_STORAGE_DIR_NAME = '.sumi';

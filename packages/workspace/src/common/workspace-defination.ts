@@ -3,8 +3,8 @@ import { FileStat } from '@opensumi/ide-file-service';
 import Ajv from 'ajv';
 import { StorageService } from '@opensumi/ide-core-browser/lib/services';
 
-export const KAITIAN_MULTI_WORKSPACE_EXT = 'kaitian-workspace';
-export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
+export const KAITIAN_MULTI_WORKSPACE_EXT = 'sumi-workspace';
+export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.sumi';
 export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export const UNTITLED_WORKSPACE = 'Untitled';
 
@@ -70,7 +70,7 @@ export namespace WorkspaceData {
   }
 
   /**
-   * 存储时需要将{workspace}.kaitian-workspace内容存储为相对路径存储
+   * 存储时需要将 {workspace}.sumi-workspace 内容存储为相对路径存储
    * 1. 如果可用相对路径表示，则存储为:
    * {
    *  "folders": [
@@ -120,7 +120,7 @@ export namespace WorkspaceData {
   }
 
   /**
-   * 将{workspace}.kaitian-workspace中存储的相对路径转换为绝对路径
+   * 将 {workspace}.sumi-workspace 中存储的相对路径转换为绝对路径
    *
    * @export
    * @param {WorkspaceData} data

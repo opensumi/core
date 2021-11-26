@@ -35,7 +35,7 @@ describe('Debug Configuration Manager', () => {
     setPosition: jest.fn(),
     getValue: () => {
       return JSON.stringify({
-        configUri: root.resolve('.kaitian/launch.json'),
+        configUri: root.resolve('.sumi/launch.json'),
         value: {
           version: '0.2.0',
           configurations: [
@@ -66,7 +66,7 @@ describe('Debug Configuration Manager', () => {
   const mockPreferenceService = {
     onPreferenceChanged: jest.fn(() => Disposable.create(() => {})),
     resolve: jest.fn(() => ({
-      configUri: root.resolve('.kaitian/launch.json'),
+      configUri: root.resolve('.sumi/launch.json'),
       value: {
         version: '0.2.0',
         configurations: [

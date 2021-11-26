@@ -707,11 +707,11 @@ export const localizationBundle = {
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Click to refresh to resume this process.',
-    'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
-    'kaitianExtension.exthostRestarting.content': 'Ext-host process is restarting',
+    'extension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Click to refresh to resume this process.',
+    'extension.invalidExthostReload.confirm.ok': 'Refresh',
+    'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
+    'extension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
+    'extension.exthostRestarting.content': 'Ext-host process is restarting',
 
     'extension.no.view.found': 'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
     'extension.profilingExtensionHost': 'Profiling Extension Host',
