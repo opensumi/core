@@ -97,11 +97,8 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
   }
 
   // 以下三个方法是给插件进程调用的 rpc call
-  /**
-   * FIXME: 这个绝对是写错了... @柳千
-   */
   public async $activateExtension(extensionPath: string): Promise<void> {
-    const extension = this.extensions.find((n) => n.path === extensionPath);
+    const extension = this.extensions.find((n) => n.workerScriptPath === extensionPath);
     if (extension) {
       await extension.activate();
     }
