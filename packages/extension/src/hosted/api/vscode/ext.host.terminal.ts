@@ -353,7 +353,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const terminal = this.terminalsMap.get(terminalId);
 
     if (terminal) {
-      terminal.name = name;
+      terminal.setName(name);
     }
   }
 
@@ -464,7 +464,7 @@ export class Terminal implements vscode.Terminal {
   });
 
   constructor(
-    public name: string = '',
+    private _name: string = '',
     private readonly _creationOptions: vscode.TerminalOptions | vscode.ExtensionTerminalOptions,
     protected proxy: IMainThreadTerminal,
     id?: string,
@@ -472,6 +472,10 @@ export class Terminal implements vscode.Terminal {
     if (!isUndefined(id)) {
       this.created(id);
     }
+  }
+
+  get name() {
+    return this._name;
   }
 
   get exitStatus() {
@@ -540,6 +544,10 @@ export class Terminal implements vscode.Terminal {
 
   public setExitCode(code: number | undefined) {
     this._exitStatus = Object.freeze({ code });
+  }
+
+  public setName(name: string) {
+    this._name = name;
   }
 }
 
