@@ -120,7 +120,7 @@ export const BreakpointItem = ({
   const converBreakpointClsState = () => {
     if (isDebugBreakpoint(data.breakpoint)) {
       if (!verified) {
-        return 'kaitian-debug-breakpoint-unverified';
+        return 'sumi-debug-breakpoint-unverified';
       }
 
       return getBreakpointIcon();

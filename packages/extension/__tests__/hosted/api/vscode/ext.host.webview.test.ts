@@ -110,7 +110,7 @@ describe('vscode extHostWebview Test', () => {
 
 });
 
-describe('kaitian extHostWebview Test', () => {
+describe('sumi extHostWebview Test', () => {
 
   const map = new Map();
   const rpcProtocol = {
@@ -126,7 +126,7 @@ describe('kaitian extHostWebview Test', () => {
 
   const extHostWebview = new ExtHostWebview(rpcProtocol as any);
 
-  it('ext host kaitian webview test', async (done) => {
+  it('ext host sumi webview test', async (done) => {
 
     const handle1 = await extHostWebview.getWebviewHandle('existingWebview');
     expect(mainService.$connectPlainWebview).toBeCalledWith('existingWebview');

@@ -319,7 +319,7 @@
         "common"
       ]
     },
-    "@opensumi/kaitian": {
+    "@opensumi/sumi": {
       "version": "2.12.0",
       "entry": []
     },
@@ -404,7 +404,7 @@
     "@opensumi/ide-terminal-next": "2.12.0",
     "@opensumi/ide-theme": "2.12.0",
     "@opensumi/ide-toolbar": "2.12.0",
-    "@opensumi/kaitian": "2.12.0",
+    "@opensumi/sumi": "2.12.0",
     "@opensumi/ide-userstorage": "2.12.0",
     "@opensumi/ide-variable": "2.12.0",
     "@opensumi/ide-webview": "2.12.0",

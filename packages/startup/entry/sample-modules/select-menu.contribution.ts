@@ -68,7 +68,7 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
     /* ---- test for submenu ---- */
     const testSubContextMenuId = 'test/sub_context_menu_id';
     menuRegistry.registerMenuItem(MenuId.SCMResourceContext, {
-      label: 'kaitian submenu',
+      label: 'sumi submenu',
       submenu: testSubContextMenuId,
     });
 
@@ -78,7 +78,7 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
     }]);
 
     menuRegistry.registerMenuItem(testSubContextMenuId, {
-      label: 'kaitian sub_submenu',
+      label: 'sumi sub_submenu',
       submenu: 'sub_submenu',
     });
 

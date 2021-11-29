@@ -1,1 +1,1 @@
-export const firstSessionDateStorageKey = 'kaitian.env.firstSessionDate';
+export const firstSessionDateStorageKey = 'sumi.env.firstSessionDate';

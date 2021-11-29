@@ -41,7 +41,7 @@
     "button.foreground": "#ffffff",
     "button.hoverBackground": "#2288E6",
 
-    // kaitian custom button
+    // custom button
     "kt.secondary.button.foreground": "#ffffffd9",
     "kt.secondary.button.border": "#626A73",
     "kt.secondary.button.hoverForeground": "#0063BF",

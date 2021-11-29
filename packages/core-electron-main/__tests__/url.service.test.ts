@@ -16,7 +16,7 @@ describe('electron main url handler tests', () => {
 
     electronURLService.registerHandler({
       async handleURL(url: string) {
-        if (url.startsWith('kaitian:')) {
+        if (url.startsWith('sumi:')) {
           return true;
         }
         return false;
@@ -31,9 +31,9 @@ describe('electron main url handler tests', () => {
 
     expect(electronURLService.getHandlers().length).toBe(2);
 
-    expect(electronURLService.open('kaitian://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
+    expect(electronURLService.open('sumi://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
 
-    expect(electronURLService.open('kaitain-dev://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
+    expect(electronURLService.open('sumi-dev://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
 
     done();
   });

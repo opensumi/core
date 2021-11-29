@@ -35,8 +35,8 @@ const emitter = new Emitter();
 const mockMainthreadCommand = {
   $executeCommand(id, ...args) {
     switch (id) {
-      case 'kaitian-extension.toolbar.btn.setState':
-      case 'kaitian-extension.toolbar.select.setState':
+      case 'sumi-extension.toolbar.btn.setState':
+      case 'sumi-extension.toolbar.select.setState':
         const [actionId, state] = args;
         emitter.fire({
           id,
@@ -76,11 +76,11 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     /** tslint:disabled */
     let eventName;
      // @ts-ignore
-    if (e.id === 'kaitian-extension.toolbar.select.setState') {
-      eventName = 'kaitian-extension.toolbar.select.stateChange';
+    if (e.id === 'sumi-extension.toolbar.select.setState') {
+      eventName = 'sumi-extension.toolbar.select.stateChange';
      // @ts-ignore
-    } else if (e.id === 'kaitian-extension.toolbar.btn.setState') {
-      eventName = 'kaitian-extension.toolbar.btn.stateChange';
+    } else if (e.id === 'sumi-extension.toolbar.btn.setState') {
+      eventName = 'sumi-extension.toolbar.btn.stateChange';
     }
     // @ts-ignore
     extHostCommon.$acceptEvent(eventName, [e.actionId, e.state]);

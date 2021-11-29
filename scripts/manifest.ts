@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import { join } from 'path';
 import * as _ from 'lodash';
 import * as fs from 'fs';

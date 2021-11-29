@@ -10,7 +10,7 @@ export * from './utils';
 
 /**
  * @param options.namespace --表示实际落盘的文件名，因为没有Manager控制同名问题，在调用时请保证名字的特殊性避免重名
- * @param options.logDir --存放日志的目录（无需精确到当天日志目录）比如：~/.kaitian/logs/
+ * @param options.logDir --存放日志的目录（无需精确到当天日志目录）比如：~/.sumi/logs/
  */
 export class SimpleLogService extends BaseLogService implements IBaseLogService {
   constructor(options: BaseLogServiceOptions) {

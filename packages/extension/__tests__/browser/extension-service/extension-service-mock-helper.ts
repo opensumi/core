@@ -60,8 +60,8 @@ class MockLoggerManagerClient {
 }
 
 const mockExtensionProps: IExtensionProps = {
-  name: 'kaitian-extension',
-  id: 'test.kaitian-extension',
+  name: 'sumi-extension',
+  id: 'test.sumi-extension',
   activated: false,
   enabled: true,
   path: path.join(__dirname, '../../__mocks__/extension'),
@@ -73,7 +73,7 @@ const mockExtensionProps: IExtensionProps = {
   isBuiltin: false,
   isDevelopment: false,
   packageJSON: {
-    name: 'kaitian-extension',
+    name: 'sumi-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
     kaitianContributes: {
       viewsProxies: [

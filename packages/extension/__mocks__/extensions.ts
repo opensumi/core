@@ -18,7 +18,7 @@ export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
   enableProposedApi: true,
   isBuiltin: false,
   packageJSON: {
-    name: 'kaitian-extension',
+    name: 'sumi-extension',
     main: './index.js',
     version: '0.0.1',
   },
@@ -41,13 +41,13 @@ export const mockExtensionProps2: IExtensionProps = {
   ...mockExtensionProps,
   extendConfig: {},
   path: path.join(__dirname, 'extension-error'),
-  name: 'kaitian-extension-error',
-  id: 'test.kaitian-extension-error',
+  name: 'sumi-extension-error',
+  id: 'test.sumi-extension-error',
   extensionId: 'uuid-for-test-extension-2',
   extensionLocation: Uri.file(path.join(__dirname, 'extension-error')),
   workerScriptPath: 'http://some-host/__mocks__/extension-error/worker.error.js',
   packageJSON: {
-    name: 'kaitian-extension-error',
+    name: 'sumi-extension-error',
     main: './index.js',
     version: '0.0.1',
     kaitianContributes: {

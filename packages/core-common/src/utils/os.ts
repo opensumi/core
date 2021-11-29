@@ -90,7 +90,7 @@ export function isDevelopment() {
 }
 
 /**
- * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
+ * 在 Electron 中，会将 opensumi 中的 extension-host 使用 webpack 打成一个，所以需要其他方法来获取原始的 require
  */
 declare var __webpack_require__: any;
 declare var __non_webpack_require__: any;

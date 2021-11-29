@@ -8,8 +8,8 @@ import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
-const ktDir = path.join(os.homedir(), `.kaitian-test`);
-const logDir = path.join(ktDir, `logs_1`);
+const testDir = path.join(os.homedir(), `.sumi-test`);
+const logDir = path.join(testDir, `logs_1`);
 const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
 
 function doAllLog(logger: ILogService) {
@@ -33,7 +33,7 @@ describe('LogService', () => {
 
   afterAll(() => {
     loggerManager.cleanAllLogs();
-    fs.rmdirSync(ktDir);
+    fs.rmdirSync(testDir);
   });
 
   test('Test level with default Info', async () => {

@@ -36,7 +36,7 @@ export class KaitianExtensionToolbarService {
 
   constructor() {
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.btn.setState',
+      id: 'sumi-extension.toolbar.btn.setState',
     }, {
       execute: (id: string, state: string, title?: string) => {
         if (this.btnDelegates.has(id)) {
@@ -46,7 +46,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.btn.setContext',
+      id: 'sumi-extension.toolbar.btn.setContext',
     }, {
       execute: (id: string, context: string) => {
         if (this.btnDelegates.has(id)) {
@@ -59,7 +59,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.btn.connectHandle',
+      id: 'sumi-extension.toolbar.btn.connectHandle',
     }, {
       execute: (id: string) => {
         if (!this.connected.has(id)) {
@@ -70,7 +70,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.select.setState',
+      id: 'sumi-extension.toolbar.select.setState',
     }, {
       execute: (id: string, state: string) => {
         if (this.selectDelegates.has(id)) {
@@ -80,7 +80,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.select.setOptions',
+      id: 'sumi-extension.toolbar.select.setOptions',
     }, {
       execute: (id: string, extensionBasePath: string, options: any) => {
         if (this.selectDelegates.has(id)) {
@@ -95,7 +95,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.select.setSelect',
+      id: 'sumi-extension.toolbar.select.setSelect',
     }, {
       execute: (id: string, value: any) => {
         if (this.selectDelegates.has(id)) {
@@ -105,7 +105,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.select.connectHandle',
+      id: 'sumi-extension.toolbar.select.connectHandle',
     }, {
       execute: (id: string) => {
         if (!this.connected.has(id)) {
@@ -119,7 +119,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.showPopover',
+      id: 'sumi-extension.toolbar.showPopover',
     }, {
       execute: (id: string, style) => {
         if (this.btnDelegates.has(id)) {
@@ -129,7 +129,7 @@ export class KaitianExtensionToolbarService {
     });
 
     this.commandRegistry.registerCommand({
-      id: 'kaitian-extension.toolbar.hidePopover',
+      id: 'sumi-extension.toolbar.hidePopover',
     }, {
       execute: (id: string) => {
         if (this.btnDelegates.has(id)) {
@@ -204,10 +204,10 @@ export class KaitianExtensionToolbarService {
     const delegate = this.btnDelegates.get(id);
     if (delegate) {
       delegate.onClick(() => {
-        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'kaitian-extension.toolbar.btn.click', id);
+        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.btn.click', id);
       });
       delegate.onChangeState((args) => {
-        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'kaitian-extension.toolbar.btn.stateChange', id, args);
+        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.btn.stateChange', id, args);
       });
     }
   }
@@ -259,10 +259,10 @@ export class KaitianExtensionToolbarService {
     const delegate = this.selectDelegates.get(id);
     if (delegate) {
       delegate.onSelect((value) => {
-        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'kaitian-extension.toolbar.select.onSelect', id, value);
+        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.select.onSelect', id, value);
       });
       delegate.onChangeState((args) => {
-        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'kaitian-extension.toolbar.select.stateChange', id, args);
+        return this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.select.stateChange', id, args);
       });
     }
   }
