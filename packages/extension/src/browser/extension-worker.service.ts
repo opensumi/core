@@ -71,7 +71,7 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
       // 激活 workerMain 相关部分
       (packageJSON.kaitianContributes && extension.contributes?.workerMain) ||
       // 激活 packageJSON.browser 相关部分
-      isWebExtension
+      (isWebExtension && packageJSON.browser)
     ) {
       await this.doActivateExtension(extension);
     }
