@@ -97,17 +97,20 @@ export const BreakpointItem = ({
   };
 
   React.useEffect(() => {
-    manager.onDidChangeActiveDebugSession(() => {
+    const exec = () => {
       if (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint)) {
         const status = getStatus(data.breakpoint);
         setStatus(status);
       }
-    });
+    };
 
-    if (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint)) {
-      const status = getStatus(data.breakpoint);
-      setStatus(status);
-    }
+    const disposable = manager.onDidChangeActiveDebugSession(() => exec());
+    exec();
+
+    return () => {
+      setStatus(undefined);
+      disposable.dispose();
+    };
   }, []);
 
   const verified = !isDebugMode ? true : (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint));
@@ -158,4 +161,3 @@ export const BreakpointItem = ({
     }
   </div>;
 };
-// e7fd

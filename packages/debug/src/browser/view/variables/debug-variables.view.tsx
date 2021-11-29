@@ -24,11 +24,14 @@ export const DebugVariableView = observer(({
   const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);
 
   React.useEffect(() => {
-    debugVariablesModelService.onDidUpdateTreeModel(async (nextModel: TreeModel) => {
+    const disposable = debugVariablesModelService.onDidUpdateTreeModel(async (nextModel: TreeModel) => {
       setModel(nextModel);
     });
+
     return () => {
+      disposable.dispose();
       debugVariablesModelService.removeNodeDecoration();
+      setModel(undefined);
     };
   }, []);
 
