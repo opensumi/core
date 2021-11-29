@@ -3,7 +3,7 @@ import clsx from 'classnames';
 import styles from './styles.module.less';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { Badge, Icon } from '@opensumi/ide-components';
-import { ComponentRegistryInfo, useInjectable, KeybindingRegistry } from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, KeybindingRegistry, usePreference } from '@opensumi/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -39,11 +39,19 @@ export const TabbarViewBase: React.FC<{
 }> = observer(({ TabView, MoreTabView, forbidCollapse, barSize = 48, panelBorderSize = 0, tabClassName, className, margin, tabSize }) => {
   const { side, direction, fullSize } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
   React.useEffect(() => {
     // 内部只关注总的宽度
     tabbarService.barSize = barSize + panelBorderSize;
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
+
+  const disableTabBar = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
+
+  if (disableTabBar && !currentContainerId) {
+    tabbarService.resizeHandle?.setSize(0);
+  }
+
   const [visibleContainers, hideContainers] = splitVisibleTabs(tabbarService.visibleContainers.filter((container) => !container.options?.hideTab), tabSize, fullSize - (margin || 0));
   hideContainers.forEach((componentInfo) => {
     tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
@@ -208,6 +216,7 @@ export const BottomTabbarRenderer: React.FC = () => {
 export const NextBottomTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
   return (
     <div onContextMenu={tabbarService.handleContextMenu} className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
       <TabbarViewBase

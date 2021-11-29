@@ -758,6 +758,7 @@ export const localizationBundle = {
     'workbench.uploadingFiles': '{0} 个文件上传中 {1}/s',
     'workspace.development.title': '插件开发宿主模式',
     'workbench.testViewContainer': '测试',
+    'workbench.hideSlotTabBarWhenHidePanel': '隐藏底部面板时一同隐藏底部标签栏',
 
     'variable.list.all': '所有已注册的变量',
     'variable.registered.variables': '已注册变量',

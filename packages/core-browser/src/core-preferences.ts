@@ -116,7 +116,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%workbench.quickOpen.preserveInput%',
     },
-
+    'workbench.hideSlotTabBarWhenHidePanel': {
+      type: 'boolean',
+      default: false,
+      description: '%workbench.hideSlotTabBarWhenHidePanel%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EXPLORER_DEFAULTS.confirmDelete,
