@@ -106,14 +106,14 @@ export function useContextMenus(
 export function usePreference<T>(key: string, defaultValue: T) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const [value, setValue] = useState<T>(
-    preferenceService.get<T>(key, defaultValue) ?? defaultValue
+    preferenceService.get<T>(key, defaultValue) ?? defaultValue,
   );
 
   useEffect(() => {
     const disposer = new Disposable(
       preferenceService.onSpecificPreferenceChange(key, (change) => {
         setValue(change.newValue);
-      })
+      }),
     );
     return () => {
       disposer.dispose();
