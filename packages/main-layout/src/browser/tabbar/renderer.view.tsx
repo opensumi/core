@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent, usePreference } from '@opensumi/ide-core-browser';
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer, NextBottomTabPanelRenderer } from './panel.view';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
@@ -77,6 +77,9 @@ export const LeftTabRenderer = ({className, components}: {className: string, com
   <TabRendererBase side='left' direction='left-to-right' className={clsx(className, 'left-slot')} components={components} TabbarView={LeftTabbarRenderer} TabpanelView={LeftTabPanelRenderer} />
 );
 
+/**
+ * @deprecation 已废弃，请使用 NextBottomTabRenderer
+ **/
 export const BottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
   <TabRendererBase side='bottom' direction='top-to-bottom' className={clsx(className, 'bottom-slot')} components={components} TabbarView={BottomTabbarRenderer} TabpanelView={BottomTabPanelRenderer} noAccordion={true} />
 );

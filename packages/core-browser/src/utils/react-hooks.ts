@@ -1,10 +1,11 @@
 import { useState, useEffect, DependencyList } from 'react';
-import { DisposableStore, IDisposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../menu/next/base';
 import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
 import { generateInlineActions } from '../menu/next/menu-util';
 import _debounce from 'lodash.debounce';
+import { PreferenceService, useInjectable } from '..';
 
 export function useDebounce(value, delay) {
   const [denouncedValue, setDenouncedValue] = useState(value);
@@ -100,4 +101,23 @@ export function useContextMenus(
   }, [ menus ]);
 
   return menuConfig;
+}
+
+export function usePreference<T>(key: string, defaultValue: T) {
+  const preferenceService: PreferenceService = useInjectable(PreferenceService);
+  const [value, setValue] = useState<T>(
+    preferenceService.get<T>(key, defaultValue) ?? defaultValue
+  );
+
+  useEffect(() => {
+    const disposer = new Disposable(
+      preferenceService.onSpecificPreferenceChange(key, (change) => {
+        setValue(change.newValue);
+      })
+    );
+    return () => {
+      disposer.dispose();
+    };
+  }, []);
+  return value;
 }

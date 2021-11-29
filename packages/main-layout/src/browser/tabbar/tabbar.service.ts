@@ -52,7 +52,7 @@ export class TabbarService extends WithEventBus {
   protected menuService: AbstractMenuService;
 
   @Autowired(AbstractContextMenuService)
-  private readonly ctxmenuService: AbstractContextMenuService;
+  private readonly ctxMenuService: AbstractContextMenuService;
 
   @Autowired(IMenuRegistry)
   protected menuRegistry: IMenuRegistry;
@@ -550,7 +550,7 @@ export class TabbarService extends WithEventBus {
         order: 2,
       },
     ]);
-    this.commonTitleMenu = this.ctxmenuService.createMenu({
+    this.commonTitleMenu = this.ctxMenuService.createMenu({
       id: 'tabbar/bottom/common',
     });
   }

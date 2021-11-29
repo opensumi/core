@@ -149,7 +149,13 @@ export class SlotRendererRegistry {
 
 export const slotRendererRegistry = new SlotRendererRegistry();
 
-export function SlotRenderer({ slot, isTabbar, ...props }: any) {
+export interface SlotProps {
+  slot: string;
+  isTabbar?: boolean;
+  [key: string]: any;
+}
+
+export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const appConfig = React.useContext(ConfigContext);
   const clientApp = useInjectable<IClientApp>(IClientApp);
