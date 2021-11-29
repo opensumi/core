@@ -49,6 +49,9 @@ export const TabbarViewBase: React.FC<{
   const disableTabBar = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
   if (disableTabBar && !currentContainerId) {
+    // 之所以要用这么偏门的方法，是因为如果让 tabbar 等地方返回 null 的话：
+    //   会导致 split-panel 计算 children 的尺寸不正确、计算 tabbar 按钮长度不完全等等
+    // 这个方法一劳永逸。
     tabbarService.resizeHandle?.setSize(0);
   }
 
