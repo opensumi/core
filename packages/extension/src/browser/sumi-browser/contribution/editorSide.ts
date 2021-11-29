@@ -1,4 +1,4 @@
-import { IRunTimeParams, AbstractKaitianBrowserContributionRunner, IEditorSideViewContribution } from '../types';
+import { IRunTimeParams, AbstractSumiBrowserContributionRunner, IEditorSideViewContribution } from '../types';
 import { IDisposable, Disposable } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -6,7 +6,7 @@ import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 @Injectable({multiple: true})
-export class EditorSideBrowserContributionRunner extends AbstractKaitianBrowserContributionRunner {
+export class EditorSideBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
   @Autowired(EditorComponentRegistry)
   editorComponentRegistry: EditorComponentRegistry;
 
