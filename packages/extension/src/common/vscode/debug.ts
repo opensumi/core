@@ -2,7 +2,7 @@ import { IJSONSchema, IJSONSchemaSnippet, Event } from '@opensumi/ide-core-commo
 import { Breakpoint } from './models';
 import type vscode from 'vscode';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@opensumi/ide-debug';
+import { DebuggerDescription, DebugConfiguration, IDebuggerContribution, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { WorkspaceFolder } from './models';
 
 export type DebugSessionUUID = string;
@@ -39,7 +39,7 @@ export interface IExtHostDebug {
   $getSupportedLanguages(debugType: string): Promise<string[]>;
   $getSchemaAttributes(debugType: string): Promise<IJSONSchema[]>;
   $getConfigurationSnippets(debugType: string): Promise<IJSONSchemaSnippet[]>;
-  $createDebugSession(debugConfiguration: vscode.DebugConfiguration): Promise<string>;
+  $createDebugSession(debugSessionDTO: Exclude<IDebugSessionDTO, 'parentSession'>): Promise<string>;
   $terminateDebugSession(sessionId: string): Promise<void>;
   $getTerminalCreationOptions(debugType: string): Promise<any>;
   $registerDebuggerContributions(extensionFolder: string, contributions: IDebuggerContribution[]);

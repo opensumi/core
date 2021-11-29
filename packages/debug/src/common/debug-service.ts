@@ -1,5 +1,6 @@
 import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError, Event } from '@opensumi/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
+import { IDebugSessionDTO } from './debug-session-options';
 
 export interface DebuggerDescription {
     type: string;
@@ -60,7 +61,7 @@ export interface DebugServer extends IDisposable {
    * @param config 传入配置
    * @returns DebugAdapterSession对应sessionId.
    */
-  createDebugSession(config: DebugConfiguration): Promise<string | void>;
+  createDebugSession(config: IDebugSessionDTO): Promise<string | void>;
 
   /**
    * 终止一个调试进程

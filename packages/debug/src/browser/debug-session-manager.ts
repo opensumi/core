@@ -19,7 +19,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { DebugSession } from './debug-session';
 import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid, localize, COMMON_COMMANDS, CommandService } from '@opensumi/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, IDebugSessionDTO, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IVariableResolverService } from '@opensumi/ide-variable';
@@ -294,7 +294,7 @@ export class DebugSessionManager implements IDebugSessionManager {
         }
         this.debugProgressService.onDebugServiceStateChange(DebugState.Running);
       }
-      const sessionId = await this.debug.createDebugSession(resolved.configuration);
+      const sessionId = await this.debug.createDebugSession(resolved);
       timeStart(resolved.configuration.type, {
         adapterID: resolved.configuration.type,
         request: resolved.configuration.request,
@@ -321,8 +321,8 @@ export class DebugSessionManager implements IDebugSessionManager {
   }
 
   protected configurationIds = new Map<string, number>();
-  async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions | undefined> {
-    if (InternalDebugSessionOptions.is(options)) {
+  async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<IDebugSessionDTO | undefined> {
+    if (IDebugSessionDTO.is(options)) {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl, compact, lifecycleManagedByParent } = options;

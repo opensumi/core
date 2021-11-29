@@ -7,12 +7,13 @@ export interface DebugSessionOptions extends IDebugSessionOptions {
   index: number;
 }
 
-export interface InternalDebugSessionOptions extends DebugSessionOptions {
+export interface IDebugSessionDTO extends DebugSessionOptions {
   id: number;
+  parent?: string;
 }
 
-export namespace InternalDebugSessionOptions {
-  export function is(options: DebugSessionOptions): options is InternalDebugSessionOptions {
+export namespace IDebugSessionDTO {
+  export function is(options: DebugSessionOptions): options is IDebugSessionDTO {
       return ('id' in options);
   }
 }

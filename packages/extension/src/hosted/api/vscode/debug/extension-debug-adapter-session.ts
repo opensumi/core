@@ -22,6 +22,10 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
     this.configuration = debugSession.configuration;
   }
 
+  public get parentSession(): vscode.DebugSession | undefined {
+    return this.debugSession.parentSession;
+  }
+
   async start(channel: IWebSocket): Promise<void> {
     if (this.tracker.onWillStartSession) {
       this.tracker.onWillStartSession();
