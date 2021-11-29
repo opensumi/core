@@ -159,9 +159,13 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
 
   it('RPC methods all should be work', async (done) => {
     const sessionId = await extHostDebug.$createDebugSession({
-      type: 'node',
-      name: 'test',
-      request: '',
+      configuration: {
+        type: 'node',
+        name: 'test',
+        request: '',
+      },
+      id: 1000,
+      index: 1,
     });
     expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
     await extHostDebug.$onSessionCustomEvent(sessionId, 'event');

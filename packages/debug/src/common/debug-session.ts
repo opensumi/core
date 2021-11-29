@@ -1,6 +1,6 @@
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { IDisposable } from '@opensumi/ide-core-browser';
-import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
+import { DebugSessionOptions, IDebugSessionDTO } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
 import { CancellationToken } from '@opensumi/ide-core-common';
 
@@ -26,7 +26,7 @@ export const IDebugSession = Symbol('DebugSession');
 export const IDebugSessionManager = Symbol('DebugSessionManager');
 export interface IDebugSessionManager {
   fireWillStartDebugSession(): Promise<void>;
-  resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions | undefined>;
+  resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<IDebugSessionDTO | undefined>;
   resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null>;
   fireWillResolveDebugConfiguration(debugType: string): Promise<void>;
   report(name: string, msg: string | undefined, extra?: any): void;

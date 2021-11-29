@@ -1,4 +1,4 @@
-import { DebuggerDescription, DebugConfiguration } from '@opensumi/ide-debug';
+import { DebuggerDescription, DebugConfiguration, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-browser';
 import { IExtHostDebug } from '../../../../common/vscode';
 import { IActivationEventService } from '../../../types';
@@ -41,9 +41,14 @@ export class ExtensionDebugAdapterContribution {
     return await this.extDebug.$resolveDebugConfigurationWithSubstitutedVariables(config, workspaceFolderUri);
   }
 
-  async createDebugSession(config: DebugConfiguration): Promise<string> {
-    await this.activationEventService.fireEvent('onDebugAdapterProtocolTracker', config.type);
-    return await this.extDebug.$createDebugSession(config);
+  async createDebugSession(dto: IDebugSessionDTO): Promise<string> {
+    const { configuration } = dto;
+    await this.activationEventService.fireEvent('onDebugAdapterProtocolTracker', configuration.type);
+    return await this.extDebug.$createDebugSession({
+      ...dto,
+      parentSession: undefined,
+      parent: dto.parentSession ? dto.parentSession.id : undefined,
+    });
   }
 
   async terminateDebugSession(sessionId: string): Promise<void> {

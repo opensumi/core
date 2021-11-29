@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { DebugServer, DebuggerDescription, IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -175,10 +175,11 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     return snippets;
   }
 
-  async createDebugSession(config: DebugConfiguration): Promise<string | void> {
-    const contributor = this.contributors.get(config.type);
+  async createDebugSession(dto: IDebugSessionDTO): Promise<string | void> {
+    const { configuration } = dto;
+    const contributor = this.contributors.get(configuration.type);
     if (contributor) {
-      const sessionId = await contributor.createDebugSession(config);
+      const sessionId = await contributor.createDebugSession(dto);
       this.sessionId2contrib.set(sessionId, contributor);
       return sessionId;
     }

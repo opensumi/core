@@ -12,7 +12,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState, DebugEventTypes, DebugExitEvent, DebugRequestTypes } from '../common';
+import { DebugSessionOptions, IDebugSessionDTO, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from '../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -573,7 +573,7 @@ export class DebugSession implements IDebugSession {
   }
 
   get label(): string {
-    if (InternalDebugSessionOptions.is(this.options) && this.options.id) {
+    if (IDebugSessionDTO.is(this.options) && this.options.id) {
       return this.configuration.name + ' (' + (this.options.id + 1) + ')';
     }
     return this.configuration.name;
