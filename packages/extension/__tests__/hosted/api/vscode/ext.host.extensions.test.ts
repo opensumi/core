@@ -12,14 +12,14 @@ import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secret
 const staticServicePath = 'http://localhost:9999';
 
 const mockExtension = {
-  name: 'kaitian-extension',
-  id: 'mock.kaitian-extension',
+  name: 'sumi-extension',
+  id: 'mock.sumi-extension',
   path: path.join(__dirname, '../../../../__mocks__/extension'),
   realPath: path.join(__dirname, '../../../../__mocks__/extension'),
-  extensionId: 'mock.kaitian-extension',
+  extensionId: 'mock.sumi-extension',
   extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../../../../__mocks__/extension')}`).codeUri,
   packageJSON: {
-    name: 'kaitian-extension',
+    name: 'sumi-extension',
     kaitianContributes: {
       workerMain: 'worker.js',
     },

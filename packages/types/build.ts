@@ -1,5 +1,5 @@
 import { readAllMainPackages } from '../../scripts/pkg';
-import { collectPkgContains, collectPkgVersionList } from '../../scripts/kaitian-manifest';
+import { collectPkgContains, collectPkgVersionList } from '../../scripts/manifest';
 import path from 'path';
 import pkg from './package.json';
 import { ensureFileSync, writeFileSync } from 'fs-extra';

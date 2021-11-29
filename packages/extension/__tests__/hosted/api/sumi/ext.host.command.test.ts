@@ -5,7 +5,7 @@ import { MainThreadAPIIdentifier, IMainThreadCommands } from '@opensumi/ide-exte
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
 describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
-  let kaitianCommand;
+  let sumiCommand;
   let extCommand: ExtHostCommands;
   let mainService: IMainThreadCommands;
   const map = new Map();
@@ -31,15 +31,15 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
     });
     rpcProtocol.set(MainThreadAPIIdentifier.MainThreadCommands, mainService);
     extCommand = new ExtHostCommands(rpcProtocol);
-    kaitianCommand = createCommandsApiFactory(extCommand, editorService, extension);
+    sumiCommand = createCommandsApiFactory(extCommand, editorService, extension);
   });
 
-  describe('kaitian api command', () => {
+  describe('sumi api command', () => {
     it('execute a not allow command', async () => {
       const extTest = jest.fn();
       const commandId = 'ext.test';
-      kaitianCommand.registerCommandWithPermit(commandId, extTest, (extension) => extension.isBuiltin);
-      expect(kaitianCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      sumiCommand.registerCommandWithPermit(commandId, extTest, (extension) => extension.isBuiltin);
+      expect(sumiCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
       // 实际命令执行注册一次
       expect(extTest).toBeCalledTimes(0);
     });
@@ -47,8 +47,8 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
     it('execute a allow command', async () => {
       const extTest = jest.fn();
       const commandId = 'ext.test';
-      kaitianCommand.registerCommandWithPermit(commandId, extTest, (extension) => !extension.isBuiltin);
-      await kaitianCommand.executeCommand(commandId);
+      sumiCommand.registerCommandWithPermit(commandId, extTest, (extension) => !extension.isBuiltin);
+      await sumiCommand.executeCommand(commandId);
       // 实际命令执行注册一次
       expect(extTest).toBeCalledTimes(1);
     });

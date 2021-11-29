@@ -51,7 +51,7 @@ export interface BaseLogServiceOptions {
   pid?: number;
   /**
    * 落盘日志的存储文件夹
-   * 例如： ~/.kaitian/logs/20180909/
+   * 例如： ~/.sumi/logs/20180909/
    */
   logDir?: string;
 }

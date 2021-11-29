@@ -18,18 +18,18 @@ export class DebugDecorator {
   protected getBreakpointDecoration(breakpoint: DebugBreakpoint, message?: string[]): DebugBreakpointDecoration {
     if (breakpoint.raw.logMessage) {
       return {
-        className: 'kaitian-debug-logpoint',
+        className: 'sumi-debug-logpoint',
         message: message || [localize('debug.breakpoint.logpointMessage')],
       };
     }
     if (breakpoint.raw.condition || breakpoint.raw.hitCondition) {
       return {
-        className: 'kaitian-debug-conditional-breakpoint',
+        className: 'sumi-debug-conditional-breakpoint',
         message: message || [localize('debug.breakpoint.conditionalMessage')],
       };
     }
     return {
-      className: 'kaitian-debug-breakpoint',
+      className: 'sumi-debug-breakpoint',
       message: message || [localize('debug.breakpoint.breakpointMessage')],
     };
   }

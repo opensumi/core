@@ -288,7 +288,7 @@ export enum EXTENSION_ENABLE {
 
 // 广播插件事件
 export const EMIT_EXT_HOST_EVENT = {
-  id: 'kaitian-extension:ext-host-event',
+  id: 'sumi-extension:ext-host-event',
 };
 
 export function getExtensionId(extensionId: string) {

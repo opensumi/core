@@ -29,7 +29,7 @@ describe('Debug Breakpoints', () => {
     it('Not Runtime Breakpoint', () => {
       expect(isDebugBreakpoint(breakpoint)).toBeTruthy();
       expect(isRuntimeBreakpoint(breakpoint)).toBeFalsy();
-      expect(decorator.getDecoration(breakpoint).className).toEqual('kaitian-debug-breakpoint');
+      expect(decorator.getDecoration(breakpoint).className).toEqual('sumi-debug-breakpoint');
     });
 
     it('Runtime Verified Breakpoint', () => {
@@ -40,7 +40,7 @@ describe('Debug Breakpoints', () => {
       });
       expect(isRuntimeBreakpoint(breakpoint)).toBeTruthy();
       expect(decorator.getDecoration(breakpoint, true).className)
-        .toEqual('kaitian-debug-breakpoint');
+        .toEqual('sumi-debug-breakpoint');
     });
 
     it('Runtime Unverified Breakpoint', () => {
@@ -51,7 +51,7 @@ describe('Debug Breakpoints', () => {
       });
       expect(isRuntimeBreakpoint(breakpoint)).toBeFalsy();
       expect(decorator.getDecoration(breakpoint, true).className)
-        .toEqual('kaitian-debug-breakpoint-unverified');
+        .toEqual('sumi-debug-breakpoint-unverified');
     });
   });
 

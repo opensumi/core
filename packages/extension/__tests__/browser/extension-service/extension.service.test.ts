@@ -75,7 +75,7 @@ describe('Extension service', () => {
     });
 
     it('should return extension by extensionId', async () => {
-      const extension = extensionManagementService.getExtensionByExtId('test.kaitian-extension');
+      const extension = extensionManagementService.getExtensionByExtId('test.sumi-extension');
       expect(extension?.extensionId).toBe(MOCK_EXTENSIONS[0].extensionId);
     });
   });
@@ -92,7 +92,7 @@ describe('Extension service', () => {
       await extensionService.activeExtension(MOCK_EXTENSIONS[0]);
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbarService: TabbarService = layoutService.getTabbarService('left');
-      const containerInfo = tabbarService.getContainer('test.kaitian-extension:Leftview');
+      const containerInfo = tabbarService.getContainer('test.sumi-extension:Leftview');
       expect(containerInfo?.options?.titleComponent).toBeDefined();
       expect(containerInfo?.options?.titleProps).toBeDefined();
       done();
@@ -153,15 +153,15 @@ describe('Extension service', () => {
 
     it('should register browserView', (done) => {
       const layoutService: LayoutService = injector.get(IMainLayoutService);
-      const tabbar = layoutService.getTabbarHandler('test.kaitian-extension:KaitianViewContribute');
+      const tabbar = layoutService.getTabbarHandler('test.sumi-extension:KaitianViewContribute');
       expect(tabbar).toBeDefined();
-      expect(tabbar?.containerId).toBe('test.kaitian-extension:KaitianViewContribute');
+      expect(tabbar?.containerId).toBe('test.sumi-extension:KaitianViewContribute');
       done();
     });
 
     it('should register browserView', (done) => {
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
-      const tabbar = layoutService.getTabbarHandler('test.kaitian-extension:KaitianViewContribute');
+      const tabbar = layoutService.getTabbarHandler('test.sumi-extension:KaitianViewContribute');
       expect(tabbar).toBeDefined();
       done();
     });

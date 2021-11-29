@@ -12,11 +12,6 @@
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@code.alipay.com:kaitian/kaitian-open-vsx.git"
-  },
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "@opensumi/di": "^1.0.0",

@@ -18,7 +18,7 @@ import {
   IBaseLogService,
 } from '../common/';
 
-export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), `.kaitian/logs/`);
+export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), `.sumi/logs/`);
 
 type SpdLogger = spdlog.RotatingLogger;
 interface ILog {

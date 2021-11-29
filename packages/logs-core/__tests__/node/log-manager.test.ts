@@ -7,7 +7,7 @@ import { toLocalISOString } from '@opensumi/ide-core-common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
-const ktDir = path.join(os.homedir(), `.kaitian-test`);
+const ktDir = path.join(os.homedir(), `.sumi-test`);
 const logDir = path.join(ktDir, `logs_0`);
 const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
 

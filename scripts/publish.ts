@@ -10,7 +10,7 @@ import * as chalk from 'chalk';
 
 import * as pkg from '../package.json';
 import Package, { readAllMainPackages } from './pkg';
-import { generateManifest } from './kaitian-manifest';
+import { generateManifest } from './manifest';
 
 const rl = createInterface({
   input: process.stdin,
@@ -64,12 +64,12 @@ function updatePackVersion(version: string) {
  * 生成对应版本号的 manifest.json，包括:
  * * packages 字段，包含所有包名和对应的版本号
 */
-const kaitianManifestPath = join(__dirname, '../packages/types/manifest.json');
+const localManifest = join(__dirname, '../packages/types/manifest.json');
 
 async function generateManifestFile(pkgList: Package[], version: string) {
   const manifest = await generateManifest(pkgList, version);
 
-  updateFileWithDispose(kaitianManifestPath, manifest);
+  updateFileWithDispose(localManifest, manifest);
 }
 
 function doPublishPackages(packages, version, distTag) {

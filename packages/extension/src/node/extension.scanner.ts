@@ -17,7 +17,7 @@ function resolvePath(path) {
 export class ExtensionScanner {
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
-    // electron中，extensionPath可能为一个.asar结尾的路径，这种情况下,fs-extra的pathExists会判断为不存在
+    // Electron 中，extensionPath 可能为一个 `.asar` 结尾的路径，这种情况下，fs-extra的pathExists 会判断为不存在
     try {
       await fs.stat(extensionPath);
     } catch (e) {
@@ -176,7 +176,7 @@ export class ExtensionScanner {
     return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
-    getDebugLogger().info('kaitian scanDir', dir);
+    getDebugLogger().info('scan directory: ', dir);
     try {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(extensionDirArr.map((extensionDir) => {

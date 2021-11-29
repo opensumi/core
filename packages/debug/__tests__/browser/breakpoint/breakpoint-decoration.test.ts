@@ -2,7 +2,7 @@ import { URI } from '@opensumi/ide-core-browser';
 import { DebugDecorator, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser';
 
 describe('Breakpoints Decoration', () => {
-  const prefix = 'kaitian-debug-breakpoint';
+  const prefix = 'sumi-debug-breakpoint';
 
   describe('Get breakpoint decoration with debugMode', () => {
     const decoration: DebugDecorator = new DebugDecorator();
@@ -38,7 +38,7 @@ describe('Breakpoints Decoration', () => {
         verified: true,
       });
       const dec = decoration.getDecoration(breakpoint, true);
-      expect(dec.className).toBe(`kaitian-debug-logpoint`);
+      expect(dec.className).toBe(`sumi-debug-logpoint`);
     });
 
     it('when breakpoint is conditionPoint', () => {
@@ -51,7 +51,7 @@ describe('Breakpoints Decoration', () => {
         verified: true,
       });
       const dec = decoration.getDecoration(breakpoint, true);
-      expect(dec.className).toBe('kaitian-debug-conditional-breakpoint');
+      expect(dec.className).toBe('sumi-debug-conditional-breakpoint');
     });
 
     it('when breakpoint is normal breakpoint', () => {
@@ -63,7 +63,7 @@ describe('Breakpoints Decoration', () => {
         verified: true,
       });
       const dec = decoration.getDecoration(breakpoint, true);
-      expect(dec.className).toBe(`kaitian-debug-breakpoint`);
+      expect(dec.className).toBe(`sumi-debug-breakpoint`);
     });
   });
 

@@ -875,7 +875,7 @@ An error case:
     class TestInlayHintsProvider implements vscode.InlayHintsProvider {
       provideInlayHints(): vscode.ProviderResult<vscode.InlayHint[]> {
         return [{
-          text: 'kaitian',
+          text: 'sumi',
           position: new types.Position(0, 0),
         }];
       }

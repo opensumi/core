@@ -106,13 +106,13 @@ export class ToolbarBtnActionHandleController extends Disposable {
         onClick: this._onClick.event,
         onStateChanged: this._onStateChange.event,
         setState: (state, title?: string) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.btn.setState', this.id, state, title);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.btn.setState', this.id, state, title);
         },
         showPopover: async (style?: IToolbarPopoverStyle) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.showPopover', this.id, style);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.showPopover', this.id, style);
         },
         hidePopover: async () => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.hidePopover', this.id);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.hidePopover', this.id);
         },
         /**
          * 由插件 API 负责更新的 context 对象
@@ -120,7 +120,7 @@ export class ToolbarBtnActionHandleController extends Disposable {
          * @param context {T}
          */
         setContext: <T>(context: T) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.btn.setContext', this.id, context);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.btn.setContext', this.id, context);
         },
       };
     }
@@ -128,17 +128,17 @@ export class ToolbarBtnActionHandleController extends Disposable {
   }
 
   async init() {
-    this.addDispose(this.kaitianCommon.onEvent('kaitian-extension.toolbar.btn.click', (id) => {
+    this.addDispose(this.kaitianCommon.onEvent('sumi-extension.toolbar.btn.click', (id) => {
       if (id === this.id) {
         this._onClick.fire();
       }
     }));
-    this.addDispose(this.kaitianCommon.onEvent('kaitian-extension.toolbar.btn.stateChange', (id, from, to) => {
+    this.addDispose(this.kaitianCommon.onEvent('sumi-extension.toolbar.btn.stateChange', (id, from, to) => {
       if (id === this.id) {
         this._onStateChange.fire({from, to});
       }
     }));
-    return this.extHostCommands.executeCommand('kaitian-extension.toolbar.btn.connectHandle', this.id);
+    return this.extHostCommands.executeCommand('sumi-extension.toolbar.btn.connectHandle', this.id);
   }
 }
 
@@ -162,13 +162,13 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
         onSelect: this._onSelect.event,
         onStateChanged: this._onStateChange.event,
         setState: (state, title?: string) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.select.setState', this.id, state, title);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.select.setState', this.id, state, title);
         },
         setOptions: (options: any, iconBasePath?: string) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.select.setOptions', this.id, iconBasePath, options);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.select.setOptions', this.id, iconBasePath, options);
         },
         setSelect: (value: T) => {
-          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.select.setSelect', this.id, value);
+          return this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.select.setSelect', this.id, value);
         },
         getValue: () => {
           return this._value;
@@ -179,17 +179,17 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
   }
 
   async init() {
-    this.addDispose(this.kaitianCommon.onEvent('kaitian-extension.toolbar.select.onSelect', (id, value) => {
+    this.addDispose(this.kaitianCommon.onEvent('sumi-extension.toolbar.select.onSelect', (id, value) => {
       if (id === this.id) {
         this._onSelect.fire(value);
       }
     }));
-    this.addDispose(this.kaitianCommon.onEvent('kaitian-extension.toolbar.select.stateChange', (id, from, to) => {
+    this.addDispose(this.kaitianCommon.onEvent('sumi-extension.toolbar.select.stateChange', (id, from, to) => {
       if (id === this.id) {
         this._onStateChange.fire({from, to});
       }
     }));
-    this._value =  await this.extHostCommands.executeCommand('kaitian-extension.toolbar.select.connectHandle', this.id) as T;
+    this._value =  await this.extHostCommands.executeCommand('sumi-extension.toolbar.select.connectHandle', this.id) as T;
   }
 
 }

@@ -11,7 +11,7 @@ export interface IExtensionStoragePathServer {
     provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<URI | undefined>;
     // 返回最后使用的存储路径(根据workspace生成的存储路径)
     getLastWorkspaceStoragePath(): Promise<string | undefined>;
-    // 获取最后使用的顶级存储路径，默认为 ~/.kaitian
+    // 获取最后使用的顶级存储路径，默认为 ~/.sumi
     getLastStoragePath(): Promise<string | undefined>;
     // 返回数据存储文件夹
     getWorkspaceDataDirPath(extensionStorageDirName: string): Promise<string>;
