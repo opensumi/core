@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent, usePreference } from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer, NextBottomTabPanelRenderer } from './panel.view';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
