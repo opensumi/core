@@ -81,8 +81,7 @@ const ContainerView: React.FC<{
     <div ref={containerRef} className={styles.view_container}>
       {!CustomComponent && <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
         {
-          // title and titleMenu both none, donot render
-          !title && !titleMenu ? null :
+          !title ? null :
           <TitleBar
             title={title!}
             menubar={<InlineActionBar menus={titleMenu} />}
