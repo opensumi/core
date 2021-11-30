@@ -325,7 +325,7 @@ export class DebugSessionManager implements IDebugSessionManager {
     if (InternalDebugSessionOptions.is(options)) {
       return options;
     }
-    const { workspaceFolderUri, index, noDebug, parentSession, repl, compact } = options;
+    const { workspaceFolderUri, index, noDebug, parentSession, repl, compact, lifecycleManagedByParent } = options;
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     let configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     if (!configuration) {
@@ -357,6 +357,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       parentSession,
       repl,
       compact,
+      lifecycleManagedByParent,
     };
   }
 

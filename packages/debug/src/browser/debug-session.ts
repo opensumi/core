@@ -11,8 +11,8 @@ import {
   canceled,
 } from '@opensumi/ide-core-browser';
 import debounce = require('lodash.debounce');
-import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState } from '../common';
+import { DebugSessionConnection } from './debug-session-connection';
+import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState, DebugEventTypes, DebugExitEvent, DebugRequestTypes } from '../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -254,6 +254,10 @@ export class DebugSession implements IDebugSession {
 
   get parentSession(): IDebugSession | undefined {
     return this.options.parentSession;
+  }
+
+  get lifecycleManagedByParent(): boolean | undefined {
+    return this.options.lifecycleManagedByParent;
   }
 
   get compact(): boolean {
@@ -816,6 +820,12 @@ export class DebugSession implements IDebugSession {
 
   public terminated = false;
   async terminate(restart?: boolean): Promise<void> {
+    this.cancelAllRequests();
+    if (this.lifecycleManagedByParent && this.parentSession) {
+      await this.parentSession.terminate(restart);
+      return;
+    }
+
     if (!this.terminated && this.capabilities.supportsTerminateRequest && this.configuration.request === 'launch') {
       this.terminated = true;
       this.sendRequest('terminate', { restart });
@@ -829,7 +839,11 @@ export class DebugSession implements IDebugSession {
 
   public async disconnect(restart?: boolean): Promise<void> {
     try {
-      this.sendRequest('disconnect', { restart });
+      if (this.lifecycleManagedByParent && this.parentSession) {
+        this.parentSession.disconnect(restart);
+      } else {
+        this.sendRequest('disconnect', { restart });
+      }
     } catch (reason) {
       this.fireExited(reason);
       return;
@@ -861,9 +875,14 @@ export class DebugSession implements IDebugSession {
   }
 
   async restart(): Promise<boolean> {
+    this.cancelAllRequests();
     if (this.capabilities.supportsRestartRequest) {
       this.terminated = false;
-      await this.sendRequest('restart', {});
+      if (this.lifecycleManagedByParent && this.parentSession) {
+        await this.parentSession.restart();
+      } else {
+        await this.sendRequest('restart', {});
+      }
       return true;
     }
     return false;
