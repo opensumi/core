@@ -4,7 +4,7 @@
   "files": [
     "lib"
   ],
-  "private": false,
+  "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
