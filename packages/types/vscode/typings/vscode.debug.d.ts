@@ -62,13 +62,13 @@ declare module 'vscode' {
     customRequest(command: string, args?: any): Thenable<any>;
 
     /**
-		 * Maps a VS Code breakpoint to the corresponding Debug Adapter Protocol (DAP) breakpoint that is managed by the debug adapter of the debug session.
-		 * If no DAP breakpoint exists (either because the VS Code breakpoint was not yet registered or because the debug adapter is not interested in the breakpoint), the value `undefined` is returned.
-		 *
-		 * @param breakpoint A VS Code [breakpoint](#Breakpoint).
-		 * @return A promise that resolves to the Debug Adapter Protocol breakpoint or `undefined`.
-		 */
-		getDebugProtocolBreakpoint(breakpoint: Breakpoint): Thenable<DebugProtocolBreakpoint | undefined>;
+     * Maps a VS Code breakpoint to the corresponding Debug Adapter Protocol (DAP) breakpoint that is managed by the debug adapter of the debug session.
+     * If no DAP breakpoint exists (either because the VS Code breakpoint was not yet registered or because the debug adapter is not interested in the breakpoint), the value `undefined` is returned.
+     *
+     * @param breakpoint A VS Code [breakpoint](#Breakpoint).
+     * @return A promise that resolves to the Debug Adapter Protocol breakpoint or `undefined`.
+     */
+    getDebugProtocolBreakpoint(breakpoint: Breakpoint): Thenable<DebugProtocolBreakpoint | undefined>;
   }
 
   /**
@@ -487,6 +487,13 @@ declare module 'vscode' {
     parentSession?: DebugSession;
 
     /**
+     * Controls whether lifecycle requests like 'restart' are sent to the newly created session or its parent session.
+     * By default (if the property is false or missing), lifecycle requests are sent to the new session.
+     * This property is ignored if the session has no parent session.
+     */
+    lifecycleManagedByParent?: boolean;
+
+    /**
      * Controls whether this session should have a separate debug console or share it
      * with the parent session. Has no effect for sessions which do not have a parent session.
      * Defaults to Separate.
@@ -494,17 +501,17 @@ declare module 'vscode' {
     consoleMode?: DebugConsoleMode;
 
     /**
-		 * Controls whether this session should run without debugging, thus ignoring breakpoints.
-		 * When this property is not specified, the value from the parent session (if there is one) is used.
-		 */
-		noDebug?: boolean;
+     * Controls whether this session should run without debugging, thus ignoring breakpoints.
+     * When this property is not specified, the value from the parent session (if there is one) is used.
+     */
+    noDebug?: boolean;
 
-		/**
-		 * Controls if the debug session's parent session is shown in the CALL STACK view even if it has only a single child.
-		 * By default, the debug session will never hide its parent.
-		 * If compact is true, debug sessions with a single child are hidden in the CALL STACK view to make the tree more compact.
-		 */
-		compact?: boolean;
+    /**
+     * Controls if the debug session's parent session is shown in the CALL STACK view even if it has only a single child.
+     * By default, the debug session will never hide its parent.
+     * If compact is true, debug sessions with a single child are hidden in the CALL STACK view to make the tree more compact.
+     */
+    compact?: boolean;
   }
 
   /**
@@ -532,11 +539,11 @@ declare module 'vscode' {
   }
 
   /**
-	 * A DebugProtocolBreakpoint is an opaque stand-in type for the [Breakpoint](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint) type defined in the Debug Adapter Protocol.
-	 */
-	export interface DebugProtocolBreakpoint {
-		// Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint).
-	}
+   * A DebugProtocolBreakpoint is an opaque stand-in type for the [Breakpoint](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint) type defined in the Debug Adapter Protocol.
+   */
+  export interface DebugProtocolBreakpoint {
+    // Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint).
+  }
 
   /**
    * Namespace for debug functionality.
