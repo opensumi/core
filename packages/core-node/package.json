@@ -5,6 +5,7 @@
   "files": [
     "lib"
   ],
+  "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
     "prepublishOnly": "npm run build",

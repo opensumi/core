@@ -4,6 +4,7 @@
   "files": [
     "lib"
   ],
+  "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -12,7 +13,6 @@
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
   },
-  "license": "MIT",
   "dependencies": {
     "@opensumi/di": "^1.0.0",
     "@opensumi/ide-components": "2.12.0",
