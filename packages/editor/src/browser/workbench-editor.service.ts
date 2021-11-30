@@ -1031,8 +1031,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.currentEditor.monacoEditor.focus();
         }
         if (options.range && this.currentEditor) {
-          this.currentEditor.monacoEditor.revealRangeInCenter(options.range as monaco.IRange);
           this.currentEditor.monacoEditor.setSelection(options.range as monaco.IRange);
+          this.currentEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(options.range as monaco.IRange, 0);
         }
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
@@ -1207,15 +1207,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         const documentRef = await this.getDocumentModelRef(resource.uri);
         await this.codeEditorReady.onceReady(async () => {
-          await this.codeEditor.open(documentRef, options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
-          setTimeout(() => {
+          await this.codeEditor.open(documentRef);
+
+          if (options.range) {
+            const range = new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!);
+            this.codeEditor.monacoEditor.setSelection(range);
+            queueMicrotask(() => {
+              this.codeEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(range, 0);
+            });
+          }
+
+          queueMicrotask(() => {
             if (options.scrollTop) {
               this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
             }
             if (options.scrollLeft) {
               this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
             }
-          }, 0);
+          });
 
           if (options.focus) {
             this._domNode?.focus();

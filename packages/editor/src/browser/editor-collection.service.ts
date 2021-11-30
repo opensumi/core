@@ -435,20 +435,16 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     }
   }
 
-  async open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void> {
+  async open(documentModelRef: IEditorDocumentModelRef): Promise<void> {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
     const model = this.currentDocumentModel!.getMonacoModel();
+
     this.disableSelectionEmitter();
     this.monacoEditor.setModel(model);
-    if (range) {
-      this.enableSelectionEmitter();
-      this.monacoEditor.revealRangeInCenter(range);
-      this.monacoEditor.setSelection(range);
-    } else {
-      this.enableSelectionEmitter();
-      this.restoreState();
-    }
+    this.enableSelectionEmitter();
+    this.restoreState();
+
     this._onRefOpen.fire(documentModelRef);
     // monaco 在文件首次打开时不会触发 cursorChange
     this._onCursorPositionChanged.fire({
