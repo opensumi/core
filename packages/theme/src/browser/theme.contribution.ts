@@ -40,9 +40,16 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
 
-    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
-    if (!themeId || themeId === DEFAULT_THEME_ID) {
-      this.themeService.applyTheme(DEFAULT_THEME_ID);
+    this.initializeDefaultTheme();
+  }
+
+  private initializeDefaultTheme() {
+    const globalProvider = this.preferenceService.getProvider(PreferenceScope.User);
+    if (globalProvider) {
+      const themeId = globalProvider.get<string>(COLOR_THEME_SETTING);
+      if (!themeId || themeId === DEFAULT_THEME_ID) {
+        this.themeService.applyTheme(DEFAULT_THEME_ID);
+      }
     }
   }
 
