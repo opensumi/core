@@ -1212,11 +1212,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options.range) {
             const range = new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!);
             this.codeEditor.monacoEditor.setSelection(range);
+            // 这里使用 queueMicrotask 在下一次事件循环时将编辑器滚动到指定位置
+            // 原因是在打开新文件的情况下
+            // setModel 后立即调用 revealRangeInCenterIfOutsideViewport 编辑器无法获取到 viewport 宽高
+            // 导致无法正确计算滚动位置
+            // 相比 setTimeout, queueMicrotask 优先级更高
+            // ref: https://developer.mozilla.org/zh-CN/docs/Web/API/queueMicrotask
             queueMicrotask(() => {
               this.codeEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(range, 0);
             });
           }
 
+          // 同上
           queueMicrotask(() => {
             if (options.scrollTop) {
               this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
