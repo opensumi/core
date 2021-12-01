@@ -1,4 +1,4 @@
-# @opensumi/ide-core
+# @opensumi/ide-core-browser
 
 ## Usage
 

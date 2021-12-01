@@ -10,10 +10,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.core-electron-main.json",
-    "start": "run-p start:client start:server",
-    "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-electron-main.json"
   },
   "repository": {
     "type": "git",
@@ -26,5 +23,7 @@
   "peerDependencies": {
     "electron": "*"
   },
-  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"
+  "devDependencies": {
+    "@opensumi/ide-dev-tool": "^1.3.1" 
+  }
 }

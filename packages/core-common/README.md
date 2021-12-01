@@ -1,1 +1,0 @@
-# @opensumi/ide-core

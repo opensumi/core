@@ -9,10 +9,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.userstorage.json",
-    "start": "run-p start:client start:server",
-    "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.userstorage.json"
   },
   "repository": {
     "type": "git",
@@ -23,10 +20,6 @@
     "@opensumi/ide-core-common": "2.12.0"
   },
   "devDependencies": {
-    "@opensumi/ide-dev-tool": "^1.1.0",
-    "npm-run-all": "^4.1.5",
-    "ts-node": "8.0.2",
-    "webpack-dev-server": "^3.3.1"
-  },
-  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"
+    "@opensumi/ide-dev-tool": "^1.3.1"
+  }
 }
