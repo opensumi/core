@@ -8,10 +8,7 @@
   "main": "lib/index.js",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.extension-manager.json",
-    "start": "run-p start:client start:server",
-    "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.extension-manager.json"
   },
   "dependencies": {
     "@opensumi/di": "^1.0.0",
@@ -46,7 +43,7 @@
     "@opensumi/ide-core-node": "2.12.0",
     "@opensumi/ide-debug": "2.12.0",
     "@opensumi/ide-decoration": "2.12.0",
-    "@opensumi/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-dev-tool": "^1.3.1",
     "@opensumi/ide-editor": "2.12.0",
     "@opensumi/ide-explorer": "2.12.0",
     "@opensumi/ide-express-file-server": "2.12.0",
@@ -90,13 +87,6 @@
     "browserfs": "^1.4.3",
     "clean-webpack-plugin": "^3.0.0",
     "compression": "^1.7.4",
-    "http-proxy-middleware": "^1.0.4",
-    "koa": "^2.7.0",
-    "koa-bodyparser": "^4.2.1",
-    "mobx": "^5.9.4",
-    "mobx-react-lite": "^1.3.1",
-    "node-notifier": "^5.4.0",
-    "npm-run": "^5.0.1",
-    "npm-run-all": "^4.1.5"
+    "http-proxy-middleware": "^1.0.4"
   }
 }

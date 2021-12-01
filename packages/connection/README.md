@@ -3,7 +3,7 @@
 基于 jsonrpc 完成多端远程调用场景，兼容 lsp 等通信方式
 
 
-### ide-framework 中使用
+### opensumi 中使用
 
 **准备**
 1. 框架中服务分为运行在浏览器环境的 前端服务(frontService) 与运行在 node 环境的 后端服务(backService)，服务在两端的实现方式是一致的

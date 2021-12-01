@@ -16,7 +16,6 @@
     "prepublishOnly": "npm run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-browser.json"
   },
-  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@opensumi/ide-components": "2.12.0",
     "@opensumi/ide-connection": "2.12.0",

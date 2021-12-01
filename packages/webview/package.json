@@ -11,9 +11,6 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.webview.json",
-    "start": "run-p start:client start:server",
-    "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
     "copy-resources": "node ./copy-resources.js"
   },
   "repository": {
@@ -27,16 +24,12 @@
   "devDependencies": {
     "@opensumi/ide-core-browser": "2.12.0",
     "@opensumi/ide-static-resource": "2.12.0",
-    "@opensumi/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-dev-tool": "^1.3.1",
     "@opensumi/ide-editor": "2.12.0",
     "@opensumi/ide-theme": "2.12.0",
-    "@opensumi/ide-core-electron-main": "2.12.0",
-    "npm-run-all": "^4.1.5",
-    "ts-node": "8.0.2",
-    "webpack-dev-server": "^3.3.1"
+    "@opensumi/ide-core-electron-main": "2.12.0"
   },
   "peerDependencies": {
     "electron": "*"
-  },
-  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"
+  }
 }

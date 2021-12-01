@@ -1,7 +1,6 @@
 .DS_Store
 yarn.lock
 
-# 由 https://github.com/msfeldstein/gitignore 自动生成
 # Logs
 logs
 *.log
@@ -58,46 +57,16 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
 dist
 lib
 
 .vscode/*
 .sumi/*
-!.vscode/launch.json
 package-lock.json
 
-tools/workspace
 
 packages/extension/hosted
-packages/feature-extension/test/init/node_modules
-packages/vscode-extension/test/init/node_modules
-packages/vscode-extension/test/fixture/init/out
-packages/extension/hosted
 !tools/extensions/*/dist
-# tools/extensions/**/out
 
 # webpack cache-loader dir
 .cache
@@ -108,10 +77,6 @@ tools/extensions
 # temp release log
 releaselog.md
 
-# devcontainer
-.devcontainer
-.devcontainer.Dockerfile
-.devcontainer.yml
-
 tools/electron/app
 tools/electron/extensions
+tools/workspace

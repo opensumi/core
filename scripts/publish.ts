@@ -3,12 +3,12 @@ import { join } from 'path';
 import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
 import { createInterface } from 'readline';
-import * as semver from 'semver';
+import semver from 'semver';
 import { argv } from 'yargs';
-import * as git from 'git-rev-sync';
-import * as chalk from 'chalk';
+import git from 'git-rev-sync';
+import chalk from 'chalk';
 
-import * as pkg from '../package.json';
+import pkg from '../package.json';
 import Package, { readAllMainPackages } from './pkg';
 import { generateManifest } from './manifest';
 
@@ -26,7 +26,7 @@ const subscriptions: Array<IDisposable> = [];
 
 function cleanSideEffect() {
   if (argv.rollback && subscriptions.length > 0) {
-    console.log('回滚package.json..');
+    console.log('Rollback package.json..');
     while (subscriptions.length > 0) {
       const sub = subscriptions.pop()!;
       sub.dispose();
@@ -76,12 +76,12 @@ function doPublishPackages(packages, version, distTag) {
   let i = 1;
 
   packages.forEach((p) => {
-    process.stdout.write(`[进度: ${i}/${packages.length}]`);
+    process.stdout.write(`[Progress: ${i}/${packages.length}]`);
     p.publish(version, packages, distTag, subscriptions);
     i++;
   });
 
-  process.stdout.write('[进度: 更新根目录版本号]');
+  process.stdout.write('[Progress: Updating package version]');
   updatePackVersion(version);
 
   // 在非回滚模式下，提交一个 release 的 commit，并且打一个 tag
@@ -96,7 +96,7 @@ function doPublishPackages(packages, version, distTag) {
 async function publishMainPacks(version, distTag) {
   const packages: Package[] = readAllMainPackages();
 
-  process.stdout.write('[进度: 生成 manifest.json]');
+  process.stdout.write('[Progress: Generating manifest.json]\n');
   await generateManifestFile(packages, version);
 
   doPublishPackages(packages, version, distTag);
@@ -107,12 +107,12 @@ function askVersion() {
 
   if (distTag && ['snapshot', 'next'].includes(distTag as string)) {
     const version = `${semver.inc(pkg.version, 'patch')}-${distTag}-${git.long().slice(0, 8)}`;
-    console.log(`即将发布的 ${distTag }版本为: ${version}`);
+    console.log(`Will publish ${distTag} version: ${version}`);
     publish(version, distTag as string);
     return;
   }
 
-  const desc = `当前版本为 ${chalk.greenBright(pkg.version)}\n输入要${argv.versionOnly ? '更新' : '发布'}的版本号:`;
+  const desc = `Current version: ${chalk.greenBright(pkg.version)}\nWrite ${argv.versionOnly ? 'Update' : 'Publish'} Version:`;
   rl.question(desc, (version) => {
     publish(version);
   });
@@ -121,15 +121,15 @@ function askVersion() {
 function publish(version, distTag = 'latest') {
   const semverVersion = semver.valid(version);
   if (!semverVersion) {
-    console.error(`${version} 不是一个正确的版本号`);
+    console.error(`${version} is not a verified version`);
     askVersion();
     return;
   } else {
     try {
-      const desc = `确认要${argv.versionOnly ? '更新' : '发布'}版本: ${chalk.green(semverVersion)}\ndistTag: ${chalk.green(distTag)} \nplease press any key to continue`;
+      const desc = `Ensure ${argv.versionOnly ? 'Update' : 'Publish'} Version: ${chalk.green(semverVersion)}\ndistTag: ${chalk.green(distTag)} \nplease press any key to continue`;
       rl.question(desc, async () => {
         await publishMainPacks(semverVersion, distTag);
-        console.log('[SUCCESS]全部发布成功');
+        console.log('[SUCCESS] Done');
         process.exit();
       });
     } finally {

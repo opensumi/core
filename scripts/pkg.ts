@@ -31,13 +31,6 @@ export default class Package {
     json.devDependencies = this.modifyDeps(json.devDependencies, version, packages);
     json.optionalDependencies = this.modifyDeps(json.optionalDependencies, version, packages);
     json.peerDependencies = this.modifyDeps(json.peerDependencies, version, packages);
-    if (json.private) {
-      json.private = false;
-    }
-    if (!json.publishConfig) {
-      json.publishConfig = {};
-    }
-    json.publishConfig.registry = 'http://registry.npmjs.com';
     writeFileSync(this.packageJsonFile, `${JSON.stringify(json, null, 2)}\n`);
   }
 
@@ -65,17 +58,17 @@ export default class Package {
   }
 
   publish(version, packages: Package[], distTag, subscriptions) {
-    process.stdout.write(`[正在更新版本号] ${this.name}@${version}`);
+    process.stdout.write(`[Updating Package Version] ${this.name}@${version}`);
     this.modifyPackageJson(version, packages, subscriptions);
 
     if (!argv.versionOnly) {
-      process.stdout.write(`[正在发布] ${this.name}@${version}`);
+      process.stdout.write(`[Publishing] ${this.name}@${version}`);
       this.doPublish(distTag);
     }
   }
 
-  doPublish(distTag = 'latest') {
-    execSync(`tnpm publish --tag=${distTag}`, {
+  doPublish(distTag = 'latest', access = 'public') {
+    execSync(`npm publish --tag=${distTag} --access=${access}`, {
       cwd: this.path,
       env: process.env,
       stdio: ['pipe', 'ignore', 'pipe'],

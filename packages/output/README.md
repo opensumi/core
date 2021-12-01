@@ -3,7 +3,7 @@ id: output
 title: 输出模块
 ---
 
-Output 模块用于管理 KAITIAN 内部以及来自插件的日志输出，对于模块来说，需要调用 outputService 的 `getChannel` 来获取/创建一个输出通道。这会在输出面板里新建一个输出通道用于展示该通道的日志。
+Output 模块用于管理 OpenSumi 内部以及来自插件的日志输出，对于模块来说，需要调用 outputService 的 `getChannel` 来获取/创建一个输出通道。这会在输出面板里新建一个输出通道用于展示该通道的日志。
 
 ```ts
 @Injectable()
