@@ -100,6 +100,7 @@ describe('main layout test', () => {
           ready: Promise.resolve(),
           get: () => undefined,
           onPreferenceChanged: () => Disposable.create(() => {}),
+          onSpecificPreferenceChange: (func: any) => Disposable.create(() => {}),
         },
       },
       {

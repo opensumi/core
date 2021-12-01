@@ -31,12 +31,13 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
       if (mutation.type === 'childList') {
         if (mutation.addedNodes.length > 0) {
           for (const addedNode of Array.from(mutation.addedNodes)) {
-            target.appendChild(addedNode.cloneNode(true));
+            // TODO: 加入真正的 typing
+            target.appendChild((addedNode as any).cloneNode(true));
           }
         }
         if (mutation.removedNodes.length > 0) {
           for (const removedNode of Array.from(mutation.removedNodes)) {
-            target.removeChild(removedNode);
+            target.removeChild(removedNode as any);
           }
         }
       }
