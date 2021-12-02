@@ -1817,6 +1817,7 @@ export { TextEditorRevealType } from './editor';
 @es5ClassCompat
 export class TaskGroup implements vscode.TaskGroup {
 
+  isDefault?: boolean;
   private _id: string;
 
   public static Clean: TaskGroup = new TaskGroup('clean', 'Clean');
