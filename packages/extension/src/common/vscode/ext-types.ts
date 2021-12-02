@@ -1313,6 +1313,7 @@ export interface Memento {
   get<T>(key: string): T | undefined;
   get<T>(key: string, defaultValue: T): T;
   update(key: string, value: any): Promise<void>;
+  keys: string[];
 }
 
 export interface OutputChannel {

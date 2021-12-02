@@ -1932,6 +1932,14 @@ declare module 'sumi-worker' {
      * @param value A value. MUST not contain cyclic references.
      */
     update(key: string, value: any): Thenable<void>;
+
+    /**
+     * VS Code Proposal API, maybe remove on latest version.
+     * #region https://github.com/microsoft/vscode/issues/87110
+     *
+     * The stored keys.
+     */
+     readonly keys: readonly string[];
   }
 
   export interface Terminal {
