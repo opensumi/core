@@ -188,9 +188,20 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         { from: path.join(__dirname, '../resources'), to: path.join(dir, 'dist', 'resources') },
       ]),
       new ForkTsCheckerWebpackPlugin({
-        checkSyntacticErrors: true,
-        tsconfig: tsConfigPath,
-        reportFiles: ['packages/**/*.{ts,tsx}']
+        typescript: {
+          diagnosticOptions: {
+            syntactic: true,
+          },
+          configFile: tsConfigPath,
+        },
+        issue: {
+          include: (issue) => {
+            return issue.file.includes('src/packages/');
+          },
+          exclude: (issue) => {
+            return issue.file.includes('__test__');
+          },
+        }
       }),
     ],
     devServer: {
