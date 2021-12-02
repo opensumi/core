@@ -14,9 +14,20 @@ declare module 'vscode' {
     export const appName: string;
 
     /**
-     * The application root folder from which the editor is running.
-     */
+		 * The application root folder from which the editor is running.
+		 *
+		 * *Note* that the value is the empty string when running in an
+		 * environment that has no representation of an application root folder.
+		 */
     export const appRoot: string;
+
+    /**
+		 * The hosted location of the application
+		 * On desktop this is 'desktop'
+		 * In the web this is the specified embedder i.e. 'github.dev', 'codespaces', or 'web' if the embedder
+		 * does not provide that information
+		 */
+		export const appHost: string;
 
     /**
      * The custom uri scheme the editor registers to in the operating system.

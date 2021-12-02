@@ -54,6 +54,8 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   const appConfig = {
     appName: 'sumi',
     uriScheme: 'sumi',
+    appHost: 'opensumi.dev',
+    workspaceDir: '',
   };
   beforeAll((done) => {
     injector.overrideProviders(...[{
@@ -98,7 +100,9 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   });
 
   it('should have enough API', (done) => {
-    expect(typeof extHostEnvAPI.appName!).toBe('string');
+    expect(typeof extHostEnvAPI.appName).toBe('string');
+    expect(typeof extHostEnvAPI.appHost).toBe('string');
+    expect(typeof extHostEnvAPI.appRoot).toBe('string');
     expect(typeof extHostEnvAPI.uriScheme).toBe('string');
     expect(typeof extHostEnvAPI.language).toBe('string');
     expect(typeof extHostEnvAPI.sessionId).toBe('string');
