@@ -44,11 +44,12 @@ export function createEnvApiFactory(
   const values = envHost.getEnvValues();
   const env = {
     appName: values.appName,
+    appRoot: values.appRoot,
+    appHost: values.appHost,
     uriScheme: values.uriScheme,
     language: values.language,
     sessionId: envValue.sessionId,
     machineId: envValue.machineId,
-    appRoot: 'appRoot',
     remoteName: 'remoteName',
     shell: exthostTerminal.shellPath,
     uiKind: values.uiKind,

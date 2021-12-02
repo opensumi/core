@@ -11,6 +11,12 @@ export interface AppConfig {
    */
   appName?: string;
   /**
+   * 应用程序的托管位置
+   * 默认桌面端下为 `desktop`, Web 下为 `web`
+   * 可以传入自定义的名称
+   */
+  appHost?: string;
+  /**
    * 默认内部的 uriScheme，用于桌面版 app 的唤起
    * 同时也默认为 vscode.env.uriScheme 的值
    * 默认值为 `ClientApp.DEFAULT_URI_SCHEME` 即 `sumi`

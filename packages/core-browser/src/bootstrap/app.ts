@@ -42,7 +42,7 @@ import { injectCorePreferences } from '../core-preferences';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import { DEFAULT_APPLICATION_NAME, DEFAULT_URI_SCHEME } from '@opensumi/ide-core-common/lib/const/application';
+import { DEFAULT_APPLICATION_DESKTOP_HOST, DEFAULT_APPLICATION_NAME, DEFAULT_APPLICATION_WEB_HOST, DEFAULT_URI_SCHEME } from '@opensumi/ide-core-common/lib/const/application';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
@@ -139,6 +139,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
+      appHost: isElectronRenderer() ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
       uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,

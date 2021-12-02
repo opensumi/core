@@ -24,6 +24,8 @@ export interface IExtHostEnv {
 export interface ExtHostEnvValues {
   appName: string;
   uriScheme: string;
+  appRoot: string;
+  appHost: string;
   language: string;
   uiKind: UIKind;
   firstSessionDate: string | undefined;

@@ -62,6 +62,7 @@ describe('vscode extHostEnv Test', () => {
     expect(typeof env.language).toBe('string');
     expect(typeof env.appRoot).toBe('string');
     expect(typeof env.appName).toBe('string');
+    expect(typeof env.appHost).toBe('string');
     expect(typeof env.machineId).toBe('string');
     expect(typeof env.sessionId).toBe('string');
     expect(typeof env.shell).toBe('string');

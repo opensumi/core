@@ -5,7 +5,7 @@ import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
 import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@opensumi/ide-core-browser';
-import { getLanguageId, URI, isElectronEnv, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
+import { getLanguageId, URI, firstSessionDateStorageKey, isElectronRenderer } from '@opensumi/ide-core-common';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { MainThreadStorage } from './main.thread.storage';
 
@@ -50,14 +50,16 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   async setEnvValues() {
-    const { appName, uriScheme } = this.appConfig;
+    const { appName, uriScheme, appHost, workspaceDir } = this.appConfig;
     const firstSessionDateValue = await this.storage.$getValue(true, firstSessionDateStorageKey);
 
     this.proxy.$setEnvValues({
       appName,
       uriScheme,
+      appHost,
+      appRoot: workspaceDir,
       language: getLanguageId(),
-      uiKind: isElectronEnv() ? UIKind.Desktop : UIKind.Web,
+      uiKind: isElectronRenderer() ? UIKind.Desktop : UIKind.Web,
       firstSessionDate: firstSessionDateValue?.date,
     });
   }
@@ -97,7 +99,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   private getWindowId() {
-    if (isElectronEnv()) {
+    if (isElectronRenderer()) {
       return electronEnv.currentWindowId;
     } else {
       // web 场景先用 clientId
