@@ -1,0 +1,45 @@
+name: RELEASE
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node_version: [12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: npm install
+      - run: npm run init
+
+      - run: |
+          cd tools/electron
+          npm i
+          npm run rebuild-native
+          npm run link-local
+          npm run pack
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          files: |
+            LICENSE
+            tools/electron/dist/*.dmg
+
+      - name: Release ✅
+        if: ${{ success() }}
+        run: |
+          echo 执行成功
+
+      - name: Release 🚨
+        if: ${{ failure() }}
+        run: |
+          echo 执行失败
