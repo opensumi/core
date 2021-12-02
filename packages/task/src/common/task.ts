@@ -375,20 +375,37 @@ export interface CommandConfiguration {
 }
 
 export namespace TaskGroup {
-  export const Clean: 'clean' = 'clean';
 
-  export const Build: 'build' = 'build';
+  export const Clean: TaskGroup = { _id: 'clean', isDefault: false };
 
-  export const Rebuild: 'rebuild' = 'rebuild';
+  export const Build: TaskGroup = { _id: 'build', isDefault: false };
 
-  export const Test: 'test' = 'test';
+  export const Rebuild: TaskGroup = { _id: 'rebuild', isDefault: false };
 
-  export function is(value: string): value is string {
-    return value === Clean || value === Build || value === Rebuild || value === Test;
+  export const Test: TaskGroup = { _id: 'test', isDefault: false };
+
+  export function is(value: any): value is string {
+    return value === Clean._id || value === Build._id || value === Rebuild._id || value === Test._id;
+  }
+
+  export function from(value: string | TaskGroup | undefined): TaskGroup | undefined {
+    if (value === undefined) {
+      return undefined;
+    } else if (isString(value)) {
+      if (is(value)) {
+        return { _id: value, isDefault: false };
+      }
+      return undefined;
+    } else {
+      return value;
+    }
   }
 }
 
-export type TaskGroup = 'clean' | 'build' | 'rebuild' | 'test';
+export interface TaskGroup {
+  _id: string;
+  isDefault?: boolean;
+}
 
 export const enum TaskScope {
   Global = 1,

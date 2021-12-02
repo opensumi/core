@@ -1418,9 +1418,9 @@ namespace CustomTask {
       }
       if (result.configurationProperties.group === undefined) {
         if (legacy.isBuildCommand === true) {
-          result.configurationProperties.group = TaskTypes.TaskGroup.Build;
+          result.configurationProperties.group = TaskTypes.TaskGroup.Build._id;
         } else if (legacy.isTestCommand === true) {
-          result.configurationProperties.group = TaskTypes.TaskGroup.Test;
+          result.configurationProperties.group = TaskTypes.TaskGroup.Test._id;
         }
       }
     }
@@ -1561,10 +1561,10 @@ namespace TaskParser {
               continue;
             }
           }
-          if (customTask.configurationProperties.group === TaskTypes.TaskGroup.Build && defaultBuildTask.rank < 2) {
+          if (customTask.configurationProperties.group === TaskTypes.TaskGroup.Build._id && defaultBuildTask.rank < 2) {
             defaultBuildTask.task = customTask;
             defaultBuildTask.rank = 2;
-          } else if (customTask.configurationProperties.group === TaskTypes.TaskGroup.Test && defaultTestTask.rank < 2) {
+          } else if (customTask.configurationProperties.group === TaskTypes.TaskGroup.Test._id && defaultTestTask.rank < 2) {
             defaultTestTask.task = customTask;
             defaultTestTask.rank = 2;
           } else if (customTask.configurationProperties.name === 'build' && defaultBuildTask.rank < 1) {
@@ -1587,10 +1587,10 @@ namespace TaskParser {
       context.taskLoadIssues = deepClone(baseLoadIssues);
     }
     if ((defaultBuildTask.rank > -1) && (defaultBuildTask.rank < 2) && defaultBuildTask.task) {
-      defaultBuildTask.task.configurationProperties.group = TaskTypes.TaskGroup.Build;
+      defaultBuildTask.task.configurationProperties.group = TaskTypes.TaskGroup.Build._id;
       defaultBuildTask.task.configurationProperties.groupType = TaskTypes.GroupType.user;
     } else if ((defaultTestTask.rank > -1) && (defaultTestTask.rank < 2) && defaultTestTask.task) {
-      defaultTestTask.task.configurationProperties.group = TaskTypes.TaskGroup.Test;
+      defaultTestTask.task.configurationProperties.group = TaskTypes.TaskGroup.Test._id;
       defaultTestTask.task.configurationProperties.groupType = TaskTypes.GroupType.user;
     }
     return result;
@@ -1931,7 +1931,7 @@ class ConfigurationParser {
         {
           name,
           identifier: name,
-          group: TaskTypes.TaskGroup.Build,
+          group: TaskTypes.TaskGroup.Build._id,
           isBackground,
           problemMatchers: matchers,
         },
