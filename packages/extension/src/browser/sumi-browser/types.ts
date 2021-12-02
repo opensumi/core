@@ -4,6 +4,7 @@ import { IDisposable, Uri } from '@opensumi/ide-core-common';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ISumiBrowserContributions {
   [containerId: string]: {
@@ -191,9 +192,11 @@ export interface IEditorSideViewContribution {
    * view 放置的位置，目前只支持 bottom
    */
   side: 'bottom';
-  when?: string;
+  /**
+   * When条件语句 https://code.visualstudio.com/api/references/when-clause-contexts#conditional-operators
+   */
+  when?: string | ContextKeyExpr;
 }
-
 export interface IRunTimeParams {
   getExtensionExtendService: (extension: IExtension, componentId: string) => {
     extendProtocol: {
