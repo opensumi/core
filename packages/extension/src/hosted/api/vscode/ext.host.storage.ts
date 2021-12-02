@@ -63,6 +63,10 @@ export class ExtensionMemento implements Memento {
     });
   }
 
+  get keys() {
+    return Object.keys(this.cache);
+  }
+
   get whenReady(): Promise<ExtensionMemento> {
     return this._init;
   }
