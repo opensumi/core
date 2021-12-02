@@ -157,7 +157,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         });
       }
       this._previousVersionId = e.versionId;
-      this.notifyChangeEvent(e.changes);
+      this.notifyChangeEvent(e.changes, e.isRedoing, e.isUndoing);
     });
 
     this.addDispose(monacoModel);
@@ -215,7 +215,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     (this.monacoModel as any)._commandManager.clear();
     this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.savingTasks = [];
-    this.notifyChangeEvent();
+    this.notifyChangeEvent([], false, false);
     this.baseContent = content;
   }
 
@@ -366,7 +366,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   setPersist(versionId: number) {
     this._persistVersionId = versionId;
-    this.notifyChangeEvent();
+    this.notifyChangeEvent([], false, false);
   }
 
   async reload() {
@@ -451,7 +451,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5!;
   }
 
-  private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
+  private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = [], isRedoing: boolean, isUndoing: boolean) {
     if (!this.closeAutoSave && this.savable && this.editorPreferences['editor.autoSave'] === 'afterDelay') {
       this.tryAutoSaveAfterDelay();
     }
@@ -461,6 +461,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       dirty: this.dirty,
       changes,
       eol: this.eol,
+      isRedoing,
+      isUndoing,
       versionId: this.monacoModel.getVersionId(),
     }));
 

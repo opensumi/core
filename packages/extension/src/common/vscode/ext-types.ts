@@ -1811,6 +1811,11 @@ export enum TextDocumentSaveReason {
   FocusOut = 3,
 }
 
+export enum TextDocumentChangeReason {
+  Undo = 1,
+  Redo = 2,
+}
+
 export { TextEditorRevealType } from './editor';
 
 @es5ClassCompat
