@@ -154,22 +154,18 @@ class MainThreadSCMProvider implements ISCMProvider {
     }
   }
 
-  $registerGroups(_groups: [number /*handle*/, string /*id*/, string /*label*/, SCMGroupFeatures][]): void {
-    const groups = _groups.map(([handle, id, label, features]) => {
-      const group = new MainThreadSCMResourceGroup(
-        this.handle,
-        handle,
-        this,
-        features,
-        label,
-        id,
-      );
+  $registerGroup(handle: number, id: string, label: string): void {
+    const group = new MainThreadSCMResourceGroup(
+      this.handle,
+      handle,
+      this,
+      {},
+      label,
+      id,
+    );
 
-      this._groupsByHandle[handle] = group;
-      return group;
-    });
-
-    this.groups.splice(this.groups.elements.length, 0, groups);
+    this._groupsByHandle[handle] = group;
+    this.groups.splice(this.groups.elements.length, 0, [group]);
   }
 
   $updateGroup(handle: number, features: SCMGroupFeatures): void {
@@ -341,7 +337,7 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     this._repositories.delete(handle);
   }
 
-  $registerGroups(sourceControlHandle: number, groups: [number /*handle*/, string /*id*/, string /*label*/, SCMGroupFeatures][], splices: SCMRawResourceSplices[]): void {
+  $registerGroup(sourceControlHandle: number, groupHandle: number, id: string, label: string): void {
     const repository = this._repositories.get(sourceControlHandle);
 
     if (!repository) {
@@ -349,12 +345,10 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     }
 
     const provider = repository.provider as MainThreadSCMProvider;
-    provider.$registerGroups(groups);
-    provider.$spliceGroupResourceStates(splices);
+    provider.$registerGroup(groupHandle, id, label);
+
     this.addDispose(Disposable.create(() => {
-      for (const group of groups) {
-        provider.$unregisterGroup(group[0]);
-      }
+      provider.$unregisterGroup(groupHandle);
     }));
   }
 
