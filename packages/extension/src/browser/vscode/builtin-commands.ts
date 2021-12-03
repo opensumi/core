@@ -171,9 +171,18 @@ export const DIFF: Command = {
   id: 'vscode.diff',
 };
 
+export const OPEN_WITH: Command = {
+  id: 'vscode.openWith',
+};
+
 export const API_OPEN_DIFF_EDITOR_COMMAND_ID: Command = {
   id: EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID,
   delegate: DIFF.id,
+};
+
+export const API_OPEN_WITH_EDITOR_COMMAND_ID: Command = {
+  id: EDITOR_COMMANDS.API_OPEN_WITH_EDITOR_COMMAND_ID,
+  delegate: OPEN_WITH.id,
 };
 
 export const RELOAD_WINDOW_COMMAND: Command = {

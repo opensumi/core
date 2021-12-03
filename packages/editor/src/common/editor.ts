@@ -739,3 +739,10 @@ export function getSimpleEditorOptions(): IEditorOptions {
     },
   };
 }
+
+/**
+ * A way to address editor groups through a column based system
+ * where `0` is the first column. Will fallback to `SIDE_GROUP`
+ * in case the column does not exist yet.
+ */
+export type EditorGroupColumn = number;
