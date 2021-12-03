@@ -121,7 +121,6 @@ export const CommandContribution = Symbol('CommandContribution');
 /**
  * 命令贡献 Contribution
  * 其他模块如果要注册命令需要实现该接口，并且把 Symbol 定义加入 Domain
- * 参考 https://yuque.antfin-inc.com/zymuwz/lsxfi3/yfe5nw#aDonI
  */
 export interface CommandContribution {
   /**

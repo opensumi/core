@@ -35,7 +35,7 @@ export const Sample = () => (
 );
 ```
 
-在 ide-framework 中可通过 appConfig [传入新 Icon/覆盖已存在的 Icon](https://yuque.antfin-inc.com/ide-framework/lsxfi3/mddcy3#m727J)
+在 ide-framework 中可通过 appConfig 传入新 Icon/覆盖已存在的 Icon
 ```js
 renderApp({
   // ...

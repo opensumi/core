@@ -56,7 +56,6 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   }
 
   // hack duck types for ContextKeyService
-  // https://yuque.antfin-inc.com/zymuwz/lsxfi3/kg9bng#5wAGA
   // https://github.com/microsoft/vscode/blob/master/src/vs/platform/configuration/common/configuration.ts
   protected triggerPreferencesChanged(changesToEmit: PreferenceChanges) {
     const changes = Object.values(changesToEmit);
