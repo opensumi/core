@@ -26,7 +26,6 @@ export interface MarketplaceRequest {
 }
 
 export interface MarketplaceConfig {
-  // 插件市场地址, 默认 https://marketplace.antfin-inc.com
   endpoint: string;
   // 插件市场下载到本地的位置，默认 ~/.sumi/extensions
   extensionDir: string;
@@ -174,7 +173,7 @@ export class ServerApp implements IServerApp {
       logLevel: opts.logLevel,
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign({
-        endpoint: 'https://marketplace.antfin-inc.com',
+        endpoint: 'https://open-vsx.org/api',
         extensionDir: path.join(
           os.homedir(),
           ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),

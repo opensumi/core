@@ -115,12 +115,12 @@ describe('vscode extHostEnv Test', () => {
     });
 
     it('asExternalUri remote uri', async () => {
-      const uri = Uri.parse('https://ide.antfin-inc.com/workspaces/5fb21cc29b67dcd76a27272f');
+      const uri = Uri.parse('https://opensumi.com/workspaces/5fb21cc29b67dcd76a27272f');
       const externalUri = await env.asExternalUri(uri);
       expect(externalUri.scheme).toBe('https');
-      expect(externalUri.authority).toBe('ide.antfin-inc.com');
+      expect(externalUri.authority).toBe('opensumi.com');
       expect(externalUri.path.toString()).toBe('/workspaces/5fb21cc29b67dcd76a27272f');
-      expect(externalUri.toString(true)).toBe('https://ide.antfin-inc.com/workspaces/5fb21cc29b67dcd76a27272f');
+      expect(externalUri.toString(true)).toBe('https://opensumi.com/workspaces/5fb21cc29b67dcd76a27272f');
     });
 
     it('asExternalUri appUriScheme', async () => {
