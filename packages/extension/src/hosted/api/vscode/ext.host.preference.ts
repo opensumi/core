@@ -110,23 +110,24 @@ export class ExtHostPreference implements IExtHostPreference {
   private parseConfigurationData(data: { [key: string]: any }): { [key: string]: any } {
     return Object.keys(data).reduce((result: any, key: string) => {
       const parts = key.split('.');
+      let branch = result;
 
       for (let i = 0; i < parts.length; i++) {
         if (i === parts.length - 1) {
-          result[parts[i]] = data[key];
+          branch[parts[i]] = data[key];
           continue;
         }
-        if (!result[parts[i]]) {
-          result[parts[i]] = {};
+        if (!branch[parts[i]]) {
+          branch[parts[i]] = {};
         }
-        result = result[parts[i]];
+        branch = branch[parts[i]];
 
         // overridden 的属性，如languages的 [typescript].editor.tabsize 转换为
         // "[typescript]" : {
         //    "editor.tabsize" : "2"
         //  }
         if (i === 0 && this.OVERRIDE_PROPERTY_PATTERN.test(parts[i])) {
-          result[key.substring(parts[0].length + 1)] = data[key];
+          branch[key.substring(parts[0].length + 1)] = data[key];
           break;
         }
       }
