@@ -5,7 +5,7 @@ import * as types from './ext-types';
 import * as model from './model.api';
 import * as debugModel from '@opensumi/ide-debug';
 import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor } from '@opensumi/ide-core-common';
-import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@opensumi/ide-editor/lib/common';
+import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness, EditorGroupColumn } from '@opensumi/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
@@ -1555,13 +1555,6 @@ export namespace SignatureHelp {
     };
   }
 }
-
-/**
- * A way to address editor groups through a column based system
- * where `0` is the first column. Will fallback to `SIDE_GROUP`
- * in case the column does not exist yet.
- */
-export type EditorGroupColumn = number;
 
 export const ACTIVE_GROUP = -1;
 export type ACTIVE_GROUP_TYPE = typeof ACTIVE_GROUP;

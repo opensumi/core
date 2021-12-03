@@ -1,7 +1,7 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import { ICustomEditorOptions } from '../../../common/vscode';
+import { ICustomEditorOptions, CUSTOM_EDITOR_SCHEME } from '../../../common/vscode';
 import React = require('react');
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
 import { IActivationEventService } from '../../types';
@@ -45,7 +45,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
     try {
       const viewType = customEditor.viewType;
       this.options.set(customEditor.viewType, {});
-      const componentId = 'vscode_customEditor_' + customEditor.viewType;
+      const componentId = `${CUSTOM_EDITOR_SCHEME}-${customEditor.viewType}`;
       const component = createCustomEditorComponent(customEditor.viewType, componentId, () => {
         return this.getOptions(customEditor.viewType);
       });

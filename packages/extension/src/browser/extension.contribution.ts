@@ -4,10 +4,11 @@ import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribut
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
-import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
 import type vscode from 'vscode';
+import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
-import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
+import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionService, IExtensionHostProfilerService, ExtensionHostTypeUpperCase } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
@@ -293,6 +294,24 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
+    registry.registerCommand(VSCodeBuiltinCommands.OPEN_WITH, {
+      execute: (resource: UriComponents, id: string, columnAndOptions?: [EditorGroupColumn?, ITextEditorOptions?]) => {
+        const uri = URI.from(resource);
+        const options: IResourceOpenOptions = {};
+        const [columnArg] = columnAndOptions ?? [];
+        if (id !== 'default') {
+          options.forceOpenType = {
+            type: 'component',
+            componentId: `${CUSTOM_EDITOR_SCHEME}-${id}`,
+          };
+        }
+        if (typeof columnArg === 'number') {
+          options.groupIndex = columnArg;
+        }
+        return this.workbenchEditorService.open(uri, options);
+      },
+    });
+
     registry.registerCommand(VSCodeBuiltinCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options?: any) => {
         const openOptions: IResourceOpenOptions = {
@@ -341,6 +360,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP,
       VSCodeBuiltinCommands.API_OPEN_EDITOR_COMMAND_ID,
       VSCodeBuiltinCommands.API_OPEN_DIFF_EDITOR_COMMAND_ID,
+      VSCodeBuiltinCommands.API_OPEN_WITH_EDITOR_COMMAND_ID,
       // debug builtin commands
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_INTO,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OVER,

@@ -270,7 +270,6 @@ export namespace EDITOR_COMMANDS {
 
   export const API_OPEN_EDITOR_COMMAND_ID = '_workbench.open';
   export const API_OPEN_DIFF_EDITOR_COMMAND_ID = '_workbench.diff';
-  // TODO: open with 待实现
   export const API_OPEN_WITH_EDITOR_COMMAND_ID = '_workbench.openWith';
 
   export const NEW_UNTITLED_FILE: Command = {
