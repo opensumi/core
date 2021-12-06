@@ -1679,6 +1679,14 @@ declare module 'sumi-worker' {
     dispose(): void;
   }
 
+  export enum TextDocumentChangeReason {
+    /** The text change is caused by an undo operation. */
+    Undo = 1,
+
+    /** The text change is caused by an redo operation. */
+    Redo = 2,
+	}
+
   /**
    * An event describing a transactional [document](#TextDocument) change.
    */
@@ -1693,6 +1701,12 @@ declare module 'sumi-worker' {
      * An array of content changes.
      */
     readonly contentChanges: ReadonlyArray<TextDocumentContentChangeEvent>;
+
+    /**
+     * The reason why the document was changed.
+     * Is `undefined` if the reason is not known.
+    */
+    readonly reason: TextDocumentChangeReason | undefined;
   }
 
   /**

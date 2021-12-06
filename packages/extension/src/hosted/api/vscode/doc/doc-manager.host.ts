@@ -4,7 +4,7 @@ import type vscode from 'vscode';
 
 import { ExtensionDocumentDataManager, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadDocumentsShape, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
-import { TextEdit, Uri } from '../../../../common/vscode/ext-types';
+import { TextDocumentChangeReason, TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
@@ -16,7 +16,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   private readonly rpcProtocol: IRPCProtocol;
   private readonly _proxy: IMainThreadDocumentsShape;
   private readonly _workspaceProxy: IMainThreadWorkspace;
-  private readonly _logService: any;
 
   private _documents: Map<string, ExtHostDocumentData> = new Map();
   private _contentProviders: Map<string, vscode.TextDocumentContentProvider> = new Map();
@@ -37,12 +36,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     this.rpcProtocol = rpcProtocol;
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadDocuments);
     this._workspaceProxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
-    this._logService = {
-      trace() {
-        // tslint:disable-next-line:no-console
-        console.log.apply(console, arguments as any);
-      },
-    };
   }
 
   get allDocumentData() {
@@ -166,27 +159,38 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   }
 
   $fireModelChangedEvent(e: IExtensionDocumentModelChangedEvent) {
-    const { uri, changes, versionId, eol, dirty } = e;
+    const { uri, changes, versionId, eol, dirty, isRedoing, isUndoing } = e;
     const document = this._documents.get(uri);
-    if (document) {
-      document.onEvents({
-        eol,
-        versionId,
-        changes,
-      });
-      document._acceptIsDirty(dirty);
-      this._onDidChangeTextDocument.fire({
-        document: document.document,
-        contentChanges: changes.map((change) => {
-          return {
-            ...change,
-            range: toRange(change.range) as any,
-          };
-        }),
-      });
-    } else {
-      // TODO: 增加消息后台未接受到的情况
+    if (!document) {
+      return;
     }
+    document.onEvents({
+      eol,
+      versionId,
+      changes,
+      isRedoing,
+      isUndoing,
+    });
+    document._acceptIsDirty(dirty);
+
+    let reason: vscode.TextDocumentChangeReason | undefined;
+
+    if (isRedoing) {
+      reason = TextDocumentChangeReason.Redo;
+    } else if (isUndoing) {
+      reason = TextDocumentChangeReason.Undo;
+    }
+
+    this._onDidChangeTextDocument.fire({
+      document: document.document,
+      contentChanges: changes.map((change) => {
+        return {
+          ...change,
+          range: toRange(change.range) as any,
+        };
+      }),
+      reason,
+    });
   }
 
   $fireModelOpenedEvent(e: IExtensionDocumentModelOpenedEvent) {

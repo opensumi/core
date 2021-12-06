@@ -243,6 +243,8 @@ export interface IEditorDocumentModelContentChangedEventPayload {
   changes: IEditorDocumentModelContentChange[];
   eol: string;
   versionId: number;
+  isRedoing: boolean;
+  isUndoing: boolean;
 }
 
 export class EditorDocumentModelOptionChangedEvent extends BasicEvent<IEditorDocumentModelOptionChangedEventPayload> {}

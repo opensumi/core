@@ -127,12 +127,15 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     if (!this.isDocSyncEnabled(e.payload.uri)) {
       return;
     }
+
     this.proxy.$fireModelChangedEvent({
       changes: e.payload.changes,
       uri: e.payload.uri.toString(),
       eol: e.payload.eol,
       dirty: e.payload.dirty,
       versionId: e.payload.versionId,
+      isRedoing: e.payload.isRedoing,
+      isUndoing: e.payload.isUndoing,
     });
   }
 
