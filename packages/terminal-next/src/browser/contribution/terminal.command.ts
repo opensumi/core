@@ -22,13 +22,18 @@ import {
   ITerminalApiService,
   TERMINAL_COMMANDS,
 } from '../../common';
+import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
 import { TerminalKeyBoardInputService } from '../terminal.input';
+import { TerminalEnvironmentService } from '../terminal.environment.service';
 
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
+
+  @Autowired(EnvironmentVariableServiceToken)
+  protected readonly terminalEnvironmentService: TerminalEnvironmentService;
 
   @Autowired(ITerminalGroupViewService)
   protected readonly view: ITerminalGroupViewService;
@@ -249,6 +254,13 @@ export class TerminalCommandContribution implements CommandContribution {
             }
           });
         }
+      },
+    });
+
+    registry.registerCommand(COMMON_COMMANDS.ENVIRONMENT_VARIABLE, {
+      execute: async () => {
+        const env = await this.terminalEnvironmentService.getProcessEnv();
+        return env;
       },
     });
   }

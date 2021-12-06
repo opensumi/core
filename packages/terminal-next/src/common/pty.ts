@@ -4,7 +4,10 @@ import { Uri } from '@opensumi/ide-core-common';
 import { WindowsShellType } from './shell';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
+export const ITerminalProcessPath = 'ITerminalProcessPath';
+
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
+export const ITerminalProcessService = Symbol('ITerminalProcessServices');
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
@@ -167,7 +170,10 @@ export interface ITerminalNodeService {
   closeClient(clientId: string);
 
   ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
+}
 
+export interface ITerminalProcessService {
+  getEnv(): Promise<{ [key in string]: string | undefined }>;
 }
 
 export interface ITerminalServiceClient {

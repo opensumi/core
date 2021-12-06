@@ -263,6 +263,10 @@ export namespace COMMON_COMMANDS {
   export const OPEN_LAUNCH_CONFIGURATION: Command = {
     id: 'core.launchConfiguration.open',
   };
+
+  export const ENVIRONMENT_VARIABLE: Command = {
+    id: 'core.environment.variable',
+  };
 }
 
 export namespace EDITOR_COMMANDS {
