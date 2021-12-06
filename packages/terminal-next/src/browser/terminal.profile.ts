@@ -1,6 +1,5 @@
-import { Disposable, Emitter, isWindows, WithEventBus } from "@opensumi/ide-core-common";
-import { isMacintosh, OperatingSystem } from "@opensumi/ide-core-common/lib/platform";
-import { IDisposable, Event } from "sumi";
+import { Disposable, Emitter, isWindows, WithEventBus, IDisposable, Event } from "@opensumi/ide-core-common";
+import { isMacintosh } from "@opensumi/ide-core-common/lib/platform";
 import { ITerminalProfile, ITerminalProfileProvider } from "../common";
 import { ITerminalProfileService } from "../common/profile";
 

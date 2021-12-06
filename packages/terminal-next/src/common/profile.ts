@@ -1,4 +1,4 @@
-import { IDisposable, Event } from "sumi";
+import { IDisposable, Event } from "@opensumi/ide-core-common/lib";
 import { ITerminalProfile, ITerminalProfileProvider } from "..";
 
 export const ITerminalProfileService = Symbol('ITerminalProfileService');
