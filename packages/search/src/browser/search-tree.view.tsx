@@ -85,13 +85,13 @@ const ResultTotalContent = observer<{
   return null;
 });
 
-export const SearchTree = React.forwardRef((
+export const SearchTree = React.memo(React.forwardRef((
   {
     searchPanelLayout,
     viewState,
   }: ISearchTreeProp,
-  ref,
 ) => {
+  console.log('SearchTree rerender');
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
     width: 0,
@@ -167,4 +167,9 @@ export const SearchTree = React.forwardRef((
       }
     </div>
   );
+}), (prevProps, nextProps) => {
+  return prevProps.searchPanelLayout.width === nextProps.searchPanelLayout.width
+    && prevProps.searchPanelLayout.height === nextProps.searchPanelLayout.height
+    && prevProps.viewState.width === nextProps.viewState.width
+    && prevProps.viewState.height === nextProps.viewState.height;
 });

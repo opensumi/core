@@ -547,6 +547,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
     this.browserStorageService.setData('search.UIState', newUIState);
+    // FIXME: 需要更精确的判断哪些 state 改变后触发重新搜索
     if (!e) { return; }
     this.search(e, newUIState);
   }

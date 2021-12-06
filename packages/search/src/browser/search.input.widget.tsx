@@ -26,6 +26,21 @@ export interface SearchInputWidgetProps {
   validateMessage?: ValidateMessage;
 }
 
+const SearchRuleCheckout = React.memo(({
+  isDetailOpen,
+  onDetailToggle,
+}: Pick<SearchInputWidgetProps, 'isDetailOpen' | 'onDetailToggle'>) => (
+  <p className={styles.search_input_title}>
+    {localize('search.input.title')}
+    <CheckBox
+      className={cls(styles.checkbox)}
+      label={localize('search.input.checkbox')}
+      checked={isDetailOpen}
+      id='search-input'
+      onChange={onDetailToggle} />
+  </p>
+));
+
 export const SearchInputWidget = React.memo(({
   isDetailOpen,
   onDetailToggle,
@@ -48,15 +63,7 @@ export const SearchInputWidget = React.memo(({
   <div className={styles.search_and_replace_container}>
     <div className={styles.search_and_replace_fields}>
       <div className={styles.search_field_container}>
-        <p className={styles.search_input_title}>
-          {localize('search.input.title')}
-          <CheckBox
-            className={cls(styles.checkbox)}
-            label={localize('search.input.checkbox')}
-            checked={isDetailOpen}
-            id='search-input'
-            onChange={onDetailToggle} />
-        </p>
+        <SearchRuleCheckout isDetailOpen={isDetailOpen} onDetailToggle={onDetailToggle} />
         <div className={cls(styles.search_field, { [styles.focus]: isSearchFocus })}>
           <ValidateInput
             id='search-input-field'

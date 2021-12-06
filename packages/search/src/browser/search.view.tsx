@@ -14,39 +14,8 @@ import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { SearchInputWidget } from './search.input.widget';
 import { SearchReplaceWidget } from './search.replace.widget';
+import { SearchRulesWidget } from './search.rules.widget';
 
-const IncludeRuleContent = React.memo(() => (
-  <div className={cls(styles.include_rule_content)}>
-    <ul>
-      <li>, : {localize('search.help.concatRule')}</li>
-      <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
-      <li>? : {localize('search.help.matchOne')}</li>
-      <li>** : {localize('search.help.matchAny')}</li>
-      <li>{} : {localize('search.help.matchWithGroup')}</li>
-      <li>[] : {localize('search.help.matchRange')}</li>
-    </ul>
-  </div>
-));
-
-const ExcludeRuleContent = React.memo(() => {
-  const configContext = React.useContext(ConfigContext);
-  const { injector } = configContext;
-  const searchBrowserService = injector.get(ContentSearchClientService);
-  const excludeList = React.useMemo(() => {
-    return searchBrowserService.getPreferenceSearchExcludes();
-  }, [searchBrowserService]);
-
-  return (<div className={cls(styles.exclude_rule_content)}>
-    <div>
-      {excludeList.map((exclude, index) => {
-        if (index === excludeList.length - 1) {
-          return exclude;
-        }
-        return `${exclude}, `;
-      })}
-    </div>
-  </div>);
-});
 
 export const Search = React.memo(observer(({
   viewState,
@@ -84,15 +53,25 @@ export const Search = React.memo(observer(({
 
   const onMatchCaseToggle = React.useCallback(() => {
     updateUIState({ isMatchCase: !UIState.isMatchCase });
-  }, [UIState.isMatchCase]);
+  }, [UIState]);
 
   const onRegexToggle = React.useCallback(() => {
-    updateUIState({ isRegexp: !UIState.isUseRegexp });
+    updateUIState({ isUseRegexp: !UIState.isUseRegexp });
   }, [UIState]);
 
   const onWholeWordToggle = React.useCallback(() => {
-    updateUIState({ isRegexp: !UIState.isWholeWord });
-  }, [UIState.isWholeWord]);
+    updateUIState({ isWholeWord: !UIState.isWholeWord });
+  }, [UIState]);
+
+  const onOnlyOpenEditorsToggle = React.useCallback(() => {
+    console.log('trigger onOnlyOpenEditorsToggle', UIState.isOnlyOpenEditors);
+    updateUIState({ isOnlyOpenEditors: !UIState.isOnlyOpenEditors });
+  }, [UIState]);
+
+  const onIncludeIgnoredToggle = React.useCallback(() => {
+    console.log('trigger onIncludeIgnoredToggle', UIState.isIncludeIgnored);
+    updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored });
+  }, [UIState]);
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -142,79 +121,20 @@ export const Search = React.memo(observer(({
         />
 
         <div className={cls(styles.search_details)}>
-          {UIState.isDetailOpen ?
-            <div className='glob_field-container'>
-              <div className={cls(styles.glob_field)}>
-                <div className={cls(styles.label)}>
-                  <span className={styles.limit}>{localize('search.includes')}</span>
-                  <span className={cls(styles.include_rule)}>
-                    <Popover
-                      id={'show_include_rule'}
-                      title={localize('search.help.supportRule')}
-                      content={<IncludeRuleContent />}
-                      trigger={PopoverTriggerType.hover}
-                      delay={500}
-                      position={PopoverPosition.right}
-                    >
-                      <a>{localize('search.help.showIncludeRule')}</a>
-                    </Popover>
-                  </span>
-                </div>
-                <Input
-                  value={searchBrowserService.includeValue}
-                  type='text'
-                  placeholder={localize('search.includes.description')}
-                  onKeyUp={searchBrowserService.search}
-                  onChange={searchBrowserService.onSearchIncludeChange}
-                  addonAfter={[
-                    <span
-                      key='onlyOpenEditors'
-                      className={cls(getExternalIcon('book'), styles.search_option, { [styles.select]: UIState.isOnlyOpenEditors })}
-                      title={localize('onlyOpenEditors')}
-                      onClick={(e) => updateUIState({ isOnlyOpenEditors: !UIState.isOnlyOpenEditors }, e)}
-                    />,
-                  ]}
-                />
-              </div>
-              <div className={cls(styles.glob_field, styles.search_excludes)}>
-                <div className={styles.label}>
-                  <span className={styles.limit}>{localize('search.excludes')}</span>
-                  <div className={styles.checkbox_wrap}>
-                    <CheckBox
-                      className={cls(styles.checkbox)}
-                      label={localize('search.excludes.default.enable')}
-                      checked={!UIState.isIncludeIgnored}
-                      id='search-input-isIncludeIgnored'
-                      onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
-                    />
-                    <Popover
-                      title={localize('search.help.excludeList')}
-                      className={cls(styles.search_excludes_description)}
-                      id={'search_excludes'}
-                      action={localize('search.help.modify')}
-                      onClickAction={searchBrowserService.openPreference}
-                      content={<ExcludeRuleContent />}
-                      trigger={PopoverTriggerType.hover}
-                      delay={500}
-                      position={PopoverPosition.right}
-                    >
-                      <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }}></span>
-                    </Popover>
-                  </div>
-
-                </div>
-                <Input
-                  type='text'
-                  value={searchBrowserService.excludeValue}
-                  placeholder={localize('search.includes.description')}
-                  onKeyUp={searchBrowserService.search}
-                  onChange={searchBrowserService.onSearchExcludeChange}
-                />
-              </div>
-            </div> : ''
-          }
+          {UIState.isDetailOpen &&
+            <SearchRulesWidget
+              includeValue={searchBrowserService.includeValue}
+              excludeValue={searchBrowserService.excludeValue}
+              onSearch={searchBrowserService.search}
+              onChangeInclude={searchBrowserService.onSearchIncludeChange}
+              onChangeExclude={searchBrowserService.onSearchExcludeChange}
+              isOnlyOpenEditors={UIState.isOnlyOpenEditors}
+              isIncludeIgnored={UIState.isIncludeIgnored}
+              onOnlyOpenEditorsToggle={onOnlyOpenEditorsToggle}
+              onIncludeIgnoredToggle={onIncludeIgnoredToggle}
+              onOpenPreference={searchBrowserService.openPreference}
+            />}
         </div>
-
       </div>
       {
         (searchResults && searchResults.size > 0 && !searchError ) ? <SearchTree
