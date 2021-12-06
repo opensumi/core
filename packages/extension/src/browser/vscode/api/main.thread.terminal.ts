@@ -27,6 +27,7 @@ import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
   private readonly _terminalProcessProxies = new Map<string, ITerminalProcessExtHostProxy>();
+  private readonly _profileProviders = new Map<string, IDisposable>();
 
   /**
    * A single shared terminal link provider for the exthost. When an ext registers a link
@@ -208,6 +209,21 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   public $stopLinkProvider() {
     this._linkProvider?.dispose();
     this._linkProvider = undefined;
+  }
+
+  public $registerProfileProvider(id: string, extensionIdentifier: string): void {
+    // TODO: 待实现
+    // Proxy profile provider requests through the extension host
+    // this._profileProviders.set(id, this.controller.registerTerminalProfileProvider(extensionIdentifier, id, {
+    //   createContributedTerminalProfile: async (options) => {
+    //     return this.proxy.$createContributedProfileTerminal(id, options);
+    //   },
+    // }));
+  }
+
+  public $unregisterProfileProvider(id: string): void {
+    this._profileProviders.get(id)?.dispose();
+    this._profileProviders.delete(id);
   }
 
   $setEnvironmentVariableCollection(
