@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import { Input, ValidateInput, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
+import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition, ValidateMessage } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
@@ -12,25 +12,30 @@ import {
 } from '../common/';
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
+import { SearchReplaceWidget } from './search.replace.widget';
 
-function getIncludeRuleContent() {
-  return (
-    <div className={cls(styles.include_rule_content)}>
-      <ul>
-        <li>, : {localize('search.help.concatRule')}</li>
-        <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
-        <li>? : {localize('search.help.matchOne')}</li>
-        <li>** : {localize('search.help.matchAny')}</li>
-        <li>{} : {localize('search.help.matchWithGroup')}</li>
-        <li>[] : {localize('search.help.matchRange')}</li>
-      </ul>
-    </div>
-  );
-}
+const IncludeRuleContent = React.memo(() => (
+  <div className={cls(styles.include_rule_content)}>
+    <ul>
+      <li>, : {localize('search.help.concatRule')}</li>
+      <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
+      <li>? : {localize('search.help.matchOne')}</li>
+      <li>** : {localize('search.help.matchAny')}</li>
+      <li>{} : {localize('search.help.matchWithGroup')}</li>
+      <li>[] : {localize('search.help.matchRange')}</li>
+    </ul>
+  </div>
+));
 
-function getExcludeRuleContent(excludeList: string[]) {
-  return (
-    <div className={cls(styles.exclude_rule_content)}>
+const ExcludeRuleContent = React.memo(() => {
+  const configContext = React.useContext(ConfigContext);
+  const { injector } = configContext;
+  const searchBrowserService = injector.get(ContentSearchClientService);
+  const excludeList = React.useMemo(() => {
+    return searchBrowserService.getPreferenceSearchExcludes();
+  }, [searchBrowserService]);
+
+  return (<div className={cls(styles.exclude_rule_content)}>
       <div>
         {excludeList.map((exclude, index) => {
           if (index === excludeList.length - 1) {
@@ -39,11 +44,30 @@ function getExcludeRuleContent(excludeList: string[]) {
           return `${exclude}, `;
         })}
       </div>
-    </div>
-  );
+    </div>);
+  });
+
+export interface SearchReplaceWidgetProps {
+  isDetailOpen: boolean;
+  onDetailToggle: () => void;
+  isSearchFocus: boolean;
+  onSearchFocus: () => void;
+  onSearchBlur: () => void;
+  isMatchCase: boolean;
+  onMatchCaseToggle: () => void;
+  isWholeWord: boolean;
+  onWholeWordToggle: () => void;
+  isRegex: boolean;
+  onRegexToggle: () => void;
+  searchValue: string;
+  onSearch: () => void;
+  onSearchInputChange: (e: React.FormEvent<HTMLInputElement>) => void;
+  searchInputEl: RefObject<HTMLInputElement>;
+  isShowValidateMessage: boolean;
+  validateMessage?: ValidateMessage;
 }
 
-export const Search = observer(({
+export const Search = React.memo(observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>,
 ) => {
@@ -51,7 +75,6 @@ export const Search = observer(({
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
   const searchBrowserService = injector.get(ContentSearchClientService);
-
   const [searchPanelLayout, setSearchPanelLayout] = React.useState({ height: 0, width: 0 });
   const searchTreeRef = React.useRef();
 
@@ -65,6 +88,30 @@ export const Search = observer(({
   const isSearchDoing = searchBrowserService.isSearchDoing;
   const validateMessage = searchBrowserService.validateMessage;
   const isShowValidateMessage = searchBrowserService.isShowValidateMessage;
+
+  const onDetailToggle = React.useCallback(() => {
+    updateUIState({ isDetailOpen: !UIState.isDetailOpen });
+  }, [UIState]);
+
+  const onSearchFocus = React.useCallback(() => {
+    updateUIState({ searchFocus: true });
+  }, []);
+
+  const onSearchBlur = React.useCallback(() => {
+    updateUIState({ searchFocus: false });
+  }, []);
+
+  const onMatchCaseToggle = React.useCallback(() => {
+    updateUIState({ isMatchCase: !UIState.isMatchCase });
+  }, [UIState]);
+
+  const onRegexToggle = React.useCallback(() => {
+    updateUIState({ isRegexp: !UIState.isUseRegexp });
+  }, [UIState]);
+
+  const onWholeWordToggle = React.useCallback(() => {
+    updateUIState({ isRegexp: !UIState.isUseRegexp });
+  }, [UIState]);
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -84,60 +131,25 @@ export const Search = observer(({
         <ProgressBar loading={isSearchDoing} />
       </div>
       <div className={styles.search_options} ref={searchOptionRef}>
-        <div className={styles.search_and_replace_container}>
-          <div className={styles.search_and_replace_fields}>
-            <div className={styles.search_field_container}>
-              <p className={styles.search_input_title}>
-                {localize('search.input.title')}
-                <CheckBox
-                  className={cls(styles.checkbox)}
-                  label={localize('search.input.checkbox')}
-                  checked={UIState.isDetailOpen}
-                  id='search-input'
-                  onChange={() => { updateUIState({ isDetailOpen: !UIState.isDetailOpen }); }}
-                />
-              </p>
-              <div className={cls(styles.search_field, { [styles.focus]: UIState.isSearchFocus })}>
-                <ValidateInput
-                  id='search-input-field'
-                  title={localize('search.input.placeholder')}
-                  type='text'
-                  value={searchBrowserService.searchValue}
-                  placeholder={localize('search.input.title')}
-                  onFocus={() => updateUIState({ isSearchFocus: true })}
-                  onBlur={() => updateUIState({ isSearchFocus: false })}
-                  onKeyUp={searchBrowserService.search}
-                  onChange={searchBrowserService.onSearchInputChange}
-                  ref={searchBrowserService.searchInputEl}
-                  validateMessage={isShowValidateMessage ? validateMessage : undefined }
-                  addonAfter={[
-                    <span
-                    key={localize('caseDescription')}
-                    className={cls(getIcon('ab'), styles['match-case'], styles.search_option, { [styles.select]: UIState.isMatchCase })}
-                    title={localize('caseDescription')}
-                    onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
-                  ></span>,
-                  <span
-                    key={localize('wordsDescription')}
-                    className={cls(getIcon('abl'), styles['whole-word'], styles.search_option, { [styles.select]: UIState.isWholeWord })}
-                    title={localize('wordsDescription')}
-                    onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
-                  ></span>,
-                  <span
-                    key={localize('regexDescription')}
-                    className={cls(getIcon('regex'), styles['use-regexp'], styles.search_option, { [styles.select]: UIState.isUseRegexp })}
-                    title={localize('regexDescription')}
-                    onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
-                  ></span>,
-                  ]}
-                />
-              </div>
-              {/* <div className='search-notification '>
-              <div>This is only a subset of all results. Use a more specific search term to narrow down the result list.</div>
-            </div> */}
-            </div>
-          </div>
-        </div>
+        <SearchReplaceWidget
+          isDetailOpen={UIState.isDetailOpen}
+          onDetailToggle={onDetailToggle}
+          isMatchCase={UIState.isMatchCase}
+          onMatchCaseToggle={onMatchCaseToggle}
+          isRegex={UIState.isUseRegexp}
+          onRegexToggle={onRegexToggle}
+          isWholeWord={UIState.isWholeWord}
+          onWholeWordToggle={onWholeWordToggle}
+          isSearchFocus={UIState.isSearchFocus}
+          isShowValidateMessage={isShowValidateMessage}
+          validateMessage={validateMessage}
+          onSearchFocus={onSearchFocus}
+          onSearchBlur={onSearchBlur}
+          searchInputEl={searchBrowserService.searchInputEl}
+          searchValue={searchBrowserService.searchValue}
+          onSearchInputChange={searchBrowserService.onSearchInputChange}
+          onSearch={searchBrowserService.search}
+        />
 
         <div className={styles.search_and_replace_container}>
           <div className={styles.search_and_replace_fields}>
@@ -171,7 +183,7 @@ export const Search = observer(({
                     <Popover
                       id={'show_include_rule'}
                       title={localize('search.help.supportRule')}
-                      content={getIncludeRuleContent()}
+                      content={<IncludeRuleContent />}
                       trigger={PopoverTriggerType.hover}
                       delay={500}
                       position={PopoverPosition.right}
@@ -213,7 +225,7 @@ export const Search = observer(({
                       id={'search_excludes'}
                       action={localize('search.help.modify')}
                       onClickAction={searchBrowserService.openPreference}
-                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes())}
+                      content={<ExcludeRuleContent />}
                       trigger={PopoverTriggerType.hover}
                       delay={500}
                       position={PopoverPosition.right}
@@ -255,4 +267,4 @@ export const Search = observer(({
       }
     </div >
   );
-});
+}));
