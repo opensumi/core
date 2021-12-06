@@ -6,6 +6,8 @@ import {
   ITerminalDimensions,
   ITerminalExitEvent,
   ITerminalLinkDto,
+  ITerminalProfile,
+  ICreateContributedTerminalProfileOptions,
 } from '@opensumi/ide-terminal-next';
 import { SerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import type vscode from 'vscode';
@@ -94,8 +96,8 @@ export interface IExtHostTerminal {
     id: string,
     provider: vscode.TerminalProfileProvider,
   ): IDisposable;
-  // $acceptDefaultProfile(profile: ITerminalProfile, automationProfile: ITerminalProfile): void;
-  // $createContributedProfileTerminal(id: string, options: ICreateContributedTerminalProfileOptions): Promise<void>;
+  $acceptDefaultProfile(profile: ITerminalProfile, automationProfile: ITerminalProfile): void;
+  $createContributedProfileTerminal(id: string, options: ICreateContributedTerminalProfileOptions): Promise<void>;
 
   // #region
   getEnviromentVariableCollection(extension: IExtensionProps): vscode.EnvironmentVariableCollection;

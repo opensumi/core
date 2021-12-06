@@ -1,6 +1,14 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@opensumi/ide-core-common';
+import {
+  WithEventBus,
+  Emitter,
+  Deferred,
+  Event,
+  IDisposable,
+  DisposableStore,
+  Disposable,
+} from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@opensumi/ide-theme';
@@ -23,6 +31,7 @@ import {
   IStartExtensionTerminalRequest,
   ITerminalExitEvent,
   ITerminalExternalLinkProvider,
+  ITerminalProfileProvider,
 } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
@@ -244,7 +253,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId)!;
+    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(

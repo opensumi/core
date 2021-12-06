@@ -1,5 +1,5 @@
 import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
-import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
+import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalProfileProvider } from './extension';
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';

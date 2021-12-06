@@ -20,6 +20,8 @@ import {
   ITerminalLaunchError,
   ITerminalExitEvent,
   ITerminalLinkDto,
+  ICreateContributedTerminalProfileOptions,
+  ITerminalProfile,
 } from '@opensumi/ide-terminal-next';
 import {
   IMainThreadTerminal,
@@ -54,6 +56,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private readonly _terminalLinkCache: Map<string, Map<number, ICachedLinkEntry>> = new Map();
   private readonly _terminalLinkCancellationSource: Map<string, CancellationTokenSource> = new Map();
   private readonly _profileProviders: Map<string, vscode.TerminalProfileProvider> = new Map();
+
+  private _defaultProfile: ITerminalProfile | undefined;
+  private _defaultAutomationProfile: ITerminalProfile | undefined;
 
   private environmentVariableCollections: Map<string, EnvironmentVariableCollection> = new Map();
 
@@ -310,6 +315,39 @@ export class ExtHostTerminal implements IExtHostTerminal {
       this._profileProviders.delete(id);
       this.proxy.$unregisterProfileProvider(id);
     });
+  }
+
+  public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile: ITerminalProfile): void {
+    this._defaultProfile = profile;
+    this._defaultAutomationProfile = automationProfile;
+  }
+
+  public async $createContributedProfileTerminal(
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void> {
+    const token = new CancellationTokenSource().token;
+    let profile = await this._profileProviders.get(id)?.provideTerminalProfile(token);
+    if (token.isCancellationRequested) {
+      return;
+    }
+    if (profile && !('options' in profile)) {
+      profile = { options: profile };
+    }
+
+    if (!profile || !('options' in profile)) {
+      throw new Error(`No terminal profile options provided for id "${id}"`);
+    }
+
+    if ('pty' in profile.options) {
+      // TODO: 传入第二个参数
+      // this.createExtensionTerminal(profile.options, options);
+      this.createExtensionTerminal(profile.options);
+      return;
+    }
+    // TODO: 传入第二个参数
+    // this.createTerminalFromOptions(profile.options, options);
+    this.createTerminalFromOptions(profile.options);
   }
 
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
