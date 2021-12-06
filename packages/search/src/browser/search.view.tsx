@@ -84,15 +84,15 @@ export const Search = React.memo(observer(({
 
   const onMatchCaseToggle = React.useCallback(() => {
     updateUIState({ isMatchCase: !UIState.isMatchCase });
-  }, [UIState]);
+  }, [UIState.isMatchCase]);
 
   const onRegexToggle = React.useCallback(() => {
     updateUIState({ isRegexp: !UIState.isUseRegexp });
   }, [UIState]);
 
   const onWholeWordToggle = React.useCallback(() => {
-    updateUIState({ isRegexp: !UIState.isUseRegexp });
-  }, [UIState]);
+    updateUIState({ isRegexp: !UIState.isWholeWord });
+  }, [UIState.isWholeWord]);
 
   React.useEffect(() => {
     setSearchPanelLayout({
