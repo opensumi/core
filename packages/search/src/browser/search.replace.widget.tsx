@@ -1,87 +1,47 @@
-import React from 'react';
-import { localize } from '@opensumi/ide-core-browser';
-import { ValidateInput, CheckBox } from '@opensumi/ide-components';
-import { getIcon } from '@opensumi/ide-core-browser';
-import cls from 'classnames';
+import React, { RefObject } from 'react';
+import { Input } from '@opensumi/ide-components/lib/input/Input';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import styles from './search.module.less';
-import { SearchReplaceWidgetProps } from './search.view';
+
+interface SearchReplaceWidgetProps {
+  replaceValue: string;
+  onSearch(): void;
+  onReplaceRuleChange(e: React.FormEvent<HTMLInputElement>): void;
+  replaceInputEl: RefObject<HTMLInputElement>;
+  doReplaceAll(): void;
+  resultCount: number;
+}
 
 export const SearchReplaceWidget = React.memo(({
-  isDetailOpen,
-  onDetailToggle,
-  isSearchFocus,
-  onSearchFocus,
-  onSearchBlur,
-  isMatchCase,
-  onMatchCaseToggle,
-  isWholeWord,
-  onWholeWordToggle,
-  isRegex,
-  onRegexToggle,
-  searchValue,
+  replaceValue,
   onSearch,
-  onSearchInputChange,
-  searchInputEl,
-  isShowValidateMessage,
-  validateMessage,
+  onReplaceRuleChange,
+  replaceInputEl,
+  doReplaceAll,
+  resultCount,
 }: SearchReplaceWidgetProps) => (
   <div className={styles.search_and_replace_container}>
     <div className={styles.search_and_replace_fields}>
-      <div className={styles.search_field_container}>
-        <p className={styles.search_input_title}>
-          {localize('search.input.title')}
-          <CheckBox
-            className={cls(styles.checkbox)}
-            label={localize('search.input.checkbox')}
-            checked={isDetailOpen}
-            id='search-input'
-            onChange={onDetailToggle} />
-        </p>
-        <div className={cls(styles.search_field, { [styles.focus]: isSearchFocus })}>
-          <ValidateInput
-            id='search-input-field'
-            title={localize('search.input.placeholder')}
-            type='text'
-            value={searchValue}
-            placeholder={localize('search.input.title')}
-            onFocus={onSearchFocus}
-            onBlur={onSearchBlur}
-            onKeyUp={onSearch}
-            onChange={onSearchInputChange}
-            ref={searchInputEl}
-            validateMessage={isShowValidateMessage ? validateMessage : undefined}
-            addonAfter={[
-              <span
-                key={localize('caseDescription')}
-                className={cls(getIcon('ab'), styles['match-case'], styles.search_option, { [styles.select]: isMatchCase })}
-                title={localize('caseDescription')}
-                onClick={onMatchCaseToggle}
-              ></span>,
-              <span
-                key={localize('wordsDescription')}
-                className={cls(getIcon('abl'), styles['whole-word'], styles.search_option, { [styles.select]: isWholeWord })}
-                title={localize('wordsDescription')}
-                onClick={onWholeWordToggle}
-              ></span>,
-              <span
-                key={localize('regexDescription')}
-                className={cls(getIcon('regex'), styles['use-regexp'], styles.search_option, { [styles.select]: isRegex })}
-                title={localize('regexDescription')}
-                onClick={onRegexToggle}
-              ></span>,
-            ]} />
+      <div className={styles.replace_field}>
+        <Input
+          value={replaceValue}
+          id='replace-input-field'
+          title={localize('search.replace.label')}
+          type='text'
+          placeholder={localize('search.replace.title')}
+          onKeyUp={onSearch}
+          onChange={onReplaceRuleChange}
+          ref={replaceInputEl}
+        />
+        <div className={`${styles['replace-all-button_container']} ${resultCount > 0 ? '' : styles.disabled}`} onClick={doReplaceAll}>
+          <span>
+            {localize('search.replaceAll.label')}
+          </span>
         </div>
       </div>
     </div>
   </div>
 ), (prevProps, nextProps) => {
-  return prevProps.isDetailOpen === nextProps.isDetailOpen
-    && prevProps.isSearchFocus === nextProps.isSearchFocus
-    && prevProps.isMatchCase === nextProps.isMatchCase
-    && prevProps.isWholeWord === nextProps.isWholeWord
-    && prevProps.isRegex === nextProps.isRegex
-    && prevProps.searchValue === nextProps.searchValue
-    && prevProps.isShowValidateMessage === nextProps.isShowValidateMessage
-    && prevProps.validateMessage === nextProps.validateMessage;
+  return prevProps.replaceValue === nextProps.replaceValue;
 });

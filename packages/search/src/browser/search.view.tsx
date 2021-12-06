@@ -1,8 +1,8 @@
-import React, { RefObject } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition, ValidateMessage } from '@opensumi/ide-components';
+import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
@@ -12,6 +12,7 @@ import {
 } from '../common/';
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
+import { SearchInputWidget } from './search.input.widget';
 import { SearchReplaceWidget } from './search.replace.widget';
 
 const IncludeRuleContent = React.memo(() => (
@@ -36,36 +37,16 @@ const ExcludeRuleContent = React.memo(() => {
   }, [searchBrowserService]);
 
   return (<div className={cls(styles.exclude_rule_content)}>
-      <div>
-        {excludeList.map((exclude, index) => {
-          if (index === excludeList.length - 1) {
-            return exclude;
-          }
-          return `${exclude}, `;
-        })}
-      </div>
-    </div>);
-  });
-
-export interface SearchReplaceWidgetProps {
-  isDetailOpen: boolean;
-  onDetailToggle: () => void;
-  isSearchFocus: boolean;
-  onSearchFocus: () => void;
-  onSearchBlur: () => void;
-  isMatchCase: boolean;
-  onMatchCaseToggle: () => void;
-  isWholeWord: boolean;
-  onWholeWordToggle: () => void;
-  isRegex: boolean;
-  onRegexToggle: () => void;
-  searchValue: string;
-  onSearch: () => void;
-  onSearchInputChange: (e: React.FormEvent<HTMLInputElement>) => void;
-  searchInputEl: RefObject<HTMLInputElement>;
-  isShowValidateMessage: boolean;
-  validateMessage?: ValidateMessage;
-}
+    <div>
+      {excludeList.map((exclude, index) => {
+        if (index === excludeList.length - 1) {
+          return exclude;
+        }
+        return `${exclude}, `;
+      })}
+    </div>
+  </div>);
+});
 
 export const Search = React.memo(observer(({
   viewState,
@@ -131,7 +112,7 @@ export const Search = React.memo(observer(({
         <ProgressBar loading={isSearchDoing} />
       </div>
       <div className={styles.search_options} ref={searchOptionRef}>
-        <SearchReplaceWidget
+        <SearchInputWidget
           isDetailOpen={UIState.isDetailOpen}
           onDetailToggle={onDetailToggle}
           isMatchCase={UIState.isMatchCase}
@@ -151,27 +132,14 @@ export const Search = React.memo(observer(({
           onSearch={searchBrowserService.search}
         />
 
-        <div className={styles.search_and_replace_container}>
-          <div className={styles.search_and_replace_fields}>
-            <div className={styles.replace_field}>
-              <Input
-                value={searchBrowserService.replaceValue}
-                id='replace-input-field'
-                title={localize('search.replace.label')}
-                type='text'
-                placeholder={localize('search.replace.title')}
-                onKeyUp={searchBrowserService.search}
-                onChange={searchBrowserService.onReplaceInputChange}
-                ref={searchBrowserService.replaceInputEl}
-              />
-              <div className={`${styles['replace-all-button_container']} ${resultTotal.resultNum > 0 ? '' : styles.disabled}`} onClick={doReplaceAll}>
-                <span>
-                  {localize('search.replaceAll.label')}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SearchReplaceWidget
+          replaceValue={searchBrowserService.replaceValue}
+          onSearch={searchBrowserService.search}
+          onReplaceRuleChange={searchBrowserService.onReplaceInputChange}
+          replaceInputEl={searchBrowserService.replaceInputEl}
+          doReplaceAll={doReplaceAll}
+          resultCount={resultTotal.resultNum}
+        />
 
         <div className={cls(styles.search_details)}>
           {UIState.isDetailOpen ?
