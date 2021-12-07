@@ -90,7 +90,6 @@ export const SearchTree = React.forwardRef((
     searchPanelLayout,
     viewState,
   }: ISearchTreeProp,
-  ref,
 ) => {
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
