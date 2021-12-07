@@ -1,17 +1,17 @@
 // tslint:disable:no-console
 
-import * as path from 'path';
-import * as fs from 'fs';
+import path from 'path';
+import fs from 'fs';
 import { promisify } from 'util';
 
-import * as Hbs from 'handlebars';
-import * as isGitClean from 'is-git-clean';
-import * as download from 'offline-iconfont';
-import * as chalk from 'chalk';
+import Hbs from 'handlebars';
+import isGitClean from 'is-git-clean';
+import download from 'offline-iconfont';
+import chalk from 'chalk';
 
 import { IDE_ICONFONT_CN_CSS } from '../packages/core-browser/src/style/icon/ide-iconfont';
 import { defaultIconfont } from '../packages/components/src/icon/iconfont/iconMap';
-import * as pkg from '../package.json';
+import pkg from '../package.json';
 
 const targetDir = path.resolve(__dirname, '../packages/components/src/icon/iconfont');
 
