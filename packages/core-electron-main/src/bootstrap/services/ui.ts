@@ -72,7 +72,13 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async moveToTrash(path: string) {
-    await shell.moveItemToTrash(path);
+    if (semver.lt(process.versions.electron, '13.0.0')) {
+      // Removed: shell.moveItemToTrash()​
+      // https://www.electronjs.org/docs/latest/breaking-changes#removed-shellmoveitemtotrash
+      await (shell as any).moveItemToTrash(path);
+    } else {
+      await shell.trashItem(path);
+    }
   }
 
   async revealInFinder(path: string) {
