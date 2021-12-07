@@ -2,9 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
-import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
 import styles from './search.module.less';
 import {
@@ -15,7 +13,6 @@ import { SearchTree } from './search-tree.view';
 import { SearchInputWidget } from './search.input.widget';
 import { SearchReplaceWidget } from './search.replace.widget';
 import { SearchRulesWidget } from './search.rules.widget';
-
 
 export const Search = React.memo(observer(({
   viewState,
@@ -44,11 +41,11 @@ export const Search = React.memo(observer(({
   }, [UIState]);
 
   const onSearchFocus = React.useCallback(() => {
-    updateUIState({ searchFocus: true });
+    updateUIState({ isSearchFocus: true });
   }, []);
 
   const onSearchBlur = React.useCallback(() => {
-    updateUIState({ searchFocus: false });
+    updateUIState({ isSearchFocus: false });
   }, []);
 
   const onMatchCaseToggle = React.useCallback(() => {
@@ -64,12 +61,10 @@ export const Search = React.memo(observer(({
   }, [UIState]);
 
   const onOnlyOpenEditorsToggle = React.useCallback(() => {
-    console.log('trigger onOnlyOpenEditorsToggle', UIState.isOnlyOpenEditors);
     updateUIState({ isOnlyOpenEditors: !UIState.isOnlyOpenEditors });
   }, [UIState]);
 
   const onIncludeIgnoredToggle = React.useCallback(() => {
-    console.log('trigger onIncludeIgnoredToggle', UIState.isIncludeIgnored);
     updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored });
   }, [UIState]);
 

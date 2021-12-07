@@ -1,8 +1,8 @@
 import React, { RefObject } from 'react';
-import { localize } from '@opensumi/ide-core-browser';
-import { ValidateInput, CheckBox, ValidateMessage } from '@opensumi/ide-components';
-import { getIcon } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
+import { ValidateInput, CheckBox, ValidateMessage } from '@opensumi/ide-components';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
+import { getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
 
 import styles from './search.module.less';
 
@@ -39,7 +39,21 @@ const SearchRuleCheckout = React.memo(({
       id='search-input'
       onChange={onDetailToggle} />
   </p>
-));
+), (prevProps, nextProps) => prevProps.isDetailOpen === nextProps.isDetailOpen);
+
+function isSearchInputPropsEqual(
+  prevProps: SearchInputWidgetProps,
+  nextProps: SearchInputWidgetProps,
+) {
+  return prevProps.isDetailOpen === nextProps.isDetailOpen
+  && prevProps.isSearchFocus === nextProps.isSearchFocus
+  && prevProps.isMatchCase === nextProps.isMatchCase
+  && prevProps.isWholeWord === nextProps.isWholeWord
+  && prevProps.isRegex === nextProps.isRegex
+  && prevProps.searchValue === nextProps.searchValue
+  && prevProps.isShowValidateMessage === nextProps.isShowValidateMessage
+  && prevProps.validateMessage === nextProps.validateMessage;
+}
 
 export const SearchInputWidget = React.memo(({
   isDetailOpen,
@@ -101,13 +115,4 @@ export const SearchInputWidget = React.memo(({
       </div>
     </div>
   </div>
-), (prevProps, nextProps) => {
-  return prevProps.isDetailOpen === nextProps.isDetailOpen
-    && prevProps.isSearchFocus === nextProps.isSearchFocus
-    && prevProps.isMatchCase === nextProps.isMatchCase
-    && prevProps.isWholeWord === nextProps.isWholeWord
-    && prevProps.isRegex === nextProps.isRegex
-    && prevProps.searchValue === nextProps.searchValue
-    && prevProps.isShowValidateMessage === nextProps.isShowValidateMessage
-    && prevProps.validateMessage === nextProps.validateMessage;
-});
+), isSearchInputPropsEqual);
