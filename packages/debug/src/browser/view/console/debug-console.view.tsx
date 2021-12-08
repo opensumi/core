@@ -7,7 +7,7 @@ import { DebugConsoleService } from './debug-console.service';
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode, TreeNodeEvent } from '@opensumi/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-components';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { LinkDetector } from '../../debug-link-detector';
 import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';

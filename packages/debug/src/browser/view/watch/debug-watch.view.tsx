@@ -5,9 +5,9 @@ import { ViewState } from '@opensumi/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@opensumi/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
+import { Loading } from '@opensumi/ide-components';
 import styles from './debug-watch.module.less';
 import cls from 'classnames';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 

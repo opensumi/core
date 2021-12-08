@@ -3,7 +3,7 @@ import cls from 'classnames';
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
 import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-components';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';

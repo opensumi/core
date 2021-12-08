@@ -5,7 +5,7 @@ import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, Pr
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { getIcon, URI } from '@opensumi/ide-core-browser';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-components';
 
 export interface IFileTreeDialogNodeProps {
   item: any;

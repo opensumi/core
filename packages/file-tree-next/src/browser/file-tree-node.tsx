@@ -7,7 +7,7 @@ import { getIcon, URI } from '@opensumi/ide-core-browser';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-components';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 
 export interface IFileTreeNodeProps {
