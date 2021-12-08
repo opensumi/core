@@ -7,6 +7,7 @@ import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ip
 import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
+import semver from 'semver';
 import qs from 'querystring';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
@@ -174,8 +175,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   bindEvents() {
     // 外部打开http
-    this.browser.webContents.on('new-window',
-      (event, url) => {
+    if (semver.lt(process.versions.electron, '13.0.0')) {
+      // Deprecated: WebContents new-window event
+      // https://www.electronjs.org/docs/latest/breaking-changes#deprecated-webcontents-new-window-event
+      this.browser.webContents.on('new-window', (event, url) => {
         if (!event.defaultPrevented) {
           event.preventDefault();
           if (url.indexOf('http') === 0) {
@@ -183,6 +186,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           }
         }
       });
+    } else {
+      this.browser.webContents.setWindowOpenHandler((details) => {
+        if (details.url.indexOf('http') === 0) {
+          shell.openExternal(details.url);
+        }
+        return { action: 'deny' };
+      });
+    }
   }
 
   async clear() {
