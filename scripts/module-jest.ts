@@ -1,6 +1,6 @@
 import { argv } from 'yargs';
 import * as jest from 'jest';
-import { pathsToModuleNameMapper } from 'ts-jest/utils';
+import { pathsToModuleNameMapper } from 'ts-jest';
 const tsconfig = require('../configs/ts/tsconfig.resolve.json');
 
 const tsModuleNameMapper = pathsToModuleNameMapper(

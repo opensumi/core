@@ -1,4 +1,4 @@
-const { pathsToModuleNameMapper } = require('ts-jest/utils');
+const { pathsToModuleNameMapper } = require('ts-jest');
 const tsconfig = require('./configs/ts/tsconfig.resolve.json');
 const os = require('os');
 

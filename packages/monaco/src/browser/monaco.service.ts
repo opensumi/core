@@ -6,12 +6,15 @@ import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
+import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor, IDiffEditor } from './monaco-api/types';
 import { monaco } from './monaco-api';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoService } from '../common';
+
+const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID =  "sumi-overflow-widgets-container";
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService {
@@ -40,16 +43,12 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     return this._monacoLoaded.promise;
   }
 
-  constructor() {
-    super();
-  }
-
-  public createCodeEditor(
-    monacoContainer: HTMLElement,
-    options?: IEditorConstructionOptions,
-    overrides: {[key: string]: any} = {},
-  ): ICodeEditor {
-    const editor =  monaco.editor.create(monacoContainer, {
+  get monacoBaseOptions() {
+    return {
+      // monaco 默认会将 overflowWidgets（如 hover） 放置在编辑器内部的 DOM 中
+      // 但我们会在外部增加其他组件，可能会导致遮挡这些 Widget
+      // 所以此处将 overflowWidget 放置在 body 下构造的一个专门的 container 中
+      overflowWidgetsDomNode: document.getElementById(SUMI_OVERFLOW_WIDGETS_CONTAINER_ID)!,
       glyphMargin: true,
       lightbulb: {
         enabled: true,
@@ -58,6 +57,26 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       model: null,
       wordBasedSuggestions: false,
       renderLineHighlight: 'none',
+    } as IStandaloneEditorConstructionOptions;
+  }
+
+  constructor() {
+    super();
+
+    const overflowWidgetsContainer = document.createElement('div');
+    // 让该容器的子元素都能被应用到 manaco-editor 中的样式
+    overflowWidgetsContainer.className = "monaco-editor";
+    overflowWidgetsContainer.id = SUMI_OVERFLOW_WIDGETS_CONTAINER_ID;
+    document.body.appendChild(overflowWidgetsContainer);
+  }
+
+  public createCodeEditor(
+    monacoContainer: HTMLElement,
+    options?: IEditorConstructionOptions,
+    overrides: {[key: string]: any} = {},
+  ): ICodeEditor {
+    const editor =  monaco.editor.create(monacoContainer, {
+      ...this.monacoBaseOptions,
       ...options,
     }, { ...this.overrideServiceRegistry.all(), ...overrides });
     this.overrideMonacoKeybindingService(editor);
@@ -104,13 +123,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     overrides: {[key: string]: any} = {},
   ): IDiffEditor {
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
-      glyphMargin: true,
-      lightbulb: {
-        enabled: true,
-      },
-      automaticLayout: true,
-      wordBasedSuggestions: false,
-      renderLineHighlight: 'none',
+      ...this.monacoBaseOptions,
       ignoreTrimWhitespace: false,
       ...options,
     } as any, { ...this.overrideServiceRegistry.all(), ...overrides });
