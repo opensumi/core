@@ -14,7 +14,7 @@ import { monaco } from './monaco-api';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoService } from '../common';
 
-const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID =  "sumi-overflow-widgets-container";
+const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID =  'sumi-overflow-widgets-container';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService {
@@ -65,7 +65,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
     const overflowWidgetsContainer = document.createElement('div');
     // 让该容器的子元素都能被应用到 manaco-editor 中的样式
-    overflowWidgetsContainer.className = "monaco-editor";
+    overflowWidgetsContainer.className = 'monaco-editor';
     overflowWidgetsContainer.id = SUMI_OVERFLOW_WIDGETS_CONTAINER_ID;
     document.body.appendChild(overflowWidgetsContainer);
   }
