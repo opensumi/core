@@ -208,7 +208,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       contentBase: dir + '/public',
       port,
       disableHostCheck: true,
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       proxy: {
         '/api': {
           target: 'http://localhost:8000',
@@ -229,7 +229,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       },
       stats: 'errors-only',
       overlay: true,
-      open: process.env.KAITIAN_DEV_OPEN_BROWSER ? true : false,
+      open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
       hot: true,
     }
   }, extraConfig);
