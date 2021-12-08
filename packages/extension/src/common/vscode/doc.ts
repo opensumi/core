@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 import { IDisposable, Event } from '@opensumi/ide-core-common';
 import { Uri } from './ext-types';
 import { SaveReason, IEditorDocumentModelContentChange } from '@opensumi/ide-editor';
-import { ExtHostDocumentData } from "../../hosted/api/vscode/doc/ext-data.host"
+import { ExtHostDocumentData } from '../../hosted/api/vscode/doc/ext-data.host';
 export interface IModelChangedEvent {
   /**
    * The actual changes.
