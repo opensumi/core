@@ -1,0 +1,170 @@
+import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
+import { IBasicTreeData } from './types';
+import { TreeNodeEvent } from '../types';
+import { DisposableCollection, Emitter } from '../../utils';
+import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
+
+export class BasicTreeService extends Tree {
+  private selectedDecoration: Decoration = new Decoration('mod_selected'); // 选中态
+  private focusedDecoration: Decoration = new Decoration('mod_focused'); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration('mod_actived'); // 右键菜单激活态
+  private loadingDecoration: Decoration = new Decoration('mod_loading'); // 加载态
+  // 即使选中态也是焦点态的节点
+  private _focusedNode: BasicCompositeTreeNode | BasicTreeNode | undefined;
+  // 选中态的节点
+  private _selectedNodes: (BasicCompositeTreeNode | BasicTreeNode)[] = [];
+  // 右键菜单选择的节点
+  private _contextMenuNode: BasicCompositeTreeNode | BasicTreeNode | undefined;
+
+  private _model: BasicTreeModel;
+  private _decorations: DecorationsManager;
+
+  private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  private onDidUpdateTreeModelEmitter: Emitter<BasicTreeModel> = new Emitter();
+
+  constructor(
+    private _treeData?: IBasicTreeData[],
+    private _resolveChildren?: (parent?: IBasicTreeData) => IBasicTreeData[] | null,
+    private _sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number,
+  ) {
+    super();
+    this._root = new BasicTreeRoot(this, undefined, { children: this._treeData, label: '', command: '', icon: ''});
+    this._model = new BasicTreeModel();
+    this._model.init(this._root);
+    this.initDecorations(this._root as BasicTreeRoot);
+    this.onDidUpdateTreeModelEmitter.fire(this._model);
+    this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
+  }
+
+  get onDidUpdateTreeModel() {
+    return this.onDidUpdateTreeModelEmitter.event;
+  }
+
+  get model() {
+    return this._model;
+  }
+
+  get root() {
+    return this._root;
+  }
+
+  get decorations() {
+    return this._decorations;
+  }
+
+  private initDecorations(root: BasicTreeRoot) {
+    this._decorations = new DecorationsManager(root as any);
+    this._decorations.addDecoration(this.selectedDecoration);
+    this._decorations.addDecoration(this.focusedDecoration);
+    this._decorations.addDecoration(this.contextMenuDecoration);
+    this._decorations.addDecoration(this.loadingDecoration);
+    this.disposableCollection.push(root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+      this.loadingDecoration.addTarget(target);
+    }));
+    this.disposableCollection.push(root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+      this.loadingDecoration.removeTarget(target);
+    }));
+    this.disposableCollection.push(this._decorations);
+  }
+
+  async resolveChildren(parent?: BasicCompositeTreeNode) {
+    if (this._resolveChildren) {
+      return this.transformTreeNode(parent, this._resolveChildren(parent?.raw) || []);
+    } else {
+      return this.transformTreeNode(parent, parent?.raw.children || []);
+    }
+  }
+
+  sortComparator = (a: BasicCompositeTreeNode, b: BasicCompositeTreeNode) => {
+    if (this._sortComparator) {
+      return this._sortComparator(a.raw, b.raw);
+    }
+    return super.sortComparator(a, b);
+  }
+
+  private transformTreeNode(parent?: BasicCompositeTreeNode, nodes?: IBasicTreeData[]) {
+    if (!nodes) {
+      return [];
+    }
+    const result: (BasicCompositeTreeNode | BasicTreeNode)[] = [];
+    for (const node of nodes) {
+      if (node.children) {
+        result.push(new BasicCompositeTreeNode(this, parent, node));
+      } else {
+        result.push(new BasicTreeNode(this, parent, node));
+      }
+    }
+    return result;
+  }
+
+  get selectedNodes() {
+    return this._selectedNodes;
+  }
+
+  get focusedNode() {
+    return this._focusedNode;
+  }
+
+  get contextMenuNode() {
+    return this._contextMenuNode;
+  }
+
+  // 清空其他选中/焦点态节点，更新当前焦点节点
+  activeFocusedDecoration = (target: BasicCompositeTreeNode | BasicTreeNode) => {
+    if (this._contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this._contextMenuNode);
+      this.focusedDecoration.removeTarget(this._contextMenuNode);
+      this.selectedDecoration.removeTarget(this._contextMenuNode);
+      this._contextMenuNode = undefined;
+    }
+    if (target) {
+      if (this.selectedNodes.length > 0) {
+        this.selectedNodes.forEach((file) => {
+          // 因为选择装饰器可能通过其他方式添加而不能及时在selectedNodes上更新
+          // 故这里遍历所有选中装饰器的节点进行一次统一清理
+          for (const target of this.selectedDecoration.appliedTargets.keys()) {
+            this.selectedDecoration.removeTarget(target);
+          }
+        });
+      }
+      if (this.focusedNode) {
+        this.focusedDecoration.removeTarget(this.focusedNode);
+      }
+      this.selectedDecoration.addTarget(target);
+      this.focusedDecoration.addTarget(target);
+      this._focusedNode = target;
+      this._selectedNodes = [target];
+
+      this.model?.dispatchChange();
+    }
+  }
+
+  activeContextMenuDecoration = (target: BasicCompositeTreeNode | BasicTreeNode) => {
+    if (this._contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this._contextMenuNode);
+    }
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = undefined;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuNode = target;
+    this.model?.dispatchChange();
+  }
+
+  // 取消选中节点焦点
+  enactiveFocusedDecoration = () => {
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = undefined;
+      this.model?.dispatchChange();
+    }
+  }
+
+  dispose() {
+    this.disposableCollection.dispose();
+  }
+}
+
+export class BasicTreeModel extends TreeModel {}

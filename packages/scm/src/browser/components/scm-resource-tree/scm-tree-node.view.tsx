@@ -3,7 +3,7 @@ import clx from 'classnames';
 import { Badge, TreeNode, CompositeTreeNode, ITreeNodeRendererProps, ClasslistComposite, TreeNodeType } from '@opensumi/ide-components';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { useInjectable, URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Loading } from '@opensumi/ide-components';
 import { IThemeService, IIconTheme } from '@opensumi/ide-theme';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';

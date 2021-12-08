@@ -17,5 +17,6 @@ export * from './recycle-tree';
 export * from './recycle-list';
 export * from './common';
 export * from './scrollbars';
+export * from './loading';
 
 export * from './locale-context-provider';

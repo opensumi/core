@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './tree.module.less';
 import cls from 'classnames';
 import { isUndefined, isString } from '@opensumi/ide-core-common';
-import { Badge } from '@opensumi/ide-components';
+import { Badge, Loading } from '@opensumi/ide-components';
 
 import {  TreeViewAction, isTreeViewActionComponent } from '../../tree';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
@@ -10,7 +10,6 @@ import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
 import { ValidateInput, InputSelection, Icon } from '@opensumi/ide-components';
 import { KeyCode, Key } from '../../keyboard';
-import { Loading } from '../loading';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 

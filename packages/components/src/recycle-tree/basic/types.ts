@@ -1,6 +1,7 @@
-import { ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from '../types';
+import { ITreeNodeOrCompositeTreeNode } from '../types';
 import { INodeRendererProps } from '../TreeNodeRendererWrap';
 import { ClasslistComposite } from '../tree/decoration';
+import { IRecycleTreeHandle } from '../RecycleTree';
 
 export enum IBasicInlineMenuPosition {
   TREE_NODE = 1,
@@ -91,19 +92,13 @@ export interface IBasicRecycleTreeProps {
    */
   width?: number;
   /**
-   * 当焦点选中时，是否高亮展示
-   * 默认值为 true
-   */
-  outline?: boolean;
-  /**
-   * 目录节点是否可折叠
-   * 默认值为 true
-   */
-  foldable?: boolean;
-  /**
    * 节点高度, 默认值为 22
    */
   itemHeight?: number;
+  /**
+   * 节点缩进，默认值为 8
+   */
+  indent?: number;
   /**
    * 追加的容器样式名，用于自定义更多样式
    */
@@ -115,31 +110,31 @@ export interface IBasicRecycleTreeProps {
   /**
    * 当组件渲染时提供了该方法时，组件展开前会尝试使用该方法去获取需要展示的节点
    */
-  resolveChildren?: (node?: ICompositeTreeNode) => ITreeNodeOrCompositeTreeNode[] | null;
+  resolveChildren?: (node?: IBasicTreeData) => IBasicTreeData[] | null;
   /**
    * 排序函数
    */
-  sortComparator?: (a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) => number;
+  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number;
   /**
    * 单击事件
    */
-  onClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onClick?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 双击事件
    */
-  onDbClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onDbClick?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单事件
    */
-  onContextMenu?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onContextMenu?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
     * 箭头点击事件
     */
-  onTwistierClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将有限执行 `onContextMenu` 函数
    */
-  contextMenus?: IBasicContextMenu[] | (() => IBasicContextMenu[]);
+  contextMenus?: IBasicContextMenu[] | ((node: ITreeNodeOrCompositeTreeNode) => IBasicContextMenu[]);
   /**
    * 右键菜单点击的执行逻辑
    */
@@ -147,11 +142,16 @@ export interface IBasicRecycleTreeProps {
   /**
    * 行内菜单定义
    */
-  inlineMenus?: IBasicInlineMenu[] | (() => IBasicInlineMenu[]);
+  inlineMenus?: IBasicInlineMenu[] | ((node: ITreeNodeOrCompositeTreeNode) => IBasicInlineMenu[]);
   /**
    * 行内菜单点击的执行逻辑
    */
   inlineMenuActuator?: IBasicInlineMenuActuator;
+  /**
+   * 用于挂载 Tree 上的一些操作方法
+   * 如：ensureVisible 等
+   */
+  onReady?: (api: IRecycleTreeHandle) => void;
 }
 
 export interface IBasicNodeProps {
@@ -174,23 +174,23 @@ export interface IBasicNodeProps {
   /**
    * 单击事件
    */
-  onClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onClick?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 双击事件
    */
-  onDbClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onDbClick?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单事件
    */
-  onContextMenu?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onContextMenu?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 箭头点击事件
    */
-  onTwistierClick?: (node: ITreeNodeOrCompositeTreeNode) => void;
+  onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
   /**
-   * 右键菜单定义，但传入了 `onContextMenu` 函数时将有限执行 `onContextMenu` 函数
+   * 右键菜单定义，但传入了 `onContextMenu` 函数时将优先执行 `onContextMenu` 函数
    */
-  contextMenus?: IBasicContextMenu[] | (() => IBasicContextMenu[]);
+  contextMenus?: IBasicContextMenu[] | ((node: ITreeNodeOrCompositeTreeNode) => IBasicContextMenu[]);
   /**
    * 右键菜单点击的执行逻辑
    */
@@ -198,7 +198,7 @@ export interface IBasicNodeProps {
   /**
    * 行内菜单定义
    */
-  inlineMenus?: IBasicInlineMenu[] | (() => IBasicInlineMenu[]);
+  inlineMenus?: IBasicInlineMenu[] | ((node: ITreeNodeOrCompositeTreeNode) => IBasicInlineMenu[]);
   /**
    * 行内菜单点击的执行逻辑
    */
