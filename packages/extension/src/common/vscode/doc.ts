@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 import { IDisposable, Event } from '@opensumi/ide-core-common';
 import { Uri } from './ext-types';
 import { SaveReason, IEditorDocumentModelContentChange } from '@opensumi/ide-editor';
-
+import { ExtHostDocumentData } from "../../hosted/api/vscode/doc/ext-data.host"
 export interface IModelChangedEvent {
   /**
    * The actual changes.
@@ -40,7 +40,7 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
   getDocument(resource: Uri | string): vscode.TextDocument | undefined;
-  getDocumentData(resource: Uri | string): any;
+  getDocumentData(resource: Uri | string): ExtHostDocumentData | undefined;
   getAllDocument(): vscode.TextDocument[];
   openTextDocument(path: Uri | string): Promise<vscode.TextDocument | undefined>;
   registerTextDocumentContentProvider(scheme: string, provider: vscode.TextDocumentContentProvider): IDisposable;
