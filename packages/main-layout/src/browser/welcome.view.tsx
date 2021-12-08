@@ -104,9 +104,24 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
   </>;
 };
 
-export const WelcomeView: React.FC<{ viewId: string }> = (props) => {
-  const viewsController: ViewsController = useInjectable(ViewsController, [props.viewId]);
-  const [contents, setContents] = React.useState<IViewContentDescriptor[]>(viewsController.contents);
+interface WelcomeViewProps {
+  viewId: string;
+}
+
+/**
+ * Welcome view 不关心 viewState 变化
+ */
+function isWelcomeViewViewIdEqual(prevProps: WelcomeViewProps, nextProps: WelcomeViewProps) {
+  return prevProps.viewId === nextProps.viewId;
+}
+
+export const WelcomeView: React.FC<WelcomeViewProps> = React.memo((props) => {
+  const viewsController: ViewsController = useInjectable(ViewsController, [
+    props.viewId,
+  ]);
+  const [contents, setContents] = React.useState<IViewContentDescriptor[]>(
+    viewsController.contents,
+  );
   React.useEffect(() => {
     viewsController.onDidChange(() => {
       const newContents = viewsController.contents;
@@ -114,7 +129,9 @@ export const WelcomeView: React.FC<{ viewId: string }> = (props) => {
     });
   }, []);
 
-  return contents.length ? <div className={styles.welcome}>
-    <WelcomeContent contents={contents} />
-  </div> : null;
-};
+  return contents.length ? (
+    <div className={styles.welcome}>
+      <WelcomeContent contents={contents} />
+    </div>
+  ) : null;
+}, isWelcomeViewViewIdEqual);
