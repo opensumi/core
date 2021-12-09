@@ -8,46 +8,28 @@ import { observer } from 'mobx-react-lite';
 import { DebugToolbarView } from './debug-toolbar.view';
 import { Select, Option } from '@opensumi/ide-components';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
-import { DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_NO_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_INDEX_SEPARATOR, DEFAULT_CONFIGURATION_NAME_SEPARATOR } from '../../../common';
+import { DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_NO_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_INDEX_SEPARATOR, DEFAULT_CONFIGURATION_NAME_SEPARATOR, DebugSessionOptions } from '../../../common';
 
-export const DebugConfigurationView = observer(() => {
-  const {
-    configurationOptions,
-    toValue,
-    currentValue,
-    openConfiguration,
-    addConfiguration,
-    openDebugConsole,
-    updateConfiguration,
-    start,
-    float,
-    isMultiRootWorkspace,
-    workspaceRoots,
-  } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
-  const addConfigurationLabel = localize('debug.action.add.configuration');
+interface ConfigurationSelectorProps {
+  currentValue: string;
+  options: DebugSessionOptions[];
+  isMultiRootWorkspace: boolean;
+  addConfigurationLabel: string;
+  workspaceRoots: string[];
+  toValue: (option: DebugSessionOptions) => string;
+  onChangeConfiguration(event: React.ChangeEvent<HTMLSelectElement> | string): void;
+}
 
-  const setCurrentConfiguration = (event: React.ChangeEvent<HTMLSelectElement> | string) => {
-    let value: React.ChangeEvent<HTMLSelectElement> | string;
-    if (typeof event === 'object') {
-      value = event.target.value;
-    } else {
-      value = event;
-    }
-    if (value.startsWith(DEFAULT_ADD_CONFIGURATION_KEY)) {
-      const index = value.slice(DEFAULT_ADD_CONFIGURATION_KEY.length);
-      if (index) {
-        addConfiguration(workspaceRoots[index]);
-      } else {
-        addConfiguration(workspaceRoots[0]);
-      }
-    } else {
-      const [name, workspaceAndIndex] = value.split(DEFAULT_CONFIGURATION_NAME_SEPARATOR);
-      const [workspaceFolderUri, index] = workspaceAndIndex.split(DEFAULT_CONFIGURATION_INDEX_SEPARATOR);
-      updateConfiguration(name, workspaceFolderUri, +index);
-    }
-  };
-
-  const renderConfigurationOptions = (options) => {
+const ConfigurationSelector = React.memo(({
+  currentValue,
+  options,
+  onChangeConfiguration,
+  isMultiRootWorkspace,
+  addConfigurationLabel,
+  toValue,
+  workspaceRoots,
+}: ConfigurationSelectorProps) => {
+  const renderConfigurationOptions = React.useCallback((options) => {
     if (options && options.length) {
       return options.map((option, index) => {
         const label = isMultiRootWorkspace ? `${option.configuration.name} (${new URI(option.workspaceFolderUri).displayName})` : option.configuration.name;
@@ -60,9 +42,9 @@ export const DebugConfigurationView = observer(() => {
         [<option value={DEFAULT_NO_CONFIGURATION_KEY} key={DEFAULT_NO_CONFIGURATION_KEY} label={localize('debug.action.no.configuration')}>{localize('debug.action.no.configuration')}</option>] :
         [<Option value={DEFAULT_NO_CONFIGURATION_KEY} key={DEFAULT_NO_CONFIGURATION_KEY} label={localize('debug.action.no.configuration')}>{localize('debug.action.no.configuration')}</Option>];
     }
-  };
+  }, [isMultiRootWorkspace]);
 
-  const renderAddConfigurationOptions = () => {
+  const renderAddConfigurationOptions = React.useCallback(() => {
     if (isMultiRootWorkspace) {
       let longName: string = addConfigurationLabel;
       const addonOptions = workspaceRoots.map((root, index) => {
@@ -90,31 +72,87 @@ export const DebugConfigurationView = observer(() => {
           <Option value={DEFAULT_ADD_CONFIGURATION_KEY} key={DEFAULT_ADD_CONFIGURATION_KEY} label={label}>{label}</Option>,
         ];
     }
-  };
+  }, [isMultiRootWorkspace, addConfigurationLabel]);
 
-  const renderConfigurationSelect = () => {
-    if (isElectronRenderer()) {
-      return (<NativeSelect value={currentValue} onChange={setCurrentConfiguration} className={cls(styles.debug_selection, styles.special_radius)}>
-        { renderConfigurationOptions(configurationOptions)}
-        { renderAddConfigurationOptions()}
-      </NativeSelect>);
-    }
-
-    return (<Select value={currentValue} onChange={setCurrentConfiguration} className={cls(styles.debug_selection, styles.special_radius)}>
-      { renderConfigurationOptions(configurationOptions)}
+  if (isElectronRenderer()) {
+    return (<NativeSelect value={currentValue} onChange={onChangeConfiguration} className={cls(styles.debug_selection, styles.special_radius)}>
+      { renderConfigurationOptions(options)}
       { renderAddConfigurationOptions()}
+    </NativeSelect>);
+  }
 
-    </Select>);
-  };
+  return (<Select value={currentValue} onChange={onChangeConfiguration} className={cls(styles.debug_selection, styles.special_radius)}>
+    { renderConfigurationOptions(options)}
+    { renderAddConfigurationOptions()}
+  </Select>);
+});
+
+interface DebugActionBarProps {
+  runDebug(): void;
+  openConfiguration(): void;
+  openDebugConsole(): void;
+}
+
+export const DebugActionBar = React.memo(({ runDebug, openConfiguration, openDebugConsole }: DebugActionBarProps) => (
+  <div className={styles.kt_debug_actions}>
+    <DebugAction id='debug.action.start' icon={'start'} label={localize('debug.action.start')} run={runDebug}></DebugAction>
+    <DebugAction id='debug.action.open.configuration' icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
+    <DebugAction id='debug.action.debug.console' icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
+  </div>
+));
+
+export const DebugConfigurationView = observer((props) => {
+  const {
+    configurationOptions,
+    toValue,
+    currentValue,
+    openConfiguration,
+    addConfiguration,
+    openDebugConsole,
+    updateConfiguration,
+    start,
+    float,
+    isMultiRootWorkspace,
+    workspaceRoots,
+  } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const addConfigurationLabel = localize('debug.action.add.configuration');
+  const setCurrentConfiguration = React.useCallback((event: React.ChangeEvent<HTMLSelectElement> | string) => {
+    let value: React.ChangeEvent<HTMLSelectElement> | string;
+    if (typeof event === 'object') {
+      value = event.target.value;
+    } else {
+      value = event;
+    }
+    if (value.startsWith(DEFAULT_ADD_CONFIGURATION_KEY)) {
+      const index = value.slice(DEFAULT_ADD_CONFIGURATION_KEY.length);
+      if (index) {
+        addConfiguration(workspaceRoots[index]);
+      } else {
+        addConfiguration(workspaceRoots[0]);
+      }
+    } else {
+      const [name, workspaceAndIndex] = value.split(DEFAULT_CONFIGURATION_NAME_SEPARATOR);
+      const [workspaceFolderUri, index] = workspaceAndIndex.split(DEFAULT_CONFIGURATION_INDEX_SEPARATOR);
+      updateConfiguration(name, workspaceFolderUri, +index);
+    }
+  }, []);
 
   return <div>
     <div className={styles.debug_configuration_toolbar}>
-      {renderConfigurationSelect()}
-      <div className={styles.kt_debug_actions}>
-        <DebugAction id='debug.action.start' icon={'start'} label={localize('debug.action.start')} run={start}></DebugAction>
-        <DebugAction id='debug.action.open.configuration' icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-        <DebugAction id='debug.action.debug.console' icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
-      </div>
+      <ConfigurationSelector
+        currentValue={currentValue}
+        options={configurationOptions}
+        onChangeConfiguration={setCurrentConfiguration}
+        isMultiRootWorkspace={isMultiRootWorkspace}
+        addConfigurationLabel={addConfigurationLabel}
+        toValue={toValue}
+        workspaceRoots={workspaceRoots}
+       />
+       <DebugActionBar
+        runDebug={start}
+        openConfiguration={openConfiguration}
+        openDebugConsole={openDebugConsole}
+       />
     </div>
     {!float && <DebugToolbarView float={false} />}
   </div>;
