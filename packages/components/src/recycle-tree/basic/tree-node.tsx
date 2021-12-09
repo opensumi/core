@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { IBasicInlineMenuPosition, IBasicNodeRendererProps } from './types';
+import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
 import { Icon } from '../../icon';
 import { Button } from '../../button';
 import { Loading } from '../../loading';
@@ -69,11 +69,13 @@ export const BasicTreeNodeRenderer: React.FC<IBasicNodeRendererProps & { item: B
   }, []);
 
   const renderDisplayName = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => {
-    return <div
-      className={cls('segment', 'display_name')}
-    >
-      {getName(node)}
-    </div>;
+    return (
+      <div
+        className={cls('segment', 'display_name')}
+      >
+        {getName(node)}
+      </div>
+    );
   }, []);
 
   const renderDescription = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => {
@@ -120,7 +122,7 @@ export const BasicTreeNodeRenderer: React.FC<IBasicNodeRendererProps & { item: B
   };
 
   const renderFolderToggle = (node: BasicCompositeTreeNode, clickHandler: any) => {
-    if (decorations && decorations?.classlist.indexOf('mod_loading') > -1) {
+    if (decorations && decorations?.classlist.indexOf(DECORATIONS.LOADING) > -1) {
       return <Loading />;
     }
     return <Icon
