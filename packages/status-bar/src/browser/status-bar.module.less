@@ -8,7 +8,7 @@
   user-select: none;
   display: flex;
   height: 24px;
-  border: 1px solid var(--statusBar-border);
+  border-top: 1px solid var(--statusBar-border);
   white-space: nowrap;
 }
 
@@ -20,7 +20,6 @@
 
 .left {
   justify-content: flex-start;
-  padding-left: calc(@kt-ui-spacing*2);
 }
 
 .right {
@@ -34,6 +33,9 @@
   align-items: center;
   padding: 0 4px;
   font-size: @kt-statusBar-font-size;
+  &:first-child {
+    padding: 0px 10px;
+  }
 }
 
 .element.hasCommand:hover {
