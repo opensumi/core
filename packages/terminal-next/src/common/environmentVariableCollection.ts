@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// Some code copued and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
 
 import { OS } from '@opensumi/ide-core-common';
 import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-// Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/model/debug-source.ts
+// Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/model/debug-source.ts
 
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
