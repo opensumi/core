@@ -28,10 +28,122 @@ declare module 'sumi-browser' {
 
   import type vscode from 'vscode';
   import React from 'react';
+  import { URI as Uri } from 'vscode-uri';
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@opensumi/ide-components';
 
-  export { URI } from '@opensumi/ide-core-browser';
+  interface IRelativePattern {
+    base: string;
+    pattern: string;
+  }
+  class Path {
+    static separator: '/';
+    static isDrive(segment: string): boolean;
+    static splitPath(path: string): string[];
+    static isRelative(path: string): boolean;
+    static pathDepth(path: string): number;
+    static normalizeDrive(path: string): string;
+    readonly isAbsolute: boolean;
+    readonly isRoot: boolean;
+    readonly root: Path | undefined;
+    readonly base: string;
+    readonly name: string;
+    readonly ext: string;
+    private _dir;
+    private readonly raw;
+    constructor(raw: string);
+    protected computeRoot(): Path | undefined;
+    get dir(): Path;
+    protected computeDir(): Path;
+    join(...paths: string[]): Path;
+    toString(): string;
+    relative(path: Path): Path | undefined;
+    isEqualOrParent(path: Path): boolean;
+    isEqual(path: Path): boolean;
+    relativity(path: Path): number;
+  }
+  export class URI {
+    static from(components: {
+      scheme: string;
+      authority?: string;
+      path?: string;
+      query?: string;
+      fragment?: string;
+    }): URI;
+    static file(path: string): URI;
+    static parse(path: string): URI;
+    static isUri(thing: any): thing is URI;
+    static isUriString(str: string): boolean;
+    static revive(data: any): Uri;
+    readonly codeUri: Uri;
+    private _path;
+    constructor(uri?: string | Uri);
+    get displayName(): string;
+    /**
+     * Return all uri from the current to the top most.
+     */
+    get allLocations(): URI[];
+    get parent(): URI;
+    relative(uri: URI): Path | undefined;
+    resolve(path: string | Path): URI;
+    /**
+     * return a new URI replacing the current with the given scheme
+     */
+    withScheme(scheme: string): URI;
+    /**
+     * @deprecated
+     * return this URI without a scheme
+     */
+    withoutScheme(): URI;
+    /**
+     * return a new URI replacing the current with the given authority
+     */
+    withAuthority(authority: string): URI;
+    /**
+     * return this URI without a authority
+     */
+    withoutAuthority(): URI;
+    /**
+     * return a new URI replacing the current with the given path
+     */
+    withPath(path: string | Path): URI;
+    /**
+     * return this URI without a path
+     */
+    withoutPath(): URI;
+    /**
+     * return a new URI replacing the current with the given query
+     */
+    withQuery(query: string): URI;
+    /**
+     * return this URI without a query
+     */
+    withoutQuery(): URI;
+    /**
+     * return a new URI replacing the current with the given fragment
+     */
+    withFragment(fragment: string): URI;
+    /**
+     * return this URI without a fragment
+     */
+    withoutFragment(): URI;
+    get scheme(): string;
+    get authority(): string;
+    get path(): Path;
+    get query(): string;
+    get fragment(): string;
+    toString(skipEncoding?: boolean): string;
+    isEqualOrParent(uri: URI): boolean;
+    isEqual(uri: URI): boolean;
+    matchGlobPattern(pattern: string | IRelativePattern): boolean;
+    static getDistinctParents(uris: URI[]): URI[];
+    getParsedQuery(): {
+        [key: string]: string;
+    };
+    static stringifyQuery(query: {
+        [key: string]: any;
+    }): string;
+  }
 
   export interface ScrollAreaProps {
     className?: string;
