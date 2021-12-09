@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ClickOutside } from '@opensumi/ide-core-browser/lib/components/click-outside';
+import { ClickOutside } from '@opensumi/ide-components';
 import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 
 import { Dropdown } from '@opensumi/ide-components/lib/dropdown';

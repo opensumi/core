@@ -1,14 +1,14 @@
 import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
-import { IBasicTreeData } from './types';
+import { IBasicTreeData, DECORATIONS } from './types';
 import { TreeNodeEvent } from '../types';
 import { DisposableCollection, Emitter } from '../../utils';
 import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
 
 export class BasicTreeService extends Tree {
-  private selectedDecoration: Decoration = new Decoration('mod_selected'); // 选中态
-  private focusedDecoration: Decoration = new Decoration('mod_focused'); // 焦点态
-  private contextMenuDecoration: Decoration = new Decoration('mod_actived'); // 右键菜单激活态
-  private loadingDecoration: Decoration = new Decoration('mod_loading'); // 加载态
+  private selectedDecoration: Decoration = new Decoration(DECORATIONS.SELECTED); // 选中态
+  private focusedDecoration: Decoration = new Decoration(DECORATIONS.FOCUSED); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(DECORATIONS.ACTIVED); // 右键菜单激活态
+  private loadingDecoration: Decoration = new Decoration(DECORATIONS.LOADING); // 加载态
   // 即使选中态也是焦点态的节点
   private _focusedNode: BasicCompositeTreeNode | BasicTreeNode | undefined;
   // 选中态的节点

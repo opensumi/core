@@ -2,12 +2,19 @@ import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
 import { ITreeNodeOrCompositeTreeNode } from '../types';
 import { INodeRendererWrapProps } from '../TreeNodeRendererWrap';
-import { IBasicRecycleTreeProps } from './types';
+import { IBasicContextMenu, IBasicRecycleTreeProps, IBasicTreeMenu } from './types';
 import { BasicTreeModel, BasicTreeService } from './tree-service';
 import { BasicTreeNodeRenderer } from './tree-node';
 import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+import { ClickOutside } from '../../click-outside';
+import { BasicMenuItem } from './menubar-item';
+import { placements } from './placements';
+import CtxMenuTrigger from 'react-ctxmenu-trigger';
 import cls from 'classnames';
 import './styles.less';
+import 'react-ctxmenu-trigger/assets/index.css';
+
+export * from './types';
 
 export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   width,
@@ -29,6 +36,15 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   contextMenus,
   contextMenuActuator,
 }) => {
+  const [showMenus, setShowMenus] = useState<{
+    show: boolean;
+    point?: {
+      pageX: number;
+      pageY: number;
+    };
+    activeNode?: BasicCompositeTreeNode | BasicTreeNode;
+  }>({show: false});
+  const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
   const treeService = useRef<BasicTreeService>(new BasicTreeService(treeData, resolveChildren, sortComparator));
   const treeHandle = useRef<IRecycleTreeHandle>();
@@ -108,6 +124,37 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     }
     if (onContextMenu) {
       onContextMenu(event, item);
+    } else {
+      // let menus: IBasicTreeMenu[] = [];
+      let rawMenus: IBasicContextMenu[] = [];
+      if (Array.isArray(contextMenus)) {
+        rawMenus = contextMenus;
+      } else if (typeof contextMenus === 'function') {
+        rawMenus = contextMenus(item);
+      }
+      const groups = new Set<string>();
+      const menusMap = {};
+      for (const menu of rawMenus) {
+        groups.add(menu.group || '-1');
+        if (!menusMap[menu.group || '-1']) {
+          menusMap[menu.group || '-1'] = [];
+        }
+        menusMap[menu.group || '-1'].push(menu);
+      }
+      const sortGroup = Array.from(groups).sort((a, b) => {
+        return a.localeCompare(b, 'kn', { numeric: true });
+      });
+      let menus: IBasicTreeMenu[] = [];
+      for (const group of sortGroup) {
+        menus = menus.concat(menusMap[group].map((menu) => ({ id: menu.id, label: menu.title, group: menu.group })));
+        menus = menus.concat([{ id: `${group}_divider`, label: '', type: 'divider' }]);
+      }
+      menus.pop();
+      if (JSON.stringify(menus) !== JSON.stringify(menubarItems)) {
+        setMenubarItems(menus);
+      }
+      const { x, y } = event.nativeEvent;
+      setShowMenus({ show: true, point: { pageX: x, pageY: y }, activeNode: item});
     }
   }, [onDbClick]);
 
@@ -138,6 +185,54 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     }
   }, []);
 
+  const handleMouseLeave = useCallback(() => {
+    setShowMenus({ ...showMenus, show: false });
+  }, [showMenus]);
+
+  const renderContextMenu = useCallback(() => {
+    if (!contextMenus) {
+      return null;
+    }
+    return <CtxMenuTrigger
+    popupPlacement='bottomLeft'
+    popupVisible={showMenus.show}
+    action={['contextMenu']}
+    popupAlign={{
+      overflow: {
+        adjustX: 1,
+        adjustY: 1,
+      },
+      offset: [window.scrollX, window.scrollY],
+    }}
+    point={showMenus.point || {}}
+    builtinPlacements={placements}
+    popup={(
+      <ClickOutside
+        className='basic_tree_menubars'
+        mouseEvents={['click', 'contextmenu']}
+        onOutsideClick={handleMouseLeave}>
+        {
+          menubarItems.map(({ id, label, type }) => (
+            <BasicMenuItem
+              key={id}
+              id={id}
+              label={label}
+              type={type}
+              focusMode={showMenus.show}
+              onClick={(id: string) => {
+                if (contextMenuActuator) {
+                  contextMenuActuator(showMenus.activeNode!, id);
+                }
+                setShowMenus({ show: false });
+              }} />
+          ))
+        }
+      </ClickOutside>
+    )}
+    alignPoint
+  />;
+  }, [menubarItems, contextMenuActuator, showMenus]);
+
   return <div
     className='basic_tree'
     tabIndex={-1}
@@ -145,6 +240,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     onClick={handleOuterClick}
     onContextMenu={handleOuterContextMenu}
   >
+    { renderContextMenu() }
     {
       model
       ? <RecycleTree

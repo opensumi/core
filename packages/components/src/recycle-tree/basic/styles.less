@@ -206,3 +206,40 @@
     }
   }
 }
+
+.basic_tree_menubars {
+  padding: 2px 0px;
+  color: var(--menu-foreground);
+  background-color: var(--menu-background);
+  border: none;
+  box-shadow: 0 2px 8px var(--kt-menu-shadow);
+  border-radius: 0;
+  min-width: 200px;
+}
+
+.basic_menu_item_divider {
+  margin: 3px 0;
+  pointer-events: none;
+  background-color: var(--menu-separatorBackground);
+  padding: 0;
+  overflow: hidden;
+  line-height: 0;
+  height: 1px;
+}
+
+.basic_menu_item {
+  margin: 0;
+  padding: 3px 4px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 16px;
+  color: var(--kt-menubar-foreground);
+
+  &:hover {
+    background: var(--menu-selectionBackground);
+    color: var(--menu-selectionForeground);
+    cursor: default;
+  }
+}

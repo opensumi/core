@@ -34,21 +34,23 @@ export type IBasicInlineMenuActuator = (node: ITreeNodeOrCompositeTreeNode, acti
 
 export interface IBasicContextMenu {
   /**
-   * 默认图标，可以使用框架内置的图标集
-   * 也可以传入自定义的 ClassName
-   */
-  icon: string;
-  /**
    * 菜单文本
    */
   title: string;
   /**
-   * 点击菜单执行的命令
+   * 菜单唯一 ID
    */
-  command: string;
+  id: string;
+  /**
+   * 分组标识
+   */
+  group?: string;
 }
 
-export type IBasicContextMenuActuator = (node: ITreeNodeOrCompositeTreeNode, action: IBasicContextMenu) => void;
+/**
+ * 这里的 ID 为命令传入的 ID
+ */
+export type IBasicContextMenuActuator = (node: ITreeNodeOrCompositeTreeNode, id: string) => void;
 
 export interface IBasicTreeData {
   /**
@@ -206,3 +208,29 @@ export interface IBasicNodeProps {
 }
 
 export type IBasicNodeRendererProps = INodeRendererProps & IBasicNodeProps;
+
+export interface IBasicTreeMenu {
+  /**
+   * 展示文本
+   */
+  label: string;
+  /**
+   * 唯一 ID
+   */
+  id: string;
+  /**
+   * 分组信息
+   */
+  group?: string;
+  /**
+   * 类型
+   */
+  type?: string;
+}
+
+export const DECORATIONS = {
+  SELECTED: 'mod_selected',
+  FOCUSED: 'mod_focused',
+  ACTIVED: 'mod_actived',
+  LOADING: 'mod_loading',
+};
