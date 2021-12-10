@@ -1,6 +1,6 @@
 import debounce = require('lodash.debounce');
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus, LRUMap } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';
@@ -33,6 +33,8 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   documentSymbolStore: DocumentSymbolStore;
 
   private debouncedFireUriEvent = new Map<string, () => any>();
+
+  private cachedBreadCrumb = new LRUMap<string, IBreadCrumbPart>(200, 100);
 
   handlesUri(uri: URI): boolean {
     return uri.scheme === 'file';
@@ -68,6 +70,11 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   }
 
   private createFilePartBreadCrumbUri(uri: URI, isDirectory: boolean): IBreadCrumbPart {
+    const uriString = uri.toString();
+    if (this.cachedBreadCrumb.has(uriString)) {
+      return this.cachedBreadCrumb.get(uriString)!;
+    }
+
     const res: IBreadCrumbPart = {
       name: uri.path.base,
       icon: this.labelService.getIcon(uri, {isDirectory}),
@@ -110,6 +117,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
       };
     }
 
+    this.cachedBreadCrumb.set(uriString, res);
     return res;
   }
 
