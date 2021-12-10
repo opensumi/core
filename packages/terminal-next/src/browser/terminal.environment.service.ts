@@ -1,6 +1,6 @@
 import React from 'react';
 import { Injectable, Autowired } from '@opensumi/di';
-import { CommandService, Emitter, Event, ILogger, localize } from '@opensumi/ide-core-common';
+import { CommandService, Emitter, Event, ILogger, localize, raceTimeout } from '@opensumi/ide-core-common';
 import {
   deserializeEnvironmentVariableCollection,
   IEnvironmentVariableCollectionWithPersistence,
@@ -19,6 +19,7 @@ import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 import { MergedEnvironmentVariableCollection } from '../common/environmentVariableCollection';
 import { TERMINAL_COMMANDS } from '../common/commands';
 import { TerminalVariable } from './component/terminal.variable';
+import { ITerminalProcessPath, ITerminalProcessService } from '../common';
 import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
 
@@ -51,6 +52,9 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
 
   @Autowired(IStatusBarService)
   private readonly statusbarService: IStatusBarService;
+
+  @Autowired(ITerminalProcessPath)
+  public readonly terminalProcessService: ITerminalProcessService;
 
   @Autowired(IDialogService)
   protected dialogService: IDialogService;
@@ -95,6 +99,13 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
   delete(extensionIdentifier: string): void {
     this.collections.delete(extensionIdentifier);
     this.updateCollections();
+  }
+
+  public async getProcessEnv(): Promise<{ [key in string]: string | undefined } | undefined> {
+    return raceTimeout(
+      this.terminalProcessService.getEnv(),
+      1000,
+    );
   }
 
   private resolveMergedCollection(): IMergedEnvironmentVariableCollection {

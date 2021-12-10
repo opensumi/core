@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { VariableRegistry } from '@opensumi/ide-core-browser';
+import { isWindows, Variable, VariableRegistry } from '@opensumi/ide-core-browser';
 import { VariableResolveOptions, IVariableResolverService } from '../common';
 
 @Injectable()
@@ -114,6 +114,33 @@ export namespace VariableResolverService {
       protected readonly options: VariableResolveOptions,
     ) { }
 
+    private async evaluateSingleVariable(name: string): Promise<string | undefined> {
+      let variable: Variable | undefined;
+
+      const parts = name.split(':');
+      if (parts.length > 1) {
+        const [key, value] = parts;
+        variable = this.variableRegistry.getVariable(key);
+
+        switch (key) {
+
+          case 'env':
+            const environment = variable && await variable.resolve(this.options.context);
+            if (!environment) {
+              return;
+            }
+            const env = environment[isWindows ? value.toLowerCase() : value];
+            return env;
+
+          default: break;
+        }
+      } else {
+        const variable = this.variableRegistry.getVariable(name);
+        const value = variable && await variable.resolve(this.options.context);
+        return value as string;
+      }
+    }
+
     get(name: string): string | undefined {
       return this.resolved.get(name);
     }
@@ -123,8 +150,7 @@ export namespace VariableResolverService {
         return;
       }
       try {
-        const variable = this.variableRegistry.getVariable(name);
-        const value = variable && await variable.resolve(this.options.context);
+        const value = await this.evaluateSingleVariable(name);
         this.resolved.set(name, value);
       } catch (e) {
         this.resolved.set(name, undefined);

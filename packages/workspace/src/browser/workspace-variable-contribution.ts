@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '../common';
-import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS, COMMON_COMMANDS } from '@opensumi/ide-core-browser';
 
 @Domain(VariableContribution)
 export class WorkspaceVariableContribution implements VariableContribution {
@@ -90,6 +90,13 @@ export class WorkspaceVariableContribution implements VariableContribution {
       resolve: async () => {
         const uri = await this.getResourceUri();
         return uri && this.getWorkspaceRelativePath(uri);
+      },
+    });
+    variables.registerVariable({
+      name: 'env',
+      resolve: async () => {
+        const envVariable = await this.commandService.executeCommand<{ [x: string]: string | undefined }>(COMMON_COMMANDS.ENVIRONMENT_VARIABLE.id);
+        return envVariable;
       },
     });
   }

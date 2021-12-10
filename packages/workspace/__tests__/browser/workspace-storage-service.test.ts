@@ -52,7 +52,7 @@ describe('WorkspaceContribution should be work', () => {
       }),
     };
     workspaceVariableContribution.registerVariables(variables as any);
-    expect(variables.registerVariable).toBeCalledTimes(10);
+    expect(variables.registerVariable).toBeCalledTimes(11);
     done();
   });
 

@@ -6,6 +6,7 @@ import {
   ITerminalRestore,
   ITerminalTheme,
   ITerminalServicePath,
+  ITerminalProcessPath,
   ITerminalClientFactory,
   ITerminalApiService,
   ITerminalSearchService,
@@ -116,6 +117,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       servicePath: ITerminalServicePath,
       clientToken: ITerminalService,
+    },
+    {
+      servicePath: ITerminalProcessPath,
+      clientToken: EnvironmentVariableServiceToken,
     },
   ];
 }

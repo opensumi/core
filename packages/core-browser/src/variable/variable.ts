@@ -1,6 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from '@opensumi/ide-core-common';
 
+export type TVariableResolve = string | undefined | { [x: string]: string | undefined };
 export interface Variable {
 
   /**
@@ -16,7 +17,7 @@ export interface Variable {
   /**
    * 处理返回值
    */
-  resolve(context?: URI): MaybePromise<string | undefined>;
+  resolve(context?: URI): MaybePromise<TVariableResolve>;
 }
 
 export const VariableContribution = Symbol('VariableContribution');
@@ -50,6 +51,7 @@ export class VariableRegistryImpl implements IDisposable {
    */
   registerVariable(variable: Variable): IDisposable {
     if (this.variables.has(variable.name)) {
+      // tslint:disable-next-line:no-console
       console.warn(`A variables with name ${variable.name} is already registered.`);
       return Disposable.NULL;
     }

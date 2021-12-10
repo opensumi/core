@@ -7,6 +7,7 @@ import { ILogger } from '@opensumi/ide-logs/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
+import { ITerminalProcessPath } from '@opensumi/ide-terminal-next';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { MergedEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariableCollection';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
@@ -45,6 +46,12 @@ describe('terminal.environment.service', () => {
       {
         token: EnvironmentVariableServiceToken,
         useClass: TerminalEnvironmentService,
+      },
+      {
+        token: ITerminalProcessPath,
+        useValue: {
+          getEnv: () => ({}),
+        },
       },
       {
         token: IWorkspaceStorageService,
