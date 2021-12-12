@@ -1,5 +1,6 @@
 extends:
   - tslint:recommended
+  - "tslint-config-prettier"
 
 rules:
   only-arrow-functions: false
@@ -43,4 +44,3 @@ linterOptions:
     - '**/typings/**'
     - '**/typings-pending/**'
     - '**/scripts/**'
-
