@@ -6,6 +6,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "prepare": "husky install",
     "clean:cache": "rimraf .cache",
     "clean": "rimraf ./packages/*/lib",
     "check:dep": "ts-node ./scripts/depcheck",
@@ -70,7 +71,6 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
       "post-checkout": "npm run clean:cache",
       "post-merge": "npm run clean:cache",

@@ -1,7 +1,17 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  KeybindingRegistry,
+  MonacoOverrideServiceRegistry,
+  ServiceNames,
+  ILogger,
+} from '@opensumi/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
-import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import {
+  IEditorConstructionOptions,
+  isDiffEditor,
+  MouseTargetType,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
@@ -14,7 +24,7 @@ import { monaco } from './monaco-api';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoService } from '../common';
 
-const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID =  'sumi-overflow-widgets-container';
+const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID = 'sumi-overflow-widgets-container';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService {
@@ -45,8 +55,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   get monacoBaseOptions() {
     return {
-      // monaco 默认会将 overflowWidgets（如 hover） 放置在编辑器内部的 DOM 中
-      // 但我们会在外部增加其他组件，可能会导致遮挡这些 Widget
+      // Monaco 默认会将 overflowWidgets（如 hover） 放置在编辑器内部的 DOM 中
+      // 但是 Monaco 在计算 overflowWidgets 的位置时是使用整个 body 的高度来计算定位的
+      // 但我们会在顶部增加我们自己的业务组件，就会导致遮挡这些 overflowWidgets
       // 所以此处将 overflowWidget 放置在 body 下构造的一个专门的 container 中
       overflowWidgetsDomNode: document.getElementById(SUMI_OVERFLOW_WIDGETS_CONTAINER_ID)!,
       glyphMargin: true,
@@ -73,12 +84,16 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public createCodeEditor(
     monacoContainer: HTMLElement,
     options?: IEditorConstructionOptions,
-    overrides: {[key: string]: any} = {},
+    overrides: { [key: string]: any } = {},
   ): ICodeEditor {
-    const editor =  monaco.editor.create(monacoContainer, {
-      ...this.monacoBaseOptions,
-      ...options,
-    }, { ...this.overrideServiceRegistry.all(), ...overrides });
+    const editor = monaco.editor.create(
+      monacoContainer,
+      {
+        ...this.monacoBaseOptions,
+        ...options,
+      },
+      { ...this.overrideServiceRegistry.all(), ...overrides },
+    );
     this.overrideMonacoKeybindingService(editor);
 
     this.addClickEventListener(editor);
@@ -86,23 +101,25 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   }
 
   private doAddClickEventListener(editor: ICodeEditor) {
-    this.addDispose(editor.onMouseDown((e) => {
-      if (e.target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
-        const lineNumber = e.target.position?.lineNumber || e.target.range?.startLineNumber;
-        if (!lineNumber) {
-          return;
-        }
+    this.addDispose(
+      editor.onMouseDown((e) => {
+        if (e.target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
+          const lineNumber = e.target.position?.lineNumber || e.target.range?.startLineNumber;
+          if (!lineNumber) {
+            return;
+          }
 
-        editor.setSelection(
-          new Range(
-            lineNumber,
-            e.target.range?.startColumn || e.target.position?.column || 0,
-            lineNumber + 1,
-            e.target.range?.startColumn || e.target.position?.column || 0,
-          ),
-        );
-      }
-    }));
+          editor.setSelection(
+            new Range(
+              lineNumber,
+              e.target.range?.startColumn || e.target.position?.column || 0,
+              lineNumber + 1,
+              e.target.range?.startColumn || e.target.position?.column || 0,
+            ),
+          );
+        }
+      }),
+    );
   }
 
   private addClickEventListener(editor: IDiffEditor | ICodeEditor) {
@@ -120,13 +137,17 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public createDiffEditor(
     monacoContainer: HTMLElement,
     options?: IDiffEditorConstructionOptions,
-    overrides: {[key: string]: any} = {},
+    overrides: { [key: string]: any } = {},
   ): IDiffEditor {
-    const editor =  monaco.editor.createDiffEditor(monacoContainer, {
-      ...this.monacoBaseOptions,
-      ignoreTrimWhitespace: false,
-      ...options,
-    } as any, { ...this.overrideServiceRegistry.all(), ...overrides });
+    const editor = monaco.editor.createDiffEditor(
+      monacoContainer,
+      {
+        ...this.monacoBaseOptions,
+        ignoreTrimWhitespace: false,
+        ...options,
+      } as any,
+      { ...this.overrideServiceRegistry.all(), ...overrides },
+    );
     this.overrideMonacoKeybindingService(editor);
     this.addClickEventListener(editor);
     return editor;
@@ -168,7 +189,12 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     if (!keybindingService) {
       return;
     }
-    keybindingService.resolveKeybinding = (keybinding) => [new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry)];
+    keybindingService.resolveKeybinding = (keybinding) => [
+      new MonacoResolvedKeybinding(
+        MonacoResolvedKeybinding.keySequence(keybinding),
+        this.keybindingRegistry,
+      ),
+    ];
     keybindingService.resolveKeyboardEvent = (keyboardEvent) => {
       const keybinding = new SimpleKeybinding(
         keyboardEvent.ctrlKey,
@@ -177,7 +203,10 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         keyboardEvent.metaKey,
         keyboardEvent.keyCode,
       ).toChord();
-      return new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry);
+      return new MonacoResolvedKeybinding(
+        MonacoResolvedKeybinding.keySequence(keybinding),
+        this.keybindingRegistry,
+      );
     };
   }
 
