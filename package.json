@@ -1,9 +1,6 @@
 {
   "name": "@opensumi/ide",
   "version": "2.12.0",
-  "resolution": {
-    "webpack": "4.39.3"
-  },
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
@@ -69,17 +66,9 @@
     "typescript": "^4.4.2",
     "webpack": "4.39.3"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "post-checkout": "npm run clean:cache",
-      "post-merge": "npm run clean:cache",
-      "pre-rebase": "npm run clean:cache"
-    }
-  },
   "lint-staged": {
-    "packages/**/*.(ts|tsx)": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish",
-    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write"
+    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
+    "packages/**/*.(ts|tsx)": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
   },
   "config": {
     "commitizen": {
@@ -93,12 +82,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:ide-framework/core.git"
+    "url": "git@github.com:opensumi/core.git"
   },
   "resolutions": {
     "canvas": "2.6.1",
     "y18n": "4.0.0",
-    "shelljs": "0.8.4"
+    "shelljs": "0.8.4",
+    "webpack": "4.39.3"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",
