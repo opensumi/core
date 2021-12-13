@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain, IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
-import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus } from '@opensumi/ide-core-common'
+import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { IconType } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -23,7 +23,7 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
     if (this.statusBarElement) {
       this.statusBarElement.update({
         text,
-        backgroundColor: backgroundColor,
+        backgroundColor,
         alignment: StatusBarAlignment.LEFT,
       });
     }
