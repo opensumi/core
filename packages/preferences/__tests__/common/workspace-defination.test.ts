@@ -1,5 +1,5 @@
 import { URI, FileStat } from '@opensumi/ide-core-browser';
-import { KAITIAN_MULTI_WORKSPACE_EXT, WorkspaceData } from '@opensumi/ide-workspace';
+import { DEFAULT_WORKSPACE_SUFFIX_NAME, WorkspaceData } from '@opensumi/ide-workspace';
 
 describe('WorkspaceData methods', () => {
 
@@ -39,7 +39,7 @@ describe('WorkspaceData methods', () => {
 
   it('transformToRelative method should be work', () => {
     const workspaceFile = {
-      uri: URI.file('home').resolve(`workspace.${KAITIAN_MULTI_WORKSPACE_EXT}`).toString(),
+      uri: URI.file('home').resolve(`workspace.${DEFAULT_WORKSPACE_SUFFIX_NAME}`).toString(),
       isDirectory: false,
       lastModification: new Date().getTime(),
     };
@@ -58,7 +58,7 @@ describe('WorkspaceData methods', () => {
 
   it('transformToAbsolute method should be work', () => {
     const workspaceFile = {
-      uri: URI.file('home').resolve(`workspace.${KAITIAN_MULTI_WORKSPACE_EXT}`).toString(),
+      uri: URI.file('home').resolve(`workspace.${DEFAULT_WORKSPACE_SUFFIX_NAME}`).toString(),
       isDirectory: false,
       lastModification: new Date().getTime(),
     };

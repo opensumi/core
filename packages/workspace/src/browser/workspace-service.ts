@@ -1,7 +1,7 @@
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
-  KAITIAN_MULTI_WORKSPACE_EXT,
+  DEFAULT_WORKSPACE_SUFFIX_NAME,
   IWorkspaceService,
   WorkspaceData,
   WorkspaceInput,
@@ -68,6 +68,10 @@ export class WorkspaceService implements IWorkspaceService {
   @Autowired(IClientApp)
   private readonly clientApp: IClientApp;
 
+  get workspaceSuffixName() {
+    return this.appConfig.workspaceSuffixName || DEFAULT_WORKSPACE_SUFFIX_NAME;
+  }
+
   protected applicationName: string;
 
   private _whenReady: Deferred<void> = new Deferred();
@@ -113,7 +117,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected getTemporaryWorkspaceFileUri(home: URI): URI {
-    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MULTI_WORKSPACE_EXT}`).withScheme('file');
+    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`).withScheme('file');
   }
 
   protected listenPreference() {
@@ -339,7 +343,7 @@ export class WorkspaceService implements IWorkspaceService {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
+        (displayName.endsWith(`.${this.workspaceSuffixName}`))) {
         title = formatLocalize('file.workspace.defaultWorkspaceTip', displayName.slice(0, displayName.lastIndexOf('.')));
       } else {
         title = displayName;
