@@ -7,8 +7,7 @@ import { IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
 import cls from 'classnames';
 import { generateCtxMenu, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 
-export const StatusBarView = observer(() => {
-
+export const StatusBarView = React.memo(observer(() => {
   const statusBar: IStatusBarService = useInjectable(IStatusBarService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
   const backgroundColor = statusBar.getBackgroundColor();
@@ -40,4 +39,4 @@ export const StatusBarView = observer(() => {
       </div>
     </div>
   );
-});
+}));

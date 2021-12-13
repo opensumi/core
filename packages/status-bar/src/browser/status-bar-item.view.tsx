@@ -9,8 +9,7 @@ import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import styles from './status-bar.module.less';
 import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 
-// todo: 移除 fa 的相关代码
-export function StatusBarItem(props: StatusBarEntry) {
+export const StatusBarItem = React.memo((props: StatusBarEntry) => {
   const {
     entryId,
     text,
@@ -69,4 +68,4 @@ export function StatusBarItem(props: StatusBarEntry) {
       })}
     </div>
   );
-}
+});
