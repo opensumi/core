@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { ConfigurationTarget } from '../../../common/vscode';
 import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -47,7 +47,7 @@ export class MainThreadPreference implements IMainThreadPreference {
   protected readonly toDispose = new DisposableCollection();
 
   private readonly proxy: any;
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
     this.toDispose.push(this.preferenceService.onPreferencesChanged((changes) => {
       const roots = this.workspaceService.tryGetRoots();

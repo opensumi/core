@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -56,7 +56,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   private disposableCollection: Map<string, DisposableStore> = new Map();
   private disposable: DisposableStore = new DisposableStore();
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
     this._registerInternalCommands();

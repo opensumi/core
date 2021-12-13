@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IMainThreadMessage, IExtHostMessage, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MessageType } from '@opensumi/ide-core-common';
 
@@ -16,7 +16,7 @@ export class MainThreadMessage implements IMainThreadMessage {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostMessage);
   }
 

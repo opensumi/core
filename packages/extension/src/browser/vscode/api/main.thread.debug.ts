@@ -1,4 +1,4 @@
-import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Injectable, Optional, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService, IStartDebuggingOptions } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@opensumi/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@opensumi/ide-debug';
@@ -83,8 +83,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   private readonly injector: Injector;
 
   constructor(
-    @Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol,
-    @Optinal(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
+    @Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol,
+    @Optional(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
   ) {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
