@@ -1,9 +1,9 @@
 import React, { RefObject, useEffect, useRef } from 'react';
+import marked from 'marked';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@opensumi/ide-components';
 import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
-import marked from 'marked';
 import { IOpenerService } from '@opensumi/ide-core-browser';
 
 @Injectable()
@@ -67,15 +67,21 @@ const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) =>
   const { html, opener } = props;
 
   useEffect(() => {
+    const eventListenerCollect: Element[] = [];
+
     if (ref && ref.current) {
       const findAllTag = html.querySelectorAll(`a[${DATA_SET_COMMAND}]`);
       findAllTag.forEach((tag) => {
         tag.addEventListener('click', listenClick);
+        eventListenerCollect.push(tag);
       });
       ref.current.appendChild(html);
     }
     return () => {
       ref.current?.removeChild(html);
+      eventListenerCollect.map((tag) => {
+        tag.removeEventListener('click', listenClick);
+      });
     };
   }, []);
 
