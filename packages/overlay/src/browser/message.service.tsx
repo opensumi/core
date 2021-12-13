@@ -67,21 +67,13 @@ const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) =>
   const { html, opener } = props;
 
   useEffect(() => {
-    const eventListenerCollect: Element[] = [];
-
     if (ref && ref.current) {
-      const findAllTag = html.querySelectorAll(`a[${DATA_SET_COMMAND}]`);
-      findAllTag.forEach((tag) => {
-        tag.addEventListener('click', listenClick);
-        eventListenerCollect.push(tag);
-      });
+      html.addEventListener('click', listenClick);
       ref.current.appendChild(html);
     }
     return () => {
       ref.current?.removeChild(html);
-      eventListenerCollect.map((tag) => {
-        tag.removeEventListener('click', listenClick);
-      });
+      html.removeEventListener('click', listenClick);
     };
   }, []);
 
@@ -90,9 +82,11 @@ const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) =>
    */
   const listenClick = (event: PointerEvent) => {
     const target = event.target as HTMLElement;
-    const dataCommand = target.getAttribute(DATA_SET_COMMAND);
-    if (dataCommand && opener) {
-      opener.open(dataCommand);
+    if (target.tagName === 'a' && target.hasAttribute(DATA_SET_COMMAND)) {
+      const dataCommand = target.getAttribute(DATA_SET_COMMAND);
+      if (dataCommand && opener) {
+        opener.open(dataCommand);
+      }
     }
   };
 
