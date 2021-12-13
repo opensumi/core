@@ -3,7 +3,7 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '@opensumi/ide-workspace';
+import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
@@ -374,7 +374,7 @@ describe('FileTree Service should be work alone on multiple workspace mode', () 
     await workspaceService.setWorkspace({
       isDirectory: false,
       lastModification: 0,
-      uri: URI.file('folder1').resolve(`test.${KAITIAN_MULTI_WORKSPACE_EXT}`).toString(),
+      uri: URI.file('folder1').resolve(`test.${DEFAULT_WORKSPACE_SUFFIX_NAME}`).toString(),
     });
     await workspaceService.spliceRoots(0, undefined, undefined, URI.file('folder1'), URI.file('folder2'));
     const path = await fileTreeService.getFileTreeNodePathByUri(URI.file('folder1').resolve('test'));

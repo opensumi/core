@@ -3,7 +3,7 @@ import { FileStat } from '@opensumi/ide-file-service';
 import Ajv from 'ajv';
 import { StorageService } from '@opensumi/ide-core-browser/lib/services';
 
-export const KAITIAN_MULTI_WORKSPACE_EXT = 'sumi-workspace';
+export const DEFAULT_WORKSPACE_SUFFIX_NAME = 'sumi-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.sumi';
 export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export const UNTITLED_WORKSPACE = 'Untitled';

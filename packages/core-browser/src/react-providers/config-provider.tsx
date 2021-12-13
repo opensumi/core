@@ -177,6 +177,10 @@ export interface AppConfig {
    * vscode-oniguruma-wasm 资源地址
    */
   onigWasmPath?: string;
+  /**
+   * 工作区文件后缀，默认后缀为 `sumi-workspace`
+   */
+  workspaceSuffixName?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
