@@ -2,10 +2,11 @@ import crypto from 'crypto';
 import { Injectable, Autowired } from '@opensumi/di';
 import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
+import { DEFAULT_WORKSPACE_SUFFIX_NAME, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import { Path } from '@opensumi/ide-core-common/lib/path';
+import { AppConfig } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
@@ -26,10 +27,17 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   @Autowired(ILoggerManagerClient)
   private readonly loggerManager: ILoggerManagerClient;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred();
     this.deferredStoragePath = new Deferred();
     this.storagePathInitialized = false;
+  }
+
+  get workspaceSuffixName() {
+    return this.appConfig.workspaceSuffixName || DEFAULT_WORKSPACE_SUFFIX_NAME;
   }
 
   async provideHostLogPath(): Promise<URI> {
@@ -109,7 +117,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   async buildWorkspaceId(workspace: FileStat, roots: FileStat[], extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     const getTemporaryWorkspaceFileUri = (home: URI): URI => {
-      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MULTI_WORKSPACE_EXT}`).withScheme('file');
+      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`).withScheme('file');
     };
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
 
@@ -123,7 +131,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       const uri = new URI(workspace.uri);
       let displayName = uri.displayName;
 
-      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
+      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${this.workspaceSuffixName}`))) {
         displayName = displayName.slice(0, displayName.lastIndexOf('.'));
       }
 

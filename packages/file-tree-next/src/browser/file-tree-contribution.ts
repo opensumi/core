@@ -1,10 +1,10 @@
-import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS } from '@opensumi/ide-core-browser';
+import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS, AppConfig } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { FileTreeService } from './file-tree.service';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
-import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
+import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -63,7 +63,14 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   @Autowired(IApplicationService)
   private readonly appService: IApplicationService;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   private isRendered = false;
+
+  get workspaceSuffixName() {
+    return this.appConfig.workspaceSuffixName || DEFAULT_WORKSPACE_SUFFIX_NAME;
+  }
 
   initialize() {
     // 等待排除配置初始化结束后再初始化文件树
@@ -122,7 +129,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       const uri = new URI(workspace.uri);
       resourceTitle = uri.displayName;
       if (!workspace.isDirectory &&
-        (resourceTitle.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
+        (resourceTitle.endsWith(`.${this.workspaceSuffixName}`))) {
         resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
         if (resourceTitle === UNTITLED_WORKSPACE) {
           return localize('file.workspace.defaultTip');
@@ -639,7 +646,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
             ],
             filters: [{
               name: localize('workspace.openWorkspaceTitle'),
-              extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
+              extensions: [this.workspaceSuffixName],
             }],
           }).then((paths) => {
             if (paths && paths.length > 0) {

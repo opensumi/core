@@ -13,7 +13,7 @@ import {
   URI,
 } from '@opensumi/ide-core-browser';
 
-import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '../common';
+import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
@@ -74,7 +74,7 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
         const folder = await this.windowDialogService.showSaveDialog({
           saveLabel: localize('workspace.saveWorkspaceAsFile'),
           showNameInput: true,
-          defaultFileName: `workspace.${KAITIAN_MULTI_WORKSPACE_EXT}`,
+          defaultFileName: `workspace.${DEFAULT_WORKSPACE_SUFFIX_NAME}`,
         });
         if (folder) {
           await this.workspaceService.save(folder);
