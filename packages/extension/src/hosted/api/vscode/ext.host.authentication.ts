@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import type vscode from 'vscode';
 import { Emitter, Disposable, Event, AuthenticationProviderInformation, AuthenticationSessionsChangeEvent, AuthenticationSession, getDebugLogger } from '@opensumi/ide-core-common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -39,6 +44,7 @@ export function createAuthenticationApiFactory(extension: IExtensionDescription,
   return authentication;
 }
 
+// some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostAuthentication.ts#L24
 export class ExtHostAuthentication implements IExtHostAuthentication {
   protected readonly logger = getDebugLogger();
 

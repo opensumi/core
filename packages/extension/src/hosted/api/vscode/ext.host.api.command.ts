@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import { CommandsConverter } from './ext.host.command';
 import * as typeConverters from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
@@ -63,6 +68,7 @@ export class ApiCommand {
   ) { }
 }
 
+// some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostApiCommands.ts#L25-L475
 export const newCommands: ApiCommand[] = [
   // -- document highlights
   new ApiCommand(
