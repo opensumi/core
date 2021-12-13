@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+// some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostLanguageFeatures.ts
+
 import vscode from 'vscode';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';

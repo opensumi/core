@@ -1,3 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+// some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostComments.ts#L32
+
 import type vscode from 'vscode';
 import { Uri as URI, MutableDisposable, DisposableStore, IRange, Emitter, debounce, asPromise, CancellationToken } from '@opensumi/ide-core-common';
 import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';

@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+// some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostTask.ts
+
 import type vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
