@@ -1,5 +1,5 @@
 import React from 'react';
-import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import { useInjectable, DomListener, Disposable, useUpdateOnEvent, URI } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
 
@@ -50,29 +50,28 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
     }
   </div>);
 };
-export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
-
+export const NavigationItem = React.memo(({ part }: { part: IBreadCrumbPart }) => {
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
   const itemRef = React.useRef<HTMLSpanElement>();
 
-  const onClick = part.getSiblings ? async () => {
-          if (itemRef.current) {
-            const { left, top, height} = itemRef.current.getBoundingClientRect();
-            const siblings = await part.getSiblings!();
-            let leftPos = left;
-            if (window.innerWidth - leftPos < 200 + 10) {
-              // 放左边
-              leftPos = window.innerWidth - 200 - 5;
-            }
-            viewService.showMenu(siblings.parts, leftPos, top + height + 5, siblings.currentIndex);
-          }
-        } : undefined;
+  const onClick = React.useCallback(async () => {
+    if (part.getSiblings && itemRef.current) {
+      const { left, top, height} = itemRef.current.getBoundingClientRect();
+      const siblings = await part.getSiblings!();
+      let leftPos = left;
+      if (window.innerWidth - leftPos < 200 + 10) {
+        // 放左边
+        leftPos = window.innerWidth - 200 - 5;
+      }
+      viewService.showMenu(siblings.parts, leftPos, top + height + 5, siblings.currentIndex);
+    }
+  }, [itemRef.current, part]);
 
   return <span onClick={onClick} className={styles['navigation-part']} ref={itemRef as any}>
     {part.icon && <span className={part.icon}></span> }
     <span>{part.name}</span>
   </span>;
-};
+});
 
 export const NavigationMenu = observer(({model}: {model: NavigationMenuModel}) => {
   let maxHeight = (window.innerHeight - model.y - 20);
