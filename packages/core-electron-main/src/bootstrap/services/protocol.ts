@@ -25,7 +25,7 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
         const { url } = req;
         //  对于webview中vscode:/aaaa/a或者 vscode:///aaaa/a 的路径
          // 旧版electron此处会是vscode://aaaa/a, 少了个斜杠，导致路径解析出现问题
-        const uri = URI.file(url.replace(/^vscode-resource:(\/\/|)/, ''));
+        const uri = URI.file(decodeURI(url).replace(/^vscode-resource:(\/\/|)/, ''));
         const fsPath = uri.codeUri.fsPath;
         const data = await readFile(fsPath);
         callback({ mimeType: getWebviewContentMimeType(uri), data});

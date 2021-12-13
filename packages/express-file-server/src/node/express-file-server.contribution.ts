@@ -21,7 +21,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
 
   initialize(app: IServerApp) {
     app.use(mount('/assets', async (ctx) => {
-      const filePath = ctx.path.replace(/^\/assets/, '');
+      const filePath = decodeURI(ctx.path.replace(/^\/assets/, ''));
       if (!filePath) {
         ctx.status = 404;
         return;
