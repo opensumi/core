@@ -1,6 +1,6 @@
 import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/progress';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Autowired, Injectable, Optinal } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@opensumi/ide-core-common';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -14,7 +14,7 @@ export class MainThreadProgress implements IMainThreadProgress {
   @Autowired(IProgressService)
   private readonly progressService: IProgressService;
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostProgress);
   }
 

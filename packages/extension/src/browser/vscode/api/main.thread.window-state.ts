@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
-import { Optinal, Injectable } from '@opensumi/di';
+import { Optional, Injectable } from '@opensumi/di';
 
 @Injectable({multiple: true})
 export class MainThreadWindowState {
@@ -8,7 +8,7 @@ export class MainThreadWindowState {
   private readonly proxy: IExtHostWindowState;
   private blurHandler;
   private focusHandler;
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWindowState);
 
     this.blurHandler = () => {

@@ -1,6 +1,6 @@
 import { IMainThreadTheming, IExtHostTheming } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Autowired, Injectable, Optinal } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IThemeService } from '@opensumi/ide-theme';
 import { IDisposable } from '@opensumi/ide-core-common';
@@ -14,7 +14,7 @@ export class MainThreadTheming implements IMainThreadTheming {
 
   private readonly _themeChangeListener: IDisposable;
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTheming);
     this._themeChangeListener = this._themeService.onThemeChange((e) => {
       this.proxy.$onColorThemeChange(e.type);

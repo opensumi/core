@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { FileStat } from '@opensumi/ide-file-service';
 import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
@@ -38,7 +38,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
 
   private workspaceChangeEvent;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
 

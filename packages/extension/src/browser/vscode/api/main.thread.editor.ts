@@ -2,7 +2,7 @@ import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable, Autowired, Optinal } from '@opensumi/di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../common/vscode';
 import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -32,7 +32,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   private readonly proxy: IExtensionHostEditorService;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
     this.$getInitialState().then((change) => {
