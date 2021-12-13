@@ -2,7 +2,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Autowired, Injectable, Optinal } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@opensumi/ide-core-common';
@@ -59,7 +59,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return data as modes.CodeAction[];
   }
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
   }
 

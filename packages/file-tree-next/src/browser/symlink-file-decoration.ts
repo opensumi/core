@@ -1,4 +1,4 @@
-import { Optinal } from '@opensumi/di';
+import { Optional } from '@opensumi/di';
 import { IDecorationsProvider, IDecorationData } from '@opensumi/ide-decoration';
 import { Uri, Emitter, localize } from '@opensumi/ide-core-browser';
 import { FileTreeService } from './file-tree.service';
@@ -8,7 +8,7 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
 
   readonly onDidChangeEmitter: Emitter<Uri[]> = new Emitter();
 
-  constructor(@Optinal() private readonly fileTreeService: FileTreeService) {}
+  constructor(@Optional() private readonly fileTreeService: FileTreeService) {}
 
   get onDidChange() {
     return this.onDidChangeEmitter.event;

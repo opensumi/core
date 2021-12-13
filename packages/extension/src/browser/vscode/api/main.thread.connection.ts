@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, DisposableCollection } from '@opensumi/ide-core-common';
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@opensumi/ide-core-browser';
 
 import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
@@ -16,7 +16,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
   protected readonly LoggerManager: ILoggerManagerClient;
   protected readonly logger: ILogServiceClient;
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
     this.logger = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
   }

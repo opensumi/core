@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILogger, Disposable, PreferenceService, IDisposable } from '@opensumi/ide-core-browser';
 import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@opensumi/ide-terminal-next';
@@ -40,7 +40,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   @Autowired(ILogger)
   logger: ILogger;
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTerminal);
     this.initData();
     this.bindEvent();

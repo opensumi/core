@@ -1,5 +1,5 @@
 import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState, IMainThreadWebviewView, IWebviewExtensionDescription, IExtHostWebviewView, WebviewViewResolverRegistrationEvent, WebviewViewResolverRegistrationRemovalEvent, WebviewViewOptions } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@opensumi/di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@opensumi/ide-webview';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
@@ -69,7 +69,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   private extWebviewStorage: Promise<IStorage>;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebview);
     this.sumiProxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.SumiExtHostWebview);

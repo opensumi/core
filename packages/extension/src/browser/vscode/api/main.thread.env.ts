@@ -1,5 +1,5 @@
 import type vscode from 'vscode';
-import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -38,7 +38,7 @@ export class MainThreadEnv implements IMainThreadEnv {
     return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme) || uri.scheme === this.appConfig.uriScheme;
   }
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol, private storage: MainThreadStorage) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol, private storage: MainThreadStorage) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEnv);
 
     this.eventDispose = this.loggerManger.onDidChangeLogLevel((level) => {

@@ -1,4 +1,4 @@
-import { Injectable, Optinal, Autowired } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@opensumi/ide-core-browser';
@@ -83,7 +83,7 @@ export class MainThreadUrls implements IMainThreadUrls {
 
   private handlers = new Map<number, IDisposable>();
 
-  constructor(@Optinal(IRPCProtocol) rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) rpcProtocol: IRPCProtocol) {
     this.proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostUrls);
     this.openerService.registerOpener(this.extensionOpener);
   }
