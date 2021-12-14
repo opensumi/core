@@ -1,7 +1,4 @@
-import {
-  BrowserEditorContribution,
-  EditorComponentRegistry,
-} from '@opensumi/ide-editor/lib/browser';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { Domain, localize } from '@opensumi/ide-core-common';
 import { Autowired } from '@opensumi/di';
 import { IMarkdownService } from '../common';
@@ -31,9 +28,7 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
           type: 'component',
           componentId: MARKDOWN_EDITOR_COMPONENT_ID,
           title: localize('editorOpenType.preview'),
-          weight: this.preferenceService.get<boolean>('application.preferMarkdownPreview')
-            ? 10
-            : -1,
+          weight: this.preferenceService.get<boolean>('application.preferMarkdownPreview') ? 10 : -1,
         });
       }
     });
