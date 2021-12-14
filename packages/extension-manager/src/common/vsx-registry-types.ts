@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2020 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -13,6 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+
+import { InstallState } from './index';
 
 /**
  * The possible options when performing a search.

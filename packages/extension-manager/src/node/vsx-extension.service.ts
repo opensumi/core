@@ -74,7 +74,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
 
   async install(param: IExtensionInstallParam): Promise<string> {
     const { downloadPath } = await this.downloadExtension(param);
-    const distPath = path.join(this.appConfig.marketplace.extensionDir, param.id + param.version);
+    const distPath = path.join(this.appConfig.marketplace.extensionDir, param.id + '-' + param.version);
     const targetPath = await this.uncompressFile(distPath, downloadPath);
     cleanup([downloadPath]);
     return targetPath;

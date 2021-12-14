@@ -6,7 +6,7 @@ import { Markdown } from '@opensumi/ide-markdown';
 
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 import * as styles from './overview.module.less';
-import { VSXExtension } from '../../common';
+import { InstallState, VSXExtension } from '../../common';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 
 enum TabActiveKey {
@@ -24,15 +24,15 @@ const tabMap = [
 interface IExtensionMetadata {
   readme?: string;
   changelog?: string;
+  installed?: boolean;
 }
 
-export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtension> = ({ resource }) => {
-  const files = React.useMemo(() => {
-    return resource.metadata?.files;
-  }, [resource]);
+export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtension & { state: string }> = ({ resource }) => {
+  const files = React.useMemo(() => resource.metadata?.files, [resource]);
   const [loading, setLoading] = React.useState(true);
   const [activateKey, setActivateKey] = React.useState(TabActiveKey.details);
   const [metadata, setMetadata] = React.useState<IExtensionMetadata>({});
+
   const tabs: TabActiveKey[] = React.useMemo(() => {
     const res: TabActiveKey[] = [];
     if (resource.metadata?.files.readme) {
@@ -113,11 +113,11 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
             <span>v{resource.metadata?.version}</span>
           </div>
           <div className={styles.description}>{resource.metadata?.description}</div>
-          <div>
+          {resource.metadata?.state === InstallState.NOT_INSTALLED && <div>
             <Button size='small' onClick={() => { }}>
               {localize('marketplace.extension.install')}
             </Button>
-          </div>
+          </div>}
         </div>
       </div>
       <div className={styles.extension_overview_body}>
