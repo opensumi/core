@@ -1,11 +1,12 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@opensumi/ide-core-browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 
-import { IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
+import { InstallState, IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
+import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
 
 @Injectable()
 export class VSXExtensionService implements IVSXExtensionService {
@@ -14,6 +15,9 @@ export class VSXExtensionService implements IVSXExtensionService {
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(AbstractExtInstanceManagementService)
+  private readonly extensionInstanceService: AbstractExtInstanceManagementService;
 
   @Autowired()
   protected extensionManagementService: ExtensionManagementService;
@@ -24,16 +28,16 @@ export class VSXExtensionService implements IVSXExtensionService {
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
 
-  private uploadStatus?: StatusBarEntryAccessor;
+  private installStatus?: StatusBarEntryAccessor;
 
   @observable
   private tasks: Map<string, Promise<string>> = new Map();
 
   private updateStatusBar() {
     if (this.tasks.size === 0) {
-      if (this.uploadStatus) {
-        this.uploadStatus.dispose();
-        this.uploadStatus = undefined;
+      if (this.installStatus) {
+        this.installStatus.dispose();
+        this.installStatus = undefined;
       }
       return;
     }
@@ -47,7 +51,7 @@ export class VSXExtensionService implements IVSXExtensionService {
         tooltip: message,
         iconClass: 'kaitian-icon kticon-cloud-server',
       };
-      this.uploadStatus = this.statusBarService.addElement(entryId, entry);
+      this.installStatus = this.statusBarService.addElement(entryId, entry);
     }
   }
 
@@ -90,8 +94,8 @@ export class VSXExtensionService implements IVSXExtensionService {
     }
   }
 
-  async openExtensionEditor(extensionId: string) {
-    this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}`), { preview: true });
+  async openExtensionEditor(extensionId: string, state: InstallState) {
+    this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}&state=${state}`), { preview: true });
   }
 
   async search(keyword: string): Promise<void> {
@@ -109,5 +113,18 @@ export class VSXExtensionService implements IVSXExtensionService {
         readme: ext.files.readme,
       }));
     }
+  }
+
+  @computed
+  get installedExtensions(): VSXExtension[] {
+    return this.extensionInstanceService.getExtensionInstances().map((e) => ({
+      namespace: e.packageJSON.publisher,
+      name: e.packageJSON.name,
+      id: e.extensionId,
+      displayName: e.packageJSON.displayName,
+      description: e.packageJSON.description,
+      publisher: e.packageJSON.publisher,
+      iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
+    }));
   }
 }

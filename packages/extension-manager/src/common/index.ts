@@ -10,6 +10,11 @@ export enum TabActiveKey {
   INSTALLED = 'installed',
 }
 
+export enum InstallState {
+  INSTALLED = 'INSTALLED',
+  NOT_INSTALLED = 'NOT_INSTALLED',
+}
+
 export type VSXExtensionNamespaceAccess = 'public' | 'restricted';
 
 /**
@@ -67,9 +72,10 @@ export interface IVSXExtensionService {
   search(keyword: string): Promise<void>;
   install(extension: VSXExtension): Promise<string | undefined>;
   getExtension(extensionId: string): Promise<VSXExtensionRaw | undefined>;
-  openExtensionEditor(extensionId: string): Promise<void>;
+  openExtensionEditor(extensionId: string, state: InstallState): Promise<void>;
 
   extensions: VSXExtension[];
+  installedExtensions: VSXExtension[];
 }
 
 export const VSXExtensionBackSerivceToken = Symbol('VSXExtensionBackSerivceToken');

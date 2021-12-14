@@ -5,7 +5,7 @@ import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-l
 import { BrowserEditorContribution, EditorComponentRegistry, IResource, ResourceService } from '@opensumi/ide-editor/lib/browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
-import { IVSXExtensionService, VSXExtensionServiceToken } from '../common';
+import { InstallState, IVSXExtensionService, VSXExtensionServiceToken } from '../common';
 import { VSXExtensionView } from './vsx-extension.view';
 import { ExtensionOverview } from './extension-overview';
 import { VSXExtensionRaw } from '../common/vsx-registry-types';
@@ -39,13 +39,18 @@ export class VSXExtensionContribution implements ClientAppContribution, MainLayo
   registerResource(service: ResourceService) {
     service.registerResourceProvider({
       scheme: EXTENSION_SCHEME,
-      provideResource: async (uri: URI): Promise<IResource<VSXExtensionRaw | undefined>> => {
-        const { extensionId } = uri.getParsedQuery();
+      provideResource: async (uri: URI): Promise<IResource<Partial<VSXExtensionRaw & { [prop: string]: string }>>> => {
+        const { extensionId, state } = uri.getParsedQuery();
         const extension = await this.vsxExtensionService.getExtension(extensionId);
         const iconClass = this.iconService.fromIcon('', extension?.files.icon, IconType.Background);
         return {
           uri,
-          metadata: extension,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          metadata: {
+            ...extension,
+            state,
+          },
           icon: iconClass || getIcon('extension'),
           name: extension?.displayName || '',
         };
