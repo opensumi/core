@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
-import { localize } from '@opensumi/ide-core-common';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
 
 import { InstallState, VSXExtension } from '../../common';
@@ -39,18 +39,25 @@ export const Extension = React.memo(({ extension, onInstall, onClick, installed 
       <img
         className={styles.icon}
         src={extension.iconUrl || 'https://open-vsx.org/default-icon.png'}
-        alt={extension.displayName}
+        alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
       />
       <div className={styles.extension_detail}>
         <div className={styles.base_info}>
-          <span className={styles.display_name}>{extension.displayName || extension.name}</span>
+          <span className={styles.display_name}>
+            {replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`) ||
+              extension.name}
+          </span>
           <span className={styles.version}>{extension.version}</span>
-          {!installedState && <span className={styles.download_count}>
-            <Icon iconClass={getKaitianIcon('download')} />
-            {extension.downloadCount}
-          </span>}
+          {!installedState && (
+            <span className={styles.download_count}>
+              <Icon iconClass={getKaitianIcon('download')} />
+              {extension.downloadCount}
+            </span>
+          )}
         </div>
-        <span className={styles.description}>{extension.description}</span>
+        <span className={styles.description}>
+          {replaceLocalizePlaceholder(extension.description, `${extension.publisher}.${extension.name}`)}
+        </span>
         <div className={styles.footer}>
           <span className={styles.namespace}>{extension.namespace}</span>
           {!installedState && (

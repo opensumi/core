@@ -1,7 +1,7 @@
 import React from 'react';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
-import { localize } from '@opensumi/ide-core-common';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { Markdown } from '@opensumi/ide-markdown';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
@@ -16,11 +16,7 @@ enum TabActiveKey {
   deps = 'Dependencies',
 }
 
-const tabMap = [
-  TabActiveKey.details,
-  TabActiveKey.changelog,
-  TabActiveKey.deps,
-];
+const tabMap = [TabActiveKey.details, TabActiveKey.changelog, TabActiveKey.deps];
 
 interface IExtensionMetadata {
   readme?: string;
@@ -74,7 +70,7 @@ export const ExtensionOverview: ReactEditorComponent<
       <div className={styles.extension_overview_header}>
         <img
           src={resource.metadata?.iconUrl || 'https://open-vsx.org/default-icon.png'}
-          alt={resource.metadata?.displayName}
+          alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
         />
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
@@ -84,7 +80,8 @@ export const ExtensionOverview: ReactEditorComponent<
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                {resource.metadata?.displayName || resource.metadata?.name}
+                {replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId) ||
+                  resource.metadata?.name}
               </a>
             </h1>
             <span className={styles.extension_id}>
@@ -118,7 +115,9 @@ export const ExtensionOverview: ReactEditorComponent<
             )}
             <span>v{resource.metadata?.version}</span>
           </div>
-          <div className={styles.description}>{resource.metadata?.description}</div>
+          <div className={styles.description}>
+            {replaceLocalizePlaceholder(resource.metadata?.description, resource.metadata?.extensionId)}
+          </div>
           {resource.metadata?.state === InstallState.NOT_INSTALLED && (
             <div>
               <Button size='small' onClick={() => {}}>
@@ -129,7 +128,12 @@ export const ExtensionOverview: ReactEditorComponent<
         </div>
       </div>
       <div className={styles.extension_overview_body}>
-        <Tabs className={styles.tabs} value={activateKey} onChange={onDidTabChange} tabs={[TabActiveKey.details, TabActiveKey.changelog]} />
+        <Tabs
+          className={styles.tabs}
+          value={activateKey}
+          onChange={onDidTabChange}
+          tabs={[TabActiveKey.details, TabActiveKey.changelog]}
+        />
         {activateKey === TabActiveKey.details && metadata.readme && <Markdown content={metadata.readme} />}
         {activateKey === TabActiveKey.changelog && metadata.changelog && <Markdown content={metadata.changelog} />}
       </div>
