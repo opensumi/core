@@ -341,7 +341,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
             onMouseDown={this.onMouseDownHorizontal.bind(this)}
           />
           <div
-            className={styles['thumb-horizontal']}
+            className={'thumb-horizontal'}
             onMouseDown={this.onMouseDownHorizontal.bind(this)}
             ref={(e) => e && (this.thumbH = e)}
           />
@@ -353,7 +353,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
             onMouseDown={this.onMouseDownVertical.bind(this)}
           />
           <div
-            className={styles['thumb-vertical']}
+            className={'thumb-vertical'}
             onMouseDown={this.onMouseDownVertical.bind(this)}
             ref={(e) => e && (this.thumbV = e)}
           />

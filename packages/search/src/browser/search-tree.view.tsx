@@ -85,11 +85,12 @@ const ResultTotalContent = observer<{
   return null;
 });
 
-export const SearchTree = React.forwardRef((
+export const SearchTree = (
   {
     searchPanelLayout,
     viewState,
   }: ISearchTreeProp,
+  ref,
 ) => {
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
@@ -166,4 +167,4 @@ export const SearchTree = React.forwardRef((
       }
     </div>
   );
-});
+};
