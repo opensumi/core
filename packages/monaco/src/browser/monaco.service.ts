@@ -1,7 +1,17 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  KeybindingRegistry,
+  MonacoOverrideServiceRegistry,
+  ServiceNames,
+  ILogger,
+} from '@opensumi/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
-import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import {
+  IEditorConstructionOptions,
+  isDiffEditor,
+  MouseTargetType,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
@@ -71,7 +81,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     document.body.appendChild(overflowWidgetsContainer);
   }
 
-  public createCodeEditor(monacoContainer: HTMLElement, options?: IEditorConstructionOptions, overrides: { [key: string]: any } = {}): ICodeEditor {
+  public createCodeEditor(
+    monacoContainer: HTMLElement,
+    options?: IEditorConstructionOptions,
+    overrides: { [key: string]: any } = {},
+  ): ICodeEditor {
     const editor = monaco.editor.create(
       monacoContainer,
       {
@@ -95,7 +109,14 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
             return;
           }
 
-          editor.setSelection(new Range(lineNumber, e.target.range?.startColumn || e.target.position?.column || 0, lineNumber + 1, e.target.range?.startColumn || e.target.position?.column || 0));
+          editor.setSelection(
+            new Range(
+              lineNumber,
+              e.target.range?.startColumn || e.target.position?.column || 0,
+              lineNumber + 1,
+              e.target.range?.startColumn || e.target.position?.column || 0,
+            ),
+          );
         }
       }),
     );
@@ -113,7 +134,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     }
   }
 
-  public createDiffEditor(monacoContainer: HTMLElement, options?: IDiffEditorConstructionOptions, overrides: { [key: string]: any } = {}): IDiffEditor {
+  public createDiffEditor(
+    monacoContainer: HTMLElement,
+    options?: IDiffEditorConstructionOptions,
+    overrides: { [key: string]: any } = {},
+  ): IDiffEditor {
     const editor = monaco.editor.createDiffEditor(
       monacoContainer,
       {
@@ -164,20 +189,34 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     if (!keybindingService) {
       return;
     }
-    keybindingService.resolveKeybinding = (keybinding) => [new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry)];
+    keybindingService.resolveKeybinding = (keybinding) => [
+      new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry),
+    ];
     keybindingService.resolveKeyboardEvent = (keyboardEvent) => {
-      const keybinding = new SimpleKeybinding(keyboardEvent.ctrlKey, keyboardEvent.shiftKey, keyboardEvent.altKey, keyboardEvent.metaKey, keyboardEvent.keyCode).toChord();
+      const keybinding = new SimpleKeybinding(
+        keyboardEvent.ctrlKey,
+        keyboardEvent.shiftKey,
+        keyboardEvent.altKey,
+        keyboardEvent.metaKey,
+        keyboardEvent.keyCode,
+      ).toChord();
       return new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry);
     };
   }
 
   public registerOverride(serviceName: ServiceNames, service: any) {
-    this.logger.warn(true, `MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.`);
+    this.logger.warn(
+      true,
+      'MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.',
+    );
     this.overrideServiceRegistry.registerOverrideService(serviceName, service);
   }
 
   public getOverride(serviceName: ServiceNames) {
-    this.logger.warn(true, `MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.`);
+    this.logger.warn(
+      true,
+      'MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.',
+    );
     return this.overrideServiceRegistry.getRegisteredService(serviceName);
   }
 

@@ -2,15 +2,7 @@
   "jsxSingleQuote": true,
   "singleQuote": true,
   "trailingComma": "all",
-  "printWidth": 200,
+  "printWidth": 120,
   "proseWrap": "never",
-  "endOfLine": "lf",
-  "overrides": [
-    {
-      "files": ["*.json", ".eslintrc.js"],
-      "options": {
-        "printWidth": 120
-      }
-    }
-  ]
+  "endOfLine": "lf"
 }
