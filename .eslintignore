@@ -1,0 +1,11 @@
+node_modules
+
+**/tools/workspaces/**
+**/tools/extensions/**
+**/tools/**/vendor/
+tools/cli-engine/src/browser/worker-host.js
+
+**/typings/**
+**/scripts/**
+packages/*/lib/**
+packages/*/dist/**

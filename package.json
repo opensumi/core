@@ -1,11 +1,9 @@
 {
   "name": "@opensumi/ide",
   "version": "2.12.0",
-  "resolution": {
-    "webpack": "4.39.3"
-  },
   "license": "MIT",
   "scripts": {
+    "prepare": "husky install",
     "clean:cache": "rimraf .cache",
     "clean": "rimraf ./packages/*/lib",
     "check:dep": "ts-node ./scripts/depcheck",
@@ -34,7 +32,8 @@
     "update-disttag": "ts-node ./scripts/dist-tag",
     "lint": "tslint -c tslint.yml -p tsconfig.json -t stylish",
     "lint:fix": "npm run lint -- --fix",
-    "lint-staged": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish",
+    "lint1": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint1:fix": "npm run lint1 -- --fix",
     "rebuild:node": "node ./scripts/rebuild-native.js",
     "test": "jest --forceExit",
     "test:module": "NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
@@ -57,10 +56,10 @@
     "execa": "^1.0.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.4",
-    "husky": "^1.2.1",
+    "husky": "^7.0.4",
     "iconv-lite": "^0.6.3",
     "lerna": "^4.0.0",
-    "lint-staged": "^12.0.2",
+    "lint-staged": "^12.1.2",
     "lodash": "^4.17.11",
     "node-gyp": "^8.3.0",
     "ts-node": "8.0.2",
@@ -68,17 +67,12 @@
     "typescript": "^4.4.2",
     "webpack": "4.39.3"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "post-checkout": "npm run clean:cache",
-      "post-merge": "npm run clean:cache",
-      "pre-rebase": "npm run clean:cache"
-    }
-  },
   "lint-staged": {
-    "packages/**/*.(ts|tsx)": "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
+    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
+    "*.{js,jsx,ts,tsx}": "eslint --fix",
+    "packages/**/*.(ts|tsx)": [
+      "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
+    ]
   },
   "config": {
     "commitizen": {
@@ -92,12 +86,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:ide-framework/core.git"
+    "url": "git@github.com:opensumi/core.git"
   },
   "resolutions": {
     "canvas": "2.6.1",
     "y18n": "4.0.0",
-    "shelljs": "0.8.4"
+    "shelljs": "0.8.4",
+    "webpack": "4.39.3"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",
@@ -120,12 +115,16 @@
     "@types/temp": "^0.8.34",
     "@types/write-pkg": "^4.0.0",
     "@types/ws": "^6.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
     "async-retry": "^1.3.1",
     "await-event": "^2.1.0",
     "chalk": "^3.0.0",
     "cross-env": "^6.0.3",
     "debug": "^4.3.2",
     "depcheck": "^1.4.2",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.3.0",
     "git-rev-sync": "^3.0.1",
     "got": "^11.8.3",
     "handlebars": "^4.7.3",
@@ -140,7 +139,7 @@
     "node-fetch": "^2.6.1",
     "offline-iconfont": "^1.1.0",
     "parse-github-url": "^1.0.2",
-    "prettier": "^2.0.5",
+    "prettier": "^2.5.1",
     "read-pkg": "^5.2.0",
     "regenerator-runtime": "^0.13.3",
     "rimraf": "^3.0.2",
@@ -150,6 +149,7 @@
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.0",
     "ts-jest": "^27.0.3",
+    "tslint-config-prettier": "^1.18.0",
     "urllib": "^2.37.4",
     "uuid": "^8.3.2",
     "write-pkg": "^4.0.0",

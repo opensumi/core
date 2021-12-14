@@ -9,7 +9,6 @@ export const MARKDOWN_EDITOR_COMPONENT_ID: string = 'MARKDOWN_EDITOR_COMPONENT_I
 
 @Domain(BrowserEditorContribution)
 export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribution {
-
   @Autowired(IMarkdownService)
   markdownService: IMarkdownService;
 
@@ -34,5 +33,4 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
       }
     });
   }
-
 }

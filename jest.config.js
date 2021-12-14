@@ -2,10 +2,7 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const tsconfig = require('./configs/ts/tsconfig.resolve.json');
 const os = require('os');
 
-const tsModuleNameMapper = pathsToModuleNameMapper(
-  tsconfig.compilerOptions.paths,
-  { prefix: '<rootDir>/configs/' },
-)
+const tsModuleNameMapper = pathsToModuleNameMapper(tsconfig.compilerOptions.paths, { prefix: '<rootDir>/configs/' });
 
 module.exports = {
   preset: 'ts-jest',
@@ -13,21 +10,19 @@ module.exports = {
   testEnvironment: 'node',
   coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
   maxWorkers: process.env.SIGMA_MAX_PROCESSORS_LIMIT || os.cpus().length,
-  setupFiles: [
-    "./jest.setup.js"
-  ],
+  setupFiles: ['./jest.setup.js'],
   collectCoverageFrom: [
-    "packages/*/src/**/*.ts",
-    "!packages/**/*.contribution.ts",
+    'packages/*/src/**/*.ts',
+    '!packages/**/*.contribution.ts',
     // 部分contribution文件为-contribution结尾
-    "!packages/**/*-contribution.ts",
-    "!packages/startup/**/*.ts",
-    "!packages/core-electron-main/**/*.ts",
-    "!packages/*/src/electron-main/**/*.ts",
+    '!packages/**/*-contribution.ts',
+    '!packages/startup/**/*.ts',
+    '!packages/core-electron-main/**/*.ts',
+    '!packages/*/src/electron-main/**/*.ts',
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
-    '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js'
+    '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js',
   },
   testPathIgnorePatterns: [
     '/dist/',
@@ -47,9 +42,7 @@ module.exports = {
     // 后续统一至 @opensumi/ide-utils 模块
     '/packages/components/src/utils',
   ],
-  modulePathIgnorePatterns: [
-    "<rootDir>/dist/",
-  ],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   coveragePathIgnorePatterns: [
     '/dist/',
     '/node_modules/',
@@ -64,13 +57,13 @@ module.exports = {
     // 后续统一至 @opensumi/ide-utils 模块
     '/packages/components/src/utils',
   ],
-  testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
+  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   coverageThreshold: {
     global: {
       branches: 0,
       functions: 0,
       lines: 0,
-      statements: 0
-    }
-  }
+      statements: 0,
+    },
+  },
 };
