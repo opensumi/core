@@ -4,8 +4,7 @@ import { CommandContribution, CommandRegistry, IEventBus, CommandService } from 
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-// import { StatusBar, StatusBarAlignment } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
-import { IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
+import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ISCMProvider } from '@opensumi/ide-scm';
