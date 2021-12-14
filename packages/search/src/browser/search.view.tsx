@@ -23,7 +23,6 @@ export const Search = React.memo(observer(({
   const { injector } = configContext;
   const searchBrowserService = injector.get(ContentSearchClientService);
   const [searchPanelLayout, setSearchPanelLayout] = React.useState({ height: 0, width: 0 });
-  const searchTreeRef = React.useRef();
 
   const searchResults = searchBrowserService.searchResults;
   const resultTotal = searchBrowserService.resultTotal;
@@ -135,7 +134,6 @@ export const Search = React.memo(observer(({
         (searchResults && searchResults.size > 0 && !searchError ) ? <SearchTree
           searchPanelLayout={searchPanelLayout}
           viewState={viewState}
-          ref={searchTreeRef}
         /> : <div
               className={cls(
                 { [styles.result_describe]: searchState === SEARCH_STATE.done },

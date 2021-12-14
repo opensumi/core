@@ -15,19 +15,6 @@
   width:10px;
   z-index: 2;
 }
-.thumb-vertical {
-  position: absolute;
-  width:5px;
-  opacity: 0.8;
-  top:0;
-  transition: opacity 200ms ease-out;
-  background: var(--scrollbarSlider-background);
-  box-shadow: 1px 0 0 var(--scrollbar-shadow);
-
-  &:hover {
-    background: var(--scrollbarSlider-hoverBackground);
-  }
-}
 
 .track-horizontal{
   position: absolute;
@@ -44,10 +31,27 @@
   height:5px;
   z-index: 2;
 }
-.thumb-horizontal {
+
+:global(.thumb-vertical) {
+  position: absolute;
+  width:5px;
+  opacity: 0.8;
+  top:0;
+  right: 0;
+  transition: opacity 200ms ease-out;
+  background: var(--scrollbarSlider-background);
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
+
+  &:hover {
+    background: var(--scrollbarSlider-hoverBackground);
+  }
+}
+
+:global(.thumb-horizontal) {
   position: absolute;
   height:5px;
   left:0;
+  bottom: 0;
   opacity: 0.8;
   transition: opacity 200ms ease-out 200ms;
   background: var(--scrollbarSlider-background);
@@ -73,10 +77,10 @@
 }
 
 .hide-thumb {
-  .thumb-horizontal {
+  :global(.thumb-horizontal) {
     opacity: 0 !important;
   }
-  .thumb-vertical {
+  :global(.thumb-vertical) {
     opacity: 0 !important;
   }
 }

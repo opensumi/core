@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { useInjectable, useUpdateOnEvent, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import React, { useEffect, useState, useCallback, useRef, useContext, useMemo, forwardRef } from 'react';
+import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
 import styles from './editor.module.less';
 import classnames from 'classnames';
@@ -21,30 +20,31 @@ export interface ITabsProps {
 }
 
 export const Tabs = ({ group }: ITabsProps) => {
-  const tabContainer = React.useRef<HTMLDivElement | null>();
-  const contentRef = React.useRef<HTMLDivElement>();
-  const editorActionRef = React.useRef<HTMLDivElement>();
+  const tabContainer = useRef<HTMLDivElement | null>();
+  const contentRef = useRef<HTMLDivElement>();
+  const editorActionUpdateTimer = useRef<any>(null);
+  const editorActionRef = useRef<typeof EditorActions>(null);
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
-  const configContext = React.useContext(ConfigContext);
+  const configContext = useContext(ConfigContext);
   const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
 
-  const [tabsLoadingMap, setTabsLoadingMap] = React.useState<{ [resource: string]: boolean }>({});
-  const [wrapMode, setWrapMode] = React.useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
-  const [tabMap, setTabMap] = React.useState<Map<number, boolean>>(new Map());
-  const [lastMarginRight, setLastMarginRight] = React.useState<number | undefined>();
+  const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
+  const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
+  const [tabMap, setTabMap] = useState<Map<number, boolean>>(new Map());
+  const [lastMarginRight, setLastMarginRight] = useState<number | undefined>();
 
-  const slotLocation = React.useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
+  const slotLocation = useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
 
   useUpdateOnGroupTabChange(group);
   useUpdateOnEventBusEvent(ResourceDidUpdateEvent, [group.resources.length], (uri) => {
     return group.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1;
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const disposer = new Disposable();
     disposer.addDispose(group.onDidEditorGroupContentLoading((resource) => {
       group.resourceStatus.get(resource)?.finally(() => {
@@ -66,7 +66,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     };
   }, [group]);
 
-  function onDrop(e: React.DragEvent, index: number, target?: IResource) {
+  const onDrop = useCallback((e: React.DragEvent, index: number, target?: IResource) => {
     if (e.dataTransfer.getData('uri')) {
       const uri = new URI(e.dataTransfer.getData('uri'));
       let sourceGroup: EditorGroup | undefined;
@@ -82,9 +82,9 @@ export const Tabs = ({ group }: ITabsProps) => {
         files: e.dataTransfer.files,
       }));
     }
-  }
+  }, [group]);
 
-  function scrollToCurrent() {
+  const scrollToCurrent = useCallback(() => {
     if (tabContainer.current) {
       if (group.currentResource) {
         try {
@@ -97,23 +97,30 @@ export const Tabs = ({ group }: ITabsProps) => {
         }
       }
     }
-  }
+  }, [group]);
 
-  React.useEffect(() => {
+  const updateTabMarginRight = useCallback(() => {
+    if (editorActionUpdateTimer.current) {
+      clearTimeout(editorActionUpdateTimer.current);
+      editorActionUpdateTimer.current = null;
+    }
+    const timer = setTimeout(() => {
+      if (editorActionRef.current?.offsetWidth !== lastMarginRight) {
+        setLastMarginRight(editorActionRef.current?.offsetWidth);
+      }
+    }, 200);
+    editorActionUpdateTimer.current = timer;
+  }, [editorActionRef.current, editorActionUpdateTimer.current, lastMarginRight]);
+
+  useEffect(() => {
     if (!wrapMode) {
-      // FIXME: 依赖了不稳定的 setTimeout 逻辑，需要一个更好的解决方案
-      const timer = setTimeout(() => {
+      queueMicrotask(() => {
         scrollToCurrent();
-      }, 200);
-      return () => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      };
+      });
     }
   }, [wrapMode, tabContainer.current]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!wrapMode) {
       const disposer = new Disposable();
       if (tabContainer.current) {
@@ -159,10 +166,12 @@ export const Tabs = ({ group }: ITabsProps) => {
     }
   }, [contentRef.current, wrapMode]);
 
-  React.useEffect(() => setLastMarginRight(editorActionRef.current?.offsetWidth), [editorActionRef.current]);
+  useEffect(() => {
+    updateTabMarginRight();
+  }, [editorActionRef.current, wrapMode]);
 
-  React.useEffect(layoutLastInRow, [wrapMode, contentRef.current, group, group.resources.length]);
-  React.useEffect(() => {
+  useEffect(layoutLastInRow, [wrapMode, contentRef.current, group, group.resources.length]);
+  useEffect(() => {
     const disposable = new DisposableCollection();
     disposable.push(eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === slotLocation) {
@@ -176,19 +185,31 @@ export const Tabs = ({ group }: ITabsProps) => {
     }));
     // 当前选中的group变化时宽度变化
     disposable.push(editorService.onDidCurrentEditorGroupChanged(() => {
-      window.requestAnimationFrame(() => setLastMarginRight(editorActionRef.current?.offsetWidth));
+      window.requestAnimationFrame(updateTabMarginRight);
     }));
     // editorMenu变化时宽度可能变化
     disposable.push(Event.debounce(
       Event.filter(menuRegistry.onDidChangeMenu, (menuId) => menuId === MenuId.EditorTitle),
       () => { },
       200,
-    )(() => setLastMarginRight(editorActionRef.current?.offsetWidth)));
+    )(() => {
+      window.requestAnimationFrame(updateTabMarginRight);
+    }));
 
     return () => {
       disposable.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    const disposableCollection = new DisposableCollection();
+    disposableCollection.push(group.onDidEditorFocusChange((event) => {
+      updateTabMarginRight();
+    }));
+    return () => {
+      disposableCollection.dispose();
+    };
+  }, [group]);
 
   const renderTabContent = () => <div className={styles.kt_editor_tabs_content} ref={contentRef as any}
     onDragLeave={(e) => {
@@ -295,7 +316,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         </div>
       </div>;
     })}
-    {wrapMode && <EditorActions className={styles.kt_editor_wrap_mode_action} onRefInit={(dom) => editorActionRef.current = dom} group={group} />}
+    {wrapMode && <EditorActions className={styles.kt_editor_wrap_mode_action} ref={editorActionRef} group={group} />}
   </div>;
 
   return <div className={styles.kt_editor_tabs}>
@@ -306,39 +327,48 @@ export const Tabs = ({ group }: ITabsProps) => {
         {renderTabContent()}
       </div>}
     </div>
-    {!wrapMode && <EditorActions onRefInit={(dom) => editorActionRef.current = dom} group={group} />}
+    {!wrapMode && <EditorActions ref={editorActionRef} group={group} />}
   </div>;
 };
 
-export const EditorActions = ({ group, onRefInit, className }: { group: EditorGroup, className?: string, onRefInit: (dom: HTMLDivElement) => void }) => {
+export interface IEditorActionsBaseProps {
+  group: EditorGroup;
+  className?: string;
+}
+
+export type IEditorActionsProps = IEditorActionsBaseProps & React.HTMLAttributes<HTMLDivElement>;
+
+export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>((
+  props: IEditorActionsProps,
+  ref: React.Ref<typeof EditorActions>,
+) => {
+  const { group, className } = props;
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
   const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
   const menu = editorActionRegistry.getMenu(group);
-  const [hasFocus, setHasFocus] = React.useState<boolean>(editorService.currentEditorGroup === group);
+  const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
 
-  React.useEffect(() => {
-    const disposer = editorService.onDidCurrentEditorGroupChanged(() => {
+  useEffect(() => {
+    const disposableCollection = new DisposableCollection();
+    disposableCollection.push(editorService.onDidCurrentEditorGroupChanged(() => {
       setHasFocus(editorService.currentEditorGroup === group);
-    });
+    }));
     return () => {
-      disposer.dispose();
+      disposableCollection.dispose();
     };
   }, []);
-
-  useUpdateOnEvent(group.onDidEditorGroupBodyChanged, [group], () => !!group.currentOpenType);
-  useUpdateOnEvent(group.onDidEditorFocusChange, [group]);
 
   const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource ?
     [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri] : undefined;
   // 第三个参数是当前编辑器的URI（如果有）
-  return <div ref={(ref) => ref && onRefInit(ref)} className={classnames(styles.editor_actions, className)}>
+  return <div ref={ref} className={classnames(styles.editor_actions, className)}>
     <InlineActionBar<URI, IEditorGroup, MaybeNull<URI>>
       menus={menu}
       context={args as any /* 这个推断过不去.. */}
       // 不 focus 的时候只展示 more 菜单
-      regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]} debounce={{delay: 100, maxWait: 300}} />
+      regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]} debounce={{ delay: 100, maxWait: 300 }} />
   </div>;
-};
+});
 
 /**
    * 获取tab DOM在可视范围的位置

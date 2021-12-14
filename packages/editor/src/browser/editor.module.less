@@ -99,16 +99,13 @@
   .kt_editor_tabs_scroll_wrapper {
     flex-grow:1;
     width:10px;
-    div {
-      &:first-child {
-        >*:first-child{
-          overflow-y: hidden;
-        }
-      }
+    :global(.thumb-vertical) {
+      opacity: 0 !important;
     }
   }
 
   .kt_editor_tabs_scroll {
+    overflow-y: hidden;
     display: flex;
     background: var(--editorGroupHeader-tabsBackground);
     &::before {
