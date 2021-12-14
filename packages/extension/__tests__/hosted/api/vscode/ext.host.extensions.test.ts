@@ -32,6 +32,8 @@ const mockExtension = {
 describe(`test ${__filename}`, () => {
   let rpcProtocol: RPCProtocol;
   let context: ExtensionContext;
+  let extHostStorage: ExtHostStorage;
+
   const injector = new Injector();
   const mockClient = {
     send: async (msg) => { },
@@ -39,6 +41,7 @@ describe(`test ${__filename}`, () => {
   };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
+    extHostStorage = new ExtHostStorage(rpcProtocol);
     context = new ExtensionContext({
       extensionDescription: mockExtension as unknown as IExtensionProps,
       isDevelopment: false,
@@ -50,7 +53,7 @@ describe(`test ${__filename}`, () => {
       registerExtendModuleService: () => { },
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,
-      storageProxy: new ExtHostStorage(rpcProtocol),
+      storageProxy: extHostStorage,
       secretProxy: new ExtHostSecret(rpcProtocol),
     });
   });
@@ -71,6 +74,28 @@ describe(`test ${__filename}`, () => {
 
     it('extensionMode', () => {
       expect(context.extensionMode).toBe(ExtensionMode.Production);
+    });
+
+    it('path in unix is valid', async () => {
+      await extHostStorage.$acceptStoragePath({
+        logUri: URI.file('/User/log').codeUri,
+        storageUri: URI.file('/User/storage').codeUri,
+        globalStorageUri: URI.file('/User/globalStorage').codeUri,
+      });
+      expect(context.logPath).toBe('/User/log');
+      expect(context.storagePath).toBe('/User/storage');
+      expect(context.globalStoragePath).toBe('/User/globalStorage');
+    });
+
+    it('path in windows is valid', async () => {
+      await extHostStorage.$acceptStoragePath({
+        logUri: URI.file('c:\\User\\log').codeUri,
+        storageUri: URI.file('c:\\User\\storage').codeUri,
+        globalStorageUri: URI.file('c:\\User\\globalStorage').codeUri,
+      });
+      expect(context.logPath).toBe('c:\\User\\log');
+      expect(context.storagePath).toBe('c:\\User\\storage');
+      expect(context.globalStoragePath).toBe('c:\\User\\globalStorage');
     });
   });
 });
