@@ -100,11 +100,11 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   get storagePath() {
-    return this._storage.storagePath.storageUri?.path.toString();
+    return this._storage.storagePath.storageUri?.fsPath.toString();
   }
 
   get logPath() {
-    return this._storage.storagePath.logUri.path.toString();
+    return this._storage.storagePath.logUri.fsPath.toString();
   }
 
   get storageUri() {
@@ -116,7 +116,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   get globalStoragePath() {
-    return this._storage.storagePath.globalStorageUri.path.toString();
+    return this._storage.storagePath.globalStorageUri.fsPath.toString();
   }
 
   get globalStorageUri() {

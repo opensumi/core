@@ -26,4 +26,4 @@ $ MY_WORKSPACE={local_path} npm run start
 
 ## Contributing
 
-Read through our [contributing guidelines](./CONTRIBUTING) to learn about our submission process, coding rules and more.
+Read through our [contributing guidelines](./CONTRIBUTING.md) to learn about our submission process, coding rules and more.
