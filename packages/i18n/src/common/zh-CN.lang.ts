@@ -441,6 +441,7 @@ export const localizationBundle = {
     'preference.array.additem': '添加',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
+    'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
     'editor.configuration.formatOnSaveTimeout': '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
     'editor.configuration.autoSave': '控制如何自动保存文件。',

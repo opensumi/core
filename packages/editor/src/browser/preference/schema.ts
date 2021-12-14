@@ -1317,6 +1317,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: false,
     description: '%editor.configuration.wrapTab%',
   },
+  'editor.enablePreviewFromCodeNavigation': {
+    type: 'boolean',
+    default: false,
+    description: '%editor.configuration.enablePreviewFromCodeNavigation%',
+  },
   'editor.minimap': {
     type: 'boolean',
     default: false,
