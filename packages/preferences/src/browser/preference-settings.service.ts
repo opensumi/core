@@ -358,6 +358,7 @@ export const defaultSettingSections: {
       preferences: [
         // 预览模式
         { id: 'editor.previewMode', localized: 'preference.editor.previewMode' },
+        { id: 'editor.enablePreviewFromCodeNavigation', localized: 'preference.editor.enablePreviewFromCodeNavigation' },
         // 自动保存
         { id: 'editor.autoSave', localized: 'preference.editor.autoSave' },
         { id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay' },

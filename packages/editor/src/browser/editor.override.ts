@@ -12,12 +12,16 @@ import { WorkbenchEditorService } from '../common';
 import { URI, IRange } from '@opensumi/ide-core-common';
 import { Autowired, Injectable } from '@opensumi/di';
 import { BrowserCodeEditor } from './editor-collection.service';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class MonacoCodeService extends CodeEditorServiceImpl {
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
 
   constructor() {
     super(null, StaticServices.standaloneThemeService.get());
@@ -38,16 +42,37 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
    * @param sideBySide ？
    */
   // @ts-ignore
-  async openCodeEditor(input: monaco.editor.IResourceInput, source: IMonacoCodeEditor | null,
-                       sideBySide?: boolean): Promise<IMonacoCodeEditor | null> {
+  async openCodeEditor(input: monaco.editor.IResourceInput, source: IMonacoCodeEditor | null, sideBySide?: boolean): Promise<IMonacoCodeEditor | null> {
     const resourceUri = new URI(input.resource.toString());
+    // 判断打开下一个不同于当前编辑器的文件时，是否需要先固定当前编辑器Tab，从而避免被替换，例如：跳转到定义
+    const enablePreviewFromCodeNavigation = this.preferenceService.get<boolean>('editor.enablePreviewFromCodeNavigation');
+    if (
+      !enablePreviewFromCodeNavigation &&
+      source &&
+      !sideBySide &&
+      !new URI(source.getModel()?.uri).isEqual(input.resource)
+    ) {
+      for (const visibleGroup of this.workbenchEditorService.editorGroups) {
+        if (visibleGroup.currentOpenType?.type === 'code') {
+          if (visibleGroup.currentEditor?.monacoEditor === source) {
+            visibleGroup.pinPreviewed(visibleGroup.currentResource?.uri);
+            break;
+          }
+        } else if (visibleGroup.currentOpenType?.type === 'diff') {
+          if (visibleGroup.diffEditor!.modifiedEditor.monacoEditor === source || visibleGroup.diffEditor!.originalEditor.monacoEditor === source) {
+            visibleGroup.pinPreviewed(visibleGroup.currentResource?.uri);
+            break;
+          }
+        }
+      }
+    }
     let editorGroup = this.workbenchEditorService.currentEditorGroup;
     let index: number | undefined;
     if (source) {
       editorGroup = this.workbenchEditorService.editorGroups.find((g) => g.currentEditor && g.currentEditor.monacoEditor === source) || editorGroup;
       index = editorGroup.resources.findIndex((r) => editorGroup.currentResource && r.uri === editorGroup.currentResource.uri);
       if (index >= 0) {
-        index ++;
+        index++;
       }
     }
     const selection = input.options ? input.options.selection : null;
@@ -59,7 +84,7 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
         range = new monaco.Range(selection.startLineNumber!, selection.startColumn!, selection.startLineNumber!, selection.startColumn!);
       }
     }
-    await editorGroup.open(resourceUri, {index, range: range as IRange, focus: true});
+    await editorGroup.open(resourceUri, { index, range: range as IRange, focus: true });
     return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 
