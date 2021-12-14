@@ -1,7 +1,7 @@
 const { JSDOM } = require('jsdom');
 const { TextDecoder, TextEncoder } = require('util');
 
-const jsdom = new JSDOM(`<div id="main"></div>`, {
+const jsdom = new JSDOM('<div id="main"></div>', {
   // https://github.com/jsdom/jsdom#basic-options
   // 禁用掉 resources: usable, 采用 jsdom 默认策略不加载 subresources
   // 避免测试用例加载 external subresource, 如 iconfont 的 css 挂掉
@@ -31,11 +31,11 @@ global.DOMParser = jsdom.window.DOMParser;
 global.HTMLDivElement = jsdom.window.HTMLDivElement;
 global.MutationObserver = jsdom.window.MutationObserver;
 global.KeyboardEvent = jsdom.window.KeyboardEvent;
-global.requestAnimationFrame = fn => setTimeout(fn, 16);
-jsdom.window.requestAnimationFrame = fn => setTimeout(fn, 16);
-jsdom.window.cancelAnimationFrame = () => { };
-global.document.queryCommandSupported = () => { };
-global.document.execCommand = () => { };
+global.requestAnimationFrame = (fn) => setTimeout(fn, 16);
+jsdom.window.requestAnimationFrame = (fn) => setTimeout(fn, 16);
+jsdom.window.cancelAnimationFrame = () => {};
+global.document.queryCommandSupported = () => {};
+global.document.execCommand = () => {};
 global.HTMLElement = jsdom.window.HTMLElement;
 global.self = global;
 global.TextEncoder = TextEncoder;
@@ -45,7 +45,7 @@ global.ElectronIpcRenderer = {
   send: () => {},
   removeListener: () => {},
   on: () => {},
-}
+};
 
 class MockLocalStorage {
   constructor() {
@@ -76,7 +76,7 @@ process.env.IS_JEST_TEST = true;
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

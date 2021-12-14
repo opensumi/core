@@ -4,5 +4,13 @@
   "trailingComma": "all",
   "printWidth": 200,
   "proseWrap": "never",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.json", ".eslintrc.js"],
+      "options": {
+        "printWidth": 120
+      }
+    }
+  ]
 }
