@@ -39,16 +39,15 @@ export class VSXExtensionContribution implements ClientAppContribution, MainLayo
   registerResource(service: ResourceService) {
     service.registerResourceProvider({
       scheme: EXTENSION_SCHEME,
-      provideResource: async (uri: URI): Promise<IResource<Partial<VSXExtensionRaw & { [prop: string]: string }>>> => {
+      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => {
         const { extensionId, state } = uri.getParsedQuery();
-        const extension = await this.vsxExtensionService.getExtension(extensionId);
-        const iconClass = this.iconService.fromIcon('', extension?.files.icon, IconType.Background);
+        const extension = await this.vsxExtensionService.getLocalExtension(extensionId);
+        const iconClass = this.iconService.fromIcon('', extension?.iconUrl, IconType.Background);
         return {
           uri,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           metadata: {
             ...extension,
+            extensionId,
             state,
           },
           icon: iconClass || getIcon('extension'),

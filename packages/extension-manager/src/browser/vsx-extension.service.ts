@@ -81,16 +81,19 @@ export class VSXExtensionService implements IVSXExtensionService {
     return extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
   }
 
-  async getExtension(extensionId: string): Promise<VSXExtensionRaw | undefined> {
+  async getLocalExtension(extensionId: string): Promise<VSXExtension | undefined> {
+    const extension = this.extensions.find((e) => this.asExtensionId(e) === extensionId);
+
+    return extension || this.installedExtensions.find((e) => this.asExtensionId(e) === extensionId);
+  }
+
+  async getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined> {
     const param: QueryParam = {
       extensionId,
     };
-
-    const extension = this.extensions.find((e) => this.asExtensionId(e) === extensionId);
-
     const res = await this.backService.getExtension(param);
     if (res && res.extensions && res.extensions.length >= 1) {
-      return Object.assign(extension || {}, res.extensions[0]);
+      return Object.assign({}, res.extensions[0]);
     }
   }
 
@@ -121,6 +124,7 @@ export class VSXExtensionService implements IVSXExtensionService {
       namespace: e.packageJSON.publisher,
       name: e.packageJSON.name,
       id: e.extensionId,
+      version: e.packageJSON.version,
       displayName: e.packageJSON.displayName,
       description: e.packageJSON.description,
       publisher: e.packageJSON.publisher,
