@@ -11,6 +11,21 @@ import { TestItemExpandState, TestRunProfileBitset } from '../../common/testColl
 import { RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
 
+const TestingExplorerInlineMenus = [
+  {
+    icon: 'start',
+    title: 'Run Tests',
+    command: RuntTestCommand.id,
+    position: IBasicInlineMenuPosition.TREE_CONTAINER,
+  },
+  {
+    icon: 'openfile',
+    title: 'Open File',
+    command: 'open-file',
+    position: IBasicInlineMenuPosition.TREE_CONTAINER,
+  },
+];
+
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
@@ -88,22 +103,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
       treeData={treeData}
       height={900}
       resolveChildren={resolveTestChildren}
-      inlineMenus={(node) => {
-        return [
-          {
-            icon: 'start',
-            title: 'Run Tests',
-            command: RuntTestCommand.id,
-            position: IBasicInlineMenuPosition.TREE_CONTAINER,
-          },
-          {
-            icon: 'openfile',
-            title: 'Open File',
-            command: 'open-file',
-            position: IBasicInlineMenuPosition.TREE_CONTAINER,
-          },
-        ];
-      }}
+      inlineMenus={TestingExplorerInlineMenus}
       inlineMenuActuator={inlineMenuActuator}
     />}
   </div>);

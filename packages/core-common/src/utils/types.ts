@@ -78,14 +78,14 @@ export function isBoolean(obj: any): obj is boolean {
  * @returns whether the provided parameter is undefined.
  */
 export function isUndefined(obj: any): obj is undefined {
-  return typeof (obj) === _typeof.undefined;
+  return typeof obj === _typeof.undefined;
 }
 
 /**
  * @returns whether the provided parameter is defined.
  */
- export function isDefined<T>(arg: T | null | undefined): arg is T {
-	return !isUndefinedOrNull(arg);
+export function isDefined<T>(arg: T | null | undefined): arg is T {
+  return !isUndefinedOrNull(arg);
 }
 
 /**
