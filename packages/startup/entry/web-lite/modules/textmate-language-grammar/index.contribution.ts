@@ -1,21 +1,13 @@
 import { Autowired } from '@opensumi/di';
 import { Disposable, Domain } from '@opensumi/ide-core-common';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
-import type { loadLanguageAndGrammar } from '@opensumi/kaitian-textmate-languages';
+import type { loadLanguageAndGrammar } from '@opensumi/textmate-languages';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
-const languages = [
-  'html',
-  'css',
-  'javascript',
-  'less',
-  'markdown',
-  'typescript',
-];
+const languages = ['html', 'css', 'javascript', 'less', 'markdown', 'typescript'];
 
 @Domain(ClientAppContribution)
 export class TextmateLanguageGrammarContribution extends Disposable implements ClientAppContribution {
-
   @Autowired(ITextmateTokenizer)
   private readonly textMateService: ITextmateTokenizerService;
 
@@ -24,9 +16,8 @@ export class TextmateLanguageGrammarContribution extends Disposable implements C
   async initialize() {
     // languages/grammars registration
     for (const language of languages) {
-      const mod = require(`@opensumi/kaitian-textmate-languages/lib/${language}`);
-      const loadLanguage: loadLanguageAndGrammar =
-        'default' in mod ? mod.default : mod;
+      const mod = require(`@opensumi/textmate-languages/lib/${language}`);
+      const loadLanguage: loadLanguageAndGrammar = 'default' in mod ? mod.default : mod;
       const registrationPromise = loadLanguage(
         this.textMateService.registerLanguage.bind(this.textMateService),
         this.textMateService.registerGrammar.bind(this.textMateService),
