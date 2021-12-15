@@ -10,4 +10,5 @@ export interface IMainThreadExtensionLog {
   $dispose(): Promise<void>;
 }
 
-export const MainThreadExtensionLogIdentifier = createMainContextProxyIdentifier<IMainThreadExtensionLog>('MainThreadExtensionLog');
+export const MainThreadExtensionLogIdentifier =
+  createMainContextProxyIdentifier<IMainThreadExtensionLog>('MainThreadExtensionLog');

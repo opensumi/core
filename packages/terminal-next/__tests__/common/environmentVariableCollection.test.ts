@@ -7,13 +7,10 @@ describe('MergedEnvironmentVariableCollection', () => {
   mockMap1.set('VARIABLE1-1', { value: 'value1-1', type: 1 });
   mockMap1.set('VARIABLE1-2', { value: 'value1-2', type: 2 });
   mockMap1.set('VARIABLE1-3', { value: 'value1-3', type: 3 });
-  mockCollection1.set(
-    'extension-env-collection',
-    {
-      persistent: true,
-      map: mockMap1,
-    },
-  );
+  mockCollection1.set('extension-env-collection', {
+    persistent: true,
+    map: mockMap1,
+  });
 
   const colleciton1 = new MergedEnvironmentVariableCollection(mockCollection1);
 
@@ -32,13 +29,10 @@ describe('MergedEnvironmentVariableCollection', () => {
     const mockCollection2 = new Map();
     const mockMap2 = new Map();
     mockMap2.set('VARIABLE1-1', { value: 'value1-1-2', type: 1 });
-    mockCollection2.set(
-      'extension-env-collection',
-      {
-        persistent: true,
-        map: mockMap2,
-      },
-    );
+    mockCollection2.set('extension-env-collection', {
+      persistent: true,
+      map: mockMap2,
+    });
 
     const colleciton2 = new MergedEnvironmentVariableCollection(mockCollection2);
     const diff = colleciton1.diff(colleciton2);
@@ -66,13 +60,10 @@ describe('MergedEnvironmentVariableCollection', () => {
     mockMap3.set('VARIABLE2-1', { value: 'value2-1', type: 1 });
     mockMap3.set('VARIABLE2-1', { value: 'value2-1', type: 1 });
     mockMap3.set('VARIABLE2-1', { value: 'value2-1', type: 1 });
-    mockCollection3.set(
-      'extension-env-collection',
-      {
-        persistent: true,
-        map: mockMap3,
-      },
-    );
+    mockCollection3.set('extension-env-collection', {
+      persistent: true,
+      map: mockMap3,
+    });
 
     const colleciton3 = new MergedEnvironmentVariableCollection(mockCollection3);
     const diff = colleciton1.diff(colleciton3);

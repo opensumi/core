@@ -7,7 +7,7 @@ import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
  * 使用 LocalStorage 实现的文档缓存对象
  */
 @Injectable()
-export class LocalStorageDocCacheImpl implements IDocPersistentCacheProvider  {
+export class LocalStorageDocCacheImpl implements IDocPersistentCacheProvider {
   @Autowired(IWorkspaceStorageService)
   private storageService: IWorkspaceStorageService;
 
@@ -56,9 +56,7 @@ export class LocalStorageDocCacheImpl implements IDocPersistentCacheProvider  {
     return {
       path: uri.path.toString(),
       startMD5: status.startMD5,
-      changeMatrix: status.changeMatrix.map((changes) => {
-        return changes.map((change) => parseCacheValueFrom(change));
-      }),
+      changeMatrix: status.changeMatrix.map((changes) => changes.map((change) => parseCacheValueFrom(change))),
     };
   }
 

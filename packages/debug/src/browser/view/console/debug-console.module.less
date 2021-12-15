@@ -8,7 +8,7 @@
 
 .variable_repl_bar {
   display: flex;
-  border-top: 1px solid hsla(0, 0%, 50%, .35);
+  border-top: 1px solid hsla(0, 0%, 50%, 0.35);
   width: 100%;
   overflow: hidden;
   min-height: 24px;
@@ -47,7 +47,7 @@
     font-weight: 600;
 
     &:before {
-      content: "\276f";
+      content: '\276f';
     }
   }
 }
@@ -139,10 +139,10 @@
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
-    color: var(--kt-tree-activeSelectionForeground) !important;;
+    color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
     .expansion_toggle {
-      color: var(--kt-tree-activeSelectionForeground) !important;;
+      color: var(--kt-tree-activeSelectionForeground) !important;
     }
     .debug_console_node_displayname {
       .compact_name {
@@ -169,9 +169,8 @@
   }
 
   &.mod_loading {
-    opacity: .8;
+    opacity: 0.8;
   }
-
 }
 
 .debug_console_output {
@@ -194,7 +193,7 @@
 }
 
 .debug_console_node_status {
-  opacity: .75;
+  opacity: 0.75;
   text-align: center;
   font-size: 12px;
   padding-right: 0;
@@ -219,7 +218,7 @@
   }
   .compact_name_separator {
     margin: 0 2px;
-    opacity: .5;
+    opacity: 0.5;
   }
   &.info {
     color: var(--debugConsole-infoForeground);

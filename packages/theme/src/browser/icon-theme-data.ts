@@ -49,7 +49,7 @@ interface FontDefinition {
   weight: string;
   style: string;
   size: string;
-  src: { path: string; format: string; }[];
+  src: { path: string; format: string }[];
 }
 
 // 图标名与图标定义的映射关系
@@ -59,11 +59,11 @@ interface IconsAssociation {
   folderExpanded?: string;
   rootFolder?: string;
   rootFolderExpanded?: string;
-  folderNames?: { [folderName: string]: string; };
-  folderNamesExpanded?: { [folderName: string]: string; };
-  fileExtensions?: { [extension: string]: string; };
-  fileNames?: { [fileName: string]: string; };
-  languageIds?: { [languageId: string]: string; };
+  folderNames?: { [folderName: string]: string };
+  folderNamesExpanded?: { [folderName: string]: string };
+  fileExtensions?: { [extension: string]: string };
+  fileNames?: { [fileName: string]: string };
+  languageIds?: { [languageId: string]: string };
 }
 
 interface IconThemeDocument extends IconsAssociation {
@@ -79,9 +79,17 @@ interface IconThemeDocument extends IconsAssociation {
  * @param iconThemeDocumentLocation
  * @param iconThemeDocument
  */
-function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocument: IconThemeDocument, staticResourceService: StaticResourceService): { content: string; hasFileIcons: boolean; hasFolderIcons: boolean; hidesExplorerArrows: boolean; } {
-
-  const result = { content: '', hasFileIcons: false, hasFolderIcons: false, hidesExplorerArrows: !!iconThemeDocument.hidesExplorerArrows };
+function processIconThemeDocument(
+  iconThemeDocumentLocation: URI,
+  iconThemeDocument: IconThemeDocument,
+  staticResourceService: StaticResourceService,
+): { content: string; hasFileIcons: boolean; hasFolderIcons: boolean; hidesExplorerArrows: boolean } {
+  const result = {
+    content: '',
+    hasFileIcons: false,
+    hasFolderIcons: false,
+    hidesExplorerArrows: !!iconThemeDocument.hidesExplorerArrows,
+  };
 
   if (!iconThemeDocument.iconDefinitions) {
     return result;
@@ -151,14 +159,20 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
       const folderNames = associations.folderNames;
       if (folderNames) {
         for (const folderName in folderNames) {
-          addSelector(`${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`, folderNames[folderName]);
+          addSelector(
+            `${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`,
+            folderNames[folderName],
+          );
           result.hasFolderIcons = true;
         }
       }
       const folderNamesExpanded = associations.folderNamesExpanded;
       if (folderNamesExpanded) {
         for (const folderName in folderNamesExpanded) {
-          addSelector(`${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`, folderNamesExpanded[folderName]);
+          addSelector(
+            `${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`,
+            folderNamesExpanded[folderName],
+          );
           result.hasFolderIcons = true;
         }
       }
@@ -169,7 +183,10 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
           languageIds.jsonc = languageIds.json;
         }
         for (const languageId in languageIds) {
-          addSelector(`${qualifier} .${escapeCSS(languageId)}-lang-file-icon.file-icon::before`, languageIds[languageId]);
+          addSelector(
+            `${qualifier} .${escapeCSS(languageId)}-lang-file-icon.file-icon::before`,
+            languageIds[languageId],
+          );
           result.hasFileIcons = true;
         }
       }
@@ -221,9 +238,15 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
   if (Array.isArray(fonts)) {
     fonts.forEach((font) => {
       const src = font.src.map((l) => `url('${resolvePath(l.path)}') format('${l.format}')`).join(', ');
-      cssRules.push(`@font-face { src: ${src}; font-family: '${font.id}'; font-weight: ${font.weight}; font-style: ${font.style}; }`);
+      cssRules.push(
+        `@font-face { src: ${src}; font-family: '${font.id}'; font-weight: ${font.weight}; font-style: ${font.style}; }`,
+      );
     });
-    cssRules.push(`.show-file-icons .file-icon::before, .show-file-icons .folder-icon::before, .show-file-icons .rootfolder-icon::before { font-family: '${fonts[0].id}'; font-size: ${fonts[0].size || '150%'}}`);
+    cssRules.push(
+      `.show-file-icons .file-icon::before, .show-file-icons .folder-icon::before, .show-file-icons .rootfolder-icon::before { font-family: '${
+        fonts[0].id
+      }'; font-size: ${fonts[0].size || '150%'}}`,
+    );
   }
 
   for (const defId in selectorByDefinitionId) {
@@ -231,7 +254,9 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
     const definition = iconThemeDocument.iconDefinitions[defId];
     if (definition) {
       if (definition.iconPath) {
-        cssRules.push(`${selectors.join(', ')} { content: ' '; background-image: url("${resolvePath(definition.iconPath)}"); }`);
+        cssRules.push(
+          `${selectors.join(', ')} { content: ' '; background-image: url("${resolvePath(definition.iconPath)}"); }`,
+        );
       }
       if (definition.fontCharacter || definition.fontColor) {
         let body = '';

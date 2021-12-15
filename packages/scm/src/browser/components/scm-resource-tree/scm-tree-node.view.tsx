@@ -1,6 +1,13 @@
 import React from 'react';
 import clx from 'classnames';
-import { Badge, TreeNode, CompositeTreeNode, ITreeNodeRendererProps, ClasslistComposite, TreeNodeType } from '@opensumi/ide-components';
+import {
+  Badge,
+  TreeNode,
+  CompositeTreeNode,
+  ITreeNodeRendererProps,
+  ClasslistComposite,
+  TreeNodeType,
+} from '@opensumi/ide-components';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { useInjectable, URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-components';
@@ -25,9 +32,24 @@ export interface ISCMTreeNodeProps extends ITreeNodeRendererProps {
   decorations?: ClasslistComposite;
   commandService: CommandService;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onDoubleClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onDoubleClick: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
+  onTwistierClick?: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
+  onContextMenu: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
   decorationService: SCMTreeDecorationService;
   labelService: LabelService;
   iconTheme: Pick<IIconTheme, 'hasFileIcons' | 'hasFolderIcons' | 'hidesExplorerArrows'>;
@@ -58,10 +80,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
 
     return (
       <div className={styles.scm_tree_node_actions}>
-        <InlineMenuBar<ISCMResourceGroup>
-          context={[scmResourceGroup]}
-          menus={menus}
-          separator='inline' />
+        <InlineMenuBar<ISCMResourceGroup> context={[scmResourceGroup]} menus={menus} separator='inline' />
       </div>
     );
   }, [scmResourceGroup /* 依赖项是 SCMResourceGroup 指针 */]);
@@ -85,15 +104,14 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return <Loading />;
     }
-    return <div
-      onClick={clickHandler}
-      className={clx(
-        styles.scm_tree_node_segment,
-        styles.expansion_toggle,
-        getIcon('arrow-right'),
-        { [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded },
-      )}
-    />;
+    return (
+      <div
+        onClick={clickHandler}
+        className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded,
+        })}
+      />
+    );
   };
 
   const handleTwistierClick = (ev: React.MouseEvent) => {
@@ -112,10 +130,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
-      className={clx(
-        styles.scm_tree_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={clx(styles.scm_tree_node, decorations ? decorations.classlist : null)}
       style={{
         height: SCM_TREE_NODE_HEIGHT,
         lineHeight: `${SCM_TREE_NODE_HEIGHT}px`,
@@ -126,11 +141,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       <div className={clx(styles.scm_tree_node_content)}>
         {renderFolderToggle(item, handleTwistierClick)}
         <div className={styles.scm_tree_node_overflow_wrap}>
-          <div
-            className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}
-          >
-            {item.name}
-          </div>
+          <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}>{item.name}</div>
         </div>
         {renderActionBar()}
         <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_tail)}>
@@ -180,10 +191,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
 
     return (
       <div className={styles.scm_tree_node_actions}>
-        <InlineMenuBar<ISCMResource>
-          menus={menus}
-          context={context as any}
-          separator='inline' />
+        <InlineMenuBar<ISCMResource> menus={menus} context={context as any} separator='inline' />
       </div>
     );
     /* 当进行 stage/unstage 操作后 resourceGroup 会产生变化需要更新 ActionBar */
@@ -206,33 +214,31 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
 
   const isDirectory = SCMResourceFolder.is(item);
   const { hidesExplorerArrows, hasFolderIcons } = iconTheme;
-  const paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0 )}px`;
+  const paddingLeft = `${
+    defaultLeftPadding +
+    (item.depth || 0) * (leftPadding || 0) +
+    (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0)
+  }px`;
 
   const renderIcon = (node: SCMResourceFolder | SCMResourceFile) => {
     const iconClass = labelService.getIcon(node.uri, { isDirectory: SCMResourceFolder.is(node) });
-    return <div
-      className={clx(styles.file_icon, iconClass)}
-      style={{ height: SCM_TREE_NODE_HEIGHT, lineHeight: `${SCM_TREE_NODE_HEIGHT}px` }}
-    />;
+    return (
+      <div
+        className={clx(styles.file_icon, iconClass)}
+        style={{ height: SCM_TREE_NODE_HEIGHT, lineHeight: `${SCM_TREE_NODE_HEIGHT}px` }}
+      />
+    );
   };
 
-  const renderDisplayName = (node: SCMResourceFolder | SCMResourceFile) => {
-    return <div
-      className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}
-    >
-      {
-        SCMResourceFolder.is(node)
-          ? node.name
-          : labelService.getName(node.uri)
-      }
-    </div>;
-  };
+  const renderDisplayName = (node: SCMResourceFolder | SCMResourceFile) => (
+    <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}>
+      {SCMResourceFolder.is(node) ? node.name : labelService.getName(node.uri)}
+    </div>
+  );
 
-  const renderDescription = (node: SCMResourceFile | SCMResourceFolder) => {
-    return <div className={clx(styles.scm_tree_node_segment_grow, styles.scm_tree_node_description)}>
-      {node.description}
-    </div>;
-  };
+  const renderDescription = (node: SCMResourceFile | SCMResourceFolder) => (
+    <div className={clx(styles.scm_tree_node_segment_grow, styles.scm_tree_node_description)}>{node.description}</div>
+  );
 
   const themeService = useInjectable<IThemeService>(IThemeService);
   const renderDecos = () => {
@@ -244,9 +250,11 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
     const badge = decoration.badge || item.resource.decorations.letter || '';
     const kolor = decoration.color || item.resource.decorations.color;
     const color = kolor && themeService.getColor({ id: kolor });
-    return <div className={styles.scm_tree_node_status} style={{ color }}>
-      {badge.slice()}
-    </div>;
+    return (
+      <div className={styles.scm_tree_node_status} style={{ color }}>
+        {badge.slice()}
+      </div>
+    );
   };
 
   const getItemTooltip = () => {
@@ -275,15 +283,14 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return <Loading />;
     }
-    return <div
-      onClick={clickHandler}
-      className={clx(
-        styles.scm_tree_node_segment,
-        styles.expansion_toggle,
-        getIcon('arrow-right'),
-        { [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded },
-      )}
-    />;
+    return (
+      <div
+        onClick={clickHandler}
+        className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded,
+        })}
+      />
+    );
   };
 
   return (
@@ -293,10 +300,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={clx(
-        styles.scm_tree_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={clx(styles.scm_tree_node, decorations ? decorations.classlist : null)}
       style={{
         color: decoration ? decoration.color : '',
         paddingLeft,
@@ -314,9 +318,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
         </div>
         {renderActionBar()}
         {/* render decorations */}
-        <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_tail)}>
-          {renderDecos()}
-        </div>
+        <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_tail)}>{renderDecos()}</div>
       </div>
     </div>
   );

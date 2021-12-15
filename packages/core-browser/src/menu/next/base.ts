@@ -1,7 +1,19 @@
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@opensumi/di';
 import { ButtonType } from '@opensumi/ide-components';
-import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
+import {
+  replaceLocalizePlaceholder,
+  ILogger,
+  Disposable,
+  combinedDisposable,
+  CommandRegistry,
+  IDisposable,
+  Event,
+  Emitter,
+  Command,
+  ContributionProvider,
+  ISumiMenuExtendInfo,
+} from '@opensumi/ide-core-common';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import ReactIs from 'react-is';
 
@@ -42,7 +54,7 @@ interface ICoreMenuItem {
   /**
    * 单独变更此 menu action 的 args
    */
-  argsTransformer?: ((...args: any[]) => any[]);
+  argsTransformer?: (...args: any[]) => any[];
 }
 
 interface IBaseMenuItem extends ICoreMenuItem {
@@ -74,8 +86,8 @@ export interface IComponentMenuItemProps {
  */
 interface IInternalComponentMenuItem extends ICoreMenuItem {
   /**
-  * 单个 menu 支持传入额外参数
-  */
+   * 单个 menu 支持传入额外参数
+   */
   extraTailArgs?: any[];
   /**
    * 组件形式的 menu item
@@ -134,9 +146,15 @@ export abstract class IMenuRegistry {
 
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>);
-  abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): IDisposable;
+  abstract registerMenuItem(
+    menuId: MenuId | string,
+    item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem,
+  ): IDisposable;
   abstract unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void;
-  abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>): IDisposable;
+  abstract registerMenuItems(
+    menuId: MenuId | string,
+    items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>,
+  ): IDisposable;
   abstract unregisterMenuId(menuId: string): IDisposable;
   abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem>;
 }
@@ -151,9 +169,7 @@ export interface IMenubarItem {
 @Injectable()
 export class CoreMenuRegistryImpl implements IMenuRegistry {
   // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
-  static EnableComponentMenuIds: Array<MenuId | string> = [
-    MenuId.EditorTitle,
-  ];
+  static EnableComponentMenuIds: Array<MenuId | string> = [MenuId.EditorTitle];
 
   private readonly _menubarItems = new Map<string, IMenubarItem>();
 
@@ -243,7 +259,6 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
         this._onDidChangeMenu.fire(menuId);
       }
     });
-
   }
 
   unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void {
@@ -294,23 +309,21 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
       return [];
     }
 
-    const result = (this._menuItems.get(id) || [])
-      .slice(0)
-      .reduce((prev, cur) => {
-        if (isIComponentMenuItem(cur)) {
-          // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
-          if (CoreMenuRegistryImpl.EnableComponentMenuIds.includes(id)) {
-            prev.push({
-              ...cur,
-              group: 'navigation',
-            });
-          }
-        } else {
-          prev.push(cur);
+    const result = (this._menuItems.get(id) || []).slice(0).reduce((prev, cur) => {
+      if (isIComponentMenuItem(cur)) {
+        // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
+        if (CoreMenuRegistryImpl.EnableComponentMenuIds.includes(id)) {
+          prev.push({
+            ...cur,
+            group: 'navigation',
+          });
         }
+      } else {
+        prev.push(cur);
+      }
 
-        return prev;
-      }, [] as Array<IMenuItem | ISubmenuItem | IComponentMenuItem>);
+      return prev;
+    }, [] as Array<IMenuItem | ISubmenuItem | IComponentMenuItem>);
 
     if (id === MenuId.CommandPalette) {
       // CommandPalette 特殊处理, 默认展示所有的 command
@@ -347,7 +360,10 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     });
   }
 
-  private convertToMenuExtendInfo(extendInfoArr: ISumiMenuExtendInfo[], result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>) {
+  private convertToMenuExtendInfo(
+    extendInfoArr: ISumiMenuExtendInfo[],
+    result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>,
+  ) {
     return result.map((menuItem) => {
       if (!isIMenuItem(menuItem)) {
         return menuItem;
@@ -386,7 +402,9 @@ export function isISubmenuItem(item: IMenuItem | ISubmenuItem | IInternalCompone
   return (item as ISubmenuItem).submenu !== undefined;
 }
 
-export function isIComponentMenuItem(item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): item is IInternalComponentMenuItem {
+export function isIComponentMenuItem(
+  item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem,
+): item is IInternalComponentMenuItem {
   return ReactIs.isValidElementType((item as IInternalComponentMenuItem).component);
 }
 
@@ -395,8 +413,8 @@ export function isIComponentMenuItem(item: IMenuItem | ISubmenuItem | IInternalC
  * 由于 Comment 模块的默认用的 Menu 的展示类型为 Button 类型
  * 同时从设计角度更完善的展示 checked 属性，额外拓展了 checkbox 类型
  * 用在 button 类型时 checked 状态的展示
-*/
-export type IMenuActionDisplayType = ButtonType | & 'checkbox';
+ */
+export type IMenuActionDisplayType = ButtonType | 'checkbox';
 
 export interface IMenuAction {
   /**
@@ -429,7 +447,7 @@ export interface IMenuAction {
   checked?: boolean;
   /**
    * electron menu 使用
-  */
+   */
   nativeRole?: string;
   execute?: (...args: any[]) => any;
   /**

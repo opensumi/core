@@ -21,12 +21,7 @@ export interface ExtensionTabBarTreeViewProps {
   treeViewId: string;
 }
 
-export const ExtensionTabBarTreeView = observer(({
-  viewState,
-  model,
-  dataProvider,
-  treeViewId,
-}: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
+export const ExtensionTabBarTreeView = observer(({ viewState, model, dataProvider, treeViewId }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
 
@@ -49,15 +44,17 @@ export const ExtensionTabBarTreeView = observer(({
     });
   };
 
-  const handleTwistierClick = React.useCallback((ev: React.MouseEvent, item: ExtensionCompositeTreeNode) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+  const handleTwistierClick = React.useCallback(
+    (ev: React.MouseEvent, item: ExtensionCompositeTreeNode) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
 
-    const { toggleDirectory } = model;
+      const { toggleDirectory } = model;
 
-    toggleDirectory(item);
-
-  }, [model]);
+      toggleDirectory(item);
+    },
+    [model],
+  );
 
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
@@ -72,31 +69,37 @@ export const ExtensionTabBarTreeView = observer(({
     return (isOSX && metaKey) || ctrlKey;
   };
 
-  const handleItemClicked = React.useCallback((ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+  const handleItemClicked = React.useCallback(
+    (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
 
-    const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
-    if (!item) {
-      return;
-    }
-    const shiftMask = hasShiftMask(event);
-    const ctrlCmdMask = hasCtrlCmdMask(event);
-    if (canSelectMany) {
-      if (shiftMask) {
-        handleItemRangeClick(item, type);
-      } else if (ctrlCmdMask) {
-        handleItemToggleClick(item, type);
+      const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
+      if (!item) {
+        return;
       }
-    } else {
-      handleItemClick(item, type);
-    }
-  }, [canSelectMany]);
+      const shiftMask = hasShiftMask(event);
+      const ctrlCmdMask = hasCtrlCmdMask(event);
+      if (canSelectMany) {
+        if (shiftMask) {
+          handleItemRangeClick(item, type);
+        } else if (ctrlCmdMask) {
+          handleItemToggleClick(item, type);
+        }
+      } else {
+        handleItemClick(item, type);
+      }
+    },
+    [canSelectMany],
+  );
 
-  const handlerContextMenu = React.useCallback((ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-    const { handleContextMenu } = model;
-    handleContextMenu(ev, node);
-  }, [model]);
+  const handlerContextMenu = React.useCallback(
+    (ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleContextMenu } = model;
+      handleContextMenu(ev, node);
+    },
+    [model],
+  );
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
     const { handleContextMenu } = model;
@@ -114,7 +117,7 @@ export const ExtensionTabBarTreeView = observer(({
     let unmouted = false;
     (async () => {
       await model.whenReady;
-      if (!!model.treeModel) {
+      if (model.treeModel) {
         // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
         // 这里需要重新取一下treeModel的值确保为最新的TreeModel
         await model.treeModel.root.ensureLoaded();
@@ -139,26 +142,21 @@ export const ExtensionTabBarTreeView = observer(({
     };
   }, [wrapperRef.current]);
 
-  return <div
-    className={styles.kt_extension_view}
-    tabIndex={-1}
-    ref={wrapperRef}
-    onContextMenu={handleOuterContextMenu}
-    onClick={handleOuterClick}
-    data-tree-view-id={treeViewId}
-  >
-    <TreeView
-      isReady={isReady}
-      isEmpty={isEmpty}
-      height={height}
-      handleTreeReady={handleTreeReady}
-      handleItemClicked={handleItemClicked}
-      handleTwistierClick={handleTwistierClick}
-      handlerContextMenu={handlerContextMenu}
-      treeViewId={treeViewId}
-      model={model}
-    />
-  </div>;
+  return (
+    <div className={styles.kt_extension_view} tabIndex={-1} ref={wrapperRef} onContextMenu={handleOuterContextMenu} onClick={handleOuterClick} data-tree-view-id={treeViewId}>
+      <TreeView
+        isReady={isReady}
+        isEmpty={isEmpty}
+        height={height}
+        handleTreeReady={handleTreeReady}
+        handleItemClicked={handleItemClicked}
+        handleTwistierClick={handleTwistierClick}
+        handlerContextMenu={handlerContextMenu}
+        treeViewId={treeViewId}
+        model={model}
+      />
+    </div>
+  );
 });
 
 interface TreeViewProps {
@@ -174,37 +172,34 @@ interface TreeViewProps {
 }
 
 function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps) {
-  return prevProps.isReady === nextProps.isReady
-  && prevProps.isEmpty === nextProps.isEmpty
-  && prevProps.model === nextProps.model
-  && prevProps.treeViewId === nextProps.treeViewId
-  && prevProps.height === nextProps.height;
+  return (
+    prevProps.isReady === nextProps.isReady &&
+    prevProps.isEmpty === nextProps.isEmpty &&
+    prevProps.model === nextProps.model &&
+    prevProps.treeViewId === nextProps.treeViewId &&
+    prevProps.height === nextProps.height
+  );
 }
 
-const TreeView = React.memo(({
-  isReady,
-  isEmpty,
-  model,
-  treeViewId,
-  height,
-  handleTreeReady,
-  handleItemClicked,
-  handleTwistierClick,
-  handlerContextMenu,
-}: TreeViewProps) => {
-  const renderTreeNode = React.useCallback((props: INodeRendererProps) => {
-    return <TreeViewNode
-      item={props.item as any}
-      itemType={props.itemType}
-      decorations={model.decorations.getDecorations(props.item as any)}
-      onClick={handleItemClicked}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handlerContextMenu}
-      defaultLeftPadding={8}
-      leftPadding={8}
-      treeViewId={treeViewId}
-    />;
-  }, [model.treeModel]);
+const TreeView = React.memo(({ isReady, isEmpty, model, treeViewId, height, handleTreeReady, handleItemClicked, handleTwistierClick, handlerContextMenu }: TreeViewProps) => {
+  const renderTreeNode = React.useCallback(
+    (props: INodeRendererProps) => {
+      return (
+        <TreeViewNode
+          item={props.item as any}
+          itemType={props.itemType}
+          decorations={model.decorations.getDecorations(props.item as any)}
+          onClick={handleItemClicked}
+          onTwistierClick={handleTwistierClick}
+          onContextMenu={handlerContextMenu}
+          defaultLeftPadding={8}
+          leftPadding={8}
+          treeViewId={treeViewId}
+        />
+      );
+    },
+    [model.treeModel],
+  );
 
   if (!isReady) {
     return <ProgressBar loading />;
@@ -212,14 +207,11 @@ const TreeView = React.memo(({
     return <WelcomeView viewId={treeViewId} />;
   } else {
     if (model.treeModel) {
-      return <RecycleTree
-        height={height}
-        itemHeight={TREE_VIEW_NODE_HEIGHT}
-        onReady={handleTreeReady}
-        model={model.treeModel}
-      >
-        {renderTreeNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree height={height} itemHeight={TREE_VIEW_NODE_HEIGHT} onReady={handleTreeReady} model={model.treeModel}>
+          {renderTreeNode}
+        </RecycleTree>
+      );
     }
   }
   return null;

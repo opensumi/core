@@ -9,7 +9,13 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@opensumi/ide-toolbar-action'],
   },
   [SlotLocation.left]: {
-    modules: ['@opensumi/ide-explorer', '@opensumi/ide-search', '@opensumi/ide-scm', '@opensumi/ide-extension-manager', '@opensumi/ide-debug'],
+    modules: [
+      '@opensumi/ide-explorer',
+      '@opensumi/ide-search',
+      '@opensumi/ide-scm',
+      '@opensumi/ide-extension-manager',
+      '@opensumi/ide-debug',
+    ],
   },
   [SlotLocation.right]: {
     modules: [],
@@ -18,7 +24,13 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers', '@opensumi/ide-refactor-preview'],
+    modules: [
+      '@opensumi/ide-terminal-next',
+      '@opensumi/ide-output',
+      'debug-console',
+      '@opensumi/ide-markers',
+      '@opensumi/ide-refactor-preview',
+    ],
   },
   [SlotLocation.statusBar]: {
     modules: ['@opensumi/ide-status-bar'],

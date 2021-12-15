@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -27,7 +27,7 @@ export interface KeyboardNativeLayoutService {
   allLayoutData: KeymapInfo[];
   currentLayoutData: KeymapInfo | null;
   currentLayoutSource: string;
-  setLayoutData(layout: KeymapInfo | 'autodetect'): Promise<KeymapInfo | null>
+  setLayoutData(layout: KeymapInfo | 'autodetect'): Promise<KeymapInfo | null>;
 }
 
 export const KeyboardLayoutChangeNotifierService = Symbol('KeyboardLayoutChangeNotifierService');

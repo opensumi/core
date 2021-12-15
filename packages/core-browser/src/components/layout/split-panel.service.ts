@@ -2,7 +2,7 @@ import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@opensumi/di';
 
 @Injectable({ multiple: true })
 export class SplitPanelService {
-  private static MIN_SIZE: number = 120;
+  private static MIN_SIZE = 120;
   constructor(public panelId: string) {}
 
   panels: HTMLElement[] = [];
@@ -10,7 +10,7 @@ export class SplitPanelService {
   rootNode: HTMLElement | undefined;
 
   get isVisible(): boolean {
-    return this.rootNode && this.rootNode.clientHeight > 0 || false;
+    return (this.rootNode && this.rootNode.clientHeight > 0) || false;
   }
 
   getFirstResizablePanel(index: number, direction: boolean, isPrev?: boolean): HTMLElement | undefined {

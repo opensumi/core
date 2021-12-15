@@ -42,5 +42,4 @@ export class ExtensionLogger implements IExtensionLogger {
     this.debugLog.error(...args);
     return this.logger.$critical(...args);
   }
-
 }

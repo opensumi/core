@@ -10,14 +10,17 @@ import { IFileSearchService } from '../common';
 
 @Injectable()
 export class FileSearchService implements IFileSearchService {
-
   @Autowired(IProcessFactory)
   processFactory: IProcessFactory;
 
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
-  async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
+  async find(
+    searchPattern: string,
+    options: IFileSearchService.Options,
+    clientToken?: CancellationToken,
+  ): Promise<string[]> {
     const cancellationSource = new CancellationTokenSource();
     if (clientToken) {
       clientToken.onCancellationRequested(() => cancellationSource.cancel());
@@ -60,33 +63,49 @@ export class FileSearchService implements IFileSearchService {
     const exactMatches = new Set<string>();
     const fuzzyMatches = new Set<string>();
     const stringPattern = searchPattern.toLocaleLowerCase();
-    await Promise.all(Object.keys(roots).map(async (root) => {
-      try {
-        const rootUri = new URI(root);
-        const rootOptions = roots[root];
-        await this.doFind(rootUri, rootOptions, (candidate) => {
-          const fileUri = FileUri.create(path.join(rootUri.codeUri.fsPath, candidate)).toString();
-          if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
-            return;
-          }
-          if (!searchPattern || searchPattern === '*' || candidate.toLocaleLowerCase().indexOf(stringPattern) !== -1) {
-            exactMatches.add(fileUri);
-          } else if (opts.fuzzyMatch && fuzzy.test(searchPattern, candidate)) {
-            fuzzyMatches.add(fileUri);
-          }
-          if (exactMatches.size + fuzzyMatches.size === opts.limit) {
-            cancellationSource.cancel();
-          }
-        }, token);
-      } catch (e) {
-        // tslint:disable-next-line:no-console
-        console.error('Failed to search:', root, e);
-      }
-    }));
+    await Promise.all(
+      Object.keys(roots).map(async (root) => {
+        try {
+          const rootUri = new URI(root);
+          const rootOptions = roots[root];
+          await this.doFind(
+            rootUri,
+            rootOptions,
+            (candidate) => {
+              const fileUri = FileUri.create(path.join(rootUri.codeUri.fsPath, candidate)).toString();
+              if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
+                return;
+              }
+              if (
+                !searchPattern ||
+                searchPattern === '*' ||
+                candidate.toLocaleLowerCase().indexOf(stringPattern) !== -1
+              ) {
+                exactMatches.add(fileUri);
+              } else if (opts.fuzzyMatch && fuzzy.test(searchPattern, candidate)) {
+                fuzzyMatches.add(fileUri);
+              }
+              if (exactMatches.size + fuzzyMatches.size === opts.limit) {
+                cancellationSource.cancel();
+              }
+            },
+            token,
+          );
+        } catch (e) {
+          // tslint:disable-next-line:no-console
+          console.error('Failed to search:', root, e);
+        }
+      }),
+    );
     return [...exactMatches, ...fuzzyMatches];
   }
 
-  private doFind(rootUri: URI, options: IFileSearchService.BaseOptions, accept: (fileUri: string) => void, token: CancellationToken): Promise<void> {
+  private doFind(
+    rootUri: URI,
+    options: IFileSearchService.BaseOptions,
+    accept: (fileUri: string) => void,
+    token: CancellationToken,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const cwd = FileUri.fsPath(rootUri);
@@ -136,5 +155,4 @@ export class FileSearchService implements IFileSearchService {
     }
     return args;
   }
-
 }

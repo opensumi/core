@@ -6,15 +6,11 @@ import { IEditorGroup, IResource } from '@opensumi/ide-editor';
 export type OpenedEditorData = IEditorGroup | IResource;
 
 export class EditorFileRoot extends CompositeTreeNode {
-
   static is(node: EditorFileGroup | EditorFileRoot): node is EditorFileRoot {
     return !!node && !node.parent;
   }
 
-  constructor(
-    tree: OpenedEditorService,
-    id?: number,
-  ) {
+  constructor(tree: OpenedEditorService, id?: number) {
     super(tree as ITree, undefined, undefined, undefined, { disableCache: true });
     // 根节点默认展开节点
     this._uid = id || this._uid;
@@ -42,12 +38,7 @@ export class EditorFileGroup extends CompositeTreeNode {
 
   private groupIndex: number;
 
-  constructor(
-    tree: OpenedEditorService,
-    public readonly group: IEditorGroup,
-    parent: EditorFileRoot,
-    id?: number,
-  ) {
+  constructor(tree: OpenedEditorService, public readonly group: IEditorGroup, parent: EditorFileRoot, id?: number) {
     super(tree as ITree, parent, undefined, undefined, { disableCache: true });
     this.groupIndex = this.group.index;
     this._uid = id || this._uid;

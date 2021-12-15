@@ -1,18 +1,22 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { PreferenceSchemaProperties, OVERRIDE_PROPERTY_PATTERN, PreferenceProvider, PreferenceScope } from '@opensumi/ide-core-browser';
+import {
+  PreferenceSchemaProperties,
+  OVERRIDE_PROPERTY_PATTERN,
+  PreferenceProvider,
+  PreferenceScope,
+} from '@opensumi/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {
-    title: string,
-    properties: any,
+    title: string;
+    properties: any;
   };
 }
 
 @Injectable()
 @Contributes('configurationDefaults')
 export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoint<PreferenceSchemaProperties> {
-
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
   protected readonly defaultPreferenceProvider: PreferenceProvider;
 
@@ -27,15 +31,18 @@ export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoin
   protected updateDefaultOverridesSchema(configurationDefaults: PreferenceSchemaProperties): void {
     // tslint:disable-next-line:forin
     for (const key in configurationDefaults) {
-        const defaultValue = configurationDefaults[key];
-        if (OVERRIDE_PROPERTY_PATTERN.test(key)) {
-            const language = key.match(OVERRIDE_PROPERTY_PATTERN)![1];
-            Object.keys(defaultValue).forEach((preferenceName) => {
-              this.defaultPreferenceProvider.setPreference(preferenceName, defaultValue[preferenceName], undefined, language);
-            });
-        }
+      const defaultValue = configurationDefaults[key];
+      if (OVERRIDE_PROPERTY_PATTERN.test(key)) {
+        const language = key.match(OVERRIDE_PROPERTY_PATTERN)![1];
+        Object.keys(defaultValue).forEach((preferenceName) => {
+          this.defaultPreferenceProvider.setPreference(
+            preferenceName,
+            defaultValue[preferenceName],
+            undefined,
+            language,
+          );
+        });
+      }
     }
-
   }
-
 }

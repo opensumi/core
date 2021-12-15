@@ -1,7 +1,13 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { formatLocalize } from '@opensumi/ide-core-common';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
-import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor, IExtensionDescription } from '../../../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadStatusBar,
+  IExtHostStatusBar,
+  ArgumentProcessor,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { v4 } from 'uuid';
 import * as types from '../../../common/vscode/ext-types';
 import type vscode from 'vscode';
@@ -16,7 +22,6 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
   }
 
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
-
     // step3
     this.proxy.$setStatusBarMessage(text);
     let handle: NodeJS.Timer | undefined;
@@ -24,7 +29,10 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     if (typeof arg === 'number') {
       handle = global.setTimeout(() => this.proxy.$dispose(), arg);
     } else if (typeof arg !== 'undefined') {
-      arg.then(() => this.proxy.$dispose(), () => this.proxy.$dispose());
+      arg.then(
+        () => this.proxy.$dispose(),
+        () => this.proxy.$dispose(),
+      );
     }
 
     return Disposable.create(() => {
@@ -35,21 +43,28 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     });
   }
 
-  createStatusBarItem(extension: IExtensionDescription, id?: string, alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
+  createStatusBarItem(
+    extension: IExtensionDescription,
+    id?: string,
+    alignment?: types.StatusBarAlignment,
+    priority?: number,
+  ): vscode.StatusBarItem {
     const statusBarItem = new StatusBarItemImpl(this.rpcProtocol, extension, id, alignment, priority);
-    this.proxy.$createStatusBarItem(statusBarItem.entryId, statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
+    this.proxy.$createStatusBarItem(
+      statusBarItem.entryId,
+      statusBarItem.id,
+      statusBarItem.alignment,
+      statusBarItem.priority,
+    );
     return statusBarItem;
   }
-
 }
 
 export class StatusBarItemImpl implements vscode.StatusBarItem {
-  private static ALLOWED_BACKGROUND_COLORS = new Map<string, ThemeColor>(
-    [
-      ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorForeground')],
-      ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
-    ],
-  );
+  private static ALLOWED_BACKGROUND_COLORS = new Map<string, ThemeColor>([
+    ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorForeground')],
+    ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
+  ]);
 
   private readonly _entryId = StatusBarItemImpl.nextId();
 

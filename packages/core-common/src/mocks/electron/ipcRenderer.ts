@@ -1,13 +1,12 @@
 import { EventEmitter } from 'events';
 
 export class MockedElectronIpcRenderer extends EventEmitter implements Electron.IpcRenderer {
-
   invoke(channel: string, ...args: any[]): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   eventNames() {
-    return super.eventNames().map(s => s.toString());
+    return super.eventNames().map((s) => s.toString());
   }
 
   public targetHost: EventEmitter = new EventEmitter();
@@ -27,7 +26,5 @@ export class MockedElectronIpcRenderer extends EventEmitter implements Electron.
     this.targetHost.emit('sendToHost', channel, ...args);
   }
 
-  postMessage(channel: string, message: any, transfer?: MessagePort[]): void {
-  }
-
+  postMessage(channel: string, message: any, transfer?: MessagePort[]): void {}
 }

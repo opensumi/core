@@ -4,17 +4,14 @@ import { EditorCollectionService, ICodeEditor } from '../../common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '../doc-model/types';
 
 export interface ICodeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
-
   uri?: URI;
 
   options?: any;
 
   editorRef?: (editor: ICodeEditor | undefined) => void;
-
 }
 
 export const CodeEditor = (props: ICodeEditorProps) => {
-
   const container = React.useRef<HTMLDivElement>();
   const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
   const documentService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
@@ -80,5 +77,4 @@ export const CodeEditor = (props: ICodeEditorProps) => {
   }
 
   return <div ref={(el) => el && (container.current = el)} {...props}></div>;
-
 };

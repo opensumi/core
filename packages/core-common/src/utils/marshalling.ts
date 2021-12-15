@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -32,17 +32,17 @@ function replacer(key: string, value: any): any {
   return value;
 }
 
-export function revive(obj: any, depth: number = 0): any {
-
+export function revive(obj: any, depth = 0): any {
   if (!obj || depth > 200) {
     return obj;
   }
 
   if (typeof obj === 'object') {
-
     switch ((obj as MarshalledObject).$mid) {
-      case 1: return URI.revive(obj);
-      case 2: return new RegExp(obj.source, obj.flags);
+      case 1:
+        return URI.revive(obj);
+      case 2:
+        return new RegExp(obj.source, obj.flags);
     }
 
     if (Array.isArray(obj)) {

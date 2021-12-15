@@ -35,7 +35,6 @@ export const keymapsSchema = {
 
 @Injectable()
 export class KeymapsParser {
-
   protected readonly validate: Ajv.ValidateFunction;
 
   constructor() {
@@ -77,24 +76,39 @@ export class KeymapsParser {
   // https://github.com/Microsoft/node-jsonc-parser/issues/13
   protected printParseErrorCode(code: number | undefined) {
     switch (code) {
-      case parser.ParseErrorCode.InvalidSymbol: return 'InvalidSymbol';
-      case parser.ParseErrorCode.InvalidNumberFormat: return 'InvalidNumberFormat';
-      case parser.ParseErrorCode.PropertyNameExpected: return 'PropertyNameExpected';
-      case parser.ParseErrorCode.ValueExpected: return 'ValueExpected';
-      case parser.ParseErrorCode.ColonExpected: return 'ColonExpected';
-      case parser.ParseErrorCode.CommaExpected: return 'CommaExpected';
-      case parser.ParseErrorCode.CloseBraceExpected: return 'CloseBraceExpected';
-      case parser.ParseErrorCode.CloseBracketExpected: return 'CloseBracketExpected';
-      case parser.ParseErrorCode.EndOfFileExpected: return 'EndOfFileExpected';
-      case parser.ParseErrorCode.InvalidCommentToken: return 'InvalidCommentToken';
-      case parser.ParseErrorCode.UnexpectedEndOfComment: return 'UnexpectedEndOfComment';
-      case parser.ParseErrorCode.UnexpectedEndOfString: return 'UnexpectedEndOfString';
-      case parser.ParseErrorCode.UnexpectedEndOfNumber: return 'UnexpectedEndOfNumber';
-      case parser.ParseErrorCode.InvalidUnicode: return 'InvalidUnicode';
-      case parser.ParseErrorCode.InvalidEscapeCharacter: return 'InvalidEscapeCharacter';
-      case parser.ParseErrorCode.InvalidCharacter: return 'InvalidCharacter';
+      case parser.ParseErrorCode.InvalidSymbol:
+        return 'InvalidSymbol';
+      case parser.ParseErrorCode.InvalidNumberFormat:
+        return 'InvalidNumberFormat';
+      case parser.ParseErrorCode.PropertyNameExpected:
+        return 'PropertyNameExpected';
+      case parser.ParseErrorCode.ValueExpected:
+        return 'ValueExpected';
+      case parser.ParseErrorCode.ColonExpected:
+        return 'ColonExpected';
+      case parser.ParseErrorCode.CommaExpected:
+        return 'CommaExpected';
+      case parser.ParseErrorCode.CloseBraceExpected:
+        return 'CloseBraceExpected';
+      case parser.ParseErrorCode.CloseBracketExpected:
+        return 'CloseBracketExpected';
+      case parser.ParseErrorCode.EndOfFileExpected:
+        return 'EndOfFileExpected';
+      case parser.ParseErrorCode.InvalidCommentToken:
+        return 'InvalidCommentToken';
+      case parser.ParseErrorCode.UnexpectedEndOfComment:
+        return 'UnexpectedEndOfComment';
+      case parser.ParseErrorCode.UnexpectedEndOfString:
+        return 'UnexpectedEndOfString';
+      case parser.ParseErrorCode.UnexpectedEndOfNumber:
+        return 'UnexpectedEndOfNumber';
+      case parser.ParseErrorCode.InvalidUnicode:
+        return 'InvalidUnicode';
+      case parser.ParseErrorCode.InvalidEscapeCharacter:
+        return 'InvalidEscapeCharacter';
+      case parser.ParseErrorCode.InvalidCharacter:
+        return 'InvalidCharacter';
     }
     return '<unknown ParseErrorCode>';
   }
-
 }

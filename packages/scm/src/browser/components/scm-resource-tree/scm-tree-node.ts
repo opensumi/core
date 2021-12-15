@@ -12,10 +12,7 @@ export class SCMResourceRoot extends CompositeTreeNode {
     return !!node && !node.parent;
   }
 
-  constructor(
-    tree: SCMTreeService,
-    private readonly isTree?: boolean,
-  ) {
+  constructor(tree: SCMTreeService, private readonly isTree?: boolean) {
     super(tree as ITree, undefined);
   }
 
@@ -34,9 +31,11 @@ export class SCMResourceRoot extends CompositeTreeNode {
 
 export class SCMResourceGroup extends CompositeTreeNode {
   public static is(node: any): node is SCMResourceGroup {
-    return CompositeTreeNode.is(node)
-      && !!(node as SCMResourceGroup).resource
-      && isSCMResourceGroup((node as SCMResourceGroup).resource);
+    return (
+      CompositeTreeNode.is(node) &&
+      !!(node as SCMResourceGroup).resource &&
+      isSCMResourceGroup((node as SCMResourceGroup).resource)
+    );
   }
 
   private _whenReady: Promise<void>;
@@ -81,12 +80,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
     public readonly resource: ISCMResource,
     id?: number,
   ) {
-    super(
-      tree as ITree,
-      parent, undefined,
-      { name: raw.name },
-      { disableCache: true },
-    );
+    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
     // 目录节点默认全部展开
@@ -106,10 +100,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
   get tooltip(): string {
     const node = this.resource;
 
-    return paths.join(
-      node.resourceGroup.provider.rootUri!.path,
-      this.raw.pathname!,
-    );
+    return paths.join(node.resourceGroup.provider.rootUri!.path, this.raw.pathname!);
   }
 
   /**
@@ -131,13 +122,7 @@ export class SCMResourceFile extends TreeNode {
     private readonly isTree?: boolean,
     id?: number,
   ) {
-    super(
-      tree as ITree,
-      parent,
-      undefined,
-      { name: raw.pathname },
-      { disableCache: true },
-    );
+    super(tree as ITree, parent, undefined, { name: raw.pathname }, { disableCache: true });
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
   }

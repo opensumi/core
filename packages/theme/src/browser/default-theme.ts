@@ -306,10 +306,7 @@ export default {
       },
     },
     {
-      scope: [
-        'punctuation.section.embedded.begin.php',
-        'punctuation.section.embedded.end.php',
-      ],
+      scope: ['punctuation.section.embedded.begin.php', 'punctuation.section.embedded.end.php'],
       settings: {
         foreground: '#569cd6',
       },
@@ -328,11 +325,7 @@ export default {
     },
     {
       name: 'coloring of the Java import and package identifiers',
-      scope: [
-        'storage.modifier.import.java',
-        'variable.language.wildcard.java',
-        'storage.modifier.package.java',
-      ],
+      scope: ['storage.modifier.import.java', 'variable.language.wildcard.java', 'storage.modifier.package.java'],
       settings: {
         foreground: '#d4d4d4',
       },

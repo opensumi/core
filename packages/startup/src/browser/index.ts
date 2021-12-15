@@ -4,7 +4,5 @@ import { StartupContribution } from './startup.contribution';
 
 @Injectable()
 export class StartupModule extends BrowserModule {
-  providers: Provider[] = [
-    StartupContribution,
-  ];
+  providers: Provider[] = [StartupContribution];
 }

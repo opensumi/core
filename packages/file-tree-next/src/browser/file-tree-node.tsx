@@ -1,7 +1,16 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from './file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@opensumi/ide-components';
+import {
+  TreeNode,
+  CompositeTreeNode,
+  INodeRendererProps,
+  ClasslistComposite,
+  PromptHandle,
+  TreeNodeType,
+  RenamePromptHandle,
+  NewPromptHandle,
+} from '@opensumi/ide-components';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { getIcon, URI } from '@opensumi/ide-core-browser';
 import { Directory, File } from '../common/file-tree-node.define';
@@ -20,8 +29,18 @@ export interface IFileTreeNodeProps {
   dndService: DragAndDropService;
   onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onDoubleClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onDoubleClick: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
+  onContextMenu: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
   template?: React.JSXElementConstructor<any>;
   // 是否有文件夹图标，没有的情况下文件图标会与父目录小箭头对齐
   hasFolderIcons?: boolean;
@@ -90,64 +109,94 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const handleContextMenu = React.useCallback((ev: React.MouseEvent) => {
-    if (ev.nativeEvent.which === 0) {
+  const handleContextMenu = React.useCallback(
+    (ev: React.MouseEvent) => {
+      if (ev.nativeEvent.which === 0) {
         return;
-    }
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onContextMenu(ev, item as TreeNode, itemType);
-    }
-  }, [onContextMenu, item]);
+      }
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        onContextMenu(ev, item as TreeNode, itemType);
+      }
+    },
+    [onContextMenu, item],
+  );
 
-  const handleDragStart = React.useCallback((ev: React.DragEvent) => {
-    const { handleDragStart } = dndService;
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDragStart(ev, item);
-    }
-  }, [dndService, item]);
+  const handleDragStart = React.useCallback(
+    (ev: React.DragEvent) => {
+      const { handleDragStart } = dndService;
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        handleDragStart(ev, item);
+      }
+    },
+    [dndService, item],
+  );
 
-  const handleDragLeave = React.useCallback((ev: React.DragEvent) => {
-    const { handleDragLeave } = dndService;
+  const handleDragLeave = React.useCallback(
+    (ev: React.DragEvent) => {
+      const { handleDragLeave } = dndService;
 
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDragLeave(ev, item);
-    }
-  }, [dndService, item]);
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        handleDragLeave(ev, item);
+      }
+    },
+    [dndService, item],
+  );
 
-  const handleDragEnter = React.useCallback((ev: React.DragEvent) => {
-    const { handleDragEnter } = dndService;
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDragEnter(ev, item);
-    }
-  }, [dndService, item]);
+  const handleDragEnter = React.useCallback(
+    (ev: React.DragEvent) => {
+      const { handleDragEnter } = dndService;
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        handleDragEnter(ev, item);
+      }
+    },
+    [dndService, item],
+  );
 
-  const handleDrop = React.useCallback((ev: React.DragEvent) => {
-    const { handleDrop } = dndService;
+  const handleDrop = React.useCallback(
+    (ev: React.DragEvent) => {
+      const { handleDrop } = dndService;
 
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDrop(ev, item);
-    }
-  }, [dndService, item]);
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        handleDrop(ev, item);
+      }
+    },
+    [dndService, item],
+  );
 
-  const handleDragOver = React.useCallback((ev: React.DragEvent) => {
-    const { handleDragOver } = dndService;
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDragOver(ev, item);
-    }
-  }, [dndService, item]);
+  const handleDragOver = React.useCallback(
+    (ev: React.DragEvent) => {
+      const { handleDragOver } = dndService;
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        handleDragOver(ev, item);
+      }
+    },
+    [dndService, item],
+  );
 
   let isDirectory = itemType === TreeNodeType.CompositeTreeNode;
   let paddingLeft;
   if (isPrompt) {
     if (isNewPrompt) {
       isDirectory = (item as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
-      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0 )}px`;
+      paddingLeft = `${
+        defaultLeftPadding +
+        ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0) +
+        (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0)
+      }px`;
     } else {
       isDirectory = (item as RenamePromptHandle).target.type === TreeNodeType.CompositeTreeNode;
-      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0 )}px`;
+      paddingLeft = `${
+        defaultLeftPadding +
+        ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0) +
+        (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0)
+      }px`;
     }
   } else {
-    paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0 )}px`;
+    paddingLeft = `${
+      defaultLeftPadding +
+      (item.depth || 0) * (leftPadding || 0) +
+      (isDirectory ? 0 : hasFolderIcons ? (hidesExplorerArrows ? 0 : 20) : 0)
+    }px`;
   }
   const fileTreeNodeStyle = {
     color: decoration ? decoration.color : '',
@@ -162,37 +211,37 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       return <Loading />;
     }
     if (isPrompt && node instanceof PromptHandle) {
-      let isDirectory: boolean = false;
+      let isDirectory = false;
       if (isRenamePrompt) {
-        isDirectory = ((node as RenamePromptHandle).target).type === TreeNodeType.CompositeTreeNode;
+        isDirectory = (node as RenamePromptHandle).target.type === TreeNodeType.CompositeTreeNode;
       } else {
         isDirectory = (node as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
       }
       if (isDirectory) {
-        return <div
-          className={cls(
-            styles.file_tree_node_segment,
-            styles.expansion_toggle,
-            getIcon('arrow-right'),
-            { [`${styles.mod_collapsed}`]:
-              isNewPrompt || !(isRenamePrompt &&
-              ((node as RenamePromptHandle).target).type === TreeNodeType.CompositeTreeNode &&
-              ((node as RenamePromptHandle).target as Directory).expanded)},
-          )}
-        />;
+        return (
+          <div
+            className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+              [`${styles.mod_collapsed}`]:
+                isNewPrompt ||
+                !(
+                  isRenamePrompt &&
+                  (node as RenamePromptHandle).target.type === TreeNodeType.CompositeTreeNode &&
+                  ((node as RenamePromptHandle).target as Directory).expanded
+                ),
+            })}
+          />
+        );
       }
     } else {
-      return <div
-        onClick={clickHandler}
-        className={cls(
-          styles.file_tree_node_segment,
-          styles.expansion_toggle,
-          getIcon('arrow-right'),
-          { [`${styles.mod_collapsed}`]: !(node as Directory).expanded },
-        )}
-      />;
+      return (
+        <div
+          onClick={clickHandler}
+          className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+            [`${styles.mod_collapsed}`]: !(node as Directory).expanded,
+          })}
+        />
+      );
     }
-
   };
 
   const renderIcon = (node: Directory | File) => {
@@ -200,7 +249,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     let isDirectory: boolean;
     if (isPrompt && node instanceof PromptHandle) {
       if (node instanceof RenamePromptHandle) {
-        nodeUri = ((node as RenamePromptHandle).target! as (File | Directory)).uri.resolve(node.$.value);
+        nodeUri = ((node as RenamePromptHandle).target! as File | Directory).uri.resolve(node.$.value);
         isDirectory = Directory.is((node as RenamePromptHandle).target);
       } else {
         nodeUri = (node.parent! as Directory).uri.resolve(node.$.value);
@@ -210,12 +259,19 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       nodeUri = node.uri;
       isDirectory = node.filestat.isDirectory;
     }
-    const iconClass = labelService.getIcon(nodeUri, {isDirectory, isOpenedDirectory: isDirectory && (node as Directory).expanded});
+    const iconClass = labelService.getIcon(nodeUri, {
+      isDirectory,
+      isOpenedDirectory: isDirectory && (node as Directory).expanded,
+    });
     if ((isDirectory && !hasFolderIcons) || (!isDirectory && !hasFileIcons)) {
       return null;
     }
-    return <div className={cls(styles.file_icon, iconClass, {expanded: isDirectory && (node as Directory).expanded})} style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px`}}>
-    </div>;
+    return (
+      <div
+        className={cls(styles.file_icon, iconClass, { expanded: isDirectory && (node as Directory).expanded })}
+        style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px` }}
+      ></div>
+    );
   };
 
   const renderDisplayName = (node: Directory | File) => {
@@ -223,13 +279,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       return <Template />;
     }
     if (isPrompt && node instanceof PromptHandle) {
-      return <div
-          className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}
-        >
+      return (
+        <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}>
           <div className={cls('input-box', styles.file_tree_node_prompt_box)}>
-            <node.ProxiedInput  wrapperStyle={{height: FILE_TREE_NODE_HEIGHT, padding: '0 5px'}}/>
+            <node.ProxiedInput wrapperStyle={{ height: FILE_TREE_NODE_HEIGHT, padding: '0 5px' }} />
           </div>
-        </div>;
+        </div>
+      );
     }
     if (isCompactName) {
       const paths = node.displayName.split(Path.separator);
@@ -277,50 +333,45 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           dndService.handleDrop(event, item as File, activeUri!);
         };
         const pathClassName = cls(activeIndex === index && styles.active, styles.compact_name);
-        return <span key={localPath}>
-          <a
-            className={pathClassName}
-            draggable={true}
-            onContextMenu={contextMenuHandler}
-            onDragStart={dragStartHandler}
-            onDragOver={dragOverHandler}
-            onDragLeave={dragLeaveHandler}
-            onDrop={dropHandler}
-            onClick={clickHandler}>
+        return (
+          <span key={localPath}>
+            <a
+              className={pathClassName}
+              draggable={true}
+              onContextMenu={contextMenuHandler}
+              onDragStart={dragStartHandler}
+              onDragOver={dragOverHandler}
+              onDragLeave={dragLeaveHandler}
+              onDrop={dropHandler}
+              onClick={clickHandler}
+            >
               {path}
-          </a>
-            {
-              index !== paths.length - 1 ? <span className={styles.compact_name_separator}>{Path.separator}</span> : null
-            }
-        </span>;
+            </a>
+            {index !== paths.length - 1 ? (
+              <span className={styles.compact_name_separator}>{Path.separator}</span>
+            ) : null}
+          </span>
+        );
       });
 
-      return <div
-        className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
-      >
-        {nameBlock}
-      </div>;
+      return <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}>{nameBlock}</div>;
     }
-    return <div
-        className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
-      >
-        { labelService.getName(node.uri) || node.displayName }
-      </div>;
+    return (
+      <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}>
+        {labelService.getName(node.uri) || node.displayName}
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_tail)}>
-      {renderBadge()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_tail)}>{renderBadge()}</div>
+  );
 
   const renderBadge = () => {
     if (!decoration) {
       return null;
     }
-    return <div className={styles.file_tree_node_status}>
-      {decoration.badge.slice()}
-    </div>;
+    return <div className={styles.file_tree_node_status}>{decoration.badge.slice()}</div>;
   };
 
   const renderTwice = (item) => {
@@ -344,35 +395,30 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   return (
     <div
-        key={item.id}
-        onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-        onContextMenu={handleContextMenu}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        title={getItemTooltip()}
-        className={cls(
-          styles.file_tree_node,
-          decorations ? decorations.classlist : null,
-        )}
-        style={fileTreeNodeStyle}
-        draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
-        data-id={item.id}
-      >
-        <div className={cls(styles.file_tree_node_content)}>
-          {renderTwice(item)}
-          {renderIcon(item)}
-          <div
-            className={isPrompt ? styles.file_tree_node_prompt_wrap : styles.file_tree_node_overflow_wrap}
-          >
-            {renderDisplayName(item)}
-          </div>
-          {renderStatusTail()}
+      key={item.id}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      title={getItemTooltip()}
+      className={cls(styles.file_tree_node, decorations ? decorations.classlist : null)}
+      style={fileTreeNodeStyle}
+      draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
+      data-id={item.id}
+    >
+      <div className={cls(styles.file_tree_node_content)}>
+        {renderTwice(item)}
+        {renderIcon(item)}
+        <div className={isPrompt ? styles.file_tree_node_prompt_wrap : styles.file_tree_node_overflow_wrap}>
+          {renderDisplayName(item)}
         </div>
+        {renderStatusTail()}
       </div>
+    </div>
   );
 };
 

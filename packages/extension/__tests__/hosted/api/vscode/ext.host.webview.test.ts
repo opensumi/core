@@ -4,12 +4,9 @@ import { MainThreadAPIIdentifier, IMainThreadWebview } from '@opensumi/ide-exten
 import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 import { ExtHostWebview } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.webview';
 describe('vscode extHostWebview Test', () => {
-
   const map = new Map();
   const rpcProtocol = {
-    getProxy: (r) => {
-      return map.get(r);
-    },
+    getProxy: (r) => map.get(r),
     set: map.set.bind(map),
   };
 
@@ -32,7 +29,12 @@ describe('vscode extHostWebview Test', () => {
       isBuiltin: true,
     };
     const webviewPanel = extHostWebview.createWebview(
-      undefined, 'editor', 'testWebview', {viewColumn: 1}, {enableFindWidget: true}, extensionInfo,
+      undefined,
+      'editor',
+      'testWebview',
+      { viewColumn: 1 },
+      { enableFindWidget: true },
+      extensionInfo,
     );
 
     const id = (webviewPanel as any)._handle;
@@ -41,8 +43,8 @@ describe('vscode extHostWebview Test', () => {
       id,
       'editor',
       'testWebview',
-      expect.objectContaining({viewColumn: 1}),
-      expect.objectContaining({enableFindWidget: true}),
+      expect.objectContaining({ viewColumn: 1 }),
+      expect.objectContaining({ enableFindWidget: true }),
       extensionInfo,
     );
 
@@ -64,9 +66,9 @@ describe('vscode extHostWebview Test', () => {
     expect(mainService.$setHtml).toBeCalledWith(id, '<div>test<div>');
 
     // setOption
-    webviewPanel.webview.options = {enableScripts: true};
+    webviewPanel.webview.options = { enableScripts: true };
     expect(webviewPanel.webview.options.enableScripts).toBeTruthy();
-    expect(mainService.$setOptions).toBeCalledWith(id, expect.objectContaining({enableScripts: true}));
+    expect(mainService.$setOptions).toBeCalledWith(id, expect.objectContaining({ enableScripts: true }));
 
     // setTitle
     webviewPanel.title = 'testTitle2';
@@ -82,20 +84,20 @@ describe('vscode extHostWebview Test', () => {
     expect(mainService.$postMessage).toBeCalledWith(id, 'testPostMessage');
 
     // viewState
-    const states = [{
-      visible: true,
-      active: true,
-      position: 5,
-    }, {
-      visible: false,
-      active: false,
-      position: 1,
-    }];
+    const states = [
+      {
+        visible: true,
+        active: true,
+        position: 5,
+      },
+      {
+        visible: false,
+        active: false,
+        position: 1,
+      },
+    ];
     states.forEach((state) => {
-      extHostWebview.$onDidChangeWebviewPanelViewState(
-        id,
-        state,
-      );
+      extHostWebview.$onDidChangeWebviewPanelViewState(id, state);
       expect(webviewPanel.viewColumn).toBe(state.position);
       expect(webviewPanel.visible).toBe(state.visible);
       expect(webviewPanel.active).toBe(state.active);
@@ -107,16 +109,12 @@ describe('vscode extHostWebview Test', () => {
     expect(() => webviewPanel.webview).toThrowError();
     done();
   });
-
 });
 
 describe('sumi extHostWebview Test', () => {
-
   const map = new Map();
   const rpcProtocol = {
-    getProxy: (r) => {
-      return map.get(r);
-    },
+    getProxy: (r) => map.get(r),
     set: map.set.bind(map),
   };
 
@@ -127,7 +125,6 @@ describe('sumi extHostWebview Test', () => {
   const extHostWebview = new ExtHostWebview(rpcProtocol as any);
 
   it('ext host sumi webview test', async (done) => {
-
     const handle1 = await extHostWebview.getWebviewHandle('existingWebview');
     expect(mainService.$connectPlainWebview).toBeCalledWith('existingWebview');
 
@@ -155,5 +152,4 @@ describe('sumi extHostWebview Test', () => {
 
     done();
   });
-
 });

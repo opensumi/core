@@ -159,7 +159,11 @@ export interface ITerminalClient extends Disposable {
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
-export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions, disposable?: IDisposable) => ITerminalClient;
+export type ITerminalClientFactory = (
+  widget: IWidget,
+  options?: TerminalOptions,
+  disposable?: IDisposable,
+) => ITerminalClient;
 
 export interface ITerminalConnection {
   name: string;

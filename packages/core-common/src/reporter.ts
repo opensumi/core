@@ -1,4 +1,12 @@
-import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer, REPORT_NAME } from './types/reporter';
+import {
+  IReporterService,
+  ReporterMetadata,
+  IReporter,
+  PerformanceData,
+  PointData,
+  IReporterTimer,
+  REPORT_NAME,
+} from './types/reporter';
 import { getDebugLogger } from './log';
 import { Injectable, Inject } from '@opensumi/di';
 import { IDisposable } from './disposable';
@@ -12,7 +20,7 @@ class ReporterTimer implements IReporterTimer {
   timeEnd(msg?: string, extra?: any) {
     const duration = Date.now() - this.now;
     this.reporter.performance(this.name, {
-      duration: duration,
+      duration,
       metadata: this.metadata,
       msg,
       extra,
@@ -24,18 +32,20 @@ class ReporterTimer implements IReporterTimer {
 @Injectable()
 export class DefaultReporter implements IReporter {
   private logger = getDebugLogger();
-  performance (name: string, data: PerformanceData): void {
-    this.logger.log(name, data)
+  performance(name: string, data: PerformanceData): void {
+    this.logger.log(name, data);
   }
-  point (name: string, data: PointData): void {
-    this.logger.log(name, data)
+  point(name: string, data: PointData): void {
+    this.logger.log(name, data);
   }
 }
 
 @Injectable()
 export class ReporterService implements IReporterService, IDisposable {
-
-  constructor(@Inject(IReporter) private reporter: IReporter, @Inject(ReporterMetadata) private metadata?: ReporterMetadata) {}
+  constructor(
+    @Inject(IReporter) private reporter: IReporter,
+    @Inject(ReporterMetadata) private metadata?: ReporterMetadata,
+  ) {}
 
   time(name: REPORT_NAME | string): IReporterTimer {
     return new ReporterTimer(name, this.reporter, this.metadata);
@@ -49,7 +59,5 @@ export class ReporterService implements IReporterService, IDisposable {
     });
   }
 
-  dispose() {
-
-  }
+  dispose() {}
 }

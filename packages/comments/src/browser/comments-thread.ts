@@ -1,21 +1,20 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { observable, computed, autorun } from 'mobx';
-import {
-  IRange,
-  Disposable,
-  URI,
-  IContextKeyService,
-  uuid,
-  localize,
-} from '@opensumi/ide-core-browser';
+import { IRange, Disposable, URI, IContextKeyService, uuid, localize } from '@opensumi/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
-import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment, ICommentsZoneWidget } from '../common';
+import {
+  ICommentsThread,
+  IComment,
+  ICommentsThreadOptions,
+  ICommentsService,
+  IThreadComment,
+  ICommentsZoneWidget,
+} from '../common';
 import { IEditor, EditorCollectionService } from '@opensumi/ide-editor';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
-
   @Autowired(ICommentsService)
   commentsService: ICommentsService;
 
@@ -63,10 +62,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     public options: ICommentsThreadOptions,
   ) {
     super();
-    this.comments = options.comments ? options.comments.map((comment) => ({
-      ...comment,
-      id: uuid(),
-    })) : [];
+    this.comments = options.comments
+      ? options.comments.map((comment) => ({
+          ...comment,
+          id: uuid(),
+        }))
+      : [];
     this.data = this.options.data;
     this._contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
     // 设置 resource context key
@@ -76,10 +77,16 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.readOnly = !!options.readOnly;
     this.label = options.label;
     this.isCollapsed = !!this.options.isCollapsed;
-    const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
+    const threadsLengthContext = this._contextKeyService.createKey<number>(
+      'threadsLength',
+      this.commentsService.getThreadsByUri(uri).length,
+    );
     const commentsLengthContext = this._contextKeyService.createKey<number>('commentsLength', this.comments.length);
     // vscode 用于判断 thread 是否为空
-    const commentThreadIsEmptyContext = this._contextKeyService.createKey<boolean>('commentThreadIsEmpty', !this.comments.length);
+    const commentThreadIsEmptyContext = this._contextKeyService.createKey<boolean>(
+      'commentThreadIsEmpty',
+      !this.comments.length,
+    );
     // vscode 用于判断是否为当前 controller 注册
     this._contextKeyService.createKey<string>('commentController', providerId);
     // 监听 comments 的变化
@@ -95,11 +102,13 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       }
     });
     // 监听每次 thread 的变化，重新设置 threadsLength
-    this.addDispose(this.commentsService.onThreadsChanged((thread) => {
-      if (thread.uri.isEqual(uri)) {
-        threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
-      }
-    }));
+    this.addDispose(
+      this.commentsService.onThreadsChanged((thread) => {
+        if (thread.uri.isEqual(uri)) {
+          threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
+        }
+      }),
+    );
     this.addDispose({
       dispose: () => {
         this.comments = [];
@@ -139,30 +148,29 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     } else {
       return localize('comments.zone.title');
     }
-
   }
 
   private getEditorsByUri(uri: URI): IEditor[] {
-    return this.editorCollectionService.listEditors()
-      .filter((editor) => editor.currentUri?.isEqual(uri));
+    return this.editorCollectionService.listEditors().filter((editor) => editor.currentUri?.isEqual(uri));
   }
 
   private addWidgetByEditor(editor: IEditor) {
     const widget = this.injector.get(CommentsZoneWidget, [editor, this]);
     // 如果当前 widget 发生高度变化，通知同一个 同一个 editor 的其他 range 相同的 thread 也重新计算一下高度
-    this.addDispose(widget.onChangeZoneWidget(() => {
-      const threads = this.commentsService.commentsThreads
-        .filter((thread) => this.isEqual(thread));
-      // 只需要 resize 当前 thread 之后的 thread
-      const currentIndex = threads.findIndex((thread) => thread === this);
-      const resizeThreads = threads.slice(currentIndex + 1);
-      for (const thread of resizeThreads) {
-        if (thread.isShowWidget(editor)) {
-          const widget = thread.getWidgetByEditor(editor);
-          widget?.resize();
+    this.addDispose(
+      widget.onChangeZoneWidget(() => {
+        const threads = this.commentsService.commentsThreads.filter((thread) => this.isEqual(thread));
+        // 只需要 resize 当前 thread 之后的 thread
+        const currentIndex = threads.findIndex((thread) => thread === this);
+        const resizeThreads = threads.slice(currentIndex + 1);
+        for (const thread of resizeThreads) {
+          if (thread.isShowWidget(editor)) {
+            const widget = thread.getWidgetByEditor(editor);
+            widget?.resize();
+          }
         }
-      }
-    }));
+      }),
+    );
     this.addDispose(widget);
     this.widgets.set(editor, widget);
     editor.onDispose(() => {
@@ -181,7 +189,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     } else {
       this.dispose();
     }
-  }
+  };
 
   public show(editor?: IEditor) {
     if (editor) {
@@ -267,14 +275,16 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public addComment(...comments: IComment[]) {
-    this.comments.push(...comments.map((comment) => ({
-      ...comment,
-      id: uuid(),
-    })));
+    this.comments.push(
+      ...comments.map((comment) => ({
+        ...comment,
+        id: uuid(),
+      })),
+    );
   }
 
   public removeComment(comment: IComment) {
-    const index = this.comments.findIndex((c) => c === comment );
+    const index = this.comments.findIndex((c) => c === comment);
     if (index !== -1) {
       this.comments.splice(index, 1);
     }

@@ -57,20 +57,15 @@ describe('log-manager', () => {
   let logServiceClient: ILogServiceClient;
   let logServiceForClient: MockLogServiceForClient;
 
-  beforeEach (() => {
-    injector = createBrowserInjector([
-      LogModule,
-    ]);
+  beforeEach(() => {
+    injector = createBrowserInjector([LogModule]);
     injector.addProviders({
       token: LogServiceForClientPath,
       useClass: MockLogServiceForClient,
     });
     logManager = injector.get(ILoggerManagerClient);
     logServiceForClient = injector.get(LogServiceForClientPath);
-    logServiceClient = new LogServiceClient(
-      SupportLogNamespace.Browser,
-      logServiceForClient,
-    );
+    logServiceClient = new LogServiceClient(SupportLogNamespace.Browser, logServiceForClient);
   });
 
   test('setLevel', async () => {
@@ -82,10 +77,10 @@ describe('log-manager', () => {
   test('logs method', async () => {
     const list = ['verbose', 'debug', 'log', 'warn', 'critical'];
     for (const key of list) {
-      await logServiceClient[key]('1', '2', {a : 3});
+      await logServiceClient[key]('1', '2', { a: 3 });
       const result = logServiceForClient.catchLogArgs;
       expect(result[0]).toEqual(SupportLogNamespace.Browser);
-      expect(result[1]).toEqual('1 2 {\"a\":3}');
+      expect(result[1]).toEqual('1 2 {"a":3}');
     }
   });
 

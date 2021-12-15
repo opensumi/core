@@ -35,14 +35,17 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     beforeEach(() => {
-      injector = createBrowserInjector([SCMModule], new Injector([
-        {
-          token: IMainLayoutService,
-          useValue: {
-            getTabbarHandler: fakeGetTabbarHandler,
+      injector = createBrowserInjector(
+        [SCMModule],
+        new Injector([
+          {
+            token: IMainLayoutService,
+            useValue: {
+              getTabbarHandler: fakeGetTabbarHandler,
+            },
           },
-        },
-      ]));
+        ]),
+      );
 
       scmService = injector.get(SCMService);
       scmBadgeController = injector.get(SCMBadgeController);
@@ -136,14 +139,18 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       const mockProvider0 = new MockSCMProvider(0);
       // prepare data
       const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
-      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined)]);
+      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [
+        new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined),
+      ]);
 
       mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
       const repo0 = scmService.registerSCMProvider(mockProvider0);
       mockProvider0.onDidChangeResourcesEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('1');
 
-      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined)]);
+      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [
+        new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined),
+      ]);
       mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('2');
 
@@ -190,18 +197,21 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     beforeEach(() => {
       fakeAddElement = jest.fn();
 
-      injector = createBrowserInjector([SCMModule], new Injector([
-        {
-          token: WorkbenchEditorService,
-          useClass: MockWorkbenchEditorService,
-        },
-        {
-          token: IStatusBarService,
-          useValue: {
-            addElement: fakeAddElement,
+      injector = createBrowserInjector(
+        [SCMModule],
+        new Injector([
+          {
+            token: WorkbenchEditorService,
+            useClass: MockWorkbenchEditorService,
           },
-        },
-      ]));
+          {
+            token: IStatusBarService,
+            useValue: {
+              addElement: fakeAddElement,
+            },
+          },
+        ]),
+      );
 
       scmService = injector.get(SCMService);
       scmStatusBarController = injector.get(SCMStatusBarController);
@@ -222,15 +232,18 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider without rootUri
       const mockProvider0 = new MockSCMProvider(0);
-      mockProvider0.statusBarCommands!.push({
-        id: 'fake.command.id.0',
-        title: 'fake.command.title.0',
-        tooltip: 'fake.command.tooltip.0',
-      }, {
-        id: 'fake.command.id.1',
-        title: 'fake.command.title.1',
-        arguments: [1, 2, 3],
-      });
+      mockProvider0.statusBarCommands!.push(
+        {
+          id: 'fake.command.id.0',
+          title: 'fake.command.title.0',
+          tooltip: 'fake.command.tooltip.0',
+        },
+        {
+          id: 'fake.command.id.1',
+          title: 'fake.command.title.1',
+          arguments: [1, 2, 3],
+        },
+      );
 
       const repo0 = scmService.registerSCMProvider(mockProvider0);
 
@@ -322,11 +335,13 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         name: 'status-bar.scm',
       });
 
-      mockProvider0.statusBarCommands = [{
-        id: 'fake.command.id.1',
-        title: 'fake.command.title.1',
-        arguments: [1, 2, 3],
-      }];
+      mockProvider0.statusBarCommands = [
+        {
+          id: 'fake.command.id.1',
+          title: 'fake.command.title.1',
+          arguments: [1, 2, 3],
+        },
+      ];
       mockProvider0.onDidChangeStatusBarCommandsEmitter.fire(mockProvider0.statusBarCommands);
 
       // fake command 1
@@ -428,7 +443,9 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // change currentResource#uri and fire onActiveResourceChange
       // and doesnot match any repo/workspace
-      workbenchEditorService.currentResource!.uri = new URI(Uri.file('/test/workspace/non-existed-folder/tfolder/dd.ts'));
+      workbenchEditorService.currentResource!.uri = new URI(
+        Uri.file('/test/workspace/non-existed-folder/tfolder/dd.ts'),
+      );
       workbenchEditorService.activeResourceChangeEmitter.fire();
       expect(fakeAddElement).toHaveBeenCalledTimes(2);
 

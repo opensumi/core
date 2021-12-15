@@ -13,7 +13,7 @@ describe('Debug Watch Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugWatchModelService: DebugWatchModelService;
   const mockDebugHoverSource = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
 
   const mockCtxMenuRenderer = {
@@ -25,7 +25,7 @@ describe('Debug Watch Tree Model', () => {
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
     },
     watchEvents: {
       get: jest.fn(() => mockWatcher),
@@ -34,15 +34,15 @@ describe('Debug Watch Tree Model', () => {
   } as any;
 
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidStopDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidStopDebugSession: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => { },
+      dispose: () => {},
     })),
   };
 
@@ -165,7 +165,7 @@ describe('Debug Watch Tree Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => {} } as any;
     debugWatchModelService.handleTreeHandler(treeHandle);
     expect(debugWatchModelService.treeHandle).toEqual(treeHandle);
   });
@@ -212,7 +212,6 @@ describe('Debug Watch Tree Model', () => {
     expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
     expect(mockEvent.stopPropagation).toBeCalledTimes(1);
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
-
   });
 
   it('refresh method should be work', async (done) => {

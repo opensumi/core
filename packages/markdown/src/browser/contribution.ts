@@ -5,7 +5,7 @@ import { IMarkdownService } from '../common';
 import { MarkdownEditorComponent } from './editor.markdown';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 
-export const MARKDOWN_EDITOR_COMPONENT_ID: string = 'MARKDOWN_EDITOR_COMPONENT_ID';
+export const MARKDOWN_EDITOR_COMPONENT_ID = 'MARKDOWN_EDITOR_COMPONENT_ID';
 
 @Domain(BrowserEditorContribution)
 export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribution {

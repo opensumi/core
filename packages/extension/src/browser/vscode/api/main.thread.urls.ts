@@ -1,7 +1,15 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  IOpenerService,
+  IDisposable,
+  IOpener,
+  URI,
+  MaybePromise,
+  ILogger,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 import { IActivationEventService } from '../../types';
 
 class ExtennsionUrlHandler {
@@ -9,7 +17,7 @@ class ExtennsionUrlHandler {
     private readonly proxy: IExtHostUrls,
     private readonly handle: number,
     private readonly extensionId: string,
-  ) { }
+  ) {}
 
   public async handleURL(uri: URI) {
     // 要执行的 uri 的authority 必须是当前 extension Id
@@ -23,7 +31,6 @@ class ExtennsionUrlHandler {
 
 @Injectable()
 class ExtensionOpener implements IOpener, IDisposable {
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -70,9 +77,8 @@ class ExtensionOpener implements IOpener, IDisposable {
   }
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadUrls implements IMainThreadUrls {
-
   private readonly proxy: IExtHostUrls;
 
   @Autowired(IOpenerService)
@@ -105,5 +111,4 @@ export class MainThreadUrls implements IMainThreadUrls {
     this.handlers.clear();
     this.extensionOpener.dispose();
   }
-
 }

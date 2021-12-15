@@ -56,30 +56,34 @@ const MarkerItemTitleName: React.FC<{ model: IRenderableMarkerModel }> = observe
  * render marker filepath
  * @param model model of renderable marker
  */
-const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
-  return <div className={styles.itemTitleDescription}>{model.longname}</div>;
-});
+const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => (
+  <div className={styles.itemTitleDescription}>{model.longname}</div>
+));
 
 /**
  * render highlight info which is filterd
  */
-const HightlightData: React.FC<{ data: string, matches: IMatch[], className: string }> = observer(({ data, matches, className }) => {
-  const result: React.ReactNode[] = [];
-  let first = 0;
-  matches.forEach((match) => {
-    if (first < match.start) {
-      result.push(<span key={`hightlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
+const HightlightData: React.FC<{ data: string; matches: IMatch[]; className: string }> = observer(
+  ({ data, matches, className }) => {
+    const result: React.ReactNode[] = [];
+    let first = 0;
+    matches.forEach((match) => {
+      if (first < match.start) {
+        result.push(<span key={`hightlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
+      }
+      result.push(
+        <span key={`hightlight-data-${match.start}-${match.end}`} className={styles.highlight}>
+          {data.substring(match.start, match.end)}
+        </span>,
+      );
+      first = match.end;
+    });
+    if (first < data.length) {
+      result.push(<span key={`hightlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
     }
-    result.push(<span key={`hightlight-data-${match.start}-${match.end}`} className={styles.highlight}>{data.substring(match.start, match.end)}</span>);
-    first = match.end;
-  });
-  if (first < data.length) {
-    result.push(<span key={`hightlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
-  }
-  return (
-    <div className={className}>{result}</div>
-  );
-});
+    return <div className={className}>{result}</div>;
+  },
+);
 
 /**
  * render marker message
@@ -89,9 +93,7 @@ const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }
   if (messageMatchs) {
     return <HightlightData data={data.message} matches={messageMatchs} className={styles.itemDetailName} />;
   } else {
-    return (
-      <div className={styles.itemDetailName}>{data.message}</div>
-    );
+    return <div className={styles.itemDetailName}>{data.message}</div>;
   }
 });
 
@@ -104,9 +106,15 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
   return (
     <div className={styles.itemDetailDescription}>
       <div className={styles.typeContainer}>
-        {sourceMatches ? data.source && <HightlightData data={data.source} matches={sourceMatches} className={styles.type} /> : data.source}
+        {sourceMatches
+          ? data.source && <HightlightData data={data.source} matches={sourceMatches} className={styles.type} />
+          : data.source}
         {data.code && '('}
-        {data.code && codeMatches ? <HightlightData data={data.code} matches={codeMatches} className={styles.type} /> : data.code}
+        {data.code && codeMatches ? (
+          <HightlightData data={data.code} matches={codeMatches} className={styles.type} />
+        ) : (
+          data.code
+        )}
         {data.code && ')'}
       </div>
       <div className={styles.position}>{`[${data.startLineNumber},${data.startColumn}]`}</div>
@@ -118,89 +126,95 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
  * render marker list
  * @param viewModel marker view model
  */
-const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }> = observer(({ viewModel, viewState }) => {
-  const markerService: MarkerService = useInjectable(IMarkerService);
-  const [selectTag, updateSelectTag] = React.useState('');
-  const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
+const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }> = observer(
+  ({ viewModel, viewState }) => {
+    const markerService: MarkerService = useInjectable(IMarkerService);
+    const [selectTag, updateSelectTag] = React.useState('');
+    const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
 
-  React.useEffect(() => {
-    const markerChangedDispose = markerService.getManager().onMarkerChanged(() => {
-      updateSelectTag(TAG_NONE);
+    React.useEffect(() => {
+      const markerChangedDispose = markerService.getManager().onMarkerChanged(() => {
+        updateSelectTag(TAG_NONE);
+      });
+      const resourceCloseDispose = markerService.onResourceClose((res: string) => {
+        const groupId = buildItemGroupId(res);
+        updateFolding(removeFolding(folding, groupId));
+      });
+      return () => {
+        markerChangedDispose.dispose();
+        resourceCloseDispose.dispose();
+      };
     });
-    const resourceCloseDispose = markerService.onResourceClose((res: string) => {
-      const groupId = buildItemGroupId(res);
-      updateFolding(removeFolding(folding, groupId));
-    });
-    return () => {
-      markerChangedDispose.dispose();
-      resourceCloseDispose.dispose();
-    };
-  });
 
-  const nodes = useComputed(() => {
-    let nodes: TreeNode[] = [];
-    viewModel.markers.forEach((model, _) => {
-      if (model.match) {
-        const groupId = buildItemGroupId(model.resource);
-        const isFolding = folding.indexOf(groupId) > -1;
-        const item: TreeNode = {
-          id: groupId,
-          name: () => <MarkerItemTitleName model={model} />,
-          icon: model.icon,
-          description: () => <MarkerItemTitleDescription model={model} />,
-          badge: model.size(),
-          badgeLimit: 999,
-          parent: undefined,
-          expanded: !isFolding,
-          depth: 0,
-          tooltip: model.resource,
-        };
+    const nodes = useComputed(() => {
+      let nodes: TreeNode[] = [];
+      viewModel.markers.forEach((model, _) => {
+        if (model.match) {
+          const groupId = buildItemGroupId(model.resource);
+          const isFolding = folding.indexOf(groupId) > -1;
+          const item: TreeNode = {
+            id: groupId,
+            name: () => <MarkerItemTitleName model={model} />,
+            icon: model.icon,
+            description: () => <MarkerItemTitleDescription model={model} />,
+            badge: model.size(),
+            badgeLimit: 999,
+            parent: undefined,
+            expanded: !isFolding,
+            depth: 0,
+            tooltip: model.resource,
+          };
 
-        nodes.push(item);
-        if (!isFolding) {// 非folding状态显示
-          item.children = model.markers.map((marker, cindex) => {
-            const id = buildItemChildId(model.resource, cindex);
-            return {
-              id,
-              iconStyle: SeverityIconStyle[markerService.getThemeType()][marker.severity],
-              name: () => <MarkerItemName data={marker} />,
-              description: () => <MarkerItemDescription data={marker} />,
-              depth: 2,
-              parent,
-              selected: id === selectTag,
-              marker,
-              tooltip: marker.message,
-            };
-          });
-          nodes = nodes.concat(item.children);
-        } else {
-          item.children = [];
+          nodes.push(item);
+          if (!isFolding) {
+            // 非folding状态显示
+            item.children = model.markers.map((marker, cindex) => {
+              const id = buildItemChildId(model.resource, cindex);
+              return {
+                id,
+                iconStyle: SeverityIconStyle[markerService.getThemeType()][marker.severity],
+                name: () => <MarkerItemName data={marker} />,
+                description: () => <MarkerItemDescription data={marker} />,
+                depth: 2,
+                parent,
+                selected: id === selectTag,
+                marker,
+                tooltip: marker.message,
+              };
+            });
+            nodes = nodes.concat(item.children);
+          } else {
+            item.children = [];
+          }
         }
-      }
-    });
-    return nodes;
-  }, [selectTag, folding]);
+      });
+      return nodes;
+    }, [selectTag, folding]);
 
-  return (
-    <DeprecatedRecycleTree
-      nodes={nodes}
-      outline={false}
-      scrollContainerStyle={{ width: '100%', height: '100%', key: 'marker-list' }}
-      containerHeight={viewState.height}
-      onSelect={(items) => {
-        const item = items && items[0];
-        if (!item) { return; }
+    return (
+      <DeprecatedRecycleTree
+        nodes={nodes}
+        outline={false}
+        scrollContainerStyle={{ width: '100%', height: '100%', key: 'marker-list' }}
+        containerHeight={viewState.height}
+        onSelect={(items) => {
+          const item = items && items[0];
+          if (!item) {
+            return;
+          }
 
-        if (item.parent) {// children
-          updateSelectTag(item.id);
-          markerService.openEditor(item.marker.resource, item.marker);
-        } else {
-          updateFolding(toggleNewFolding(folding, item.id));
-        }
-      }}
-    />
-  );
-});
+          if (item.parent) {
+            // children
+            updateSelectTag(item.id);
+            markerService.openEditor(item.marker.resource, item.marker);
+          } else {
+            updateFolding(toggleNewFolding(folding, item.id));
+          }
+        }}
+      />
+    );
+  },
+);
 
 /**
  * empty marker
@@ -212,34 +226,31 @@ const Empty: React.FC = observer(() => {
     return (
       <div className={styles.empty}>
         {Messages.markerPanelFilterContentEmpty()}
-        <div className={styles.reset} onClick={() => {
-          markerService.fireFilterChanged(undefined);
-        }}>
+        <div
+          className={styles.reset}
+          onClick={() => {
+            markerService.fireFilterChanged(undefined);
+          }}
+        >
           {Messages.markerPanelFilterReset()}
         </div>
       </div>
     );
   } else {
-    return (
-      <div className={styles.empty}>{Messages.markerPanelContentEmpty()}</div>
-    );
+    return <div className={styles.empty}>{Messages.markerPanelContentEmpty()}</div>;
   }
 });
 
 /**
  * marker panel
  */
-export const MarkerPanel = observer(({viewState}: {viewState: ViewState}) => {
+export const MarkerPanel = observer(({ viewState }: { viewState: ViewState }) => {
   const markerService: MarkerService = useInjectable(IMarkerService);
   const viewModel = markerService.getViewModel();
 
   return (
     <div ref={markerService.rootEle} className={styles.markersContent}>
-      {
-        viewModel.hasData() ?
-          <MarkerList viewModel={viewModel} viewState={viewState} /> :
-          <Empty />
-      }
+      {viewModel.hasData() ? <MarkerList viewModel={viewModel} viewState={viewState} /> : <Empty />}
     </div>
   );
 });

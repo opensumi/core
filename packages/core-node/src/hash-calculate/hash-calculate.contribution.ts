@@ -5,7 +5,6 @@ import { ServerAppContribution } from '../bootstrap';
 
 @Domain(ServerAppContribution)
 export class HashCalculateContribution implements ServerAppContribution {
-
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 

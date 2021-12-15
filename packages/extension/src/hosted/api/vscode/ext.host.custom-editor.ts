@@ -1,30 +1,55 @@
-import { IExtHostCustomEditor, IMainThreadCustomEditor, MainThreadAPIIdentifier, CustomEditorType, ExtensionDocumentDataManager, IWebviewPanelOptions, TCustomEditorProvider } from '../../../common/vscode';
+import {
+  IExtHostCustomEditor,
+  IMainThreadCustomEditor,
+  MainThreadAPIIdentifier,
+  CustomEditorType,
+  ExtensionDocumentDataManager,
+  IWebviewPanelOptions,
+  TCustomEditorProvider,
+} from '../../../common/vscode';
 import { UriComponents } from '@opensumi/ide-editor';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { IDisposable, CancellationToken, IExtensionInfo, Emitter, Schemas } from '@opensumi/ide-core-common';
 import { Uri } from '../../../common/vscode/ext-types';
-import { CustomEditorProvider, CustomReadonlyEditorProvider, CustomTextEditorProvider, CustomDocument, CustomDocumentEditEvent, CustomDocumentContentChangeEvent } from '../../../common/vscode/custom-editor';
+import {
+  CustomEditorProvider,
+  CustomReadonlyEditorProvider,
+  CustomTextEditorProvider,
+  CustomDocument,
+  CustomDocumentEditEvent,
+  CustomDocumentContentChangeEvent,
+} from '../../../common/vscode/custom-editor';
 import { CustomDocumentOpenContext } from 'vscode';
 import { iconvEncode } from '@opensumi/ide-core-common/lib/encoding';
 
 export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
-
   private proxy: IMainThreadCustomEditor;
 
   private providers = new Map<string, TCustomEditorProvider>();
 
-  private customDocuments = new Map<string, {
-    documents: Map<string, CustomDocumentHostData<any>> ,
-    provider: CustomEditorProvider | CustomReadonlyEditorProvider,
-  }>();
+  private customDocuments = new Map<
+    string,
+    {
+      documents: Map<string, CustomDocumentHostData<any>>;
+      provider: CustomEditorProvider | CustomReadonlyEditorProvider;
+    }
+  >();
 
-  constructor(rpcProtocol: IRPCProtocol, private webview: ExtHostWebviewService, private extDocuments: ExtensionDocumentDataManager) {
-
+  constructor(
+    rpcProtocol: IRPCProtocol,
+    private webview: ExtHostWebviewService,
+    private extDocuments: ExtensionDocumentDataManager,
+  ) {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCustomEditor);
   }
 
-  registerCustomEditorProvider(viewType: string, provider: CustomTextEditorProvider | CustomEditorProvider | CustomReadonlyEditorProvider, options: {supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: IWebviewPanelOptions}, extensionInfo: IExtensionInfo ): IDisposable {
+  registerCustomEditorProvider(
+    viewType: string,
+    provider: CustomTextEditorProvider | CustomEditorProvider | CustomReadonlyEditorProvider,
+    options: { supportsMultipleEditorsPerDocument?: boolean; webviewOptions?: IWebviewPanelOptions },
+    extensionInfo: IExtensionInfo,
+  ): IDisposable {
     const type = getEditorType(provider);
     this.proxy.$registerCustomEditor(viewType, type, options, extensionInfo);
     this.providers.set(viewType, {
@@ -62,7 +87,12 @@ export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
     }
   }
 
-  async $resolveCustomTextEditor(viewType: string, uriParts: UriComponents, webviewPanelId: string, token: CancellationToken) {
+  async $resolveCustomTextEditor(
+    viewType: string,
+    uriParts: UriComponents,
+    webviewPanelId: string,
+    token: CancellationToken,
+  ) {
     const provider = this.providers.get(viewType);
     if (!provider) {
       throw new Error(`no custom editor provider for ${viewType}`);
@@ -106,11 +136,11 @@ export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
     }
   }
 
-  private getCustomDocument(viewType: string , uri: Uri): CustomDocumentHostData | undefined {
+  private getCustomDocument(viewType: string, uri: Uri): CustomDocumentHostData | undefined {
     return this.customDocuments.get(viewType)?.documents?.get(uri.toString());
   }
 
-  async $undo(viewType: string , uriParts: Uri) {
+  async $undo(viewType: string, uriParts: Uri) {
     const uri = Uri.revive(uriParts);
     const document = this.getCustomDocument(viewType, uri);
     if (document) {
@@ -118,17 +148,18 @@ export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
     }
   }
 
-  async $redo(viewType: string , uriParts: Uri) {
+  async $redo(viewType: string, uriParts: Uri) {
     const uri = Uri.revive(uriParts);
     const document = this.getCustomDocument(viewType, uri);
     if (document) {
       await document.redo();
     }
   }
-
 }
 
-function getEditorType(provider: CustomTextEditorProvider | CustomEditorProvider | CustomReadonlyEditorProvider): CustomEditorType {
+function getEditorType(
+  provider: CustomTextEditorProvider | CustomEditorProvider | CustomReadonlyEditorProvider,
+): CustomEditorType {
   if (typeof (provider as CustomEditorProvider).saveCustomDocument === 'function') {
     return CustomEditorType.FullEditor;
   } else if (typeof (provider as CustomReadonlyEditorProvider).openCustomDocument === 'function') {
@@ -139,17 +170,16 @@ function getEditorType(provider: CustomTextEditorProvider | CustomEditorProvider
 }
 
 class CustomDocumentHostData<T extends CustomDocument = any> {
-
   private edits: CustomDocumentEditEvent<T>[] = [];
 
-  private currentIndex: number = -1 ;
+  private currentIndex = -1;
 
-  private savePoint: number = -1 ;
+  private savePoint = -1;
 
   private _onDidChange = new Emitter<void>();
   public onDidChange = this._onDidChange.event;
 
-  private _forceDirty: boolean = false;
+  private _forceDirty = false;
 
   constructor(private _document: T, private provider: CustomEditorProvider<T> | CustomReadonlyEditorProvider<T>) {
     if (isNotReadonlyProvider(this.provider)) {
@@ -168,7 +198,7 @@ class CustomDocumentHostData<T extends CustomDocument = any> {
   }
 
   addEdit(edit: CustomDocumentEditEvent<T>) {
-    if (this.currentIndex !== this.edits.length - 1 ) {
+    if (this.currentIndex !== this.edits.length - 1) {
       this.edits.splice(this.currentIndex + 1, this.edits.length - this.currentIndex - 1);
     }
     this.edits.push(edit);
@@ -187,7 +217,7 @@ class CustomDocumentHostData<T extends CustomDocument = any> {
   async undo() {
     if (this.edits[this.currentIndex]) {
       const edit = this.edits[this.currentIndex];
-      this.currentIndex --;
+      this.currentIndex--;
       await edit.undo();
       this._onDidChange.fire();
     }
@@ -196,7 +226,7 @@ class CustomDocumentHostData<T extends CustomDocument = any> {
   async redo() {
     if (this.edits[this.currentIndex + 1]) {
       const edit = this.edits[this.currentIndex + 1];
-      this.currentIndex ++;
+      this.currentIndex++;
       await edit.redo();
       this._onDidChange.fire();
     }
@@ -226,13 +256,16 @@ class CustomDocumentHostData<T extends CustomDocument = any> {
     }
     return this.currentIndex !== this.savePoint;
   }
-
 }
 
-function isNotReadonlyProvider<T extends CustomDocument>(provider: CustomEditorProvider<T> | CustomReadonlyEditorProvider<T>): provider is CustomEditorProvider<T> {
+function isNotReadonlyProvider<T extends CustomDocument>(
+  provider: CustomEditorProvider<T> | CustomReadonlyEditorProvider<T>,
+): provider is CustomEditorProvider<T> {
   return typeof (provider as CustomEditorProvider<T>).saveCustomDocument === 'function';
 }
 
-function isEditEvent<T extends CustomDocument>(e: CustomDocumentEditEvent<T> | CustomDocumentContentChangeEvent<T>): e is CustomDocumentEditEvent<T> {
+function isEditEvent<T extends CustomDocument>(
+  e: CustomDocumentEditEvent<T> | CustomDocumentContentChangeEvent<T>,
+): e is CustomDocumentEditEvent<T> {
   return (e as CustomDocumentEditEvent<T>).undo !== undefined && (e as CustomDocumentEditEvent<T>).redo !== undefined;
 }

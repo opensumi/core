@@ -19,11 +19,7 @@ export function resetWarned() {
   warned = {};
 }
 
-export function call(
-  method: (valid: boolean, message: string) => void,
-  valid: boolean,
-  message: string,
-) {
+export function call(method: (valid: boolean, message: string) => void, valid: boolean, message: string) {
   if (!valid && !warned[message]) {
     method(false, message);
     warned[message] = true;

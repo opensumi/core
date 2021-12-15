@@ -6,4 +6,8 @@ export const checkboxBorder = registerColor(
   { dark: null, light: null, hc: null },
   localize('checkboxBorder', 'Checkbox Border color.'),
 );
-export const checkboxBackground = registerColor('checkbox.background', { dark: '#00000040', light: '#FFFFFF', hc: null }, localize('checkboxBackground', 'Checkbox Background color.'));
+export const checkboxBackground = registerColor(
+  'checkbox.background',
+  { dark: '#00000040', light: '#FFFFFF', hc: null },
+  localize('checkboxBackground', 'Checkbox Background color.'),
+);

@@ -1,7 +1,10 @@
 import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { FileSystemEditorResourceContribution, FileSystemEditorComponentContribution } from './file-scheme.contribution';
+import {
+  FileSystemEditorResourceContribution,
+  FileSystemEditorComponentContribution,
+} from './file-scheme.contribution';
 import { FileSchemeDocNodeServicePath, IFileSchemeDocClient } from '../common';
 import { FileSchemeDocClientService } from './file-scheme-doc.client';
 

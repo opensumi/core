@@ -28,7 +28,10 @@ import {
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import {
+  KeyboardNativeLayoutService,
+  KeyboardLayoutChangeNotifierService,
+} from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
@@ -37,13 +40,33 @@ import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { createElectronMainApi } from '../utils/electron';
-import { IElectronMainUIService, IElectronMainLifeCycleService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
+import {
+  IElectronMainUIService,
+  IElectronMainLifeCycleService,
+  IElectronURLService,
+} from '@opensumi/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 
-import { AbstractMenuService, MenuServiceImpl, AbstractMenubarService, MenubarServiceImpl, IMenuRegistry, MenuRegistryImpl, MenuContribution, AbstractContextMenuService, ContextMenuServiceImpl } from '../menu/next';
+import {
+  AbstractMenuService,
+  MenuServiceImpl,
+  AbstractMenubarService,
+  MenubarServiceImpl,
+  IMenuRegistry,
+  MenuRegistryImpl,
+  MenuContribution,
+  AbstractContextMenuService,
+  ContextMenuServiceImpl,
+} from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
-import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
+import {
+  ElectronCtxMenuRenderer,
+  ElectronMenuBarService,
+  IElectronMenuFactory,
+  IElectronMenuBarService,
+  ElectronMenuFactory,
+} from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 import { SlotRendererContribution } from '../react-providers';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
@@ -61,7 +84,10 @@ import { IExternalUriService, ExternalUriService } from '../services/external-ur
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -97,9 +123,7 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: KeybindingService,
-      useFactory: (inject: Injector) => {
-        return inject.get(KeybindingRegistry);
-      },
+      useFactory: (inject: Injector) => inject.get(KeybindingRegistry),
     },
     {
       token: KeyboardNativeLayoutService,
@@ -107,15 +131,11 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: KeyboardLayoutChangeNotifierService,
-      useFactory: (inject: Injector) => {
-        return inject.get(KeyboardNativeLayoutService);
-      },
+      useFactory: (inject: Injector) => inject.get(KeyboardNativeLayoutService),
     },
     {
       token: KeyValidator,
-      useFactory: (inject: Injector) => {
-        return inject.get(KeyboardNativeLayoutService);
-      },
+      useFactory: (inject: Injector) => inject.get(KeyboardNativeLayoutService),
     },
     ClientAppStateService,
     {
@@ -235,19 +255,23 @@ export function injectInnerProviders(injector: Injector) {
 
   // 为electron添加独特的api服务，主要是向electron-main进行调用的服务
   if (isElectronRenderer()) {
-    injector.addProviders({
-      token: IElectronMainMenuService,
-      useValue: createElectronMainApi(IElectronMainMenuService),
-    }, {
-      token: IElectronMainUIService,
-      useValue: createElectronMainApi(IElectronMainUIService),
-    }, {
-      token: IElectronMainLifeCycleService,
-      useValue: createElectronMainApi(IElectronMainLifeCycleService),
-    }, {
-      token: IElectronURLService,
-      useValue: createElectronMainApi(IElectronURLService),
-    },
+    injector.addProviders(
+      {
+        token: IElectronMainMenuService,
+        useValue: createElectronMainApi(IElectronMainMenuService),
+      },
+      {
+        token: IElectronMainUIService,
+        useValue: createElectronMainApi(IElectronMainUIService),
+      },
+      {
+        token: IElectronMainLifeCycleService,
+        useValue: createElectronMainApi(IElectronMainLifeCycleService),
+      },
+      {
+        token: IElectronURLService,
+        useValue: createElectronMainApi(IElectronURLService),
+      },
       {
         token: IElectronMenuFactory,
         useClass: ElectronMenuFactory,

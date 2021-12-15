@@ -1,6 +1,12 @@
 import { Injector } from '@opensumi/di';
 import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@opensumi/ide-core-common';
-import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl, CorePreferences } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  IContextKeyService,
+  PreferenceService,
+  EventBusImpl,
+  CorePreferences,
+} from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IThemeService } from '@opensumi/ide-theme';
@@ -12,7 +18,17 @@ import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
 import { TerminalNetworkService } from '../../src/browser/terminal.network';
-import { ITerminalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalNetwork, ITerminalErrorService } from '../../src/common';
+import {
+  ITerminalService,
+  ITerminalTheme,
+  ITerminalClientFactory,
+  ITerminalController,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
+  IWidget,
+  ITerminalNetwork,
+  ITerminalErrorService,
+} from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 import {
   MockMainLayoutService,
@@ -93,9 +109,10 @@ export const injector = new Injector([
   },
   {
     token: ITerminalClientFactory,
-    useFactory: (injector) => (widget: IWidget, options = {}) => {
-      return TerminalClientFactory.createClient(injector, widget, options);
-    },
+    useFactory:
+      (injector) =>
+      (widget: IWidget, options = {}) =>
+        TerminalClientFactory.createClient(injector, widget, options),
   },
   {
     token: CommandService,

@@ -1,4 +1,3 @@
-
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor, transparent } from '../../color-registry';

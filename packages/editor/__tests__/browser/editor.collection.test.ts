@@ -9,21 +9,28 @@ import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-i
 import { Injectable } from '@opensumi/di';
 import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
-import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import {
+  IConfigurationService,
+  IConfigurationChangeEvent,
+  IConfigurationOverrides,
+  ConfigurationTarget,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 describe('editor collection service test', () => {
-
   let injector: MockInjector;
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: MonacoService,
-      useClass: MockedMonacoService,
-    }, {
-      token: IEditorDecorationCollectionService,
-      useClass: EditorDecorationCollectionService,
-    });
+    injector.addProviders(
+      {
+        token: MonacoService,
+        useClass: MockedMonacoService,
+      },
+      {
+        token: IEditorDecorationCollectionService,
+        useClass: EditorDecorationCollectionService,
+      },
+    );
   });
 
   afterAll(() => {
@@ -37,11 +44,9 @@ describe('editor collection service test', () => {
       'editor.forceReadonly': false,
     };
     injector.mockService(EditorCollectionService);
-    const mockConfigurationService: Partial<IConfigurationService> =  {
+    const mockConfigurationService: Partial<IConfigurationService> = {
       onDidChangeConfiguration: emitter.event,
-      getValue: ((section: string, overrides?: IConfigurationOverrides) => {
-        return prefs[section];
-      }) as any,
+      getValue: ((section: string, overrides?: IConfigurationOverrides) => prefs[section]) as any,
     };
     injector.addProviders({
       token: IConfigurationService,
@@ -65,7 +70,6 @@ describe('editor collection service test', () => {
 
     codeEditor.setSelections([]);
     expect(setSelections).toBeCalled();
-
   });
 
   it('options level test', () => {
@@ -87,11 +91,9 @@ describe('editor collection service test', () => {
         sourceConfig: {},
       });
     };
-    const mockConfigurationService: Partial<IConfigurationService> =  {
+    const mockConfigurationService: Partial<IConfigurationService> = {
       onDidChangeConfiguration: emitter.event,
-      getValue: ((section: string, overrides?: IConfigurationOverrides) => {
-        return prefs[section];
-      }) as any,
+      getValue: ((section: string, overrides?: IConfigurationOverrides) => prefs[section]) as any,
     };
     injector.addProviders({
       token: IConfigurationService,
@@ -100,14 +102,17 @@ describe('editor collection service test', () => {
     });
     injector.mockService(IEditorFeatureRegistry);
 
-    @Injectable({multiple: true})
+    @Injectable({ multiple: true })
     class SimpleTestEditor extends BaseMonacoEditorWrapper {
-
       get currentDocumentModel() {
-        return (this.monacoEditor.getModel() ? {
-          uri: new URI(this.monacoEditor.getModel()!.uri.toString()),
-          readonly: this.monacoEditor.getModel()!.uri.toString().endsWith('test2.js'),
-        } : null) as any;
+        return (
+          this.monacoEditor.getModel()
+            ? {
+                uri: new URI(this.monacoEditor.getModel()!.uri.toString()),
+                readonly: this.monacoEditor.getModel()!.uri.toString().endsWith('test2.js'),
+              }
+            : null
+        ) as any;
       }
     }
 
@@ -119,14 +124,15 @@ describe('editor collection service test', () => {
       updateOptions: (v) => {
         Object.assign(options, v);
       },
-      getModel: () => {
-        return (_uri ? {
-          uri: _uri,
-          updateOptions: (v) => {
-            Object.assign(modelOptions, v);
-          },
-        } : undefined )as any;
-      },
+      getModel: () =>
+        (_uri
+          ? {
+              uri: _uri,
+              updateOptions: (v) => {
+                Object.assign(modelOptions, v);
+              },
+            }
+          : undefined) as any,
       onDidChangeModel: onDidModelChange.event,
       onDidChangeModelLanguage: new Emitter<any>().event,
     });
@@ -142,7 +148,7 @@ describe('editor collection service test', () => {
 
     expect(options['fontSize']).toBe(20);
 
-    testEditor.updateOptions({fontSize: 40});
+    testEditor.updateOptions({ fontSize: 40 });
 
     expect(options['fontSize']).toBe(40);
     expect(options['readOnly']).toBeFalsy();
@@ -154,7 +160,7 @@ describe('editor collection service test', () => {
 
     expect(options['readOnly']).toBeTruthy();
 
-    testEditor.updateOptions({fontSize: undefined});
+    testEditor.updateOptions({ fontSize: undefined });
 
     expect(options['fontSize']).toBe(20);
 
@@ -168,5 +174,4 @@ describe('editor collection service test', () => {
     setPref('editor.forceReadOnly', true);
     expect(options['readOnly']).toBeTruthy();
   });
-
 });

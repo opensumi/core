@@ -1,14 +1,13 @@
-import { Injectable, Optional} from '@opensumi/di';
+import { Injectable, Optional } from '@opensumi/di';
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { ExtensionTreeRoot } from './tree-view.node.defined';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class ExtensionTreeModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(ExtensionTreeModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(ExtensionTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: ExtensionTreeRoot) {

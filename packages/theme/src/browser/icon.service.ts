@@ -1,7 +1,26 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  PreferenceService,
+  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+  Emitter,
+  Event,
+  ILogger,
+  CODICON_OWNER,
+} from '@opensumi/ide-core-browser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
+import {
+  ThemeType,
+  IIconService,
+  ThemeContribution,
+  getThemeId,
+  IIconTheme,
+  getThemeTypeSelector,
+  IconType,
+  IconShape,
+  IconThemeInfo,
+} from '../common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -35,7 +54,7 @@ export class IconService implements IIconService {
 
   private iconThemes: Map<string, IIconTheme> = new Map();
 
-  private iconContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: URI }> = new Map();
+  private iconContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
@@ -91,17 +110,21 @@ export class IconService implements IIconService {
   }
 
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
+    const iconUrl =
+      path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     return this.getMaskStyleSheet(iconUrl, className, baseTheme);
   }
 
   protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
-    const cssRule = `${baseTheme || ''} .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:contain;}`;
+    const cssRule = `${
+      baseTheme || ''
+    } .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
+    const iconUrl =
+      path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
   }
 
@@ -122,7 +145,12 @@ export class IconService implements IIconService {
     return className;
   }
 
-  fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
+  fromIcon(
+    basePath = '',
+    icon?: { [index in ThemeType]: string } | string,
+    type: IconType = IconType.Mask,
+    shape: IconShape = IconShape.Square,
+  ): string | undefined {
     if (!icon) {
       return;
     }
@@ -156,19 +184,21 @@ export class IconService implements IIconService {
         if (type === IconType.Mask) {
           this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
         } else {
-          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
+          this.appendStyleSheet(
+            this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`),
+          );
         }
       }
     }
     const targetIconClass = [
       'kaitian-icon',
       randomClass,
-      ({
+      {
         [IconType.Background]: 'background-mode',
         [IconType.Base64]: 'background-mode',
         [IconType.Mask]: 'mask-mode',
-      })[type],
-      (shape === IconShape.Circle ? 'circle' : ''),
+      }[type],
+      shape === IconShape.Circle ? 'circle' : '',
     ].join(' ');
     this.iconMap.set(iconId, targetIconClass);
     return targetIconClass;
@@ -183,25 +213,25 @@ export class IconService implements IIconService {
         this.applyTheme(preferencesIcon);
       }
     }
-    this.preferenceSchemaProvider.setSchema({
-      properties: {
-        [ICON_THEME_SETTING]: {
-          type: 'string',
-          default: 'vscode-icons',
-          enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+    this.preferenceSchemaProvider.setSchema(
+      {
+        properties: {
+          [ICON_THEME_SETTING]: {
+            type: 'string',
+            default: 'vscode-icons',
+            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+          },
         },
       },
-    }, true);
-
-    const themeMap = this.getAvailableThemeInfos().reduce(
-      (pre: Map<string, string>, cur: IconThemeInfo) => {
-        if (!pre.has(cur.themeId)) {
-          pre.set(cur.themeId, cur.name);
-        }
-        return pre;
-      },
-      new Map(),
+      true,
     );
+
+    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: IconThemeInfo) => {
+      if (!pre.has(cur.themeId)) {
+        pre.set(cur.themeId, cur.name);
+      }
+      return pre;
+    }, new Map());
 
     this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, Object.fromEntries(themeMap.entries()));
     // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
@@ -217,11 +247,8 @@ export class IconService implements IIconService {
 
   getAvailableThemeInfos(): IconThemeInfo[] {
     const themeInfos: IconThemeInfo[] = [];
-    for (const {contribution} of this.iconContributionRegistry.values()) {
-      const {
-        label,
-        id,
-      } = contribution;
+    for (const { contribution } of this.iconContributionRegistry.values()) {
+      const { label, id } = contribution;
       themeInfos.push({
         themeId: id || getThemeId(contribution),
         name: label,

@@ -21,7 +21,7 @@ export class TabBarHandler {
   protected readonly onCollapseEmitter = new Emitter<void>();
   protected readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
-  public isVisible: boolean = false;
+  public isVisible = false;
   public accordionService = this.layoutService.getAccordionService(this.containerId);
 
   constructor(public readonly containerId: string, private tabbarService: TabbarService) {
@@ -94,7 +94,11 @@ export class TabBarHandler {
    * 设置当前视图的展开尺寸，会强制展开面板
    */
   setSize(size: number) {
-    this.layoutService.toggleSlot(this.tabbarService.location, true, size + this.tabbarService.barSize /*border宽(高)度*/);
+    this.layoutService.toggleSlot(
+      this.tabbarService.location,
+      true,
+      size + this.tabbarService.barSize /* border宽(高)度*/,
+    );
   }
   /**
    * 设置视图tab的徽标

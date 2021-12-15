@@ -1,14 +1,13 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { Injectable, Optional } from '@opensumi/di';
-import { ThrottledDelayer,  Emitter, Event } from '@opensumi/ide-core-browser';
+import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { ExpressionContainer } from '../tree/debug-tree-node.define';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class DebugHoverModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(DebugHoverModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugHoverModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: ExpressionContainer) {

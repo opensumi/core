@@ -1,7 +1,22 @@
 import path from 'path';
-import { Emitter as EventEmitter, Disposable, ILoggerManagerClient, StorageProvider, Uri, IFileServiceClient } from '@opensumi/ide-core-common';
+import {
+  Emitter as EventEmitter,
+  Disposable,
+  ILoggerManagerClient,
+  StorageProvider,
+  Uri,
+  IFileServiceClient,
+} from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { ITerminalApiService, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, ITerminalService, ITerminalTheme } from '@opensumi/ide-terminal-next';
+import {
+  ITerminalApiService,
+  ITerminalClientFactory,
+  ITerminalController,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
+  ITerminalService,
+  ITerminalTheme,
+} from '@opensumi/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
@@ -19,7 +34,11 @@ import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace-
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.defination';
-import { MockMainLayoutService, MockSocketService, MockTerminalThemeService } from '../../../../../terminal-next/__tests__/browser/mock.service';
+import {
+  MockMainLayoutService,
+  MockSocketService,
+  MockTerminalThemeService,
+} from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
@@ -60,20 +79,19 @@ let mainThreadTask: MainthreadTasks;
 describe('ExtHostTask API', () => {
   const injector = createBrowserInjector([]);
 
-  injector.addProviders({
-    token: ITerminalApiService,
-    useValue: mockService({
-      terminals: [],
-      onDidChangeActiveTerminal: () => Disposable.NULL,
-      onDidCloseTerminal: () => Disposable.NULL,
-      onDidOpenTerminal: () => Disposable.NULL,
-      createTerminal: (options) => {
-        return {
+  injector.addProviders(
+    {
+      token: ITerminalApiService,
+      useValue: mockService({
+        terminals: [],
+        onDidChangeActiveTerminal: () => Disposable.NULL,
+        onDidCloseTerminal: () => Disposable.NULL,
+        onDidOpenTerminal: () => Disposable.NULL,
+        createTerminal: (options) => ({
           id: options.name,
-        };
-      },
-    }),
-  },
+        }),
+      }),
+    },
     {
       token: ITerminalService,
       useValue: new MockSocketService(),
@@ -81,24 +99,29 @@ describe('ExtHostTask API', () => {
     {
       token: ITerminalInternalService,
       useClass: TerminalInternalService,
-    }, {
-    token: StorageProvider,
-    useValue: MockedStorageProvider,
-  }, {
-    token: ITaskService,
-    useClass: TaskService,
-  }, {
-    token: ITaskSystem,
-    useClass: TerminalTaskSystem,
-  }, {
-    token: ILoggerManagerClient,
-    useClass: MockLoggerManageClient,
-  },
+    },
+    {
+      token: StorageProvider,
+      useValue: MockedStorageProvider,
+    },
+    {
+      token: ITaskService,
+      useClass: TaskService,
+    },
+    {
+      token: ITaskSystem,
+      useClass: TerminalTaskSystem,
+    },
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
+    },
     {
       token: ITerminalClientFactory,
-      useFactory: (injector) => (widget, options = {}) => {
-        return TerminalClientFactory.createClient(injector, widget, options);
-      },
+      useFactory:
+        (injector) =>
+        (widget, options = {}) =>
+          TerminalClientFactory.createClient(injector, widget, options),
     },
     {
       token: IVariableResolverService,
@@ -113,16 +136,15 @@ describe('ExtHostTask API', () => {
       useValue: {
         'output.logWhenNoPanel': true,
       },
-    }, {
-    token: IWorkspaceService,
-    useValue: {
-      tryGetRoots: () => ([{ uri: __dirname }]),
-      getWorkspaceName: () => 'Test Workspace',
-      getWorkspaceFolder: (uri) => {
-        return { uri, name: 'Test Workspace' };
+    },
+    {
+      token: IWorkspaceService,
+      useValue: {
+        tryGetRoots: () => [{ uri: __dirname }],
+        getWorkspaceName: () => 'Test Workspace',
+        getWorkspaceFolder: (uri) => ({ uri, name: 'Test Workspace' }),
       },
     },
-  },
     {
       token: ITaskDefinitionRegistry,
       useClass: TaskDefinitionRegistryImpl,
@@ -154,31 +176,33 @@ describe('ExtHostTask API', () => {
           instance: {
             dirty: false,
           },
-          dispose: () => { },
+          dispose: () => {},
         })),
-        createModelReference: (uri) => {
-          return Promise.resolve({
+        createModelReference: (uri) =>
+          Promise.resolve({
             instance: {
               uri,
-              getMonacoModel: () => {
-                return {
-                  onDidChangeContent: new EventEmitter().event,
-                  uri,
-                  setValue: () => { },
-                };
-              },
+              getMonacoModel: () => ({
+                onDidChangeContent: new EventEmitter().event,
+                uri,
+                setValue: () => {},
+              }),
             },
             dispose: jest.fn(),
-          });
-        },
+          }),
       },
-    }, {
-    token: IMainLayoutService,
-    useValue: new MockMainLayoutService(),
-  });
+    },
+    {
+      token: IMainLayoutService,
+      useValue: new MockMainLayoutService(),
+    },
+  );
 
   const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
-  const extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
+  const extHostDocs = rpcProtocolExt.set(
+    ExtHostAPIIdentifier.ExtHostDocuments,
+    injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]),
+  );
   const extHostWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
 
   extHostTerminal = new ExtHostTerminal(rpcProtocolExt);
@@ -190,7 +214,11 @@ describe('ExtHostTask API', () => {
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTasks, extHostTask);
   rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadTerminal, mainThreadTerminal);
   rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadTasks, mainThreadTask);
-  extHostTask.registerTaskProvider('custombuildscript', new CustomBuildTaskProvider(path.join(__dirname, 'test')), extension);
+  extHostTask.registerTaskProvider(
+    'custombuildscript',
+    new CustomBuildTaskProvider(path.join(__dirname, 'test')),
+    extension,
+  );
 
   const taskService: ITaskService = injector.get(ITaskService);
   const taskDefinition: ITaskDefinitionRegistry = injector.get(ITaskDefinitionRegistry);
@@ -212,7 +240,7 @@ describe('ExtHostTask API', () => {
 
   it('provide tasks', async (done) => {
     const taskHandler = mainThreadTask['providers'].get(1);
-    const taskSet = await taskHandler?.provider.provideTasks({ 'custombuildscript': true });
+    const taskSet = await taskHandler?.provider.provideTasks({ custombuildscript: true });
     expect(taskSet).toBeDefined();
     expect(taskSet?.type).toBe('custombuildscript');
     expect(taskSet?.tasks.length).toBe(6);

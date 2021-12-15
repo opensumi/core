@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2017 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -15,85 +15,79 @@
  ********************************************************************************/
 
 function is(userAgent: string, platform: string): boolean {
-    if (global.hasOwnProperty('platform')) {
-        return ((global as any).platform === platform);
+  if (global.hasOwnProperty('platform')) {
+    return (global as any).platform === platform;
+  }
+  if (typeof process !== 'undefined' && (process.platform as any) !== 'browser') {
+    return process.platform === platform;
+  }
+  if (typeof navigator !== 'undefined') {
+    if (navigator.userAgent && navigator.userAgent.indexOf(userAgent) >= 0) {
+      return true;
     }
-    if ((typeof process !== 'undefined' )&& (process.platform as any) !== 'browser') {
-        return (process.platform === platform);
-    }
-    if (typeof navigator !== 'undefined') {
-        if (navigator.userAgent && navigator.userAgent.indexOf(userAgent) >= 0) {
-            return true;
-        }
-    }
-    return false;
+  }
+  return false;
 }
 
 export const isWindows = is('Windows', 'win32');
 export const isOSX = is('Mac', 'darwin');
-export const isLinux = is('Linux','linux');
+export const isLinux = is('Linux', 'linux');
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {
-    return [
-        isWindows ? 'cmd' : command,
-        isWindows ? ['/c', command, ...args] : args
-    ];
+  return [isWindows ? 'cmd' : command, isWindows ? ['/c', command, ...args] : args];
 }
 
 export namespace OS {
+  /**
+   * Enumeration of the supported operating systems.
+   */
+  export enum Type {
+    Windows = 'Windows',
+    Linux = 'Linux',
+    OSX = 'OSX',
+  }
 
-    /**
-     * Enumeration of the supported operating systems.
-     */
-    export enum Type {
-        Windows = 'Windows',
-        Linux = 'Linux',
-        OSX = 'OSX'
+  /**
+   * Returns with the type of the operating system. If it is neither [Windows](isWindows) nor [OS X](isOSX), then
+   * it always return with the `Linux` OS type.
+   */
+  export function type(): OS.Type {
+    if (isWindows) {
+      return Type.Windows;
     }
-
-    /**
-     * Returns with the type of the operating system. If it is neither [Windows](isWindows) nor [OS X](isOSX), then
-     * it always return with the `Linux` OS type.
-     */
-    export function type(): OS.Type {
-        if (isWindows) {
-            return Type.Windows;
-        }
-        if (isOSX) {
-            return Type.OSX;
-        }
-        return Type.Linux;
+    if (isOSX) {
+      return Type.OSX;
     }
-
+    return Type.Linux;
+  }
 }
 
-
 export function isNodeIntegrated(): boolean {
-    return typeof module !== 'undefined' && !!module.exports
+  return typeof module !== 'undefined' && !!module.exports;
 }
 
 export function isElectronEnv(): boolean {
-    return isElectronRenderer() || isElectronNode();
+  return isElectronRenderer() || isElectronNode();
 }
 
 export function isElectronRenderer() {
-    return (global as any).isElectronRenderer;
+  return (global as any).isElectronRenderer;
 }
 
 export function isElectronNode() {
-    return process && process.env && process.env.ELECTRON_RUN_AS_NODE;
+  return process && process.env && process.env.ELECTRON_RUN_AS_NODE;
 }
 
 export function isDevelopment() {
-    return (global as any).isDev || (process && process.env.IS_DEV);
+  return (global as any).isDev || (process && process.env.IS_DEV);
 }
 
 /**
  * 在 Electron 中，会将 opensumi 中的 extension-host 使用 webpack 打成一个，所以需要其他方法来获取原始的 require
  */
-declare var __webpack_require__: any;
-declare var __non_webpack_require__: any;
+declare let __webpack_require__: any;
+declare let __non_webpack_require__: any;
 
 // https://github.com/webpack/webpack/issues/4175#issuecomment-342931035
 export function getNodeRequire() {

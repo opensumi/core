@@ -28,7 +28,10 @@ export interface IDecorationData {
 export interface IDecorationsProvider {
   readonly label: string;
   readonly onDidChange: Event<Uri[]>;
-  provideDecorations(uri: Uri, token: CancellationToken): IDecorationData | Promise<IDecorationData | undefined> | undefined;
+  provideDecorations(
+    uri: Uri,
+    token: CancellationToken,
+  ): IDecorationData | Promise<IDecorationData | undefined> | undefined;
 }
 
 export interface IResourceDecorationChangeEvent {

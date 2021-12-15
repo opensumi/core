@@ -1,10 +1,18 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import type vscode from 'vscode';
-import { Emitter, Disposable, Event, AuthenticationProviderInformation, AuthenticationSessionsChangeEvent, AuthenticationSession, getDebugLogger } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  Disposable,
+  Event,
+  AuthenticationProviderInformation,
+  AuthenticationSessionsChangeEvent,
+  AuthenticationSession,
+  getDebugLogger,
+} from '@opensumi/ide-core-common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';
 import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
@@ -20,7 +28,10 @@ interface ProviderWithMetadata {
   options: vscode.AuthenticationProviderOptions;
 }
 
-export function createAuthenticationApiFactory(extension: IExtensionDescription, extHostAuthentication: ExtHostAuthentication) {
+export function createAuthenticationApiFactory(
+  extension: IExtensionDescription,
+  extHostAuthentication: ExtHostAuthentication,
+) {
   const authentication: typeof vscode.authentication = {
     getSession(providerId: string, scopes: string[], options?: vscode.AuthenticationGetSessionOptions) {
       return extHostAuthentication.getSession(extension, providerId, scopes, options);
@@ -28,7 +39,12 @@ export function createAuthenticationApiFactory(extension: IExtensionDescription,
     get onDidChangeSessions(): Event<vscode.AuthenticationSessionsChangeEvent> {
       return extHostAuthentication.onDidChangeSessions;
     },
-    registerAuthenticationProvider(id: string, label: string, provider: vscode.AuthenticationProvider, options?: vscode.AuthenticationProviderOptions): vscode.Disposable {
+    registerAuthenticationProvider(
+      id: string,
+      label: string,
+      provider: vscode.AuthenticationProvider,
+      options?: vscode.AuthenticationProviderOptions,
+    ): vscode.Disposable {
       return extHostAuthentication.registerAuthenticationProvider(id, label, provider, options);
     },
     get onDidChangeAuthenticationProviders(): Event<vscode.AuthenticationProvidersChangeEvent> {
@@ -54,7 +70,8 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
   private _providers: vscode.AuthenticationProviderInformation[] = [];
 
   private _onDidChangeAuthenticationProviders = new Emitter<vscode.AuthenticationProvidersChangeEvent>();
-  readonly onDidChangeAuthenticationProviders: Event<vscode.AuthenticationProvidersChangeEvent> = this._onDidChangeAuthenticationProviders.event;
+  readonly onDidChangeAuthenticationProviders: Event<vscode.AuthenticationProvidersChangeEvent> =
+    this._onDidChangeAuthenticationProviders.event;
 
   private _onDidChangeSessions = new Emitter<vscode.AuthenticationSessionsChangeEvent>();
   readonly onDidChangeSessions: Event<vscode.AuthenticationSessionsChangeEvent> = this._onDidChangeSessions.event;
@@ -78,11 +95,18 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     return Object.freeze(this._providers.slice());
   }
 
-  async getSession(requestingExtension: IExtensionDescription, providerId: string, scopes: string[], options: vscode.AuthenticationGetSessionOptions = {}): Promise<vscode.AuthenticationSession | undefined> {
+  async getSession(
+    requestingExtension: IExtensionDescription,
+    providerId: string,
+    scopes: string[],
+    options: vscode.AuthenticationGetSessionOptions = {},
+  ): Promise<vscode.AuthenticationSession | undefined> {
     const extensionId = ExtensionIdentifier.toKey(requestingExtension.identifier);
     const inFlightRequests = this._inFlightRequests.get(extensionId) || [];
     const sortedScopes = scopes.sort().join(' ');
-    let inFlightRequest: GetSessionsRequest | undefined = inFlightRequests.find((request) => request.scopes === sortedScopes);
+    let inFlightRequest: GetSessionsRequest | undefined = inFlightRequests.find(
+      (request) => request.scopes === sortedScopes,
+    );
 
     if (inFlightRequest) {
       return inFlightRequest.result;
@@ -112,7 +136,13 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     }
   }
 
-  private async _getSession(requestingExtension: IExtensionDescription, extensionId: string, providerId: string, scopes: string[], options: vscode.AuthenticationGetSessionOptions = {}): Promise<vscode.AuthenticationSession | undefined> {
+  private async _getSession(
+    requestingExtension: IExtensionDescription,
+    extensionId: string,
+    providerId: string,
+    scopes: string[],
+    options: vscode.AuthenticationGetSessionOptions = {},
+  ): Promise<vscode.AuthenticationSession | undefined> {
     await this._proxy.$ensureProvider(providerId);
     const extensionName = requestingExtension.displayName || requestingExtension.name;
 
@@ -123,7 +153,12 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     return this._proxy.$logout(providerId, sessionId);
   }
 
-  registerAuthenticationProvider(id: string, label: string, provider: vscode.AuthenticationProvider, options?: vscode.AuthenticationProviderOptions): vscode.Disposable {
+  registerAuthenticationProvider(
+    id: string,
+    label: string,
+    provider: vscode.AuthenticationProvider,
+    options?: vscode.AuthenticationProviderOptions,
+  ): vscode.Disposable {
     if (this._authenticationProviders.get(id)) {
       throw new Error(`An authentication provider with id '${id}' is already registered.`);
     }
@@ -212,7 +247,10 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     return Promise.resolve();
   }
 
-  $onDidChangeAuthenticationProviders(added: AuthenticationProviderInformation[], removed: AuthenticationProviderInformation[]) {
+  $onDidChangeAuthenticationProviders(
+    added: AuthenticationProviderInformation[],
+    removed: AuthenticationProviderInformation[],
+  ) {
     added.forEach((provider) => {
       if (!this._providers.some((p) => p.id === provider.id)) {
         this._providers.push(provider);
@@ -229,5 +267,4 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     this._onDidChangeAuthenticationProviders.fire({ added, removed });
     return Promise.resolve();
   }
-
 }

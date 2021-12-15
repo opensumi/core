@@ -15,19 +15,19 @@ import { SampleModule } from '../sample-modules';
 import '../styles.less';
 
 renderApp({
-  modules: [
-    ...CommonBrowserModules,
-    ExpressFileServerModule,
-    SampleModule,
-  ],
+  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule],
   layoutConfig: {
     ...defaultConfig,
-    ...{[SlotLocation.top]: {
-      modules: ['@opensumi/ide-menu-bar', 'toolbar'],
-    }},
-    ...{[SlotLocation.action]: {
-      modules: ['@opensumi/ide-toolbar-action'],
-  }},
+    ...{
+      [SlotLocation.top]: {
+        modules: ['@opensumi/ide-menu-bar', 'toolbar'],
+      },
+    },
+    ...{
+      [SlotLocation.action]: {
+        modules: ['@opensumi/ide-toolbar-action'],
+      },
+    },
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,
@@ -38,7 +38,7 @@ renderApp({
     'editor.quickSuggestionsDelay': 100,
   },
   defaultPanels: {
-    'bottom': '@opensumi/ide-terminal-next',
-    'right': '',
+    bottom: '@opensumi/ide-terminal-next',
+    right: '',
   },
 });

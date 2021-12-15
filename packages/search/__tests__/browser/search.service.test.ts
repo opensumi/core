@@ -27,19 +27,19 @@ const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString
 @Injectable()
 class MockWorkspaceService {
   tryGetRoots() {
-    return [{
-      uri: rootUri,
-    }];
+    return [
+      {
+        uri: rootUri,
+      },
+    ];
   }
 
-  setMostRecentlySearchWord() {
-
-  }
+  setMostRecentlySearchWord() {}
 }
 
 @Injectable()
 class MockMainLayoutService {
-  getTabbarHandler() { }
+  getTabbarHandler() {}
 }
 
 @Injectable()
@@ -56,7 +56,7 @@ class MockSearchContentService {
     return 1;
   }
 
-  cancel() { }
+  cancel() {}
 }
 
 describe('search.service.ts', () => {
@@ -64,58 +64,64 @@ describe('search.service.ts', () => {
   let searchService: IContentSearchClientService;
 
   beforeAll(() => {
-    injector = createBrowserInjector([
-      SearchModule,
-    ]);
+    injector = createBrowserInjector([SearchModule]);
 
-    injector.addProviders({
-      token: ContentSearchClientService,
-      useClass: ContentSearchClientService,
-    }, {
-      token: ILoggerManagerClient,
-      useClass: LoggerManagerClient,
-    }, {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    }, {
-      token: ContentSearchServerPath,
-      useClass: MockSearchContentService,
-    }, {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    }, {
-      token: IMainLayoutService,
-      useClass: MockMainLayoutService,
-    });
+    injector.addProviders(
+      {
+        token: ContentSearchClientService,
+        useClass: ContentSearchClientService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: LoggerManagerClient,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: ContentSearchServerPath,
+        useClass: MockSearchContentService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: IMainLayoutService,
+        useClass: MockMainLayoutService,
+      },
+    );
 
-    injector.overrideProviders({
-      token: SearchPreferences,
-      useValue: {
-        'search.exclude': {
-          '**/bower_components': true,
-        },
-        'search.include': {
-          '*.java': true,
-          '*.ts': true,
+    injector.overrideProviders(
+      {
+        token: SearchPreferences,
+        useValue: {
+          'search.exclude': {
+            '**/bower_components': true,
+          },
+          'search.include': {
+            '*.java': true,
+            '*.ts': true,
+          },
         },
       },
-    }, {
-      token: CorePreferences,
-      useValue: {
-        'files.exclude': {
-          '**/node_modules': true,
+      {
+        token: CorePreferences,
+        useValue: {
+          'files.exclude': {
+            '**/node_modules': true,
+          },
         },
       },
-    });
+    );
 
     searchService = injector.get(ContentSearchClientService);
     // without docModel
     (searchService as any).workbenchEditorService = true;
-    (searchService as any).searchAllFromDocModel = () => {
-      return {
-        result: null,
-      };
-    };
+    (searchService as any).searchAllFromDocModel = () => ({
+      result: null,
+    });
   });
 
   test('可以加载正常service', () => {
@@ -142,10 +148,7 @@ describe('search.service.ts', () => {
     expect(service.contentSearchServer.catchSearchOptions.useRegExp).toBe(false);
     expect(service.contentSearchServer.catchSearchOptions.includeIgnored).toBe(false);
     expect(service.contentSearchServer.catchSearchOptions.include).toEqual([]);
-    expect(service.contentSearchServer.catchSearchOptions.exclude).toEqual([
-      '**/node_modules',
-      '**/bower_components',
-    ]);
+    expect(service.contentSearchServer.catchSearchOptions.exclude).toEqual(['**/node_modules', '**/bower_components']);
   });
 
   test.only('method:search options', () => {
@@ -175,10 +178,7 @@ describe('search.service.ts', () => {
     expect(service.contentSearchServer.catchSearchOptions.matchWholeWord).toBe(true);
     expect(service.contentSearchServer.catchSearchOptions.useRegExp).toBe(true);
     expect(service.contentSearchServer.catchSearchOptions.includeIgnored).toBe(false);
-    expect(service.contentSearchServer.catchSearchOptions.include).toEqual([
-      'includeValue1',
-      'includeValue2',
-    ]);
+    expect(service.contentSearchServer.catchSearchOptions.include).toEqual(['includeValue1', 'includeValue2']);
     expect(service.contentSearchServer.catchSearchOptions.exclude).toEqual([
       'excludeValue',
       '**/node_modules',
@@ -222,5 +222,4 @@ describe('search.service.ts', () => {
     expect(service.searchResults.size).toEqual(1);
     expect(service.searchResults.get(sendResult.fileUri)).toEqual([sendResult]);
   });
-
 });

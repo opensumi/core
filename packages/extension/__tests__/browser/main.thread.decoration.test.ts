@@ -3,7 +3,11 @@ import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
 import { MainThreadDecorations } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.decoration';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  IMainThreadEnv,
+  MainThreadAPIIdentifier,
+  ExtHostAPIIdentifier,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import type vscode from 'vscode';
@@ -41,17 +45,23 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
   const toTearDown = new DisposableCollection();
 
   beforeAll((done) => {
-    injector.addProviders({
-      token: ExtensionHostextWindowAPIImpl,
-      useValue: {
-        enableProposedApi: true,
+    injector.addProviders(
+      {
+        token: ExtensionHostextWindowAPIImpl,
+        useValue: {
+          enableProposedApi: true,
+        },
       },
-    }, {
-      token: IDecorationsService,
-      useClass: FileDecorationsService,
-    });
+      {
+        token: IDecorationsService,
+        useClass: FileDecorationsService,
+      },
+    );
 
-    extHostDecorations = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocolExt));
+    extHostDecorations = rpcProtocolExt.set(
+      ExtHostAPIIdentifier.ExtHostDecorations,
+      new ExtHostDecorations(rpcProtocolExt),
+    );
     mainThreadDecorations = injector.get(MainThreadDecorations, [rpcProtocolMain]);
     rpcProtocolMain.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadDecorations, mainThreadDecorations);
     setTimeout(() => {
@@ -90,7 +100,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
   });
 
   it('ok for registerDecorationProvider', async () => {
-    const extDecoProvider = new class implements vscode.DecorationProvider {
+    const extDecoProvider = new (class implements vscode.DecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
       provideDecoration(uri: Uri, token: CancellationToken) {
@@ -103,7 +113,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
           source: 'sync',
         };
       }
-    };
+    })();
 
     const disposable = extWindowAPI.registerDecorationProvider(extDecoProvider);
     toTearDown.push(disposable);
@@ -120,7 +130,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
   });
 
   it('multi decorations', async () => {
-    const extDecoProvider1 = new class implements vscode.DecorationProvider {
+    const extDecoProvider1 = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
       provideDecoration(uri: Uri, token: CancellationToken) {
         return {
@@ -132,25 +142,25 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
           source: 'sync',
         };
       }
-    };
+    })();
 
-    const extDecoProvider2 = new class implements vscode.DecorationProvider {
+    const extDecoProvider2 = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
       provideDecoration(uri: Uri, token: CancellationToken) {
         return new Promise<vscode.Decoration>((resolve) => {
-          setTimeout(() => {
-            return resolve({
+          setTimeout(() =>
+            resolve({
               letter: 'A',
               title: 'Modified changes',
               color: { id: 'green' },
               priority: 1,
               bubble: false,
               source: 'async',
-            });
-          });
+            }),
+          );
         });
       }
-    };
+    })();
 
     const disposable1 = extWindowAPI.registerDecorationProvider(extDecoProvider1);
     const disposable2 = extWindowAPI.registerDecorationProvider(extDecoProvider2);

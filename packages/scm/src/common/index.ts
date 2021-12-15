@@ -1,4 +1,3 @@
-
 export const scmContainerId = 'scm';
 export const scmProviderViewId = 'scm_provider';
 export const scmResourceViewId = 'scm_view';

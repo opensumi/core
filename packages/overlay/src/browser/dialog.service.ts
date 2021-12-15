@@ -1,32 +1,36 @@
 import { Injectable } from '@opensumi/di';
-import { IDialogService, AbstractMessageService, Icon} from '../common';
+import { IDialogService, AbstractMessageService, Icon } from '../common';
 import { observable, action } from 'mobx';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {
-
   protected type: MessageType | undefined;
 
   protected deferred: Deferred<any>;
 
   @observable
-  protected visible: boolean = false;
+  protected visible = false;
 
   @observable
   protected message: string | React.ReactNode = '';
 
   @observable
-  protected title: string = '';
+  protected title = '';
 
   @observable
-  public closable: boolean = true;
+  public closable = true;
 
   @observable
   protected buttons: string[] = [];
 
   @action
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[], closable: boolean = true): Promise<T | undefined> {
+  open<T = string>(
+    message: string | React.ReactNode,
+    type: MessageType,
+    buttons?: any[],
+    closable = true,
+  ): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
@@ -71,15 +75,15 @@ export class DialogService extends AbstractMessageService implements IDialogServ
           className: 'close-circle',
         };
       case MessageType.Info:
-          return {
-            color: 'var(--notificationsInfoIcon-foreground)',
-            className: 'info-circle',
-          };
+        return {
+          color: 'var(--notificationsInfoIcon-foreground)',
+          className: 'info-circle',
+        };
       case MessageType.Warning:
-          return {
-            color: 'var(--notificationsWarningIcon-foreground)',
-            className: 'question-circle',
-          };
+        return {
+          color: 'var(--notificationsWarningIcon-foreground)',
+          className: 'question-circle',
+        };
       default:
         break;
     }

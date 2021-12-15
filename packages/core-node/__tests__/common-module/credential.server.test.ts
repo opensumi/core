@@ -14,13 +14,16 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
   };
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: AppConfig,
-      useValue: {},
-    }, {
-      token: INativeCredentialService,
-      useClass: CredentialService,
-    });
+    injector.addProviders(
+      {
+        token: AppConfig,
+        useValue: {},
+      },
+      {
+        token: INativeCredentialService,
+        useClass: CredentialService,
+      },
+    );
     credentialsService = injector.get<INativeCredentialService>(INativeCredentialService);
   });
 

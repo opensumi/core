@@ -10,7 +10,6 @@ export interface ApplicationConfig {
  * 下列的属性在页面启动时会注入到`index.html`中的window对象中
  */
 export interface ClientAppConfig extends ApplicationConfig {
-
   /**
    * 默认主题
    */
@@ -26,5 +25,4 @@ export interface ClientAppConfig extends ApplicationConfig {
    * 也默认为 vscode.env.uriScheme 的值
    */
   readonly uriScheme: string;
-
 }

@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -7,9 +7,7 @@ import { KeyboardLayoutContribution } from './_.contribution';
 
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
   layout: { model: 'pc105', layout: 'us', variant: '', options: '', rules: 'evdev', isUSStandard: true },
-  secondaryLayouts: [
-    { model: 'pc105', layout: 'cn', variant: '', options: '', rules: 'evdev' },
-  ],
+  secondaryLayouts: [{ model: 'pc105', layout: 'cn', variant: '', options: '', rules: 'evdev' }],
   mapping: {
     Sleep: [],
     WakeUp: [],
@@ -60,7 +58,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     BracketRight: [']', '}', ']', '}', 0],
     Backslash: ['\\', '|', '\\', '|', 0],
     Semicolon: [';', ':', ';', ':', 0],
-    Quote: ['\'', '"', '\'', '"', 0],
+    Quote: ["'", '"', "'", '"', 0],
     Backquote: ['`', '~', '`', '~', 0],
     Comma: [',', '<', ',', '<', 0],
     Period: ['.', '>', '.', '>', 0],
@@ -185,5 +183,4 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     MailForward: [],
     MailSend: [],
   },
-
 });

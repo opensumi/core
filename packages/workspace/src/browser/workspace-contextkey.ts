@@ -4,7 +4,6 @@ import { WorkbenchState, WorkspaceFolderCount } from '@opensumi/ide-core-browser
 
 @Injectable()
 export class WorkspaceContextKey {
-
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 

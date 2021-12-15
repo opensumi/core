@@ -1,5 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@opensumi/ide-core-node';
+import {
+  IEditorDocumentModelSaveResult,
+  URI,
+  IEditorDocumentChange,
+  BasicTextLines,
+  isEditChange,
+} from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
@@ -17,7 +23,12 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
 
   // 由于此处只处理file协议，为了简洁，不再使用 fileService,
 
-  async $saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async $saveByChange(
+    uri: string,
+    change: IContentChange,
+    encoding?: string | undefined,
+    force = false,
+  ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const fsPath = new URI(uri).codeUri.fsPath;
       if (existsSync(fsPath)) {
@@ -54,24 +65,29 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     }
   }
 
-  async $saveByContent(uri: string, content: ISavingContent, encoding?: string | undefined, force: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async $saveByContent(
+    uri: string,
+    content: ISavingContent,
+    encoding?: string | undefined,
+    force = false,
+  ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {
         if (!force) {
-          const res = await this.fileService.resolveContent(uri, {encoding});
+          const res = await this.fileService.resolveContent(uri, { encoding });
           if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
           }
         }
-        await this.fileService.setContent(stat, content.content, {encoding});
+        await this.fileService.setContent(stat, content.content, { encoding });
         return {
           state: 'success',
         };
       } else {
-        await this.fileService.createFile(uri, {content: content.content, encoding});
+        await this.fileService.createFile(uri, { content: content.content, encoding });
         return {
           state: 'success',
         };
@@ -87,7 +103,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
   async $getMd5(uri: string, encoding?: string | undefined): Promise<string | undefined> {
     try {
       if (await this.fileService.access(uri)) {
-        const res = await this.fileService.resolveContent(uri, {encoding});
+        const res = await this.fileService.resolveContent(uri, { encoding });
         return this.hashCalculateService.calculate(res.content);
       } else {
         return undefined;
@@ -96,7 +112,6 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
       return undefined;
     }
   }
-
 }
 
 /**

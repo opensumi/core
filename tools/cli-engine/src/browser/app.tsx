@@ -3,11 +3,7 @@ import { Injector } from '@opensumi/di';
 
 export async function renderApp(opts: IClientAppOpts) {
   const { hostname } = window.location;
-  const specificIp = [
-    '0.0.0.0',
-    '127.0.0.1',
-    'localhost',
-  ].every((n) => n !== hostname);
+  const specificIp = ['0.0.0.0', '127.0.0.1', 'localhost'].every((n) => n !== hostname);
 
   const guessedConfig = {} as any;
   if (!specificIp) {

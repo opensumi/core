@@ -6,7 +6,6 @@ import { ClientAppContribution } from '../common/common.define';
 
 @Domain(ClientAppContribution)
 export class HashCalculateContribution implements ClientAppContribution {
-
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
@@ -17,5 +16,4 @@ export class HashCalculateContribution implements ClientAppContribution {
       throw new Error(`hashCalculateService init fail: \n ${err.message}`);
     }
   }
-
 }

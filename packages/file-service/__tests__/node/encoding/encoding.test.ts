@@ -1,4 +1,3 @@
-
 import path from 'path';
 import * as fs from 'fs-extra';
 import temp from 'temp';
@@ -25,10 +24,15 @@ describe('encoding', () => {
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 
-    injector = createNodeInjector([FileServiceModule], new Injector([{
-      token: AppConfig,
-      useValue: {},
-    }]));
+    injector = createNodeInjector(
+      [FileServiceModule],
+      new Injector([
+        {
+          token: AppConfig,
+          useValue: {},
+        },
+      ]),
+    );
 
     fileService = injector.get(IFileService);
   });

@@ -5,15 +5,8 @@ import RightOutlined from '@ant-design/icons/RightOutlined';
 import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
 
-const Placements = tuple(
-  'topLeft',
-  'topCenter',
-  'topRight',
-  'bottomLeft',
-  'bottomCenter',
-  'bottomRight',
-);
-type Placement = (typeof Placements)[number];
+const Placements = tuple('topLeft', 'topCenter', 'topRight', 'bottomLeft', 'bottomCenter', 'bottomRight');
+type Placement = typeof Placements[number];
 
 type OverlayFunc = () => React.ReactNode;
 
@@ -110,16 +103,10 @@ export default class Dropdown extends React.Component<DropDownProps, any> {
           });
 
     return fixedModeOverlay;
-  }
+  };
 
   renderDropDown = () => {
-    const {
-      prefixCls: customizePrefixCls,
-      children,
-      trigger,
-      disabled,
-      getPopupContainer,
-    } = this.props;
+    const { prefixCls: customizePrefixCls, children, trigger, disabled, getPopupContainer } = this.props;
 
     const prefixCls = customizePrefixCls || 'kt-dropdown';
     const child = React.Children.only(children) as React.ReactElement<any>;
@@ -148,7 +135,7 @@ export default class Dropdown extends React.Component<DropDownProps, any> {
         {dropdownTrigger}
       </RcDropdown>
     );
-  }
+  };
 
   render() {
     return this.renderDropDown();

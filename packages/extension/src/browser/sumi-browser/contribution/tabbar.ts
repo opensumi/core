@@ -5,11 +5,10 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { IIconService } from '@opensumi/ide-theme';
 
-const SUPPORT_LOCATION = [ 'left', 'right', 'bottom', 'editor', 'toolBar' ];
+const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar'];
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
-
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
@@ -45,10 +44,14 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
     });
 
     return disposer;
-
   }
 
-  registerTabBar(view: ITabBarViewContribution, runtimeParams: IRunTimeParams, kind: 'add' | 'replace' = 'add', position?: 'left' | 'right' | 'bottom'): IDisposable {
+  registerTabBar(
+    view: ITabBarViewContribution,
+    runtimeParams: IRunTimeParams,
+    kind: 'add' | 'replace' = 'add',
+    position?: 'left' | 'right' | 'bottom',
+  ): IDisposable {
     const { extendProtocol, extendService } = runtimeParams.getExtensionExtendService(this.extension, view.id);
     const containerId = `${this.extension.id}:${view.id}`;
     const initialProps = {
@@ -59,12 +62,18 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
       if (kind === 'add') {
         const { component, titleComponent } = view;
         this.layoutService.collectTabbarComponent(
-          [{
-            id: containerId,
-          }],
+          [
+            {
+              id: containerId,
+            },
+          ],
           {
             ...view,
-            iconClass: view.icon ? getIcon(view.icon) : view.iconPath ? this.iconService.fromIcon(this.extension.path, view.iconPath) : '',
+            iconClass: view.icon
+              ? getIcon(view.icon)
+              : view.iconPath
+              ? this.iconService.fromIcon(this.extension.path, view.iconPath)
+              : '',
             containerId,
             component,
             titleComponent,
@@ -76,7 +85,8 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
         );
       } else {
         this.layoutService.replaceViewComponent(view, initialProps);
-        view.titleComponent && this.layoutService.getTabbarHandler(containerId)?.setTitleComponent(view.titleComponent, initialProps);
+        view.titleComponent &&
+          this.layoutService.getTabbarHandler(containerId)?.setTitleComponent(view.titleComponent, initialProps);
       }
     });
 
@@ -89,5 +99,4 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
       },
     };
   }
-
 }

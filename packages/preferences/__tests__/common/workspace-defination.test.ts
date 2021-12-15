@@ -2,12 +2,13 @@ import { URI, FileStat } from '@opensumi/ide-core-browser';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME, WorkspaceData } from '@opensumi/ide-workspace';
 
 describe('WorkspaceData methods', () => {
-
   it('is method should be work', () => {
     const workspaceData = {
-      folders: [{
-        path: 'folder1',
-      }],
+      folders: [
+        {
+          path: 'folder1',
+        },
+      ],
       settings: {},
     };
     expect(WorkspaceData.is(workspaceData)).toBeTruthy();
@@ -26,11 +27,13 @@ describe('WorkspaceData methods', () => {
 
     expect(workspaceData.folders[0].path).toBe(URI.file('home').toString());
     expect(workspaceData.settings!['hello']).toBe('world');
-    const statFolders = [{
-      uri: URI.file('home').toString(),
-      isDirectory: true,
-      lastModification: new Date().getTime(),
-    } as FileStat];
+    const statFolders = [
+      {
+        uri: URI.file('home').toString(),
+        isDirectory: true,
+        lastModification: new Date().getTime(),
+      } as FileStat,
+    ];
     workspaceData = WorkspaceData.buildWorkspaceData(statFolders, settings);
 
     expect(workspaceData.folders[0].path).toBe(URI.file('home').toString());
@@ -86,5 +89,4 @@ describe('WorkspaceData methods', () => {
 
     expect(data.folders[0].path).toBe(URI.file('home').toString());
   });
-
 });

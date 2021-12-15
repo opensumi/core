@@ -20,7 +20,7 @@ export class GitResourceProvider implements IResourceProvider {
       this.labelService.getName(uri),
       this.labelService.getIcon(uri),
     ] as const).then(([stat, name, icon]) => {
-      let fileName = (stat ? name : (name + localize('file.resource-deleted', '(已删除)')));
+      let fileName = stat ? name : name + localize('file.resource-deleted', '(已删除)');
       if (uri.scheme === 'git') {
         const { ref } = fromSCMUri(uri);
         fileName = `git:${name}${ref ? `@${ref}` : ''}`;
@@ -58,5 +58,4 @@ export class GitResourceProvider implements IResourceProvider {
   private getFileStat(uri: string) {
     return true;
   }
-
 }

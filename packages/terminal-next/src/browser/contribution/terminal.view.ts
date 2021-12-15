@@ -42,15 +42,19 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@opensumi/ide-terminal-next', {
-      component: TerminalView,
-      id: 'ide-terminal-next',
-    }, {
-      title: localize('terminal.name'),
-      priority: 1,
-      activateKeyBinding: 'ctrl+`',
-      containerId: TerminalRenderContribution.viewId,
-      titleComponent: TerminalTabs,
-    });
+    registry.register(
+      '@opensumi/ide-terminal-next',
+      {
+        component: TerminalView,
+        id: 'ide-terminal-next',
+      },
+      {
+        title: localize('terminal.name'),
+        priority: 1,
+        activateKeyBinding: 'ctrl+`',
+        containerId: TerminalRenderContribution.viewId,
+        titleComponent: TerminalTabs,
+      },
+    );
   }
 }

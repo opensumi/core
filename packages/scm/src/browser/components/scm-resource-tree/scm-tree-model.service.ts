@@ -1,6 +1,17 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
-import { CommandService, CorePreferences, Deferred, DisposableCollection, Emitter, Event, URI, PreferenceService, EDITOR_COMMANDS, ILogger } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  CorePreferences,
+  Deferred,
+  DisposableCollection,
+  Emitter,
+  Event,
+  URI,
+  PreferenceService,
+  EDITOR_COMMANDS,
+  ILogger,
+} from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -14,7 +25,13 @@ import { ISCMRepository, ISCMResource, scmResourceViewId } from '../../../common
 import { ViewModelContext } from '../../scm-model';
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMTreeModel } from './scm-tree-model';
-import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot, SCMResourceNotRoot } from './scm-tree-node';
+import {
+  SCMResourceFolder,
+  SCMResourceFile,
+  SCMResourceGroup,
+  SCMResourceRoot,
+  SCMResourceNotRoot,
+} from './scm-tree-node';
 import { SCMTreeService } from './scm-tree.service';
 
 import styles from './scm-tree-node.module.less';
@@ -37,7 +54,6 @@ const defaultIconThemeDesc = {
 
 @Injectable()
 export class SCMTreeModelService {
-
   @Autowired(LabelService)
   public readonly labelService: LabelService;
 
@@ -105,46 +121,65 @@ export class SCMTreeModelService {
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = new Emitter();
 
-  private treeModelCache: Map<string, { treeModel: SCMTreeModel, decorations: DecorationsManager, selectedDecoration: Decoration, focusedDecoration: Decoration }> = new Map();
+  private treeModelCache: Map<
+    string,
+    {
+      treeModel: SCMTreeModel;
+      decorations: DecorationsManager;
+      selectedDecoration: Decoration;
+      focusedDecoration: Decoration;
+    }
+  > = new Map();
 
   constructor() {
-    this.showProgress(this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode));
-    this.disposableCollection.push(this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
-      // 展示进度条
-      this.showProgress(this._whenReady = this.initTreeModel(isTreeMode));
-    }));
+    this.showProgress((this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode)));
+    this.disposableCollection.push(
+      this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
+        // 展示进度条
+        this.showProgress((this._whenReady = this.initTreeModel(isTreeMode)));
+      }),
+    );
 
-    this.disposableCollection.push(this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
-      this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
-    }));
+    this.disposableCollection.push(
+      this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
+        this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
+      }),
+    );
 
     const onDidChange = Event.any(
       // 当labelService注册的对应节点图标变化时，通知视图更新
-      Event.map(this.labelService.onDidChange, () => { }),
+      Event.map(this.labelService.onDidChange, () => {}),
       // 根据 scm list 事件刷新树
       this.viewModel.onDidSCMListChange,
       // 变更 list/tree 模式时需要刷新
-      Event.map(this.onDidTreeModelChange, () => { }),
+      Event.map(this.onDidTreeModelChange, () => {}),
       // 当偏好设置改为压缩目录并且此时为 tree 模式
-      Event.map(Event.filter(
-        this.preferenceService.onPreferenceChanged,
-        (e) => e.preferenceName === 'scm.listView.compactFolders' && this.scmTreeService.isTreeMode),
-        () => { },
+      Event.map(
+        Event.filter(
+          this.preferenceService.onPreferenceChanged,
+          (e) => e.preferenceName === 'scm.listView.compactFolders' && this.scmTreeService.isTreeMode,
+        ),
+        () => {},
       ),
     );
 
-    this.disposableCollection.push(onDidChange(() => {
-      this.refresh();
-    }));
+    this.disposableCollection.push(
+      onDidChange(() => {
+        this.refresh();
+      }),
+    );
 
     this.setIconThemeDesc(this.iconService.currentTheme || defaultIconThemeDesc);
-    this.disposableCollection.push(this.iconService.onThemeChange((theme) => {
-      this.setIconThemeDesc(theme);
-    }));
+    this.disposableCollection.push(
+      this.iconService.onThemeChange((theme) => {
+        this.setIconThemeDesc(theme);
+      }),
+    );
   }
 
   @observable.deep
-  public iconThemeDesc: Pick<IIconTheme, 'hasFileIcons' | 'hasFolderIcons' | 'hidesExplorerArrows'> = defaultIconThemeDesc;
+  public iconThemeDesc: Pick<IIconTheme, 'hasFileIcons' | 'hasFolderIcons' | 'hidesExplorerArrows'> =
+    defaultIconThemeDesc;
 
   private setIconThemeDesc(theme: IIconTheme) {
     this.iconThemeDesc = {
@@ -284,7 +319,7 @@ export class SCMTreeModelService {
       this.selectedDecoration.removeTarget(file);
     });
     this._selectedFiles = [];
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeFileDecoration = (
@@ -325,7 +360,7 @@ export class SCMTreeModelService {
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前选中节点
   selectFileDecoration = (target: SCMResourceGroup | SCMResourceFile) => {
@@ -348,11 +383,11 @@ export class SCMTreeModelService {
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
-  }
+  };
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeFileFocusedDecoration = (target: SCMResourceFile | SCMResourceFolder, removePreFocusedDecoration: boolean = false) => {
+  activeFileFocusedDecoration = (target: SCMResourceFile | SCMResourceFolder, removePreFocusedDecoration = false) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -360,12 +395,12 @@ export class SCMTreeModelService {
 
     if (this.focusedFile !== target) {
       if (removePreFocusedDecoration) {
-        if (!!this.focusedFile) {
+        if (this.focusedFile) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedFile);
         }
         this._contextMenuFile = target;
-      } else if (!!this.focusedFile) {
+      } else if (this.focusedFile) {
         this._contextMenuFile = undefined;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
@@ -381,7 +416,7 @@ export class SCMTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 选中当前指定节点，添加装饰器属性
   activeFileSelectedDecoration = (target: SCMResourceGroup | SCMResourceFile) => {
@@ -392,7 +427,7 @@ export class SCMTreeModelService {
     this.selectedDecoration.addTarget(target);
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 判断节点是否选中，进行状态反转
   toggleFileSelectedDecoration = (target: SCMResourceGroup | SCMResourceFile) => {
@@ -415,7 +450,7 @@ export class SCMTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   private async persistFileSelection(preType: SCMTreeTypes) {
     const cacheKey = await this.getCacheKey(preType);
@@ -449,7 +484,7 @@ export class SCMTreeModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 右键菜单焦点态切换
   activeFileActivedDecoration = (target: SCMResourceGroup | SCMResourceFile | SCMResourceFolder) => {
@@ -463,7 +498,7 @@ export class SCMTreeModelService {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuFile = target;
     this.treeModel.dispatchChange();
-  }
+  };
 
   removeFileDecoration() {
     if (!this.decorations) {
@@ -480,9 +515,9 @@ export class SCMTreeModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveFileDecoration();
-  }
+  };
 
-  private _isMutiSelected: boolean = false;
+  private _isMutiSelected = false;
   public handleItemRangeClick = (item: SCMResourceGroup | SCMResourceFile, type: TreeNodeType) => {
     if (!this.focusedFile) {
       this.handleItemClick(item, type);
@@ -496,7 +531,7 @@ export class SCMTreeModelService {
         this.activeFileDecorationByRange(preFocusedFileIndex, targetIndex, targetIndex);
       }
     }
-  }
+  };
 
   handleItemToggleClick = (item: SCMResourceGroup | SCMResourceFile | SCMResourceFolder, type: TreeNodeType) => {
     this._isMutiSelected = true;
@@ -505,15 +540,19 @@ export class SCMTreeModelService {
     }
 
     this.toggleFileSelectedDecoration(item);
-  }
+  };
 
-  public handleContextMenu = (event: React.MouseEvent, item: SCMResourceGroup | SCMResourceFile, type: TreeNodeType) => {
+  public handleContextMenu = (
+    event: React.MouseEvent,
+    item: SCMResourceGroup | SCMResourceFile,
+    type: TreeNodeType,
+  ) => {
     const { x, y } = event.nativeEvent;
     if (!item) {
       return;
     }
 
-    const group = SCMResourceGroup.is(item) ? item.resource : (item.resource).resourceGroup;
+    const group = SCMResourceGroup.is(item) ? item.resource : item.resource.resourceGroup;
     const repoMenus = this.viewModel.menus.getRepositoryMenus(group.provider);
     if (!repoMenus) {
       return;
@@ -554,7 +593,7 @@ export class SCMTreeModelService {
         args: folderArgs,
       });
     }
-  }
+  };
 
   private _getSelectedFiles() {
     return this._selectedFiles.filter((r) => !!r && !SCMResourceGroup.is(r));
@@ -583,7 +622,7 @@ export class SCMTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   public handleItemDoubleClick = (item: SCMResourceGroup | SCMResourceFile, type: TreeNodeType) => {
     if (type === TreeNodeType.TreeNode) {
@@ -596,13 +635,12 @@ export class SCMTreeModelService {
           currentEditorGroup.pin(currentEditor.currentUri);
         }
       }
-
     } else {
       if (this.listOpenMode === 'doubleClick') {
         this.toggleDirectory(item as SCMResourceGroup);
       }
     }
-  }
+  };
 
   private get listOpenMode() {
     return this.corePreferences['workbench.list.openMode'];
@@ -620,8 +658,12 @@ export class SCMTreeModelService {
       if (type === TreeNodeType.TreeNode) {
         const openFileItem = item as SCMResourceFile;
         const commandID = openFileItem.resource.command?.id;
-        if (commandID === EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID || commandID === EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID)  {
-          this.commandService.executeCommand(commandID, ...(openFileItem.resource.command?.arguments || []))
+        if (
+          commandID === EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID ||
+          commandID === EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID
+        ) {
+          this.commandService
+            .executeCommand(commandID, ...(openFileItem.resource.command?.arguments || []))
             .catch((err) => this.logger.error('Failed to execute command:', err, commandID));
         } else {
           this.openFile(openFileItem);
@@ -630,12 +672,12 @@ export class SCMTreeModelService {
         this.toggleDirectory(item as SCMResourceGroup);
       }
     }
-  }
+  };
 
   private openFile = (item: SCMResourceFile) => {
     const scmResource = item.resource as ISCMResource;
     scmResource.open(true /* preverseFocus 应该从 editorOptions 中取 */);
-  }
+  };
 
   public toggleDirectory = (item: SCMResourceGroup | SCMResourceFolder) => {
     if (item.expanded) {
@@ -643,7 +685,7 @@ export class SCMTreeModelService {
     } else {
       this.scmTreeHandle.expandNode(item);
     }
-  }
+  };
 
   /**
    * 刷新指定下的所有子节点
@@ -671,15 +713,17 @@ export class SCMTreeModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
+  };
 }

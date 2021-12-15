@@ -6,11 +6,22 @@ import React from 'react';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { SeparatorMenuItemNode, IComponentMenuItemProps, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu, ComponentMenuItemNode } from '../../../src/menu/next';
+import {
+  SeparatorMenuItemNode,
+  IComponentMenuItemProps,
+  AbstractMenuService,
+  MenuRegistryImpl,
+  MenuServiceImpl,
+  IMenuRegistry,
+  MenuId,
+  isIMenuItem,
+  generateMergedCtxMenu,
+  ComponentMenuItemNode,
+} from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 
 // tslint:disable-next-line:new-parens
-const contextKeyService = new class extends MockContextKeyService {
+const contextKeyService = new (class extends MockContextKeyService {
   match(context: string) {
     if (typeof context === 'string') {
       try {
@@ -21,7 +32,7 @@ const contextKeyService = new class extends MockContextKeyService {
     }
     return true;
   }
-};
+})();
 
 jest.useFakeTimers();
 
@@ -30,7 +41,11 @@ const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
     props.getExecuteArgs();
   };
 
-  return <div style={{color: 'red'}} onClick={handleClick}>hello world</div>;
+  return (
+    <div style={{ color: 'red' }} onClick={handleClick}>
+      hello world
+    </div>
+  );
 };
 
 describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
@@ -43,18 +58,23 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   const testMenuId = 'mock/test/menu';
 
   beforeEach(() => {
-    injector = createBrowserInjector([], new Injector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      }, {
-        token: IMenuRegistry,
-        useClass: MenuRegistryImpl,
-      },  {
-        token: CommandRegistry,
-        useClass: CoreCommandRegistryImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
+        {
+          token: CommandRegistry,
+          useClass: CoreCommandRegistryImpl,
+        },
+      ]),
+    );
 
     injector.addProviders({
       token: AbstractMenuService,
@@ -73,37 +93,47 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('basic property check', () => {
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: 'a',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: 'a',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: {
-        id: 'b',
-        label: 'b1',
-      },
-      toggledWhen: 'true',
-      order: 3,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: {
+          id: 'b',
+          label: 'b1',
+        },
+        toggledWhen: 'true',
+        order: 3,
+      }),
+    );
 
     // 注册一个 visible 为 false 的 menu item
-    commandRegistry.registerCommand({
-      id: 'c',
-      label: 'c1',
-    }, {
-      execute: jest.fn(),
-      isEnabled: () => false,
-      isToggled: () => true,
-      isVisible: () => true,
-    });
+    commandRegistry.registerCommand(
+      {
+        id: 'c',
+        label: 'c1',
+      },
+      {
+        execute: jest.fn(),
+        isEnabled: () => false,
+        isToggled: () => true,
+        isVisible: () => true,
+      },
+    );
 
-    commandRegistry.registerCommand({
-      id: 'd',
-      label: 'd1',
-    }, {
-      execute: jest.fn(),
-      isVisible: () => false,
-    });
+    commandRegistry.registerCommand(
+      {
+        id: 'd',
+        label: 'd1',
+      },
+      {
+        execute: jest.fn(),
+        isVisible: () => false,
+      },
+    );
 
     const menus = menuService.createMenu(MenuId.CommandPalette, contextKeyService);
     const menuNodes = generateMergedCtxMenu({ menus });
@@ -131,30 +161,40 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
       });
     });
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'one',
-      group: '0_hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'one',
+        group: '0_hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'two',
-      group: 'hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'two',
+        group: 'hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'three',
-      group: 'Hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'three',
+        group: 'Hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'four',
-      group: '',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'four',
+        group: '',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'five',
-      group: 'navigation',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'five',
+        group: 'navigation',
+      }),
+    );
 
     const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
 
@@ -179,20 +219,26 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
       });
     });
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'a',
-      group: 'Hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'a',
+        group: 'Hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'b',
-      group: 'Hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'b',
+        group: 'Hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'c',
-      group: 'Hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'c',
+        group: 'Hello',
+      }),
+    );
 
     const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
 
@@ -218,28 +264,36 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
       });
     });
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'a',
-      group: 'Hello',
-      order: 10,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'a',
+        group: 'Hello',
+        order: 10,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'b',
-      group: 'Hello',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'b',
+        group: 'Hello',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'c',
-      group: 'Hello',
-      order: -1,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'c',
+        group: 'Hello',
+        order: -1,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'd',
-      group: 'Hello',
-      order: -1,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'd',
+        group: 'Hello',
+        order: -1,
+      }),
+    );
 
     const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
 
@@ -266,23 +320,29 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
       });
     });
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'a',
-      group: 'navigation',
-      order: 1.3,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'a',
+        group: 'navigation',
+        order: 1.3,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'b',
-      group: 'navigation',
-      order: 1.2,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'b',
+        group: 'navigation',
+        order: 1.2,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: 'c',
-      group: 'navigation',
-      order: 1.1,
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: 'c',
+        group: 'navigation',
+        order: 1.1,
+      }),
+    );
 
     const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
 
@@ -297,23 +357,31 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('MenuId#CommandPalette', () => {
-    commandRegistry.registerCommand({
-      id: 'a',
-      label: 'Explicit',
-    }, {
-      execute: jest.fn(),
-    });
+    commandRegistry.registerCommand(
+      {
+        id: 'a',
+        label: 'Explicit',
+      },
+      {
+        execute: jest.fn(),
+      },
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: 'a',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: 'a',
+      }),
+    );
 
-    commandRegistry.registerCommand({
-      id: 'b',
-      label: 'Explicit',
-    }, {
-      execute: jest.fn(),
-    });
+    commandRegistry.registerCommand(
+      {
+        id: 'b',
+        label: 'Explicit',
+      },
+      {
+        execute: jest.fn(),
+      },
+    );
 
     let foundA = false;
     let foundB = false;
@@ -339,17 +407,22 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
       { id: 'b', label: 'fff', enabledWhen: JSON.stringify(false) },
       { id: 'c', label: 'zzz' },
     ].forEach((desc) => {
-      commandRegistry.registerCommand({
-        id: desc.id,
-        label: desc.label,
-      }, {
-        execute: jest.fn(),
-      });
+      commandRegistry.registerCommand(
+        {
+          id: desc.id,
+          label: desc.label,
+        },
+        {
+          execute: jest.fn(),
+        },
+      );
 
-      disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-        command: desc.id,
-        enabledWhen: desc.enabledWhen,
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem(testMenuId, {
+          command: desc.id,
+          enabledWhen: desc.enabledWhen,
+        }),
+      );
     });
 
     const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
@@ -364,33 +437,43 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('register menu item with label', () => {
-    commandRegistry.registerCommand({
-      id: 'a',
-      label: 'a1',
-    }, {
-      execute: jest.fn(),
-    });
-
-    commandRegistry.registerCommand({
-      id: 'b',
-      label: 'b1',
-    }, {
-      execute: jest.fn(),
-    });
-
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: {
+    commandRegistry.registerCommand(
+      {
         id: 'a',
-        label: 'a2',
+        label: 'a1',
       },
-    }));
+      {
+        execute: jest.fn(),
+      },
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: {
+    commandRegistry.registerCommand(
+      {
         id: 'b',
-        label: 'b2',
+        label: 'b1',
       },
-    }));
+      {
+        execute: jest.fn(),
+      },
+    );
+
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: {
+          id: 'a',
+          label: 'a2',
+        },
+      }),
+    );
+
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: {
+          id: 'b',
+          label: 'b2',
+        },
+      }),
+    );
 
     const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
     expect(menuNodes1[0][1][0].label).toBe('b2');
@@ -400,53 +483,68 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('hack: hide in QuickOpen', () => {
-    commandRegistry.registerCommand({
-      id: 'a',
-    }, {
-      execute: jest.fn(),
-    });
-
-    commandRegistry.registerCommand({
-      id: 'b',
-      label: 'b1',
-    }, {
-      execute: jest.fn(),
-    });
-
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: {
-        id: 'b',
-        label: '',
+    commandRegistry.registerCommand(
+      {
+        id: 'a',
       },
-    }));
+      {
+        execute: jest.fn(),
+      },
+    );
+
+    commandRegistry.registerCommand(
+      {
+        id: 'b',
+        label: 'b1',
+      },
+      {
+        execute: jest.fn(),
+      },
+    );
+
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: {
+          id: 'b',
+          label: '',
+        },
+      }),
+    );
 
     const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
     expect(menuNodes1.length).toBe(0);
   });
 
   it('register menu item without command', () => {
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: {
-        id: 'a',
-        label: 'a1',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: {
+          id: 'a',
+          label: 'a1',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
-      command: {
-        id: 'b',
-        label: 'b1',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+        command: {
+          id: 'b',
+          label: 'b1',
+        },
+      }),
+    );
 
     // 注册一个 visible 为 false 的 menu item
-    commandRegistry.registerCommand({
-      id: 'c',
-      label: 'c1',
-    }, {
-      execute: jest.fn(),
-      isVisible: () => false,
-    });
+    commandRegistry.registerCommand(
+      {
+        id: 'c',
+        label: 'c1',
+      },
+      {
+        execute: jest.fn(),
+        isVisible: () => false,
+      },
+    );
 
     const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
     expect(menuNodes1[0][1].length).toBe(1);
@@ -456,19 +554,25 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('register menubar item', () => {
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId1', {
-      label: 'a1',
-      order: 2,
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId1', {
+        label: 'a1',
+        order: 2,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId2', {
-      label: 'a2',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId2', {
+        label: 'a2',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId3', {
-      label: 'a3',
-      order: -1,
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId3', {
+        label: 'a3',
+        order: -1,
+      }),
+    );
 
     const menubarItems = menuRegistry.getMenubarItems();
 
@@ -479,19 +583,23 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   });
 
   it('unregister menu-id', () => {
-    disposables.add(menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: {
-        id: 'a',
-        label: 'a1',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+        command: {
+          id: 'a',
+          label: 'a1',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: {
-        id: 'b',
-        label: 'b1',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+        command: {
+          id: 'b',
+          label: 'b1',
+        },
+      }),
+    );
 
     const menus = menuService.createMenu(MenuId.ExplorerContext, contextKeyService);
     disposables.add(menus);
@@ -528,19 +636,23 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
 
   describe('component menu item', () => {
     it('works', () => {
-      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
-        component: CustomMenuItem,
-        order: 100,
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+          component: CustomMenuItem,
+          order: 100,
+        }),
+      );
 
-      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
-        command: {
-          id: 'b',
-          label: 'b1',
-        },
-        group: 'navigation',
-        order: 3,
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+          command: {
+            id: 'b',
+            label: 'b1',
+          },
+          group: 'navigation',
+          order: 3,
+        }),
+      );
 
       const menus = menuService.createMenu(MenuId.EditorTitle, contextKeyService);
       const menuNodes = generateMergedCtxMenu({ menus });
@@ -551,18 +663,22 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
     });
 
     it('works for different group', () => {
-      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
-        component: CustomMenuItem,
-        order: 100,
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+          component: CustomMenuItem,
+          order: 100,
+        }),
+      );
 
-      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
-        command: {
-          id: 'b',
-          label: 'b1',
-        },
-        group: 'a3',
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+          command: {
+            id: 'b',
+            label: 'b1',
+          },
+          group: 'a3',
+        }),
+      );
 
       const menus = menuService.createMenu(MenuId.EditorTitle, contextKeyService);
       const menuNodes = generateMergedCtxMenu({ menus });
@@ -575,10 +691,12 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
 
     it('only works for editor/title', () => {
       // 目前只有 editor-title 开启了该选项
-      disposables.add(menuRegistry.registerMenuItem('test-xxx', {
-        component: CustomMenuItem,
-        order: 100,
-      }));
+      disposables.add(
+        menuRegistry.registerMenuItem('test-xxx', {
+          component: CustomMenuItem,
+          order: 100,
+        }),
+      );
 
       const menus1 = menuService.createMenu('test-xxx', contextKeyService);
       const menuNodes1 = generateMergedCtxMenu({ menus: menus1 });

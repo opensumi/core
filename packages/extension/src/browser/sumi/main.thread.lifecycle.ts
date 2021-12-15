@@ -8,9 +8,7 @@ import { IMainThreadLifeCycle } from '../../common/sumi/lifecycle';
 
 @Injectable({ multiple: true })
 export class MainThreadLifeCycle implements IMainThreadLifeCycle {
-
-  constructor(rpcProtocol: IRPCProtocol, private injector: Injector) {
-  }
+  constructor(rpcProtocol: IRPCProtocol, private injector: Injector) {}
 
   $setExtensionCandidate(candidate: ExtensionCandidate[]) {
     if (isElectronRenderer()) {

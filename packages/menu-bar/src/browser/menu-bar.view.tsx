@@ -12,11 +12,13 @@ import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
 import { MenubarStore } from './menu-bar.store';
 import styles from './menu-bar.module.less';
 
-const MenubarItem = observer<IMenubarItem & {
-  focusMode: boolean;
-  afterMenuClick: () => void;
-  afterMenubarClick: () => void;
-}>(({ id, label, focusMode, afterMenubarClick, afterMenuClick }) => {
+const MenubarItem = observer<
+  IMenubarItem & {
+    focusMode: boolean;
+    afterMenuClick: () => void;
+    afterMenubarClick: () => void;
+  }
+>(({ id, label, focusMode, afterMenubarClick, afterMenuClick }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
@@ -58,11 +60,15 @@ const MenubarItem = observer<IMenubarItem & {
       visible={menuOpen}
       onVisibleChange={triggerMenuVisibleChange}
       overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} />}
-      trigger={focusMode ? ['click', 'hover'] : ['click']}>
+      trigger={focusMode ? ['click', 'hover'] : ['click']}
+    >
       <div
         className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
         onMouseOver={handleMouseOver}
-        onClick={handleMenubarItemClick}>{label}</div>
+        onClick={handleMenubarItemClick}
+      >
+        {label}
+      </div>
     </Dropdown>
   );
 });
@@ -84,22 +90,18 @@ export const MenuBar = observer(() => {
   const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
   return (
-    <ClickOutside
-      className={styles.menubars}
-      mouseEvents={['click', 'contextmenu']}
-      onOutsideClick={handleMouseLeave}>
-      { LogoIcon ? <LogoIcon /> : <div className={styles.logoIconEmpty}></div>}
-      {
-        menubarStore.menubarItems.map(({ id, label }) => (
-          <MenubarItem
-            key={id}
-            id={id}
-            label={label}
-            focusMode={focusMode}
-            afterMenuClick={() => setFocusMode(false)}
-            afterMenubarClick={() => setFocusMode((r) => !r)} />
-        ))
-      }
+    <ClickOutside className={styles.menubars} mouseEvents={['click', 'contextmenu']} onOutsideClick={handleMouseLeave}>
+      {LogoIcon ? <LogoIcon /> : <div className={styles.logoIconEmpty}></div>}
+      {menubarStore.menubarItems.map(({ id, label }) => (
+        <MenubarItem
+          key={id}
+          id={id}
+          label={label}
+          focusMode={focusMode}
+          afterMenuClick={() => setFocusMode(false)}
+          afterMenubarClick={() => setFocusMode((r) => !r)}
+        />
+      ))}
     </ClickOutside>
   );
 });
@@ -108,12 +110,12 @@ MenuBar.displayName = 'MenuBar';
 
 type MenuBarMixToolbarActionProps = Pick<React.HTMLProps<HTMLElement>, 'className'>;
 
-export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => {
-  return <div className={clx(styles.menubarWrapper, props.className)}>
+export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => (
+  <div className={clx(styles.menubarWrapper, props.className)}>
     <MenuBar />
     <SlotRenderer slot='action' flex={1} overflow={'initial'} />
-  </div>;
-};
+  </div>
+);
 
 MenuBarMixToolbarAction.displayName = 'MenuBarMixToolbarAction';
 

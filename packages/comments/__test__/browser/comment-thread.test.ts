@@ -15,13 +15,19 @@ describe('comment service test', () => {
   let commentsService: ICommentsService;
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;
-    injector = createBrowserInjector([ CommentsModule ], new Injector([{
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IIconService,
-      useClass: IconService,
-    }]));
+    injector = createBrowserInjector(
+      [CommentsModule],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IIconService,
+          useClass: IconService,
+        },
+      ]),
+    );
     commentsService = injector.get<ICommentsService>(ICommentsService);
   });
 
@@ -36,13 +42,15 @@ describe('comment service test', () => {
   it('basic props', () => {
     const uri = URI.file('/test');
     const thread = commentsService.createThread(uri, positionToRange(1), {
-      comments: [{
-        mode: CommentMode.Editor,
-        author: {
-          name: '蛋总',
+      comments: [
+        {
+          mode: CommentMode.Editor,
+          author: {
+            name: '蛋总',
+          },
+          body: '评论内容1',
         },
-        body: '评论内容1',
-      }],
+      ],
     });
     expect(thread.uri.isEqual(uri));
     expect(thread.range.startLineNumber).toBe(1);
@@ -51,16 +59,18 @@ describe('comment service test', () => {
   it('thread and comment data', () => {
     const uri = URI.file('/test');
     const thread = commentsService.createThread(uri, positionToRange(1), {
-      comments: [{
-        mode: CommentMode.Editor,
-        author: {
-          name: '蛋总',
+      comments: [
+        {
+          mode: CommentMode.Editor,
+          author: {
+            name: '蛋总',
+          },
+          body: '评论内容1',
+          data: {
+            b: 1,
+          },
         },
-        body: '评论内容1',
-        data: {
-          b: 1,
-        },
-      }],
+      ],
       data: {
         a: 1,
       },
@@ -72,19 +82,22 @@ describe('comment service test', () => {
   it('thread add comment', () => {
     const uri = URI.file('/test');
     const thread = commentsService.createThread(uri, positionToRange(1));
-    thread.addComment({
-      mode: CommentMode.Preview,
-      author: {
-        name: '蛋总',
+    thread.addComment(
+      {
+        mode: CommentMode.Preview,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容1',
       },
-      body: '评论内容1',
-    }, {
-      mode: CommentMode.Editor,
-      author: {
-        name: '蛋总',
+      {
+        mode: CommentMode.Editor,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容2',
       },
-      body: '评论内容2',
-    });
+    );
     expect(thread.comments.length).toBe(2);
     expect(thread.comments[1].mode).toBe(CommentMode.Editor);
   });
@@ -92,19 +105,22 @@ describe('comment service test', () => {
   it('thread dispose', () => {
     const uri = URI.file('/test');
     const thread = commentsService.createThread(uri, positionToRange(1));
-    thread.addComment({
-      mode: CommentMode.Preview,
-      author: {
-        name: '蛋总',
+    thread.addComment(
+      {
+        mode: CommentMode.Preview,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容1',
       },
-      body: '评论内容1',
-    }, {
-      mode: CommentMode.Editor,
-      author: {
-        name: '蛋总',
+      {
+        mode: CommentMode.Editor,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容2',
       },
-      body: '评论内容2',
-    });
+    );
     thread.dispose();
     expect(thread.comments.length).toBe(0);
   });

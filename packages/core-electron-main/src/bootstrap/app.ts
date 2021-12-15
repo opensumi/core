@@ -1,9 +1,25 @@
-import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs, ElectronURLHandlerRegistry } from './types';
+import {
+  ElectronAppConfig,
+  ElectronMainApiRegistry,
+  ElectronMainContribution,
+  IElectronMainApp,
+  IElectronMainApiProvider,
+  IParsedArgs,
+  ElectronURLHandlerRegistry,
+} from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@opensumi/di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, ExtensionCandidate, IEventBus, EventBusImpl, asExtensionCandidate } from '@opensumi/ide-core-common';
+import {
+  createContributionProvider,
+  ContributionProvider,
+  URI,
+  ExtensionCandidate,
+  IEventBus,
+  EventBusImpl,
+  asExtensionCandidate,
+} from '@opensumi/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
@@ -18,7 +34,6 @@ export interface IWindowOpenOptions {
 }
 
 export class ElectronMainApp {
-
   private codeWindows: Map<number, CodeWindow> = new Map();
 
   private injector: Injector;
@@ -27,7 +42,11 @@ export class ElectronMainApp {
 
   private parsedArgs: IParsedArgs = {
     extensionDir: argv.extensionDir as string | undefined,
-    extensionCandidate: argv.extensionCandidate ? ((Array.isArray(argv.extensionCandidate) ? argv.extensionCandidate : [argv.extensionCandidate])) : [],
+    extensionCandidate: argv.extensionCandidate
+      ? Array.isArray(argv.extensionCandidate)
+        ? argv.extensionCandidate
+        : [argv.extensionCandidate]
+      : [],
     extensionDevelopmentPath: argv.extensionDevelopmentPath as string | undefined,
   };
 
@@ -41,29 +60,37 @@ export class ElectronMainApp {
 
     if (this.parsedArgs.extensionDevelopmentPath) {
       config.extensionCandidate = config.extensionCandidate.concat(
-        Array.isArray(this.parsedArgs.extensionDevelopmentPath) ?
-          this.parsedArgs.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
-          [asExtensionCandidate(this.parsedArgs.extensionDevelopmentPath, true)]);
+        Array.isArray(this.parsedArgs.extensionDevelopmentPath)
+          ? this.parsedArgs.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true))
+          : [asExtensionCandidate(this.parsedArgs.extensionDevelopmentPath, true)],
+      );
     }
 
     config.extensionDevelopmentHost = !!this.parsedArgs.extensionDevelopmentPath;
 
-    this.injector.addProviders({
-      token: IEventBus,
-      useClass: EventBusImpl,
-    }, {
-      token: ElectronAppConfig,
-      useValue: config,
-    }, {
-      token: IElectronMainApp,
-      useValue: this,
-    }, {
-      token: ElectronURLHandlerRegistry,
-      useClass: ElectronURLHandlerRegistryImpl,
-    }, {
-      token: ElectronMainApiRegistry,
-      useClass: ElectronMainApiRegistryImpl,
-    }, ...serviceProviders);
+    this.injector.addProviders(
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+      {
+        token: ElectronAppConfig,
+        useValue: config,
+      },
+      {
+        token: IElectronMainApp,
+        useValue: this,
+      },
+      {
+        token: ElectronURLHandlerRegistry,
+        useClass: ElectronURLHandlerRegistryImpl,
+      },
+      {
+        token: ElectronMainApiRegistry,
+        useClass: ElectronMainApiRegistryImpl,
+      },
+      ...serviceProviders,
+    );
     this.injectLifecycleApi();
     createContributionProvider(this.injector, ElectronMainContribution);
     this.createElectronMainModules(this.config.modules);
@@ -110,7 +137,12 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
+  loadWorkspace(
+    workspace?: string,
+    metadata: any = {},
+    options: BrowserWindowConstructorOptions & ICodeWindowOptions = {},
+    openOptions?: IWindowOpenOptions,
+  ): CodeWindow {
     const formattedWorkspace = this.formatWorkspace(workspace);
     if (openOptions && openOptions.windowId) {
       const lastWindow = this.getCodeWindowByElectronBrowserWindowId(openOptions.windowId);
@@ -140,7 +172,9 @@ export class ElectronMainApp {
   }
 
   get contributions() {
-    return (this.injector.get(ElectronMainContribution) as ContributionProvider<ElectronMainContribution>).getContributions();
+    return (
+      this.injector.get(ElectronMainContribution) as ContributionProvider<ElectronMainContribution>
+    ).getContributions();
   }
 
   getCodeWindows() {
@@ -158,14 +192,13 @@ export class ElectronMainApp {
   getCodeWindowByWorkspace(workspace: string) {
     const normalizeUri = URI.isUriString(workspace) ? URI.parse(workspace) : URI.file(workspace);
     for (const codeWindow of this.getCodeWindows()) {
-      if (codeWindow.workspace && (codeWindow.workspace.toString() === normalizeUri.toString())) {
+      if (codeWindow.workspace && codeWindow.workspace.toString() === normalizeUri.toString()) {
         return codeWindow;
       }
     }
   }
 
   private createElectronMainModules(Constructors: Array<ConstructorOf<ElectronMainModule>> = []) {
-
     for (const Constructor of Constructors) {
       this.modules.push(this.injector.get(Constructor));
     }
@@ -184,7 +217,6 @@ export class ElectronMainApp {
         }
       }
     }
-
   }
 
   private injectLifecycleApi() {
@@ -213,12 +245,9 @@ export class ElectronMainApp {
 }
 
 class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
-
   eventEmitter: undefined;
 
-  constructor(private app: ElectronMainApp) {
-
-  }
+  constructor(private app: ElectronMainApp) {}
 
   openWorkspace(workspace: string, openOptions: IWindowOpenOptions) {
     if (workspace) {

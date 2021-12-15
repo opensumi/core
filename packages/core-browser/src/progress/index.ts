@@ -1,4 +1,12 @@
-import { IDisposable, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgress, IProgressStep, IProgressCompositeOptions } from '@opensumi/ide-core-common';
+import {
+  IDisposable,
+  IProgressOptions,
+  IProgressNotificationOptions,
+  IProgressWindowOptions,
+  IProgress,
+  IProgressStep,
+  IProgressCompositeOptions,
+} from '@opensumi/ide-core-common';
 
 export interface IProgressModel {
   show: boolean;
@@ -24,16 +32,16 @@ export interface IProgressService {
 export interface IProgressIndicator {
   progressModel: IProgressModel;
   /**
-	 * Show progress customized with the provided flags.
-	 */
+   * Show progress customized with the provided flags.
+   */
   show(infinite: true, delay?: number): IProgressRunner;
   // tslint:disable-next-line: unified-signatures
   show(total: number, delay?: number): IProgressRunner;
 
   /**
-	 * Indicate progress for the duration of the provided promise. Progress will stop in
-	 * any case of promise completion, error or cancellation.
-	 */
+   * Indicate progress for the duration of the provided promise. Progress will stop in
+   * any case of promise completion, error or cancellation.
+   */
   showWhile(promise: Promise<unknown>, delay?: number): Promise<void>;
 }
 
@@ -44,7 +52,7 @@ export interface IProgressRunner {
 }
 
 export const emptyProgressRunner: IProgressRunner = Object.freeze({
-  total() { },
-  worked() { },
-  done() { },
+  total() {},
+  worked() {},
+  done() {},
 });

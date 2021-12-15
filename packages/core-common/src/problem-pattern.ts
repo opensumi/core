@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -84,42 +84,42 @@ export namespace FileLocationKind {
 
 export enum FileLocationKind {
   Default,
-	Relative,
-	Absolute,
-	AutoDetect
+  Relative,
+  Absolute,
+  AutoDetect,
 }
 
 export interface ProblemPattern {
   regexp?: RegExp | string;
 
-	kind?: ProblemLocationKind;
+  kind?: ProblemLocationKind;
 
-	file?: number;
+  file?: number;
 
-	message?: number;
+  message?: number;
 
-	location?: number;
+  location?: number;
 
-	line?: number;
+  line?: number;
 
-	character?: number;
+  character?: number;
 
-	endLine?: number;
+  endLine?: number;
 
-	endCharacter?: number;
+  endCharacter?: number;
 
-	code?: number;
+  code?: number;
 
-	severity?: number;
+  severity?: number;
 
-	loop?: boolean;
+  loop?: boolean;
 }
 
 export interface CheckedProblemPattern extends ProblemPattern {
   /**
-  * The regular expression to find a problem in the console output of an
-  * executed task.
-  */
+   * The regular expression to find a problem in the console output of an
+   * executed task.
+   */
   regexp: string;
 }
 
@@ -137,7 +137,7 @@ export interface NamedProblemPattern extends ProblemPattern {
 
 export namespace CheckedProblemPattern {
   export function is(value: any): value is CheckedProblemPattern {
-    let candidate: ProblemPattern = value as ProblemPattern;
+    const candidate: ProblemPattern = value as ProblemPattern;
     return candidate && isString(candidate.regexp);
   }
 }
@@ -165,7 +165,7 @@ export namespace MultiLineCheckedProblemPattern {
 
 export namespace NamedProblemPattern {
   export function is(value: any): value is NamedProblemPattern {
-    let candidate: NamedProblemPattern = value as NamedProblemPattern;
+    const candidate: NamedProblemPattern = value as NamedProblemPattern;
     return candidate && isString(candidate.name);
   }
 }
@@ -189,18 +189,22 @@ export interface NamedMultiLineCheckedProblemPattern {
 
 export namespace NamedMultiLineCheckedProblemPattern {
   export function is(value: any): value is NamedMultiLineCheckedProblemPattern {
-    let candidate = value as NamedMultiLineCheckedProblemPattern;
-    return candidate && isString(candidate.name) && isArray(candidate.patterns) && MultiLineCheckedProblemPattern.is(candidate.patterns);
+    const candidate = value as NamedMultiLineCheckedProblemPattern;
+    return (
+      candidate &&
+      isString(candidate.name) &&
+      isArray(candidate.patterns) &&
+      MultiLineCheckedProblemPattern.is(candidate.patterns)
+    );
   }
 }
-
 
 export type MultiLineProblemPattern = ProblemPattern[];
 
 export interface NamedMultiLineProblemPattern {
-	name: string;
-	label: string;
-	patterns: MultiLineProblemPattern;
+  name: string;
+  label: string;
+  patterns: MultiLineProblemPattern;
 }
 
 export interface ProblemPatternContribution {
@@ -237,7 +241,7 @@ export namespace ProblemPattern {
       endCharacter: value.endColumn || value.endCharacter,
       code: value.code,
       severity: value.severity,
-      loop: value.loop
+      loop: value.loop,
     };
   }
 }
@@ -408,7 +412,9 @@ export class ProblemPatternRegistryImpl implements IProblemPatternRegistry {
   // copied from https://github.com/Microsoft/vscode/blob/1.33.1/src/vs/workbench/contrib/tasks/common/problemMatcher.ts
   private fillDefaults(): void {
     this.add('msCompile', {
-      regexp: /^(?:\s+\d+\>)?([^\s].*)\((\d+|\d+,\d+|\d+,\d+,\d+,\d+)\)\s*:\s+(error|warning|info)\s+(\w{1,2}\d+)\s*:\s*(.*)$/.source,
+      regexp:
+        /^(?:\s+\d+\>)?([^\s].*)\((\d+|\d+,\d+|\d+,\d+,\d+,\d+)\)\s*:\s+(error|warning|info)\s+(\w{1,2}\d+)\s*:\s*(.*)$/
+          .source,
       kind: ProblemLocationKind.Location,
       file: 1,
       location: 2,

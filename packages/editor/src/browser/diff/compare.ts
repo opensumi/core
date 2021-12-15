@@ -1,12 +1,20 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ICompareService, CompareResult } from '../types';
-import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS, CommandContribution, CommandRegistry } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Domain,
+  localize,
+  Deferred,
+  CommandService,
+  EDITOR_COMMANDS,
+  CommandContribution,
+  CommandRegistry,
+} from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class CompareService implements ICompareService {
-
   public readonly comparing = new Map<string, Deferred<CompareResult>>();
 
   @Autowired(CommandService)
@@ -37,7 +45,6 @@ export class CompareService implements ICompareService {
 
 @Domain(MenuContribution, CommandContribution)
 export class CompareEditorContribution implements MenuContribution, CommandContribution {
-
   @Autowired(ICompareService)
   compareService: CompareService;
 
@@ -67,20 +74,25 @@ export class CompareEditorContribution implements MenuContribution, CommandContr
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand({id: 'editor.diff.accept'}, {
-      execute: (uri: URI) => {
-        if (uri && this.compareService.comparing.has(uri.toString())) {
-          this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.accept);
-        }
+    commands.registerCommand(
+      { id: 'editor.diff.accept' },
+      {
+        execute: (uri: URI) => {
+          if (uri && this.compareService.comparing.has(uri.toString())) {
+            this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.accept);
+          }
+        },
       },
-    });
-    commands.registerCommand({id: 'editor.diff.revert'}, {
-      execute: (uri: URI) => {
-        if (uri && this.compareService.comparing.has(uri.toString())) {
-          this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.revert);
-        }
+    );
+    commands.registerCommand(
+      { id: 'editor.diff.revert' },
+      {
+        execute: (uri: URI) => {
+          if (uri && this.compareService.comparing.has(uri.toString())) {
+            this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.revert);
+          }
+        },
       },
-    });
+    );
   }
-
 }

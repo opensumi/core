@@ -5,14 +5,14 @@
 import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@opensumi/di';
 
 interface FrontService {
-  token: Token,
-  servicePath: string,
+  token: Token;
+  servicePath: string;
 }
 
 export interface BackService {
-  token?: Token,
-  clientToken?: Token,
-  servicePath: string,
+  token?: Token;
+  clientToken?: Token;
+  servicePath: string;
 }
 
 export class BasicModule {
@@ -24,9 +24,8 @@ export class BasicModule {
   contributionProvider: Domain | Domain[];
 }
 
-
 export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<BasicModule>[]) {
   return (target) => {
     Reflect.defineMetadata('dependencies', dependencies, target);
-  }
+  };
 }

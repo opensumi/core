@@ -1,8 +1,18 @@
-import { PreferenceProviderProvider, PreferenceScope, PreferenceService, PreferenceSchemaProvider, URI } from '@opensumi/ide-core-browser';
+import {
+  PreferenceProviderProvider,
+  PreferenceScope,
+  PreferenceService,
+  PreferenceSchemaProvider,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
+import {
+  PreferenceSettingsService,
+  defaultSettingGroup,
+  defaultSettingSections,
+} from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
 import { PREFERENCE_COMMANDS } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
 
@@ -45,26 +55,32 @@ describe('PreferenceSettingService should be work', () => {
       resource: Promise.resolve(mockResource),
     };
 
-    injector.overrideProviders({
-      token: PreferenceService,
-      useValue: mockPreferenceService,
-    }, {
-      token: PreferenceSchemaProvider,
-      useValue: mockPreferenceSchemaProvider,
-    }, {
-      token: PreferenceProviderProvider,
-      useValue: (scope: PreferenceScope) => {
-        if (scope === PreferenceScope.User) {
-          return mockUserPreferenceProvider;
-        }
+    injector.overrideProviders(
+      {
+        token: PreferenceService,
+        useValue: mockPreferenceService,
       },
-    }, {
-      token: IFileServiceClient,
-      useValue: mockFileServiceClient,
-    }, {
-      token: PreferenceSettingsService,
-      useClass: PreferenceSettingsService,
-    });
+      {
+        token: PreferenceSchemaProvider,
+        useValue: mockPreferenceSchemaProvider,
+      },
+      {
+        token: PreferenceProviderProvider,
+        useValue: (scope: PreferenceScope) => {
+          if (scope === PreferenceScope.User) {
+            return mockUserPreferenceProvider;
+          }
+        },
+      },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileServiceClient,
+      },
+      {
+        token: PreferenceSettingsService,
+        useClass: PreferenceSettingsService,
+      },
+    );
 
     preferenceSettingsService = injector.get(PreferenceSettingsService);
 
@@ -76,7 +92,6 @@ describe('PreferenceSettingService should be work', () => {
   });
 
   describe('01 #Init', () => {
-
     it('should have enough API', async () => {
       expect(typeof preferenceSettingsService.currentGroup).toBe('string');
       expect(typeof preferenceSettingsService.currentSearch).toBe('string');
@@ -129,7 +144,7 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('handleListHandler', () => {
-      const handler = { open: () => {}};
+      const handler = { open: () => {} };
       preferenceSettingsService.handleListHandler(handler);
       expect(preferenceSettingsService.listHandler).toEqual(handler);
     });

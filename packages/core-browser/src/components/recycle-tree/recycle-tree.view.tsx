@@ -14,7 +14,7 @@ export interface RecycleTreeProps extends TreeProps {
    * @memberof RecycleTreeProps
    */
   scrollContentStyle?: {
-    [key: string]: string | number | boolean | undefined,
+    [key: string]: string | number | boolean | undefined;
   };
   /**
    * 可视区域样式 (必须包含宽高用于初始化视图)
@@ -29,7 +29,7 @@ export interface RecycleTreeProps extends TreeProps {
   scrollContainerStyle: {
     width: number | string;
     height: number | string;
-    [key: string]: string | number | boolean | undefined,
+    [key: string]: string | number | boolean | undefined;
   };
   /**
    * 缩进大小
@@ -79,50 +79,48 @@ export interface RecycleTreeProps extends TreeProps {
 /**
  * @deprecated
  */
-export const DeprecatedRecycleTree = (
-  {
-    nodes,
-    leftPadding,
-    defaultLeftPadding,
-    multiSelectable,
-    scrollContainerStyle,
-    scrollContentStyle,
-    onContextMenu,
-    onDrag,
-    onDragStart,
-    onDragEnter,
-    onDragOver,
-    onDragLeave,
-    onDragEnd,
-    onDrop,
-    onChange,
-    draggable,
-    foldable,
-    editable,
-    searchable,
-    search,
-    replace,
-    onSelect,
-    onBlur,
-    onFocus,
-    onReveal,
-    filter,
-    onTwistieClick,
-    scrollTop,
-    prerenderNumber = 10,
-    containerHeight,
-    itemLineHeight = 22,
-    actions,
-    commandActuator,
-    fileDecorationProvider,
-    themeProvider,
-    notifyFileDecorationsChange,
-    notifyThemeChange,
-    validate,
-    alwaysShowActions,
-  }: RecycleTreeProps,
-) => {
-  const noop = () => { };
+export const DeprecatedRecycleTree = ({
+  nodes,
+  leftPadding,
+  defaultLeftPadding,
+  multiSelectable,
+  scrollContainerStyle,
+  scrollContentStyle,
+  onContextMenu,
+  onDrag,
+  onDragStart,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDragEnd,
+  onDrop,
+  onChange,
+  draggable,
+  foldable,
+  editable,
+  searchable,
+  search,
+  replace,
+  onSelect,
+  onBlur,
+  onFocus,
+  onReveal,
+  filter,
+  onTwistieClick,
+  scrollTop,
+  prerenderNumber = 10,
+  containerHeight,
+  itemLineHeight = 22,
+  actions,
+  commandActuator,
+  fileDecorationProvider,
+  themeProvider,
+  notifyFileDecorationsChange,
+  notifyThemeChange,
+  validate,
+  alwaysShowActions,
+}: RecycleTreeProps) => {
+  const noop = () => {};
   const contentNumber = Math.ceil(containerHeight / itemLineHeight);
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   const [renderedStart, setRenderedStart] = React.useState(0);
@@ -156,7 +154,7 @@ export const DeprecatedRecycleTree = (
     return false;
   };
 
-  const isEqual  = (node1: TreeNode, node2: TreeNode) => {
+  const isEqual = (node1: TreeNode, node2: TreeNode) => {
     if (node1.id === node2.id) {
       return true;
     }
@@ -175,36 +173,41 @@ export const DeprecatedRecycleTree = (
     if (filter) {
       const fuzzyLists = fuzzy.filter(filter, nodes, fuzzyOptions);
       const tempNode = nodes.find((node: TreeNode) => node.name === TEMP_FILE_NAME);
-      renderedFileItems = nodes.map((node: TreeNode) => {
-        for (const item of fuzzyLists) {
-          if (isEqual(node, (item as any).original)) {
-            // 匹配，存在高亮
-            return {
-              ...node,
-              name: () => {
-                return <div style={{
-                  flex: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
-              },
-            };
-          } else if (isEqualOrParent(node, (item as any).original) || (tempNode && isEqualOrParent(node, tempNode))) {
-            // 子节点存在匹配，不高亮但需展示
-            return  node;
-          } else if (node.name === TEMP_FILE_NAME) {
-            // 如果为新建节点的节点，直接返回展示
-            return node;
+      renderedFileItems = nodes
+        .map((node: TreeNode) => {
+          for (const item of fuzzyLists) {
+            if (isEqual(node, (item as any).original)) {
+              // 匹配，存在高亮
+              return {
+                ...node,
+                name: () => (
+                  <div
+                    style={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    dangerouslySetInnerHTML={{ __html: item.string || '' }}
+                  ></div>
+                ),
+              };
+            } else if (isEqualOrParent(node, (item as any).original) || (tempNode && isEqualOrParent(node, tempNode))) {
+              // 子节点存在匹配，不高亮但需展示
+              return node;
+            } else if (node.name === TEMP_FILE_NAME) {
+              // 如果为新建节点的节点，直接返回展示
+              return node;
+            }
           }
-        }
-      }).filter((node: TreeNode) => !!node);
+        })
+        .filter((node: TreeNode) => !!node);
     } else {
       renderedFileItems = nodes;
     }
-    renderedFileItems = renderedFileItems!.filter((item: TreeNode, index: number) => {
-      return renderedStart <= index && index <= renderedEnd;
-    });
+    renderedFileItems = renderedFileItems!.filter(
+      (item: TreeNode, index: number) => renderedStart <= index && index <= renderedEnd,
+    );
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
       let highLightRanges = item.highLightRanges;
       if (!highLightRanges && searchable && search) {
@@ -216,7 +219,7 @@ export const DeprecatedRecycleTree = (
         let end;
         if (typeof item.name === 'string') {
           let step = 0;
-          start =  item.name.indexOf(search);
+          start = item.name.indexOf(search);
           while (start >= 0) {
             end = start + search.length;
             highLightRanges.name!.push({
@@ -224,12 +227,12 @@ export const DeprecatedRecycleTree = (
               end: end + step,
             });
             step += end;
-            start =  item.name.indexOf(search.slice(end));
+            start = item.name.indexOf(search.slice(end));
           }
         }
         if (typeof item.description === 'string') {
           let step = 0;
-          start =  item.description.indexOf(search);
+          start = item.description.indexOf(search);
           while (start >= 0) {
             end = start + search.length;
             highLightRanges.description!.push({
@@ -237,7 +240,7 @@ export const DeprecatedRecycleTree = (
               end: end + step,
             });
             step += end;
-            start =  item.description.indexOf(search.slice(end));
+            start = item.description.indexOf(search.slice(end));
           }
         }
       }
@@ -277,7 +280,7 @@ export const DeprecatedRecycleTree = (
 
   const scrollDownHandler = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
-    if (positionIndex > (prerenderNumber - upPrerenderNumber)) {
+    if (positionIndex > prerenderNumber - upPrerenderNumber) {
       const start = positionIndex - (prerenderNumber - upPrerenderNumber);
       // 当开始位置超过节点长度时，重置其实位置
       setRenderedStart(start > nodes.length ? 0 : start);
@@ -302,58 +305,62 @@ export const DeprecatedRecycleTree = (
     minScrollbarLength: 20,
   };
 
-  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
-    return ExpandableTreeNode.is(node);
-  });
+  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => ExpandableTreeNode.is(node));
 
-  return <React.Fragment>
-    <PerfectScrollbar
-      style={scrollContainerStyle}
-      onScrollUp={scrollUpThrottledHandler}
-      onScrollDown={scrollDownThrottledHandler}
-      containerRef={(ref) => {
-        setScrollRef(ref);
-      }}
-      options = {scrollerBarOptions}
-    >
-      <TreeContainer
-        style={contentStyle}
-        multiSelectable={multiSelectable}
-        itemLineHeight={itemLineHeight}
-        nodes={renderNodes}
-        actions={actions}
-        commandActuator={commandActuator}
-        leftPadding={leftPadding}
-        defaultLeftPadding={defaultLeftPadding}
-        onContextMenu={onContextMenu || noop}
-        onDrag={onDrag || noop}
-        onBlur={onBlur || noop}
-        onFocus={onFocus || noop}
-        onDragStart={onDragStart || noop}
-        onDragEnter={onDragEnter || noop}
-        onDragEnd={onDragEnd || noop}
-        onDragOver={onDragOver || noop}
-        onDragLeave={onDragLeave || noop}
-        onChange={onChange || noop}
-        onDrop={onDrop || noop}
-        onSelect={onSelect || noop}
-        onReveal={onReveal || noop}
-        onTwistieClick={onTwistieClick}
-        draggable={draggable}
-        foldable={foldable}
-        replace={replace}
-        editable={editable}
-        fileDecorationProvider={fileDecorationProvider}
-        themeProvider={themeProvider}
-        notifyFileDecorationsChange={notifyFileDecorationsChange}
-        notifyThemeChange={notifyThemeChange}
-        validate={validate}
-        isComplex={isComplex}
-        alwaysShowActions={alwaysShowActions} />
-    </PerfectScrollbar>
-  </React.Fragment>;
+  return (
+    <React.Fragment>
+      <PerfectScrollbar
+        style={scrollContainerStyle}
+        onScrollUp={scrollUpThrottledHandler}
+        onScrollDown={scrollDownThrottledHandler}
+        containerRef={(ref) => {
+          setScrollRef(ref);
+        }}
+        options={scrollerBarOptions}
+      >
+        <TreeContainer
+          style={contentStyle}
+          multiSelectable={multiSelectable}
+          itemLineHeight={itemLineHeight}
+          nodes={renderNodes}
+          actions={actions}
+          commandActuator={commandActuator}
+          leftPadding={leftPadding}
+          defaultLeftPadding={defaultLeftPadding}
+          onContextMenu={onContextMenu || noop}
+          onDrag={onDrag || noop}
+          onBlur={onBlur || noop}
+          onFocus={onFocus || noop}
+          onDragStart={onDragStart || noop}
+          onDragEnter={onDragEnter || noop}
+          onDragEnd={onDragEnd || noop}
+          onDragOver={onDragOver || noop}
+          onDragLeave={onDragLeave || noop}
+          onChange={onChange || noop}
+          onDrop={onDrop || noop}
+          onSelect={onSelect || noop}
+          onReveal={onReveal || noop}
+          onTwistieClick={onTwistieClick}
+          draggable={draggable}
+          foldable={foldable}
+          replace={replace}
+          editable={editable}
+          fileDecorationProvider={fileDecorationProvider}
+          themeProvider={themeProvider}
+          notifyFileDecorationsChange={notifyFileDecorationsChange}
+          notifyThemeChange={notifyThemeChange}
+          validate={validate}
+          isComplex={isComplex}
+          alwaysShowActions={alwaysShowActions}
+        />
+      </PerfectScrollbar>
+    </React.Fragment>
+  );
 };
 
 DeprecatedRecycleTree.displayName = 'DeprecatedRecycleTree';
 
-export const RecycleTree = Deprecated(DeprecatedRecycleTree, '[Deprecated warning]: The `RecycleTree` component in `@opensumi/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@opensumi/ide-component` instead');
+export const RecycleTree = Deprecated(
+  DeprecatedRecycleTree,
+  '[Deprecated warning]: The `RecycleTree` component in `@opensumi/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@opensumi/ide-component` instead',
+);

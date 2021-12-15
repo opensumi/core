@@ -1,5 +1,5 @@
 export interface IMainThreadTheme {
-  $getThemeColors(): Promise<{[key: string]: string}>;
+  $getThemeColors(): Promise<{ [key: string]: string }>;
 }
 
 export interface IExtHostTheme {

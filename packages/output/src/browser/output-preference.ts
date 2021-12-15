@@ -1,5 +1,11 @@
 import { Injector } from '@opensumi/di';
-import { PreferenceService, PreferenceProxy, createPreferenceProxy, PreferenceSchema, localize } from '@opensumi/ide-core-browser';
+import {
+  PreferenceService,
+  PreferenceProxy,
+  createPreferenceProxy,
+  PreferenceSchema,
+  localize,
+} from '@opensumi/ide-core-browser';
 
 // output 相关配置项注册
 /* istanbul ignore file */

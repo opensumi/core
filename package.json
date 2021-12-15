@@ -30,10 +30,9 @@
     "publish:engine": "sh ./scripts/release-cli-engine.sh",
     "update-version": "ts-node ./scripts/publish --versionOnly",
     "update-disttag": "ts-node ./scripts/dist-tag",
-    "lint": "tslint -c tslint.yml -p tsconfig.json -t stylish",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
-    "lint1": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint1:fix": "npm run lint1 -- --fix",
+    "format": "npm run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "rebuild:node": "node ./scripts/rebuild-native.js",
     "test": "jest --forceExit",
     "test:module": "NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
@@ -68,11 +67,7 @@
     "webpack": "4.39.3"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "packages/**/*.(ts|tsx)": [
-      "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
-    ]
+    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write"
   },
   "config": {
     "commitizen": {

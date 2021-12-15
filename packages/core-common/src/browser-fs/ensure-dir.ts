@@ -37,8 +37,8 @@ export async function ensureDir(path: string, fsLikeImpl: FsLike = defaultFsImpl
   let i = 0;
   while (i < pathList.length) {
     const targetPath = PATH_SEPARATOR + pathList.slice(0, i + 1).join(PATH_SEPARATOR);
-    if (!await fsLikeImpl.access(targetPath)) {
-      await fsLikeImpl.mkdir((PATH_SEPARATOR + targetPath));
+    if (!(await fsLikeImpl.access(targetPath))) {
+      await fsLikeImpl.mkdir(PATH_SEPARATOR + targetPath);
     }
     i = i + 1;
   }

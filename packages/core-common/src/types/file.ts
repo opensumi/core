@@ -11,7 +11,6 @@ export * from './file-watch';
 export const IFileServiceClient = Symbol('IFileServiceClient');
 
 export interface FileStat {
-
   /**
    * 资源路径
    */
@@ -61,16 +60,21 @@ export interface FileStat {
 
 export namespace FileStat {
   export function is(candidate: object | undefined): candidate is FileStat {
-    return typeof candidate === 'object' && ('uri' in candidate) && ('lastModification' in candidate) && ('isDirectory' in candidate);
+    return (
+      typeof candidate === 'object' &&
+      'uri' in candidate &&
+      'lastModification' in candidate &&
+      'isDirectory' in candidate
+    );
   }
 
   export function equals(one: object | undefined, other: object | undefined): boolean {
     if (!one || !other || !is(one) || !is(other)) {
       return false;
     }
-    return one.uri === other.uri
-      && one.lastModification === other.lastModification
-      && one.isDirectory === other.isDirectory;
+    return (
+      one.uri === other.uri && one.lastModification === other.lastModification && one.isDirectory === other.isDirectory
+    );
   }
 }
 
@@ -102,7 +106,6 @@ export enum FileType {
  * Compatible with vscode.FileSystemProvider
  */
 export interface FileSystemProvider {
-
   readonly capabilities: FileSystemProviderCapabilities;
   readonly onDidChangeCapabilities: Event<void>;
 
@@ -183,7 +186,11 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean, encoding?: string }): void | Thenable<void | FileStat>;
+  writeFile(
+    uri: Uri,
+    content: Uint8Array,
+    options: { create: boolean; overwrite: boolean; encoding?: string },
+  ): void | Thenable<void | FileStat>;
 
   /**
    * Delete a file.
@@ -191,7 +198,7 @@ export interface FileSystemProvider {
    * @param uri The resource that is to be deleted.
    * @param options Defines if deletion of folders is recursive.
    */
-  delete(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }): void | Promise<void>;
+  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean }): void | Promise<void>;
 
   /**
    * Rename a file or folder.
@@ -205,47 +212,46 @@ export interface FileSystemProvider {
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
   rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Promise<void | FileStat>;
-
 }
 
 export const enum FileSystemProviderCapabilities {
   /**
    * Provider supports unbuffered read/write.
    */
-   FileReadWrite = 1 << 1,
+  FileReadWrite = 1 << 1,
 
-   /**
-    * Provider supports open/read/write/close low level file operations.
-    */
-   FileOpenReadWriteClose = 1 << 2,
+  /**
+   * Provider supports open/read/write/close low level file operations.
+   */
+  FileOpenReadWriteClose = 1 << 2,
 
-   /**
-    * Provider supports stream based reading.
-    */
-   FileReadStream = 1 << 4,
+  /**
+   * Provider supports stream based reading.
+   */
+  FileReadStream = 1 << 4,
 
-   /**
-    * Provider supports copy operation.
-    */
-   FileFolderCopy = 1 << 3,
+  /**
+   * Provider supports copy operation.
+   */
+  FileFolderCopy = 1 << 3,
 
-   /**
-    * Provider is path case sensitive.
-    */
-   PathCaseSensitive = 1 << 10,
+  /**
+   * Provider is path case sensitive.
+   */
+  PathCaseSensitive = 1 << 10,
 
-   /**
-    * All files of the provider are readonly.
-    */
-   Readonly = 1 << 11,
+  /**
+   * All files of the provider are readonly.
+   */
+  Readonly = 1 << 11,
 
-   /**
-    * Provider supports to delete via trash.
-    */
-   Trash = 1 << 12,
+  /**
+   * Provider supports to delete via trash.
+   */
+  Trash = 1 << 12,
 
-   /**
-    * Provider support to unlock files for writing.
-    */
-   FileWriteUnlock = 1 << 13,
+  /**
+   * Provider support to unlock files for writing.
+   */
+  FileWriteUnlock = 1 << 13,
 }

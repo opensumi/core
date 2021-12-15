@@ -5,42 +5,39 @@ import stripJsonComments from 'strip-json-comments';
  */
 export type JSONPrimitive = boolean | number | string | null;
 
-
 /**
  * JSON对象值类型
  */
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 
-
 /**
  * JSON Object值类型
  */
-export interface JSONObject { [key: string]: JSONValue; }
-
+export interface JSONObject {
+  [key: string]: JSONValue;
+}
 
 /**
  * JSON Array值类型
  */
-export interface JSONArray extends Array<JSONValue> { }
-
+export type JSONArray = Array<JSONValue>;
 
 /**
  * 只读的JSON Object类型
  */
-export interface ReadonlyJSONObject { readonly [key: string]: ReadonlyJSONValue; }
-
+export interface ReadonlyJSONObject {
+  readonly [key: string]: ReadonlyJSONValue;
+}
 
 /**
  * 只读的JSON Array类型
  */
-export interface ReadonlyJSONArray extends ReadonlyArray<ReadonlyJSONValue> { }
-
+export type ReadonlyJSONArray = ReadonlyArray<ReadonlyJSONValue>;
 
 /**
  * 只读的JSON值类型
  */
 export type ReadonlyJSONValue = JSONPrimitive | ReadonlyJSONObject | ReadonlyJSONArray;
-
 
 /**
  * JSON 工具方法空间
@@ -61,12 +58,7 @@ export namespace JSONUtils {
    * @param value
    */
   export function isPrimitive(value: ReadonlyJSONValue): value is JSONPrimitive {
-    return (
-      value === null ||
-      typeof value === 'boolean' ||
-      typeof value === 'number' ||
-      typeof value === 'string'
-    );
+    return value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string';
   }
 
   /**
@@ -103,8 +95,8 @@ export namespace JSONUtils {
       return false;
     }
 
-    let a1 = isArray(first);
-    let a2 = isArray(second);
+    const a1 = isArray(first);
+    const a2 = isArray(second);
 
     if (a1 !== a2) {
       return false;
@@ -164,21 +156,21 @@ export namespace JSONUtils {
       return true;
     }
 
-    for (let key in first) {
+    for (const key in first) {
       if (!(key in second)) {
         return false;
       }
     }
 
     // Check for the second object's keys in the first object.
-    for (let key in second) {
+    for (const key in second) {
       if (!(key in first)) {
         return false;
       }
     }
 
     // Compare the values for equality.
-    for (let key in first) {
+    for (const key in first) {
       if (!deepEqual(first[key], second[key])) {
         return false;
       }
@@ -192,7 +184,7 @@ export namespace JSONUtils {
    * 深拷贝Array类型的值
    */
   function deepArrayCopy(value: any): any {
-    let result = new Array<any>(value.length);
+    const result = new Array<any>(value.length);
     for (let i = 0, n = value.length; i < n; ++i) {
       result[i] = deepCopy(value[i]);
     }
@@ -203,14 +195,13 @@ export namespace JSONUtils {
    * 深拷贝Object类型的值
    */
   function deepObjectCopy(value: any): any {
-    let result: any = {};
-    for (let key in value) {
+    const result: any = {};
+    for (const key in value) {
       result[key] = deepCopy(value[key]);
     }
     return result;
   }
 }
-
 
 export function parseWithComments<T>(content): T {
   content = stripTrailingComma(stripJsonComments(content));
@@ -229,7 +220,6 @@ export function stripTrailingComma(content: string) {
         inString = false;
       }
     } else {
-
       if (content[i] === ',') {
         // 跳过空白
         const candidate = i;

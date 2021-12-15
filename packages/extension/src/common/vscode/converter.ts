@@ -4,18 +4,34 @@ import type vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import * as debugModel from '@opensumi/ide-debug';
-import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor, isDefined } from '@opensumi/ide-core-common';
-import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness, EditorGroupColumn } from '@opensumi/ide-editor/lib/common';
+import {
+  URI,
+  Uri,
+  UriComponents,
+  ISelection,
+  IMarkerData,
+  IRelatedInformation,
+  MarkerTag,
+  MarkerSeverity,
+  ProgressLocation as MainProgressLocation,
+  parse,
+  cloneAndChange,
+  IThemeColor,
+  isDefined,
+} from '@opensumi/ide-core-common';
+import {
+  IDecorationRenderOptions,
+  IThemeDecorationRenderOptions,
+  IContentDecorationRenderOptions,
+  TrackedRangeStickiness,
+  EditorGroupColumn,
+} from '@opensumi/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import {
-  isMarkdownString,
-  IMarkdownString,
-  parseHrefAndDimensions,
-} from './models';
+import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './models';
 import marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
@@ -31,19 +47,13 @@ export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
 }
 
 export namespace TextEditorOpenOptions {
-  export function from(
-    options?: TextEditorOpenOptions,
-  ): any | /* ITextEditorOptions */ undefined {
+  export function from(options?: TextEditorOpenOptions): any | /* ITextEditorOptions */ undefined {
     if (options) {
       return {
-        pinned:
-          typeof options.preview === 'boolean' ? !options.preview : undefined,
+        pinned: typeof options.preview === 'boolean' ? !options.preview : undefined,
         inactive: options.background,
         preserveFocus: options.preserveFocus,
-        selection:
-          typeof options.selection === 'object'
-            ? Range.from(options.selection)
-            : undefined,
+        selection: typeof options.selection === 'object' ? Range.from(options.selection) : undefined,
         override: typeof options.override === 'boolean' ? false : undefined,
       };
     }
@@ -63,12 +73,8 @@ export function fromPosition(position: types.Position): model.Position {
 export namespace Range {
   export function from(range: undefined): undefined;
   export function from(range: vscode.Range): model.Range;
-  export function from(
-    range: vscode.Range | undefined,
-  ): model.Range | undefined;
-  export function from(
-    range: vscode.Range | undefined,
-  ): model.Range | undefined {
+  export function from(range: vscode.Range | undefined): model.Range | undefined;
+  export function from(range: vscode.Range | undefined): model.Range | undefined {
     if (!range) {
       return undefined;
     }
@@ -89,12 +95,7 @@ export namespace Range {
       return undefined;
     }
     const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
-    return new types.Range(
-      startLineNumber - 1,
-      startColumn - 1,
-      endLineNumber - 1,
-      endColumn - 1,
-    );
+    return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
   }
 }
 
@@ -104,9 +105,7 @@ export namespace Range {
  */
 export function fromRange(range: undefined): undefined;
 export function fromRange(range: vscode.Range): model.Range;
-export function fromRange(
-  range: vscode.Range | undefined,
-): model.Range | undefined {
+export function fromRange(range: vscode.Range | undefined): model.Range | undefined {
   if (!range) {
     return undefined;
   }
@@ -125,12 +124,7 @@ export function fromRange(
  */
 export function toRange(range: model.Range): types.Range {
   const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
-  return new types.Range(
-    startLineNumber - 1,
-    startColumn - 1,
-    endLineNumber - 1,
-    endColumn - 1,
-  );
+  return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
 }
 
 interface Codeblock {
@@ -148,9 +142,7 @@ function isCodeblock(thing: any): thing is Codeblock {
   );
 }
 
-export function fromMarkdown(
-  markup: vscode.MarkdownString | vscode.MarkedString,
-): model.IMarkdownString {
+export function fromMarkdown(markup: vscode.MarkdownString | vscode.MarkedString): model.IMarkdownString {
   if (isCodeblock(markup)) {
     const { language, value } = markup;
     return { value: '```' + language + '\n' + value + '\n```\n' };
@@ -164,9 +156,7 @@ export function fromMarkdown(
 }
 
 export namespace MarkdownString {
-  export function fromMany(
-    markup: (vscode.MarkdownString | vscode.MarkedString)[],
-  ): IMarkdownString[] {
+  export function fromMany(markup: (vscode.MarkdownString | vscode.MarkedString)[]): IMarkdownString[] {
     return markup.map(MarkdownString.from);
   }
 
@@ -184,9 +174,7 @@ export namespace MarkdownString {
     );
   }
 
-  export function from(
-    markup: vscode.MarkdownString | vscode.MarkedString,
-  ): IMarkdownString {
+  export function from(markup: vscode.MarkdownString | vscode.MarkedString): IMarkdownString {
     let res: IMarkdownString;
     if (isCodeblock(markup)) {
       const { language, value } = markup;
@@ -226,10 +214,7 @@ export namespace MarkdownString {
     return res;
   }
 
-  function _uriMassage(
-    part: string,
-    bucket: { [n: string]: UriComponents },
-  ): string {
+  function _uriMassage(part: string, bucket: { [n: string]: UriComponents }): string {
     if (!part) {
       return part;
     }
@@ -262,17 +247,12 @@ export namespace MarkdownString {
   }
 
   export function to(value: IMarkdownString): vscode.MarkdownString {
-    const result = new types.MarkdownString(
-      value.value,
-      value.supportThemeIcons,
-    );
+    const result = new types.MarkdownString(value.value, value.supportThemeIcons);
     result.isTrusted = value.isTrusted;
     return result;
   }
 
-  export function fromStrict(
-    value: string | vscode.MarkdownString,
-  ): undefined | string | IMarkdownString {
+  export function fromStrict(value: string | vscode.MarkdownString): undefined | string | IMarkdownString {
     if (!value) {
       return undefined;
     }
@@ -283,9 +263,7 @@ export namespace MarkdownString {
 /**
  * @deprecated
  */
-export function fromManyMarkdown(
-  markup: (vscode.MarkdownString | vscode.MarkedString)[],
-): model.IMarkdownString[] {
+export function fromManyMarkdown(markup: (vscode.MarkdownString | vscode.MarkedString)[]): model.IMarkdownString[] {
   return markup.map(fromMarkdown);
 }
 
@@ -298,10 +276,7 @@ export namespace Hover {
   }
 
   export function to(info: model.Hover): types.Hover {
-    return new types.Hover(
-      info.contents.map(MarkdownString.to),
-      Range.to(info.range),
-    );
+    return new types.Hover(info.contents.map(MarkdownString.to), Range.to(info.range));
   }
 }
 
@@ -312,9 +287,7 @@ export function fromHover(hover: vscode.Hover): model.Hover {
   } as model.Hover;
 }
 
-export function fromLanguageSelector(
-  selector: vscode.DocumentSelector,
-): model.LanguageSelector | undefined {
+export function fromLanguageSelector(selector: vscode.DocumentSelector): model.LanguageSelector | undefined {
   if (!selector) {
     return undefined;
   } else if (Array.isArray(selector)) {
@@ -330,9 +303,7 @@ export function fromLanguageSelector(
   }
 }
 
-export function fromGlobPattern(
-  pattern: vscode.GlobPattern,
-): string | model.RelativePattern {
+export function fromGlobPattern(pattern: vscode.GlobPattern): string | model.RelativePattern {
   if (typeof pattern === 'string') {
     return pattern;
   }
@@ -410,9 +381,9 @@ export namespace TextEdit {
 
   export function to(edit: model.TextEdit): types.TextEdit {
     const result = new types.TextEdit(Range.to(edit.range), edit.text);
-    result.newEol = (typeof edit.eol === 'undefined'
-      ? undefined
-      : EndOfLine.to((edit.eol as unknown) as EndOfLineSequence))!;
+    result.newEol = (
+      typeof edit.eol === 'undefined' ? undefined : EndOfLine.to(edit.eol as unknown as EndOfLineSequence)
+    )!;
     return result;
   }
 }
@@ -424,24 +395,16 @@ export function fromTextEdit(edit: vscode.TextEdit): model.SingleEditOperation {
   } as model.SingleEditOperation;
 }
 
-export function fromDefinitionLink(
-  definitionLink: vscode.DefinitionLink,
-): model.DefinitionLink {
+export function fromDefinitionLink(definitionLink: vscode.DefinitionLink): model.DefinitionLink {
   return {
     uri: definitionLink.targetUri,
     range: fromRange(definitionLink.targetRange),
-    origin: definitionLink.originSelectionRange
-      ? fromRange(definitionLink.originSelectionRange)
-      : undefined,
-    selectionRange: definitionLink.targetSelectionRange
-      ? fromRange(definitionLink.targetSelectionRange)
-      : undefined,
+    origin: definitionLink.originSelectionRange ? fromRange(definitionLink.originSelectionRange) : undefined,
+    selectionRange: definitionLink.targetSelectionRange ? fromRange(definitionLink.targetSelectionRange) : undefined,
   } as model.DefinitionLink;
 }
 
-export function fromFoldingRange(
-  foldingRange: vscode.FoldingRange,
-): model.FoldingRange {
+export function fromFoldingRange(foldingRange: vscode.FoldingRange): model.FoldingRange {
   const range: model.FoldingRange = {
     start: foldingRange.start + 1,
     end: foldingRange.end + 1,
@@ -452,9 +415,7 @@ export function fromFoldingRange(
   return range;
 }
 
-export function fromFoldingRangeKind(
-  kind: vscode.FoldingRangeKind | undefined,
-): model.FoldingRangeKind | undefined {
+export function fromFoldingRangeKind(kind: vscode.FoldingRangeKind | undefined): model.FoldingRangeKind | undefined {
   if (kind) {
     switch (kind) {
       case types.FoldingRangeKind.Comment:
@@ -468,40 +429,28 @@ export function fromFoldingRangeKind(
   return undefined;
 }
 
-export function fromSelectionRange(
-  obj: vscode.SelectionRange,
-): model.SelectionRange {
+export function fromSelectionRange(obj: vscode.SelectionRange): model.SelectionRange {
   return { range: fromRange(obj.range) };
 }
 
 export namespace ColorPresentation {
-  export function to(
-    colorPresentation: model.IColorPresentation,
-  ): types.ColorPresentation {
+  export function to(colorPresentation: model.IColorPresentation): types.ColorPresentation {
     const cp = new types.ColorPresentation(colorPresentation.label);
     if (colorPresentation.textEdit) {
       cp.textEdit = TextEdit.to(colorPresentation.textEdit);
     }
     if (colorPresentation.additionalTextEdits) {
-      cp.additionalTextEdits = colorPresentation.additionalTextEdits.map(
-        (value) => TextEdit.to(value),
-      );
+      cp.additionalTextEdits = colorPresentation.additionalTextEdits.map((value) => TextEdit.to(value));
     }
     return cp;
   }
 
-  export function from(
-    colorPresentation: vscode.ColorPresentation,
-  ): model.IColorPresentation {
+  export function from(colorPresentation: vscode.ColorPresentation): model.IColorPresentation {
     return {
       label: colorPresentation.label,
-      textEdit: colorPresentation.textEdit
-        ? TextEdit.from(colorPresentation.textEdit)
-        : undefined,
+      textEdit: colorPresentation.textEdit ? TextEdit.from(colorPresentation.textEdit) : undefined,
       additionalTextEdits: colorPresentation.additionalTextEdits
-        ? colorPresentation.additionalTextEdits.map((value) =>
-          TextEdit.from(value),
-        )
+        ? colorPresentation.additionalTextEdits.map((value) => TextEdit.from(value))
         : undefined,
     };
   }
@@ -519,9 +468,7 @@ export namespace Color {
 /**
  * @deprecated
  */
-export function fromColor(
-  color: types.Color,
-): [number, number, number, number] {
+export function fromColor(color: types.Color): [number, number, number, number] {
   return [color.red, color.green, color.blue, color.alpha];
 }
 
@@ -533,38 +480,25 @@ export function toColor(color: [number, number, number, number]): types.Color {
  * @description
  * @param colorPresentation
  */
-export function fromColorPresentation(
-  colorPresentation: vscode.ColorPresentation,
-): model.ColorPresentation {
+export function fromColorPresentation(colorPresentation: vscode.ColorPresentation): model.ColorPresentation {
   return {
     label: colorPresentation.label,
-    textEdit: colorPresentation.textEdit
-      ? fromTextEdit(colorPresentation.textEdit)
-      : undefined,
+    textEdit: colorPresentation.textEdit ? fromTextEdit(colorPresentation.textEdit) : undefined,
     additionalTextEdits: colorPresentation.additionalTextEdits
-      ? colorPresentation.additionalTextEdits.map((value) =>
-        fromTextEdit(value),
-      )
+      ? colorPresentation.additionalTextEdits.map((value) => fromTextEdit(value))
       : undefined,
   };
 }
 
 export namespace DocumentHighlight {
-  export function from(
-    documentHighlight: vscode.DocumentHighlight,
-  ): model.DocumentHighlight {
+  export function from(documentHighlight: vscode.DocumentHighlight): model.DocumentHighlight {
     return {
       range: fromRange(documentHighlight.range),
       kind: documentHighlight.kind,
     };
   }
-  export function to(
-    occurrence: model.DocumentHighlight,
-  ): types.DocumentHighlight {
-    return new types.DocumentHighlight(
-      toRange(occurrence.range),
-      occurrence.kind,
-    );
+  export function to(occurrence: model.DocumentHighlight): types.DocumentHighlight {
+    return new types.DocumentHighlight(toRange(occurrence.range), occurrence.kind);
   }
 }
 
@@ -582,9 +516,7 @@ export function fromDocumentHighlightKind(
   return model.DocumentHighlightKind.Text;
 }
 
-export function convertDiagnosticToMarkerData(
-  diagnostic: vscode.Diagnostic,
-): IMarkerData {
+export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): IMarkerData {
   return {
     code: convertCode(diagnostic.code),
     severity: convertSeverity(diagnostic.severity),
@@ -594,14 +526,12 @@ export function convertDiagnosticToMarkerData(
     startColumn: diagnostic.range.start.character + 1,
     endLineNumber: diagnostic.range.end.line + 1,
     endColumn: diagnostic.range.end.character + 1,
-    relatedInformation: convertRelatedInformation(
-      diagnostic.relatedInformation,
-    ),
+    relatedInformation: convertRelatedInformation(diagnostic.relatedInformation),
     tags: convertTags(diagnostic.tags),
   };
 }
 
-function convertCode(code: string | number | undefined | { target: URI; value: string; }): string | undefined {
+function convertCode(code: string | number | undefined | { target: URI; value: string }): string | undefined {
   if (typeof code === 'number') {
     return String(code);
   } else if (typeof code === 'object') {
@@ -625,9 +555,7 @@ function convertSeverity(severity: types.DiagnosticSeverity): MarkerSeverity {
 }
 
 function convertRelatedInformation(
-  diagnosticsRelatedInformation:
-    | vscode.DiagnosticRelatedInformation[]
-    | undefined,
+  diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined,
 ): IRelatedInformation[] | undefined {
   if (!diagnosticsRelatedInformation) {
     return undefined;
@@ -647,9 +575,7 @@ function convertRelatedInformation(
   return relatedInformation;
 }
 
-function convertTags(
-  tags: types.DiagnosticTag[] | undefined,
-): MarkerTag[] | undefined {
+function convertTags(tags: types.DiagnosticTag[] | undefined): MarkerTag[] | undefined {
   if (!tags) {
     return undefined;
   }
@@ -669,16 +595,8 @@ function convertTags(
 }
 
 export function toSelection(selection: model.Selection): types.Selection {
-  const {
-    selectionStartLineNumber,
-    selectionStartColumn,
-    positionLineNumber,
-    positionColumn,
-  } = selection;
-  const start = new types.Position(
-    selectionStartLineNumber - 1,
-    selectionStartColumn - 1,
-  );
+  const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+  const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
   const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
   return new types.Selection(start, end);
 }
@@ -706,10 +624,7 @@ export namespace DocumentLink {
     let target: Uri | undefined;
     if (link.url) {
       try {
-        target =
-          typeof link.url === 'string'
-            ? Uri.parse(link.url)
-            : Uri.revive(link.url);
+        target = typeof link.url === 'string' ? Uri.parse(link.url) : Uri.revive(link.url);
       } catch (err) {
         // ignore
       }
@@ -731,16 +646,8 @@ export function fromDocumentLink(link: vscode.DocumentLink): model.ILink {
 
 export namespace Selection {
   export function to(selection: ISelection): vscode.Selection {
-    const {
-      selectionStartLineNumber,
-      selectionStartColumn,
-      positionLineNumber,
-      positionColumn,
-    } = selection;
-    const start = new types.Position(
-      selectionStartLineNumber - 1,
-      selectionStartColumn - 1,
-    );
+    const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+    const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
     const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
     return new types.Selection(start, end);
   }
@@ -757,9 +664,7 @@ export namespace Selection {
 }
 
 export namespace TextEditorLineNumbersStyle {
-  export function from(
-    style: types.TextEditorLineNumbersStyle,
-  ): RenderLineNumbersType {
+  export function from(style: types.TextEditorLineNumbersStyle): RenderLineNumbersType {
     switch (style) {
       case types.TextEditorLineNumbersStyle.Off:
         return RenderLineNumbersType.Off;
@@ -770,9 +675,7 @@ export namespace TextEditorLineNumbersStyle {
         return RenderLineNumbersType.On;
     }
   }
-  export function to(
-    style: RenderLineNumbersType,
-  ): types.TextEditorLineNumbersStyle {
+  export function to(style: RenderLineNumbersType): types.TextEditorLineNumbersStyle {
     switch (style) {
       case RenderLineNumbersType.Off:
         return types.TextEditorLineNumbersStyle.Off;
@@ -789,16 +692,10 @@ export namespace DecorationRenderOptions {
   export function from(options: any): IDecorationRenderOptions {
     return {
       isWholeLine: options.isWholeLine,
-      rangeBehavior: options.rangeBehavior
-        ? DecorationRangeBehavior.from(options.rangeBehavior)
-        : undefined,
+      rangeBehavior: options.rangeBehavior ? DecorationRangeBehavior.from(options.rangeBehavior) : undefined,
       overviewRulerLane: options.overviewRulerLane,
-      light: options.light
-        ? ThemableDecorationRenderOptions.from(options.light)
-        : undefined,
-      dark: options.dark
-        ? ThemableDecorationRenderOptions.from(options.dark)
-        : undefined,
+      light: options.light ? ThemableDecorationRenderOptions.from(options.light) : undefined,
+      dark: options.dark ? ThemableDecorationRenderOptions.from(options.dark) : undefined,
 
       backgroundColor: options.backgroundColor as string | IThemeColor,
       outline: options.outline,
@@ -818,26 +715,16 @@ export namespace DecorationRenderOptions {
       color: options.color as string | IThemeColor,
       opacity: options.opacity,
       letterSpacing: options.letterSpacing,
-      gutterIconPath: options.gutterIconPath
-        ? pathOrURIToURI(options.gutterIconPath)
-        : undefined,
+      gutterIconPath: options.gutterIconPath ? pathOrURIToURI(options.gutterIconPath) : undefined,
       gutterIconSize: options.gutterIconSize,
-      overviewRulerColor: options.overviewRulerColor as
-        | string
-        | IThemeColor,
-      before: options.before
-        ? ThemableDecorationAttachmentRenderOptions.from(options.before)
-        : undefined,
-      after: options.after
-        ? ThemableDecorationAttachmentRenderOptions.from(options.after)
-        : undefined,
+      overviewRulerColor: options.overviewRulerColor as string | IThemeColor,
+      before: options.before ? ThemableDecorationAttachmentRenderOptions.from(options.before) : undefined,
+      after: options.after ? ThemableDecorationAttachmentRenderOptions.from(options.after) : undefined,
     };
   }
 }
 export namespace ThemableDecorationRenderOptions {
-  export function from(
-    options: vscode.ThemableDecorationRenderOptions,
-  ): IThemeDecorationRenderOptions {
+  export function from(options: vscode.ThemableDecorationRenderOptions): IThemeDecorationRenderOptions {
     if (typeof options === 'undefined') {
       return options;
     }
@@ -860,34 +747,22 @@ export namespace ThemableDecorationRenderOptions {
       color: options.color as string | IThemeColor,
       opacity: options.opacity,
       letterSpacing: options.letterSpacing,
-      gutterIconPath: options.gutterIconPath
-        ? pathOrURIToURI(options.gutterIconPath)
-        : undefined,
+      gutterIconPath: options.gutterIconPath ? pathOrURIToURI(options.gutterIconPath) : undefined,
       gutterIconSize: options.gutterIconSize,
-      overviewRulerColor: options.overviewRulerColor as
-        | string
-        | IThemeColor,
-      before: options.before
-        ? ThemableDecorationAttachmentRenderOptions.from(options.before)
-        : undefined,
-      after: options.after
-        ? ThemableDecorationAttachmentRenderOptions.from(options.after)
-        : undefined,
+      overviewRulerColor: options.overviewRulerColor as string | IThemeColor,
+      before: options.before ? ThemableDecorationAttachmentRenderOptions.from(options.before) : undefined,
+      after: options.after ? ThemableDecorationAttachmentRenderOptions.from(options.after) : undefined,
     };
   }
 }
 export namespace ThemableDecorationAttachmentRenderOptions {
-  export function from(
-    options: vscode.ThemableDecorationAttachmentRenderOptions,
-  ): IContentDecorationRenderOptions {
+  export function from(options: vscode.ThemableDecorationAttachmentRenderOptions): IContentDecorationRenderOptions {
     if (typeof options === 'undefined') {
       return options;
     }
     return {
       contentText: options.contentText,
-      contentIconPath: options.contentIconPath
-        ? pathOrURIToURI(options.contentIconPath)
-        : undefined,
+      contentIconPath: options.contentIconPath ? pathOrURIToURI(options.contentIconPath) : undefined,
       border: options.border,
       borderColor: options.borderColor as string | IThemeColor,
       fontStyle: options.fontStyle,
@@ -954,9 +829,7 @@ export namespace WorkspaceEdit {
 }
 
 export namespace DecorationRangeBehavior {
-  export function from(
-    value: types.DecorationRangeBehavior,
-  ): TrackedRangeStickiness | undefined {
+  export function from(value: types.DecorationRangeBehavior): TrackedRangeStickiness | undefined {
     if (typeof value === 'undefined') {
       return value;
     }
@@ -974,9 +847,7 @@ export namespace DecorationRangeBehavior {
 }
 
 export namespace GlobPattern {
-  export function from(
-    pattern: vscode.GlobPattern,
-  ): string | types.RelativePattern;
+  export function from(pattern: vscode.GlobPattern): string | types.RelativePattern;
   export function from(pattern: undefined): undefined;
   export function from(pattern: null): null;
   export function from(
@@ -1079,9 +950,7 @@ export namespace SymbolKind {
     return types.SymbolKind.Property;
   }
 }
-export function fromDocumentSymbol(
-  info: vscode.DocumentSymbol,
-): model.DocumentSymbol {
+export function fromDocumentSymbol(info: vscode.DocumentSymbol): model.DocumentSymbol {
   const result: model.DocumentSymbol = {
     name: info.name,
     detail: info.detail,
@@ -1096,22 +965,14 @@ export function fromDocumentSymbol(
   return result;
 }
 
-export function fromSymbolInformation(
-  symbolInformation: vscode.SymbolInformation,
-): SymbolInformation | undefined {
+export function fromSymbolInformation(symbolInformation: vscode.SymbolInformation): SymbolInformation | undefined {
   if (!symbolInformation) {
     return undefined;
   }
 
   if (symbolInformation.location && symbolInformation.location.range) {
-    const p1 = P.create(
-      symbolInformation.location.range.start.line,
-      symbolInformation.location.range.start.character,
-    );
-    const p2 = P.create(
-      symbolInformation.location.range.end.line,
-      symbolInformation.location.range.end.character,
-    );
+    const p1 = P.create(symbolInformation.location.range.start.line, symbolInformation.location.range.start.character);
+    const p2 = P.create(symbolInformation.location.range.end.line, symbolInformation.location.range.end.character);
     return SymbolInformation.create(
       symbolInformation.name,
       symbolInformation.kind++ as S,
@@ -1131,9 +992,7 @@ export function fromSymbolInformation(
   } as SymbolInformation;
 }
 
-export function toSymbolInformation(
-  symbolInformation: SymbolInformation,
-): vscode.SymbolInformation | undefined {
+export function toSymbolInformation(symbolInformation: SymbolInformation): vscode.SymbolInformation | undefined {
   if (!symbolInformation) {
     return undefined;
   }
@@ -1169,10 +1028,7 @@ export namespace CompletionItemKind {
   const _from = new Map<types.CompletionItemKind, model.CompletionItemKind>([
     [types.CompletionItemKind.Method, model.CompletionItemKind.Method],
     [types.CompletionItemKind.Function, model.CompletionItemKind.Function],
-    [
-      types.CompletionItemKind.Constructor,
-      model.CompletionItemKind.Constructor,
-    ],
+    [types.CompletionItemKind.Constructor, model.CompletionItemKind.Constructor],
     [types.CompletionItemKind.Field, model.CompletionItemKind.Field],
     [types.CompletionItemKind.Variable, model.CompletionItemKind.Variable],
     [types.CompletionItemKind.Class, model.CompletionItemKind.Class],
@@ -1194,27 +1050,19 @@ export namespace CompletionItemKind {
     [types.CompletionItemKind.Folder, model.CompletionItemKind.Folder],
     [types.CompletionItemKind.Event, model.CompletionItemKind.Event],
     [types.CompletionItemKind.Operator, model.CompletionItemKind.Operator],
-    [
-      types.CompletionItemKind.TypeParameter,
-      model.CompletionItemKind.TypeParameter,
-    ],
+    [types.CompletionItemKind.TypeParameter, model.CompletionItemKind.TypeParameter],
     [types.CompletionItemKind.Issue, model.CompletionItemKind.Issue],
     [types.CompletionItemKind.User, model.CompletionItemKind.User],
   ]);
 
-  export function from(
-    kind: types.CompletionItemKind,
-  ): model.CompletionItemKind {
+  export function from(kind: types.CompletionItemKind): model.CompletionItemKind {
     return _from.get(kind) ?? model.CompletionItemKind.Property;
   }
 
   const _to = new Map<model.CompletionItemKind, types.CompletionItemKind>([
     [model.CompletionItemKind.Method, types.CompletionItemKind.Method],
     [model.CompletionItemKind.Function, types.CompletionItemKind.Function],
-    [
-      model.CompletionItemKind.Constructor,
-      types.CompletionItemKind.Constructor,
-    ],
+    [model.CompletionItemKind.Constructor, types.CompletionItemKind.Constructor],
     [model.CompletionItemKind.Field, types.CompletionItemKind.Field],
     [model.CompletionItemKind.Variable, types.CompletionItemKind.Variable],
     [model.CompletionItemKind.Class, types.CompletionItemKind.Class],
@@ -1236,10 +1084,7 @@ export namespace CompletionItemKind {
     [model.CompletionItemKind.Folder, types.CompletionItemKind.Folder],
     [model.CompletionItemKind.Event, types.CompletionItemKind.Event],
     [model.CompletionItemKind.Operator, types.CompletionItemKind.Operator],
-    [
-      model.CompletionItemKind.TypeParameter,
-      types.CompletionItemKind.TypeParameter,
-    ],
+    [model.CompletionItemKind.TypeParameter, types.CompletionItemKind.TypeParameter],
     // [model.CompletionItemKind.User, types.CompletionItemKind.User],
     // [model.CompletionItemKind.Issue, types.CompletionItemKind.Issue],
   ]);
@@ -1250,10 +1095,7 @@ export namespace CompletionItemKind {
 }
 
 export namespace CompletionItem {
-  export function to(
-    suggestion: model.CompletionItem,
-    converter?: CommandsConverter,
-  ): types.CompletionItem {
+  export function to(suggestion: model.CompletionItem, converter?: CommandsConverter): types.CompletionItem {
     const result = new types.CompletionItem(suggestion.label);
     if (typeof suggestion.label !== 'string') {
       result.label2 = suggestion.label;
@@ -1284,36 +1126,22 @@ export namespace CompletionItem {
     result.keepWhitespace =
       typeof suggestion.insertTextRules === 'undefined'
         ? false
-        : Boolean(
-          suggestion.insertTextRules &
-          model.CompletionItemInsertTextRule.KeepWhitespace,
-        );
+        : Boolean(suggestion.insertTextRules & model.CompletionItemInsertTextRule.KeepWhitespace);
     // 'insertText'-logic
     if (
       typeof suggestion.insertTextRules !== 'undefined' &&
-      suggestion.insertTextRules &
-      model.CompletionItemInsertTextRule.InsertAsSnippet
+      suggestion.insertTextRules & model.CompletionItemInsertTextRule.InsertAsSnippet
     ) {
       result.insertText = new types.SnippetString(suggestion.insertText);
     } else {
       result.insertText = suggestion.insertText;
       result.textEdit =
-        result.range instanceof types.Range
-          ? new types.TextEdit(result.range, result.insertText)
-          : undefined;
+        result.range instanceof types.Range ? new types.TextEdit(result.range, result.insertText) : undefined;
     }
-    if (
-      suggestion.additionalTextEdits &&
-      suggestion.additionalTextEdits.length > 0
-    ) {
-      result.additionalTextEdits = suggestion.additionalTextEdits.map((e) =>
-        TextEdit.to(e as model.TextEdit),
-      );
+    if (suggestion.additionalTextEdits && suggestion.additionalTextEdits.length > 0) {
+      result.additionalTextEdits = suggestion.additionalTextEdits.map((e) => TextEdit.to(e as model.TextEdit));
     }
-    result.command =
-      converter && suggestion.command
-        ? converter.fromInternal(suggestion.command)
-        : undefined;
+    result.command = converter && suggestion.command ? converter.fromInternal(suggestion.command) : undefined;
 
     return result;
   }
@@ -1335,9 +1163,10 @@ export namespace CompletionItemTag {
   }
 }
 
-export function viewColumnToResourceOpenOptions(
-  viewColumn?: ViewColumnEnums,
-): { groupIndex?: number; relativeGroupIndex?: number } {
+export function viewColumnToResourceOpenOptions(viewColumn?: ViewColumnEnums): {
+  groupIndex?: number;
+  relativeGroupIndex?: number;
+} {
   const result: { groupIndex?: number; relativeGroupIndex?: number } = {};
   if (viewColumn) {
     if (viewColumn === ViewColumnEnums.Beside) {
@@ -1377,17 +1206,13 @@ export namespace Position {
   export function to(position: model.Position): types.Position {
     return new types.Position(position.lineNumber - 1, position.column - 1);
   }
-  export function from(
-    position: types.Position | vscode.Position,
-  ): model.Position {
+  export function from(position: types.Position | vscode.Position): model.Position {
     return { lineNumber: position.line + 1, column: position.character + 1 };
   }
 }
 
 export namespace ProgressLocation {
-  export function from(
-    loc: vscode.ProgressLocation | { viewId: string },
-  ): MainProgressLocation | string {
+  export function from(loc: vscode.ProgressLocation | { viewId: string }): MainProgressLocation | string {
     if (typeof loc === 'object') {
       return loc.viewId;
     }
@@ -1400,13 +1225,12 @@ export namespace ProgressLocation {
       case types.ProgressLocation.Notification:
         return MainProgressLocation.Notification;
     }
-    throw new Error(`Unknown 'ProgressLocation'`);
+    throw new Error("Unknown 'ProgressLocation'");
   }
 }
 
 export function fromFileStat(stat: vscode.FileStat, uri: types.Uri) {
-  const isSymbolicLink =
-    stat.type.valueOf() === FileType.SymbolicLink.valueOf();
+  const isSymbolicLink = stat.type.valueOf() === FileType.SymbolicLink.valueOf();
   const isDirectory = stat.type.valueOf() === FileType.Directory.valueOf();
 
   const result: FileStat = {
@@ -1434,16 +1258,11 @@ export function isLikelyVscodeRange(thing: any): thing is types.Range {
   if (!thing) {
     return false;
   }
-  return (
-    (thing as types.Range).start !== undefined &&
-    (thing as types.Range).end !== undefined
-  );
+  return (thing as types.Range).start !== undefined && (thing as types.Range).end !== undefined;
 }
 
 export namespace CallHierarchyItem {
-  export function to(
-    item: model.ICallHierarchyItemDto,
-  ): types.CallHierarchyItem {
+  export function to(item: model.ICallHierarchyItemDto): types.CallHierarchyItem {
     const result = new types.CallHierarchyItem(
       SymbolKind.toSymbolKind(item.kind),
       item.name,
@@ -1461,9 +1280,7 @@ export namespace CallHierarchyItem {
 }
 
 export namespace CallHierarchyIncomingCall {
-  export function to(
-    item: model.IIncomingCallDto,
-  ): types.CallHierarchyIncomingCall {
+  export function to(item: model.IIncomingCallDto): types.CallHierarchyIncomingCall {
     return new types.CallHierarchyIncomingCall(
       CallHierarchyItem.to(item.from),
       item.fromRanges.map((r) => toRange(r)),
@@ -1472,9 +1289,7 @@ export namespace CallHierarchyIncomingCall {
 }
 
 export namespace CallHierarchyOutgoingCall {
-  export function to(
-    item: model.IOutgoingCallDto,
-  ): types.CallHierarchyOutgoingCall {
+  export function to(item: model.IOutgoingCallDto): types.CallHierarchyOutgoingCall {
     return new types.CallHierarchyOutgoingCall(
       CallHierarchyItem.to(item.to),
       item.fromRanges.map((r) => toRange(r)),
@@ -1483,55 +1298,35 @@ export namespace CallHierarchyOutgoingCall {
 }
 
 export namespace ParameterInformation {
-  export function from(
-    info: types.ParameterInformation,
-  ): model.ParameterInformation {
+  export function from(info: types.ParameterInformation): model.ParameterInformation {
     return {
       label: info.label,
-      documentation: info.documentation
-        ? MarkdownString.fromStrict(info.documentation)
-        : undefined,
+      documentation: info.documentation ? MarkdownString.fromStrict(info.documentation) : undefined,
     };
   }
-  export function to(
-    info: model.ParameterInformation,
-  ): types.ParameterInformation {
+  export function to(info: model.ParameterInformation): types.ParameterInformation {
     return {
       label: info.label,
-      documentation: isMarkdownString(info.documentation)
-        ? MarkdownString.to(info.documentation)
-        : info.documentation,
+      documentation: isMarkdownString(info.documentation) ? MarkdownString.to(info.documentation) : info.documentation,
     };
   }
 }
 
 export namespace SignatureInformation {
-  export function from(
-    info: types.SignatureInformation,
-  ): model.SignatureInformation {
+  export function from(info: types.SignatureInformation): model.SignatureInformation {
     return {
       label: info.label,
-      documentation: info.documentation
-        ? MarkdownString.fromStrict(info.documentation)
-        : undefined,
-      parameters: Array.isArray(info.parameters)
-        ? info.parameters.map(ParameterInformation.from)
-        : [],
+      documentation: info.documentation ? MarkdownString.fromStrict(info.documentation) : undefined,
+      parameters: Array.isArray(info.parameters) ? info.parameters.map(ParameterInformation.from) : [],
       activeParameter: info.activeParameter,
     };
   }
 
-  export function to(
-    info: model.SignatureInformation,
-  ): types.SignatureInformation {
+  export function to(info: model.SignatureInformation): types.SignatureInformation {
     return {
       label: info.label,
-      documentation: isMarkdownString(info.documentation)
-        ? MarkdownString.to(info.documentation)
-        : info.documentation,
-      parameters: Array.isArray(info.parameters)
-        ? info.parameters.map(ParameterInformation.to)
-        : [],
+      documentation: isMarkdownString(info.documentation) ? MarkdownString.to(info.documentation) : info.documentation,
+      parameters: Array.isArray(info.parameters) ? info.parameters.map(ParameterInformation.to) : [],
       activeParameter: info.activeParameter,
     };
   }
@@ -1542,9 +1337,7 @@ export namespace SignatureHelp {
     return {
       activeSignature: help.activeSignature,
       activeParameter: help.activeParameter,
-      signatures: Array.isArray(help.signatures)
-        ? help.signatures.map(SignatureInformation.from)
-        : [],
+      signatures: Array.isArray(help.signatures) ? help.signatures.map(SignatureInformation.from) : [],
     };
   }
 
@@ -1552,9 +1345,7 @@ export namespace SignatureHelp {
     return {
       activeSignature: help.activeSignature,
       activeParameter: help.activeParameter,
-      signatures: Array.isArray(help.signatures)
-        ? help.signatures.map(SignatureInformation.to)
-        : [],
+      signatures: Array.isArray(help.signatures) ? help.signatures.map(SignatureInformation.to) : [],
     };
   }
 }
@@ -1583,14 +1374,12 @@ export namespace ViewColumn {
       return position + 1; // adjust to index (ViewColumn.ONE => 1)
     }
 
-    throw new Error(`invalid 'EditorGroupColumn'`);
+    throw new Error("invalid 'EditorGroupColumn'");
   }
 }
 
 export namespace DefinitionLink {
-  export function from(
-    value: vscode.Location | vscode.DefinitionLink,
-  ): model.LocationLink {
+  export function from(value: vscode.Location | vscode.DefinitionLink): model.LocationLink {
     const definitionLink = value as vscode.DefinitionLink;
     const location = value as vscode.Location;
     return {
@@ -1598,9 +1387,7 @@ export namespace DefinitionLink {
         ? Range.from(definitionLink.originSelectionRange)
         : undefined,
       uri: definitionLink.targetUri ? definitionLink.targetUri : location.uri,
-      range: Range.from(
-        definitionLink.targetRange ? definitionLink.targetRange : location.range,
-      ),
+      range: Range.from(definitionLink.targetRange ? definitionLink.targetRange : location.range),
       targetSelectionRange: definitionLink.targetSelectionRange
         ? Range.from(definitionLink.targetSelectionRange)
         : undefined,
@@ -1611,12 +1398,8 @@ export namespace DefinitionLink {
     return {
       targetUri: value.uri,
       targetRange: Range.to(value.range),
-      targetSelectionRange: value.targetSelectionRange
-        ? Range.to(value.targetSelectionRange)
-        : undefined,
-      originSelectionRange: value.originSelectionRange
-        ? Range.to(value.originSelectionRange)
-        : undefined,
+      targetSelectionRange: value.targetSelectionRange ? Range.to(value.targetSelectionRange) : undefined,
+      originSelectionRange: value.originSelectionRange ? Range.to(value.originSelectionRange) : undefined,
     };
   }
 }
@@ -1655,7 +1438,7 @@ export namespace InlineValue {
         expression: inlineValue.expression,
       } as debugModel.InlineValueExpression;
     } else {
-      throw new Error(`Unknown 'InlineValue' type`);
+      throw new Error("Unknown 'InlineValue' type");
     }
   }
 
@@ -1695,7 +1478,6 @@ export namespace InlineValueContext {
 }
 
 export namespace InlayHint {
-
   export function from(hint: vscode.InlayHint): modes.InlayHint {
     return {
       text: hint.text,
@@ -1707,11 +1489,7 @@ export namespace InlayHint {
   }
 
   export function to(hint: modes.InlayHint): vscode.InlayHint {
-    const res = new types.InlayHint(
-      hint.text,
-      Position.to(hint.position),
-      InlayHintKind.to(hint.kind),
-    );
+    const res = new types.InlayHint(hint.text, Position.to(hint.position), InlayHintKind.to(hint.kind));
     res.whitespaceAfter = hint.whitespaceAfter;
     res.whitespaceBefore = hint.whitespaceBefore;
     return res;
@@ -1728,7 +1506,6 @@ export namespace InlayHintKind {
 }
 
 export namespace CodeActionTriggerKind {
-
   export function to(value: CodeActionTriggerType): types.CodeActionTriggerKind {
     switch (value) {
       case CodeActionTriggerType.Invoke:

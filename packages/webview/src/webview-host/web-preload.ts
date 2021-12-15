@@ -3,11 +3,10 @@ import { IWebviewChannel } from './common';
 import { WebviewPanelManager } from './webview-manager';
 
 export class WebIframeChannel implements IWebviewChannel {
-
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
-  fakeLoad: boolean = false;
+  fakeLoad = false;
   private isInDevelopmentMode = false;
   private id = document!.location!.search!.match(/\bid=([\w-]+)/)![1];
 
@@ -67,7 +66,7 @@ export class WebIframeChannel implements IWebviewChannel {
 
   onKeydown(event: KeyboardEvent) {
     // 在浏览器上，需要阻止一些默认的keydown快捷键
-    if (event.key === 's' && (event.metaKey || event.ctrlKey) ) {
+    if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
       // 阻止保存
       event.preventDefault();
     }

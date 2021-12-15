@@ -106,5 +106,4 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     }
     return handler!;
   }
-
 }

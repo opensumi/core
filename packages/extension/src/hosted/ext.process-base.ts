@@ -4,13 +4,15 @@ import { performance } from 'perf_hooks';
 import { ConstructorOf, Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
-import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId, ILogService } from '@opensumi/ide-core-common';
 import {
-  RPCProtocol,
-  initRPCService,
-  RPCServiceCenter,
-  createSocketConnection,
-} from '@opensumi/ide-connection';
+  Emitter,
+  ReporterProcessMessage,
+  LogLevel,
+  IReporter,
+  setLanguageId,
+  ILogService,
+} from '@opensumi/ide-core-common';
+import { RPCProtocol, initRPCService, RPCServiceCenter, createSocketConnection } from '@opensumi/ide-connection';
 
 import { CommandHandler } from '../common/vscode';
 import { ExtensionLogger2 } from './extension-log2';
@@ -90,13 +92,13 @@ async function initRPCProtocol(extInjector): Promise<any> {
 }
 
 function patchProcess() {
-  process.exit = function(code?: number) {
+  process.exit = function (code?: number) {
     const err = new Error(`An extension called process.exit(${code ?? ''}) and this was prevented.`);
     getWarnLogger()(err.stack);
   } as (code?: number) => never;
 
   // override Electron's process.crash() method
-  process.crash = function() {
+  process.crash = function () {
     const err = new Error('An extension called process.crash() and this was prevented.');
     getWarnLogger()(err.stack);
   };
@@ -107,13 +109,16 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
   const { injector, ...extConfig } = config;
   const extInjector = injector || new Injector();
   const reporterEmitter = new Emitter<ReporterProcessMessage>();
-  extInjector.addProviders({
-    token: AppConfig,
-    useValue: { ...extAppConfig, ...extConfig },
-  }, {
-    token: IReporter,
-    useValue: new ExtensionReporter(reporterEmitter),
-  });
+  extInjector.addProviders(
+    {
+      token: AppConfig,
+      useValue: { ...extAppConfig, ...extConfig },
+    },
+    {
+      token: IReporter,
+      useValue: new ExtensionReporter(reporterEmitter),
+    },
+  );
   if (locale) {
     setLanguageId(locale);
   }
@@ -153,9 +158,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
           }
         }
       });
-
     }
-
   } catch (e) {
     logger!.error(e);
   }
@@ -163,12 +166,12 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
 
 function getErrorLogger() {
   // tslint:disable-next-line
-  return logger && logger.error.bind(logger) || console.error.bind(console);
+  return (logger && logger.error.bind(logger)) || console.error.bind(console);
 }
 
 function getWarnLogger() {
   // tslint:disable-next-line
-  return logger && logger.warn.bind(logger) || console.warn.bind(console);
+  return (logger && logger.warn.bind(logger)) || console.warn.bind(console);
 }
 
 function unexpectedErrorHandler(e) {

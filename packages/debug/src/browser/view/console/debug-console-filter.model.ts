@@ -35,10 +35,7 @@ export class DebugConsoleFilterModel {
     let includeQueryMatched = false;
 
     for (const { type, query } of this._parsedQueries) {
-      if (
-        type === 'exclude' &&
-        DebugConsoleFilterModel.matchQuery(query, text)
-      ) {
+      if (type === 'exclude' && DebugConsoleFilterModel.matchQuery(query, text)) {
         return false;
       } else if (type === 'include') {
         includeQueryPresent = true;

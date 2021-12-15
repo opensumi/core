@@ -1,13 +1,10 @@
 import { isEditorOption, getConvertedMonacoOptions } from '@opensumi/ide-editor/lib/browser/preference/converter';
 
 describe('editor Options Converter Tests', () => {
-
   const preferences: Map<string, any> = new Map();
 
   const mockConfigurationService: any = {
-    getValue: (k) => {
-      return preferences.get(k);
-    },
+    getValue: (k) => preferences.get(k),
     setValue: (k, v) => {
       preferences.set(k, v);
     },
@@ -48,5 +45,4 @@ describe('editor Options Converter Tests', () => {
     expect(isEditorOption('editor.tabSize')).toBe(true);
     expect(isEditorOption('diffEditor.enableSplitViewResizing')).toBe(true);
   });
-
 });

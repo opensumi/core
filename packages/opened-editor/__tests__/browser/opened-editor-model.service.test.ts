@@ -26,7 +26,7 @@ describe('OpenedEditorModelService should be work', () => {
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
       notifyDidChangeMetadata: jest.fn(),
     },
     watchEvents: {
@@ -39,41 +39,37 @@ describe('OpenedEditorModelService should be work', () => {
     show: jest.fn(),
   } as any;
   const mockDecorationsService = {
-    onDidChangeDecorations: jest.fn(() => Disposable.create(() => { })),
+    onDidChangeDecorations: jest.fn(() => Disposable.create(() => {})),
   };
   const mockThemeService = {
-    onThemeChange: jest.fn(() => Disposable.create(() => { })),
+    onThemeChange: jest.fn(() => Disposable.create(() => {})),
   };
   const mockWorkbenchEditorService = {
-    onActiveResourceChange: jest.fn(() => Disposable.create(() => { })),
-    onDidEditorGroupsChanged: jest.fn(() => Disposable.create(() => { })),
-    onDidCurrentEditorGroupChanged: jest.fn(() => Disposable.create(() => { })),
-    onDidDecorationChange: jest.fn(() => Disposable.create(() => { })),
+    onActiveResourceChange: jest.fn(() => Disposable.create(() => {})),
+    onDidEditorGroupsChanged: jest.fn(() => Disposable.create(() => {})),
+    onDidCurrentEditorGroupChanged: jest.fn(() => Disposable.create(() => {})),
+    onDidDecorationChange: jest.fn(() => Disposable.create(() => {})),
   };
   const mockExploreStorage = {
-    get: jest.fn(() => {
-      return {
-        specVersion: 1,
-        scrollPosition: 100,
-        expandedDirectories: {
-          atSurface: [],
-          buried: [],
-        },
-      };
-    }),
+    get: jest.fn(() => ({
+      specVersion: 1,
+      scrollPosition: 100,
+      expandedDirectories: {
+        atSurface: [],
+        buried: [],
+      },
+    })),
     set: jest.fn(),
   };
   const mockLabelService = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   };
   const mockOpenedEditorService = {
     on: jest.fn(),
-    onNodeRefreshed: jest.fn(() => Disposable.create(() => { })),
-    onDirtyNodesChange: jest.fn(() => Disposable.create(() => { })),
-    resolveChildren: jest.fn(() => {
-      return [mockRoot];
-    }),
-    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => { })),
+    onNodeRefreshed: jest.fn(() => Disposable.create(() => {})),
+    onDirtyNodesChange: jest.fn(() => Disposable.create(() => {})),
+    resolveChildren: jest.fn(() => [mockRoot]),
+    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => {})),
     startWatchFileEvent: jest.fn(),
     refresh: jest.fn(),
     contextMenuContextKeyService: new MockContextKeyService().createScoped({} as any),
@@ -147,11 +143,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('activeFileDecoration method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.activeFileDecoration(node);
     const decoration = openedEditorModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -160,11 +161,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('activeFileActivedDecoration method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.activeFileActivedDecoration(node);
     const decoration = openedEditorModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -173,11 +179,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('selectFileDecoration method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.selectFileDecoration(node);
     const decoration = openedEditorModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -186,11 +197,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('enactiveFileDecoration method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.activeFileDecoration(node);
     let decoration = openedEditorModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -203,11 +219,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('removeFileDecoration method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.activeFileDecoration(node);
     let decoration = openedEditorModelService.decorations.getDecorations(node);
     openedEditorModelService.removeFileDecoration();
@@ -218,11 +239,16 @@ describe('OpenedEditorModelService should be work', () => {
 
   it('handleTreeBlur method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     openedEditorModelService.initDecorations(mockRoot);
     openedEditorModelService.activeFileDecoration(node);
     let decoration = openedEditorModelService.decorations.getDecorations(node);
@@ -235,11 +261,16 @@ describe('OpenedEditorModelService should be work', () => {
   });
 
   it('handleContextMenu method should be work', () => {
-    const node = new EditorFile(openedEditorService, {
-      uri: mockRoot.uri.resolve('test.js').toString(),
-      name: 'test',
-      icon: '',
-    }, 'tooltip', mockRoot);
+    const node = new EditorFile(
+      openedEditorService,
+      {
+        uri: mockRoot.uri.resolve('test.js').toString(),
+        name: 'test',
+        icon: '',
+      },
+      'tooltip',
+      mockRoot,
+    );
     const mockEvent = {
       stopPropagation: jest.fn(),
       preventDefault: jest.fn(),

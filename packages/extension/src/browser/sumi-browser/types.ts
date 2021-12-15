@@ -7,21 +7,23 @@ import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ISumiBrowserContributions {
-  [containerId: string]: {
-    type?: 'replace' | 'add',
-    view: IEditorViewContribution[] | ITabBarViewContribution[];
-  } | undefined;
+  [containerId: string]:
+    | {
+        type?: 'replace' | 'add';
+        view: IEditorViewContribution[] | ITabBarViewContribution[];
+      }
+    | undefined;
   left?: {
-    type: 'replace' | 'add',
-    view: ITabBarViewContribution[],
+    type: 'replace' | 'add';
+    view: ITabBarViewContribution[];
   };
   right?: {
-    type: 'replace' | 'add',
-    view: ITabBarViewContribution[],
+    type: 'replace' | 'add';
+    view: ITabBarViewContribution[];
   };
   bottom?: {
-    type: 'replace' | 'add',
-    view: ITabBarViewContribution[],
+    type: 'replace' | 'add';
+    view: ITabBarViewContribution[];
   };
   editor?: {
     view: IEditorViewContribution[];
@@ -30,13 +32,12 @@ export interface ISumiBrowserContributions {
     view: IEditorSideViewContribution[];
   };
   toolBar?: {
-    position?: ToolBarPosition // @deprecated
+    position?: ToolBarPosition; // @deprecated
     view: IToolBarViewContribution[];
   };
 }
 
 export interface IToolBarViewContribution {
-
   /**
    * id
    */
@@ -59,7 +60,6 @@ export interface IToolBarViewContribution {
 }
 
 export interface ITabBarViewContribution {
-
   /**
    * id
    */
@@ -115,7 +115,6 @@ export interface ITabBarViewContribution {
 }
 
 export interface IEditorViewContribution {
-
   /**
    * id
    */
@@ -170,7 +169,7 @@ export interface IEditorViewContribution {
    */
   tabTitle?: string;
 
-   /**
+  /**
    * 相对于插件路径的icon地址
    * 如果需要更复杂的图标Resolve，需要在 sumi node进程中注册ResourceProvider
    */
@@ -184,8 +183,8 @@ export interface IEditorSideViewContribution {
   id: string;
 
   /**
-  * editor组件主体
-  */
+   * editor组件主体
+   */
   component: React.FC;
 
   /**
@@ -198,22 +197,23 @@ export interface IEditorSideViewContribution {
   when?: string | ContextKeyExpr;
 }
 export interface IRunTimeParams {
-  getExtensionExtendService: (extension: IExtension, componentId: string) => {
+  getExtensionExtendService: (
+    extension: IExtension,
+    componentId: string,
+  ) => {
     extendProtocol: {
       getProxy: (identifier: ProxyIdentifier<any>) => {
-      node: any,
-      worker: any,
-      },
-      set: <T>(identifier: ProxyIdentifier<T>, service: T) => void,
-    },
-    extendService: any,
+        node: any;
+        worker: any;
+      };
+      set: <T>(identifier: ProxyIdentifier<T>, service: T) => void;
+    };
+    extendService: any;
   };
 }
 
 export abstract class AbstractSumiBrowserContributionRunner {
-
   constructor(protected extension: IExtension, protected contribution: ISumiBrowserContributions) {}
 
   abstract run(param: IRunTimeParams): IDisposable;
-
 }

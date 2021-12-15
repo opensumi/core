@@ -1,4 +1,10 @@
-import { CommandService, IEventBus, EventBusImpl, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent } from '@opensumi/ide-core-common';
+import {
+  CommandService,
+  IEventBus,
+  EventBusImpl,
+  BrowserConnectionCloseEvent,
+  BrowserConnectionOpenEvent,
+} from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -12,17 +18,21 @@ describe('test for browser/status-bar-contribution.ts', () => {
   const fakeExecCmd = jest.fn();
 
   beforeEach(() => {
-    injector = createBrowserInjector([ ClientAddonModule ], new MockInjector([
-      {
-        token: IEventBus,
-        useClass: EventBusImpl,
-      }, {
-        token: CommandService,
-        useValue: {
-          executeCommand: fakeExecCmd,
+    injector = createBrowserInjector(
+      [ClientAddonModule],
+      new MockInjector([
+        {
+          token: IEventBus,
+          useClass: EventBusImpl,
         },
-      },
-    ]));
+        {
+          token: CommandService,
+          useValue: {
+            executeCommand: fakeExecCmd,
+          },
+        },
+      ]),
+    );
 
     eventBus = injector.get(IEventBus);
     // 获取对象实例的时候才开始注册事件

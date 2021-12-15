@@ -5,8 +5,8 @@ import { DebugStackFrame } from './debug-stack-frame';
 import { DEBUG_REPORT_NAME } from '../../common';
 
 export type StoppedDetails = DebugProtocol.StoppedEvent['body'] & {
-  framesErrorMessage?: string
-  totalFrames?: number,
+  framesErrorMessage?: string;
+  totalFrames?: number;
 };
 
 export class DebugThreadData {
@@ -18,9 +18,7 @@ export class DebugThread extends DebugThreadData {
   protected readonly _onDidChanged = new Emitter<void>();
   readonly onDidChanged: Event<void> = this._onDidChanged.event;
 
-  constructor(
-    readonly session: DebugSession,
-  ) {
+  constructor(readonly session: DebugSession) {
     super();
   }
 
@@ -91,8 +89,8 @@ export class DebugThread extends DebugThreadData {
   }
 
   protected pendingFetch = Promise.resolve<DebugStackFrame[]>([]);
-  async rawFetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
-    return this.pendingFetch = this.pendingFetch.then(async () => {
+  async rawFetchFrames(levels = 20): Promise<DebugStackFrame[]> {
+    return (this.pendingFetch = this.pendingFetch.then(async () => {
       try {
         const start = this.frameCount;
         const frames = await this.doFetchFrames(start, levels);
@@ -101,10 +99,10 @@ export class DebugThread extends DebugThreadData {
       } catch (e) {
         return [];
       }
-    });
+    }));
   }
 
-  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+  async fetchFrames(levels = 20): Promise<DebugStackFrame[]> {
     const frames = await this.rawFetchFrames(levels);
     this.updateCurrentFrame();
     return frames;
@@ -112,7 +110,8 @@ export class DebugThread extends DebugThreadData {
 
   protected async doFetchFrames(startFrame: number, levels: number): Promise<DebugProtocol.StackFrame[]> {
     try {
-      const response = await this.session.sendRequest('stackTrace',
+      const response = await this.session.sendRequest(
+        'stackTrace',
         this.toArgs<Partial<DebugProtocol.StackTraceArguments>>({ startFrame, levels }),
       );
       if (this.stoppedDetails) {
@@ -143,7 +142,6 @@ export class DebugThread extends DebugThreadData {
     const values = [...result.values()];
     frontEndTime('doUpdateFrames');
     return values;
-
   }
   protected clearFrames(): void {
     this._frames.clear();
@@ -152,9 +150,8 @@ export class DebugThread extends DebugThreadData {
   protected updateCurrentFrame(): void {
     const { currentFrame } = this;
     const frameId = currentFrame && currentFrame.raw.id;
-    this.currentFrame = typeof frameId === 'number' &&
-      this._frames.get(frameId) ||
-      this._frames.values().next().value;
+    this.currentFrame =
+      (typeof frameId === 'number' && this._frames.get(frameId)) || this._frames.values().next().value;
   }
 
   protected toArgs<T extends object>(arg?: T): { threadId: number } & T {

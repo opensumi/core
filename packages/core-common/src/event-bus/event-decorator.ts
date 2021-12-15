@@ -4,7 +4,7 @@ import { IEventBus } from './event-bus-types';
 
 const EVENT_TOKEN = Symbol('EVENT_TOKEN');
 
-import { Autowired } from '@opensumi/di'
+import { Autowired } from '@opensumi/di';
 import { Disposable } from '../disposable';
 
 export class WithEventBus extends Disposable {
@@ -16,9 +16,7 @@ export class WithEventBus extends Disposable {
 
     const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, this) || new Map();
     for (const [key, Constructor] of map.entries()) {
-      const dispose = this.eventBus.on(Constructor, (event: any) => {
-        return (this as any)[key](event);
-      });
+      const dispose = this.eventBus.on(Constructor, (event: any) => (this as any)[key](event));
       this.addDispose(dispose);
     }
   }
@@ -29,5 +27,5 @@ export function OnEvent<T extends BasicEvent<any>>(Constructor: ConstructorOf<T>
     const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, target) || new Map();
     map.set(key, Constructor);
     Reflect.defineMetadata(EVENT_TOKEN, map, target);
-  }
+  };
 }

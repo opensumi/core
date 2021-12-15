@@ -37,22 +37,24 @@ export const Dialog = observer(() => {
       type='confirm'
       messageType={type}
       icon={icon}
-      buttons={buttons.length ? buttons.map((button, index) => (
-        <Button
-          size='large'
-          onClick={handlerClickButton(button)}
-          key={button}
-          type={index === buttons.length - 1 ? 'primary' : 'secondary'}>
-          { mnemonicButtonLabel(button, true) }
-        </Button>
-      )) : (
-        <Button
-          size='large'
-          onClick={handleClose}
-          type='primary'>
-          {localize('dialog.confirm')}
-        </Button>
-      )}
+      buttons={
+        buttons.length ? (
+          buttons.map((button, index) => (
+            <Button
+              size='large'
+              onClick={handlerClickButton(button)}
+              key={button}
+              type={index === buttons.length - 1 ? 'primary' : 'secondary'}
+            >
+              {mnemonicButtonLabel(button, true)}
+            </Button>
+          ))
+        ) : (
+          <Button size='large' onClick={handleClose} type='primary'>
+            {localize('dialog.confirm')}
+          </Button>
+        )
+      }
     />
   );
 });

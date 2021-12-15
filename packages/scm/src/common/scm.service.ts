@@ -5,7 +5,6 @@ import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm'
 import { observable, computed, action } from 'mobx';
 
 class SCMInput implements ISCMInput {
-
   private _value = '';
 
   get value(): string {
@@ -64,7 +63,6 @@ class SCMInput implements ISCMInput {
 }
 
 class SCMRepository implements ISCMRepository {
-
   private _onDidFocus = new Emitter<void>();
   readonly onDidFocus: Event<void> = this._onDidFocus.event;
 
@@ -81,10 +79,7 @@ class SCMRepository implements ISCMRepository {
 
   readonly input: ISCMInput = new SCMInput();
 
-  constructor(
-    public readonly provider: ISCMProvider,
-    private disposable: IDisposable,
-  ) { }
+  constructor(public readonly provider: ISCMProvider, private disposable: IDisposable) {}
 
   focus(): void {
     this._onDidFocus.fire();
@@ -105,14 +100,19 @@ class SCMRepository implements ISCMRepository {
 @Injectable()
 export class SCMService {
   private _selectedRepositories: ISCMRepository[] = [];
-  public get selectedRepositories(): ISCMRepository[] { return [...this._selectedRepositories]; }
+  public get selectedRepositories(): ISCMRepository[] {
+    return [...this._selectedRepositories];
+  }
 
   private _providerIds = new Set<string>();
   private _repositories: ISCMRepository[] = [];
-  public get repositories(): ISCMRepository[] { return [...this._repositories]; }
+  public get repositories(): ISCMRepository[] {
+    return [...this._repositories];
+  }
 
   private _onDidChangeSelectedRepositories = new Emitter<ISCMRepository[]>();
-  public readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]> = this._onDidChangeSelectedRepositories.event;
+  public readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]> =
+    this._onDidChangeSelectedRepositories.event;
 
   private _onDidAddProvider = new Emitter<ISCMRepository>();
   public readonly onDidAddRepository: Event<ISCMRepository> = this._onDidAddProvider.event;
@@ -150,10 +150,10 @@ export class SCMService {
 
     const repository = new SCMRepository(provider, disposable);
     // 过滤掉只剩下 selected#true 的事件
-    const selectedDisposable = Event.filter(
-      repository.onDidChangeSelection,
-      (e) => e.selected,
-    )(this.onDidChangeSelection, this);
+    const selectedDisposable = Event.filter(repository.onDidChangeSelection, (e) => e.selected)(
+      this.onDidChangeSelection,
+      this,
+    );
 
     this._repositories.push(repository);
     this._onDidAddProvider.fire(repository);
@@ -172,7 +172,8 @@ export class SCMService {
     }
 
     // 将其他 repository#selected 设置为 false
-    this._repositories.filter((n) => n !== repository)
+    this._repositories
+      .filter((n) => n !== repository)
       .forEach((repo) => {
         repo.setSelected(false);
       });

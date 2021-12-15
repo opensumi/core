@@ -1,4 +1,4 @@
-import {  IEventBus, EventBusImpl, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
+import { IEventBus, EventBusImpl, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
@@ -7,17 +7,19 @@ import { WebSocket, Server } from 'mock-socket';
 (global as any).WebSocket = WebSocket;
 
 describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
-
   let injector: MockInjector;
   let eventBus: IEventBus;
   let isError = false;
   beforeEach(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: IEventBus,
-        useClass: EventBusImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IEventBus,
+          useClass: EventBusImpl,
+        },
+      ]),
+    );
 
     eventBus = injector.get(IEventBus);
   });
@@ -29,7 +31,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
       isError = true;
     });
 
-    createClientConnection2(injector, [], fakeWSURL, () => { });
+    createClientConnection2(injector, [], fakeWSURL, () => {});
     await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();

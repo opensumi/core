@@ -2,8 +2,17 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IconService } from '../../src/browser';
 import { IIconService, IconType } from '../../src';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@opensumi/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@opensumi/ide-core-browser/__mocks__/preference';
+import {
+  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+  ILoggerManagerClient,
+  IFileServiceClient,
+  URI,
+} from '@opensumi/ide-core-browser';
+import {
+  MockPreferenceSchemaProvider,
+  MockPreferenceSettingsService,
+} from '@opensumi/ide-core-browser/__mocks__/preference';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
@@ -176,12 +185,17 @@ describe('icon theme test', () => {
   };
 
   it('should be able to register icon theme', () => {
-    service.registerIconThemes([{
-      id: 'test-icon-theme',
-      label: 'Test IconTheme',
-      uiTheme: 'vs',
-      path: './test/path',
-    }], new URI('file://mock/path'));
+    service.registerIconThemes(
+      [
+        {
+          id: 'test-icon-theme',
+          label: 'Test IconTheme',
+          uiTheme: 'vs',
+          path: './test/path',
+        },
+      ],
+      new URI('file://mock/path'),
+    );
     const infos = service.getAvailableThemeInfos();
     expect(infos.length).toEqual(1);
   });
@@ -249,18 +263,27 @@ describe('icon theme test', () => {
     expect(extraIconNode!.innerHTML.includes(randomIconClass)).toBeTruthy();
 
     // base64 svg
-    const iconClass1 = service.fromIcon('', `data:image/svg+xml,%3Csvg width='30' height='30'%3E%3Ctext x='10' y='20' %3Ehello%3C/text%3E%3C/svg%3E`, IconType.Base64);
+    const iconClass1 = service.fromIcon(
+      '',
+      "data:image/svg+xml,%3Csvg width='30' height='30'%3E%3Ctext x='10' y='20' %3Ehello%3C/text%3E%3C/svg%3E",
+      IconType.Base64,
+    );
     const randomIconClass1 = iconClass1!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
     expect(extraIconNode!.innerHTML.includes(randomIconClass1)).toBeTruthy();
   });
 
   it('should be able to load font icons', async (done) => {
-    service.registerIconThemes([{
-      id: 'test-font-icon-theme',
-      label: 'Test IconTheme',
-      uiTheme: 'vs',
-      path: './test/font/path',
-    }], new URI('file://mock/path'));
+    service.registerIconThemes(
+      [
+        {
+          id: 'test-font-icon-theme',
+          label: 'Test IconTheme',
+          uiTheme: 'vs',
+          path: './test/font/path',
+        },
+      ],
+      new URI('file://mock/path'),
+    );
     await service.applyTheme('test-font-icon-theme');
     expect(service.currentThemeId).toEqual('test-font-icon-theme');
     done();

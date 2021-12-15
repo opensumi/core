@@ -80,7 +80,10 @@ export function killPty(json: RPCRequest<{ sessionId: string }>) {
   return _makeResponse(json, { sessionId });
 }
 
-export function createPty(socket: WebSocket, json: RPCRequest<{ sessionId: string, cols: number, rows: number }>): RPCResponse<{ sessionId: string }> {
+export function createPty(
+  socket: WebSocket,
+  json: RPCRequest<{ sessionId: string; cols: number; rows: number }>,
+): RPCResponse<{ sessionId: string }> {
   const { sessionId, cols, rows } = json.params;
 
   const ptyProcess = pty.spawn(shell, [], {
@@ -99,14 +102,14 @@ export function createPty(socket: WebSocket, json: RPCRequest<{ sessionId: strin
   ptyProcess.onExit(() => {
     try {
       socket.close();
-    } catch { }
+    } catch {}
   });
 
   cache.set(sessionId, ptyProcess);
   return _makeResponse(json, { sessionId });
 }
 
-export function resizePty(json: RPCRequest<{ sessionId: string, cols: number, rows: number }>) {
+export function resizePty(json: RPCRequest<{ sessionId: string; cols: number; rows: number }>) {
   const { sessionId, cols, rows } = json.params;
   const ptyProcess = cache.get(sessionId);
 
@@ -149,15 +152,17 @@ export function createWsServer() {
         handleStdinMessage(json);
       }
     });
-    socket.on('error', () => { });
+    socket.on('error', () => {});
   });
 
   return server;
 }
 
 export function createProxyServer() {
-  return httpProxy.createServer({
-    target: localhost(getPort()),
-    ws: true,
-  }).listen(getProxyPort());
+  return httpProxy
+    .createServer({
+      target: localhost(getPort()),
+      ws: true,
+    })
+    .listen(getProxyPort());
 }

@@ -3,14 +3,14 @@ import { MockContextKeyService } from '../../monaco/__mocks__/monaco.context-key
 import { RawContextKey } from '../src/raw-context-key';
 
 // tslint:disable-next-line:new-parens
-const contextKeyService = new class extends MockContextKeyService {
+const contextKeyService = new (class extends MockContextKeyService {
   match(bool) {
     if (bool) {
       return bool;
     }
     return true;
   }
-};
+})();
 
 describe('test for @opensumi/ide-core-browser/src/raw-context-key', () => {
   const contextA = new RawContextKey<boolean>('contextA', false);

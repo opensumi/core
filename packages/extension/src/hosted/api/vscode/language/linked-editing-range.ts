@@ -8,9 +8,13 @@ export class LinkedEditingRangeAdapter {
   constructor(
     private readonly _documents: ExtensionDocumentDataManager,
     private readonly _provider: vscode.LinkedEditingRangeProvider,
-  ) { }
+  ) {}
 
-  provideLinkedEditingRanges(resource: Uri, position: IPosition, token: CancellationToken): Promise<modes.LinkedEditingRanges | undefined> {
+  provideLinkedEditingRanges(
+    resource: Uri,
+    position: IPosition,
+    token: CancellationToken,
+  ): Promise<modes.LinkedEditingRanges | undefined> {
     const doc = this._documents.getDocument(resource);
 
     if (!doc) {

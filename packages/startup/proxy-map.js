@@ -1,12 +1,8 @@
 const SCM_PLATFORM = process.env.SCM_PLATFORM;
 
-const SCM_API_HOST = SCM_PLATFORM === 'aone'
-  ? 'https://code.aone.alibaba-inc.com'
-  : 'https://code.alipay.com';
+const SCM_API_HOST = SCM_PLATFORM === 'aone' ? 'https://code.aone.alibaba-inc.com' : 'https://code.alipay.com';
 
-const PRIVATE_TOKEN = SCM_PLATFORM === 'aone'
-  ? process.env.AONECODE_SK
-  : process.env.ANTCODE_SK;
+const PRIVATE_TOKEN = SCM_PLATFORM === 'aone' ? process.env.AONECODE_SK : process.env.ANTCODE_SK;
 
 const COMMON_HEADERS = {
   'private-token': PRIVATE_TOKEN,
@@ -23,9 +19,10 @@ module.exports = {
     pathRewrite: (path) => {
       if (treeApiRegex.test(path)) {
         // tree 接口 aone 和 antcode 的不太一样
-        return path.replace(treeApiRegex, (_, p1) => {
-          return `/api/${SCM_PLATFORM === 'aone' ? 'v4' : 'v3'}/projects/${p1}/repository/tree`;
-        });
+        return path.replace(
+          treeApiRegex,
+          (_, p1) => `/api/${SCM_PLATFORM === 'aone' ? 'v4' : 'v3'}/projects/${p1}/repository/tree`,
+        );
       }
       return path.replace(/^\/code-service/, () => '/api');
     },

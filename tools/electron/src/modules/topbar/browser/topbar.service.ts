@@ -4,13 +4,11 @@ import { ITopbarNodeServer, ITopbarService, TopbarNodeServerPath } from '../comm
 
 @Injectable()
 export class TopbarService extends Disposable implements ITopbarService {
+  @Autowired(TopbarNodeServerPath)
+  topbarNodeServer: ITopbarNodeServer;
 
-    @Autowired(TopbarNodeServerPath)
-    topbarNodeServer: ITopbarNodeServer;
-
-    sayHelloFromNode() {
-        console.log('browser hello!');
-        this.topbarNodeServer.topbarHello();
-    }
-
+  sayHelloFromNode() {
+    console.log('browser hello!');
+    this.topbarNodeServer.topbarHello();
+  }
 }

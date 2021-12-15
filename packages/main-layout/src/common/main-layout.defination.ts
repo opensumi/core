@@ -78,25 +78,26 @@ export interface IMainLayoutService {
 export const MainLayoutContribution = Symbol('MainLayoutContribution');
 
 export interface MainLayoutContribution {
-
   // 将LayoutConfig渲染到各Slot后调用
   onDidRender?(): void;
 
   provideDefaultState?(): SideStateManager;
-
 }
 
 /**
  * 当有新的TabBar被注册时发送的新事件
  */
-export class TabBarRegistrationEvent extends BasicEvent<{ tabBarId: string }> { }
+export class TabBarRegistrationEvent extends BasicEvent<{ tabBarId: string }> {}
 
 export const IViewsRegistry = Symbol('IViewsRegistry');
 
 export interface IViewsRegistry {
   readonly onDidChangeViewWelcomeContent: Event<string>;
   registerViewWelcomeContent(id: string, descriptor: IViewContentDescriptor): IDisposable;
-  registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable>;
+  registerViewWelcomeContent2<TKey>(
+    id: string,
+    viewContentMap: Map<TKey, IViewContentDescriptor>,
+  ): Map<TKey, IDisposable>;
   getViewWelcomeContent(id: string): IViewContentDescriptor[];
 }
 
@@ -110,7 +111,7 @@ export interface IViewContentDescriptor {
 
 export class ViewCollapseChangedEvent extends BasicEvent<{
   viewId: string;
-  collapsed: boolean
+  collapsed: boolean;
 }> {}
 
 export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.left, SlotLocation.right]);

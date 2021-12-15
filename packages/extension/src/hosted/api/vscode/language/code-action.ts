@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -34,9 +34,14 @@ export class CodeActionAdapter {
     private readonly provider: vscode.CodeActionProvider,
     private readonly document: ExtensionDocumentDataManager,
     private readonly diagnostics: Diagnostics,
-  ) { }
+  ) {}
 
-  async provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: CodeActionContext, commandConverter: CommandsConverter): Promise<ICodeActionListDto | undefined> {
+  async provideCodeAction(
+    resource: URI,
+    rangeOrSelection: Range | Selection,
+    context: CodeActionContext,
+    commandConverter: CommandsConverter,
+  ): Promise<ICodeActionListDto | undefined> {
     const document = this.document.getDocumentData(resource);
     if (!document) {
       return Promise.reject(new Error(`There are no document for ${resource}`));
@@ -44,8 +49,8 @@ export class CodeActionAdapter {
 
     const doc = document.document;
     const ran = CodeActionAdapter._isSelection(rangeOrSelection)
-      ? Converter.toSelection(rangeOrSelection) as vscode.Selection
-      : Converter.toRange(rangeOrSelection) as vscode.Range;
+      ? (Converter.toSelection(rangeOrSelection) as vscode.Selection)
+      : (Converter.toRange(rangeOrSelection) as vscode.Range);
     const allDiagnostics: vscode.Diagnostic[] = [];
 
     for (const diagnostic of this.diagnostics.getDiagnostics(resource)) {
@@ -60,7 +65,9 @@ export class CodeActionAdapter {
       triggerKind: Converter.CodeActionTriggerKind.to(context.trigger),
     };
     let cacheId: number | undefined;
-    const actions = await Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, createToken())).then((commandsOrActions) => {
+    const actions = await Promise.resolve(
+      this.provider.provideCodeActions(doc, ran, codeActionContext, createToken()),
+    ).then((commandsOrActions) => {
       if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
         return undefined!;
       }
@@ -85,11 +92,15 @@ export class CodeActionAdapter {
             if (!candidate.kind) {
               /* tslint:disable-next-line:max-line-length */
               // tslint:disable-next-line:no-console
-              console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`);
+              console.warn(
+                `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
+              );
             } else if (!codeActionContext.only.contains(candidate.kind)) {
               /* tslint:disable-next-line:max-line-length */
               // tslint:disable-next-line:no-console
-              console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`);
+              console.warn(
+                `Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`,
+              );
             }
           }
 
@@ -98,7 +109,7 @@ export class CodeActionAdapter {
             title: candidate.title,
             command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
             diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
-            edit: candidate.edit && Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit,
+            edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
             kind: candidate.kind && candidate.kind.value,
             isPreferred: candidate.isPreferred,
             disabled: candidate.disabled?.reason,
@@ -119,7 +130,10 @@ export class CodeActionAdapter {
     return undefined;
   }
 
-  public async resolveCodeAction(id: ChainedCacheId, token: vscode.CancellationToken): Promise<IWorkspaceEditDto | undefined> {
+  public async resolveCodeAction(
+    id: ChainedCacheId,
+    token: vscode.CancellationToken,
+  ): Promise<IWorkspaceEditDto | undefined> {
     const [sessionId, itemId] = id;
     const item = this._cache.get(sessionId, itemId);
     if (!item || CodeActionAdapter._isCommand(item)) {
@@ -129,9 +143,7 @@ export class CodeActionAdapter {
       return; // this should not happen...
     }
     const resolvedItem = (await this.provider.resolveCodeAction(item, token)) ?? item;
-    return resolvedItem?.edit
-      ? Converter.WorkspaceEdit.from(resolvedItem.edit)
-      : undefined;
+    return resolvedItem?.edit ? Converter.WorkspaceEdit.from(resolvedItem.edit) : undefined;
   }
 
   public releaseCodeActions(cachedId: number): void {
@@ -148,12 +160,11 @@ export class CodeActionAdapter {
   // tslint:disable-next-line:no-any
   private static _isSelection(obj: any): obj is Selection {
     return (
-      obj
-      && (typeof obj.selectionStartLineNumber === 'number')
-      && (typeof obj.selectionStartColumn === 'number')
-      && (typeof obj.positionLineNumber === 'number')
-      && (typeof obj.positionColumn === 'number')
+      obj &&
+      typeof obj.selectionStartLineNumber === 'number' &&
+      typeof obj.selectionStartColumn === 'number' &&
+      typeof obj.positionLineNumber === 'number' &&
+      typeof obj.positionColumn === 'number'
     );
   }
-
 }

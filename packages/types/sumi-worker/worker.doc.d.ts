@@ -4,7 +4,6 @@ declare module 'sumi-worker' {
    * [lines](#TextLine) and knowledge about an underlying resource like a file.
    */
   export interface TextDocument {
-
     /**
      * The associated uri for this document.
      *
@@ -183,7 +182,7 @@ declare module 'sumi-worker' {
      * @param options Options to control how the document will be created.
      * @return A promise that resolves to a [document](#TextDocument).
      */
-    export function openTextDocument(options?: { language?: string; content?: string; }): Thenable<TextDocument>;
+    export function openTextDocument(options?: { language?: string; content?: string }): Thenable<TextDocument>;
 
     /**
      * An event that is emitted when a [text document](#TextDocument) is opened or when the language id
@@ -251,8 +250,10 @@ declare module 'sumi-worker' {
      * @param provider A content provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerTextDocumentContentProvider(scheme: string, provider: TextDocumentContentProvider): Disposable;
-
+    export function registerTextDocumentContentProvider(
+      scheme: string,
+      provider: TextDocumentContentProvider,
+    ): Disposable;
   }
 
   /**
@@ -265,7 +266,6 @@ declare module 'sumi-worker' {
    * asked.
    */
   export interface TextDocumentContentProvider {
-
     /**
      * An event to signal a resource has changed.
      */
@@ -318,7 +318,6 @@ declare module 'sumi-worker' {
    * that resolves to an array of [text edits](#TextEdit).
    */
   export interface TextDocumentWillSaveEvent {
-
     /**
      * The document that will be saved.
      */
@@ -349,8 +348,6 @@ declare module 'sumi-worker' {
      *
      * @param thenable A thenable that resolves to [pre-save-edits](#TextEdit).
      */
-    waitUntil(thenable: Thenable<TextEdit[]> |  Thenable<any>): void;
-
+    waitUntil(thenable: Thenable<TextEdit[]> | Thenable<any>): void;
   }
-
 }

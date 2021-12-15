@@ -1,4 +1,3 @@
-
 import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
 import { FileStat } from '@opensumi/ide-file-service';
 import { Uri } from '@opensumi/ide-core-common';
@@ -9,7 +8,11 @@ export interface IExtensionStorageServer {
   set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<void>;
   get(key: string, isGlobal: boolean): Promise<KeysToAnyValues>;
   getAll(isGlobal: boolean): Promise<KeysToKeysToAnyValue>;
-  init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStorageUri>;
+  init(
+    workspace: FileStat | undefined,
+    roots: FileStat[],
+    extensionStorageDirName?: string,
+  ): Promise<ExtensionStorageUri>;
 }
 
 export const IExtensionStorageService = Symbol('ExtensionStorageService');

@@ -24,20 +24,27 @@ export class LayoutState {
     this.globalLayoutStorage = await this.getStorage(STORAGE_NAMESPACE.GLOBAL_LAYOUT);
     await this.preferenceService.ready;
     this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
-    this.disposableCollection.push(this.preferenceService.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
-        this.saveLayoutWithWorkspace = e.newValue;
-      }
-    }));
+    this.disposableCollection.push(
+      this.preferenceService.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
+          this.saveLayoutWithWorkspace = e.newValue;
+        }
+      }),
+    );
   }
 
   getState<T>(key: string, defaultState: T): T {
     let storedState: T;
     try {
       if (this.saveLayoutWithWorkspace) {
-        storedState = LAYOUT_STATE.isScoped(key) || LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
+        storedState =
+          LAYOUT_STATE.isScoped(key) || LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key)
+            ? this.layoutStorage.get<any>(key, defaultState)
+            : this.globalLayoutStorage.get<any>(key, defaultState);
       } else {
-        storedState = LAYOUT_STATE.isScoped(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
+        storedState = LAYOUT_STATE.isScoped(key)
+          ? this.layoutStorage.get<any>(key, defaultState)
+          : this.globalLayoutStorage.get<any>(key, defaultState);
       }
     } catch (err) {
       this.logger.warn('Layout state parse 出错，使用默认 state');
@@ -51,7 +58,12 @@ export class LayoutState {
   }
 
   private debounceSave = debounce((key, state) => {
-    this.setStorageValue(key, state, LAYOUT_STATE.isScoped(key) || (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key))));
+    this.setStorageValue(
+      key,
+      state,
+      LAYOUT_STATE.isScoped(key) ||
+        (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key))),
+    );
   }, 60);
 
   private setStorageValue(key: string, state: object, scope?: boolean) {
@@ -64,11 +76,9 @@ export class LayoutState {
       localStorage.setItem(key, JSON.stringify(state));
     }
   }
-
 }
 
 export namespace LAYOUT_STATE {
-
   export const MAIN = 'layout';
 
   export const STATUSBAR = 'statusbar';
@@ -92,5 +102,4 @@ export namespace LAYOUT_STATE {
   export function getTabbarSpace(location: string) {
     return `tabbar/${location}`;
   }
-
 }

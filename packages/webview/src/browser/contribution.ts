@@ -14,7 +14,6 @@ const WEBVIEW_DEVTOOLS_COMMAND = {
 
 @Domain(BrowserEditorContribution, CommandContribution)
 export class WebviewModuleContribution implements BrowserEditorContribution, CommandContribution {
-
   @Autowired(IWebviewService)
   webviewService: WebviewServiceImpl;
 
@@ -39,7 +38,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
         for (const resources of openedResources) {
           for (const r of resources) {
             if (r.uri.scheme === EDITOR_WEBVIEW_SCHEME && r.uri.toString() === resource.uri.toString()) {
-              count ++;
+              count++;
             }
             if (count > 1) {
               return true;
@@ -71,9 +70,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           }
         }
       },
-      isEnabled: () => {
-        return isElectronRenderer();
-      },
+      isEnabled: () => isElectronRenderer(),
     });
   }
 }

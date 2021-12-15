@@ -1,5 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Ericsson and others.
  *
  * This program and the accompanying materials are made available under the
@@ -25,10 +25,7 @@ export class TokenizerState implements monaco.languages.IState {
   }
 
   equals(other: monaco.languages.IState): boolean {
-    return (
-      other instanceof TokenizerState &&
-      (other === this || other.ruleStack === this.ruleStack)
-    );
+    return other instanceof TokenizerState && (other === this || other.ruleStack === this.ruleStack);
   }
 }
 
@@ -74,13 +71,8 @@ export function createTextmateTokenizer(
   grammar: IGrammar,
   options: TokenizerOption,
 ): monaco.languages.EncodedTokensProvider {
-  if (
-    options.lineLimit !== undefined &&
-    (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))
-  ) {
-    throw new Error(
-      `The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`,
-    );
+  if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {
+    throw new Error(`The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`);
   }
   return {
     getInitialState: () => new TokenizerState(INITIAL),
@@ -112,8 +104,7 @@ export function createTextmateTokenizer(
       const result = grammar.tokenizeLine(line, state.ruleStack);
       return {
         endState: new TokenizerState(result.ruleStack),
-        tokens: result.tokens
-          .map((t) => ({ ...t, scopes: t.scopes.join('\r\n') })),
+        tokens: result.tokens.map((t) => ({ ...t, scopes: t.scopes.join('\r\n') })),
       };
     },
   };

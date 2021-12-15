@@ -3,11 +3,10 @@ import { WebviewPanelManager } from '../webview-host/webview-manager';
 import { ipcRenderer } from 'electron';
 
 export class ElectronWebviewChannel implements IWebviewChannel {
-
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
-  fakeLoad: boolean = false;
+  fakeLoad = false;
   // tslint:disable-next-line: no-unused-variable
   private isInDevelopmentMode = false;
 

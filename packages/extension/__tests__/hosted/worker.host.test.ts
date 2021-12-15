@@ -24,7 +24,6 @@ const enum MessageType {
 (global as any).MessageChannel = MessageChannel;
 
 describe('Extension Worker Thread Test Suites', () => {
-
   let extHostImpl: ExtensionWorkerHost;
   let rpcProtocol: RPCProtocol;
 
@@ -106,7 +105,9 @@ describe('Extension Worker Thread Test Suites', () => {
     const id = mockExtensionProps2.id;
     await extHostImpl.$activateExtension(id);
     const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
-    const proxies = rpcProtocol.getProxy({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${id}:FakeComponentId` } as ProxyIdentifier<any>);
+    const proxies = rpcProtocol.getProxy({
+      serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${id}:FakeComponentId`,
+    } as ProxyIdentifier<any>);
     // 这里其实没法覆盖到，因为 getProxy 永远都返回不为空..
     expect(proxies).toBeDefined();
   });

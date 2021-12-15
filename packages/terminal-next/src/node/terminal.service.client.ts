@@ -54,12 +54,12 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, rows: number, cols: number, options: TerminalOptions ) {
+  async create(id: string, rows: number, cols: number, options: TerminalOptions) {
     const clientId = this.clientId;
 
     this.terminalService.setClient(clientId, this);
     this.logger.log('create pty id', id);
-    const pty = await this.terminalService.create(id, rows, cols, options) as IPty;
+    const pty = (await this.terminalService.create(id, rows, cols, options)) as IPty;
     this.terminalMap.set(id, pty);
     return {
       pid: pty.pid,
@@ -117,5 +117,4 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     });
     */
   }
-
 }

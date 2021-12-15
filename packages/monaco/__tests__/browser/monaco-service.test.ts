@@ -10,21 +10,26 @@ import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 let injector: MockInjector;
 
 describe(' monaco service test', () => {
-
   injector = createBrowserInjector([]);
-  (global as any).amdLoader = {require: null};
-  injector.overrideProviders(...[{
-    token: MonacoService,
-    useClass: MonacoServiceImpl,
-  }, {
-    token: MonacoOverrideServiceRegistry,
-    useClass: MonacoOverrideServiceRegistryImpl,
-  }, {
-    token: ILogger,
-    useClass: MockLogger,
-  }]);
+  (global as any).amdLoader = { require: null };
+  injector.overrideProviders(
+    ...[
+      {
+        token: MonacoService,
+        useClass: MonacoServiceImpl,
+      },
+      {
+        token: MonacoOverrideServiceRegistry,
+        useClass: MonacoOverrideServiceRegistryImpl,
+      },
+      {
+        token: ILogger,
+        useClass: MockLogger,
+      },
+    ],
+  );
 
-  (global as any).amdLoader = {require: null};
+  (global as any).amdLoader = { require: null };
 
   it('should be able to create', async () => {
     const service: MonacoService = injector.get(MonacoService);
@@ -47,5 +52,4 @@ describe(' monaco service test', () => {
   afterAll(() => {
     injector.disposeAll();
   });
-
 });

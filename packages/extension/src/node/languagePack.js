@@ -1,91 +1,98 @@
 function factory(nodeRequire, path, fs) {
   /**
-    *  @param  {string}  file
-    *  @returns  {Promise<boolean>}
-    */
+   *  @param  {string}  file
+   *  @returns  {Promise<boolean>}
+   */
   function exists(file) {
-    return new Promise(c => fs.exists(file, c));
+    return new Promise((c) => fs.exists(file, c));
   }
 
   /**
-    *  @param  {string}  file
-    *  @returns  {Promise<void>}
-    */
+   *  @param  {string}  file
+   *  @returns  {Promise<void>}
+   */
   function touch(file) {
-    return new Promise((c, e) => { const d = new Date(); fs.utimes(file, d, d, err => err ? e(err) : c()); });
-  }
-
-  /**
-    *  @param  {string}  file
-    *  @returns  {Promise<object>}
-    */
-  function lstat(file) {
-    return new Promise((c, e) => fs.lstat(file, (err, stats) => err ? e(err) : c(stats)));
-  }
-
-  /**
-    *  @param  {string}  dir
-    *  @returns  {Promise<string[]>}
-    */
-  function readdir(dir) {
-    return new Promise((c, e) => fs.readdir(dir, (err, files) => err ? e(err) : c(files)));
-  }
-
-  /**
-    *  @param  {string}  dir
-    *  @returns  {Promise<string>}
-    */
-  function mkdir(dir) {
-    return new Promise((c, e) => fs.mkdir(dir, err => (err && err.code !== 'EEXIST') ? e(err) : c(dir)));
-  }
-
-  /**
-    *  @param  {string}  dir
-    *  @returns  {Promise<void>}
-    */
-  function rmdir(dir) {
-    return new Promise((c, e) => fs.rmdir(dir, err => err ? e(err) : c(undefined)));
-  }
-
-  /**
-    *  @param  {string}  file
-    *  @returns  {Promise<void>}
-    */
-  function unlink(file) {
-    return new Promise((c, e) => fs.unlink(file, err => err ? e(err) : c(undefined)));
-  }
-
-  /**
-    *  @param  {string}  location
-    *  @returns  {Promise<void>}
-    */
-  function rimraf(location) {
-    return lstat(location).then(stat => {
-      if (stat.isDirectory() && !stat.isSymbolicLink()) {
-        return readdir(location)
-          .then(children => Promise.all(children.map(child => rimraf(path.join(location, child)))))
-          .then(() => rmdir(location));
-      } else {
-        return unlink(location);
-      }
-    }, err => {
-      if (err.code === 'ENOENT') {
-        return undefined;
-      }
-      throw err;
+    return new Promise((c, e) => {
+      const d = new Date();
+      fs.utimes(file, d, d, (err) => (err ? e(err) : c()));
     });
   }
 
   /**
-    *  @param  {string}  dir
-    *  @returns  {Promise<string>}
-    */
+   *  @param  {string}  file
+   *  @returns  {Promise<object>}
+   */
+  function lstat(file) {
+    return new Promise((c, e) => fs.lstat(file, (err, stats) => (err ? e(err) : c(stats))));
+  }
+
+  /**
+   *  @param  {string}  dir
+   *  @returns  {Promise<string[]>}
+   */
+  function readdir(dir) {
+    return new Promise((c, e) => fs.readdir(dir, (err, files) => (err ? e(err) : c(files))));
+  }
+
+  /**
+   *  @param  {string}  dir
+   *  @returns  {Promise<string>}
+   */
+  function mkdir(dir) {
+    return new Promise((c, e) => fs.mkdir(dir, (err) => (err && err.code !== 'EEXIST' ? e(err) : c(dir))));
+  }
+
+  /**
+   *  @param  {string}  dir
+   *  @returns  {Promise<void>}
+   */
+  function rmdir(dir) {
+    return new Promise((c, e) => fs.rmdir(dir, (err) => (err ? e(err) : c(undefined))));
+  }
+
+  /**
+   *  @param  {string}  file
+   *  @returns  {Promise<void>}
+   */
+  function unlink(file) {
+    return new Promise((c, e) => fs.unlink(file, (err) => (err ? e(err) : c(undefined))));
+  }
+
+  /**
+   *  @param  {string}  location
+   *  @returns  {Promise<void>}
+   */
+  function rimraf(location) {
+    return lstat(location).then(
+      (stat) => {
+        if (stat.isDirectory() && !stat.isSymbolicLink()) {
+          return readdir(location)
+            .then((children) => Promise.all(children.map((child) => rimraf(path.join(location, child)))))
+            .then(() => rmdir(location));
+        } else {
+          return unlink(location);
+        }
+      },
+      (err) => {
+        if (err.code === 'ENOENT') {
+          return undefined;
+        }
+        throw err;
+      },
+    );
+  }
+
+  /**
+   *  @param  {string}  dir
+   *  @returns  {Promise<string>}
+   */
   function mkdirp(dir) {
-    return mkdir(dir).then(null, err => {
+    return mkdir(dir).then(null, (err) => {
       if (err && err.code === 'ENOENT') {
         const parent = path.dirname(dir);
 
-        if (parent !== dir) {  //  if  not  arrived  at  root
+        if (parent !== dir) {
+          //  if  not  arrived  at  root
           return mkdirp(parent).then(() => mkdir(dir));
         }
       }
@@ -107,10 +114,10 @@ function factory(nodeRequire, path, fs) {
   }
 
   /**
-    *  @param  {string}  file
-    *  @param  {string}  content
-    *  @returns  {Promise<void>}
-    */
+   *  @param  {string}  file
+   *  @param  {string}  content
+   *  @returns  {Promise<void>}
+   */
   function writeFile(file, content) {
     return new Promise(function (resolve, reject) {
       fs.writeFile(file, content, 'utf8', function (err) {
@@ -123,18 +130,17 @@ function factory(nodeRequire, path, fs) {
     });
   }
 
-
   /**
-    *  @param  {string}  userDataPath
-    *  @returns  {object}
-    */
+   *  @param  {string}  userDataPath
+   *  @returns  {object}
+   */
   function getLanguagePackConfigurations(userDataPath) {
     const configFile = path.join(userDataPath, 'languagepacks.json');
     try {
       const config = fs.readFileSync(configFile);
       return JSON.parse(config.toString());
     } catch (err) {
-      console.log(err.message || "failed");
+      console.log(err.message || 'failed');
       // Do nothing. If we can't read the file we have no
       // language pack config.
     }
@@ -173,11 +179,11 @@ function factory(nodeRequire, path, fs) {
    */
   function getNLSConfiguration(commit, userDataPath, locale) {
     if (locale === 'pseudo') {
-      return Promise.resolve({ locale: locale, availableLanguages: {}, pseudo: true });
+      return Promise.resolve({ locale, availableLanguages: {}, pseudo: true });
     }
 
     if (process.env['VSCODE_DEV']) {
-      return Promise.resolve({ locale: locale, availableLanguages: {} });
+      return Promise.resolve({ locale, availableLanguages: {} });
     }
 
     // We have a built version so we have extracted nls file. Try to find
@@ -186,14 +192,13 @@ function factory(nodeRequire, path, fs) {
     // Check if we have an English or English US locale. If so fall to default since that is our
     // English translation (we don't ship *.nls.en.json files)
     if (locale && (locale === 'en' || locale === 'en-us')) {
-      return Promise.resolve({ locale: locale, availableLanguages: {} });
+      return Promise.resolve({ locale, availableLanguages: {} });
     }
 
     const initialLocale = locale;
 
-
     const defaultResult = function (locale) {
-      return Promise.resolve({ locale: locale, availableLanguages: {} });
+      return Promise.resolve({ locale, availableLanguages: {} });
     };
     try {
       if (!commit) {
@@ -209,10 +214,15 @@ function factory(nodeRequire, path, fs) {
       }
       const packConfig = configs[locale];
       let mainPack;
-      if (!packConfig || typeof packConfig.hash !== 'string' || !packConfig.translations || typeof (mainPack = packConfig.translations['vscode']) !== 'string') {
+      if (
+        !packConfig ||
+        typeof packConfig.hash !== 'string' ||
+        !packConfig.translations ||
+        typeof (mainPack = packConfig.translations['vscode']) !== 'string'
+      ) {
         return defaultResult(initialLocale);
       }
-      return exists(mainPack).then(fileExists => {
+      return exists(mainPack).then((fileExists) => {
         if (!fileExists) {
           return defaultResult(initialLocale);
         }
@@ -228,9 +238,9 @@ function factory(nodeRequire, path, fs) {
           _translationsConfigFile: translationsConfigFile,
           _cacheRoot: cacheRoot,
           _resolvedLanguagePackCoreLocation: coreLocation,
-          _corruptedFile: corruptedFile
+          _corruptedFile: corruptedFile,
         };
-        return exists(corruptedFile).then(corrupted => {
+        return exists(corruptedFile).then((corrupted) => {
           // The nls cache directory is corrupted.
           let toDelete;
           if (corrupted) {
@@ -238,27 +248,27 @@ function factory(nodeRequire, path, fs) {
           } else {
             toDelete = Promise.resolve(undefined);
           }
-          return toDelete.then(() => {
-            return exists(coreLocation).then(fileExists => {
+          return toDelete.then(() =>
+            exists(coreLocation).then((fileExists) => {
               if (fileExists) {
                 // We don't wait for this. No big harm if we can't touch
-                touch(coreLocation).catch(() => { });
+                touch(coreLocation).catch(() => {});
                 return result;
               }
-              return mkdirp(coreLocation).then(() => {
-                return Promise.all([readFile(mainPack)]);
-              }).then(() => {
-                const writes = [];
-                writes.push(writeFile(translationsConfigFile, JSON.stringify(packConfig.translations)));
-                return Promise.all(writes);
-              }).then(() => {
-                return result;
-              }).catch(err => {
-                console.error('Generating translation files failed.', err);
-                return defaultResult(locale);
-              });
-            });
-          });
+              return mkdirp(coreLocation)
+                .then(() => Promise.all([readFile(mainPack)]))
+                .then(() => {
+                  const writes = [];
+                  writes.push(writeFile(translationsConfigFile, JSON.stringify(packConfig.translations)));
+                  return Promise.all(writes);
+                })
+                .then(() => result)
+                .catch((err) => {
+                  console.error('Generating translation files failed.', err);
+                  return defaultResult(locale);
+                });
+            }),
+          );
         });
       });
     } catch (err) {
@@ -268,11 +278,11 @@ function factory(nodeRequire, path, fs) {
   }
 
   return {
-    getNLSConfiguration
+    getNLSConfiguration,
   };
 }
 
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 module.exports = factory(require, path, fs);

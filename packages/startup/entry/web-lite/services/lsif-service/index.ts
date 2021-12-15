@@ -13,7 +13,9 @@ export class LsifServiceImpl implements ILsifService {
     return await this.lsifClient.hover(payload);
   }
 
-  async fetchLsifDefinition(payload: ILsifPayload): Promise<vscode.Location | vscode.Location[] | vscode.LocationLink[]> {
+  async fetchLsifDefinition(
+    payload: ILsifPayload,
+  ): Promise<vscode.Location | vscode.Location[] | vscode.LocationLink[]> {
     return await this.lsifClient.definition(payload);
   }
 

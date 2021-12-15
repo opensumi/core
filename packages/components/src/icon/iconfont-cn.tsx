@@ -18,14 +18,10 @@ export interface CustomIconOptions {
 export type IconFontProps<T> = Omit<IconProps<T>, 'iconClass'>;
 
 function isValidCustomScriptUrl(scriptUrl: string): boolean {
-  return Boolean(
-    typeof scriptUrl === 'string'
-      && scriptUrl.length
-      && !customCache.has(scriptUrl),
-  );
+  return Boolean(typeof scriptUrl === 'string' && scriptUrl.length && !customCache.has(scriptUrl));
 }
 
-function createScriptUrlElements(scriptUrls: string[], index: number = 0): void {
+function createScriptUrlElements(scriptUrls: string[], index = 0): void {
   const currentScriptUrl = scriptUrls[index];
   if (isValidCustomScriptUrl(currentScriptUrl)) {
     const script = document.createElement('script');
@@ -73,42 +69,34 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
     }
   }
 
-  const IconFont = React.forwardRef<HTMLSpanElement, IconProps>((
-    props: IconProps<T>,
-    ref: React.Ref<HTMLSpanElement>,
-  ) => {
-    const { icon, children, rotate, anim, fill, className = '', ...restProps } = props;
-    const iconShapeOptions = { rotate, anim, fill };
+  const IconFont = React.forwardRef<HTMLSpanElement, IconProps>(
+    (props: IconProps<T>, ref: React.Ref<HTMLSpanElement>) => {
+      const { icon, children, rotate, anim, fill, className = '', ...restProps } = props;
+      const iconShapeOptions = { rotate, anim, fill };
 
-    // children > icon
-    let content: React.ReactNode = null;
-    if (icon) {
-      content = (
-        <svg {...svgBaseProps} focusable='false'>
-          <use xlinkHref={`#${icon}`} />
-        </svg>
+      // children > icon
+      let content: React.ReactNode = null;
+      if (icon) {
+        content = (
+          <svg {...svgBaseProps} focusable='false'>
+            <use xlinkHref={`#${icon}`} />
+          </svg>
+        );
+      }
+      if (children) {
+        content = children;
+      }
+
+      const iconShapeClx = getIconShapeClxList(iconShapeOptions);
+      return (
+        <_InternalIcon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)} ref={ref}>
+          {content}
+        </_InternalIcon>
       );
-    }
-    if (children) {
-      content = children;
-    }
-
-    const iconShapeClx = getIconShapeClxList(iconShapeOptions);
-    return (
-      <_InternalIcon
-        {...extraCommonProps}
-        {...restProps}
-        className={clx(className, iconShapeClx)}
-        ref={ref}>
-        {content}
-      </_InternalIcon>
-    );
-  });
+    },
+  );
 
   IconFont.displayName = 'Iconfont';
 
-  return IconFont as <T = any> (
-    props: IconProps<T>,
-    ref: React.Ref<HTMLSpanElement>,
-  ) => React.ReactElement;
+  return IconFont as <T = any>(props: IconProps<T>, ref: React.Ref<HTMLSpanElement>) => React.ReactElement;
 }

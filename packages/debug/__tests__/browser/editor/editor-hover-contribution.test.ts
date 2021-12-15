@@ -1,5 +1,10 @@
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  IContextKeyService,
+  IFileServiceClient,
+  MonacoOverrideServiceRegistry,
+} from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';

@@ -5,13 +5,17 @@ import { TopbarNodeServer } from './topbar-node-server';
 
 @Injectable()
 export class TopBarModule extends NodeModule {
-  providers: Provider[] = [{
-    token: ITopbarNodeServer,
-    useClass: TopbarNodeServer,
-  }];
+  providers: Provider[] = [
+    {
+      token: ITopbarNodeServer,
+      useClass: TopbarNodeServer,
+    },
+  ];
 
-  backServices = [{
-    token: ITopbarNodeServer,
-    servicePath: TopbarNodeServerPath,
-  }];
+  backServices = [
+    {
+      token: ITopbarNodeServer,
+      servicePath: TopbarNodeServerPath,
+    },
+  ];
 }

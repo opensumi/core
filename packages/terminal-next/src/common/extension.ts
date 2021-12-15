@@ -14,8 +14,7 @@ interface TerminalDataBuffer extends IDisposable {
 export class TerminalDataBufferer implements IDisposable {
   private readonly _terminalBufferMap = new Map<string, TerminalDataBuffer>();
 
-  constructor(private readonly _callback: (id: string, data: string) => void) {
-  }
+  constructor(private readonly _callback: (id: string, data: string) => void) {}
 
   dispose() {
     for (const buffer of this._terminalBufferMap.values()) {
@@ -23,10 +22,10 @@ export class TerminalDataBufferer implements IDisposable {
     }
   }
 
-  startBuffering(id: string, event: Event<string | IProcessDataEvent>, throttleBy: number = 5): IDisposable {
+  startBuffering(id: string, event: Event<string | IProcessDataEvent>, throttleBy = 5): IDisposable {
     let disposable: IDisposable;
     disposable = event((e: string | IProcessDataEvent) => {
-      const data = (typeof e === 'string' ? e : e.data);
+      const data = typeof e === 'string' ? e : e.data;
       let buffer = this._terminalBufferMap.get(id);
       if (buffer) {
         buffer.data.push(data);
@@ -112,7 +111,7 @@ export interface ITerminalLaunchError {
 export interface ITerminalChildProcess {
   onProcessData: Event<IProcessDataEvent | string>;
   onProcessExit: Event<number | undefined>;
-  onProcessReady: Event<{ pid: number, cwd: string }>;
+  onProcessReady: Event<{ pid: number; cwd: string }>;
   onProcessTitleChanged: Event<string>;
   onProcessOverrideDimensions?: Event<ITerminalDimensionsOverride | undefined>;
   onProcessResolvedShellLaunchConfig?: Event<vscode.TerminalOptions>;
@@ -153,7 +152,7 @@ export interface ITerminalProcessExtHostProxy extends IDisposable {
   emitLatency(latency: number): void;
 
   onInput: Event<string>;
-  onResize: Event<{ cols: number, rows: number }>;
+  onResize: Event<{ cols: number; rows: number }>;
   onShutdown: Event<boolean>;
   onRequestInitialCwd: Event<void>;
   onRequestCwd: Event<void>;

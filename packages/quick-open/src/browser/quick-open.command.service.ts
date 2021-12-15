@@ -1,6 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { CommandRegistry, Command, CommandService, Deferred, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  CommandRegistry,
+  Command,
+  CommandService,
+  Deferred,
+  IReporterService,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KeybindingRegistry, Keybinding } from '@opensumi/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
@@ -54,9 +61,10 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   private async initRecentlyUsedCommands() {
     const recentCommandIds = await this.workspaceService.getMostRecentlyUsedCommands();
-    const recentCommands: Command[] = recentCommandIds.map((commandId) => {
-      return this.commandRegistry.getCommand(commandId);
-    }).filter((command) => !!command).reverse() as Command[];
+    const recentCommands: Command[] = recentCommandIds
+      .map((commandId) => this.commandRegistry.getCommand(commandId))
+      .filter((command) => !!command)
+      .reverse() as Command[];
     this.commandRegistry.setRecentCommands(recentCommands);
     this.initDeferred.resolve();
   }
@@ -84,10 +92,11 @@ export class QuickCommandHandler implements QuickOpenHandler {
       // 关闭模糊排序，否则会按照 label 长度排序
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
-      getPlaceholderItem: () => new QuickOpenItem({
-        label: localize('quickopen.commands.notfound'),
-        run: () => false,
-      }),
+      getPlaceholderItem: () =>
+        new QuickOpenItem({
+          label: localize('quickopen.commands.notfound'),
+          run: () => false,
+        }),
     };
   }
 
@@ -102,16 +111,24 @@ export class QuickCommandHandler implements QuickOpenHandler {
     items.push(
       // 渲染最近使用命令
       ...recent.map((command, index) =>
-      this.injector.get(CommandQuickOpenItem, [command, {
-        groupLabel: index === 0 ? localize('quickopen.recent-commands') : '',
-        showBorder: false,
-      }])),
+        this.injector.get(CommandQuickOpenItem, [
+          command,
+          {
+            groupLabel: index === 0 ? localize('quickopen.recent-commands') : '',
+            showBorder: false,
+          },
+        ]),
+      ),
       // 渲染其他命令
       ...other.map((command, index) =>
-      this.injector.get(CommandQuickOpenItem, [command, {
-        groupLabel: recent.length <= 0 ? '' : index === 0 ? localize('quickopen.other-commands') : '',
-        showBorder: recent.length <= 0 ? false : index === 0 ? true : false,
-      }])),
+        this.injector.get(CommandQuickOpenItem, [
+          command,
+          {
+            groupLabel: recent.length <= 0 ? '' : index === 0 ? localize('quickopen.other-commands') : '',
+            showBorder: recent.length <= 0 ? false : index === 0 ? true : false,
+          },
+        ]),
+      ),
     );
 
     return items;
@@ -119,12 +136,11 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   protected getOtherCommands() {
     const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
-    const menuNodes = menus.getMenuNodes()
+    const menuNodes = menus
+      .getMenuNodes()
       .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
       .filter((item) => item instanceof MenuItemNode && !item.disabled)
-      .filter((item, index, array) => {
-        return array.findIndex((n) => n.id === item.id) === index;
-      }) as MenuItemNode[];
+      .filter((item, index, array) => array.findIndex((n) => n.id === item.id) === index) as MenuItemNode[];
     menus.dispose();
 
     return menuNodes.reduce((prev, item) => {
@@ -141,7 +157,7 @@ export class QuickCommandHandler implements QuickOpenHandler {
     }, [] as Command[]);
   }
 
-  protected getCommands(): { recent: Command[], other: Command[] } {
+  protected getCommands(): { recent: Command[]; other: Command[] } {
     const otherCommands = this.getOtherCommands();
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
     const limit = this.corePreferences['workbench.commandPalette.history'];
@@ -163,15 +179,15 @@ export class QuickCommandHandler implements QuickOpenHandler {
    * @param commands 要校验的 command
    */
   protected getValidCommands(commands: Command[]): Command[] {
-    return commands.filter((command) => command.label
-      && this.commandRegistry.isVisible(command.id)
-      && this.commandRegistry.isEnabled(command.id));
+    return commands.filter(
+      (command) =>
+        command.label && this.commandRegistry.isVisible(command.id) && this.commandRegistry.isEnabled(command.id),
+    );
   }
 }
 
 @Injectable({ multiple: true })
 export class CommandQuickOpenItem extends QuickOpenItem {
-
   @Autowired(CommandService)
   commandService: CommandService;
 
@@ -184,17 +200,12 @@ export class CommandQuickOpenItem extends QuickOpenItem {
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
 
-  constructor(
-    protected readonly command: Command,
-    protected readonly commandOptions: QuickOpenItemOptions,
-  ) {
+  constructor(protected readonly command: Command, protected readonly commandOptions: QuickOpenItemOptions) {
     super(commandOptions);
   }
 
   getLabel(): string {
-    return (this.command.category)
-      ? `${this.command.category}: ` + this.command.label!
-      : this.command.label!;
+    return this.command.category ? `${this.command.category}: ` + this.command.label! : this.command.label!;
   }
 
   isHidden(): boolean {
@@ -216,7 +227,7 @@ export class CommandQuickOpenItem extends QuickOpenItem {
     }
     setTimeout(() => {
       this.commandService.executeCommand(this.command.id);
-      this.commandRegistry.setRecentCommands([ this.command ]);
+      this.commandRegistry.setRecentCommands([this.command]);
       // 执行的同时写入Workspace存储文件中
       this.workspaceService.setMostRecentlyUsedCommand(this.command.id);
     }, 50);

@@ -1,4 +1,3 @@
-
 import { Disposable } from './ext-types';
 import { IExtensionInfo, IDisposable } from '@opensumi/ide-core-common';
 
@@ -14,7 +13,11 @@ export interface IMainThreadCommands {
    * 来自ext -> main的command调用
    */
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
-  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined>;
+  $executeCommandWithExtensionInfo<T>(
+    id: string,
+    extensionInfo: IExtensionInfo,
+    ...args: any[]
+  ): Promise<T | undefined>;
   registerArgumentProcessor(processor: ArgumentProcessor): IDisposable;
 }
 
@@ -35,20 +38,30 @@ export interface ArgumentProcessor {
 }
 
 export interface IExtHostCommands {
-  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable;
+  registerCommand(
+    global: boolean,
+    id: string,
+    handler: Handler,
+    thisArg?: any,
+    description?: ICommandHandlerDescription,
+  ): Disposable;
   registerCommand(global: boolean, id: string, handler: CommandHandler): Disposable;
   executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   getCommands(filterUnderscoreCommands: boolean): Promise<string[]>;
   registerArgumentProcessor(processor: ArgumentProcessor): void;
 
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
-  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined>;
+  $executeCommandWithExtensionInfo<T>(
+    id: string,
+    extensionInfo: IExtensionInfo,
+    ...args: any[]
+  ): Promise<T | undefined>;
   $registerBuiltInCommands(): void;
   $registerCommandConverter(): void;
 }
 
 export interface ICommandHandlerDescription {
   description: string;
-  args: { name: string; description?: string; constraint?: any; schema?: any; }[];
+  args: { name: string; description?: string; constraint?: any; schema?: any }[];
   returns?: string;
 }

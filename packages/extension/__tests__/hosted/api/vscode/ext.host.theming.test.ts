@@ -27,11 +27,11 @@ let mainThread: MainThreadTheming;
 
 describe('vscode extHostTheming Test', () => {
   const injector = createBrowserInjector([]);
-  const themeChangeEmitter = new Emitter<{type: ThemeType}>();
+  const themeChangeEmitter = new Emitter<{ type: ThemeType }>();
   const mockThemeService = {
     onThemeChange: themeChangeEmitter.event,
     getCurrentThemeSync() {
-      return {type: 'light'};
+      return { type: 'light' };
     },
   };
   injector.addProviders({
@@ -41,7 +41,10 @@ describe('vscode extHostTheming Test', () => {
   extHost = new ExtHostTheming(rpcProtocolExt);
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTheming, extHost);
 
-  mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadTheming, [rpcProtocolMain]));
+  mainThread = rpcProtocolMain.set(
+    MainThreadAPIIdentifier.MainThreadLanguages,
+    injector.get(MainThreadTheming, [rpcProtocolMain]),
+  );
 
   afterAll(() => {
     mainThread.dispose();
@@ -57,7 +60,6 @@ describe('vscode extHostTheming Test', () => {
       expect(e.kind).toEqual(ColorThemeKind.HighContrast);
       done();
     });
-    themeChangeEmitter.fire({type: 'hc'});
+    themeChangeEmitter.fire({ type: 'hc' });
   });
-
 });

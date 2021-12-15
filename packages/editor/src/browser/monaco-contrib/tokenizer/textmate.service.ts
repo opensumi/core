@@ -7,10 +7,41 @@ import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
 import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
-import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
-import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  Registry,
+  IRawGrammar,
+  IOnigLib,
+  parseRawGrammar,
+  IEmbeddedLanguagesMap,
+  ITokenTypeMap,
+  INITIAL,
+} from 'vscode-textmate';
+import {
+  CommentRule,
+  GrammarsContribution,
+  ITextmateTokenizerService,
+  LanguagesContribution,
+  ScopeMap,
+} from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import {
+  FoldingRules,
+  IAutoClosingPair,
+  IAutoClosingPairConditional,
+  IndentationRule,
+  LanguageConfiguration,
+} from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import {
+  WithEventBus,
+  isElectronEnv,
+  parseWithComments,
+  PreferenceService,
+  ILogger,
+  ExtensionActivateEvent,
+  getDebugLogger,
+  MonacoService,
+  electronEnv,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 
 import { TextmateRegistry } from './textmate-registry';
 import { IEditorDocumentModelService } from '../../doc-model/types';
@@ -45,14 +76,10 @@ function isStringArr(something: string[] | null): something is string[] {
     }
   }
   return true;
-
 }
 export type CharacterPair = [string, string];
 function isCharacterPair(something: CharacterPair | null): boolean {
-  return (
-    isStringArr(something)
-    && something.length === 2
-  );
+  return isStringArr(something) && something.length === 2;
 }
 
 @Injectable()
@@ -114,60 +141,64 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
     await this.monacoService.monacoLoaded;
 
-    this.dynamicLanguages.push(...languages.map((language) => ({
-      id: language.id,
-      aliases: language.aliases,
-      extensions: language.extensions,
-      filenamePatterns: language.filenamePatterns,
-      filenames: language.filenames,
-      firstLine: language.firstLine,
-      mimetypes: language.mimetypes,
-    })));
+    this.dynamicLanguages.push(
+      ...languages.map((language) => ({
+        id: language.id,
+        aliases: language.aliases,
+        extensions: language.extensions,
+        filenamePatterns: language.filenamePatterns,
+        filenames: language.filenames,
+        firstLine: language.firstLine,
+        mimetypes: language.mimetypes,
+      })),
+    );
 
     ModesRegistry.setDynamicLanguages(this.dynamicLanguages);
 
     const languageIds: string[] = [];
 
-    await Promise.all(languages.map(async (language) => {
-      this.addDispose(
-        monaco.languages.onLanguage(language.id, () => {
-          this.activateLanguage(language.id);
-        }),
-      );
+    await Promise.all(
+      languages.map(async (language) => {
+        this.addDispose(
+          monaco.languages.onLanguage(language.id, () => {
+            this.activateLanguage(language.id);
+          }),
+        );
 
-      let configuration: LanguageConfiguration | undefined;
-      if (typeof language.resolvedConfiguration === 'object') {
-        configuration = await language.resolvedConfiguration;
-      } else if (language.configuration) {
-        // remove `./` prefix
-        const langPath = language.configuration.replace(/^\.\//, '');
-        // http 的不作支持
-        const configurationPath = extPath.resolve(langPath);
-        const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
-        const content = ret.content;
-        if (content) {
-          const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
-          if (jsonContent) {
-            configuration = jsonContent;
+        let configuration: LanguageConfiguration | undefined;
+        if (typeof language.resolvedConfiguration === 'object') {
+          configuration = await language.resolvedConfiguration;
+        } else if (language.configuration) {
+          // remove `./` prefix
+          const langPath = language.configuration.replace(/^\.\//, '');
+          // http 的不作支持
+          const configurationPath = extPath.resolve(langPath);
+          const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
+          const content = ret.content;
+          if (content) {
+            const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
+            if (jsonContent) {
+              configuration = jsonContent;
+            }
           }
         }
-      }
 
-      if (configuration) {
-        // FIXME: type for wordPattern/indentationRules
-        monaco.languages.setLanguageConfiguration(language.id, {
-          wordPattern: this.createRegex(configuration.wordPattern),
-          autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
-          brackets: this.extractValidBrackets(language.id, configuration),
-          comments: this.extractValidCommentRule(language.id, configuration),
-          folding: this.convertFolding(configuration.folding),
-          surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
-          indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
-        });
-      }
+        if (configuration) {
+          // FIXME: type for wordPattern/indentationRules
+          monaco.languages.setLanguageConfiguration(language.id, {
+            wordPattern: this.createRegex(configuration.wordPattern),
+            autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
+            brackets: this.extractValidBrackets(language.id, configuration),
+            comments: this.extractValidCommentRule(language.id, configuration),
+            folding: this.convertFolding(configuration.folding),
+            surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
+            indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
+          });
+        }
 
-      languageIds.push(language.id);
-    }));
+        languageIds.push(language.id);
+      }),
+    );
 
     if (this.initialized) {
       const uris = this.editorDocumentModelService.getAllModels().map((m) => m.uri);
@@ -210,9 +241,11 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         if (!injections) {
           injections = [];
 
-          toDispose.addDispose(Disposable.create(() => {
-            this.injections.delete(injectScope);
-          }));
+          toDispose.addDispose(
+            Disposable.create(() => {
+              this.injections.delete(injectScope);
+            }),
+          );
 
           this.injections.set(injectScope, injections);
         }
@@ -220,38 +253,42 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       }
     }
 
-    toDispose.addDispose(Disposable.create(
-      this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
-        async getGrammarDefinition() {
-          return {
-            format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
-            location: grammar.location!,
-            content: await grammar.resolvedConfiguration,
-          };
-        },
-        getInjections: (scopeName: string) => {
-          const scopeParts = scopeName.split('.');
-          let injections: string[] = [];
-          for (let i = 1; i <= scopeParts.length; i++) {
-            const subScopeName = scopeParts.slice(0, i).join('.');
-            injections = [...injections, ...(this.injections.get(subScopeName) || [])];
-          }
-          return injections;
-        },
-      }),
-    ));
+    toDispose.addDispose(
+      Disposable.create(
+        this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
+          async getGrammarDefinition() {
+            return {
+              format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
+              location: grammar.location!,
+              content: await grammar.resolvedConfiguration,
+            };
+          },
+          getInjections: (scopeName: string) => {
+            const scopeParts = scopeName.split('.');
+            let injections: string[] = [];
+            for (let i = 1; i <= scopeParts.length; i++) {
+              const subScopeName = scopeParts.slice(0, i).join('.');
+              injections = [...injections, ...(this.injections.get(subScopeName) || [])];
+            }
+            return injections;
+          },
+        }),
+      ),
+    );
 
     if (grammar.language) {
-      toDispose.addDispose(Disposable.create(
-        this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName),
-      ));
+      toDispose.addDispose(
+        Disposable.create(this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName)),
+      );
 
-      toDispose.addDispose(Disposable.create(
-        this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
-          embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
-          tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
-        })),
-      ));
+      toDispose.addDispose(
+        Disposable.create(
+          this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
+            embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
+            tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
+          })),
+        ),
+      );
     }
 
     this.registeredGrammarDisposableCollection.set(grammar.scopeName, toDispose);
@@ -284,7 +321,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
     try {
       const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
-        scopeName, initialLanguage, configuration);
+        scopeName,
+        initialLanguage,
+        configuration,
+      );
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : tokenizerOption;
       // 要保证grammar把所有的languageID关联的语法都注册好了
       if (grammar) {
@@ -346,7 +386,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
 
     return result;
-
   }
 
   // 字符串定义转正则
@@ -414,8 +453,13 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidSurroundingPairs(languageId: string, configuration: LanguageConfiguration): IAutoClosingPair[] | undefined {
-    if (!configuration) { return; }
+  private extractValidSurroundingPairs(
+    languageId: string,
+    configuration: LanguageConfiguration,
+  ): IAutoClosingPair[] | undefined {
+    if (!configuration) {
+      return;
+    }
     const source = configuration.surroundingPairs;
     if (typeof source === 'undefined') {
       return;
@@ -430,22 +474,30 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       const pair = source[i];
       if (Array.isArray(pair)) {
         if (!isCharacterPair(pair as unknown as [string, string])) {
-          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(
+            `[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`,
+          );
           continue;
         }
         result = result || [];
         result.push({ open: pair[0], close: pair[1] });
       } else {
         if (typeof pair !== 'object') {
-          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(
+            `[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`,
+          );
           continue;
         }
         if (typeof pair.open !== 'string') {
-          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`);
+          this.logger.warn(
+            `[${languageId}: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`,
+          );
           continue;
         }
         if (typeof pair.close !== 'string') {
-          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`);
+          this.logger.warn(
+            `[${languageId}: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`,
+          );
           continue;
         }
         result = result || [];
@@ -469,7 +521,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     for (let i = 0, len = source.length; i < len; i++) {
       const pair = source[i];
       if (!isCharacterPair(pair)) {
-        this.logger.warn(`[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`);
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`,
+        );
         continue;
       }
 
@@ -479,7 +533,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidAutoClosingPairs(languageId: string, configuration: LanguageConfiguration): IAutoClosingPairConditional[] | undefined {
+  private extractValidAutoClosingPairs(
+    languageId: string,
+    configuration: LanguageConfiguration,
+  ): IAutoClosingPairConditional[] | undefined {
     const source = configuration.autoClosingPairs;
     if (typeof source === 'undefined') {
       return undefined;
@@ -494,27 +551,37 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       const pair = source[i];
       if (Array.isArray(pair)) {
         if (!isCharacterPair(pair as unknown as [string, string])) {
-          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`,
+          );
           continue;
         }
         result = result || [];
         result.push({ open: pair[0], close: pair[1] });
       } else {
         if (typeof pair !== 'object') {
-          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`,
+          );
           continue;
         }
         if (typeof pair.open !== 'string') {
-          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`);
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`,
+          );
           continue;
         }
         if (typeof pair.close !== 'string') {
-          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`);
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`,
+          );
           continue;
         }
         if (typeof pair.notIn !== 'undefined') {
           if (!isStringArr(pair.notIn)) {
-            this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`);
+            this.logger.warn(
+              `[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`,
+            );
             continue;
           }
         }
@@ -546,7 +613,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
     if (typeof source.blockComment !== 'undefined') {
       if (!isCharacterPair(source.blockComment)) {
-        this.logger.warn(`[${languageId}]: language configuration: expected \`comments.blockComment\` to be an array of two strings.`);
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`comments.blockComment\` to be an array of two strings.`,
+        );
       } else {
         result = result || {};
         result.blockComment = source.blockComment;
@@ -638,7 +707,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
     const grammar = (await this.grammarRegistry.loadGrammarWithConfiguration(
-      scopeName, initialLanguage, configuration))!;
+      scopeName,
+      initialLanguage,
+      configuration,
+    ))!;
     let ruleStack = INITIAL;
     const lineTokens = grammar.tokenizeLine(line, ruleStack);
     const debugLogger = getDebugLogger('tokenize');
@@ -646,9 +718,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     // tslint:disable-next-line: prefer-for-of
     for (let j = 0; j < lineTokens.tokens.length; j++) {
       const token = lineTokens.tokens[j];
-      debugLogger.log(` - token from ${token.startIndex} to ${token.endIndex} ` +
-        `(${line.substring(token.startIndex, token.endIndex)}) ` +
-        `with scopes ${token.scopes.join(', ')}`,
+      debugLogger.log(
+        ` - token from ${token.startIndex} to ${token.endIndex} ` +
+          `(${line.substring(token.startIndex, token.endIndex)}) ` +
+          `with scopes ${token.scopes.join(', ')}`,
       );
     }
     ruleStack = lineTokens.ruleStack;

@@ -7,7 +7,7 @@ const flexDirectionMap: {
     domSize: 'clientWidth' | 'clientHeight';
     minSize: 'minWidth' | 'minHeight';
     maxSize: 'maxWidth' | 'maxHeight';
-  },
+  };
 } = {
   'left-to-right': {
     direction: 'row',
@@ -40,7 +40,7 @@ const flexDirectionMap: {
 };
 
 export namespace Layout {
-  export type direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
+  export type direction = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
 
   export type alignment = 'horizontal' | 'vertical';
 

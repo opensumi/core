@@ -1,5 +1,26 @@
-import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode, ClientAppContribution } from '@opensumi/ide-core-browser';
-import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme, DEFAULT_THEME_ID } from '../common';
+import {
+  Domain,
+  CommandContribution,
+  CommandRegistry,
+  Command,
+  localize,
+  PreferenceService,
+  replaceLocalizePlaceholder,
+  PreferenceScope,
+  QuickOpenService,
+  QuickOpenOptions,
+  QuickOpenItem,
+  Mode,
+  ClientAppContribution,
+} from '@opensumi/ide-core-browser';
+import {
+  IThemeService,
+  IIconService,
+  BuiltinThemeComparator,
+  getThemeTypeName,
+  BuiltinTheme,
+  DEFAULT_THEME_ID,
+} from '../common';
 import { Autowired } from '@opensumi/di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
@@ -19,7 +40,6 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
 
 @Domain(MenuContribution, CommandContribution, ClientAppContribution)
 export class ThemeContribution implements MenuContribution, CommandContribution, ClientAppContribution {
-
   @Autowired(IThemeService)
   themeService: IThemeService;
 
@@ -54,14 +74,46 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   }
 
   private registerDefaultTokenModifier() {
-    this.semanticTokenRegistry.registerTokenModifier('declaration', localize('declaration', 'Style for all symbol declarations.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('documentation', localize('documentation', 'Style to use for references in documentation.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('static', localize('static', 'Style to use for symbols that are static.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('abstract', localize('abstract', 'Style to use for symbols that are abstract.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('deprecated', localize('deprecated', 'Style to use for symbols that are deprecated.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('modification', localize('modification', 'Style to use for write accesses.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('async', localize('async', 'Style to use for symbols that are async.'), undefined);
-    this.semanticTokenRegistry.registerTokenModifier('readonly', localize('readonly', 'Style to use for symbols that are readonly.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier(
+      'declaration',
+      localize('declaration', 'Style for all symbol declarations.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'documentation',
+      localize('documentation', 'Style to use for references in documentation.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'static',
+      localize('static', 'Style to use for symbols that are static.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'abstract',
+      localize('abstract', 'Style to use for symbols that are abstract.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'deprecated',
+      localize('deprecated', 'Style to use for symbols that are deprecated.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'modification',
+      localize('modification', 'Style to use for write accesses.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'async',
+      localize('async', 'Style to use for symbols that are async.'),
+      undefined,
+    );
+    this.semanticTokenRegistry.registerTokenModifier(
+      'readonly',
+      localize('readonly', 'Style to use for symbols that are readonly.'),
+      undefined,
+    );
   }
 
   private registerDefaultTokenType() {
@@ -76,20 +128,44 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
     this.doRegisterTokenType('type', localize('type', 'Style for types.'), [['entity.name.type'], ['support.type']]);
     this.doRegisterTokenType('struct', localize('struct', 'Style for structs.'), [['entity.name.type.struct']]);
-    this.doRegisterTokenType('class', localize('class', 'Style for classes.'), [['entity.name.type.class'], ['support.class']]);
-    this.doRegisterTokenType('interface', localize('interface', 'Style for interfaces.'), [['entity.name.type.interface']]);
+    this.doRegisterTokenType('class', localize('class', 'Style for classes.'), [
+      ['entity.name.type.class'],
+      ['support.class'],
+    ]);
+    this.doRegisterTokenType('interface', localize('interface', 'Style for interfaces.'), [
+      ['entity.name.type.interface'],
+    ]);
     this.doRegisterTokenType('enum', localize('enum', 'Style for enums.'), [['entity.name.type.enum']]);
-    this.doRegisterTokenType('typeParameter', localize('typeParameter', 'Style for type parameters.'), [['entity.name.type.parameter']]);
+    this.doRegisterTokenType('typeParameter', localize('typeParameter', 'Style for type parameters.'), [
+      ['entity.name.type.parameter'],
+    ]);
 
-    this.doRegisterTokenType('function', localize('function', 'Style for functions'), [['entity.name.function'], ['support.function']]);
-    this.doRegisterTokenType('member', localize('member', 'Style for member functions'), [], 'method', 'Deprecated use `method` instead');
-    this.doRegisterTokenType('method', localize('method', 'Style for method (member functions)'), [['entity.name.function.member'], ['support.function']]);
+    this.doRegisterTokenType('function', localize('function', 'Style for functions'), [
+      ['entity.name.function'],
+      ['support.function'],
+    ]);
+    this.doRegisterTokenType(
+      'member',
+      localize('member', 'Style for member functions'),
+      [],
+      'method',
+      'Deprecated use `method` instead',
+    );
+    this.doRegisterTokenType('method', localize('method', 'Style for method (member functions)'), [
+      ['entity.name.function.member'],
+      ['support.function'],
+    ]);
     this.doRegisterTokenType('macro', localize('macro', 'Style for macros.'), [['entity.name.function.preprocessor']]);
 
-    this.doRegisterTokenType('variable', localize('variable', 'Style for variables.'), [['variable.other.readwrite'], ['entity.name.variable']]);
+    this.doRegisterTokenType('variable', localize('variable', 'Style for variables.'), [
+      ['variable.other.readwrite'],
+      ['entity.name.variable'],
+    ]);
     this.doRegisterTokenType('parameter', localize('parameter', 'Style for parameters.'), [['variable.parameter']]);
     this.doRegisterTokenType('property', localize('property', 'Style for properties.'), [['variable.other.property']]);
-    this.doRegisterTokenType('enumMember', localize('enumMember', 'Style for enum members.'), [['variable.other.enummember']]);
+    this.doRegisterTokenType('enumMember', localize('enumMember', 'Style for enum members.'), [
+      ['variable.other.enummember'],
+    ]);
     this.doRegisterTokenType('event', localize('event', 'Style for events.'), [['variable.other.event']]);
 
     this.doRegisterTokenType('label', localize('labels', 'Style for labels. '), undefined);
@@ -118,7 +194,13 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     }
   }
 
-  private doRegisterTokenType(id: string, description: string, scopesToProbe: ProbeScope[] = [], superType?: string, deprecationMessage?: string): string {
+  private doRegisterTokenType(
+    id: string,
+    description: string,
+    scopesToProbe: ProbeScope[] = [],
+    superType?: string,
+    deprecationMessage?: string,
+  ): string {
     this.semanticTokenRegistry.registerTokenType(id, description, superType, deprecationMessage);
     if (scopesToProbe) {
       this.doRegisterTokenStyleDefault(id, scopesToProbe);
@@ -141,9 +223,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     commands.registerCommand(THEME_TOGGLE_COMMAND, {
       execute: async () => {
         const themeInfos = this.themeService.getAvailableThemeInfos();
-        themeInfos.sort((a, b) => {
-          return BuiltinThemeComparator[a.base] - BuiltinThemeComparator[b.base];
-        });
+        themeInfos.sort((a, b) => BuiltinThemeComparator[a.base] - BuiltinThemeComparator[b.base]);
         let prevBase: BuiltinTheme;
         const items = themeInfos.map((themeInfo) => {
           if (prevBase !== themeInfo.base) {
@@ -161,12 +241,16 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
         });
         const defaultSelected = items.findIndex((opt) => opt.value === this.themeService.currentThemeId);
         const prevThemeId = this.themeService.currentThemeId;
-        const themeId = await this.showPickWithPreview(items, {
-          selectIndex: () => defaultSelected,
-          placeholder: localize('theme.quickopen.plh'),
-        }, (value) => {
-          this.updateTopPreference('general.theme', value);
-        });
+        const themeId = await this.showPickWithPreview(
+          items,
+          {
+            selectIndex: () => defaultSelected,
+            placeholder: localize('theme.quickopen.plh'),
+          },
+          (value) => {
+            this.updateTopPreference('general.theme', value);
+          },
+        );
 
         if (themeId && themeId === this.themeService.currentThemeId) {
           return;
@@ -183,12 +267,16 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
         }));
         const defaultSelected = items.findIndex((opt) => opt.value === this.iconService.currentThemeId);
         const prevThemeId = this.iconService.currentThemeId;
-        const themeId = await this.showPickWithPreview(items, {
-          selectIndex: () => defaultSelected,
-          placeholder: localize('icon.quickopen.plh'),
-        }, (value) => {
-          this.updateTopPreference('general.icon', value);
-        });
+        const themeId = await this.showPickWithPreview(
+          items,
+          {
+            selectIndex: () => defaultSelected,
+            placeholder: localize('icon.quickopen.plh'),
+          },
+          (value) => {
+            this.updateTopPreference('general.icon', value);
+          },
+        );
         if (themeId) {
           await this.updateTopPreference('general.icon', themeId);
         } else {
@@ -208,7 +296,11 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     }
   }
 
-  protected showPickWithPreview(pickItems: { label: string; value: string, groupLabel?: string }[], options: QuickOpenOptions, onFocusChange: (value: string) => void) {
+  protected showPickWithPreview(
+    pickItems: { label: string; value: string; groupLabel?: string }[],
+    options: QuickOpenOptions,
+    onFocusChange: (value: string) => void,
+  ) {
     return new Promise((resolve: (value: string | undefined) => void) => {
       const items: QuickOpenItem[] = [];
       pickItems.forEach((item, index) => {
@@ -226,16 +318,23 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
             return false;
           },
         };
-        items.push(new QuickOpenItem(Object.assign(baseOption, { groupLabel: item.groupLabel, showBorder: !!item.groupLabel && index !== 0 })));
+        items.push(
+          new QuickOpenItem(
+            Object.assign(baseOption, { groupLabel: item.groupLabel, showBorder: !!item.groupLabel && index !== 0 }),
+          ),
+        );
       });
-      this.quickOpenService.open({
-        onType: (_, acceptor) => acceptor(items),
-      }, {
-        onClose: () => resolve(undefined),
-        fuzzyMatchLabel: true,
-        showItemsWithoutHighlight: false,
-        ...options,
-      });
+      this.quickOpenService.open(
+        {
+          onType: (_, acceptor) => acceptor(items),
+        },
+        {
+          onClose: () => resolve(undefined),
+          fuzzyMatchLabel: true,
+          showItemsWithoutHighlight: false,
+          ...options,
+        },
+      );
     });
   }
 }

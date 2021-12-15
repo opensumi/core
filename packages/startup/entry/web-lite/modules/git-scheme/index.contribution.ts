@@ -1,7 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import { IResource } from '@opensumi/ide-editor/lib/common';
-import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorComponentRegistry,
+  IEditorDocumentModelContentRegistry,
+  BrowserEditorContribution,
+  ResourceService,
+} from '@opensumi/ide-editor/lib/browser';
 
 import { GitDocContentProvider } from './doc-content-provider/git';
 import { GitResourceProvider } from './resource-provider/git';

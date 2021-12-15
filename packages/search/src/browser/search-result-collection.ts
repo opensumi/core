@@ -6,9 +6,9 @@ import { SendClientResult, SEARCH_STATE } from '../common';
 export class SearchResultCollection {
   list: SendClientResult[] = [];
 
-  maxLength: number = 5;
+  maxLength = 5;
 
-  pushAndGetResultList(result: SendClientResult)  {
+  pushAndGetResultList(result: SendClientResult) {
     const { id, data, searchState } = result;
     const outResultList: SendClientResult[] = [];
 

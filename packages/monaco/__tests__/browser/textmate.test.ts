@@ -118,7 +118,6 @@ class MockFileServiceClient {
 let injector: MockInjector;
 
 describe('textmate service test', () => {
-
   injector = createBrowserInjector([]);
   let monacoService: MonacoService;
   let textmateService: TextmateService;
@@ -150,58 +149,59 @@ describe('textmate service test', () => {
     textmateService = injector.get(TextmateService);
     monacoService = injector.get(MonacoService);
     await monacoService.loadMonaco();
-    await textmateService.registerLanguage({
-      id: 'html',
-      extensions: [
-        '.html',
-        '.htm',
-      ],
-      aliases: [
-        'HTML',
-      ],
-      mimetypes: [
-        'text/html',
-      ],
-      configuration: './language-configuration.json',
-    }, new URI('file:///mock/base'));
+    await textmateService.registerLanguage(
+      {
+        id: 'html',
+        extensions: ['.html', '.htm'],
+        aliases: ['HTML'],
+        mimetypes: ['text/html'],
+        configuration: './language-configuration.json',
+      },
+      new URI('file:///mock/base'),
+    );
     const languageIds = monaco.languages.getLanguages().map((l) => l.id);
     expect(languageIds).toContain('html');
   });
 
   it('should be able to register grammar with or without languageId', () => {
-    textmateService.registerGrammar({
-      'language': 'html',
-      'scopeName': 'text.html.derivative',
-      'path': './syntaxes/html-derivative.tmLanguage.json',
-      'embeddedLanguages': {
-        'text.html': 'html',
-        'source.css': 'css',
-        'source.js': 'javascript',
-        'source.python': 'python',
-        'source.smarty': 'smarty',
+    textmateService.registerGrammar(
+      {
+        language: 'html',
+        scopeName: 'text.html.derivative',
+        path: './syntaxes/html-derivative.tmLanguage.json',
+        embeddedLanguages: {
+          'text.html': 'html',
+          'source.css': 'css',
+          'source.js': 'javascript',
+          'source.python': 'python',
+          'source.smarty': 'smarty',
+        },
+        tokenTypes: {
+          'meta.tag string.quoted': 'other',
+        },
       },
-      'tokenTypes': {
-        'meta.tag string.quoted': 'other',
+      new URI('file:///mock/extpath'),
+    );
+    textmateService.registerGrammar(
+      {
+        scopeName: 'text.html.basic',
+        path: './syntaxes/html.tmLanguage.json',
+        embeddedLanguages: {
+          'text.html': 'html',
+          'source.css': 'css',
+          'source.js': 'javascript',
+          'source.python': 'python',
+          'source.smarty': 'smarty',
+        },
+        tokenTypes: {
+          'meta.tag string.quoted': 'other',
+        },
       },
-    }, new URI('file:///mock/extpath'));
-    textmateService.registerGrammar({
-      'scopeName': 'text.html.basic',
-      'path': './syntaxes/html.tmLanguage.json',
-      'embeddedLanguages': {
-        'text.html': 'html',
-        'source.css': 'css',
-        'source.js': 'javascript',
-        'source.python': 'python',
-        'source.smarty': 'smarty',
-      },
-      'tokenTypes': {
-        'meta.tag string.quoted': 'other',
-      },
-    }, new URI('file:///mock/extpath'));
+      new URI('file:///mock/extpath'),
+    );
   });
 
   it('grammar registry should init correctly after grammars registed', () => {
     textmateService.init();
   });
-
 });

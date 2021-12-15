@@ -9,5 +9,4 @@ export class ViewContribution implements SlotRendererContribution {
   registerRenderer(registry: SlotRendererRegistry) {
     registry.registerSlotRenderer(SlotLocation.right, RightTabRenderer);
   }
-
 }

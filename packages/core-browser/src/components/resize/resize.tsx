@@ -60,10 +60,10 @@ function preventWebviewCatchMouseEvents() {
 function allowWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
-  for (const webview of webviews  as any) {
+  for (const webview of webviews as any) {
     webview.classList.remove('none-pointer-event');
   }
-  for (const iframe of iframes  as any) {
+  for (const iframe of iframes as any) {
     iframe.classList.remove('none-pointer-event');
   }
 
@@ -87,9 +87,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     const parentWidth = ref.current!.parentElement!.offsetWidth;
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
-    if (
-      (prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))
-    ) {
+    if ((prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))) {
       return;
     }
     const prevMinResize = prevEle!.dataset.minResize || 0;
@@ -115,7 +113,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
     let fixedElement: HTMLElement;
     let flexElement: HTMLElement;
-    let targetFixedWidth: number = 0;
+    let targetFixedWidth = 0;
     const prevMinResize = parseInt(prevEle!.dataset.minResize || '0', 10);
     const nextMinResize = parseInt(nextEle!.dataset.minResize || '0', 10);
     if (props.flexMode === ResizeFlexMode.Prev) {
@@ -160,16 +158,17 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     const nextEle = nextElement.current!;
     let currentTotalWidth: number;
     if (props.flexMode) {
-      currentTotalWidth = (prevEle.offsetWidth + nextEle.offsetWidth) / (prevEle.parentElement!.offsetWidth) * 100;
+      currentTotalWidth = ((prevEle.offsetWidth + nextEle.offsetWidth) / prevEle.parentElement!.offsetWidth) * 100;
     } else {
-      currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+      currentTotalWidth =
+        +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
     }
 
     if (nextEle) {
-      nextEle.style.width = next / (prev + next) * currentTotalWidth + '%';
+      nextEle.style.width = (next / (prev + next)) * currentTotalWidth + '%';
     }
     if (prevEle) {
-      prevEle.style.width = prev / (prev + next) * currentTotalWidth + '%';
+      prevEle.style.width = (prev / (prev + next)) * currentTotalWidth + '%';
     }
     handleZeroSize(prev, next);
 
@@ -229,7 +228,8 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
       flexModeSetSize(prevWidth, nextWidth, true);
     } else {
-      const currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+      const currentTotalWidth =
+        +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
       if (isLatter) {
         nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
         prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
@@ -255,7 +255,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     return prevElement.current!.clientWidth;
   };
 
-  const hideScrollBar = (element: HTMLElement)  => {
+  const hideScrollBar = (element: HTMLElement) => {
     const elementClasses = element.classList;
     const hiddenClass = styles['resize-overflow-hidden'];
     if (!elementClasses?.contains(hiddenClass)) {
@@ -263,7 +263,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
   };
 
-  const restoreScrollBar = (element: HTMLElement)  => {
+  const restoreScrollBar = (element: HTMLElement) => {
     const elementClasses = element.classList;
     const hiddenClass = styles['resize-overflow-hidden'];
     if (elementClasses?.contains(hiddenClass)) {
@@ -271,13 +271,13 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
   };
 
-  const onMouseMove =  ((e) => {
+  const onMouseMove = (e) => {
     e.preventDefault();
     if (ref.current && ref.current.classList.contains('no-resize')) {
       return;
     }
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
-    const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
+    const nextWidth = startNextWidth.current - (e.pageX - startX.current);
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
@@ -286,12 +286,11 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       if (props.flexMode) {
         flexModeSetSize(prevWidth, nextWidth);
       } else {
-        setSize( (prevWidth / parentWidth), (nextWidth / parentWidth));
+        setSize(prevWidth / parentWidth, nextWidth / parentWidth);
       }
     });
-
-  });
-  const onMouseUp = ((e) => {
+  };
+  const onMouseUp = (e) => {
     resizing.current = false;
     ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
@@ -303,8 +302,8 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       props.onFinished();
     }
     allowWebviewCatchMouseEvents();
-  });
-  const onMouseDown =  ((e) => {
+  };
+  const onMouseDown = (e) => {
     resizing.current = true;
     ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
@@ -316,7 +315,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     hideScrollBar(prevElement.current!);
     hideScrollBar(nextElement.current!);
     preventWebviewCatchMouseEvents();
-  });
+  };
 
   React.useEffect(() => {
     if (ref.current) {
@@ -345,11 +344,16 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   }
 
   return (
-    <div ref={(e) => {ref.current = e; } } className={classnames({
-      [styles['resize-handle-horizontal']]: true,
-      [styles['with-color']]: !props.noColor,
-      [props.className || '']: true,
-    })}/>
+    <div
+      ref={(e) => {
+        ref.current = e;
+      }}
+      className={classnames({
+        [styles['resize-handle-horizontal']]: true,
+        [styles['with-color']]: !props.noColor,
+        [props.className || '']: true,
+      })}
+    />
   );
 };
 
@@ -369,19 +373,19 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const requestFrame = React.useRef<number>();
   // direction: true为向下，false为向上
   const setSize = (prev: number, next: number, direction?: boolean) => {
-      const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
-      const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
-      if (!nextEle || !prevEle) {
-        return;
-      }
-      if (prevEle.classList.contains(RESIZE_LOCK) || nextEle.classList.contains(RESIZE_LOCK)) {
-        return;
-      }
-      nextEle.style.height = next * 100 + '%';
-      prevEle.style.height = prev * 100 + '%';
-      if (props.onResize) {
-        props.onResize(prevEle, nextEle);
-      }
+    const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
+    const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
+    if (!nextEle || !prevEle) {
+      return;
+    }
+    if (prevEle.classList.contains(RESIZE_LOCK) || nextEle.classList.contains(RESIZE_LOCK)) {
+      return;
+    }
+    nextEle.style.height = next * 100 + '%';
+    prevEle.style.height = prev * 100 + '%';
+    if (props.onResize) {
+      props.onResize(prevEle, nextEle);
+    }
   };
 
   const flexModeSetSize = (prevHeight: number, nextHeight: number, ignoreMin?: boolean, direction?: boolean) => {
@@ -389,7 +393,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
     let fixedElement: HTMLElement;
     let flexElement: HTMLElement;
-    let targetFixedHeight: number = 0;
+    let targetFixedHeight = 0;
     const prevMinResize = parseInt(prevEle!.dataset.minResize || '0', 10);
     const nextMinResize = parseInt(nextEle!.dataset.minResize || '0', 10);
     if (props.flexMode === ResizeFlexMode.Prev) {
@@ -434,16 +438,16 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const nextEle = nextElement.current!;
     let currentTotalHeight;
     if (props.flexMode) {
-      currentTotalHeight = (prevEle.offsetHeight + nextEle.offsetHeight) / (prevEle.parentElement!.offsetHeight) * 100;
+      currentTotalHeight = ((prevEle.offsetHeight + nextEle.offsetHeight) / prevEle.parentElement!.offsetHeight) * 100;
       // flexModeSetSize(prev / (prev + next) * totalHeight, next / (prev + next) * totalHeight, true);
     } else {
       currentTotalHeight = +nextEle.style.height!.replace('%', '') + +prevEle.style.height!.replace('%', '');
     }
     if (nextEle) {
-      nextEle.style.height = next / (prev + next) * currentTotalHeight + '%';
+      nextEle.style.height = (next / (prev + next)) * currentTotalHeight + '%';
     }
     if (prevEle) {
-      prevEle.style.height = prev / (prev + next) * currentTotalHeight + '%';
+      prevEle.style.height = (prev / (prev + next)) * currentTotalHeight + '%';
     }
 
     handleZeroSize(prev, next);
@@ -552,7 +556,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     return prevElement.current!.clientHeight;
   };
 
-  const onMouseDown = ((e) => {
+  const onMouseDown = (e) => {
     resizing.current = true;
     ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
@@ -563,9 +567,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     startPrevHeight.current = prevElement.current!.offsetHeight;
     startNextHeight.current = nextElement.current!.offsetHeight;
     preventWebviewCatchMouseEvents();
-  });
+  };
 
-  const onMouseMove = ((e: MouseEvent) => {
+  const onMouseMove = (e: MouseEvent) => {
     e.preventDefault();
     if (ref.current && ref.current.classList.contains('no-resize')) {
       return;
@@ -577,7 +581,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     // 作用元素变化重新初始化当前位置，传入findNextElement时默认已传入findPrevElement
     if (
       (dynamicNext !== null && cachedNextElement.current !== dynamicNext) ||
-        (dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev)
+      (dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev)
     ) {
       if (!dynamicNext || !dynamicPrev) {
         return;
@@ -590,7 +594,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     }
 
     const prevHeight = startPrevHeight.current + e.pageY - startY.current;
-    const nextHeight = startNextHeight.current - ( e.pageY - startY.current);
+    const nextHeight = startNextHeight.current - (e.pageY - startY.current);
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
@@ -606,14 +610,14 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
         flexModeSetSize(prevHeight, nextHeight);
       } else if (props.flexMode === ResizeFlexMode.Percentage) {
         const parentHeight = ref.current!.parentElement!.offsetHeight;
-        setSize( (prevHeight / parentHeight), (nextHeight / parentHeight));
+        setSize(prevHeight / parentHeight, nextHeight / parentHeight);
       } else {
         setDomSize(prevHeight, nextHeight, cachedPrevElement.current!, cachedNextElement.current!);
       }
     });
-  });
+  };
 
-  const onMouseUp = ((e) => {
+  const onMouseUp = (e) => {
     resizing.current = false;
     ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
@@ -622,7 +626,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       props.onFinished();
     }
     allowWebviewCatchMouseEvents();
-  });
+  };
 
   React.useEffect(() => {
     ref.current!.addEventListener('mousedown', onMouseDown);
@@ -645,10 +649,14 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     });
   }
 
-  return (<div ref={(e) => e && (ref.current = e) } className={classnames({
-    [styles['resize-handle-vertical']]: true,
-    [props.className || '']: true,
-    [styles['with-color']]: !props.noColor,
-  })}/>);
-
+  return (
+    <div
+      ref={(e) => e && (ref.current = e)}
+      className={classnames({
+        [styles['resize-handle-vertical']]: true,
+        [props.className || '']: true,
+        [styles['with-color']]: !props.noColor,
+      })}
+    />
+  );
 };

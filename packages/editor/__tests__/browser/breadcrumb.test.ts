@@ -3,14 +3,16 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { URI, IEventBus } from '@opensumi/ide-core-browser';
-import { DocumentSymbol, DocumentSymbolChangedEvent } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import {
+  DocumentSymbol,
+  DocumentSymbolChangedEvent,
+} from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { BreadCrumbServiceImpl } from '@opensumi/ide-editor/lib/browser/breadcrumb';
 
 describe('breadcrumb test', () => {
-
   let injector: MockInjector;
 
   beforeAll(() => {
@@ -46,24 +48,20 @@ describe('breadcrumb test', () => {
             };
           }
         }
-       },
+      },
     });
 
     injector.mockService(IEditorDocumentModelService, {
-      createModelReference: (uri) => {
-        return {
-          instance: {
+      createModelReference: (uri) => ({
+        instance: {
+          uri,
+          getMonacoModel: () => ({
             uri,
-            getMonacoModel: () => {
-              return {
-                uri,
-                getLanguageIdentifier: () => 'javascript',
-              };
-            },
-          },
-          dispose: jest.fn(),
-        };
-      },
+            getLanguageIdentifier: () => 'javascript',
+          }),
+        },
+        dispose: jest.fn(),
+      }),
     });
   });
 
@@ -71,7 +69,7 @@ describe('breadcrumb test', () => {
     injector.disposeAll();
   });
 
-  it('breadcrumb test', async  (done) => {
+  it('breadcrumb test', async (done) => {
     injector.mockService(WorkbenchEditorService, {});
 
     const labelService = injector.get(LabelService);
@@ -166,13 +164,11 @@ describe('breadcrumb test', () => {
       },
     ];
 
-    modes.DocumentSymbolProviderRegistry['all'] = () => {
-      return [{
-        provideDocumentSymbols: () => {
-          return testDS;
-        },
-      }];
-    };
+    modes.DocumentSymbolProviderRegistry['all'] = () => [
+      {
+        provideDocumentSymbols: () => testDS,
+      },
+    ];
 
     const service: BreadCrumbServiceImpl = injector.get(BreadCrumbServiceImpl);
 
@@ -192,12 +188,10 @@ describe('breadcrumb test', () => {
 
     service.getBreadCrumbs(new URI('file:///testDir1/testDir2/file2.ts'), {
       monacoEditor: {
-        getPosition: () => {
-          return {
-            lineNumber: 3,
-            column: 10,
-          };
-        },
+        getPosition: () => ({
+          lineNumber: 3,
+          column: 10,
+        }),
         onDidDispose: jest.fn(),
       },
     } as any)!;
@@ -207,12 +201,10 @@ describe('breadcrumb test', () => {
     eventBus.on(DocumentSymbolChangedEvent, async () => {
       const res2 = service.getBreadCrumbs(new URI('file:///testDir1/testDir2/file2.ts'), {
         monacoEditor: {
-          getPosition: () => {
-            return {
-              lineNumber: 3,
-              column: 10,
-            };
-          },
+          getPosition: () => ({
+            lineNumber: 3,
+            column: 10,
+          }),
           onDidDispose: jest.fn(),
         },
       } as any)!;
@@ -233,5 +225,4 @@ describe('breadcrumb test', () => {
       done();
     });
   });
-
 });

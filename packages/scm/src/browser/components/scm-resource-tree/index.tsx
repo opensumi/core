@@ -36,7 +36,7 @@ export const SCMResourceTree: React.FC<{
     // ensure ready
     (async () => {
       await scmTreeModelService.whenReady;
-      if (!!scmTreeModelService.treeModel) {
+      if (scmTreeModelService.treeModel) {
         // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
         // 这里需要重新取一下treeModel的值确保为最新的TreeModel
         await scmTreeModelService.treeModel.root.ensureLoaded();
@@ -54,7 +54,7 @@ export const SCMResourceTree: React.FC<{
       setModel(scmTreeModelService.treeModel);
       scmTreeModelService.onDidTreeModelChange(async (model) => {
         await scmTreeModelService.whenReady;
-        if (!!model) {
+        if (model) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await scmTreeModelService.treeModel.root.ensureLoaded();
         }
@@ -96,25 +96,28 @@ export const SCMResourceTree: React.FC<{
     return (isOSX && metaKey) || ctrlKey;
   }, []);
 
-  const handleItemClick = React.useCallback((event: React.MouseEvent, item: SCMResourceFile | SCMResourceGroup, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    event.stopPropagation();
+  const handleItemClick = React.useCallback(
+    (event: React.MouseEvent, item: SCMResourceFile | SCMResourceGroup, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      event.stopPropagation();
 
-    if (!item) {
-      return;
-    }
+      if (!item) {
+        return;
+      }
 
-    const shiftMask = hasShiftMask(event);
-    const ctrlCmdMask = hasCtrlCmdMask(event);
-    // 多选
-    if (shiftMask) {
-      scmTreeModelService.handleItemRangeClick(item, type);
-    } else if (ctrlCmdMask) {
-      scmTreeModelService.handleItemToggleClick(item, type);
-    } else {
-      scmTreeModelService.handleItemClick(item, type);
-    }
-  }, []);
+      const shiftMask = hasShiftMask(event);
+      const ctrlCmdMask = hasCtrlCmdMask(event);
+      // 多选
+      if (shiftMask) {
+        scmTreeModelService.handleItemRangeClick(item, type);
+      } else if (ctrlCmdMask) {
+        scmTreeModelService.handleItemToggleClick(item, type);
+      } else {
+        scmTreeModelService.handleItemClick(item, type);
+      }
+    },
+    [],
+  );
 
   const handleTwistierClick = React.useCallback((ev: React.MouseEvent, item: SCMResourceFolder) => {
     // 阻止点击事件冒泡
@@ -123,9 +126,10 @@ export const SCMResourceTree: React.FC<{
     scmTreeModelService.toggleDirectory(item);
   }, []);
 
-  const handleItemDoubleClick = React.useCallback((event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    event.stopPropagation();
+  const handleItemDoubleClick = React.useCallback(
+    (event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      event.stopPropagation();
 
     if (!item) {
       return;
@@ -222,3 +226,5 @@ const TreeView = React.memo(({
   }
   return <span className={styles.scm_tree_empty_text} />;
 }, isTreeViewPropsEqual);
+
+TreeView.displayName = 'SCMResourceTreeView';

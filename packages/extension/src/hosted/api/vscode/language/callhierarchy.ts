@@ -1,21 +1,29 @@
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { Position, IIncomingCallDto, IOutgoingCallDto, ICallHierarchyItemDto } from '../../../../common/vscode/model.api';
+import {
+  Position,
+  IIncomingCallDto,
+  IOutgoingCallDto,
+  ICallHierarchyItemDto,
+} from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
 import { Uri, CancellationToken } from '@opensumi/ide-core-common';
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 
 export class CallHierarchyAdapter {
-
   private readonly _idPool = new IdGenerator('');
   private readonly _cache = new Map<string, Map<string, vscode.CallHierarchyItem>>();
 
   constructor(
     private readonly documents: ExtensionDocumentDataManager,
     private readonly provider: vscode.CallHierarchyProvider,
-  ) { }
+  ) {}
 
-  async prepareSession(uri: Uri, position: Position, token: CancellationToken): Promise<ICallHierarchyItemDto[] | undefined> {
+  async prepareSession(
+    uri: Uri,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<ICallHierarchyItemDto[] | undefined> {
     const documentData = this.documents.getDocumentData(uri);
     if (!documentData) {
       return Promise.reject(new Error(`There is no document for ${uri}`));
@@ -39,7 +47,11 @@ export class CallHierarchyAdapter {
     }
   }
 
-  async provideCallsTo(sessionId: string, itemId: string, token: CancellationToken): Promise<IIncomingCallDto[] | undefined> {
+  async provideCallsTo(
+    sessionId: string,
+    itemId: string,
+    token: CancellationToken,
+  ): Promise<IIncomingCallDto[] | undefined> {
     const item = this._itemFromCache(sessionId, itemId);
     if (!item) {
       throw new Error('missing call hierarchy item');
@@ -48,15 +60,17 @@ export class CallHierarchyAdapter {
     if (!calls) {
       return undefined;
     }
-    return calls.map((call) => {
-      return {
-        from: this._cacheAndConvertItem(sessionId, call.from),
-        fromRanges: call.fromRanges.map((r) => Converter.fromRange(r)),
-      };
-    });
+    return calls.map((call) => ({
+      from: this._cacheAndConvertItem(sessionId, call.from),
+      fromRanges: call.fromRanges.map((r) => Converter.fromRange(r)),
+    }));
   }
 
-  async provideCallsFrom(sessionId: string, itemId: string, token: CancellationToken): Promise<IOutgoingCallDto[] | undefined> {
+  async provideCallsFrom(
+    sessionId: string,
+    itemId: string,
+    token: CancellationToken,
+  ): Promise<IOutgoingCallDto[] | undefined> {
     const item = this._itemFromCache(sessionId, itemId);
     if (!item) {
       throw new Error('missing call hierarchy item');
@@ -65,12 +79,10 @@ export class CallHierarchyAdapter {
     if (!calls) {
       return undefined;
     }
-    return calls.map((call) => {
-      return {
-        to: this._cacheAndConvertItem(sessionId, call.to),
-        fromRanges: call.fromRanges.map((r) => Converter.fromRange(r)),
-      };
-    });
+    return calls.map((call) => ({
+      to: this._cacheAndConvertItem(sessionId, call.to),
+      fromRanges: call.fromRanges.map((r) => Converter.fromRange(r)),
+    }));
   }
 
   releaseSession(sessionId: string): void {

@@ -1,4 +1,8 @@
-import type { ICodeEditor, IDiffEditor, IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import type {
+  ICodeEditor,
+  IDiffEditor,
+  IEditorConstructionOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import * as suggest from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
@@ -50,7 +54,9 @@ export abstract class MonacoOverrideServiceRegistry {
 export const MonacoContribution = Symbol('MonacoContribution');
 
 export type FormattingSelectorType = (
-  formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>,
+  formatters: Array<
+    monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
+  >,
   document: ITextModel,
 ) => monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 
@@ -60,7 +66,7 @@ export interface MonacoContribution {
    * @param monacoService
    */
   onMonacoLoaded?(monacoService: MonacoService);
-   /**
+  /**
    * @deprecated 请勿依赖 onContextKeyServiceReady
    * @param contextKeyService
    */
@@ -80,7 +86,6 @@ export interface ISchemaContributions {
 }
 
 export interface IJSONSchemaRegistry {
-
   readonly onDidChangeSchema: Event<string>;
 
   registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void;
@@ -125,4 +130,4 @@ export interface SuggestEventPayload {
   eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
   data: suggest.ISelectedSuggestion | suggest.SuggestWidget;
 }
-export class SuggestEvent extends BasicEvent<SuggestEventPayload> { }
+export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}

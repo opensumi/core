@@ -1,13 +1,23 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ClientAppContribution, Domain, IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
-import { BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import {
+  ClientAppContribution,
+  Domain,
+  IStatusBarService,
+  StatusBarAlignment,
+  StatusBarEntryAccessor,
+} from '@opensumi/ide-core-browser';
+import {
+  BrowserConnectionCloseEvent,
+  BrowserConnectionOpenEvent,
+  OnEvent,
+  WithEventBus,
+} from '@opensumi/ide-core-common';
 import { IconType } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 @Injectable()
 @Domain(ClientAppContribution)
 export class StatusBarContribution extends WithEventBus implements ClientAppContribution {
-
   @Autowired(IconService)
   private iconService: IconService;
 
@@ -16,10 +26,7 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
 
   private statusBarElement?: StatusBarEntryAccessor;
 
-  private onDidConnectionChange(
-    text: string | undefined,
-    backgroundColor: string,
-  ) {
+  private onDidConnectionChange(text: string | undefined, backgroundColor: string) {
     if (this.statusBarElement) {
       this.statusBarElement.update({
         text,
@@ -46,10 +53,13 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
         color: '#FFFFFF',
         tooltip: 'OpenSumi',
         alignment: StatusBarAlignment.LEFT,
-        iconClass: this.iconService.fromIcon('', 'https://img.alicdn.com/imgextra/i1/O1CN01I0fKZ51PTgHByjznG_!!6000000001842-2-tps-40-40.png', IconType.Mask),
+        iconClass: this.iconService.fromIcon(
+          '',
+          'https://img.alicdn.com/imgextra/i1/O1CN01I0fKZ51PTgHByjznG_!!6000000001842-2-tps-40-40.png',
+          IconType.Mask,
+        ),
         priority: Infinity,
       });
     }
   }
-
 }

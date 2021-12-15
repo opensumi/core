@@ -3,7 +3,6 @@ import { MockedStandaloneCodeEditor } from './code-editor';
 import { Disposable, Event } from '@opensumi/ide-core-common';
 
 export class MockedDiffEditor extends Disposable implements monaco.editor.IStandaloneDiffEditor {
-
   private originalEditor: MockedStandaloneCodeEditor;
   private modifiedEditor: MockedStandaloneCodeEditor;
   onDidDispose: Event<void>;
@@ -52,7 +51,7 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   }
 
   addCommand(keybinding: number, handler: monaco.editor.ICommandHandler, context?: string | undefined): string | null {
-   return null;
+    return null;
   }
 
   createContextKey<T>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
@@ -139,7 +138,10 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   revealPositionInCenter(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
     this.modifiedEditor.revealPositionInCenter(position, scrollType);
   }
-  revealPositionInCenterIfOutsideViewport(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealPositionInCenterIfOutsideViewport(
+    position: monaco.IPosition,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     this.modifiedEditor.revealPositionInCenterIfOutsideViewport(position, scrollType);
   }
   getSelection(): monaco.Selection | null {
@@ -157,10 +159,18 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   revealLines(startLineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     this.modifiedEditor.revealLines(startLineNumber, endLineNumber, scrollType);
   }
-  revealLinesInCenter(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealLinesInCenter(
+    lineNumber: number,
+    endLineNumber: number,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     this.modifiedEditor.revealLinesInCenter(lineNumber, endLineNumber, scrollType);
   }
-  revealLinesInCenterIfOutsideViewport(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealLinesInCenterIfOutsideViewport(
+    lineNumber: number,
+    endLineNumber: number,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     this.modifiedEditor.revealLinesInCenterIfOutsideViewport(lineNumber, endLineNumber, scrollType);
   }
   revealRange(range: monaco.IRange, scrollType?: monaco.editor.ScrollType | undefined): void {
@@ -198,10 +208,7 @@ interface IDiffRange {
 }
 
 export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
-
-  constructor(public diffEditor, public opts) {
-
-  }
+  constructor(public diffEditor, public opts) {}
 
   canNavigate(): boolean {
     throw new Error('Method not implemented.');
@@ -226,5 +233,4 @@ export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
   _initIdx(fwd: boolean): void {
     throw new Error('Method not implemented.');
   }
-
 }

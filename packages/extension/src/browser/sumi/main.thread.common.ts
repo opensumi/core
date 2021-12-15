@@ -12,7 +12,6 @@ import { ExtHostEvent } from '../types';
  */
 @Injectable({ multiple: true })
 export class MainThreadCommon extends WithEventBus implements IMainThreadCommon {
-
   _proxy: IExtHostCommon;
 
   @Autowired(IEventBus)
@@ -36,9 +35,11 @@ export class MainThreadCommon extends WithEventBus implements IMainThreadCommon 
   async $subscribeEvent(eventName: string) {
     this.subscribedEvent.add(eventName);
 
-    this.addDispose(Disposable.create(() => {
-      this.$unSubscribeEvent(eventName);
-    }));
+    this.addDispose(
+      Disposable.create(() => {
+        this.$unSubscribeEvent(eventName);
+      }),
+    );
   }
 
   async $unSubscribeEvent(eventName: string) {

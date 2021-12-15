@@ -1,5 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@opensumi/ide-core-browser';
+import {
+  CommandRegistry,
+  CommandService,
+  ILogger,
+  formatLocalize,
+  IContextKeyService,
+  isUndefined,
+  URI,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ThemeType } from '@opensumi/ide-theme';
 import { IconType, IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
@@ -18,7 +27,7 @@ export interface MenuActionFormat extends IMenuItem {
 
 // 对插件侧 contributes 的 submenu interface
 // tslint:disable-next-line:no-empty-interface
-export interface SubmenuActionFormat extends ISubmenuItem { }
+export type SubmenuActionFormat = ISubmenuItem;
 
 function isMenuActionFormat(item: MenuActionFormat | SubmenuActionFormat): item is MenuActionFormat {
   return typeof (item as MenuActionFormat).command === 'string';
@@ -88,7 +97,9 @@ export function isValidMenuItem(item: MenuActionFormat, collector: Console): boo
 
 function isValidSubmenuItem(item: SubmenuActionFormat, collector: Console): boolean {
   if (typeof item.submenu !== 'string') {
-    collector.error(formatLocalize('requirestring', 'property `{0}` is mandatory and must be of type `string`', 'submenu'));
+    collector.error(
+      formatLocalize('requirestring', 'property `{0}` is mandatory and must be of type `string`', 'submenu'),
+    );
     return false;
   }
   if (item.when && typeof item.when !== 'string') {
@@ -140,7 +151,6 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSch
 @Injectable()
 @Contributes('menus')
 export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
-
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
@@ -191,7 +201,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   }
 
   contribute() {
-
     const collector = console;
 
     // menu registration
@@ -225,19 +234,14 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
           const [group, order] = parseMenuGroup(item.group);
           let argsTransformer: ((...args: any[]) => any[]) | undefined;
-          if (menuId as MenuId === MenuId.EditorTitleContext) {
-            argsTransformer = ({ uri, group }: { uri: URI, group: IEditorGroup }) => {
-              return [uri.codeUri];
-            };
-          } else if (menuId as MenuId === MenuId.EditorTitle) {
-            argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => {
-              return [editorUri?.codeUri || uri.codeUri];
-            };
+          if ((menuId as MenuId) === MenuId.EditorTitleContext) {
+            argsTransformer = ({ uri, group }: { uri: URI; group: IEditorGroup }) => [uri.codeUri];
+          } else if ((menuId as MenuId) === MenuId.EditorTitle) {
+            argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => [editorUri?.codeUri || uri.codeUri];
           }
 
-          this.addDispose(this.menuRegistry.registerMenuItem(
-            menuId,
-            {
+          this.addDispose(
+            this.menuRegistry.registerMenuItem(menuId, {
               command: item.command,
               alt,
               group,
@@ -248,8 +252,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               type: item.type,
               toggledWhen: item.toggledWhen,
               enabledWhen: item.enabledWhen,
-            } as IMenuItem,
-          ));
+            } as IMenuItem),
+          );
         } else {
           const submenuRegistry = _submenuDescRegistry.get(this.extension.id);
           if (!submenuRegistry) {
@@ -259,23 +263,28 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const submenuDesc = submenuRegistry.find((n) => n.id === item.submenu);
 
           if (!submenuDesc) {
-            collector.error(localize('missing.submenu', "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.", item.submenu));
+            collector.error(
+              localize(
+                'missing.submenu',
+                "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.",
+                item.submenu,
+              ),
+            );
             continue;
           }
 
           const [group, order] = parseMenuGroup(item.group);
 
-          this.addDispose(this.menuRegistry.registerMenuItem(
-            menuId,
-            {
+          this.addDispose(
+            this.menuRegistry.registerMenuItem(menuId, {
               submenu: item.submenu,
               label: this.getLocalizeFromNlsJSON(submenuDesc.label),
               when: item.when,
               group,
               order,
               iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon),
-            } as ISubmenuItem,
-          ));
+            } as ISubmenuItem),
+          );
         }
       }
     }

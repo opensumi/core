@@ -8,7 +8,6 @@ import { ContributionProvider } from './contribution-provider';
 export const StorageProvider = Symbol('StorageProvider');
 export type StorageProvider = (storageId: URI) => Promise<IStorage>;
 
-
 export const StorageResolverContribution = Symbol('StorageResolverContribution');
 
 export interface StorageResolverContribution {
@@ -16,7 +15,6 @@ export interface StorageResolverContribution {
 }
 
 export interface IStorage extends IDisposable {
-
   readonly items: Map<string, string>;
   readonly size: number;
   readonly onDidChangeStorage: Event<string>;
@@ -43,8 +41,8 @@ export interface IStorage extends IDisposable {
 
 export const STORAGE_SCHEMA = {
   SCOPE: 'wsdb',
-  GLOBAL: 'gldb'
-}
+  GLOBAL: 'gldb',
+};
 
 export const STORAGE_NAMESPACE = {
   // workspace database
@@ -59,13 +57,12 @@ export const STORAGE_NAMESPACE = {
   GLOBAL_LAYOUT: new URI('layout-global').withScheme(STORAGE_SCHEMA.GLOBAL),
   GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
   GLOBAL_RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.GLOBAL),
-}
+};
 
 @Injectable()
 export class DefaultStorageProvider {
-
   @Autowired(StorageResolverContribution)
-  protected readonly resolversProvider: ContributionProvider<StorageResolverContribution>
+  protected readonly resolversProvider: ContributionProvider<StorageResolverContribution>;
 
   private storageCacheMap: Map<string, IStorage> = new Map();
 
@@ -74,7 +71,7 @@ export class DefaultStorageProvider {
    */
   async get(storageId: URI): Promise<IStorage | void> {
     if (this.storageCacheMap.has(storageId.toString())) {
-      return this.storageCacheMap.get(storageId.toString())
+      return this.storageCacheMap.get(storageId.toString());
     }
     const resolvers = this.resolversProvider.getContributions();
     for (const resolver of resolvers) {
@@ -84,7 +81,7 @@ export class DefaultStorageProvider {
         return storageResolver;
       }
     }
-    return ;
+    return;
   }
 }
 

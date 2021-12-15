@@ -41,14 +41,13 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
 
   contribute() {
     for (const menubarItem of this.json) {
-      this.addDispose(this.menuRegistry.registerMenubarItem(
-        menubarItem.id,
-        {
+      this.addDispose(
+        this.menuRegistry.registerMenubarItem(menubarItem.id, {
           label: this.getLocalizeFromNlsJSON(menubarItem.title),
           order: menubarItem.order,
           nativeRole: menubarItem.nativeRole,
-        },
-      ));
+        }),
+      );
     }
   }
 }

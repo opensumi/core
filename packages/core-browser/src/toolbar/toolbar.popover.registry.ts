@@ -28,7 +28,5 @@ export class ToolbarPopoverRegistry implements IToolbarPopoverRegistry {
     };
   }
 
-  getComponent = (id: string): React.FC | undefined => {
-    return this.popOverComponents.get(id);
-  }
+  getComponent = (id: string): React.FC | undefined => this.popOverComponents.get(id);
 }

@@ -7,13 +7,22 @@ export class ExtensionClientService implements IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  async getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]> {
+  async getAllExtensions(
+    scan: string[],
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]> {
     return nodeLessExtensions;
   }
   createProcess(clientId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData | undefined,
+  ): Promise<IExtensionMetaData | undefined> {
     throw new Error('Method not implemented.');
   }
   restartExtProcessByClient(): void {
@@ -31,5 +40,4 @@ export class ExtensionClientService implements IExtensionNodeClientService {
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
-
 }

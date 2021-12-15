@@ -2,9 +2,8 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
 import { Optional, Injectable } from '@opensumi/di';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadWindowState {
-
   private readonly proxy: IExtHostWindowState;
   private blurHandler;
   private focusHandler;
@@ -26,5 +25,4 @@ export class MainThreadWindowState {
     window.removeEventListener('blur', this.blurHandler);
     window.removeEventListener('focus', this.focusHandler);
   }
-
 }

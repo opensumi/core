@@ -1,11 +1,22 @@
 import { Injectable } from '@opensumi/di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, isEmptyObject, FileStat } from '@opensumi/ide-core-common';
+import {
+  IDisposable,
+  DisposableCollection,
+  Emitter,
+  Event,
+  URI,
+  Deferred,
+  JSONUtils,
+  JSONValue,
+  isEmptyObject,
+  FileStat,
+} from '@opensumi/ide-core-common';
 import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/preference-scope';
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {
-  default: {[key: string]: any};
+  default: { [key: string]: any };
   languageSpecific: {
-    [languageId: string]: {[key: string]: any},
+    [languageId: string]: { [key: string]: any };
   };
 }
 export interface PreferenceProviderDataChange {
@@ -37,14 +48,18 @@ export interface PreferenceResolveResult<T> {
   languageSpecific?: boolean;
 }
 
-function transformReverse(delegates: {[delegated: string]: {
-  delegateTo: string,
-  transform?: (delegateValue: any) => any,
-}}): {[delegated: string]: {
-  delegated: string,
-  delegateTo: string,
-  transform?: (delegateValue: any) => any,
-}} {
+function transformReverse(delegates: {
+  [delegated: string]: {
+    delegateTo: string;
+    transform?: (delegateValue: any) => any;
+  };
+}): {
+  [delegated: string]: {
+    delegated: string;
+    delegateTo: string;
+    transform?: (delegateValue: any) => any;
+  };
+} {
   const res = {};
   for (const key of Object.keys(delegates)) {
     res[delegates[key].delegateTo] = {
@@ -57,11 +72,11 @@ function transformReverse(delegates: {[delegated: string]: {
 
 @Injectable()
 export abstract class PreferenceProvider implements IDisposable {
-
   public readonly name: string;
 
   private readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges>();
-  public readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> = this.onDidPreferencesChangedEmitter.event;
+  public readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> =
+    this.onDidPreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -78,22 +93,26 @@ export abstract class PreferenceProvider implements IDisposable {
   // 4. 当尝试获取 delegate 的值时，如果 delegate 没有值， 尝试获取 delegateTo 的值
   // 5. schema 只会检测改变后 delegatedTo 的值
   // 6. 不对语言特定的设置生效
-  static PreferenceDelegates: {[delegated: string]: {
-    delegateTo: string,
-    transform?: (delegatedValue: any) => any,
-    transformFrom?: (delegatedToValue: any) => any,
-  }} = {
+  static PreferenceDelegates: {
+    [delegated: string]: {
+      delegateTo: string;
+      transform?: (delegatedValue: any) => any;
+      transformFrom?: (delegatedToValue: any) => any;
+    };
+  } = {
     'workbench.colorTheme': {
       delegateTo: 'general.theme',
     },
   };
 
-  static PreferenceDelegatesReverse: {[delegated: string]: {
-    delegated: string,
-    delegateTo: string,
-    transform?: (delegatedValue: any) => any,
-    transformFrom?: (delegatedToValue: any) => any,
-  }} = transformReverse(PreferenceProvider.PreferenceDelegates);
+  static PreferenceDelegatesReverse: {
+    [delegated: string]: {
+      delegated: string;
+      delegateTo: string;
+      transform?: (delegatedValue: any) => any;
+      transformFrom?: (delegatedToValue: any) => any;
+    };
+  } = transformReverse(PreferenceProvider.PreferenceDelegates);
 
   constructor() {
     this.toDispose.push(this.onDidPreferencesChangedEmitter);
@@ -109,12 +128,17 @@ export abstract class PreferenceProvider implements IDisposable {
       if (provider.onDidChange) {
         provider.onDidChange((e) => {
           if (e.scope === this._scope) {
-            this.emitPreferencesChangedEvent([{
-              preferenceName,
-              scope: e.scope,
-              newValue: e.newValue,
-              oldValue: e.oldValue,
-            }], true);
+            this.emitPreferencesChangedEvent(
+              [
+                {
+                  preferenceName,
+                  scope: e.scope,
+                  newValue: e.newValue,
+                  oldValue: e.oldValue,
+                },
+              ],
+              true,
+            );
           }
         });
       }
@@ -129,10 +153,13 @@ export abstract class PreferenceProvider implements IDisposable {
    * 处理事件监听中接收到的Event数据对象
    * 以便后续接收到数据后能确认来自那个配置项的值
    */
-  protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): boolean {
+  protected emitPreferencesChangedEvent(
+    changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[],
+    noFilterExternal?: boolean,
+  ): boolean {
     let prefChanges: PreferenceProviderDataChanges;
     if (Array.isArray(changes)) {
-      prefChanges =  {default: {}, languageSpecific: {}};
+      prefChanges = { default: {}, languageSpecific: {} };
       for (const change of changes) {
         prefChanges.default[change.preferenceName] = change;
       }
@@ -152,7 +179,12 @@ export abstract class PreferenceProvider implements IDisposable {
             prefChanges.default[delegate.delegateTo] = {
               ...change,
               oldValue: undefined,
-              newValue: change.newValue !== undefined ? (delegate.transform ? delegate.transform(change.newValue) : change.newValue) : undefined,
+              newValue:
+                change.newValue !== undefined
+                  ? delegate.transform
+                    ? delegate.transform(change.newValue)
+                    : change.newValue
+                  : undefined,
               preferenceName: delegate.delegateTo,
             };
           }
@@ -230,7 +262,7 @@ export abstract class PreferenceProvider implements IDisposable {
     if (PreferenceProvider.PreferenceDelegatesReverse[preferenceName]) {
       const res = this.getDelegateToValueFromDelegated(preferenceName);
       if (res !== undefined) {
-        return {value: res, scope: this._scope}; // FIXME: 这里好像scope有点问题，暂时不影响
+        return { value: res, scope: this._scope }; // FIXME: 这里好像scope有点问题，暂时不影响
       }
     }
     if (typeof this._scope !== 'undefined') {
@@ -244,7 +276,7 @@ export abstract class PreferenceProvider implements IDisposable {
     }
     const res = this.doResolve<T>(preferenceName, resourceUri, language);
     if (res.value === undefined && PreferenceProvider.PreferenceDelegates[preferenceName]) {
-      return { value: this.getDelegatedValueFromDelegateTo(preferenceName), scope: this._scope}; // FIXME: 这里好像scope有点问题，暂时不影响
+      return { value: this.getDelegatedValueFromDelegateTo(preferenceName), scope: this._scope }; // FIXME: 这里好像scope有点问题，暂时不影响
     } else {
       return res;
     }
@@ -285,9 +317,17 @@ export abstract class PreferenceProvider implements IDisposable {
    * @returns {({ [language: string]: {[p: string]: any} } | undefined)}
    * @memberof PreferenceProvider
    */
-  public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} } | undefined;
+  public abstract getLanguagePreferences(
+    resourceUri?: string,
+    language?: string,
+  ): { [language: string]: { [p: string]: any } } | undefined;
 
-  public async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
+  public async setPreference(
+    preferenceName: string,
+    value: any,
+    resourceUri?: string,
+    language?: string,
+  ): Promise<boolean> {
     // 对于我们 workbench.colorTheme -> general.theme 这种托管，
     // 修改 workbench.colorTheme 为 'themeA' 的时候，get('general.theme')，会首先查看 workbench.colorTheme，
     // 如果有值，则采用 workbench.colorTheme， 而不管配置文件中是否 general.theme 有值，
@@ -309,12 +349,17 @@ export abstract class PreferenceProvider implements IDisposable {
           await externalProvider.set(value, this._scope);
           // 如果外部provider没有监听器，帮助他发送改变事件
           if (!externalProvider.onDidChange) {
-            this.emitPreferencesChangedEvent([{
-              preferenceName,
-              scope: this._scope,
-              oldValue,
-              newValue: externalProvider.get(this._scope),
-            }], true);
+            this.emitPreferencesChangedEvent(
+              [
+                {
+                  preferenceName,
+                  scope: this._scope,
+                  oldValue,
+                  newValue: externalProvider.get(this._scope),
+                },
+              ],
+              true,
+            );
           }
           return true;
         } catch (e) {
@@ -325,7 +370,12 @@ export abstract class PreferenceProvider implements IDisposable {
     return await this.doSetPreference(preferenceName, value, resourceUri, language);
   }
 
-  protected abstract doSetPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean>;
+  protected abstract doSetPreference(
+    preferenceName: string,
+    value: any,
+    resourceUri?: string,
+    language?: string,
+  ): Promise<boolean>;
 
   /**
    * 返回promise，当 preference provider 已经可以提供配置时返回resolved
@@ -367,5 +417,4 @@ export abstract class PreferenceProvider implements IDisposable {
     }
     return source;
   }
-
 }

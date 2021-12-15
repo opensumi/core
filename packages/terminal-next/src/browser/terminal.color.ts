@@ -9,34 +9,67 @@ import { registerColor, PANEL_BACKGROUND, PANEL_BORDER, ColorIdentifier, ColorDe
  */
 export const ansiColorIdentifiers: ColorIdentifier[] = [];
 
-export const TERMINAL_BACKGROUND_COLOR = registerColor('terminal.background', {
-  dark: PANEL_BACKGROUND,
-  light: PANEL_BACKGROUND,
-  hc: PANEL_BACKGROUND,
-}, localize('terminal.background', 'The background color of the terminal, this allows coloring the terminal differently to the panel.'));
+export const TERMINAL_BACKGROUND_COLOR = registerColor(
+  'terminal.background',
+  {
+    dark: PANEL_BACKGROUND,
+    light: PANEL_BACKGROUND,
+    hc: PANEL_BACKGROUND,
+  },
+  localize(
+    'terminal.background',
+    'The background color of the terminal, this allows coloring the terminal differently to the panel.',
+  ),
+);
 
-export const TERMINAL_FOREGROUND_COLOR = registerColor('terminal.foreground', {
-  light: '#333333',
-  dark: '#CCCCCC',
-  hc: '#FFFFFF',
-}, localize('terminal.foreground', 'The foreground color of the terminal.'));
-export const TERMINAL_CURSOR_FOREGROUND_COLOR = registerColor('terminalCursor.foreground', null, localize('terminalCursor.foreground', 'The foreground color of the terminal cursor.'));
+export const TERMINAL_FOREGROUND_COLOR = registerColor(
+  'terminal.foreground',
+  {
+    light: '#333333',
+    dark: '#CCCCCC',
+    hc: '#FFFFFF',
+  },
+  localize('terminal.foreground', 'The foreground color of the terminal.'),
+);
+export const TERMINAL_CURSOR_FOREGROUND_COLOR = registerColor(
+  'terminalCursor.foreground',
+  null,
+  localize('terminalCursor.foreground', 'The foreground color of the terminal cursor.'),
+);
 
-export const TERMINAL_CURSOR_BACKGROUND_COLOR = registerColor('terminalCursor.background', null, localize('terminalCursor.background', 'The background color of the terminal cursor. Allows customizing the color of a character overlapped by a block cursor.'));
+export const TERMINAL_CURSOR_BACKGROUND_COLOR = registerColor(
+  'terminalCursor.background',
+  null,
+  localize(
+    'terminalCursor.background',
+    'The background color of the terminal cursor. Allows customizing the color of a character overlapped by a block cursor.',
+  ),
+);
 
-export const TERMINAL_SELECTION_BACKGROUND_COLOR = registerColor('terminal.selectionBackground', {
-  light: '#00000040',
-  dark: '#FFFFFF40',
-  hc: '#FFFFFF80',
-}, localize('terminal.selectionBackground', 'The selection background color of the terminal.'));
+export const TERMINAL_SELECTION_BACKGROUND_COLOR = registerColor(
+  'terminal.selectionBackground',
+  {
+    light: '#00000040',
+    dark: '#FFFFFF40',
+    hc: '#FFFFFF80',
+  },
+  localize('terminal.selectionBackground', 'The selection background color of the terminal.'),
+);
 
-export const TERMINAL_BORDER_COLOR = registerColor('terminal.border', {
-  dark: PANEL_BORDER,
-  light: PANEL_BORDER,
-  hc: PANEL_BORDER,
-}, localize('terminal.border', 'The color of the border that separates split panes within the terminal. This defaults to panel.border.'));
+export const TERMINAL_BORDER_COLOR = registerColor(
+  'terminal.border',
+  {
+    dark: PANEL_BORDER,
+    light: PANEL_BORDER,
+    hc: PANEL_BORDER,
+  },
+  localize(
+    'terminal.border',
+    'The color of the border that separates split panes within the terminal. This defaults to panel.border.',
+  ),
+);
 
-export const ansiColorMap: { [key: string]: { index: number, defaults: ColorDefaults } } = {
+export const ansiColorMap: { [key: string]: { index: number; defaults: ColorDefaults } } = {
   'terminal.ansiBlack': {
     index: 0,
     defaults: {
@@ -171,6 +204,10 @@ export function registerTerminalColors(): void {
   Object.keys(ansiColorMap).forEach((id) => {
     const entry = ansiColorMap[id];
     const colorName = id.substring(13);
-    ansiColorIdentifiers[entry.index] = registerColor(id, entry.defaults, localize('terminal.ansiColor', '\'{0}\' ANSI color in the terminal.', colorName));
+    ansiColorIdentifiers[entry.index] = registerColor(
+      id,
+      entry.defaults,
+      localize('terminal.ansiColor', "'{0}' ANSI color in the terminal.", colorName),
+    );
   });
 }

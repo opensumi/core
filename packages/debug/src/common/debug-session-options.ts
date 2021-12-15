@@ -14,6 +14,6 @@ export interface IDebugSessionDTO extends DebugSessionOptions {
 
 export namespace IDebugSessionDTO {
   export function is(options: DebugSessionOptions): options is IDebugSessionDTO {
-      return ('id' in options);
+    return 'id' in options;
   }
 }

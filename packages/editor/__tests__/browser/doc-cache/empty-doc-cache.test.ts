@@ -16,12 +16,10 @@ describe('EmptyDocCacheImpl', () => {
 
   beforeEach(async (done) => {
     injector = createBrowserInjector([]);
-    injector.addProviders(
-      {
-        token: IDocPersistentCacheProvider,
-        useClass: EmptyDocCacheImpl,
-      },
-    );
+    injector.addProviders({
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+    });
 
     uri = new URI(`test://testUri${Math.random()}`);
     content = uniqueId('content');
@@ -64,17 +62,19 @@ describe('EmptyDocCacheImpl', () => {
     expect(persistCacheSpy).toBeCalledTimes(1);
     expect(persistCacheSpy).toBeCalledWith(uri, {
       changeMatrix: [
-        [{
-          range: {
-            endColumn: 9,
-            endLineNumber: 1,
-            startColumn: 1,
-            startLineNumber: 1,
+        [
+          {
+            range: {
+              endColumn: 9,
+              endLineNumber: 1,
+              startColumn: 1,
+              startLineNumber: 1,
+            },
+            rangeLength: 8,
+            rangeOffset: 0,
+            text: newContent,
           },
-          rangeLength: 8,
-          rangeOffset: 0,
-          text: newContent,
-        }],
+        ],
       ],
       content: newContent,
       dirty: true,

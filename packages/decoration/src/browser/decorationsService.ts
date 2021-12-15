@@ -1,17 +1,30 @@
 import { Injectable } from '@opensumi/di';
-import { Uri, Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@opensumi/ide-core-common';
+import {
+  Uri,
+  Disposable,
+  Event,
+  Emitter,
+  CancellationTokenSource,
+  localize,
+  isThenable,
+  IDisposable,
+  toDisposable,
+  dispose,
+} from '@opensumi/ide-core-common';
 import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
 import { LinkedList } from '@opensumi/ide-core-common/lib/linked-list';
 import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@opensumi/ide-core-common';
 
 import {
-  IDecorationsService, IDecoration, IResourceDecorationChangeEvent,
-  IDecorationsProvider, IDecorationData,
+  IDecorationsService,
+  IDecoration,
+  IResourceDecorationChangeEvent,
+  IDecorationsProvider,
+  IDecorationData,
 } from '../common/decorations';
 
 class FileDecorationChangeEvent implements IResourceDecorationChangeEvent {
-
   private readonly _data = TernarySearchTree.forPaths<boolean>();
 
   affectsResource(uri: Uri): boolean {
@@ -37,14 +50,10 @@ class FileDecorationChangeEvent implements IResourceDecorationChangeEvent {
 }
 
 class DecorationDataRequest {
-  constructor(
-    readonly source: CancellationTokenSource,
-    readonly thenable: Promise<void>,
-  ) { }
+  constructor(readonly source: CancellationTokenSource, readonly thenable: Promise<void>) {}
 }
 
 class DecorationProviderWrapper {
-
   readonly data = TernarySearchTree.forPaths<DecorationDataRequest | IDecorationData | null>();
   private readonly _dispoable: IDisposable;
 
@@ -57,8 +66,11 @@ class DecorationProviderWrapper {
       if (!uris) {
         // flush event -> drop all data, can affect everything
         this.data.clear();
-        this._flushEmitter.fire({ affectsResource() { return true; } });
-
+        this._flushEmitter.fire({
+          affectsResource() {
+            return true;
+          },
+        });
       } else {
         // selective changes -> drop for resource, fetch again, send event
         // perf: the map stores thenables, decorations, or `null`-markers.
@@ -108,7 +120,6 @@ class DecorationProviderWrapper {
   }
 
   private _fetchData(uri: Uri): IDecorationData | null {
-
     // check for pending request and cancel it
     const pendingRequest = this.data.get(uri.toString());
     if (pendingRequest instanceof DecorationDataRequest) {
@@ -121,18 +132,22 @@ class DecorationProviderWrapper {
     if (!isThenable<IDecorationData | Promise<IDecorationData | undefined> | undefined>(dataOrThenable)) {
       // sync -> we have a result now
       return this._keepItem(uri, dataOrThenable);
-
     } else {
       // async -> we have a result soon
-      const request = new DecorationDataRequest(source, Promise.resolve(dataOrThenable).then((data) => {
-        if (this.data.get(uri.toString()) === request) {
-          this._keepItem(uri, data);
-        }
-      }).catch((err) => {
-        if (!isPromiseCanceledError(err) && this.data.get(uri.toString()) === request) {
-          this.data.delete(uri.toString());
-        }
-      }));
+      const request = new DecorationDataRequest(
+        source,
+        Promise.resolve(dataOrThenable)
+          .then((data) => {
+            if (this.data.get(uri.toString()) === request) {
+              this._keepItem(uri, data);
+            }
+          })
+          .catch((err) => {
+            if (!isPromiseCanceledError(err) && this.data.get(uri.toString()) === request) {
+              this.data.delete(uri.toString());
+            }
+          }),
+      );
 
       this.data.set(uri.toString(), request);
       return null;
@@ -170,8 +185,14 @@ function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecorati
     // label
     color: list[0].color,
     // badge
-    badge: list.filter((d) => !isFalsyOrWhitespace(d.letter)).map((d) => d.letter).join(','),
-    tooltip: list.filter((d) => !isFalsyOrWhitespace(d.tooltip)).map((d) => d.tooltip).join(' • '),
+    badge: list
+      .filter((d) => !isFalsyOrWhitespace(d.letter))
+      .map((d) => d.letter)
+      .join(','),
+    tooltip: list
+      .filter((d) => !isFalsyOrWhitespace(d.tooltip))
+      .map((d) => d.tooltip)
+      .join(' • '),
   };
 }
 
@@ -188,7 +209,9 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
     Event.debounce<Uri | Uri[], FileDecorationChangeEvent>(
       this._onDidChangeDecorationsDelayed.event,
       FileDecorationChangeEvent.debouncer, // todo: remove it
-      undefined, undefined, 500,
+      undefined,
+      undefined,
+      500,
     ),
   );
 
@@ -209,7 +232,9 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
 
     this._onDidChangeDecorations.fire({
       // everything might have changed
-      affectsResource() { return true; },
+      affectsResource() {
+        return true;
+      },
     });
 
     return toDisposable(() => {
@@ -223,7 +248,7 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
 
   getDecoration(uri: Uri, includeChildren: boolean): IDecoration | undefined {
     const data: IDecorationData[] = [];
-    let containsChildren: boolean = false;
+    let containsChildren = false;
     for (let iter = this._data.iterator(), next = iter.next(); !next.done; next = iter.next()) {
       next.value.getOrRetrieve(uri, includeChildren, (deco, isChild) => {
         if (!isChild || deco.bubble) {

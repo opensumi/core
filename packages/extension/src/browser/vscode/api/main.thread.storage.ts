@@ -3,7 +3,7 @@ import { ExtHostAPIIdentifier, IMainThreadStorage, KeysToAnyValues, IExtHostStor
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadStorage implements IMainThreadStorage {
   private readonly proxy: IExtHostStorage;
 

@@ -9,7 +9,7 @@ import { HashCalculateContribution } from '../hash-calculate/hash-calculate.cont
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {
-  contributionProvider = [ OpenerContribution ];
+  contributionProvider = [OpenerContribution];
   providers = [
     ClientCommonContribution,
     DefaultOpenerContribution,

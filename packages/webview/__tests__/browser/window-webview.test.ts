@@ -5,7 +5,6 @@ import { ElectronPlainWebviewWindow } from '@opensumi/ide-webview/lib/browser/we
 import { Emitter } from '@opensumi/ide-core-common';
 
 describe('webview-window-test', () => {
-
   const injector = createBrowserInjector([]);
 
   injector.addProviders({
@@ -15,7 +14,6 @@ describe('webview-window-test', () => {
     },
   });
   it('webview-window class test', async (done) => {
-
     mockElectronRenderer();
 
     const windowId = Math.floor(Math.random() * 10);
@@ -27,9 +25,7 @@ describe('webview-window-test', () => {
       return windowId;
     });
 
-    const onListen = jest.fn((eventName, listener) => {
-      return emitter.event(listener);
-    });
+    const onListen = jest.fn((eventName, listener) => emitter.event(listener));
 
     const showBrowserWindow = jest.fn();
     const browserWindowLoadUrl = jest.fn();
@@ -76,5 +72,4 @@ describe('webview-window-test', () => {
 
     done();
   });
-
 });

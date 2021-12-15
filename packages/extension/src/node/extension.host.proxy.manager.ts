@@ -1,13 +1,20 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
-import { IExtensionHostManager, Output, EXT_HOST_PROXY_PROTOCOL, EXT_SERVER_IDENTIFIER, IExtHostProxyRPCService, EXT_HOST_PROXY_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common';
+import {
+  IExtensionHostManager,
+  Output,
+  EXT_HOST_PROXY_PROTOCOL,
+  EXT_SERVER_IDENTIFIER,
+  IExtHostProxyRPCService,
+  EXT_HOST_PROXY_IDENTIFIER,
+  EXT_HOST_PROXY_SERVER_PROT,
+} from '../common';
 import net from 'net';
 import { RPCServiceCenter, INodeLogger } from '@opensumi/ide-core-node';
 import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
 
 @Injectable()
 export class ExtensionHostProxyManager implements IExtensionHostManager {
-
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
@@ -25,10 +32,12 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private disposer = new Disposable();
 
-  constructor(@Optional() private listenOptions: net.ListenOptions = {
-    port: EXT_HOST_PROXY_SERVER_PROT,
-  }) {
-  }
+  constructor(
+    @Optional()
+    private listenOptions: net.ListenOptions = {
+      port: EXT_HOST_PROXY_SERVER_PROT,
+    },
+  ) {}
 
   async init() {
     await this.startProxyServer();
@@ -38,10 +47,12 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private startProxyServer() {
     return new Promise<net.Socket | void>((resolve) => {
       const server = net.createServer();
-      this.disposer.addDispose(toDisposable(() => {
-        this.logger.warn('dispose server');
-        server.close();
-      }));
+      this.disposer.addDispose(
+        toDisposable(() => {
+          this.logger.warn('dispose server');
+          server.close();
+        }),
+      );
       this.logger.log('waiting ext-proxy connecting...');
       server.on('connection', (connection) => {
         this.logger.log('there are new connections coming in');
@@ -60,11 +71,13 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     connection.on('close', () => {
       this.extServiceProxyCenter.removeConnection(serverConnection);
     });
-    this.disposer.addDispose(toDisposable(() => {
-      if (!connection.destroyed) {
-        connection.destroy();
-      }
-    }));
+    this.disposer.addDispose(
+      toDisposable(() => {
+        if (!connection.destroyed) {
+          connection.destroy();
+        }
+      }),
+    );
   }
 
   private setExtHostProxyRPCProtocol() {
@@ -98,13 +111,18 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private addNewCallback(pid: number, callback: (...args: any[]) => void) {
     const callId = this.callId++;
     this.callbackMap.set(callId, callback);
-    this.processDisposeMap.set(pid, toDisposable(() => {
-      this.callbackMap.delete(callId);
-    }));
-    this.disposer.addDispose(toDisposable(() => {
-      this.processDisposeMap.delete(pid);
-      this.callbackMap.delete(callId);
-    }));
+    this.processDisposeMap.set(
+      pid,
+      toDisposable(() => {
+        this.callbackMap.delete(callId);
+      }),
+    );
+    this.disposer.addDispose(
+      toDisposable(() => {
+        this.processDisposeMap.delete(pid);
+        this.callbackMap.delete(callId);
+      }),
+    );
     return callId;
   }
 

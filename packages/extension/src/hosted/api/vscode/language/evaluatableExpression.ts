@@ -7,14 +7,16 @@ import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 
 export class EvaluatableExpressionAdapter {
-
   constructor(
     private readonly _documents: ExtensionDocumentDataManager,
     private readonly _provider: vscode.EvaluatableExpressionProvider,
-  ) { }
+  ) {}
 
-  public provideEvaluatableExpression(resource: vscode.Uri, position: Position, token: CancellationToken): Promise<IEvaluatableExpression | undefined> {
-
+  public provideEvaluatableExpression(
+    resource: vscode.Uri,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<IEvaluatableExpression | undefined> {
     const doc = this._documents.getDocument(resource);
     const pos = Converter.toPosition(position);
 

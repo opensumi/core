@@ -32,7 +32,6 @@ declare module 'sumi-worker' {
    * ```
    */
   export namespace extensions {
-
     /**
      * Get an extension by its full identifier in the form of: `publisher.name`.
      *

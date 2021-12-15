@@ -44,7 +44,6 @@ export class TabbarHandler implements ITabbarHandler {
   isAttached(): Promise<boolean> {
     return this.proxy.$isAttached(this.id);
   }
-
 }
 
 export class ExtHostLayout implements IExtHostLayout {
@@ -81,36 +80,20 @@ export function createLayoutAPIFactory(
   extension: IExtensionDescription,
 ) {
   return {
-    toggleBottomPanel: async (size?: number) => {
-      return await extHostCommands.executeCommand('main-layout.bottom-panel.toggle', undefined, size);
-    },
-    toggleLeftPanel: async (size?: number) => {
-      return await extHostCommands.executeCommand('main-layout.left-panel.toggle', undefined, size);
-    },
-    toggleRightPanel: async (size?: number) => {
-      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', undefined, size);
-    },
-    showRightPanel: async (size?: number) => {
-      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', true, size);
-    },
-    hideRightPanel: async () => {
-      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', false);
-    },
-    activatePanel: async (id) => {
-      return await extHostCommands.executeCommand(`workbench.view.extension.${id}`);
-    },
-    isBottomPanelVisible: async () => {
-      return await extHostCommands.executeCommand('main-layout.bottom-panel.is-visible');
-    },
-    isLeftPanelVisible: async () => {
-      return await extHostCommands.executeCommand('main-layout.left-panel.is-visible');
-    },
-    isRightPanelVisible: async () => {
-      return await extHostCommands.executeCommand('main-layout.right-panel.is-visible');
-    },
-    getTabbarHandler: (id: string) => {
-      return kaitianLayout.getTabbarHandler( extension.id + ':' + id);
-    },
+    toggleBottomPanel: async (size?: number) =>
+      await extHostCommands.executeCommand('main-layout.bottom-panel.toggle', undefined, size),
+    toggleLeftPanel: async (size?: number) =>
+      await extHostCommands.executeCommand('main-layout.left-panel.toggle', undefined, size),
+    toggleRightPanel: async (size?: number) =>
+      await extHostCommands.executeCommand('main-layout.right-panel.toggle', undefined, size),
+    showRightPanel: async (size?: number) =>
+      await extHostCommands.executeCommand('main-layout.right-panel.toggle', true, size),
+    hideRightPanel: async () => await extHostCommands.executeCommand('main-layout.right-panel.toggle', false),
+    activatePanel: async (id) => await extHostCommands.executeCommand(`workbench.view.extension.${id}`),
+    isBottomPanelVisible: async () => await extHostCommands.executeCommand('main-layout.bottom-panel.is-visible'),
+    isLeftPanelVisible: async () => await extHostCommands.executeCommand('main-layout.left-panel.is-visible'),
+    isRightPanelVisible: async () => await extHostCommands.executeCommand('main-layout.right-panel.is-visible'),
+    getTabbarHandler: (id: string) => kaitianLayout.getTabbarHandler(extension.id + ':' + id),
     // 为了获取其他插件注册的tabbarHandler
     getExtensionTabbarHandler: (id: string, extensionId?: string) => {
       if (extensionId) {

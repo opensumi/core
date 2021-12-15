@@ -32,11 +32,12 @@ export class ThemeModule extends BrowserModule {
   ];
 
   // 依赖 fileService 服务
-  backServices = [{
-    servicePath: ThemeServicePath,
-    clientToken: IThemeService,
-  }];
-
+  backServices = [
+    {
+      servicePath: ThemeServicePath,
+      clientToken: IThemeService,
+    },
+  ];
 }
 
 export * from './icon.service';

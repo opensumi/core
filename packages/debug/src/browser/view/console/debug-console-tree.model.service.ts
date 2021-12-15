@@ -1,10 +1,31 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection, IClipboardService } from '@opensumi/ide-core-browser';
+import {
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  WatchEvent,
+  TreeNodeEvent,
+  IWatcherEvent,
+  CompositeTreeNode,
+} from '@opensumi/ide-components';
+import {
+  Emitter,
+  IContextKeyService,
+  Deferred,
+  Event,
+  DisposableCollection,
+  IClipboardService,
+} from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleTreeModel } from './debug-console-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import { ExpressionContainer, ExpressionNode, DebugConsoleNode, DebugConsoleRoot } from '../../tree/debug-tree-node.define';
+import {
+  ExpressionContainer,
+  ExpressionNode,
+  DebugConsoleNode,
+  DebugConsoleRoot,
+} from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugConsoleSession } from './debug-console-session';
 import pSeries from 'p-series';
@@ -139,11 +160,11 @@ export class DebugConsoleModelService {
   clear = () => {
     // 重新初始化Console中渲染的TreeModel
     this.initTreeModel(this.manager.currentSession, true);
-  }
+  };
 
   collapseAll = () => {
     this.treeModel?.root.collapsedAll();
-  }
+  };
 
   copyAll = () => {
     let text = '';
@@ -153,14 +174,14 @@ export class DebugConsoleModelService {
     for (const child of this.treeModel.root.children) {
       text += this.getValidText(child as DebugConsoleNode) + '\n';
     }
-    this.clipboardService.writeText(text.slice(0, -('\n'.length)));
-  }
+    this.clipboardService.writeText(text.slice(0, -'\n'.length));
+  };
 
   copy = (node: DebugConsoleNode) => {
-    if (!!node) {
+    if (node) {
       this.clipboardService.writeText(this.getValidText(node));
     }
-  }
+  };
 
   private getValidText(node: DebugConsoleNode) {
     return node.description;
@@ -188,35 +209,45 @@ export class DebugConsoleModelService {
   }
 
   async init() {
-    this.debugConsoleDisposableCollection.push(this.manager.onDidDestroyDebugSession((session: DebugSession) => {
-      this.debugSessionModelMap.delete(session.id);
-      if (this.debugSessionModelMap.size > 0) {
-        this.initTreeModel(this.manager.currentSession);
-      }
-    }));
-    this.debugConsoleDisposableCollection.push(this.manager.onDidChangeActiveDebugSession((state: DidChangeActiveDebugSession) => {
-      if (state.current) {
-        this.initTreeModel(state.current);
-      }
-    }));
+    this.debugConsoleDisposableCollection.push(
+      this.manager.onDidDestroyDebugSession((session: DebugSession) => {
+        this.debugSessionModelMap.delete(session.id);
+        if (this.debugSessionModelMap.size > 0) {
+          this.initTreeModel(this.manager.currentSession);
+        }
+      }),
+    );
+    this.debugConsoleDisposableCollection.push(
+      this.manager.onDidChangeActiveDebugSession((state: DidChangeActiveDebugSession) => {
+        if (state.current) {
+          this.initTreeModel(state.current);
+        }
+      }),
+    );
   }
 
   listenTreeViewChange() {
     this.disposeTreeModel();
-    this.treeModelDisposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.treeModelDisposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.treeModelDisposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-        this.selectedDecoration.addTarget(node as ExpressionNode);
-      }
-    }));
+    this.treeModelDisposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.treeModelDisposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.treeModelDisposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.selectedNodes.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+          this.selectedDecoration.addTarget(node as ExpressionNode);
+        }
+      }),
+    );
   }
 
   async initTreeModel(session?: DebugSession, force?: boolean) {
@@ -238,7 +269,10 @@ export class DebugConsoleModelService {
         return;
       }
       const treeModel = this.injector.get<any>(DebugConsoleTreeModel, [root]);
-      const debugConsoleSession = this.injector.get<any>(DebugConsoleSession, [session, treeModel]) as DebugConsoleSession;
+      const debugConsoleSession = this.injector.get<any>(DebugConsoleSession, [
+        session,
+        treeModel,
+      ]) as DebugConsoleSession;
       this._activeDebugSessionModel = {
         treeModel,
         debugConsoleSession,
@@ -276,7 +310,7 @@ export class DebugConsoleModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: AnsiConsoleNode | DebugConsoleNode, dispatchChange: boolean = true) => {
+  activeNodeDecoration = (target: AnsiConsoleNode | DebugConsoleNode, dispatchChange = true) => {
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
       this._contextMenuNode = undefined;
@@ -300,7 +334,7 @@ export class DebugConsoleModelService {
         this.treeModel?.dispatchChange();
       }
     }
-  }
+  };
 
   // 右键菜单焦点态切换
   activeNodeActivedDecoration = (target: AnsiConsoleNode | DebugConsoleNode) => {
@@ -313,7 +347,7 @@ export class DebugConsoleModelService {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuNode = target;
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -324,7 +358,7 @@ export class DebugConsoleModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
     this.treeModel?.dispatchChange();
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -354,7 +388,10 @@ export class DebugConsoleModelService {
     } else {
       node = expression;
     }
-    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugConsoleContext, contextKeyService: this.contextMenuContextKeyService });
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.DebugConsoleContext,
+      contextKeyService: this.contextMenuContextKeyService,
+    });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
@@ -362,7 +399,7 @@ export class DebugConsoleModelService {
       menuNodes,
       args: [node],
     });
-  }
+  };
 
   handleTreeHandler(handle: IDebugConsoleHandle) {
     this._debugWatchTreeHandle = handle;
@@ -371,12 +408,12 @@ export class DebugConsoleModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleItemClick = (item: AnsiConsoleNode | DebugConsoleNode) => {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
-  }
+  };
 
   handleTwistierClick = (item: AnsiConsoleNode | DebugConsoleNode, type: TreeNodeType) => {
     if (type === TreeNodeType.CompositeTreeNode) {
@@ -393,7 +430,7 @@ export class DebugConsoleModelService {
       }
     }
     this.activeNodeDecoration(item);
-  }
+  };
 
   toggleDirectory = async (item: ExpressionContainer) => {
     if (item.expanded) {
@@ -401,7 +438,7 @@ export class DebugConsoleModelService {
     } else {
       this.treeHandle.expandNode(item);
     }
-  }
+  };
 
   private dispatchWatchEvent(root: DebugConsoleRoot, path: string, event: IWatcherEvent) {
     const watcher = root.watchEvents.get(path);
@@ -419,7 +456,7 @@ export class DebugConsoleModelService {
    */
   async refresh(node?: ExpressionContainer) {
     if (!node) {
-      if (!!this.treeModel) {
+      if (this.treeModel) {
         node = this.treeModel.root as ExpressionContainer;
       } else {
         return;
@@ -470,17 +507,19 @@ export class DebugConsoleModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const node = this.treeModel?.root?.getTreeNodeByPath(path);
-      if (node && CompositeTreeNode.is(node)) {
-        await (node as CompositeTreeNode).refresh();
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const node = this.treeModel?.root?.getTreeNodeByPath(path);
+        if (node && CompositeTreeNode.is(node)) {
+          await (node as CompositeTreeNode).refresh();
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
+  };
 
   async execute(value: string) {
     if (!this.treeModel) {
@@ -494,5 +533,4 @@ export class DebugConsoleModelService {
     this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
     this.treeHandle.ensureVisible(expressionNode, 'end', true);
   }
-
 }

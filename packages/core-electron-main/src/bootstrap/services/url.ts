@@ -1,18 +1,24 @@
 import { app, BrowserWindow } from 'electron';
 import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
 import { Disposable, Domain } from '@opensumi/ide-core-common';
-import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, ElectronURLHandlerRegistry } from '../types';
+import {
+  ElectronAppConfig,
+  ElectronMainApiRegistry,
+  ElectronMainContribution,
+  ElectronURLHandlerRegistry,
+} from '../types';
 import { IElectronURLService, IURLHandler } from '@opensumi/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronURLService extends Disposable implements IElectronURLService {
-
   private defaultHandler: IURLHandler;
 
   private handlers = new Set<IURLHandler>();
 
   getHandlers() {
-    return Array.from(this.handlers).filter((handler) => handler.handleURL).reverse();
+    return Array.from(this.handlers)
+      .filter((handler) => handler.handleURL)
+      .reverse();
   }
 
   async open(url: string): Promise<boolean> {
@@ -49,7 +55,6 @@ export class ElectronURLService extends Disposable implements IElectronURLServic
 
 @Domain(ElectronMainContribution)
 export class UrlElectronMainContribution implements ElectronMainContribution {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -89,7 +94,6 @@ export class UrlElectronMainContribution implements ElectronMainContribution {
     app.on('open-url', (event, url) => {
       ins.open(url);
     });
-
   }
 
   protocolInit() {

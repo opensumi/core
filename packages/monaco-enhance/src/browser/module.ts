@@ -3,13 +3,10 @@ import { BrowserModule, Domain, ClientAppContribution } from '@opensumi/ide-core
 
 @Domain(ClientAppContribution)
 class MonacoEnhanceContribution implements ClientAppContribution {
-  onDidStart() {
-  }
+  onDidStart() {}
 }
 
 @Injectable()
 export class MonacoEnhanceModule extends BrowserModule {
-  providers: Provider[] = [
-    MonacoEnhanceContribution,
-  ];
+  providers: Provider[] = [MonacoEnhanceContribution];
 }

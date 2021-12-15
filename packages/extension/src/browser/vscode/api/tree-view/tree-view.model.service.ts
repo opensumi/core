@@ -1,12 +1,35 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@opensumi/ide-components';
-import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Deferred, ThrottledDelayer, CommandService } from '@opensumi/ide-core-browser';
+import {
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  PromptValidateMessage,
+  TreeNodeEvent,
+  WatchEvent,
+  TreeNode,
+  CompositeTreeNode,
+} from '@opensumi/ide-components';
+import {
+  DisposableCollection,
+  Emitter,
+  PreferenceService,
+  IContextKeyService,
+  Deferred,
+  ThrottledDelayer,
+  CommandService,
+} from '@opensumi/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
 import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
 import { TreeViewDataProvider } from '../main.thread.treeview';
-import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractMenuService,
+  ICtxMenuRenderer,
+  generateCtxMenu,
+  MenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { isUndefinedOrNull, isNumber } from '@opensumi/ide-core-common';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
@@ -26,11 +49,15 @@ const ITreeViewDataProvider = Symbol('ITreeViewDataProvider');
 
 @Injectable()
 export class ExtensionTreeViewModel {
-
   static DEFAULT_REVEAL_DELAY = 500;
   static DEFAULT_REFRESH_DELAY = 500;
 
-  static createContainer(injector: Injector, tree: TreeViewDataProvider, treeViewId: string, options: TreeViewBaseOptions): Injector {
+  static createContainer(
+    injector: Injector,
+    tree: TreeViewDataProvider,
+    treeViewId: string,
+    options: TreeViewBaseOptions,
+  ): Injector {
     const child = injector.createChild([
       {
         token: ITreeViewDataProvider,
@@ -52,7 +79,12 @@ export class ExtensionTreeViewModel {
     return child;
   }
 
-  static createModel(injector: Injector, tree: TreeViewDataProvider, treeViewId: string, options: TreeViewBaseOptions): ExtensionTreeViewModel {
+  static createModel(
+    injector: Injector,
+    tree: TreeViewDataProvider,
+    treeViewId: string,
+    options: TreeViewBaseOptions,
+  ): ExtensionTreeViewModel {
     return ExtensionTreeViewModel.createContainer(injector, tree, treeViewId, options).get(IExtensionTreeViewModel);
   }
 
@@ -106,11 +138,11 @@ export class ExtensionTreeViewModel {
   private onDidFocusedNodeChangeEmitter: Emitter<string | void> = new Emitter();
   private onDidSelectedNodeChangeEmitter: Emitter<string[]> = new Emitter();
   private onDidChangeExpansionStateEmitter: Emitter<{
-    treeItemId: string,
-    expanded: boolean,
+    treeItemId: string;
+    expanded: boolean;
   }> = new Emitter();
 
-  private _isMultiSelected: boolean = false;
+  private _isMultiSelected = false;
   private refreshDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REFRESH_DELAY);
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
   private revealDeferred: Deferred<void> | null;
@@ -170,35 +202,52 @@ export class ExtensionTreeViewModel {
 
     this.initDecorations(root);
     this.disposableCollection.push(this.treeViewDataProvider);
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target: ExtensionTreeNode, nowExpanded) => {
-      this.onDidChangeExpansionStateEmitter.fire({
-        treeItemId: target.treeItemId,
-        expanded: nowExpanded,
-      });
-    }));
-    this.disposableCollection.push(this.treeViewDataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
-      this.refresh(itemsToRefresh);
-    }));
-    this.disposableCollection.push(this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
-      this.reveal(treeItemId);
-    }));
-    this.disposableCollection.push(this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
-      this.reveal(treeItemId);
-    }));
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-        this.selectedDecoration.addTarget(node as ExtensionTreeNode);
-      }
-    }));
+    this.disposableCollection.push(
+      this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel.root.watcher.on(
+        TreeNodeEvent.DidChangeExpansionState,
+        (target: ExtensionTreeNode, nowExpanded) => {
+          this.onDidChangeExpansionStateEmitter.fire({
+            treeItemId: target.treeItemId,
+            expanded: nowExpanded,
+          });
+        },
+      ),
+    );
+    this.disposableCollection.push(
+      this.treeViewDataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
+        this.refresh(itemsToRefresh);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
+        this.reveal(treeItemId);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
+        this.reveal(treeItemId);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.selectedNodes.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+          this.selectedDecoration.addTarget(node as ExtensionTreeNode);
+        }
+      }),
+    );
   }
 
   async updateTreeModel() {
@@ -221,11 +270,11 @@ export class ExtensionTreeViewModel {
     });
     this._selectedNodes = [];
     this.onDidSelectedNodeChangeEmitter.fire([]);
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-    if (target === this.treeModel.root as TreeNode) {
+    if (target === (this.treeModel.root as TreeNode)) {
       // 根节点不能选中
       return;
     }
@@ -255,11 +304,15 @@ export class ExtensionTreeViewModel {
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
-  }
+  };
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode, removePreFocusedDecoration: boolean = false, clearSelection: boolean = false) => {
+  activeNodeFocusedDecoration = (
+    target: ExtensionTreeNode | ExtensionCompositeTreeNode,
+    removePreFocusedDecoration = false,
+    clearSelection = false,
+  ) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -267,12 +320,12 @@ export class ExtensionTreeViewModel {
 
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
-        if (!!this.focusedNode) {
+        if (this.focusedNode) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedNode);
         }
         this._contextMenuNode = target;
-      } else if (!!this.focusedNode) {
+      } else if (this.focusedNode) {
         this._contextMenuNode = undefined;
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
@@ -297,7 +350,7 @@ export class ExtensionTreeViewModel {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 右键菜单焦点态切换
   activeNodeActivedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
@@ -311,10 +364,10 @@ export class ExtensionTreeViewModel {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuNode = target;
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectNodeDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode, dispatchChange: boolean = true) => {
+  selectNodeDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode, dispatchChange = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -342,7 +395,7 @@ export class ExtensionTreeViewModel {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 选中当前指定节点，添加装饰器属性
   activeNodeSelectedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
@@ -355,7 +408,7 @@ export class ExtensionTreeViewModel {
     this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 选中范围内的所有节点
   activeNodeDecorationByRange = (begin: number, end: number) => {
@@ -372,7 +425,7 @@ export class ExtensionTreeViewModel {
     this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -385,7 +438,7 @@ export class ExtensionTreeViewModel {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
     this.treeModel?.dispatchChange();
-  }
+  };
 
   toggleDirectory = async (item: ExtensionCompositeTreeNode) => {
     if (item.expanded) {
@@ -393,7 +446,7 @@ export class ExtensionTreeViewModel {
     } else {
       this.extensionTreeHandle.expandNode(item);
     }
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -412,11 +465,11 @@ export class ExtensionTreeViewModel {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleTreeFocus = () => {
     // 激活面板
-  }
+  };
 
   handleItemRangeClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
     if (!this.focusedNode) {
@@ -431,7 +484,7 @@ export class ExtensionTreeViewModel {
         this.activeNodeDecorationByRange(preFocusedNodeIndex, targetIndex);
       }
     }
-  }
+  };
 
   handleItemToggleClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
     this._isMultiSelected = true;
@@ -449,7 +502,7 @@ export class ExtensionTreeViewModel {
     } else {
       this.activeNodeSelectedDecoration(item);
     }
-  }
+  };
 
   handleItemClick = async (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
     this._isMultiSelected = false;
@@ -485,7 +538,7 @@ export class ExtensionTreeViewModel {
         this.clickTimes = 0;
       }, 200);
     }
-  }
+  };
 
   handleContextMenu = (ev: React.MouseEvent, item?: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
     ev.stopPropagation();
@@ -524,9 +577,12 @@ export class ExtensionTreeViewModel {
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [{ treeViewId: this.treeViewId, treeItemId: node.treeItemId }, nodes.map((node) => ({ treeViewId: this.treeViewId, treeItemId: node.treeItemId }))],
+      args: [
+        { treeViewId: this.treeViewId, treeItemId: node.treeItemId },
+        nodes.map((node) => ({ treeViewId: this.treeViewId, treeItemId: node.treeItemId })),
+      ],
     });
-  }
+  };
 
   private getCtxMenuNodes(viewItemValue: string) {
     return this.getMenuNodes(viewItemValue)[1];
@@ -580,7 +636,7 @@ export class ExtensionTreeViewModel {
         let path;
         if (ExtensionCompositeTreeNode.is(cache)) {
           path = (cache as ExtensionCompositeTreeNode).path;
-        } else if (!!cache.parent) {
+        } else if (cache.parent) {
           path = (cache.parent as ExtensionCompositeTreeNode).path;
         }
         const watcher = this.treeModel.root?.watchEvents.get(path);
@@ -631,9 +687,15 @@ export class ExtensionTreeViewModel {
           this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode, false, true);
         }
       }
-      for (; ExtensionCompositeTreeNode.is(itemsToExpand) && (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 && expand > 0; expand--) {
+      for (
+        ;
+        ExtensionCompositeTreeNode.is(itemsToExpand) &&
+        (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 &&
+        expand > 0;
+        expand--
+      ) {
         await this.extensionTreeHandle.expandNode(itemsToExpand as CompositeTreeNode);
-        itemsToExpand = itemsToExpand?.children ? itemsToExpand?.children[0] as TreeNode : undefined;
+        itemsToExpand = itemsToExpand?.children ? (itemsToExpand?.children[0] as TreeNode) : undefined;
       }
       this.revealDeferred.resolve();
       this.revealDeferred = null;

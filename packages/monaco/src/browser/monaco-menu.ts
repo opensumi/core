@@ -8,11 +8,7 @@ export interface MonacoActionGroup {
 export namespace MonacoMenus {
   export const SELECTION_GROUP: MonacoActionGroup = {
     id: '1_selection_group',
-    actions: [
-      EDITOR_COMMANDS.SELECT_ALL.id,
-      'editor.action.smartSelect.expand',
-      'editor.action.smartSelect.shrink',
-    ],
+    actions: [EDITOR_COMMANDS.SELECT_ALL.id, 'editor.action.smartSelect.expand', 'editor.action.smartSelect.shrink'],
   };
 
   export const SELECTION_MOVE_GROUP: MonacoActionGroup = {
@@ -37,9 +33,5 @@ export namespace MonacoMenus {
     ],
   };
 
-  export const SELECTION_GROUPS = [
-    SELECTION_GROUP,
-    SELECTION_MOVE_GROUP,
-    SELECTION_CURSOR_GROUP,
-  ];
+  export const SELECTION_GROUPS = [SELECTION_GROUP, SELECTION_MOVE_GROUP, SELECTION_CURSOR_GROUP];
 }

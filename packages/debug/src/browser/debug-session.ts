@@ -12,7 +12,17 @@ import {
 } from '@opensumi/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection } from './debug-session-connection';
-import { DebugSessionOptions, IDebugSessionDTO, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from '../common';
+import {
+  DebugSessionOptions,
+  IDebugSessionDTO,
+  IDebugSession,
+  IDebugSessionManager,
+  DEBUG_REPORT_NAME,
+  DebugState,
+  DebugEventTypes,
+  DebugRequestTypes,
+  DebugExitEvent,
+} from '../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -30,7 +40,6 @@ import { ExpressionContainer } from './tree/debug-tree-node.define';
 import { DebugEditor } from './../common/debug-editor';
 
 export class DebugSession implements IDebugSession {
-
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
   public fireDidChange(): void {
@@ -111,7 +120,6 @@ export class DebugSession implements IDebugSession {
     protected readonly fileSystem: IFileServiceClient,
     protected readonly sessionManager: IDebugSessionManager,
   ) {
-
     this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => {
       this.runInTerminal(request);
     });
@@ -126,7 +134,9 @@ export class DebugSession implements IDebugSession {
       // 更新断点
       this.on('breakpoint', ({ body }) => this.onUpdateBreakpoint(body)),
       this.on('continued', async (event: DebugProtocol.ContinuedEvent) => {
-        const { body: { allThreadsContinued, threadId } } = event;
+        const {
+          body: { allThreadsContinued, threadId },
+        } = event;
         this.handleCancellation(threadId);
         if (this.supportsThreadIdCorrespond) {
           if (threadId) {
@@ -189,7 +199,9 @@ export class DebugSession implements IDebugSession {
         this._onDidStop.fire(event);
       }),
       this.on('thread', (event: DebugProtocol.ThreadEvent) => {
-        const { body: { reason, threadId } } = event;
+        const {
+          body: { reason, threadId },
+        } = event;
 
         if (this.supportsThreadIdCorrespond) {
           // 当 supportsThreadIdCorrespond 开启的时候，只有在 DebugState 为 Stopped 的时候才发送 thread dap 事件
@@ -226,7 +238,13 @@ export class DebugSession implements IDebugSession {
       this.on('invalidated', async (event: DebugProtocol.InvalidatedEvent) => {
         this._onDidInvalidated.fire(event);
 
-        if (!(event.body.areas && event.body.areas.length === 1 && (event.body.areas[0] === 'variables' || event.body.areas[0] === 'watch'))) {
+        if (
+          !(
+            event.body.areas &&
+            event.body.areas.length === 1 &&
+            (event.body.areas[0] === 'variables' || event.body.areas[0] === 'watch')
+          )
+        ) {
           this.cancelAllRequests();
           this.clearThreads();
           await this.updateThreads(this.stoppedDetails);
@@ -270,12 +288,19 @@ export class DebugSession implements IDebugSession {
     await this.launchOrAttach();
   }
 
-  protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async runInTerminal({
+    arguments: { title, cwd, args, env },
+  }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     return this.doRunInTerminal({ name: title, cwd, env }, args.join(' '));
   }
 
-  protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const activeTerminal = this.terminalService.terminals.find((terminal) => terminal.name === options.name && terminal.isActive);
+  protected async doRunInTerminal(
+    options: TerminalOptions,
+    command?: string,
+  ): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+    const activeTerminal = this.terminalService.terminals.find(
+      (terminal) => terminal.name === options.name && terminal.isActive,
+    );
     let processId: number | undefined;
     // 当存在同名终端并且处于激活状态时，复用该终端
     if (activeTerminal) {
@@ -295,20 +320,24 @@ export class DebugSession implements IDebugSession {
   }
 
   protected async initialize(): Promise<void> {
-    const response = await this.connection.sendRequest('initialize', {
-      clientID: 'KatiTian',
-      clientName: 'KatiTian IDE',
-      adapterID: this.configuration.type,
-      locale: 'en-US',
-      linesStartAt1: true,
-      columnsStartAt1: true,
-      pathFormat: 'path',
-      supportsVariableType: false,
-      supportsVariablePaging: false,
-      supportsRunInTerminalRequest: true,
-      supportsProgressReporting: true,
-      supportsInvalidatedEvent: true,
-    }, this.configuration);
+    const response = await this.connection.sendRequest(
+      'initialize',
+      {
+        clientID: 'KatiTian',
+        clientName: 'KatiTian IDE',
+        adapterID: this.configuration.type,
+        locale: 'en-US',
+        linesStartAt1: true,
+        columnsStartAt1: true,
+        pathFormat: 'path',
+        supportsVariableType: false,
+        supportsVariablePaging: false,
+        supportsRunInTerminalRequest: true,
+        supportsProgressReporting: true,
+        supportsInvalidatedEvent: true,
+      },
+      this.configuration,
+    );
     this.updateCapabilities(response.body || {});
     this.onStateChange();
   }
@@ -405,15 +434,17 @@ export class DebugSession implements IDebugSession {
         default:
           break;
       }
-    } finally { }
-
+    } finally {
+    }
   }
 
   private async setBreakpoints(affected: URI[]) {
     const promises: Promise<void>[] = [];
     for (const uri of affected) {
       const source = await this.toSource(uri);
-      const enableds = this.breakpointManager.getBreakpoints(uri).filter((b) => this.breakpointManager.breakpointsEnabled && b.enabled);
+      const enableds = this.breakpointManager
+        .getBreakpoints(uri)
+        .filter((b) => this.breakpointManager.breakpointsEnabled && b.enabled);
       promises.push(
         this.sendRequest('setBreakpoints', {
           source: source.raw,
@@ -426,7 +457,7 @@ export class DebugSession implements IDebugSession {
               if (status.id) {
                 this.id2Breakpoint.set(status.id, enableds[index]);
               }
-              const enabledBp = (enableds[index] as IRuntimeBreakpoint);
+              const enabledBp = enableds[index] as IRuntimeBreakpoint;
               enabledBp.raw.line = status.line ?? enabledBp.raw.line;
               enabledBp.raw.column = status.column ?? enabledBp.raw.column;
               enabledBp.status.set(this.id, status);
@@ -437,14 +468,15 @@ export class DebugSession implements IDebugSession {
           })
           .catch((error) => {
             if (!(error instanceof Error)) {
-              const genericMessage: string = 'Breakpoint not valid for current debug session';
+              const genericMessage = 'Breakpoint not valid for current debug session';
               const message: string = error.message ? `${error.message}` : genericMessage;
               enableds.forEach((breakpoint) => {
                 (breakpoint as IRuntimeBreakpoint).status.set(this.id, { verified: false, message });
                 this.breakpointManager.updateBreakpoint(breakpoint, true);
               });
             }
-          }));
+          }),
+      );
     }
 
     return await Promise.all(promises);
@@ -560,7 +592,7 @@ export class DebugSession implements IDebugSession {
     } else if (this.supportsThreadIdCorrespond) {
       return DebugState.Running;
     }
-    return !!this.stoppedThreads.next().value ? DebugState.Stopped : DebugState.Running;
+    return this.stoppedThreads.next().value ? DebugState.Stopped : DebugState.Running;
   }
 
   get currentFrame(): DebugStackFrame | undefined {
@@ -586,7 +618,9 @@ export class DebugSession implements IDebugSession {
   protected readonly sources = new Map<string, DebugSource>();
   getSource(raw: DebugProtocol.Source): DebugSource {
     const uri = DebugSource.toUri(raw).toString();
-    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, this.modelManager, this.workbenchEditorService, this.fileSystem);
+    const source =
+      this.sources.get(uri) ||
+      new DebugSource(this, this.labelProvider, this.modelManager, this.workbenchEditorService, this.fileSystem);
     source.update({ raw });
     this.sources.set(uri, source);
     return source;
@@ -647,7 +681,7 @@ export class DebugSession implements IDebugSession {
   protected pendingThreads = Promise.resolve();
 
   private async rawFetchThreads(threadId?: number): Promise<DebugProtocol.Thread[]> {
-    const arg = typeof threadId === 'undefined'  ? null : { threadId };
+    const arg = typeof threadId === 'undefined' ? null : { threadId };
     const response = await this.sendRequest('threads', arg);
     if (response && response.body && response.body.threads && Array.isArray(response.body.threads)) {
       return Promise.resolve(response.body.threads);
@@ -671,7 +705,7 @@ export class DebugSession implements IDebugSession {
   }
 
   private updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
-    return this.pendingThreads = this.pendingThreads.then(async () => {
+    return (this.pendingThreads = this.pendingThreads.then(async () => {
       try {
         // java debugger returns an empty body sometimes
         const threads = await this.rawFetchThreads();
@@ -679,7 +713,7 @@ export class DebugSession implements IDebugSession {
       } catch (e) {
         // console.error(e);
       }
-    });
+    }));
   }
 
   protected doUpdateThreads(rawThreads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
@@ -706,7 +740,9 @@ export class DebugSession implements IDebugSession {
     });
 
     this._threads.forEach((dthread: DebugThread) => {
-      const { raw: { id } } = dthread;
+      const {
+        raw: { id },
+      } = dthread;
       if (threadIds.indexOf(id) === -1) {
         this._threads.delete(id);
       }
@@ -730,7 +766,8 @@ export class DebugSession implements IDebugSession {
     if (stoppedDetails && !stoppedDetails.preserveFocusHint && !!stoppedDetails.threadId) {
       threadId = stoppedDetails.threadId;
     }
-    this.currentThread = typeof threadId === 'number' && this._threads.get(threadId) || this._threads.values().next().value;
+    this.currentThread =
+      (typeof threadId === 'number' && this._threads.get(threadId)) || this._threads.values().next().value;
     if (this.currentThread?.raw.id !== threadId) {
       this.fireDidChange();
     }
@@ -756,7 +793,10 @@ export class DebugSession implements IDebugSession {
       return new Map();
     }
 
-    const debugThread = stoppedDetails.threadId && this._multipleThreadPaused.has(stoppedDetails.threadId) ? this._multipleThreadPaused.get(stoppedDetails.threadId) : new DebugThread(this);
+    const debugThread =
+      stoppedDetails.threadId && this._multipleThreadPaused.has(stoppedDetails.threadId)
+        ? this._multipleThreadPaused.get(stoppedDetails.threadId)
+        : new DebugThread(this);
     const data: Partial<Mutable<DebugThreadData>> = { raw: threads[0] };
     if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === threads[0].id)) {
       data.stoppedDetails = stoppedDetails;
@@ -785,7 +825,9 @@ export class DebugSession implements IDebugSession {
 
     if (this.currentThread && !this.currentFrame) {
       // 过滤出有效的 frame source 资源
-      const frames = this.currentThread.frames.filter((f: DebugStackFrame) => f && f.source && f.source.raw.presentationHint !== 'deemphasize');
+      const frames = this.currentThread.frames.filter(
+        (f: DebugStackFrame) => f && f.source && f.source.raw.presentationHint !== 'deemphasize',
+      );
       if (frames.length === 0) {
         return;
       }
@@ -807,14 +849,14 @@ export class DebugSession implements IDebugSession {
 
   protected async rawFetchFrames(thread?: DebugThread): Promise<void> {
     if (!thread || thread.frameCount) {
-        return;
+      return;
     }
 
     if (this.capabilities.supportsDelayedStackTraceLoading) {
-        await thread.rawFetchFrames(1);
-        await thread.rawFetchFrames(19);
+      await thread.rawFetchFrames(1);
+      await thread.rawFetchFrames(19);
     } else {
-        await thread.rawFetchFrames();
+      await thread.rawFetchFrames();
     }
   }
 
@@ -829,7 +871,7 @@ export class DebugSession implements IDebugSession {
     if (!this.terminated && this.capabilities.supportsTerminateRequest && this.configuration.request === 'launch') {
       this.terminated = true;
       this.sendRequest('terminate', { restart });
-      if (!await this.exited(1000)) {
+      if (!(await this.exited(1000))) {
         await this.disconnect(restart);
       }
     } else {
@@ -852,7 +894,7 @@ export class DebugSession implements IDebugSession {
       this.onStateChange();
     }
     const timeout = 500;
-    if (!await this.exited(timeout)) {
+    if (!(await this.exited(timeout))) {
       this.fireExited(new Error(`timeout after ${timeout} ms`));
     }
   }
@@ -867,7 +909,10 @@ export class DebugSession implements IDebugSession {
 
   protected exited(timeout: number): Promise<boolean> {
     return Promise.race([
-      this.exitDeferred.promise.then(() => true, () => false),
+      this.exitDeferred.promise.then(
+        () => true,
+        () => false,
+      ),
       new Promise<boolean>((resolve) => {
         setTimeout(resolve, timeout, false);
       }),
@@ -926,14 +971,26 @@ export class DebugSession implements IDebugSession {
   async breakpointLocations(uri: URI, line: number) {
     const source = await this.toSource(uri);
     const response = await this.sendRequest('breakpointLocations', { source: source.raw, line });
-    const positions: IPosition[] = (response.body?.breakpoints || []).map((item) => ({ lineNumber: item.line, column: item.column || 1 }));
-    return Object.values<IPosition>(positions.reduce((obj, p) => ({
-      ...obj,
-      [`${p.lineNumber}:${p.column}`]: p,
-    }), {}));
+    const positions: IPosition[] = (response.body?.breakpoints || []).map((item) => ({
+      lineNumber: item.line,
+      column: item.column || 1,
+    }));
+    return Object.values<IPosition>(
+      positions.reduce(
+        (obj, p) => ({
+          ...obj,
+          [`${p.lineNumber}:${p.column}`]: p,
+        }),
+        {},
+      ),
+    );
   }
 
-  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], token?: CancellationToken): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(
+    command: K,
+    args: DebugRequestTypes[K][0],
+    token?: CancellationToken,
+  ): Promise<DebugRequestTypes[K][1]> {
     if (
       (!this._capabilities.supportsTerminateRequest && command === 'terminate') ||
       (!this._capabilities.supportsCompletionsRequest && command === 'completions') ||
@@ -944,16 +1001,14 @@ export class DebugSession implements IDebugSession {
 
     let requestToken: CancellationToken | undefined;
 
-    if (
-      (['continue', 'next', 'stepIn', 'stepOut', 'threads'] as K[]).some((c) => command === c)
-    ) {
+    if ((['continue', 'next', 'stepIn', 'stepOut', 'threads'] as K[]).some((c) => command === c)) {
       this.handleCancellation(this.currentThread?.raw.id);
     }
 
-    if (
-      (['stackTrace', 'scopes', 'variables', 'completions', 'threads'] as K[]).some((c) => command === c)
-    ) {
-      requestToken = this.currentThread?.raw.id ? this.getNewCancellationToken(this.currentThread?.raw.id, token) : undefined;
+    if ((['stackTrace', 'scopes', 'variables', 'completions', 'threads'] as K[]).some((c) => command === c)) {
+      requestToken = this.currentThread?.raw.id
+        ? this.getNewCancellationToken(this.currentThread?.raw.id, token)
+        : undefined;
     }
 
     try {

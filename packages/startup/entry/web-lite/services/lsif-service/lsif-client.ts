@@ -26,8 +26,8 @@ export class LsifClient {
     return await fetch('/lsif/exist', {
       method: 'POST',
       body: JSON.stringify({
-        'commit': commit,
-        'repository': repo,
+        commit,
+        repository: repo,
       }),
       ...config,
     }).then((res) => res.json());
@@ -37,13 +37,13 @@ export class LsifClient {
     const response = await fetch('/lsif/hover', {
       method: 'POST',
       body: JSON.stringify({
-        'commit': params.commit,
-        'path': params.path,
-        'position': {
-          'character': params.character,
-          'line': params.line,
+        commit: params.commit,
+        path: params.path,
+        position: {
+          character: params.character,
+          line: params.line,
         },
-        'repository': params.repository,
+        repository: params.repository,
       }),
       ...config,
     }).then((res) => res.json());
@@ -61,13 +61,13 @@ export class LsifClient {
     const response = await fetch('/lsif/definition', {
       method: 'POST',
       body: JSON.stringify({
-        'commit': params.commit,
-        'path': params.path,
-        'position': {
-          'character': params.character,
-          'line': params.line,
+        commit: params.commit,
+        path: params.path,
+        position: {
+          character: params.character,
+          line: params.line,
         },
-        'repository': params.repository,
+        repository: params.repository,
       }),
       ...config,
     }).then((res) => res.json());
@@ -93,13 +93,13 @@ export class LsifClient {
     const response = await fetch('/lsif/references', {
       method: 'POST',
       body: JSON.stringify({
-        'commit': params.commit,
-        'path': params.path,
-        'position': {
-          'character': params.character,
-          'line': params.line,
+        commit: params.commit,
+        path: params.path,
+        position: {
+          character: params.character,
+          line: params.line,
         },
-        'repository': params.repository,
+        repository: params.repository,
       }),
       ...config,
     }).then((res) => res.json());

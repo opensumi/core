@@ -1,15 +1,31 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
-  createSocketConnection, initRPCService, IRPCProtocol, RPCProtocol,
-  RPCServiceCenter, WSChannelHandler as IWSChannelHandler,
+  createSocketConnection,
+  initRPCService,
+  IRPCProtocol,
+  RPCProtocol,
+  RPCServiceCenter,
+  WSChannelHandler as IWSChannelHandler,
 } from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
-  AppConfig, Deferred, electronEnv, Emitter, IExtensionProps,
-  ILogger, isElectronEnv, IDisposable, toDisposable,
+  AppConfig,
+  Deferred,
+  electronEnv,
+  Emitter,
+  IExtensionProps,
+  ILogger,
+  isElectronEnv,
+  IDisposable,
+  toDisposable,
 } from '@opensumi/ide-core-browser';
 
-import { ExtensionNodeServiceServerPath, IExtension, IExtensionHostService, IExtensionNodeClientService } from '../common';
+import {
+  ExtensionNodeServiceServerPath,
+  IExtension,
+  IExtensionHostService,
+  IExtensionNodeClientService,
+} from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
 import { ExtHostAPIIdentifier } from '../common/vscode';
@@ -145,7 +161,9 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const mainThreadCenter = new RPCServiceCenter();
 
     if (isElectronEnv()) {
-      const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(electronEnv.metadata.windowClientId);
+      const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(
+        electronEnv.metadata.windowClientId,
+      );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));

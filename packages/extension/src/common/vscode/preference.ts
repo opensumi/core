@@ -16,14 +16,14 @@ export interface IExtHostPreference {
 
 export interface IMainThreadPreference {
   $updateConfigurationOption(
-      target: boolean | ConfigurationTarget | undefined,
-      key: string,
-      value: any,
-      resource?: string,
+    target: boolean | ConfigurationTarget | undefined,
+    key: string,
+    value: any,
+    resource?: string,
   ): PromiseLike<void>;
   $removeConfigurationOption(
-      target: boolean | ConfigurationTarget | undefined,
-      key: string,
-      resource?: string,
+    target: boolean | ConfigurationTarget | undefined,
+    key: string,
+    resource?: string,
   ): PromiseLike<void>;
 }

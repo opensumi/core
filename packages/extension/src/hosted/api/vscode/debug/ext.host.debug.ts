@@ -1,23 +1,45 @@
 import type vscode from 'vscode';
-import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
+import {
+  IExtHostCommands,
+  IExtHostDebugService,
+  IMainThreadDebug,
+  ExtensionWSChannel,
+  IExtHostConnectionService,
+} from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
-import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation, DebugAdapterNamedPipeServer, DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
+import {
+  Disposable,
+  Uri,
+  DebugConsoleMode,
+  DebugAdapterExecutable,
+  DebugAdapterServer,
+  DebugAdapterInlineImplementation,
+  DebugAdapterNamedPipeServer,
+  DebugConfigurationProviderTriggerKind,
+} from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import { Breakpoint } from '../../../../common/vscode/models';
-import { DebugConfiguration, DebugStreamConnection, IDebuggerContribution, IDebugSessionDTO } from '@opensumi/ide-debug';
+import {
+  DebugConfiguration,
+  DebugStreamConnection,
+  IDebuggerContribution,
+  IDebugSessionDTO,
+} from '@opensumi/ide-debug';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
-import { connectDebugAdapter, startDebugAdapter, directDebugAdapter, namedPipeDebugAdapter } from './extension-debug-adapter-starter';
+import {
+  connectDebugAdapter,
+  startDebugAdapter,
+  directDebugAdapter,
+  namedPipeDebugAdapter,
+} from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { CustomeChildProcessModule } from '../../../ext.process-base';
 import { IDebugConfigurationProvider } from './common';
 
-export function createDebugApiFactory(
-  extHostDebugService: IExtHostDebugService,
-) {
-
+export function createDebugApiFactory(extHostDebugService: IExtHostDebugService) {
   const debug: typeof vscode.debug = {
     get activeDebugSession() {
       return extHostDebugService.activeDebugSession;
@@ -43,8 +65,16 @@ export function createDebugApiFactory(
     onDidChangeBreakpoints(listener, thisArgs?, disposables?) {
       return extHostDebugService.onDidChangeBreakpoints(listener, thisArgs, disposables);
     },
-    registerDebugConfigurationProvider(debugType: string, provider: vscode.DebugConfigurationProvider, triggerKind?: vscode.DebugConfigurationProviderTriggerKind) {
-      return extHostDebugService.registerDebugConfigurationProvider(debugType, provider, triggerKind || DebugConfigurationProviderTriggerKind.Initial);
+    registerDebugConfigurationProvider(
+      debugType: string,
+      provider: vscode.DebugConfigurationProvider,
+      triggerKind?: vscode.DebugConfigurationProviderTriggerKind,
+    ) {
+      return extHostDebugService.registerDebugConfigurationProvider(
+        debugType,
+        provider,
+        triggerKind || DebugConfigurationProviderTriggerKind.Initial,
+      );
     },
     registerDebugAdapterDescriptorFactory(debugType: string, factory: vscode.DebugAdapterDescriptorFactory) {
       return extHostDebugService.registerDebugAdapterDescriptorFactory(debugType, factory);
@@ -52,7 +82,11 @@ export function createDebugApiFactory(
     registerDebugAdapterTrackerFactory(debugType: string, factory: vscode.DebugAdapterTrackerFactory) {
       return extHostDebugService.registerDebugAdapterTrackerFactory(debugType, factory);
     },
-    startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSession?: vscode.DebugSession | vscode.DebugSessionOptions) {
+    startDebugging(
+      folder: vscode.WorkspaceFolder | undefined,
+      nameOrConfig: string | vscode.DebugConfiguration,
+      parentSession?: vscode.DebugSession | vscode.DebugSessionOptions,
+    ) {
       return extHostDebugService.startDebugging(folder, nameOrConfig, parentSession);
     },
     stopDebugging(session?: vscode.DebugSession) {
@@ -73,7 +107,6 @@ export function createDebugApiFactory(
 }
 
 export class ExtHostDebugSession implements vscode.DebugSession {
-
   constructor(
     private _debugServiceProxy: IMainThreadDebug,
     private _id: string,
@@ -81,8 +114,8 @@ export class ExtHostDebugSession implements vscode.DebugSession {
     private _name: string,
     private _workspaceFolder: vscode.WorkspaceFolder | undefined,
     private _configuration: vscode.DebugConfiguration,
-    private _parentSession: vscode.DebugSession | undefined) {
-  }
+    private _parentSession: vscode.DebugSession | undefined,
+  ) {}
 
   public get id(): string {
     return this._id;
@@ -115,13 +148,14 @@ export class ExtHostDebugSession implements vscode.DebugSession {
     return this._debugServiceProxy.$customRequest(this._id, command, args);
   }
 
-  public getDebugProtocolBreakpoint(breakpoint: vscode.Breakpoint): Promise<vscode.DebugProtocolBreakpoint | undefined> {
+  public getDebugProtocolBreakpoint(
+    breakpoint: vscode.Breakpoint,
+  ): Promise<vscode.DebugProtocolBreakpoint | undefined> {
     return this._debugServiceProxy.$getDebugProtocolBreakpoint(this._id, breakpoint.id);
   }
 }
 
 export class ExtHostDebug implements IExtHostDebugService {
-
   private readonly onDidChangeBreakpointsEmitter = new Emitter<vscode.BreakpointsChangeEvent>();
   private readonly onDidChangeActiveDebugSessionEmitter = new Emitter<vscode.DebugSession | undefined>();
   private readonly onDidTerminateDebugSessionEmitter = new Emitter<vscode.DebugSession>();
@@ -141,7 +175,12 @@ export class ExtHostDebug implements IExtHostDebugService {
   breakpoints: Breakpoint[];
   activeDebugConsole: vscode.DebugConsole;
 
-  constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands, private cp?: CustomeChildProcessModule) {
+  constructor(
+    rpc: IRPCProtocol,
+    private extHostConnectionService: IExtHostConnectionService,
+    private extHostCommand: IExtHostCommands,
+    private cp?: CustomeChildProcessModule,
+  ) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
     this.activeDebugConsole = {
       append: (value: string) => this.proxy.$appendToDebugConsole(value),
@@ -227,7 +266,9 @@ export class ExtHostDebug implements IExtHostDebugService {
       // src 就是一个本地路径
       return Uri.file(source.path);
     } else {
-      throw new Error(`cannot create uri from DAP 'source' object; properties 'path' and 'sourceReference' are both missing.`);
+      throw new Error(
+        "cannot create uri from DAP 'source' object; properties 'path' and 'sourceReference' are both missing.",
+      );
     }
   }
 
@@ -237,19 +278,28 @@ export class ExtHostDebug implements IExtHostDebugService {
    * @param nameOrConfig
    * @param parentSession
    */
-  async startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSessionOrOptions?: vscode.DebugSession | vscode.DebugSessionOptions): Promise<boolean> {
-    if (!parentSessionOrOptions || (typeof parentSessionOrOptions === 'object' && 'configuration' in parentSessionOrOptions)) {
+  async startDebugging(
+    folder: vscode.WorkspaceFolder | undefined,
+    nameOrConfig: string | vscode.DebugConfiguration,
+    parentSessionOrOptions?: vscode.DebugSession | vscode.DebugSessionOptions,
+  ): Promise<boolean> {
+    if (
+      !parentSessionOrOptions ||
+      (typeof parentSessionOrOptions === 'object' && 'configuration' in parentSessionOrOptions)
+    ) {
       return this.proxy.$startDebugging(folder, nameOrConfig, {
         parentSessionID: parentSessionOrOptions ? parentSessionOrOptions.id : undefined,
         compact: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).compact,
-        lifecycleManagedByParent: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).lifecycleManagedByParent,
+        lifecycleManagedByParent:
+          parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).lifecycleManagedByParent,
       });
     }
     return this.proxy.$startDebugging(folder, nameOrConfig, {
       parentSessionID: parentSessionOrOptions.parentSession ? parentSessionOrOptions.parentSession.id : undefined,
       repl: parentSessionOrOptions.consoleMode === DebugConsoleMode.MergeWithParent ? 'mergeWithParent' : 'separate',
       compact: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).compact,
-      lifecycleManagedByParent: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).lifecycleManagedByParent,
+      lifecycleManagedByParent:
+        parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).lifecycleManagedByParent,
     });
   }
 
@@ -257,7 +307,11 @@ export class ExtHostDebug implements IExtHostDebugService {
     return this.proxy.$stopDebugging(session ? session.id : undefined);
   }
 
-  registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider, trigger: vscode.DebugConfigurationProviderTriggerKind): vscode.Disposable {
+  registerDebugConfigurationProvider(
+    type: string,
+    provider: vscode.DebugConfigurationProvider,
+    trigger: vscode.DebugConfigurationProviderTriggerKind,
+  ): vscode.Disposable {
     const providers = this.configurationProviders.get(type) || new Set<IDebugConfigurationProvider>();
     this.configurationProviders.set(type, providers);
 
@@ -282,7 +336,10 @@ export class ExtHostDebug implements IExtHostDebugService {
     });
   }
 
-  registerDebugAdapterDescriptorFactory(type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable {
+  registerDebugAdapterDescriptorFactory(
+    type: string,
+    factory: vscode.DebugAdapterDescriptorFactory,
+  ): vscode.Disposable {
     if (this.descriptorFactories.has(type)) {
       throw new Error(`Descriptor factory for ${type} has been already registered`);
     }
@@ -290,9 +347,12 @@ export class ExtHostDebug implements IExtHostDebugService {
     return Disposable.create(() => this.descriptorFactories.delete(type));
   }
 
-  public registerDebugAdapterTrackerFactory(type: string, factory: vscode.DebugAdapterTrackerFactory): vscode.Disposable {
+  public registerDebugAdapterTrackerFactory(
+    type: string,
+    factory: vscode.DebugAdapterTrackerFactory,
+  ): vscode.Disposable {
     if (!factory) {
-      return Disposable.create(() => { });
+      return Disposable.create(() => {});
     }
 
     this.trackerFactories.push([type, factory]);
@@ -327,7 +387,12 @@ export class ExtHostDebug implements IExtHostDebugService {
     this.onDidChangeActiveDebugSessionEmitter.fire(this.activeDebugSession);
   }
 
-  async $breakpointsDidChange(all: Breakpoint[], added: Breakpoint[], removed: Breakpoint[], changed: Breakpoint[]): Promise<void> {
+  async $breakpointsDidChange(
+    all: Breakpoint[],
+    added: Breakpoint[],
+    removed: Breakpoint[],
+    changed: Breakpoint[],
+  ): Promise<void> {
     this.breakpoints = all;
     this.onDidChangeBreakpointsEmitter.fire({ added, removed, changed });
   }
@@ -371,17 +436,17 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   async $getSupportedLanguages(debugType: string): Promise<string[]> {
     const contribution = this.debuggersContributions.get(debugType);
-    return contribution && contribution.languages || [];
+    return (contribution && contribution.languages) || [];
   }
 
   async $getSchemaAttributes(debugType: string): Promise<IJSONSchema[]> {
     const contribution = this.debuggersContributions.get(debugType);
-    return contribution && contribution.configurationAttributes || [];
+    return (contribution && contribution.configurationAttributes) || [];
   }
 
   async $getConfigurationSnippets(debugType: string): Promise<IJSONSchemaSnippet[]> {
     const contribution = this.debuggersContributions.get(debugType);
-    return contribution && contribution.configurationSnippets || [];
+    return (contribution && contribution.configurationSnippets) || [];
   }
 
   async $getTerminalCreationOptions(debugType: string): Promise<undefined> {
@@ -392,26 +457,40 @@ export class ExtHostDebug implements IExtHostDebugService {
     return undefined;
   }
 
-  async $provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration[]> {
+  async $provideDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+    token?: vscode.CancellationToken,
+  ): Promise<vscode.DebugConfiguration[]> {
     let result: DebugConfiguration[] = [];
     const providers = this.configurationProviders.get(debugType);
     if (providers) {
       for (const provider of providers) {
         if (provider.provideDebugConfigurations) {
-          result = result.concat(await provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri), token) || []);
+          result = result.concat(
+            (await provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri), token)) || [],
+          );
         }
       }
     }
     return result;
   }
 
-  async $resolveDebugConfigurations(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null> {
+  async $resolveDebugConfigurations(
+    debugConfiguration: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+    token?: vscode.CancellationToken,
+  ): Promise<vscode.DebugConfiguration | undefined | null> {
     const current: DebugConfiguration | undefined | null = debugConfiguration;
     const providers = this.configurationProviders.get(debugConfiguration.type);
     if (providers) {
       for (const provider of providers) {
         if (provider.resolveDebugConfiguration) {
-          const next = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current!, token);
+          const next = await provider.resolveDebugConfiguration(
+            this.toWorkspaceFolder(workspaceFolderUri),
+            current!,
+            token,
+          );
           // 对齐 VS Code 实现，当 resolveDebugConfiguration 返回值为 `undefined` 时，中断调试进程
           // 当返回值是 `null` 时，中断调试进程并打开 `launch.json` 文件
           // ref: https://code.visualstudio.com/api/references/vscode-api#DebugConfigurationProvider
@@ -422,13 +501,21 @@ export class ExtHostDebug implements IExtHostDebugService {
     return current;
   }
 
-  async $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined | null> {
+  async $resolveDebugConfigurationWithSubstitutedVariables(
+    debugConfiguration: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+    token?: vscode.CancellationToken,
+  ): Promise<vscode.DebugConfiguration | undefined | null> {
     const current: DebugConfiguration | undefined = debugConfiguration;
     const providers = this.configurationProviders.get(debugConfiguration.type);
     if (providers) {
       for (const provider of providers) {
         if (provider.resolveDebugConfigurationWithSubstitutedVariables) {
-          const next = await provider.resolveDebugConfigurationWithSubstitutedVariables(this.toWorkspaceFolder(workspaceFolderUri), current, token);
+          const next = await provider.resolveDebugConfigurationWithSubstitutedVariables(
+            this.toWorkspaceFolder(workspaceFolderUri),
+            current,
+            token,
+          );
           // 对齐 VS Code 实现，当 resolveDebugConfigurationWithSubstitutedVariables 返回值为 `undefined` 时，中断调试进程
           // 当返回值是 `null` 时，中断调试进程并打开 `launch.json` 文件
           // ref: https://code.visualstudio.com/api/references/vscode-api#DebugConfigurationProvider
@@ -457,7 +544,10 @@ export class ExtHostDebug implements IExtHostDebugService {
     return ExtensionDebugAdapterTracker.create(session, this.trackerFactories);
   }
 
-  protected async getDebugAdapterDescriptor(session: vscode.DebugSession, executable?: vscode.DebugAdapterExecutable): Promise<vscode.DebugAdapterDescriptor | undefined | null> {
+  protected async getDebugAdapterDescriptor(
+    session: vscode.DebugSession,
+    executable?: vscode.DebugAdapterExecutable,
+  ): Promise<vscode.DebugAdapterDescriptor | undefined | null> {
     const descriptorFactory = this.descriptorFactories.get(session.type);
     if (descriptorFactory) {
       return await descriptorFactory.createDebugAdapterDescriptor(session, executable);
@@ -465,7 +555,10 @@ export class ExtHostDebug implements IExtHostDebugService {
     return undefined;
   }
 
-  protected async createCommunicationProvider(session: vscode.DebugSession, debugConfiguration: vscode.DebugConfiguration): Promise<DebugStreamConnection> {
+  protected async createCommunicationProvider(
+    session: vscode.DebugSession,
+    debugConfiguration: vscode.DebugConfiguration,
+  ): Promise<DebugStreamConnection> {
     const executable = await this.resolveDebugAdapterExecutable(debugConfiguration);
     const descriptor = await this.getDebugAdapterDescriptor(session, executable);
     if (descriptor) {
@@ -496,7 +589,8 @@ export class ExtHostDebug implements IExtHostDebugService {
             return namedPipeDebugAdapter(adapter as DebugAdapterNamedPipeServer);
           case 'implementation':
             return directDebugAdapter(session.id, (adapter as DebugAdapterInlineImplementation).implementation);
-          default: break;
+          default:
+            break;
         }
       }
     }
@@ -511,12 +605,16 @@ export class ExtHostDebug implements IExtHostDebugService {
     }
   }
 
-  protected async resolveDebugAdapterExecutable(debugConfiguration: vscode.DebugConfiguration): Promise<vscode.DebugAdapterExecutable | undefined> {
+  protected async resolveDebugAdapterExecutable(
+    debugConfiguration: vscode.DebugConfiguration,
+  ): Promise<vscode.DebugAdapterExecutable | undefined> {
     const { type } = debugConfiguration;
     const contribution = this.debuggersContributions.get(type);
     if (contribution) {
       if (contribution.adapterExecutableCommand) {
-        const executable = await this.extHostCommand.executeCommand<vscode.DebugAdapterExecutable>(contribution.adapterExecutableCommand);
+        const executable = await this.extHostCommand.executeCommand<vscode.DebugAdapterExecutable>(
+          contribution.adapterExecutableCommand,
+        );
         if (executable) {
           return executable;
         }
@@ -546,8 +644,8 @@ export class ExtHostDebug implements IExtHostDebugService {
   }
 
   private convertToDto(x: vscode.DebugAdapterDescriptor | undefined | null): {
-    type: 'executable' | 'server' | 'implementation' | 'pipeServer',
-    adapter: vscode.DebugAdapterDescriptor,
+    type: 'executable' | 'server' | 'implementation' | 'pipeServer';
+    adapter: vscode.DebugAdapterDescriptor;
   } {
     if (x instanceof DebugAdapterExecutable) {
       return {

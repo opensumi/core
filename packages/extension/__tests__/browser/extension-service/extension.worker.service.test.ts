@@ -24,7 +24,9 @@ describe('Extension service', () => {
   it('activate worker host should be work', async () => {
     await workerService.activate(true);
     expect(workerService.protocol).toBeDefined();
-    const proxy = workerService.protocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+    const proxy = workerService.protocol.getProxy<IExtensionWorkerHost>(
+      WorkerHostAPIIdentifier.ExtWorkerHostExtensionService,
+    );
     expect(proxy).toBeDefined();
   });
 

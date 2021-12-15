@@ -27,13 +27,16 @@ export class DocumentSemanticTokensProvider {
     private readonly proxy: IExtHostLanguages,
     public handleId: number,
     private legend: modes.SemanticTokensLegend,
-  ) {
-  }
+  ) {}
   getLegend(): modes.SemanticTokensLegend {
     return this.legend;
   }
 
-  async provideDocumentSemanticTokens(model: model.ITextModel, lastResultId: string | null, token: monaco.CancellationToken): Promise<modes.SemanticTokens | modes.SemanticTokensEdits | null> {
+  async provideDocumentSemanticTokens(
+    model: model.ITextModel,
+    lastResultId: string | null,
+    token: monaco.CancellationToken,
+  ): Promise<modes.SemanticTokens | modes.SemanticTokensEdits | null> {
     const nLastResultId = lastResultId ? parseInt(lastResultId, 10) : 0;
     const encodedDto = await this.proxy.$provideDocumentSemanticTokens(this.handleId, model.uri, nLastResultId, token);
     if (!encodedDto) {
@@ -68,14 +71,17 @@ export class DocumentRangeSemanticTokensProviderImpl implements modes.DocumentRa
     private readonly proxy: IExtHostLanguages,
     public handleId: number,
     private legend: monaco.languages.SemanticTokensLegend,
-  ) {
-  }
+  ) {}
 
   getLegend() {
     return this.legend;
   }
 
-  async provideDocumentRangeSemanticTokens(model: model.ITextModel, range: monaco.Range, token: monaco.CancellationToken): Promise<monaco.languages.SemanticTokens | null> {
+  async provideDocumentRangeSemanticTokens(
+    model: model.ITextModel,
+    range: monaco.Range,
+    token: monaco.CancellationToken,
+  ): Promise<monaco.languages.SemanticTokens | null> {
     const encodedDto = await this.proxy.$provideDocumentRangeSemanticTokens(this.handleId, model.uri, range, token);
     if (!encodedDto) {
       return null;
@@ -90,6 +96,6 @@ export class DocumentRangeSemanticTokensProviderImpl implements modes.DocumentRa
         data: dto.data,
       };
     }
-    throw new Error(`Unexpected`);
+    throw new Error('Unexpected');
   }
 }

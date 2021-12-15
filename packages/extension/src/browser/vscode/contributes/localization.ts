@@ -1,10 +1,22 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@opensumi/ide-core-browser';
+import {
+  ILogger,
+  registerLocalizationBundle,
+  URI,
+  PreferenceService,
+  parseWithComments,
+  getLanguageId,
+} from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 
-import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../common';
+import {
+  VSCodeContributePoint,
+  Contributes,
+  IExtensionNodeClientService,
+  ExtensionNodeServiceServerPath,
+} from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface TranslationFormat {
@@ -13,7 +25,6 @@ export interface TranslationFormat {
 }
 
 export interface LocalizationFormat {
-
   languageId: string;
 
   languageName: string;
@@ -21,7 +32,6 @@ export interface LocalizationFormat {
   localizedLanguageName: string;
 
   translations: TranslationFormat[];
-
 }
 
 export type LocalizationsSchema = Array<LocalizationFormat>;
@@ -70,21 +80,26 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
           if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
             return;
           }
-          promises.push((async () => {
-            const contents = await this.registerLanguage(translate);
-            registerLocalizationBundle({
-              languageId,
-              languageName: localization.languageName,
-              localizedLanguageName: localization.localizedLanguageName,
-              contents,
-            }, translate.id);
-          })());
+          promises.push(
+            (async () => {
+              const contents = await this.registerLanguage(translate);
+              registerLocalizationBundle(
+                {
+                  languageId,
+                  languageName: localization.languageName,
+                  localizedLanguageName: localization.localizedLanguageName,
+                  contents,
+                },
+                translate.id,
+              );
+            })(),
+          );
         });
       }
     });
 
     const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
-    const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || '';
+    const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path, storagePath));
     await Promise.all(promises);
   }
@@ -103,13 +118,10 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
           }
         }
       }
-
     }
 
     return contents;
-
   }
-
 }
 
 /**

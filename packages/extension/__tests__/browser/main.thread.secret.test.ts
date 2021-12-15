@@ -23,10 +23,12 @@ describe('MainThreadSecret API Test Suite', () => {
   const onDidChangePasswordEmitter = new Emitter();
   const mockCredentialsService = {
     onDidChangePassword: onDidChangePasswordEmitter.event,
-    getPassword: jest.fn(() => JSON.stringify({
-      extensionId,
-      content: 'hello',
-    })),
+    getPassword: jest.fn(() =>
+      JSON.stringify({
+        extensionId,
+        content: 'hello',
+      }),
+    ),
     setPassword: jest.fn(),
     deletePassword: jest.fn(),
   };
@@ -35,21 +37,27 @@ describe('MainThreadSecret API Test Suite', () => {
     encrypt: jest.fn((value) => value),
   };
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: AppConfig,
-        useValue: {
-          uriScheme: 'uriScheme',
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: AppConfig,
+          useValue: {
+            uriScheme: 'uriScheme',
+          },
         },
+      ]),
+    );
+    injector.overrideProviders(
+      {
+        token: ICredentialsService,
+        useValue: mockCredentialsService,
       },
-    ]));
-    injector.overrideProviders({
-      token: ICredentialsService,
-      useValue: mockCredentialsService,
-    }, {
-      token: ICryptrService,
-      useValue: mockCryptrService,
-    });
+      {
+        token: ICryptrService,
+        useValue: mockCryptrService,
+      },
+    );
     mainThreadSecret = injector.get(MainThreadSecret, [mockProxy as any]);
   });
 

@@ -1,8 +1,19 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { AppConfig, Disposable, getPreferenceLanguageId, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  Disposable,
+  getPreferenceLanguageId,
+  StorageProvider,
+  STORAGE_NAMESPACE,
+} from '@opensumi/ide-core-browser';
 import { ExtensionCandidate as ExtensionCandidate } from '@opensumi/ide-core-common';
 
-import { ExtensionNodeServiceServerPath, EXTENSION_ENABLE, IExtensionMetaData, IExtensionNodeClientService } from '../common';
+import {
+  ExtensionNodeServiceServerPath,
+  EXTENSION_ENABLE,
+  IExtensionMetaData,
+  IExtensionNodeClientService,
+} from '../common';
 import { Extension } from './extension';
 import { AbstractExtInstanceManagementService } from './types';
 
@@ -84,10 +95,15 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
   }
 
-  public async createExtensionInstance(extensionPathOrMetaData: IExtensionMetaData | string, isBuiltin: boolean, isDevelopment?: boolean): Promise<Extension | undefined> {
-    const extensionMetadata: IExtensionMetaData | undefined = typeof extensionPathOrMetaData === 'string'
-      ? await this.extensionNodeClient.getExtension(extensionPathOrMetaData, getPreferenceLanguageId(), {})
-      : extensionPathOrMetaData;
+  public async createExtensionInstance(
+    extensionPathOrMetaData: IExtensionMetaData | string,
+    isBuiltin: boolean,
+    isDevelopment?: boolean,
+  ): Promise<Extension | undefined> {
+    const extensionMetadata: IExtensionMetaData | undefined =
+      typeof extensionPathOrMetaData === 'string'
+        ? await this.extensionNodeClient.getExtension(extensionPathOrMetaData, getPreferenceLanguageId(), {})
+        : extensionPathOrMetaData;
 
     if (!extensionMetadata) {
       return;
@@ -96,7 +112,8 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     return this.injector.get(Extension, [
       extensionMetadata,
       await this.checkExtensionEnable(extensionMetadata),
-      isBuiltin || (this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false),
+      isBuiltin ||
+        (this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false),
       !!isDevelopment,
     ]);
   }
@@ -108,7 +125,9 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     const extensionCandidate = this.getExtensionCandidateByPath(extensionMetaData.realPath);
     // 1. 通过路径判决是否是内置插件
     // 2. candidate 是否有  isBuiltin 标识符
-    const isBuiltin = (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) || (extensionCandidate ? extensionCandidate.isBuiltin : false);
+    const isBuiltin =
+      (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) ||
+      (extensionCandidate ? extensionCandidate.isBuiltin : false);
     return isBuiltin;
   }
 
@@ -125,6 +144,9 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
    * @param realPath extension path
    */
   private getExtensionCandidateByPath(realPath: string): ExtensionCandidate | undefined {
-    return this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === realPath);
+    return (
+      this.appConfig.extensionCandidate &&
+      this.appConfig.extensionCandidate.find((extension) => extension.path === realPath)
+    );
   }
 }

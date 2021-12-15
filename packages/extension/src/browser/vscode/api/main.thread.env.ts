@@ -4,7 +4,13 @@ import { IRPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
-import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  IOpenerService,
+  IClipboardService,
+  electronEnv,
+  IExternalUriService,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 import { getLanguageId, URI, firstSessionDateStorageKey, isElectronRenderer } from '@opensumi/ide-core-common';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { MainThreadStorage } from './main.thread.storage';
@@ -86,7 +92,7 @@ export class MainThreadEnv implements IMainThreadEnv {
     return new Promise<void>(async (resolve) => {
       try {
         await this.clipboardService.writeText(text);
-      } catch (e) { }
+      } catch (e) {}
       resolve();
     });
   }

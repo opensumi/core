@@ -8,12 +8,15 @@ describe('DebugService', () => {
   let injector: MockInjector;
 
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: IDebugService,
-        useClass: DebugService,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IDebugService,
+          useClass: DebugService,
+        },
+      ]),
+    );
     debugService = injector.get(IDebugService);
   });
 
@@ -26,9 +29,11 @@ describe('DebugService', () => {
       done();
     });
 
-    debugService.registerDebugContributionPoints('file://extensions/a', [{
-      title: 'node',
-    }]);
+    debugService.registerDebugContributionPoints('file://extensions/a', [
+      {
+        title: 'node',
+      },
+    ]);
   });
 
   it('registerDebugContributionPoints should emit change', () => {
@@ -38,5 +43,4 @@ describe('DebugService', () => {
 
     expect(debugService.debugContributionPoints.size).toBe(0);
   });
-
 });

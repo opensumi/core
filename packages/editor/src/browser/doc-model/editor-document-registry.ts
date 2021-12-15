@@ -1,11 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@opensumi/ide-core-browser';
 
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider, EditorDocumentModelOptionExternalUpdatedEvent, ORIGINAL_DOC_SCHEME } from './types';
+import {
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelContentProvider,
+  EditorDocumentModelOptionExternalUpdatedEvent,
+  ORIGINAL_DOC_SCHEME,
+} from './types';
 
 @Injectable()
 export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentModelContentRegistry {
-
   private providers: IEditorDocumentModelContentProvider[] = [];
 
   @Autowired(IEventBus)
@@ -19,17 +23,13 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
 
   constructor() {
     this.originalProvider = {
-      handlesScheme: (scheme: string) => {
-        return scheme === ORIGINAL_DOC_SCHEME;
-      },
+      handlesScheme: (scheme: string) => scheme === ORIGINAL_DOC_SCHEME,
       provideEditorDocumentModelContent: async (uri: URI) => {
         const { target } = uri.getParsedQuery();
         const targetUri = new URI(target);
         return (await this.getContentForUri(targetUri)) || '';
       },
-      isReadonly: () => {
-        return true;
-      },
+      isReadonly: () => true,
       onDidChangeContent: this._onOriginalDocChanged.event,
     };
     this.registerEditorDocumentModelContentProvider(this.originalProvider);
@@ -45,12 +45,14 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
     // 处理的doc uri为shadowed_前缀的scheme
     if (provider !== this.originalProvider && provider.onDidChangeContent) {
       provider.onDidChangeContent((uri) => {
-        this._onOriginalDocChanged.fire(URI.from({
-          scheme: ORIGINAL_DOC_SCHEME,
-          query: URI.stringifyQuery({
-            target: uri.toString(),
+        this._onOriginalDocChanged.fire(
+          URI.from({
+            scheme: ORIGINAL_DOC_SCHEME,
+            query: URI.stringifyQuery({
+              target: uri.toString(),
+            }),
           }),
-        }));
+        );
       });
     }
     return {
@@ -76,9 +78,9 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
   // Ant Codespaces 需要使用该方法复写 getProvider，不使用缓存 provider
   protected async calculateProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined> {
     let calculated: {
-      provider: IEditorDocumentModelContentProvider | undefined,
-      weight: number,
-      index: number,
+      provider: IEditorDocumentModelContentProvider | undefined;
+      weight: number;
+      index: number;
     } = {
       provider: undefined,
       weight: -1,
@@ -90,11 +92,11 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
       if (provider.handlesUri) {
         weight = await provider.handlesUri(uri);
       } else if (provider.handlesScheme) {
-        weight = (await provider.handlesScheme(uri.scheme) ) ? 10 : -1;
+        weight = (await provider.handlesScheme(uri.scheme)) ? 10 : -1;
       }
 
       if (weight >= 0) {
-        if (weight > calculated.weight || (weight === calculated.weight && index > calculated.index ) ) {
+        if (weight > calculated.weight || (weight === calculated.weight && index > calculated.index)) {
           calculated = {
             index,
             weight,

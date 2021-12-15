@@ -1,7 +1,19 @@
 import { KeymapService } from '@opensumi/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable, KeybindingScope, localize, ILogger, FileUri, BrowserModule, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  KeybindingRegistry,
+  KeybindingService,
+  URI,
+  EDITOR_COMMANDS,
+  Disposable,
+  KeybindingScope,
+  localize,
+  ILogger,
+  FileUri,
+  BrowserModule,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 import { IUserStorageService } from '@opensumi/ide-preferences';
 import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
@@ -17,19 +29,19 @@ import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class AddonModule extends BrowserModule {
-  providers: Provider[] = [
-    UserStorageContribution,
-  ];
+  providers: Provider[] = [UserStorageContribution];
 }
 
 describe('KeymapsService should be work', () => {
   let keymapsService: KeymapService;
   let injector: MockInjector;
-  const keybindingContent = [{
-    when: 'editorFocus && textInputFocus && !editorReadonly',
-    command: 'editor.action.deleteLines',
-    keybinding: '⌘+⇧+L',
-  }];
+  const keybindingContent = [
+    {
+      when: 'editorFocus && textInputFocus && !editorReadonly',
+      command: 'editor.action.deleteLines',
+      keybinding: '⌘+⇧+L',
+    },
+  ];
   const preferenceDirName = '.sumi';
 
   const mockKeybindingService = {
@@ -43,15 +55,15 @@ describe('KeymapsService should be work', () => {
     }),
   };
   const mockKeybindingRegistry = {
-    getKeybindingsForCommand: jest.fn(() => {
-      return [{
+    getKeybindingsForCommand: jest.fn(() => [
+      {
         command: 'test.command',
         keybinding: 'cmd+c',
-      }];
-    }),
+      },
+    ]),
     unregisterKeybinding: jest.fn(),
-    registerKeybinding: jest.fn(() => Disposable.create(() => { })),
-    acceleratorFor: jest.fn(() => (['CMD+C'])),
+    registerKeybinding: jest.fn(() => Disposable.create(() => {})),
+    acceleratorFor: jest.fn(() => ['CMD+C']),
     validateKeybindingInScope: jest.fn(() => true),
   };
 
@@ -59,17 +71,12 @@ describe('KeymapsService should be work', () => {
 
   let onKeybindingsChanged;
   beforeAll(async (done) => {
-
     userhome = FileUri.create(path.join(os.tmpdir(), 'keymaps-service-test'));
 
     await fs.createFile(path.join(userhome.path.toString(), preferenceDirName, 'keymaps.json'));
     await fs.writeJSON(path.join(userhome.path.toString(), preferenceDirName, 'keymaps.json'), keybindingContent);
 
-    injector = createBrowserInjector([
-      FileServiceClientModule,
-      AddonModule,
-      KeymapsModule,
-    ]);
+    injector = createBrowserInjector([FileServiceClientModule, AddonModule, KeymapsModule]);
 
     injector.overrideProviders(
       {
@@ -101,13 +108,11 @@ describe('KeymapsService should be work', () => {
     );
 
     // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
-      return {
-        uri: userhome!.toString(),
-        isDirectory: true,
-        lastModification: new Date().getTime(),
-      };
-    });
+    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+      uri: userhome!.toString(),
+      isDirectory: true,
+      lastModification: new Date().getTime(),
+    }));
 
     onKeybindingsChanged = jest.fn();
     injector.mock(KeybindingRegistry, 'onKeybindingsChanged', onKeybindingsChanged);
@@ -154,7 +159,6 @@ describe('KeymapsService should be work', () => {
   });
 
   describe('02 #API should be work', () => {
-
     it('open method should be work', async (done) => {
       const open = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, open);
@@ -192,10 +196,12 @@ describe('KeymapsService should be work', () => {
     });
 
     it('reconcile method should be work', async (done) => {
-      const keybindings = [{
-        command: 'test.command',
-        key: 'cmd+c',
-      }];
+      const keybindings = [
+        {
+          command: 'test.command',
+          key: 'cmd+c',
+        },
+      ];
       keymapsService.reconcile(keybindings);
       expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
       expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(2);
@@ -259,18 +265,23 @@ describe('KeymapsService should be work', () => {
 
     it('detectKeybindings method should be work', () => {
       const items = keymapsService.getKeybindingItems();
-      const detectKeybindings = keymapsService.detectKeybindings({
-        ...items[0],
-        keybinding: 'CMD+D',
-      }, 'CMD+C');
+      const detectKeybindings = keymapsService.detectKeybindings(
+        {
+          ...items[0],
+          keybinding: 'CMD+D',
+        },
+        'CMD+C',
+      );
       expect(detectKeybindings.length).toBe(1);
     });
 
     it('filter monaco.editor from storeKeybindings ', () => {
-      keymapsService.storeKeybindings = [{
-        command: 'monaco.editor.action.quickCommand',
-        key: 'cmd+c',
-      }];
+      keymapsService.storeKeybindings = [
+        {
+          command: 'monaco.editor.action.quickCommand',
+          key: 'cmd+c',
+        },
+      ];
       expect(keymapsService.storeKeybindings[0].command === 'editor.action.quickCommand');
     });
   });

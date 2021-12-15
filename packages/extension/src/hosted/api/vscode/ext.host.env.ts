@@ -3,11 +3,13 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import address from 'address';
-import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostTerminal, IExtensionDescription } from '../../../common/vscode';
 import {
-  IExtHostEnv,
-  ExtHostEnvValues,
+  MainThreadAPIIdentifier,
+  IMainThreadEnv,
+  IExtHostTerminal,
+  IExtensionDescription,
 } from '../../../common/vscode';
+import { IExtHostEnv, ExtHostEnvValues } from '../../../common/vscode';
 import { LogLevel } from '../../../common/vscode/ext-types';
 import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@opensumi/ide-core-common';
 

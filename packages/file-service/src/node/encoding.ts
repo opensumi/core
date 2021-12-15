@@ -13,73 +13,81 @@ export const UTF8 = 'utf8';
 export const UTF8_WITH_BOM = 'utf8bom';
 export const UTF16BE = 'utf16be';
 export const UTF16LE = 'utf16le';
-export const UTF16BE_BOM = [0xFE, 0xFF];
-export const UTF16LE_BOM = [0xFF, 0xFE];
-export const UTF8_BOM = [0xEF, 0xBB, 0xBF];
+export const UTF16BE_BOM = [0xfe, 0xff];
+export const UTF16LE_BOM = [0xff, 0xfe];
+export const UTF8_BOM = [0xef, 0xbb, 0xbf];
 
 function isUtf8(buffer: Buffer) {
   let i = 0;
   while (i < buffer.length) {
-    if ((// ASCII
+    if (
+      // ASCII
       buffer[i] === 0x09 ||
-      buffer[i] === 0x0A ||
-      buffer[i] === 0x0D ||
-      (0x20 <= buffer[i] && buffer[i] <= 0x7E)
-    )
+      buffer[i] === 0x0a ||
+      buffer[i] === 0x0d ||
+      (0x20 <= buffer[i] && buffer[i] <= 0x7e)
     ) {
       i += 1;
       continue;
     }
 
-    if ((// non-overlong 2-byte
-      (0xC2 <= buffer[i] && buffer[i] <= 0xDF) &&
-      (0x80 <= buffer[i + 1] && buffer[i + 1] <= 0xBF)
-    )
+    if (
+      // non-overlong 2-byte
+      0xc2 <= buffer[i] &&
+      buffer[i] <= 0xdf &&
+      0x80 <= buffer[i + 1] &&
+      buffer[i + 1] <= 0xbf
     ) {
       i += 2;
       continue;
     }
 
-    if ((// excluding overlongs
-      buffer[i] === 0xE0 &&
-      (0xA0 <= buffer[i + 1] && buffer[i + 1] <= 0xBF) &&
-      (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF)
-    ) ||
-      (// straight 3-byte
-        ((0xE1 <= buffer[i] && buffer[i] <= 0xEC) ||
-          buffer[i] === 0xEE ||
-          buffer[i] === 0xEF) &&
-        (0x80 <= buffer[i + 1] && buffer[i + 1] <= 0xBF) &&
-        (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF)
-      ) ||
-      (// excluding surrogates
-        buffer[i] === 0xED &&
-        (0x80 <= buffer[i + 1] && buffer[i + 1] <= 0x9F) &&
-        (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF)
-      )
+    if (
+      // excluding overlongs
+      (buffer[i] === 0xe0 &&
+        0xa0 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0xbf &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf) || // straight 3-byte
+      (((0xe1 <= buffer[i] && buffer[i] <= 0xec) || buffer[i] === 0xee || buffer[i] === 0xef) &&
+        0x80 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0xbf &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf) || // excluding surrogates
+      (buffer[i] === 0xed &&
+        0x80 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0x9f &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf)
     ) {
       i += 3;
       continue;
     }
 
-    if ((// planes 1-3
-      buffer[i] === 0xF0 &&
-      (0x90 <= buffer[i + 1] && buffer[i + 1] <= 0xBF) &&
-      (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF) &&
-      (0x80 <= buffer[i + 3] && buffer[i + 3] <= 0xBF)
-    ) ||
-      (// planes 4-15
-        (0xF1 <= buffer[i] && buffer[i] <= 0xF3) &&
-        (0x80 <= buffer[i + 1] && buffer[i + 1] <= 0xBF) &&
-        (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF) &&
-        (0x80 <= buffer[i + 3] && buffer[i + 3] <= 0xBF)
-      ) ||
-      (// plane 16
-        buffer[i] === 0xF4 &&
-        (0x80 <= buffer[i + 1] && buffer[i + 1] <= 0x8F) &&
-        (0x80 <= buffer[i + 2] && buffer[i + 2] <= 0xBF) &&
-        (0x80 <= buffer[i + 3] && buffer[i + 3] <= 0xBF)
-      )
+    if (
+      // planes 1-3
+      (buffer[i] === 0xf0 &&
+        0x90 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0xbf &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf &&
+        0x80 <= buffer[i + 3] &&
+        buffer[i + 3] <= 0xbf) || // planes 4-15
+      (0xf1 <= buffer[i] &&
+        buffer[i] <= 0xf3 &&
+        0x80 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0xbf &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf &&
+        0x80 <= buffer[i + 3] &&
+        buffer[i + 3] <= 0xbf) || // plane 16
+      (buffer[i] === 0xf4 &&
+        0x80 <= buffer[i + 1] &&
+        buffer[i + 1] <= 0x8f &&
+        0x80 <= buffer[i + 2] &&
+        buffer[i + 2] <= 0xbf &&
+        0x80 <= buffer[i + 3] &&
+        buffer[i + 3] <= 0xbf)
     ) {
       i += 4;
       continue;
@@ -124,8 +132,8 @@ export function detectEncodingByBOMFromBuffer(buffer: Buffer | null): string | n
 }
 
 const JSCHARDET_TO_ICONV_ENCODINGS: { [name: string]: string } = {
-  'ibm866': 'cp866',
-  'big5': 'cp950',
+  ibm866: 'cp866',
+  big5: 'cp950',
 };
 
 export function detectEncodingByBuffer(buffer: Buffer): string | null {
@@ -207,8 +215,11 @@ function toNodeEncoding(enc: string | null): string {
 }
 
 function toNodeEncodeOptions(encoding: string, options?: { addBOM?: boolean }) {
-  return Object.assign({
-    // Set iconv write utf8 with bom
-    addBOM: encoding === UTF8_WITH_BOM,
-  }, options);
+  return Object.assign(
+    {
+      // Set iconv write utf8 with bom
+      addBOM: encoding === UTF8_WITH_BOM,
+    },
+    options,
+  );
 }

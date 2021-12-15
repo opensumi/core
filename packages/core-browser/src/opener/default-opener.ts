@@ -5,7 +5,6 @@ import { IWindowService } from '../window';
 
 @Injectable()
 export class DefaultOpener implements IOpener {
-
   @Autowired(IWindowService)
   private readonly windowService: IWindowService;
 

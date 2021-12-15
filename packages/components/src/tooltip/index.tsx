@@ -7,11 +7,7 @@ import './style.less';
 export const Tooltip: React.FC<{
   title: string;
   delay?: number;
-}> = ({
-  title,
-  children,
-  delay,
-}) => {
+}> = ({ title, children, delay }) => {
   const [visible, setVisible] = useState(false);
   const targetRef = useRef<HTMLParagraphElement | null>(null);
   const tooltipRef = useRef<HTMLSpanElement | null>(null);
@@ -33,16 +29,16 @@ export const Tooltip: React.FC<{
 
         if (y < tooltipRect.height) {
           arrowRef.current.className += ' kt-tooltip-reverse-arrow';
-          tooltipRef.current.style.top = `${y + height + (tooltipRect.height / 2)}px`;
+          tooltipRef.current.style.top = `${y + height + tooltipRect.height / 2}px`;
         } else {
-          tooltipRef.current.style.top = `${y - (height / 2) - (tooltipRect.height / 2)}px`;
+          tooltipRef.current.style.top = `${y - height / 2 - tooltipRect.height / 2}px`;
         }
 
         if (x + tooltipRect.width >= document.body.offsetWidth) {
-          arrowRef.current.style.left = `${x + tooltipRect.width - document.body.offsetWidth + (width / 2)}px`;
+          arrowRef.current.style.left = `${x + tooltipRect.width - document.body.offsetWidth + width / 2}px`;
           tooltipRef.current.style.left = `${document.body.offsetWidth - tooltipRect.width}px`;
         } else {
-          tooltipRef.current.style.left = `${x + (width / 2) - (tooltipRect.width / 2)}px`;
+          tooltipRef.current.style.left = `${x + width / 2 - tooltipRect.width / 2}px`;
         }
       }
       clearTimeout(timer);
@@ -56,8 +52,15 @@ export const Tooltip: React.FC<{
     setVisible(false);
   }
 
-  return (<p ref={targetRef} className={'kt-tooltip-wrapper'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-    {children}
-    {visible && <span ref={tooltipRef} className={cxs('kt-tooltip-content')}>{title}<span ref={arrowRef} className={'kt-tooltip-arrow-placeholder'} /></span>}
-  </p>);
+  return (
+    <p ref={targetRef} className={'kt-tooltip-wrapper'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {children}
+      {visible && (
+        <span ref={tooltipRef} className={cxs('kt-tooltip-content')}>
+          {title}
+          <span ref={arrowRef} className={'kt-tooltip-arrow-placeholder'} />
+        </span>
+      )}
+    </p>
+  );
 };

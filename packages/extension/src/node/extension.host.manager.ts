@@ -8,7 +8,6 @@ import treeKill from 'tree-kill';
 
 @Injectable()
 export class ExtensionHostManager implements IExtensionHostManager {
-
   private readonly processMap = new Map<number, cp.ChildProcess>();
 
   constructor() {
@@ -82,11 +81,18 @@ export class ExtensionHostManager implements IExtensionHostManager {
     );
 
     // Debounce all output, so we can render it in the Chrome console as a group
-    const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
-      return r
-        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [r.type, o.type].includes(OutputType.STDERR) ? OutputType.STDERR : OutputType.STDOUT }
-        : { data: o.data, format: o.format, type: o.type };
-    }, 100);
+    const onDebouncedOutput = Event.debounce<Output>(
+      onOutput,
+      (r, o) =>
+        r
+          ? {
+              data: r.data + o.data,
+              format: [...r.format, ...o.format],
+              type: [r.type, o.type].includes(OutputType.STDERR) ? OutputType.STDERR : OutputType.STDOUT,
+            }
+          : { data: o.data, format: o.format, type: o.type },
+      100,
+    );
 
     onDebouncedOutput(listener);
   }
@@ -111,16 +117,17 @@ export class ExtensionHostManager implements IExtensionHostManager {
       }
       this.processMap.delete(pid);
     }
-
   }
 
   async dispose(): Promise<void> {
-    await Promise.all([...this.processMap.keys()].map(async (pid) => {
-      const isRunning = await this.isRunning(pid);
-      if (isRunning) {
-        await this.treeKill(pid);
-      }
-    }));
+    await Promise.all(
+      [...this.processMap.keys()].map(async (pid) => {
+        const isRunning = await this.isRunning(pid);
+        if (isRunning) {
+          await this.treeKill(pid);
+        }
+      }),
+    );
     this.processMap.clear();
   }
 }

@@ -1,6 +1,16 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@opensumi/di';
-import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler, FileChange } from '@opensumi/ide-core-browser';
+import {
+  JSONUtils,
+  URI,
+  Disposable,
+  isUndefined,
+  PreferenceProviderDataChanges,
+  ILogger,
+  IResolvedPreferences,
+  Throttler,
+  FileChange,
+} from '@opensumi/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -19,7 +29,6 @@ export const OVERRIDE_PROPERTY_PATTERN = new RegExp(OVERRIDE_PROPERTY);
 
 @Injectable()
 export abstract class AbstractResourcePreferenceProvider extends PreferenceProvider {
-
   protected preferences: IResolvedPreferences = {
     default: {},
     languageSpecific: {},
@@ -181,7 +190,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   protected loaded = false;
   protected async readPreferences(content?: string): Promise<void> {
-    const newContent = content || await this.readContents();
+    const newContent = content || (await this.readContents());
     this.loaded = !isUndefined(newContent);
     const newPrefs = newContent ? this.getParsedContent(newContent) : { default: {}, languageSpecific: {} };
     this.handlePreferenceChanges(newPrefs);
@@ -266,9 +275,15 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       default: this.collectOneChanges(newPref.default, oldPref.default),
       languageSpecific: {},
     };
-    const languages = new Set<string>([...Object.keys(newPref.languageSpecific), ...Object.keys(oldPref.languageSpecific)]);
+    const languages = new Set<string>([
+      ...Object.keys(newPref.languageSpecific),
+      ...Object.keys(oldPref.languageSpecific),
+    ]);
     for (const language of languages) {
-      const languageChange = this.collectOneChanges(newPref.languageSpecific[language], oldPref.languageSpecific[language]);
+      const languageChange = this.collectOneChanges(
+        newPref.languageSpecific[language],
+        oldPref.languageSpecific[language],
+      );
       if (Object.keys(languageChange).length > 0) {
         changes.languageSpecific[language] = languageChange;
       }
@@ -276,7 +291,10 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     return changes;
   }
 
-  private collectOneChanges(newPref: { [name: string]: any }, oldPref: { [name: string]: any }): { [preferenceName: string]: PreferenceProviderDataChange } {
+  private collectOneChanges(
+    newPref: { [name: string]: any },
+    oldPref: { [name: string]: any },
+  ): { [preferenceName: string]: PreferenceProviderDataChange } {
     const keys = new Set([...Object.keys(oldPref || {}), ...Object.keys(newPref || {})]);
     const changes: { [preferenceName: string]: PreferenceProviderDataChange } = {};
     const uri = this.getUri();
@@ -289,19 +307,28 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
         const scope = schemaProperties.scope;
         // do not emit the change event if the change is made out of the defined preference scope
         if (!this.schemaProvider.isValidInScope(prefName, this.getScope())) {
-          this.logger.warn(`Preference ${prefName} in ${uri} can only be defined in scopes: ${PreferenceScope.getScopeNames(scope).join(', ')}.`);
+          this.logger.warn(
+            `Preference ${prefName} in ${uri} can only be defined in scopes: ${PreferenceScope.getScopeNames(
+              scope,
+            ).join(', ')}.`,
+          );
           continue;
         }
       }
-      if ((isUndefined(newValue) && oldValue !== newValue)
-        || (isUndefined(oldValue) && newValue !== oldValue) // JSONUtils.deepEqual() does not support handling `undefined`
-        || !JSONUtils.deepEqual(oldValue, newValue)) {
+      if (
+        (isUndefined(newValue) && oldValue !== newValue) ||
+        (isUndefined(oldValue) && newValue !== oldValue) || // JSONUtils.deepEqual() does not support handling `undefined`
+        !JSONUtils.deepEqual(oldValue, newValue)
+      ) {
         changes[prefName] = {
-          preferenceName: prefName, newValue, oldValue, scope: this.getScope(), domain: this.getDomain(),
+          preferenceName: prefName,
+          newValue,
+          oldValue,
+          scope: this.getScope(),
+          domain: this.getDomain(),
         };
       }
     }
     return changes;
   }
-
 }

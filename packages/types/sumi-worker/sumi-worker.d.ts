@@ -1,4 +1,3 @@
-
 /**
  * @deprecated `kaitian-worker` was deprecated, Please use `sumi-worker` instead.
  */
@@ -235,7 +234,6 @@ declare module 'sumi-worker' {
    * The clipboard provides read and write access to the system's clipboard.
    */
   export interface Clipboard {
-
     /**
      * Read the current clipboard contents as text.
      * @returns A thenable that resolves to a string.
@@ -254,7 +252,6 @@ declare module 'sumi-worker' {
    * may have a parent selection range that contains it.
    */
   export class SelectionRange {
-
     /**
      * The [range](#Range) of this selection range.
      */
@@ -284,7 +281,6 @@ declare module 'sumi-worker' {
    * the [symbol search](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)-feature.
    */
   export interface WorkspaceSymbolProvider {
-
     /**
      * Project-wide search for a symbol matching the given query string.
      *
@@ -323,7 +319,6 @@ declare module 'sumi-worker' {
    * Describes how comments for a language work.
    */
   export interface CommentRule {
-
     /**
      * The line comment token, like `// this is a comment`
      */
@@ -380,7 +375,6 @@ declare module 'sumi-worker' {
    * are equal which means there is no notion of an active or master workspace folder.
    */
   export interface WorkspaceFolder {
-
     /**
      * The associated uri for this workspace folder.
      *
@@ -404,7 +398,6 @@ declare module 'sumi-worker' {
    * Represents reasons why a text document is saved.
    */
   export enum TextDocumentSaveReason {
-
     /**
      * Manually triggered, e.g. by the user pressing save, by starting debugging,
      * or by an API call.
@@ -426,7 +419,6 @@ declare module 'sumi-worker' {
    * Represents the state of a window.
    */
   export interface WindowState {
-
     /**
      * Whether the current window is focused.
      */
@@ -438,7 +430,6 @@ declare module 'sumi-worker' {
    * have a label and a doc-comment.
    */
   export class ParameterInformation {
-
     /**
      * The label of this signature.
      *
@@ -523,7 +514,6 @@ declare module 'sumi-worker' {
    * the [parameter hints](https://code.visualstudio.com/docs/editor/intellisense)-feature.
    */
   export interface SignatureHelpProvider {
-
     /**
      * Provide help for the signature at the given position and document.
      *
@@ -535,7 +525,12 @@ declare module 'sumi-worker' {
      * @return Signature help or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp>;
+    provideSignatureHelp(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+      context: SignatureHelpContext,
+    ): ProviderResult<SignatureHelp>;
   }
 
   /**
@@ -562,7 +557,6 @@ declare module 'sumi-worker' {
    * a set of parameters.
    */
   export class SignatureInformation {
-
     /**
      * The label of this signature. Will be shown in
      * the UI.
@@ -602,7 +596,6 @@ declare module 'sumi-worker' {
    * active and only one active parameter.
    */
   export class SignatureHelp {
-
     /**
      * One or more signatures.
      */
@@ -623,7 +616,6 @@ declare module 'sumi-worker' {
    * Symbol tags are extra annotations that tweak the rendering of a symbol.
    */
   export enum SymbolTag {
-
     /**
      * Render a symbol as obsolete, usually using a strike-out.
      */
@@ -635,7 +627,6 @@ declare module 'sumi-worker' {
    * interfaces etc.
    */
   export class SymbolInformation {
-
     /**
      * The name of this symbol.
      */
@@ -726,7 +717,6 @@ declare module 'sumi-worker' {
    * runs where the UI (window) runs or if an extension runs remotely.
    */
   export enum ExtensionKind {
-
     /**
      * Extension runs where the UI runs.
      */
@@ -752,7 +742,11 @@ declare module 'sumi-worker' {
      * @return Selection ranges or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideSelectionRanges(document: TextDocument, positions: Position[], token: CancellationToken): ProviderResult<SelectionRange[]>;
+    provideSelectionRanges(
+      document: TextDocument,
+      positions: Position[],
+      token: CancellationToken,
+    ): ProviderResult<SelectionRange[]>;
   }
   /**
    * Contains additional information about the context in which
@@ -830,7 +824,6 @@ declare module 'sumi-worker' {
    * Use the [applyEdit](#workspace.applyEdit)-function to apply a workspace edit.
    */
   export class WorkspaceEdit {
-
     /**
      * The number of affected resources of textual or resource changes.
      */
@@ -893,14 +886,14 @@ declare module 'sumi-worker' {
      * @param options Defines if an existing file should be overwritten or be
      * ignored. When overwrite and ignoreIfExists are both set overwrite wins.
      */
-    createFile(uri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void;
+    createFile(uri: Uri, options?: { overwrite?: boolean; ignoreIfExists?: boolean }): void;
 
     /**
      * Delete a file or folder.
      *
      * @param uri The uri of the file that is to be deleted.
      */
-    deleteFile(uri: Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }): void;
+    deleteFile(uri: Uri, options?: { recursive?: boolean; ignoreIfNotExists?: boolean }): void;
 
     /**
      * Rename a file or folder.
@@ -910,7 +903,7 @@ declare module 'sumi-worker' {
      * @param options Defines if existing files should be overwritten or be
      * ignored. When overwrite and ignoreIfExists are both set overwrite wins.
      */
-    renameFile(oldUri: Uri, newUri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void;
+    renameFile(oldUri: Uri, newUri: Uri, options?: { overwrite?: boolean; ignoreIfExists?: boolean }): void;
 
     /**
      * Get all text edits grouped by resource.
@@ -924,7 +917,6 @@ declare module 'sumi-worker' {
    * Options for creating a [TreeView](#TreeView)
    */
   export interface TreeViewOptions<T> {
-
     /**
      * A data provider that provides tree data.
      */
@@ -947,43 +939,36 @@ declare module 'sumi-worker' {
    * The event that is fired when an element in the [TreeView](#TreeView) is expanded or collapsed
    */
   export interface TreeViewExpansionEvent<T> {
-
     /**
      * Element that is expanded or collapsed.
      */
     readonly element: T;
-
   }
 
   /**
    * The event that is fired when there is a change in [tree view's selection](#TreeView.selection)
    */
   export interface TreeViewSelectionChangeEvent<T> {
-
     /**
      * Selected elements.
      */
     readonly selection: T[];
-
   }
 
   /**
    * The event that is fired when there is a change in [tree view's visibility](#TreeView.visible)
    */
   export interface TreeViewVisibilityChangeEvent {
-
     /**
      * `true` if the [tree view](#TreeView) is visible otherwise `false`.
      */
     readonly visible: boolean;
-
   }
 
   /**
    * Represents a Tree view
    */
   export interface TreeView<T> extends Disposable {
-
     /**
      * Event that is fired when an element is expanded
      */
@@ -1026,7 +1011,7 @@ declare module 'sumi-worker' {
      *
      * **NOTE:** [TreeDataProvider](#TreeDataProvider) is required to implement [getParent](#TreeDataProvider.getParent) method to access this API.
      */
-    reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): Thenable<void>;
+    reveal(element: T, options?: { select?: boolean; focus?: boolean; expand?: boolean | number }): Thenable<void>;
   }
 
   /**
@@ -1051,7 +1036,6 @@ declare module 'sumi-worker' {
    * Label describing the [Tree item](#TreeItem)
    */
   export interface TreeItemLabel {
-
     /**
      * A human-readable string describing the [Tree item](#TreeItem).
      */
@@ -1062,7 +1046,6 @@ declare module 'sumi-worker' {
      * first is the inclusive start index and the second the exclusive end index
      */
     highlights?: [number, number][];
-
   }
 
   /**
@@ -1223,7 +1206,6 @@ declare module 'sumi-worker' {
    * previously retrieved lines will not represent the latest state.
    */
   export interface TextLine {
-
     /**
      * The zero-based line number.
      */
@@ -1261,7 +1243,6 @@ declare module 'sumi-worker' {
    * [lines](#TextLine) and knowledge about an underlying resource like a file.
    */
   export interface TextDocument {
-
     /**
      * The associated uri for this document.
      *
@@ -1409,7 +1390,6 @@ declare module 'sumi-worker' {
    * Represents a text selection in an editor.
    */
   export class Selection extends Range {
-
     /**
      * The position at which the selection starts.
      * This position might be before or after [active](#Selection.active).
@@ -1458,7 +1438,6 @@ declare module 'sumi-worker' {
    * or another resource, like untitled resources.
    */
   export class Uri {
-
     /**
      * Create an URI from a string, e.g. `http://www.msft.com/some/path`,
      * `file:///usr/home`, or `scheme:with/path`.
@@ -1584,8 +1563,8 @@ declare module 'sumi-worker' {
      *
      * @param skipEncoding Do not percentage-encode the result, defaults to `false`. Note that
      *  the `#` and `?` characters occurring in the path will always be encoded.
-      * @returns A string representation of this Uri.
-      */
+     * @returns A string representation of this Uri.
+     */
     toString(skipEncoding?: boolean): string;
 
     /**
@@ -1615,7 +1594,6 @@ declare module 'sumi-worker' {
    * API to other extensions.
    */
   export class EventEmitter<T> {
-
     /**
      * The event listeners can subscribe to.
      */
@@ -1644,7 +1622,6 @@ declare module 'sumi-worker' {
    * [CancellationTokenSource](#CancellationTokenSource).
    */
   export interface CancellationToken {
-
     /**
      * Is `true` when the token has been cancelled, `false` otherwise.
      */
@@ -1662,7 +1639,6 @@ declare module 'sumi-worker' {
    *
    */
   export class CancellationTokenSource {
-
     /**
      * The cancellation token of this source.
      */
@@ -1685,13 +1661,12 @@ declare module 'sumi-worker' {
 
     /** The text change is caused by an redo operation. */
     Redo = 2,
-	}
+  }
 
   /**
    * An event describing a transactional [document](#TextDocument) change.
    */
   export interface TextDocumentChangeEvent {
-
     /**
      * The affected document.
      */
@@ -1705,7 +1680,7 @@ declare module 'sumi-worker' {
     /**
      * The reason why the document was changed.
      * Is `undefined` if the reason is not known.
-    */
+     */
     readonly reason: TextDocumentChangeReason | undefined;
   }
 
@@ -1716,7 +1691,6 @@ declare module 'sumi-worker' {
    * @寻壑
    */
   export class DiagnosticRelatedInformation {
-
     /**
      * The location of this related diagnostic information.
      */
@@ -1758,7 +1732,6 @@ declare module 'sumi-worker' {
    * Represents the severity of diagnostics.
    */
   export enum DiagnosticSeverity {
-
     /**
      * Something not allowed by the rules of a language or other means.
      */
@@ -1787,7 +1760,6 @@ declare module 'sumi-worker' {
    * @寻壑
    */
   export class Diagnostic {
-
     /**
      * The range to which this diagnostic applies.
      */
@@ -1840,7 +1812,6 @@ declare module 'sumi-worker' {
    * as event listening or a timer.
    */
   export class Disposable {
-
     /**
      * Combine many disposable-likes into one. Use this method
      * when having objects with a dispose function which are not
@@ -1871,7 +1842,6 @@ declare module 'sumi-worker' {
    * To get an instance of an `Extension` use [getExtension](#extensions.getExtension).
    */
   export interface Extension<T> {
-
     /**
      * The canonical extension identifier in the form of: `publisher.name`.
      */
@@ -1920,7 +1890,6 @@ declare module 'sumi-worker' {
    * values.
    */
   export interface Memento {
-
     /**
      * Return a value.
      *
@@ -1953,11 +1922,10 @@ declare module 'sumi-worker' {
      *
      * The stored keys.
      */
-     readonly keys: readonly string[];
+    readonly keys: readonly string[];
   }
 
   export interface Terminal {
-
     /**
      * The name of the terminal.
      */
@@ -1998,14 +1966,13 @@ declare module 'sumi-worker' {
   }
 
   // tslint:disable no-empty-interface class-name
-  export interface env { }
+  export interface env {}
 
   /**
    * A memento represents a storage utility. It can store and retrieve
    * values.
    */
   export interface Memento {
-
     /**
      * Return a value.
      *
@@ -2041,7 +2008,6 @@ declare module 'sumi-worker' {
    * [createFileSystemWatcher](#workspace.createFileSystemWatcher).
    */
   export interface FileSystemWatcher extends Disposable {
-
     /**
      * true if this file system watcher has been created such that
      * it ignores creation file system events.
@@ -2131,7 +2097,6 @@ declare module 'sumi-worker' {
    * @墨蛰
    */
   export class FileSystemError extends Error {
-
     /**
      * Create an error to signal that a file or folder wasn't found.
      * @param messageOrUri Message or uri.
@@ -2182,7 +2147,6 @@ declare module 'sumi-worker' {
    * Enumeration of file change types.
    */
   export enum FileChangeType {
-
     /**
      * The contents or metadata of a file have changed.
      */
@@ -2203,7 +2167,6 @@ declare module 'sumi-worker' {
    * The event filesystem providers must use to signal a file change.
    */
   export interface FileChangeEvent {
-
     /**
      * The type of change.
      */
@@ -2228,7 +2191,6 @@ declare module 'sumi-worker' {
    * folders, symbolic links, and regular files.
    */
   export interface FileSystemProvider {
-
     /**
      * An event to signal that a resource has been created, changed, or deleted. This
      * event should fire for resources that are being [watched](#FileSystemProvider.watch)
@@ -2301,7 +2263,7 @@ declare module 'sumi-worker' {
      * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
      * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
      */
-    writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void>;
+    writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }): void | Thenable<void>;
 
     /**
      * Delete a file.
@@ -2346,7 +2308,7 @@ declare module 'sumi-worker' {
     readDirectory(uri: Uri): Thenable<[string, FileType][]>;
     createDirectory(uri: Uri): Thenable<void>;
     readFile(uri: Uri): Thenable<Uint8Array>;
-    writeFile(uri: Uri, content: Uint8Array, options?: { create: boolean, overwrite: boolean }): Thenable<void>;
+    writeFile(uri: Uri, content: Uint8Array, options?: { create: boolean; overwrite: boolean }): Thenable<void>;
     delete(uri: Uri, options?: { recursive: boolean }): Thenable<void>;
     rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
     copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
@@ -2391,7 +2353,6 @@ declare module 'sumi-worker' {
    * Defines a generalized way of reporting progress updates.
    */
   export interface Progress<T> {
-
     /**
      * Report a progress update.
      * @param value A progress item, like a message and/or an
@@ -2405,7 +2366,6 @@ declare module 'sumi-worker' {
    * location how progress is visually represented.
    */
   export enum ProgressLocation {
-
     /**
      * Show progress for the source control viewlet, as overlay for the icon and as progress bar
      * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
@@ -2427,7 +2387,6 @@ declare module 'sumi-worker' {
    * Value-object describing where and how progress should show.
    */
   export interface ProgressOptions {
-
     /**
      * The location at which progress should show.
      */
@@ -2453,7 +2412,6 @@ declare module 'sumi-worker' {
    * Using a theme color is preferred over a custom color as it gives theme authors and users the possibility to change the color.
    */
   export class ThemeColor {
-
     /**
      * Creates a reference to a theme color.
      * @param id of the color. The available colors are listed in https://code.visualstudio.com/docs/getstarted/theme-color-reference.
@@ -2532,279 +2490,279 @@ declare module 'sumi-worker' {
     outlineWidth?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     border?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    * Better use 'border' for setting one or more of the individual border properties.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     * Better use 'border' for setting one or more of the individual border properties.
+     */
     borderColor?: string | ThemeColor;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    * Better use 'border' for setting one or more of the individual border properties.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     * Better use 'border' for setting one or more of the individual border properties.
+     */
     borderRadius?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    * Better use 'border' for setting one or more of the individual border properties.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     * Better use 'border' for setting one or more of the individual border properties.
+     */
     borderSpacing?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    * Better use 'border' for setting one or more of the individual border properties.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     * Better use 'border' for setting one or more of the individual border properties.
+     */
     borderStyle?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    * Better use 'border' for setting one or more of the individual border properties.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     * Better use 'border' for setting one or more of the individual border properties.
+     */
     borderWidth?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     fontStyle?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     fontWeight?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     textDecoration?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     cursor?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     color?: string | ThemeColor;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     opacity?: string;
 
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     letterSpacing?: string;
 
     /**
-    * An **absolute path** or an URI to an image to be rendered in the gutter.
-    */
+     * An **absolute path** or an URI to an image to be rendered in the gutter.
+     */
     gutterIconPath?: string | Uri;
 
     /**
-    * Specifies the size of the gutter icon.
-    * Available values are 'auto', 'contain', 'cover' and any percentage value.
-    * For further information: https://msdn.microsoft.com/en-us/library/jj127316(v=vs.85).aspx
-    */
+     * Specifies the size of the gutter icon.
+     * Available values are 'auto', 'contain', 'cover' and any percentage value.
+     * For further information: https://msdn.microsoft.com/en-us/library/jj127316(v=vs.85).aspx
+     */
     gutterIconSize?: string;
 
     /**
-    * The color of the decoration in the overview ruler. Use rgba() and define transparent colors to play well with other decorations.
-    */
+     * The color of the decoration in the overview ruler. Use rgba() and define transparent colors to play well with other decorations.
+     */
     overviewRulerColor?: string | ThemeColor;
 
     /**
-    * Defines the rendering options of the attachment that is inserted before the decorated text.
-    */
+     * Defines the rendering options of the attachment that is inserted before the decorated text.
+     */
     before?: ThemableDecorationAttachmentRenderOptions;
 
     /**
-    * Defines the rendering options of the attachment that is inserted after the decorated text.
-    */
+     * Defines the rendering options of the attachment that is inserted after the decorated text.
+     */
     after?: ThemableDecorationAttachmentRenderOptions;
   }
 
   export interface ThemableDecorationAttachmentRenderOptions {
     /**
-    * Defines a text content that is shown in the attachment. Either an icon or a text can be shown, but not both.
-    */
+     * Defines a text content that is shown in the attachment. Either an icon or a text can be shown, but not both.
+     */
     contentText?: string;
     /**
-    * An **absolute path** or an URI to an image to be rendered in the attachment. Either an icon
-    * or a text can be shown, but not both.
-    */
+     * An **absolute path** or an URI to an image to be rendered in the attachment. Either an icon
+     * or a text can be shown, but not both.
+     */
     contentIconPath?: string | Uri;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     border?: string;
     /**
-    * CSS styling property that will be applied to text enclosed by a decoration.
-    */
+     * CSS styling property that will be applied to text enclosed by a decoration.
+     */
     borderColor?: string | ThemeColor;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     fontStyle?: string;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     fontWeight?: string;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     textDecoration?: string;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     color?: string | ThemeColor;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     backgroundColor?: string | ThemeColor;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     margin?: string;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     width?: string;
     /**
-    * CSS styling property that will be applied to the decoration attachment.
-    */
+     * CSS styling property that will be applied to the decoration attachment.
+     */
     height?: string;
   }
 
   /**
-  * Represents a color in RGBA space.
-  */
+   * Represents a color in RGBA space.
+   */
   export class Color {
-
     /**
-    * The red component of this color in the range [0-1].
-    */
+     * The red component of this color in the range [0-1].
+     */
     readonly red: number;
 
     /**
-    * The green component of this color in the range [0-1].
-    */
+     * The green component of this color in the range [0-1].
+     */
     readonly green: number;
 
     /**
-    * The blue component of this color in the range [0-1].
-    */
+     * The blue component of this color in the range [0-1].
+     */
     readonly blue: number;
 
     /**
-    * The alpha component of this color in the range [0-1].
-    */
+     * The alpha component of this color in the range [0-1].
+     */
     readonly alpha: number;
 
     /**
-    * Creates a new color instance.
-    *
-    * @param red The red component.
-    * @param green The green component.
-    * @param blue The blue component.
-    * @param alpha The alpha component.
-    */
+     * Creates a new color instance.
+     *
+     * @param red The red component.
+     * @param green The green component.
+     * @param blue The blue component.
+     * @param alpha The alpha component.
+     */
     constructor(red: number, green: number, blue: number, alpha: number);
   }
 
   /**
-  * Represents a color range from a document.
-  */
+   * Represents a color range from a document.
+   */
   export class ColorInformation {
-
     /**
-    * The range in the document where this color appears.
-    */
+     * The range in the document where this color appears.
+     */
     range: Range;
 
     /**
-    * The actual color value for this color range.
-    */
+     * The actual color value for this color range.
+     */
     color: Color;
 
     /**
-    * Creates a new color range.
-    *
-    * @param range The range the color appears in. Must not be empty.
-    * @param color The value of the color.
-    * @param format The format in which this color is currently formatted.
-    */
+     * Creates a new color range.
+     *
+     * @param range The range the color appears in. Must not be empty.
+     * @param color The value of the color.
+     * @param format The format in which this color is currently formatted.
+     */
     constructor(range: Range, color: Color);
   }
 
   /**
-  * A color presentation object describes how a [`color`](#Color) should be represented as text and what
-  * edits are required to refer to it from source code.
-  *
-  * For some languages one color can have multiple presentations, e.g. css can represent the color red with
-  * the constant `Red`, the hex-value `#ff0000`, or in rgba and hsla forms. In csharp other representations
-  * apply, e.g. `System.Drawing.Color.Red`.
-  */
+   * A color presentation object describes how a [`color`](#Color) should be represented as text and what
+   * edits are required to refer to it from source code.
+   *
+   * For some languages one color can have multiple presentations, e.g. css can represent the color red with
+   * the constant `Red`, the hex-value `#ff0000`, or in rgba and hsla forms. In csharp other representations
+   * apply, e.g. `System.Drawing.Color.Red`.
+   */
   export class ColorPresentation {
-
     /**
-    * The label of this color presentation. It will be shown on the color
-    * picker header. By default this is also the text that is inserted when selecting
-    * this color presentation.
-    */
+     * The label of this color presentation. It will be shown on the color
+     * picker header. By default this is also the text that is inserted when selecting
+     * this color presentation.
+     */
     label: string;
 
     /**
-    * An [edit](#TextEdit) which is applied to a document when selecting
-    * this presentation for the color.  When `falsy` the [label](#ColorPresentation.label)
-    * is used.
-    */
+     * An [edit](#TextEdit) which is applied to a document when selecting
+     * this presentation for the color.  When `falsy` the [label](#ColorPresentation.label)
+     * is used.
+     */
     textEdit?: TextEdit;
 
     /**
-    * An optional array of additional [text edits](#TextEdit) that are applied when
-    * selecting this color presentation. Edits must not overlap with the main [edit](#ColorPresentation.textEdit) nor with themselves.
-    */
+     * An optional array of additional [text edits](#TextEdit) that are applied when
+     * selecting this color presentation. Edits must not overlap with the main [edit](#ColorPresentation.textEdit) nor with themselves.
+     */
     additionalTextEdits?: TextEdit[];
 
     /**
-    * Creates a new color presentation.
-    *
-    * @param label The label of this color presentation.
-    */
+     * Creates a new color presentation.
+     *
+     * @param label The label of this color presentation.
+     */
     constructor(label: string);
   }
 
   /**
-  * The document color provider defines the contract between extensions and feature of
-  * picking and modifying colors in the editor.
-  */
+   * The document color provider defines the contract between extensions and feature of
+   * picking and modifying colors in the editor.
+   */
   export interface DocumentColorProvider {
-
     /**
-    * Provide colors for the given document.
-    *
-    * @param document The document in which the command was invoked.
-    * @param token A cancellation token.
-    * @return An array of [color information](#ColorInformation) or a thenable that resolves to such. The lack of a result
-    * can be signaled by returning `undefined`, `null`, or an empty array.
-    */
+     * Provide colors for the given document.
+     *
+     * @param document The document in which the command was invoked.
+     * @param token A cancellation token.
+     * @return An array of [color information](#ColorInformation) or a thenable that resolves to such. The lack of a result
+     * can be signaled by returning `undefined`, `null`, or an empty array.
+     */
     provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]>;
 
     /**
-    * Provide [representations](#ColorPresentation) for a color.
-    *
-    * @param color The color to show and insert.
-    * @param context A context object with additional information
-    * @param token A cancellation token.
-    * @return An array of color presentations or a thenable that resolves to such. The lack of a result
-    * can be signaled by returning `undefined`, `null`, or an empty array.
-    */
-    provideColorPresentations(color: Color, context: { document: TextDocument, range: Range }, token: CancellationToken): ProviderResult<ColorPresentation[]>;
+     * Provide [representations](#ColorPresentation) for a color.
+     *
+     * @param color The color to show and insert.
+     * @param context A context object with additional information
+     * @param token A cancellation token.
+     * @return An array of color presentations or a thenable that resolves to such. The lack of a result
+     * can be signaled by returning `undefined`, `null`, or an empty array.
+     */
+    provideColorPresentations(
+      color: Color,
+      context: { document: TextDocument; range: Range },
+      token: CancellationToken,
+    ): ProviderResult<ColorPresentation[]>;
   }
 }

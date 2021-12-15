@@ -8,7 +8,6 @@ import ws from 'ws';
 import {
   CommonChannelHandler,
   commonChannelPathHandler,
-
   initRPCService,
   RPCServiceCenter,
   createSocketConnection,
@@ -18,7 +17,12 @@ import { INodeLogger } from './logger/node-logger';
 
 export { RPCServiceCenter };
 
-export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
+export function createServerConnection2(
+  server: http.Server,
+  injector,
+  modulesInstances,
+  handlerArr?: WebSocketHandler[],
+) {
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
@@ -42,8 +46,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         logger.log(`remove rpc connection ${clientId} `);
       });
     },
-    dispose: (connection: ws, connectionClientId: string) => {
-    },
+    dispose: (connection: ws, connectionClientId: string) => {},
   });
 
   socketRoute.registerHandler(channelHandler);
@@ -58,10 +61,15 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
   const logger = injector.get(INodeLogger);
   const serviceCenter = new RPCServiceCenter(undefined, logger);
-  const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
+  const serviceChildInjector = bindModuleBackService(
+    injector,
+    modulesInstances,
+    serviceCenter,
+    process.env.CODE_WINDOW_CLIENT_ID as string,
+  );
 
   server.on('connection', (connection) => {
-    logger.log(`set net rpc connection`);
+    logger.log('set net rpc connection');
     const serverConnection = createSocketConnection(connection);
     serviceCenter.setConnection(serverConnection);
 
@@ -74,14 +82,16 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
   });
 
   return serviceCenter;
-
 }
 
-export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter, clientId?: string) {
+export function bindModuleBackService(
+  injector: Injector,
+  modules: NodeModule[],
+  serviceCenter: RPCServiceCenter,
+  clientId?: string,
+) {
   const logger = injector.get(INodeLogger);
-  const {
-    createRPCService,
-  } = initRPCService(serviceCenter);
+  const { createRPCService } = initRPCService(serviceCenter);
 
   const childInjector = injector.createChild();
   for (const module of modules) {

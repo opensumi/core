@@ -5,16 +5,20 @@ import { Position, ISignatureHelpDto, SignatureHelpContextDto } from '../../../.
 import * as typeConvert from '../../../../common/vscode/converter';
 
 export class SignatureHelpAdapter {
-
-  private cacheId: number = 0;
+  private cacheId = 0;
   private cache = new Map<number, vscode.SignatureHelp>();
 
   constructor(
     private readonly delegate: vscode.SignatureHelpProvider,
-    private readonly documents: ExtensionDocumentDataManager) {
-  }
+    private readonly documents: ExtensionDocumentDataManager,
+  ) {}
 
-  async provideSignatureHelp(resource: URI, position: Position, token: vscode.CancellationToken, context: SignatureHelpContextDto): Promise<ISignatureHelpDto | undefined> {
+  async provideSignatureHelp(
+    resource: URI,
+    position: Position,
+    token: vscode.CancellationToken,
+    context: SignatureHelpContextDto,
+  ): Promise<ISignatureHelpDto | undefined> {
     const documentData = this.documents.getDocumentData(resource);
     if (!documentData) {
       return Promise.reject(new Error(`There are no document for  ${resource}`));

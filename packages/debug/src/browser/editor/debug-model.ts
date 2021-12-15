@@ -12,7 +12,13 @@ import * as options from './debug-styles';
 import { DebugStackFrame } from '../model';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { IDebugModel, DEBUG_REPORT_NAME } from '../../common';
-import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  ICtxMenuRenderer,
+  generateMergedCtxMenu,
+  IMenu,
+  MenuId,
+  AbstractMenuService,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
 import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
@@ -56,7 +62,11 @@ export class DebugModel implements IDebugModel {
   protected breakpointDecorations: string[] = [];
   protected breakpointRanges = new Map<string, monaco.Range>();
 
-  protected currentBreakpointDecorations: { decorationId: string; inlineWidget?: InlineBreakpointWidget; breakpoint: DebugBreakpoint }[] = [];
+  protected currentBreakpointDecorations: {
+    decorationId: string;
+    inlineWidget?: InlineBreakpointWidget;
+    breakpoint: DebugBreakpoint;
+  }[] = [];
   private candidateDecorations: { decorationId: string; inlineWidget: InlineBreakpointWidget }[] = [];
 
   static createContainer(injector: Injector, editor: DebugEditor): Injector {
@@ -151,13 +161,27 @@ export class DebugModel implements IDebugModel {
   protected createFrameDecorations(): monaco.editor.IModelDeltaDecoration[] {
     const decorations: monaco.editor.IModelDeltaDecoration[] = [];
     const { currentFrame, topFrame } = this.debugSessionManager;
-    if (!currentFrame || !currentFrame.source || currentFrame.source.uri.toString() !== this.editor.getModel()?.uri.toString()) {
+    if (
+      !currentFrame ||
+      !currentFrame.source ||
+      currentFrame.source.uri.toString() !== this.editor.getModel()?.uri.toString()
+    ) {
       return decorations;
     }
 
     // tslint:disable-next-line:no-bitwise
-    const columnUntilEOLRange = new monaco.Range(currentFrame.raw.line, currentFrame.raw.column, currentFrame.raw.line, 1 << 30);
-    const range = new monaco.Range(currentFrame.raw.line, currentFrame.raw.column, currentFrame.raw.line, currentFrame.raw.column + 1);
+    const columnUntilEOLRange = new monaco.Range(
+      currentFrame.raw.line,
+      currentFrame.raw.column,
+      currentFrame.raw.line,
+      1 << 30,
+    );
+    const range = new monaco.Range(
+      currentFrame.raw.line,
+      currentFrame.raw.column,
+      currentFrame.raw.line,
+      currentFrame.raw.column + 1,
+    );
 
     if (topFrame === currentFrame) {
       decorations.push({
@@ -176,7 +200,11 @@ export class DebugModel implements IDebugModel {
           range: columnUntilEOLRange,
         });
         const { topFrameRange } = this;
-        if (topFrameRange && topFrameRange.startLineNumber === currentFrame.raw.line && topFrameRange.startColumn !== currentFrame.raw.column) {
+        if (
+          topFrameRange &&
+          topFrameRange.startLineNumber === currentFrame.raw.line &&
+          topFrameRange.startColumn !== currentFrame.raw.column
+        ) {
           decorations.push({
             options: options.TOP_STACK_FRAME_INLINE_DECORATION,
             range: columnUntilEOLRange,
@@ -202,7 +230,10 @@ export class DebugModel implements IDebugModel {
    * @param oldDecorations
    * @param newDecorations
    */
-  protected deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
+  protected deltaDecorations(
+    oldDecorations: string[],
+    newDecorations: monaco.editor.IModelDeltaDecoration[],
+  ): string[] {
     this.updatingDecorations = true;
     try {
       return this.editor.deltaDecorations(oldDecorations, newDecorations);
@@ -281,12 +312,9 @@ export class DebugModel implements IDebugModel {
       if (range && !lines.has(range.startLineNumber)) {
         const line = range.startLineNumber;
         const oldRange = this.breakpointRanges.get(decoration);
-        const oldBreakpoint = oldRange && this.breakpointManager.getBreakpoint(uri, oldRange.startLineNumber) || {} as any;
-        const breakpoint = DebugBreakpoint.create(
-          uri,
-          { ...(oldBreakpoint.raw || {}), line },
-          oldBreakpoint.enabled,
-        );
+        const oldBreakpoint =
+          (oldRange && this.breakpointManager.getBreakpoint(uri, oldRange.startLineNumber)) || ({} as any);
+        const breakpoint = DebugBreakpoint.create(uri, { ...(oldBreakpoint.raw || {}), line }, oldBreakpoint.enabled);
         breakpoints.push(breakpoint);
         lines.add(line);
       }
@@ -333,7 +361,10 @@ export class DebugModel implements IDebugModel {
   protected async renderCurrentBreakpoints(): Promise<void> {
     const breakpoints = this.breakpointManager.getBreakpoints(this.uri);
     const decorations = this.createCurrentBreakpointDecorations();
-    const decorationIds = this.deltaDecorations(this.currentBreakpointDecorations.map(({ decorationId }) => decorationId), decorations);
+    const decorationIds = this.deltaDecorations(
+      this.currentBreakpointDecorations.map(({ decorationId }) => decorationId),
+      decorations,
+    );
     this.currentBreakpointDecorations.forEach((item) => {
       if (item.inlineWidget) {
         item.inlineWidget.dispose();
@@ -342,8 +373,11 @@ export class DebugModel implements IDebugModel {
     this.currentBreakpointDecorations = decorationIds.map((decorationId, index) => {
       const decoration = decorations[index];
       const breakpoint = breakpoints[index];
-      const icon = (breakpoint.enabled ? options.BREAKPOINT_DECORATION : options.BREAKPOINT_DECORATION_DISABLED).glyphMarginClassName;
-      const inlineWidget = decoration.options.beforeContentClassName ? new InlineBreakpointWidget(this.editor, decorationId, icon, breakpoint, this.breakpointManager) : undefined;
+      const icon = (breakpoint.enabled ? options.BREAKPOINT_DECORATION : options.BREAKPOINT_DECORATION_DISABLED)
+        .glyphMarginClassName;
+      const inlineWidget = decoration.options.beforeContentClassName
+        ? new InlineBreakpointWidget(this.editor, decorationId, icon, breakpoint, this.breakpointManager)
+        : undefined;
       return {
         breakpoint,
         decorationId,
@@ -351,14 +385,24 @@ export class DebugModel implements IDebugModel {
       };
     });
     const desiredCandidateDecorations = await this.getCandidateBreakpoints(breakpoints);
-    const candidateDecorationIds = this.deltaDecorations(this.candidateDecorations.map(({ decorationId }) => decorationId), desiredCandidateDecorations);
+    const candidateDecorationIds = this.deltaDecorations(
+      this.candidateDecorations.map(({ decorationId }) => decorationId),
+      desiredCandidateDecorations,
+    );
     this.candidateDecorations.forEach((candidate) => {
       candidate.inlineWidget.dispose();
     });
     this.candidateDecorations = candidateDecorationIds.map((decorationId, index) => {
       const { breakpoint } = desiredCandidateDecorations[index];
-      const icon = (breakpoint ? options.BREAKPOINT_DECORATION : options.BREAKPOINT_DECORATION_DISABLED).glyphMarginClassName;
-      const inlineWidget = new InlineBreakpointWidget(this.editor, decorationId, icon, breakpoint, this.breakpointManager);
+      const icon = (breakpoint ? options.BREAKPOINT_DECORATION : options.BREAKPOINT_DECORATION_DISABLED)
+        .glyphMarginClassName;
+      const inlineWidget = new InlineBreakpointWidget(
+        this.editor,
+        decorationId,
+        icon,
+        breakpoint,
+        this.breakpointManager,
+      );
       return {
         decorationId,
         inlineWidget,
@@ -373,37 +417,44 @@ export class DebugModel implements IDebugModel {
       return [];
     }
     const lineNumbers = Array.from(new Set(breakpoints.map((item) => item.raw.line)));
-    const result: { range: monaco.Range; options: monaco.editor.IModelDecorationOptions; breakpoint?: DebugBreakpoint }[] = [];
-    await Promise.all(lineNumbers.map(async (lineNumber) => {
-      const positions = await session.breakpointLocations(this.uri, lineNumber);
-      if (positions.length <= 1) {
-        return;
-      }
-      const firstColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
-      const lastColumn = model.getLineLastNonWhitespaceColumn(lineNumber);
-      positions.forEach((p) => {
-        const range = new monaco.Range(p.lineNumber, p.column, p.lineNumber, p.column + 1);
-        if (p.column <= firstColumn || p.column > lastColumn) {
+    const result: {
+      range: monaco.Range;
+      options: monaco.editor.IModelDecorationOptions;
+      breakpoint?: DebugBreakpoint;
+    }[] = [];
+    await Promise.all(
+      lineNumbers.map(async (lineNumber) => {
+        const positions = await session.breakpointLocations(this.uri, lineNumber);
+        if (positions.length <= 1) {
           return;
         }
-        const breakpointAtPosition = this.currentBreakpointDecorations.find(({ breakpoint }) => {
-          return breakpoint.raw.line === range.startLineNumber && breakpoint.raw.column === range.startColumn;
+        const firstColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
+        const lastColumn = model.getLineLastNonWhitespaceColumn(lineNumber);
+        positions.forEach((p) => {
+          const range = new monaco.Range(p.lineNumber, p.column, p.lineNumber, p.column + 1);
+          if (p.column <= firstColumn || p.column > lastColumn) {
+            return;
+          }
+          const breakpointAtPosition = this.currentBreakpointDecorations.find(
+            ({ breakpoint }) =>
+              breakpoint.raw.line === range.startLineNumber && breakpoint.raw.column === range.startColumn,
+          );
+          if (breakpointAtPosition?.inlineWidget) {
+            // Space already occupied, do not render candidate.
+            return;
+          }
+          result.push({
+            range,
+            options: {
+              description: 'debug-breakpoint-placeholder',
+              stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+              beforeContentClassName: breakpointAtPosition ? undefined : 'debug-breakpoint-placeholder',
+            },
+            breakpoint: breakpointAtPosition?.breakpoint,
+          });
         });
-        if (breakpointAtPosition?.inlineWidget) {
-          // Space already occupied, do not render candidate.
-          return;
-        }
-        result.push({
-          range,
-          options: {
-            description: 'debug-breakpoint-placeholder',
-            stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-            beforeContentClassName: breakpointAtPosition ? undefined : 'debug-breakpoint-placeholder',
-          },
-          breakpoint: breakpointAtPosition?.breakpoint,
-        });
-      });
-    }));
+      }),
+    );
     return result;
   }
 
@@ -429,13 +480,17 @@ export class DebugModel implements IDebugModel {
    */
   protected createCurrentBreakpointDecoration(breakpoint: DebugBreakpoint): monaco.editor.IModelDeltaDecoration {
     const session = this.debugSessionManager.currentSession;
-    const status = breakpoint.status.get(session && session.id || '');
-    const lineNumber = (status && status.line) ? status.line : breakpoint.raw.line;
+    const status = breakpoint.status.get((session && session.id) || '');
+    const lineNumber = status && status.line ? status.line : breakpoint.raw.line;
     const column = breakpoint.raw.column || 1;
     const model = this.editor.getModel()!;
     const renderInline = column > model.getLineFirstNonWhitespaceColumn(lineNumber);
     const range = new monaco.Range(lineNumber, column, lineNumber, column + 1);
-    const { className, message } = this.decorator.getDecoration(breakpoint, !!session, this.breakpointManager.breakpointsEnabled);
+    const { className, message } = this.decorator.getDecoration(
+      breakpoint,
+      !!session,
+      this.breakpointManager.breakpointsEnabled,
+    );
 
     return {
       range,
@@ -473,7 +528,11 @@ export class DebugModel implements IDebugModel {
       return;
     }
 
-    if (targetType === monaco.editor.MouseTargetType.CONTENT_WIDGET && mouseEvent.target.detail === this.debugHoverWidget.getId() && !(mouseEvent.event as any)[stopKey]) {
+    if (
+      targetType === monaco.editor.MouseTargetType.CONTENT_WIDGET &&
+      mouseEvent.target.detail === this.debugHoverWidget.getId() &&
+      !(mouseEvent.event as any)[stopKey]
+    ) {
       return;
     }
     if (targetType === monaco.editor.MouseTargetType.CONTENT_TEXT) {
@@ -505,7 +564,7 @@ export class DebugModel implements IDebugModel {
    */
   toggleBreakpoint = (position: monaco.Position = this.position) => {
     this.doToggleBreakpoint(position);
-  }
+  };
 
   protected doToggleBreakpoint(position: monaco.Position = this.position) {
     const breakpoints = this.breakpointManager.getBreakpoints(this.uri, { lineNumber: position.lineNumber });
@@ -514,12 +573,11 @@ export class DebugModel implements IDebugModel {
         this.breakpointManager.delBreakpoint(breakpoint);
       }
     } else {
-      this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-        this.uri,
-        {
+      this.breakpointManager.addBreakpoint(
+        DebugBreakpoint.create(this.uri, {
           line: position.lineNumber,
-        },
-      ));
+        }),
+      );
     }
   }
 
@@ -528,13 +586,17 @@ export class DebugModel implements IDebugModel {
     return contributedContextMenu;
   }
 
-  openBreakpointView = (position: monaco.Position, context?: DebugBreakpointWidgetContext, defaultContext?: DebugBreakpointZoneWidget.Context) => {
+  openBreakpointView = (
+    position: monaco.Position,
+    context?: DebugBreakpointWidgetContext,
+    defaultContext?: DebugBreakpointZoneWidget.Context,
+  ) => {
     this.breakpointWidget.show(position, context, defaultContext);
-  }
+  };
 
   closeBreakpointView = () => {
     this.breakpointWidget.hide();
-  }
+  };
 
   acceptBreakpoint = () => {
     const { position, values } = this.breakpointWidget;
@@ -547,17 +609,16 @@ export class DebugModel implements IDebugModel {
         breakpoint.raw.logMessage = values.logMessage;
         this.breakpointManager.updateBreakpoint(breakpoint);
       } else {
-        this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-          this.uri,
-          {
+        this.breakpointManager.addBreakpoint(
+          DebugBreakpoint.create(this.uri, {
             line: position.lineNumber,
             ...values,
-          },
-        ));
+          }),
+        );
       }
       this.breakpointWidget.hide();
     }
-  }
+  };
 
   public onContextMenu(event: monaco.editor.IEditorMouseEvent) {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
@@ -613,17 +674,20 @@ export class DebugModel implements IDebugModel {
   }
 
   protected createHintDecorations(event: monaco.editor.IEditorMouseEvent): monaco.editor.IModelDeltaDecoration[] {
-    if (event.target
-      && (event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN)
-      || event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS) {
+    if (
+      (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) ||
+      event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS
+    ) {
       const lineNumber = event.target.position!.lineNumber;
-      if (!!this.breakpointManager.getBreakpoint(this.uri, lineNumber)) {
+      if (this.breakpointManager.getBreakpoint(this.uri, lineNumber)) {
         return [];
       }
-      return [{
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: options.BREAKPOINT_HINT_DECORATION,
-      }];
+      return [
+        {
+          range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+          options: options.BREAKPOINT_HINT_DECORATION,
+        },
+      ];
     }
     return [];
   }
@@ -645,17 +709,21 @@ class InlineBreakpointWidget extends Disposable implements monaco.editor.IConten
   ) {
     super();
     this.range = this.editor.getModel()!.getDecorationRange(decorationId);
-    this.addDispose(this.editor.onDidChangeModelDecorations(() => {
-      const model = this.editor.getModel()!;
-      const range = model.getDecorationRange(this.decorationId);
-      if (this.range && !this.range.equalsRange(range)) {
-        this.range = range;
-        this.editor.layoutContentWidget(this);
-      }
-    }));
-    this.addDispose(Disposable.create(() => {
-      this.editor.removeContentWidget(this);
-    }));
+    this.addDispose(
+      this.editor.onDidChangeModelDecorations(() => {
+        const model = this.editor.getModel()!;
+        const range = model.getDecorationRange(this.decorationId);
+        if (this.range && !this.range.equalsRange(range)) {
+          this.range = range;
+          this.editor.layoutContentWidget(this);
+        }
+      }),
+    );
+    this.addDispose(
+      Disposable.create(() => {
+        this.editor.removeContentWidget(this);
+      }),
+    );
     this.create(cssClass);
 
     this.editor.addContentWidget(this);
@@ -676,29 +744,32 @@ class InlineBreakpointWidget extends Disposable implements monaco.editor.IConten
       const lineHeight = this.editor.getOption(EditorOption.lineHeight);
       domNode.style.height = `${lineHeight}px`;
       domNode.style.width = `${Math.ceil(0.8 * lineHeight)}px`;
-      domNode.style.marginLeft = `4px`;
+      domNode.style.marginLeft = '4px';
     };
     updateSize();
 
-    this.addDispose(new DomListener(domNode, 'click', async () => {
-      const uri = new URI(this.editor.getModel()!.uri);
-      if (this.breakpoint) {
-        this.breakpointManager.delBreakpoint(this.breakpoint);
-      } else {
-        this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-          uri,
-          {
-            line: this.range!.startLineNumber,
-            column: this.range!.startColumn,
-          },
-        ));
-      }
-    }));
-    this.addDispose(this.editor.onDidChangeConfiguration((c) => {
-      if (c.hasChanged(EditorOption.fontSize) || c.hasChanged(EditorOption.lineHeight)) {
-        updateSize();
-      }
-    }));
+    this.addDispose(
+      new DomListener(domNode, 'click', async () => {
+        const uri = new URI(this.editor.getModel()!.uri);
+        if (this.breakpoint) {
+          this.breakpointManager.delBreakpoint(this.breakpoint);
+        } else {
+          this.breakpointManager.addBreakpoint(
+            DebugBreakpoint.create(uri, {
+              line: this.range!.startLineNumber,
+              column: this.range!.startColumn,
+            }),
+          );
+        }
+      }),
+    );
+    this.addDispose(
+      this.editor.onDidChangeConfiguration((c) => {
+        if (c.hasChanged(EditorOption.fontSize) || c.hasChanged(EditorOption.lineHeight)) {
+          updateSize();
+        }
+      }),
+    );
   }
 
   @memoize

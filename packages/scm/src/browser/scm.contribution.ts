@@ -1,13 +1,37 @@
 import { Autowired } from '@opensumi/di';
-import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@opensumi/ide-core-common';
-import { ClientAppContribution, PreferenceContribution, PreferenceService, getExternalIcon } from '@opensumi/ide-core-browser';
+import {
+  CommandContribution,
+  CommandRegistry,
+  Command,
+  PreferenceSchema,
+  localize,
+  URI,
+  PreferenceScope,
+} from '@opensumi/ide-core-common';
+import {
+  ClientAppContribution,
+  PreferenceContribution,
+  PreferenceService,
+  getExternalIcon,
+} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 
 import { SCMViewContainer } from './scm-view-container';
-import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE, scmResourceViewId, SET_SCM_TREE_VIEW_MODE, SET_SCM_LIST_VIEW_MODE, SCMViewModelMode } from '../common';
+import {
+  scmContainerId,
+  IDirtyDiffWorkbenchController,
+  OPEN_DIRTY_DIFF_WIDGET,
+  GOTO_NEXT_CHANGE,
+  GOTO_PREVIOUS_CHANGE,
+  TOGGLE_DIFF_SIDE_BY_SIDE,
+  scmResourceViewId,
+  SET_SCM_TREE_VIEW_MODE,
+  SET_SCM_LIST_VIEW_MODE,
+  SCMViewModelMode,
+} from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
@@ -20,9 +44,23 @@ export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, MenuContribution)
-export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, MenuContribution {
-
+@Domain(
+  ClientAppContribution,
+  CommandContribution,
+  ComponentContribution,
+  PreferenceContribution,
+  MainLayoutContribution,
+  MenuContribution,
+)
+export class SCMContribution
+  implements
+    CommandContribution,
+    ClientAppContribution,
+    ComponentContribution,
+    PreferenceContribution,
+    MainLayoutContribution,
+    MenuContribution
+{
   @Autowired(SCMBadgeController)
   private readonly statusUpdater: SCMBadgeController;
 
@@ -61,11 +99,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   }
 
   onDidRender() {
-    [
-      this.statusUpdater,
-      this.statusBarController,
-      this.dirtyDiffWorkbenchController,
-    ].forEach((controller) => {
+    [this.statusUpdater, this.statusBarController, this.dirtyDiffWorkbenchController].forEach((controller) => {
       controller.start();
       this.toDispose.addDispose(controller);
     });
@@ -82,7 +116,8 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
         if (editor) {
           const codeEditor = editor.monacoEditor;
           this.dirtyDiffWorkbenchController.toggleDirtyDiffWidget(codeEditor, {
-            lineNumber, column: 1,
+            lineNumber,
+            column: 1,
           });
           setTimeout(() => {
             codeEditor.revealLineInCenter(lineNumber);
@@ -200,7 +235,12 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
 
   private getDiffEditor(editor: IEditor) {
     const editorId = editor.getId();
-    const [diffEditor] = this.editorCollectionService.listDiffEditors().filter((diffEditor) => diffEditor.modifiedEditor.getId() === editorId || diffEditor.originalEditor.getId() === editorId);
+    const [diffEditor] = this.editorCollectionService
+      .listDiffEditors()
+      .filter(
+        (diffEditor) =>
+          diffEditor.modifiedEditor.getId() === editorId || diffEditor.originalEditor.getId() === editorId,
+      );
     return diffEditor;
   }
 

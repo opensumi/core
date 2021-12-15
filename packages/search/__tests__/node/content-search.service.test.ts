@@ -27,13 +27,16 @@ let rootSubdirAUri: string;
 const fileLines: Map<string, string[]> = new Map();
 
 const injector = createNodeInjector([SearchModule, ProcessModule, LogServiceModule]);
-injector.addProviders({
-  token: AppConfig,
-  useValue: {},
-}, {
-  token: INodeLogger,
-  useClass: NodeLogger,
-});
+injector.addProviders(
+  {
+    token: AppConfig,
+    useValue: {},
+  },
+  {
+    token: INodeLogger,
+    useClass: NodeLogger,
+  },
+);
 
 const contentSearchServer: IContentSearchServer = injector.get(IContentSearchServer);
 
@@ -109,52 +112,79 @@ beforeAll(() => {
   rootDirBUri = FileUri.create(rootDirB).toString();
   rootSubdirAUri = FileUri.create(rootSubdirA).toString();
 
-  createTestFile('carrots', `\
+  createTestFile(
+    'carrots',
+    `\
 This is a carrot.
 Most carrots are orange, but some carrots are not.
 Once capitalized, the word carrot looks like this: CARROT.
 Carrot is a funny word.
-`);
-  createTestFile('potatoes', `\
+`,
+  );
+  createTestFile(
+    'potatoes',
+    `\
 Potatoes, unlike carrots, are generally not orange.  But sweet potatoes are,
 it's very confusing.
-`);
+`,
+  );
 
   createTestFile('pastas', 'pasta pasta');
 
-  createTestFile('regexes', `\
+  createTestFile(
+    'regexes',
+    `\
 aaa hello. x h3lo y hell0h3lllo
 hello1
-`);
+`,
+  );
 
   fs.mkdirSync(rootDirA + '/small');
   createTestFile('small', 'A small file.\n');
 
   if (!isWindows) {
-    createTestFile('file:with:some:colons', `\
+    createTestFile(
+      'file:with:some:colons',
+      `\
 Are you looking for this: --foobar?
-`);
+`,
+    );
   }
 
-  createTestFile('file with spaces', `\
+  createTestFile(
+    'file with spaces',
+    `\
 Are you looking for this: --foobar?
-`);
+`,
+  );
 
-  createTestFile('utf8-file', `\
+  createTestFile(
+    'utf8-file',
+    `\
 Var är jag?  Varför är jag här?
-`);
+`,
+  );
 
-  createTestFile('special shell matchStarts', `\
+  createTestFile(
+    'special shell matchStarts',
+    `\
 If one uses \`salut";\' echo foo && echo bar; "\` as a search term it should not be a problem to find here.
-`);
+`,
+  );
 
-  createTestFile('glob.txt', `\
+  createTestFile(
+    'glob.txt',
+    `\
 test -glob patterns
-`);
+`,
+  );
 
-  createTestFile('glob', `\
+  createTestFile(
+    'glob',
+    `\
 test --glob patterns
-`);
+`,
+  );
 
   let lotsOfMatchesText = '';
   for (let i = 0; i < 100000; i++) {
@@ -162,9 +192,12 @@ test --glob patterns
   }
   createTestFile('lots-of-matches', lotsOfMatchesText);
 
-  createTestFile('orange', `\
+  createTestFile(
+    'orange',
+    `\
 the oranges' orange looks slightly different from carrots' orange.
-`);
+`,
+  );
 
   createTestFile('folderSubfolder', 'a file in the subfolder of a folder.');
 });
@@ -476,9 +509,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       ];
 
       if (!isWindows) {
-        expected.push(
-          { fileUri: 'file:with:some:colons', line: 1, matchStart: 28, matchLength: 7, lineText: '' },
-        );
+        expected.push({ fileUri: 'file:with:some:colons', line: 1, matchStart: 28, matchLength: 7, lineText: '' });
       }
 
       compareSearchResults(expected, client.results);
@@ -498,9 +529,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       ];
 
       if (!isWindows) {
-        expected.push(
-          { fileUri: 'file:with:some:colons', line: 1, matchStart: 27, matchLength: 8, lineText: '' },
-        );
+        expected.push({ fileUri: 'file:with:some:colons', line: 1, matchStart: 27, matchLength: 8, lineText: '' });
       }
 
       compareSearchResults(expected, client.results);
@@ -519,9 +548,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       ];
 
       if (!isWindows) {
-        expected.push(
-          { fileUri: 'file:with:some:colons', line: 1, matchStart: 28, matchLength: 7, lineText: '' },
-        );
+        expected.push({ fileUri: 'file:with:some:colons', line: 1, matchStart: 28, matchLength: 7, lineText: '' });
       }
 
       compareSearchResults(expected, client.results);
@@ -540,9 +567,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       ];
 
       if (!isWindows) {
-        expected.push(
-          { fileUri: 'file:with:some:colons', line: 1, matchStart: 27, matchLength: 8, lineText: '' },
-        );
+        expected.push({ fileUri: 'file:with:some:colons', line: 1, matchStart: 27, matchLength: 8, lineText: '' });
       }
 
       compareSearchResults(expected, client.results);
@@ -655,8 +680,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     const pattern = '(hello)?';
 
     const client = new MockContentSearchClient(() => {
-      const expected: ContentSearchResult[] = [
-      ];
+      const expected: ContentSearchResult[] = [];
 
       compareSearchResults(expected, client.results);
       done();

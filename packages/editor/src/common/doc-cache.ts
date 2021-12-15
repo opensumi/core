@@ -102,23 +102,11 @@ export function parseCacheValueFrom(change: IModelContentChange): IDocCacheValue
   const endLineNumber = change.range.endLineNumber;
   const endColumn = change.range.endColumn;
 
-  return [
-    text,
-    startLineNumber,
-    startColumn,
-    endLineNumber,
-    endColumn,
-  ];
+  return [text, startLineNumber, startColumn, endLineNumber, endColumn];
 }
 
 export function parseRangeFrom(cacheValue: IDocCacheValue): Range {
-  const [
-    _text,
-    startLineNumber,
-    startColumn,
-    endLineNumber,
-    endColumn,
-  ] = cacheValue;
+  const [_text, startLineNumber, startColumn, endLineNumber, endColumn] = cacheValue;
 
   return Range.lift({
     startLineNumber,

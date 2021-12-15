@@ -35,8 +35,7 @@ export class TerminalSearchService implements ITerminalSearchService {
   }
 
   search() {
-    const client = this.controller
-      .findClientFromWidgetId(this.terminalView.currentWidget.id);
+    const client = this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);
 
     if (!client) {
       throw new Error('client not found');

@@ -17,9 +17,7 @@ const mockMainThreadCommandProxy = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -40,9 +38,7 @@ const mockTreeViewItem = {
 const mockTreeDataProvider = {
   onDidChangeTreeData: onDidChangeTreeDataEmitter.event,
   getTreeItem: jest.fn(() => mockTreeViewItem),
-  getChildren: jest.fn(() => [
-    mockTreeViewItem.id,
-  ]),
+  getChildren: jest.fn(() => [mockTreeViewItem.id]),
   getParent: jest.fn(),
   resolveTreeItem: jest.fn(),
 };
@@ -83,37 +79,37 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () =
     const treeViewId = 'createTreeView-TreeViewId';
     let treeView: TreeView<any>;
     beforeAll(() => {
-      treeView = extHostTreeViews.createTreeView<any>(treeViewId, { treeDataProvider: mockTreeDataProvider as any});
+      treeView = extHostTreeViews.createTreeView<any>(treeViewId, { treeDataProvider: mockTreeDataProvider as any });
     });
 
-    it ('$getChildren method should be work', () => {
+    it('$getChildren method should be work', () => {
       mockTreeDataProvider.getChildren.mockClear();
       extHostTreeViews.$getChildren(treeViewId);
       expect(mockTreeDataProvider.getChildren).toBeCalledTimes(1);
     });
 
-    it ('$setExpanded method should be work while expand value to be true', async (done) => {
+    it('$setExpanded method should be work while expand value to be true', async (done) => {
       treeView.onDidExpandElement(() => {
         done();
       });
       extHostTreeViews.$setExpanded(treeViewId, mockTreeViewItem.id, true);
     });
 
-    it ('$setExpanded method should be work while expand value to be false', async (done) => {
+    it('$setExpanded method should be work while expand value to be false', async (done) => {
       treeView.onDidCollapseElement(() => {
         done();
       });
       extHostTreeViews.$setExpanded(treeViewId, mockTreeViewItem.id, false);
     });
 
-    it ('$setSelection method should be work', async (done) => {
+    it('$setSelection method should be work', async (done) => {
       treeView.onDidChangeSelection(() => {
         done();
       });
       extHostTreeViews.$setSelection(treeViewId, [mockTreeViewItem.id]);
     });
 
-    it ('$setVisible method should be work', async (done) => {
+    it('$setVisible method should be work', async (done) => {
       treeView.onDidChangeVisibility(() => {
         done();
       });

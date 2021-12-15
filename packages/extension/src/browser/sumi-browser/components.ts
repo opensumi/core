@@ -17,7 +17,12 @@ export function createBrowserComponents(injector: Injector, extension: IExtensio
       if (prop === 'Dialog' || prop === 'Overlay') {
         const OriginalComponent = Components[prop];
 
-        return (props) => React.createElement(PortalRoot, { otherProps: props, extensionId: extension.id, original: OriginalComponent });
+        return (props) =>
+          React.createElement(PortalRoot, {
+            otherProps: props,
+            extensionId: extension.id,
+            original: OriginalComponent,
+          });
       }
       return target[prop];
     },

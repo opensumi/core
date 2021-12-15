@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2019 Ericsson and others.
  *
  * This program and the accompanying materials are made available under the
@@ -22,12 +22,9 @@ export function isWatchModeWatcher(matcher: ProblemMatcher): boolean {
 }
 
 export class ProblemCollector {
-
   private lineMatchers: AbstractLineMatcher[] = [];
 
-  constructor(
-    public problemMatchers: ProblemMatcher[],
-  ) {
+  constructor(public problemMatchers: ProblemMatcher[]) {
     for (const matcher of problemMatchers) {
       if (isWatchModeWatcher(matcher)) {
         this.lineMatchers.push(new WatchModeLineMatcher(matcher));
@@ -49,17 +46,23 @@ export class ProblemCollector {
   }
 
   isTaskActiveOnStart(): boolean {
-    const activeOnStart = this.lineMatchers.some((lineMatcher) => (lineMatcher instanceof WatchModeLineMatcher) && lineMatcher.activeOnStart);
+    const activeOnStart = this.lineMatchers.some(
+      (lineMatcher) => lineMatcher instanceof WatchModeLineMatcher && lineMatcher.activeOnStart,
+    );
     return activeOnStart;
   }
 
   matchBeginMatcher(line: string): boolean {
-    const match = this.lineMatchers.some((lineMatcher) => (lineMatcher instanceof WatchModeLineMatcher) && lineMatcher.matchBegin(line));
+    const match = this.lineMatchers.some(
+      (lineMatcher) => lineMatcher instanceof WatchModeLineMatcher && lineMatcher.matchBegin(line),
+    );
     return match;
   }
 
   matchEndMatcher(line: string): boolean {
-    const match = this.lineMatchers.some((lineMatcher) => (lineMatcher instanceof WatchModeLineMatcher) && lineMatcher.matchEnd(line));
+    const match = this.lineMatchers.some(
+      (lineMatcher) => lineMatcher instanceof WatchModeLineMatcher && lineMatcher.matchEnd(line),
+    );
     return match;
   }
 }

@@ -2,7 +2,13 @@ import { equalsIgnoreCase } from '@opensumi/ide-core-browser';
 import { DebugConfiguration } from '../common';
 
 export function isExtensionHostDebugging(config: DebugConfiguration) {
-  return config.type && equalsIgnoreCase(config.type === 'vslsShare' ? (config as any).adapterProxy.configuration.type : config.type, 'extensionhost');
+  return (
+    config.type &&
+    equalsIgnoreCase(
+      config.type === 'vslsShare' ? (config as any).adapterProxy.configuration.type : config.type,
+      'extensionhost',
+    )
+  );
 }
 
 export function matchAll(str: string, regexp: RegExp) {
@@ -39,7 +45,6 @@ export function isRemoteAttach(config: DebugConfiguration): boolean {
     }
 
     return true;
-
   }
   return false;
 }
@@ -53,7 +58,7 @@ export const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';
  * The default would look like this:
  * /(-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g
  */
-function createWordRegExp(allowInWords: string = ''): RegExp {
+function createWordRegExp(allowInWords = ''): RegExp {
   let source = '(-?\\d*\\.\\d\\w*)|([^';
   for (const sep of USUAL_WORD_SEPARATORS) {
     if (allowInWords.indexOf(sep) >= 0) {

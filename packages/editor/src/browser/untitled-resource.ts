@@ -1,5 +1,19 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Emitter,
+  Event,
+  Schemas,
+  WithEventBus,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
+  AppConfig,
+  CommandService,
+  OS,
+  IApplicationService,
+  PreferenceService,
+  getLanguageIdFromMonaco,
+} from '@opensumi/ide-core-browser';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
@@ -35,13 +49,23 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
   }
 
   async provideEncoding(uri: URI) {
-    const encoding = this.preferenceService.get<string>('files.encoding', undefined, uri.toString(), getLanguageIdFromMonaco(uri)!);
+    const encoding = this.preferenceService.get<string>(
+      'files.encoding',
+      undefined,
+      uri.toString(),
+      getLanguageIdFromMonaco(uri)!,
+    );
     return encoding || 'utf8';
   }
 
   async provideEOL(uri: URI) {
     const backendOS = await this.applicationService.getBackendOS();
-    const eol = this.preferenceService.get<EOL | 'auto'>('files.eol', 'auto', uri.toString(), getLanguageIdFromMonaco(uri)!)!;
+    const eol = this.preferenceService.get<EOL | 'auto'>(
+      'files.eol',
+      'auto',
+      uri.toString(),
+      getLanguageIdFromMonaco(uri)!,
+    )!;
 
     if (eol !== 'auto') {
       return eol;
@@ -66,7 +90,14 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     return true;
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding: string,
+    ignoreDiff = false,
+  ): Promise<IEditorDocumentModelSaveResult> {
     const { name } = uri.getParsedQuery();
     const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
     const saveUri = await this.commandService.tryExecuteCommand<URI>('file.save', {
@@ -75,7 +106,14 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
       defaultUri: URI.file(defaultPath),
     });
     if (saveUri) {
-      await this.editorDocumentModelService.saveEditorDocumentModel(saveUri, content, baseContent, changes, encoding, ignoreDiff);
+      await this.editorDocumentModelService.saveEditorDocumentModel(
+        saveUri,
+        content,
+        baseContent,
+        changes,
+        encoding,
+        ignoreDiff,
+      );
       // TODO: 不依赖 workspaceEditor，先关闭再打开，等 fileSystemProvider 迁移到前端再做改造
       await this.workbenchEditorService.close(uri);
       await this.workbenchEditorService.open(saveUri, {
@@ -87,9 +125,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
       state: 'success',
     };
   }
-  onDidDisposeModel() {
-
-  }
+  onDidDisposeModel() {}
 }
 
 @Injectable()

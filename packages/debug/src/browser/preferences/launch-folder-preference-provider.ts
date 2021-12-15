@@ -3,7 +3,6 @@ import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/
 
 @Injectable()
 export class LaunchFolderPreferenceProvider extends FolderPreferenceProvider {
-
   protected parse(content: string): any {
     const launch = super.parse(content);
     if (launch === undefined) {
@@ -21,5 +20,4 @@ export class LaunchFolderPreferenceProvider extends FolderPreferenceProvider {
     }
     return undefined;
   }
-
 }

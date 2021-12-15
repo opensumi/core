@@ -35,6 +35,4 @@ export function createStaticServiceApi() {
   });
 }
 
-export {
-  StaticServices,
-};
+export { StaticServices };

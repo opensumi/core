@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  * MIT License Copyright (c) 2020 Dani All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * https://github.com/Daninet/hash-wasm
@@ -19,7 +19,7 @@ export class Mutex {
     });
   }
 
-  async dispatch<T>(fn: (() => PromiseLike<T>)): Promise<T> {
+  async dispatch<T>(fn: () => PromiseLike<T>): Promise<T> {
     const unlock = await this.lock();
     try {
       return await Promise.resolve(fn());
@@ -28,4 +28,3 @@ export class Mutex {
     }
   }
 }
-

@@ -29,15 +29,13 @@ describe('event-bus', () => {
     const spyA = jest.fn();
     eventBus.on(AEvent, spyA);
 
-    const validListener = async () => {
-      return 'result';
-    }
+    const validListener = async () => 'result';
     eventBus.on(AEvent, validListener);
 
     const error = new Error('testError');
     const errorListener = async () => {
       throw error;
-    }
+    };
     eventBus.on(AEvent, errorListener);
 
     const aEvent = new AEvent(1);
@@ -83,7 +81,7 @@ describe('event-bus', () => {
   it('使用 Decorator 去监听事件变化', () => {
     const spy = jest.fn();
     class ResizeEvent extends BasicEvent<number> {}
-    const resizeEvent = new ResizeEvent(1)
+    const resizeEvent = new ResizeEvent(1);
 
     @Injectable()
     class LayoutStore extends WithEventBus {
@@ -97,7 +95,7 @@ describe('event-bus', () => {
     class FileTreeStore extends WithEventBus {
       @OnEvent(ResizeEvent)
       onResizeChange(event: ResizeEvent) {
-        spy(event)
+        spy(event);
       }
     }
 
@@ -105,7 +103,7 @@ describe('event-bus', () => {
       {
         token: IEventBus,
         useClass: EventBusImpl,
-      }
+      },
     ]);
     const layoutStore = injector.get(LayoutStore);
     layoutStore.changeSize();
@@ -130,9 +128,7 @@ describe('event-bus', () => {
     const a2 = new AEvent(2);
     eventBus.fire(a2);
 
-
     expect(spy).toBeCalledTimes(1);
     expect(spy).toBeCalledWith(a1);
   });
-
 });

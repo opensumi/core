@@ -41,10 +41,12 @@ export class DecorationsManager implements IDisposable {
 
   public addDecoration(decoration: Decoration): void {
     if (this.disposed) {
-      throw new Error(`DecorationManager disposed`);
+      throw new Error('DecorationManager disposed');
     }
 
-    if (this.decorations.has(decoration)) { return; }
+    if (this.decorations.has(decoration)) {
+      return;
+    }
 
     const disposable = new DisposableCollection();
 
@@ -56,18 +58,20 @@ export class DecorationsManager implements IDisposable {
     this.decorations.set(decoration, disposable);
 
     for (const [target] of decoration.appliedTargets) {
-      this.targetDecoration({decoration, target});
+      this.targetDecoration({ decoration, target });
     }
 
     for (const [target] of decoration.negatedTargets) {
-      this.negateDecoration({decoration, target});
+      this.negateDecoration({ decoration, target });
     }
   }
 
   public removeDecoration(decoration: Decoration): void {
     const decorationSubscriptions = this.decorations.get(decoration);
 
-    if (!decorationSubscriptions) { return; }
+    if (!decorationSubscriptions) {
+      return;
+    }
 
     for (const [target] of decoration.appliedTargets) {
       const meta = this.decorationsMeta.get(target);
@@ -96,36 +100,40 @@ export class DecorationsManager implements IDisposable {
   }
 
   public getDecorations(item: ITreeNodeOrCompositeTreeNode): ClasslistComposite | undefined {
-    if (!item || (!TreeNode.is(item))) {
-      return ;
+    if (!item || !TreeNode.is(item)) {
+      return;
     }
     const decMeta = this.getDecorationData(item);
     if (decMeta) {
       return decMeta.applicable.compositeCssClasslist;
     }
-    return ;
+    return;
   }
 
   public getDecorationData(item: ITreeNodeOrCompositeTreeNode): IDecorationMeta | undefined {
-    if (this.disposed) { return ; }
+    if (this.disposed) {
+      return;
+    }
     const meta = this.decorationsMeta.get(item);
     if (meta) {
       return meta;
     }
     // 执行到这里说明该节点不是直接节点，而是需要从父级节点继承装饰器属性
     if (!item || !item.parent) {
-      return ;
+      return;
     }
     const parentMeta = this.getDecorationData(item.parent as CompositeTreeNode);
     if (parentMeta) {
       const ownMeta: IDecorationMeta = {
         applicable: new CompositeDecoration(item, CompositeDecorationType.Applicable, parentMeta.inheritable),
-        inheritable: CompositeTreeNode.is(item) ? new CompositeDecoration(item, CompositeDecorationType.Inheritable, parentMeta.inheritable) : undefined,
+        inheritable: CompositeTreeNode.is(item)
+          ? new CompositeDecoration(item, CompositeDecorationType.Inheritable, parentMeta.inheritable)
+          : undefined,
       };
       this.decorationsMeta.set(item, ownMeta);
       return ownMeta;
     }
-    return ;
+    return;
   }
 
   private targetDecoration = (event: IDecorationTargetChangeEventData): void => {
@@ -140,7 +148,7 @@ export class DecorationsManager implements IDisposable {
         inheritable.add(decoration);
       }
     }
-  }
+  };
 
   private unTargetDecoration = (event: IDecorationTargetChangeEventData): void => {
     const { decoration, target } = event;
@@ -154,7 +162,7 @@ export class DecorationsManager implements IDisposable {
         inheritable.remove(decoration);
       }
     }
-  }
+  };
 
   private negateDecoration = (event: IDecorationTargetChangeEventData): void => {
     const { decoration, target } = event;
@@ -168,7 +176,7 @@ export class DecorationsManager implements IDisposable {
         inheritable.negate(decoration);
       }
     }
-  }
+  };
 
   private unNegateDecoration = (event: IDecorationTargetChangeEventData): void => {
     const { decoration, target } = event;
@@ -182,9 +190,13 @@ export class DecorationsManager implements IDisposable {
         inheritable.unNegate(decoration);
       }
     }
-  }
+  };
 
-  private switchParent = (target: ITreeNodeOrCompositeTreeNode, prevParent: CompositeTreeNode, newParent: CompositeTreeNode): void => {
+  private switchParent = (
+    target: ITreeNodeOrCompositeTreeNode,
+    prevParent: CompositeTreeNode,
+    newParent: CompositeTreeNode,
+  ): void => {
     const ownMeta = this.decorationsMeta.get(target);
     if (!ownMeta) {
       return;
@@ -196,5 +208,5 @@ export class DecorationsManager implements IDisposable {
         ownMeta.inheritable.changeParent(newParentMeta.inheritable);
       }
     }
-  }
+  };
 }

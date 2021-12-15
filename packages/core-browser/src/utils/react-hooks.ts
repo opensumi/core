@@ -10,18 +10,15 @@ import { PreferenceService, useInjectable } from '..';
 export function useDebounce(value, delay) {
   const [denouncedValue, setDenouncedValue] = useState(value);
 
-  useEffect(
-    () => {
-      const handler = setTimeout(() => {
-        setDenouncedValue(value);
-      }, delay);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDenouncedValue(value);
+    }, delay);
 
-      return () => {
-        clearTimeout(handler);
-      };
-    },
-    [value, delay],
-  );
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
 
   return denouncedValue;
 }
@@ -49,7 +46,7 @@ export function useMenus(
   separator?: IMenuSeparator,
   args?: any[],
   // 防止 menu 快速变化
-  debounce?: {delay: number, maxWait?: number},
+  debounce?: { delay: number; maxWait?: number },
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
@@ -65,7 +62,7 @@ export function useMenus(
     };
 
     if (debounce) {
-      updateMenuConfig = _debounce(updateMenuConfig, debounce.delay, {maxWait: debounce.maxWait});
+      updateMenuConfig = _debounce(updateMenuConfig, debounce.delay, { maxWait: debounce.maxWait });
     }
 
     // initialize
@@ -76,14 +73,12 @@ export function useMenus(
         updateMenuConfig();
       }),
     ];
-  }, [ menus, args ]);
+  }, [menus, args]);
 
   return menuConfig;
 }
 
-export function useContextMenus(
-  menus: IContextMenu,
-) {
+export function useContextMenus(menus: IContextMenu) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
   useDisposable(() => {
     updateMenuConfig(menus);
@@ -98,16 +93,14 @@ export function useContextMenus(
         updateMenuConfig(menus);
       }),
     ];
-  }, [ menus ]);
+  }, [menus]);
 
   return menuConfig;
 }
 
 export function usePreference<T>(key: string, defaultValue: T) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const [value, setValue] = useState<T>(
-    preferenceService.get<T>(key, defaultValue) ?? defaultValue,
-  );
+  const [value, setValue] = useState<T>(preferenceService.get<T>(key, defaultValue) ?? defaultValue);
 
   useEffect(() => {
     const disposer = new Disposable(

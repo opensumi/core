@@ -10,12 +10,13 @@ import { XtermLinkMatcherHandler } from './link-manager';
  * manages link lifecycle, hovers, etc. and gets registered in xterm.js.
  */
 export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvider {
-
   constructor(
     private readonly _xterm: Terminal,
     private readonly _instance: ITerminalClient,
     private readonly _externalLinkProvider: ITerminalExternalLinkProvider,
-    private readonly _wrapLinkHandler: (handler: (event: MouseEvent | undefined, link: string) => void) => XtermLinkMatcherHandler,
+    private readonly _wrapLinkHandler: (
+      handler: (event: MouseEvent | undefined, link: string) => void,
+    ) => XtermLinkMatcherHandler,
   ) {
     super();
   }
@@ -24,9 +25,7 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
     let startLine = y - 1;
     let endLine = startLine;
 
-    const lines: IBufferLine[] = [
-      this._xterm.buffer.active.getLine(startLine)!,
-    ];
+    const lines: IBufferLine[] = [this._xterm.buffer.active.getLine(startLine)!];
 
     while (startLine >= 0 && this._xterm.buffer.active.getLine(startLine)?.isWrapped) {
       lines.unshift(this._xterm.buffer.active.getLine(startLine - 1)!);
@@ -49,15 +48,27 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
     }
 
     return externalLinks.map((link) => {
-      const bufferRange = convertLinkRangeToBuffer(lines, this._xterm.cols, {
-        startColumn: link.startIndex + 1,
-        startLineNumber: 1,
-        endColumn: link.startIndex + link.length + 1,
-        endLineNumber: 1,
-      }, startLine);
+      const bufferRange = convertLinkRangeToBuffer(
+        lines,
+        this._xterm.cols,
+        {
+          startColumn: link.startIndex + 1,
+          startLineNumber: 1,
+          endColumn: link.startIndex + link.length + 1,
+          endLineNumber: 1,
+        },
+        startLine,
+      );
       const matchingText = lineContent.substr(link.startIndex, link.length) || '';
       const activateLink = this._wrapLinkHandler((_, text) => link.activate(text));
-      return new TerminalLink(this._xterm, bufferRange, matchingText, this._xterm.buffer.active.viewportY, activateLink, true);
+      return new TerminalLink(
+        this._xterm,
+        bufferRange,
+        matchingText,
+        this._xterm.buffer.active.viewportY,
+        activateLink,
+        true,
+      );
     });
   }
 }

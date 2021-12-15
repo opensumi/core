@@ -30,27 +30,35 @@ describe('comment service test', () => {
       }),
     });
     currentEditor = mockService({ monacoEditor });
-    injector = createBrowserInjector([ CommentsModule ], new Injector([{
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IIconService,
-      useClass: IconService,
-    }, {
-      token: ResourceService,
-      useClass: ResourceServiceImpl,
-    }, {
-      token: EditorCollectionService,
-      useValue: mockService({
-        listEditors: () => [currentEditor],
-      }),
-    }, {
-      token: IEditorDecorationCollectionService,
-      useValue: mockService({
-        registerDecorationProvider: () => Disposable.NULL,
-      }),
-    }]));
-
+    injector = createBrowserInjector(
+      [CommentsModule],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IIconService,
+          useClass: IconService,
+        },
+        {
+          token: ResourceService,
+          useClass: ResourceServiceImpl,
+        },
+        {
+          token: EditorCollectionService,
+          useValue: mockService({
+            listEditors: () => [currentEditor],
+          }),
+        },
+        {
+          token: IEditorDecorationCollectionService,
+          useValue: mockService({
+            registerDecorationProvider: () => Disposable.NULL,
+          }),
+        },
+      ]),
+    );
   });
 
   beforeEach(() => {
@@ -68,7 +76,7 @@ describe('comment service test', () => {
 
   it('create thread', () => {
     const uri = URI.file('/test');
-    const [ thread ] = createTestThreads(uri);
+    const [thread] = createTestThreads(uri);
     expect(thread.uri.isEqual(uri));
     expect(thread.range.startLineNumber).toBe(1);
     expect(thread.comments[0].body).toBe('评论内容1');
@@ -76,7 +84,7 @@ describe('comment service test', () => {
 
   it('get commentsThreads', () => {
     const uri = URI.file('/test');
-    const [ thread, thread2 ] = createTestThreads(uri);
+    const [thread, thread2] = createTestThreads(uri);
     expect(commentsService.commentsThreads.length).toBe(2);
     // 按照创建时间排列
     expect(commentsService.commentsThreads[0].id).toBe(thread.id);
@@ -85,7 +93,7 @@ describe('comment service test', () => {
 
   it('getThreadByUri', () => {
     const uri = URI.file('/test');
-    const [ thread, thread2 ] = createTestThreads(uri);
+    const [thread, thread2] = createTestThreads(uri);
     const threads = commentsService.getThreadsByUri(uri);
     expect(threads.length).toBe(2);
     // 按照 range 升序排列
@@ -95,7 +103,7 @@ describe('comment service test', () => {
 
   it('commentsTreeNodes', () => {
     const uri = URI.file('/test');
-    const [ thread, thread2 ] = createTestThreads(uri);
+    const [thread, thread2] = createTestThreads(uri);
     thread.addComment({
       mode: CommentMode.Preview,
       author: {
@@ -135,13 +143,15 @@ describe('comment service test', () => {
     commentsService.onThreadsCreated(threadsCreatedListener);
     const uri = URI.file('/test');
     const thread = commentsService.createThread(uri, positionToRange(1), {
-      comments: [{
-        mode: CommentMode.Editor,
-        author: {
-          name: '蛋总',
+      comments: [
+        {
+          mode: CommentMode.Editor,
+          author: {
+            name: '蛋总',
+          },
+          body: '评论内容1',
         },
-        body: '评论内容1',
-      }],
+      ],
     });
     expect(threadsCreatedListener.mock.calls.length).toBe(1);
     expect(threadsCreatedListener.mock.calls[0][0].id).toBe(thread.id);
@@ -152,20 +162,22 @@ describe('comment service test', () => {
     commentsService.onThreadsChanged(threadsChangedListener);
     const uri = URI.file('/test');
     commentsService.createThread(uri, positionToRange(1), {
-      comments: [{
-        mode: CommentMode.Editor,
-        author: {
-          name: '蛋总',
+      comments: [
+        {
+          mode: CommentMode.Editor,
+          author: {
+            name: '蛋总',
+          },
+          body: '评论内容1',
         },
-        body: '评论内容1',
-      }],
+      ],
     });
     expect(threadsChangedListener.mock.calls.length).toBe(1);
   });
 
   it('调用 showWidgetsIfShowed 时已经被隐藏的 widget 不会被调用 show 方法', async () => {
     const uri = URI.file('/test');
-    const [ thread ] = createTestThreads(uri);
+    const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
     // 生成一个 widget
     thread.show(currentEditor);
@@ -183,7 +195,7 @@ describe('comment service test', () => {
 
   it('如果 isShow 为 true 才会调用 show 方法', async () => {
     const uri = URI.file('/test');
-    const [ thread ] = createTestThreads(uri);
+    const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
     // 生成一个 widget
     thread.show(currentEditor);
@@ -199,7 +211,7 @@ describe('comment service test', () => {
 
   it('通过 dispose 的方式隐藏 widget，不会影响 isShow', async () => {
     const uri = URI.file('/test');
-    const [ thread ] = createTestThreads(uri);
+    const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
     // 生成一个 widget
     thread.show(currentEditor);
@@ -224,22 +236,26 @@ describe('comment service test', () => {
   function createTestThreads(uri: URI) {
     return [
       commentsService.createThread(uri, positionToRange(1), {
-        comments: [{
-          mode: CommentMode.Editor,
-          author: {
-            name: '蛋总',
+        comments: [
+          {
+            mode: CommentMode.Editor,
+            author: {
+              name: '蛋总',
+            },
+            body: '评论内容1',
           },
-          body: '评论内容1',
-        }],
+        ],
       }),
       commentsService.createThread(uri, positionToRange(2), {
-        comments: [{
-          mode: CommentMode.Editor,
-          author: {
-            name: '蛋总',
+        comments: [
+          {
+            mode: CommentMode.Editor,
+            author: {
+              name: '蛋总',
+            },
+            body: '评论内容2',
           },
-          body: '评论内容2',
-        }],
+        ],
       }),
     ];
   }

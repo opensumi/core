@@ -1,5 +1,12 @@
 import { Injector } from '@opensumi/di';
-import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@opensumi/ide-debug/lib/browser';
+import {
+  DebugSession,
+  DebugSessionConnection,
+  BreakpointManager,
+  DebugSessionFactory,
+  DebugPreferences,
+  DebugModelManager,
+} from '@opensumi/ide-debug/lib/browser';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -27,10 +34,25 @@ export class ExtensionDebugSession extends DebugSession {
     protected readonly sessionManager: IDebugSessionManager,
     protected readonly terminalOptionsExt: any,
   ) {
-    super(id, options, connection, terminalService, editorService, breakpointManager, modelManager, labelService, messageService, fileSystem, sessionManager);
+    super(
+      id,
+      options,
+      connection,
+      terminalService,
+      editorService,
+      breakpointManager,
+      modelManager,
+      labelService,
+      messageService,
+      fileSystem,
+      sessionManager,
+    );
   }
 
-  protected async doRunInTerminal(terminalOptions: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(
+    terminalOptions: TerminalOptions,
+    command?: string,
+  ): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const terminalWidgetOptions = Object.assign({}, terminalOptions, this.terminalOptionsExt);
     return super.doRunInTerminal(terminalWidgetOptions, command);
   }
@@ -52,8 +74,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly outputService: OutputService,
     protected readonly injector: Injector,
     protected readonly sessionManager: IDebugSessionManager,
-  ) {
-  }
+  ) {}
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = this.injector.get(DebugSessionConnection, [

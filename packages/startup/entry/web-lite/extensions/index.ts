@@ -16,19 +16,19 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
     defaultPkgNlsJSON: undefined,
     packageNlsJSON: undefined,
     packageJSON: {
-      'contributes': {
-        'themes': [
+      contributes: {
+        themes: [
           {
-            'id': 'tao-ide-dark',
-            'label': 'Tao IDE Dark',
-            'uiTheme': 'vs-dark',
-            'path': './dark/plus.json',
+            id: 'tao-ide-dark',
+            label: 'Tao IDE Dark',
+            uiTheme: 'vs-dark',
+            path: './dark/plus.json',
           },
           {
-            'id': 'tao-ide-light',
-            'label': 'Tao IDE Light',
-            'uiTheme': 'vs',
-            'path': './light/plus.json',
+            id: 'tao-ide-light',
+            label: 'Tao IDE Light',
+            uiTheme: 'vs',
+            path: './light/plus.json',
           },
         ],
       },
@@ -46,12 +46,12 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
     defaultPkgNlsJSON: undefined,
     packageNlsJSON: undefined,
     packageJSON: {
-      'contributes': {
-        'iconThemes': [
+      contributes: {
+        iconThemes: [
           {
-            'id': 'vsicons-slim',
-            'label': 'VSCode Icons Slim',
-            'path': 'vsicons-slim.json',
+            id: 'vsicons-slim',
+            label: 'VSCode Icons Slim',
+            path: 'vsicons-slim.json',
           },
         ],
       },

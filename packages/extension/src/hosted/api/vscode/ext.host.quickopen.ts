@@ -1,13 +1,25 @@
 import type vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
-import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise, isUndefined } from '@opensumi/ide-core-common';
+import {
+  MainThreadAPIIdentifier,
+  IExtHostQuickOpen,
+  IMainThreadQuickOpen,
+  IExtHostWorkspace,
+} from '../../../common/vscode';
+import {
+  CancellationToken,
+  hookCancellationToken,
+  Event,
+  Emitter,
+  DisposableCollection,
+  MaybePromise,
+  isUndefined,
+} from '@opensumi/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@opensumi/ide-quick-open';
 
 type Item = string | vscode.QuickPickItem;
 
 export class ExtHostQuickOpen implements IExtHostQuickOpen {
-
   private _onDidSelectItem?: (handle: number) => void;
 
   private proxy: IMainThreadQuickOpen;
@@ -16,17 +28,30 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   private createdQuicks = new Map<number, QuickInputExt | QuickPickExt<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
   private currentQuick = 0;
 
-  constructor(
-    rpc: IRPCProtocol,
-    private readonly workspace: IExtHostWorkspace,
-  ) {
+  constructor(rpc: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadQuickOpen);
   }
 
-  showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions | undefined, token?: CancellationToken | undefined): Promise<vscode.QuickPickItem | undefined>;
-  showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: (vscode.QuickPickOptions & { canSelectMany: true; }) | undefined, token?: CancellationToken | undefined): Promise<vscode.QuickPickItem[] | undefined>;
-  showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: vscode.QuickPickOptions | undefined, token?: CancellationToken | undefined): Promise<string | undefined>;
-  async showQuickPick(promiseOrItems: Item[] | Promise<Item[]>, options?: vscode.QuickPickOptions, token: CancellationToken = CancellationToken.None): Promise<Item | Item[] | undefined> {
+  showQuickPick(
+    promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>,
+    options?: vscode.QuickPickOptions | undefined,
+    token?: CancellationToken | undefined,
+  ): Promise<vscode.QuickPickItem | undefined>;
+  showQuickPick(
+    promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>,
+    options?: (vscode.QuickPickOptions & { canSelectMany: true }) | undefined,
+    token?: CancellationToken | undefined,
+  ): Promise<vscode.QuickPickItem[] | undefined>;
+  showQuickPick(
+    promiseOrItems: string[] | Promise<string[]>,
+    options?: vscode.QuickPickOptions | undefined,
+    token?: CancellationToken | undefined,
+  ): Promise<string | undefined>;
+  async showQuickPick(
+    promiseOrItems: Item[] | Promise<Item[]>,
+    options?: vscode.QuickPickOptions,
+    token: CancellationToken = CancellationToken.None,
+  ): Promise<Item | Item[] | undefined> {
     // clear state from last invocation
     this._onDidSelectItem = undefined;
     const sessionId = (options as any)?._sessionId ?? ++this.currentQuick;
@@ -40,7 +65,6 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     }
 
     const pickItems = items.map((item, index) => {
-
       if (typeof item === 'string') {
         return {
           label: item,
@@ -58,17 +82,21 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       }
     });
 
-    const quickPickPromise = this.proxy.$showQuickPick(sessionId, pickItems, options && {
-      canPickMany: options.canPickMany,
-      placeholder: options.placeHolder,
-      fuzzyMatchDescription: options.matchOnDescription,
-      fuzzyMatchDetail: options.matchOnDetail,
-      ignoreFocusOut: options.ignoreFocusOut,
-      title: (options as QuickPickOptions).title,
-      buttons: (options as QuickPickOptions).buttons,
-      step: (options as QuickPickOptions).step,
-      totalSteps: (options as QuickPickOptions).totalSteps,
-    });
+    const quickPickPromise = this.proxy.$showQuickPick(
+      sessionId,
+      pickItems,
+      options && {
+        canPickMany: options.canPickMany,
+        placeholder: options.placeHolder,
+        fuzzyMatchDescription: options.matchOnDescription,
+        fuzzyMatchDetail: options.matchOnDetail,
+        ignoreFocusOut: options.ignoreFocusOut,
+        title: (options as QuickPickOptions).title,
+        buttons: (options as QuickPickOptions).buttons,
+        step: (options as QuickPickOptions).step,
+        totalSteps: (options as QuickPickOptions).totalSteps,
+      },
+    );
 
     const value = await hookCancellationToken<number | number[] | undefined>(token, quickPickPromise);
 
@@ -85,7 +113,10 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     }
   }
 
-  async showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token: CancellationToken = CancellationToken.None) {
+  async showWorkspaceFolderPick(
+    options: vscode.WorkspaceFolderPickOptions,
+    token: CancellationToken = CancellationToken.None,
+  ) {
     const workspaceFolders = await this.workspace.resolveWorkspaceFolder();
     if (!workspaceFolders) {
       return undefined;
@@ -98,10 +129,14 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       };
       return quickPickItem;
     });
-    const quickPickPromise = this.proxy.$showQuickPick(session, pickItems, options && {
-      placeholder: options.placeHolder,
-      ignoreFocusOut: options.ignoreFocusOut,
-    });
+    const quickPickPromise = this.proxy.$showQuickPick(
+      session,
+      pickItems,
+      options && {
+        placeholder: options.placeHolder,
+        ignoreFocusOut: options.ignoreFocusOut,
+      },
+    );
     const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
     return workspaceFolders.find((folder) => folder.index === value);
   }
@@ -135,12 +170,18 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
 
-  showInputBox(options: vscode.InputBoxOptions = {}, token: CancellationToken = CancellationToken.None): PromiseLike<string | undefined> {
+  showInputBox(
+    options: vscode.InputBoxOptions = {},
+    token: CancellationToken = CancellationToken.None,
+  ): PromiseLike<string | undefined> {
     // 校验函数需要运行在扩展进程中
     this.validateInputHandler = options && options.validateInput;
     this.hideInputBox();
 
-    const promise = this.proxy.$showQuickInput(options as vscode.QuickPickOptions, typeof this.validateInputHandler === 'function');
+    const promise = this.proxy.$showQuickInput(
+      options as vscode.QuickPickOptions,
+      typeof this.validateInputHandler === 'function',
+    );
     return hookCancellationToken(token, promise);
   }
 
@@ -154,7 +195,6 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   hideInputBox(): void {
     this.proxy.$hideQuickinput();
   }
-
 }
 
 class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T> {
@@ -193,12 +233,12 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this._buttons = [];
     this.value = '';
     this.disposableCollection = new DisposableCollection();
-    this.disposableCollection.push(this.onDidHideEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidAcceptEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidChangeActiveEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidChangeSelectionEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidChangeValueEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidTriggerButtonEmitter = new Emitter());
+    this.disposableCollection.push((this.onDidHideEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidAcceptEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidChangeActiveEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidChangeSelectionEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidChangeValueEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidTriggerButtonEmitter = new Emitter()));
   }
 
   get items(): T[] {
@@ -291,23 +331,27 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       this.onDidChangeSelectionEmitter.fire(selectedItems);
     };
 
-    this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
-      canPickMany: this.canSelectMany,
-      title: this.title,
-      step: this.step,
-      totalSteps: this.totalSteps,
-      buttons: this.buttons,
-      placeHolder: this.placeholder,
-      ignoreFocusOut: this.ignoreFocusOut,
-      _sessionId: this.quickPickIndex,
-    } as QuickPickOptions).then((item) => {
-      if (!isUndefined(item)) {
-        selectItem(item as (T | T[]));
-      }
-      hide();
-    });
+    this.quickOpen
+      .showQuickPick(
+        this.items.map((item) => item as T),
+        {
+          canPickMany: this.canSelectMany,
+          title: this.title,
+          step: this.step,
+          totalSteps: this.totalSteps,
+          buttons: this.buttons,
+          placeHolder: this.placeholder,
+          ignoreFocusOut: this.ignoreFocusOut,
+          _sessionId: this.quickPickIndex,
+        } as QuickPickOptions,
+      )
+      .then((item) => {
+        if (!isUndefined(item)) {
+          selectItem(item as T | T[]);
+        }
+        hide();
+      });
   }
-
 }
 
 class QuickInputExt implements vscode.InputBox {
@@ -345,10 +389,10 @@ class QuickInputExt implements vscode.InputBox {
     this.ignoreFocusOut = false;
     this.quickInputIndex = quickInputIndex;
     this.disposableCollection = new DisposableCollection();
-    this.disposableCollection.push(this.onDidAcceptEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidChangeValueEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidTriggerButtonEmitter = new Emitter());
-    this.disposableCollection.push(this.onDidHideEmitter = new Emitter());
+    this.disposableCollection.push((this.onDidAcceptEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidChangeValueEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidTriggerButtonEmitter = new Emitter()));
+    this.disposableCollection.push((this.onDidHideEmitter = new Emitter()));
   }
 
   _fireDidChangeValue(value: string) {
@@ -373,22 +417,23 @@ class QuickInputExt implements vscode.InputBox {
   }
 
   show(): void {
-    this.quickOpen.showInputBox({
-      value: this.value,
-      prompt: this.prompt,
-      placeHolder: this.placeholder,
-      password: this.password,
-      ignoreFocusOut: this.ignoreFocusOut,
-      title: this.title,
-      totalSteps: this.totalSteps,
-      step: this.step,
-    }).then((item) => {
-      if (item) {
-        this.value = item;
-      }
-      this.onDidAcceptEmitter.fire();
-    });
-
+    this.quickOpen
+      .showInputBox({
+        value: this.value,
+        prompt: this.prompt,
+        placeHolder: this.placeholder,
+        password: this.password,
+        ignoreFocusOut: this.ignoreFocusOut,
+        title: this.title,
+        totalSteps: this.totalSteps,
+        step: this.step,
+      })
+      .then((item) => {
+        if (item) {
+          this.value = item;
+        }
+        this.onDidAcceptEmitter.fire();
+      });
   }
   hide(): void {
     this.quickOpen.hideInputBox();
@@ -398,5 +443,4 @@ class QuickInputExt implements vscode.InputBox {
   dispose(): void {
     this.disposableCollection.dispose();
   }
-
 }

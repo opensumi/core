@@ -7,7 +7,7 @@ export class InlayHintsAdapter {
   constructor(
     private readonly _documents: ExtensionDocumentDataManager,
     private readonly _provider: vscode.InlayHintsProvider,
-  ) { }
+  ) {}
 
   async provideInlayHints(resource: Uri, range: IRange, token: CancellationToken) {
     const doc = this._documents.getDocument(resource);

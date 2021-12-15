@@ -28,19 +28,19 @@ const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString
 @Injectable()
 class MockWorkspaceService {
   tryGetRoots() {
-    return [{
-      uri: rootUri,
-    }];
+    return [
+      {
+        uri: rootUri,
+      },
+    ];
   }
 
-  setMostRecentlySearchWord() {
-
-  }
+  setMostRecentlySearchWord() {}
 }
 
 @Injectable()
 class MockMainLayoutService {
-  getTabbarHandler() { }
+  getTabbarHandler() {}
 }
 
 @Injectable()
@@ -57,28 +57,28 @@ class MockSearchContentService {
     return 1;
   }
 
-  cancel() { }
+  cancel() {}
 }
 
 @Injectable()
 class MockWorkbenchEditorService {
-  open() { }
-  apply() { }
+  open() {}
+  apply() {}
 }
 
 @Injectable()
 class MockWorkspaceEditorService {
-  apply() { }
+  apply() {}
 }
 
 @Injectable()
 class MockEditorDocumentModelContentRegistry {
-  registerEditorDocumentModelContentProvider() { }
+  registerEditorDocumentModelContentProvider() {}
 }
 
 @Injectable()
 class MockFileServiceClient {
-  getCurrentUserHome() { }
+  getCurrentUserHome() {}
 }
 
 @Injectable()
@@ -112,52 +112,68 @@ describe('search.service.ts', () => {
     children: [],
   };
 
-  const searchResult1 = { fileUri: 'file://root', line: 1, matchStart: 11, matchLength: 12, renderLineText: '', renderStart: 2 };
+  const searchResult1 = {
+    fileUri: 'file://root',
+    line: 1,
+    matchStart: 11,
+    matchLength: 12,
+    renderLineText: '',
+    renderStart: 2,
+  };
   const searchResult2 = Object.assign({}, searchResult1, { line: 2 });
   const searchResults: Map<string, ContentSearchResult[]> = new Map();
 
   searchResults.set('file://root', [searchResult1, searchResult2]);
 
   beforeAll(() => {
-    injector = createBrowserInjector([
-      OverlayModule,
-      SearchModule,
-    ]);
+    injector = createBrowserInjector([OverlayModule, SearchModule]);
 
-    injector.addProviders({
-      token: ContentSearchClientService,
-      useClass: ContentSearchClientService,
-    }, {
-      token: ILoggerManagerClient,
-      useClass: LoggerManagerClient,
-    }, {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    }, {
-      token: ContentSearchServerPath,
-      useClass: MockSearchContentService,
-    }, {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    }, {
-      token: IMainLayoutService,
-      useClass: MockMainLayoutService,
-    }, {
-      token: WorkbenchEditorService,
-      useClass: MockWorkbenchEditorService,
-    }, {
-      token: IWorkspaceEditService,
-      useClass: MockWorkspaceEditorService,
-    }, {
-      token: IEditorDocumentModelContentRegistry,
-      useClass: MockEditorDocumentModelContentRegistry,
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IFileServiceClient,
-      useClass: MockFileServiceClient,
-    });
+    injector.addProviders(
+      {
+        token: ContentSearchClientService,
+        useClass: ContentSearchClientService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: LoggerManagerClient,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: ContentSearchServerPath,
+        useClass: MockSearchContentService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: IMainLayoutService,
+        useClass: MockMainLayoutService,
+      },
+      {
+        token: WorkbenchEditorService,
+        useClass: MockWorkbenchEditorService,
+      },
+      {
+        token: IWorkspaceEditService,
+        useClass: MockWorkspaceEditorService,
+      },
+      {
+        token: IEditorDocumentModelContentRegistry,
+        useClass: MockEditorDocumentModelContentRegistry,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: IFileServiceClient,
+        useClass: MockFileServiceClient,
+      },
+    );
 
     searchService = injector.get(ContentSearchClientService);
     searchTreeService = injector.get(SearchTreeService);
@@ -167,11 +183,9 @@ describe('search.service.ts', () => {
 
     // without docModel
     (searchService as any).workbenchEditorService = true;
-    (searchService as any).searchAllFromDocModel = () => {
-      return {
-        result: null,
-      };
-    };
+    (searchService as any).searchAllFromDocModel = () => ({
+      result: null,
+    });
   });
 
   test('可以加载正常service', () => {
@@ -204,5 +218,4 @@ describe('search.service.ts', () => {
 
     expect(searchService.searchResults.size).toEqual(0);
   });
-
 });

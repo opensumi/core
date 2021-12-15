@@ -12,7 +12,6 @@ import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';
 
 @Injectable({ multiple: true })
 export class EditorContextMenuController extends Disposable {
-
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
 
@@ -26,7 +25,9 @@ export class EditorContextMenuController extends Disposable {
 
   constructor(private _editor: IEditor) {
     super();
-    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped((this._editor.monacoEditor as any)._contextKeyService));
+    this.contextKeyService = this.registerDispose(
+      this.globalContextKeyService.createScoped((this._editor.monacoEditor as any)._contextKeyService),
+    );
     this.overrideContextmenuContribution(_editor);
   }
 
@@ -37,7 +38,7 @@ export class EditorContextMenuController extends Disposable {
     const _this = this;
     const originMethod = contextmenu['showContextMenu'];
     // https://github.com/microsoft/vscode/blob/master/src/vs/editor/contrib/contextmenu/contextmenu.ts#L124
-    contextmenu['showContextMenu'] = function(anchor?: IAnchor | null): void {
+    contextmenu['showContextMenu'] = function (anchor?: IAnchor | null): void {
       if (!this['_editor'].getOption(EditorOption.contextmenu)) {
         return; // Context menu is turned off through configuration
       }
@@ -47,7 +48,7 @@ export class EditorContextMenuController extends Disposable {
 
       if (!this['_contextMenuService']) {
         this['_editor'].focus();
-        return;	// We need the context menu service to function
+        return; // We need the context menu service to function
       }
 
       // Find actions available for menu
@@ -60,7 +61,7 @@ export class EditorContextMenuController extends Disposable {
 
     this.addDispose({
       dispose: () => {
-        contextmenu['_onContextMenu'] = function() {
+        contextmenu['_onContextMenu'] = function () {
           originMethod.apply(contextmenu, arguments);
         };
       },
@@ -131,16 +132,12 @@ export class EditorContextMenuController extends Disposable {
 
 @Domain(BrowserEditorContribution)
 export class EditorContextMenuBrowserEditorContribution implements BrowserEditorContribution {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => {
-        return this.injector.get(EditorContextMenuController, [editor]);
-      },
+      contribute: (editor: IEditor) => this.injector.get(EditorContextMenuController, [editor]),
     });
   }
-
 }

@@ -38,13 +38,15 @@ const mockProxy = {
 };
 
 describe('MainThreadWindow API Test Suite', () => {
-
-  const injector = createBrowserInjector([], new MockInjector([
-    {
-      token: IWebviewService,
-      useValue: mockWebviewService,
-    },
-  ]));
+  const injector = createBrowserInjector(
+    [],
+    new MockInjector([
+      {
+        token: IWebviewService,
+        useValue: mockWebviewService,
+      },
+    ]),
+  );
 
   beforeAll(() => {
     mainThreadIDEWindow = injector.get(MainThreadIDEWindow, [mockProxy as any]);
@@ -74,7 +76,7 @@ describe('MainThreadWindow API Test Suite', () => {
 
   it('should able to $setSize', async () => {
     const webviewId = 'testView';
-    mainThreadIDEWindow.$setSize(webviewId, {width: 350, height: 750});
+    mainThreadIDEWindow.$setSize(webviewId, { width: 350, height: 750 });
     expect(mockWindow.setSize).toBeCalledTimes(1);
   });
 

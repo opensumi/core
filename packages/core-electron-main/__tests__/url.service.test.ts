@@ -2,7 +2,6 @@ import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
 import { ElectronURLService } from '../src/bootstrap/services/url';
 
 describe('electron main url handler tests', () => {
-
   it('Register url handlers', async (done) => {
     const injector = new MockInjector();
 
@@ -33,9 +32,10 @@ describe('electron main url handler tests', () => {
 
     expect(electronURLService.open('sumi://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
 
-    expect(electronURLService.open('sumi-dev://extension.git/clone?url=git@github.com:example/example.git')).toBeTruthy();
+    expect(
+      electronURLService.open('sumi-dev://extension.git/clone?url=git@github.com:example/example.git'),
+    ).toBeTruthy();
 
     done();
   });
-
 });

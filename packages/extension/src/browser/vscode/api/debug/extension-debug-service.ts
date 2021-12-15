@@ -1,7 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
-import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  IDisposable,
+  DisposableCollection,
+  IJSONSchema,
+  IJSONSchemaSnippet,
+  WaitUntilEvent,
+} from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
@@ -25,7 +32,6 @@ export interface ExtensionDebugAdapterContributionRegistrator {
 
 @Injectable()
 export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapterContributionRegistrator {
-
   protected readonly contributors = new Map<string, ExtensionDebugAdapterContribution>();
   protected readonly toDispose = new DisposableCollection();
 
@@ -57,8 +63,12 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   protected init(): void {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.debugSessionManager.onWillStartDebugSession((event) => this.ensureDebugActivation(event));
-    this.debugSessionManager.onWillResolveDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugResolve', event.debugType));
-    this.debugConfigurationManager.onWillProvideDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugInitialConfigurations'));
+    this.debugSessionManager.onWillResolveDebugConfiguration((event) =>
+      this.ensureDebugActivation(event, 'onDebugResolve', event.debugType),
+    );
+    this.debugConfigurationManager.onWillProvideDebugConfiguration((event) =>
+      this.ensureDebugActivation(event, 'onDebugInitialConfigurations'),
+    );
     this.toDispose.pushAll([
       Disposable.create(() => {
         for (const sessionId of this.sessionId2contrib.keys()) {
@@ -86,7 +96,11 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     this.contributors.delete(debugType);
   }
 
-  protected ensureDebugActivation(event: WaitUntilEvent, activationEvent?: DebugActivationEvent, debugType?: string): void {
+  protected ensureDebugActivation(
+    event: WaitUntilEvent,
+    activationEvent?: DebugActivationEvent,
+    debugType?: string,
+  ): void {
     if (typeof event.waitUntil === 'function') {
       event.waitUntil(this.activateByDebug(activationEvent, debugType));
     }
@@ -107,16 +121,24 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     return Array.from(this.contributors.keys());
   }
 
-  async provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]> {
+  async provideDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration[]> {
     const contributor = this.contributors.get(debugType);
     if (contributor) {
-      return contributor.provideDebugConfigurations && contributor.provideDebugConfigurations(workspaceFolderUri) || [];
+      return (
+        (contributor.provideDebugConfigurations && contributor.provideDebugConfigurations(workspaceFolderUri)) || []
+      );
     } else {
       return [];
     }
   }
 
-  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  async resolveDebugConfiguration(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     const contributor = this.contributors.get(config.type);
     if (contributor) {
       try {
@@ -128,7 +150,10 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     }
   }
 
-  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  async resolveDebugConfigurationWithSubstitutedVariables(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     const contributor = this.contributors.get(config.type);
     if (contributor) {
       try {
@@ -147,7 +172,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
       const languages = await contributor.languages;
       if (languages && languages.indexOf(language) !== -1) {
         const { type } = contributor;
-        debuggers.push({ type, label: await contributor.label || type });
+        debuggers.push({ type, label: (await contributor.label) || type });
       }
     }
 
@@ -157,7 +182,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   async getSchemaAttributes(debugType: string): Promise<IJSONSchema[]> {
     const contributor = this.contributors.get(debugType);
     if (contributor) {
-      return contributor.getSchemaAttributes && contributor.getSchemaAttributes() || [];
+      return (contributor.getSchemaAttributes && contributor.getSchemaAttributes()) || [];
     } else {
       return [];
     }

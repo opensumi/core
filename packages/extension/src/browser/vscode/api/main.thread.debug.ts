@@ -1,8 +1,37 @@
 import { Injectable, Optional, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService, IStartDebuggingOptions } from '../../../common/vscode';
-import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@opensumi/ide-core-browser';
-import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@opensumi/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser';
+import {
+  IMainThreadDebug,
+  ExtHostAPIIdentifier,
+  IExtHostDebug,
+  ExtensionWSChannel,
+  IMainThreadConnectionService,
+  IStartDebuggingOptions,
+} from '../../../common/vscode';
+import {
+  DisposableCollection,
+  Uri,
+  ILoggerManagerClient,
+  ILogServiceClient,
+  SupportLogNamespace,
+  URI,
+} from '@opensumi/ide-core-browser';
+import {
+  DebuggerDescription,
+  IDebugService,
+  DebugConfiguration,
+  IDebugServer,
+  IDebuggerContribution,
+  IDebugServiceContributionPoint,
+} from '@opensumi/ide-debug';
+import {
+  DebugSessionManager,
+  BreakpointManager,
+  DebugConfigurationManager,
+  DebugPreferences,
+  DebugSessionContributionRegistry,
+  DebugModelManager,
+  DebugBreakpoint,
+} from '@opensumi/ide-debug/lib/browser';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -21,7 +50,6 @@ import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/c
 
 @Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {
-
   private readonly toDispose = new Map<string, DisposableCollection>();
   private readonly listenerDispose = new DisposableCollection();
 
@@ -90,7 +118,6 @@ export class MainThreadDebug implements IMainThreadDebug {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
     this.listen();
     this.registerDebugContributions();
-
   }
 
   public dispose() {
@@ -125,28 +152,30 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.sessionManager.onDidReceiveDebugSessionCustomEvent((event) => {
         this.proxy.$onSessionCustomEvent(event.session.id, event.event, event.body);
       }),
-      this.debugService.onDidDebugContributionPointChange(({ path, contributions, removed}: IDebugServiceContributionPoint) => {
-        // 新增调试插件时注册对应调试能力
-        if (removed) {
-          this.proxy.$unregisterDebuggerContributions(contributions as IDebuggerContribution[]);
-          contributions.forEach((contribution: any) => {
-            this.$unregisterDebuggerContribution({
-              type: contribution.type,
-              label: contribution.label || contribution.type,
+      this.debugService.onDidDebugContributionPointChange(
+        ({ path, contributions, removed }: IDebugServiceContributionPoint) => {
+          // 新增调试插件时注册对应调试能力
+          if (removed) {
+            this.proxy.$unregisterDebuggerContributions(contributions as IDebuggerContribution[]);
+            contributions.forEach((contribution: any) => {
+              this.$unregisterDebuggerContribution({
+                type: contribution.type,
+                label: contribution.label || contribution.type,
+              });
+              this.logger.log(`Debugger contribution has been unregistered: ${contribution.type}`);
             });
-            this.logger.log(`Debugger contribution has been unregistered: ${contribution.type}`);
-          });
-        } else {
-          this.proxy.$registerDebuggerContributions(path, contributions as IDebuggerContribution[]);
-          contributions.forEach((contribution: any) => {
-            this.$registerDebuggerContribution({
-              type: contribution.type,
-              label: contribution.label || contribution.type,
+          } else {
+            this.proxy.$registerDebuggerContributions(path, contributions as IDebuggerContribution[]);
+            contributions.forEach((contribution: any) => {
+              this.$registerDebuggerContribution({
+                type: contribution.type,
+                label: contribution.label || contribution.type,
+              });
+              this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
             });
-            this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
-          });
-        }
-      }),
+          }
+        },
+      ),
     ]);
   }
 
@@ -233,17 +262,19 @@ export class MainThreadDebug implements IMainThreadDebug {
     for (const breakpoint of newBreakpoints.values()) {
       if (breakpoint.location) {
         const location = breakpoint.location;
-        this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-          Uri.revive(location.uri) as any,
-          {
-            line: breakpoint.location.range.startLineNumber + 1,
-            column: 1,
-            condition: breakpoint.condition,
-            hitCondition: breakpoint.hitCondition,
-            logMessage: breakpoint.logMessage,
-          },
-          true,
-        ));
+        this.breakpointManager.addBreakpoint(
+          DebugBreakpoint.create(
+            Uri.revive(location.uri) as any,
+            {
+              line: breakpoint.location.range.startLineNumber + 1,
+              column: 1,
+              condition: breakpoint.condition,
+              hitCondition: breakpoint.hitCondition,
+              logMessage: breakpoint.logMessage,
+            },
+            true,
+          ),
+        );
       }
     }
   }
@@ -268,7 +299,10 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
-  public $getDebugProtocolBreakpoint(sessionId: string, breakpoinId: string): Promise<DebugProtocol.Breakpoint | undefined> {
+  public $getDebugProtocolBreakpoint(
+    sessionId: string,
+    breakpoinId: string,
+  ): Promise<DebugProtocol.Breakpoint | undefined> {
     const session = this.sessionManager.getSession(sessionId);
     if (session) {
       return Promise.resolve(session.getDebugProtocolBreakpoint(breakpoinId));
@@ -276,7 +310,11 @@ export class MainThreadDebug implements IMainThreadDebug {
     return Promise.reject(new Error('debug session not found'));
   }
 
-  async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean> {
+  async $startDebugging(
+    folder: WorkspaceFolder | undefined,
+    nameOrConfiguration: string | DebugConfiguration,
+    options: IStartDebuggingOptions,
+  ): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
     let index = 0;
     if (typeof nameOrConfiguration === 'string') {
@@ -285,7 +323,7 @@ export class MainThreadDebug implements IMainThreadDebug {
           configuration = options.configuration;
           break;
         }
-        index ++;
+        index++;
       }
     } else {
       configuration = nameOrConfiguration;
@@ -319,7 +357,8 @@ export class MainThreadDebug implements IMainThreadDebug {
       if (session) {
         return this.sessionManager.stopSession(session);
       }
-    } else {	// stop all
+    } else {
+      // stop all
       return this.sessionManager.stopSession(undefined);
     }
     throw new Error(`Debug session '${sessionId}' not found`);

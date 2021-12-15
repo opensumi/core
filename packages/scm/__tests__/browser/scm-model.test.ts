@@ -28,16 +28,19 @@ describe('test for scm.store.ts', () => {
     let injector: MockInjector;
 
     beforeEach(() => {
-      injector = createBrowserInjector([SCMModule], new MockInjector([
-        {
-          token: IContextKeyService,
-          useClass: MockContextKeyService,
-        },
-        {
-          token: IMenuRegistry,
-          useClass: MenuRegistryImpl,
-        },
-      ]));
+      injector = createBrowserInjector(
+        [SCMModule],
+        new MockInjector([
+          {
+            token: IContextKeyService,
+            useClass: MockContextKeyService,
+          },
+          {
+            token: IMenuRegistry,
+            useClass: MenuRegistryImpl,
+          },
+        ]),
+      );
 
       provider1 = new MockSCMProvider(1, 'git');
       provider2 = new MockSCMProvider(2, 'svn');
@@ -140,11 +143,13 @@ describe('test for scm.store.ts', () => {
     it('ok with empty repo', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
-      toTearDown.push(repoOnDidSplice(({ index, deleteCount, elements }) => {
-        expect(index).toBe(0);
-        expect(deleteCount).toBe(0);
-        expect(elements.length).toBe(0);
-      }));
+      toTearDown.push(
+        repoOnDidSplice(({ index, deleteCount, elements }) => {
+          expect(index).toBe(0);
+          expect(deleteCount).toBe(0);
+          expect(elements.length).toBe(0);
+        }),
+      );
 
       resourceGroup.run();
     });
@@ -221,7 +226,9 @@ describe('test for scm.store.ts', () => {
       expect(spliceListener.mock.calls[2][0].index).toBe(1);
       expect(spliceListener.mock.calls[2][0].deleteCount).toBe(0);
       expect(spliceListener.mock.calls[2][0].elements.length).toBe(1);
-      expect((spliceListener.mock.calls[2][0].elements[0] as ISCMResource).resourceGroup.id).toBe('scm_resource_group_1');
+      expect((spliceListener.mock.calls[2][0].elements[0] as ISCMResource).resourceGroup.id).toBe(
+        'scm_resource_group_1',
+      );
 
       // 继续添加一个 scm resource
       scmResourceGroup.splice(0, 0, [new MockSCMResource(scmResourceGroup, undefined, undefined, undefined)]);

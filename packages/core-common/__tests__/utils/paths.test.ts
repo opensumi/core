@@ -24,7 +24,7 @@ describe('paths', () => {
         authority: '',
         path: 'test.ts',
         query: 'a=1',
-        fragment: 'hash'
+        fragment: 'hash',
       });
 
       expect(uri1.withoutScheme().toString(true)).toContain(uri1.path.toString());
@@ -34,7 +34,7 @@ describe('paths', () => {
         authority: 'github.com',
         path: '/test1.ts',
         query: 'a=1',
-        fragment: 'hash'
+        fragment: 'hash',
       });
 
       expect(uri2.withoutScheme().toString(true)).toContain(uri2.path.toString());

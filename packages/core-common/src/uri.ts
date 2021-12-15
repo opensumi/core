@@ -13,13 +13,7 @@ export interface UriComponents {
 }
 
 export class URI {
-  static from(components: {
-    scheme: string;
-    authority?: string;
-    path?: string;
-    query?: string;
-    fragment?: string;
-  }) {
+  static from(components: { scheme: string; authority?: string; path?: string; query?: string; fragment?: string }) {
     return new URI(Uri.from(components));
   }
 
@@ -109,7 +103,7 @@ export class URI {
   withScheme(scheme: string): URI {
     const newCodeUri = Uri.from({
       ...this.codeUri.toJSON(),
-      scheme
+      scheme,
     });
     return new URI(newCodeUri);
   }
@@ -132,9 +126,9 @@ export class URI {
      */
     if (process.env.NODE_ENV !== 'production' && console !== undefined) {
       console.warn(
-        'Warning: `Uri.withoutScheme` is deprecated, '
-        + 'If you want to get `fsPath` by `withoutScheme` method, '
-        + 'it\'s recommended to use `uri.path.toString` directly'
+        'Warning: `Uri.withoutScheme` is deprecated, ' +
+          'If you want to get `fsPath` by `withoutScheme` method, ' +
+          "it's recommended to use `uri.path.toString` directly",
       );
     }
 
@@ -154,7 +148,7 @@ export class URI {
     const newCodeUri = Uri.from({
       ...this.codeUri.toJSON(),
       scheme: this.codeUri.scheme,
-      authority
+      authority,
     });
     return new URI(newCodeUri);
   }
@@ -173,7 +167,7 @@ export class URI {
     const newCodeUri = Uri.from({
       ...this.codeUri.toJSON(),
       scheme: this.codeUri.scheme,
-      path: path.toString()
+      path: path.toString(),
     });
     return new URI(newCodeUri);
   }
@@ -192,7 +186,7 @@ export class URI {
     const newCodeUri = Uri.from({
       ...this.codeUri.toJSON(),
       scheme: this.codeUri.scheme,
-      query
+      query,
     });
     return new URI(newCodeUri);
   }
@@ -211,7 +205,7 @@ export class URI {
     const newCodeUri = Uri.from({
       ...this.codeUri.toJSON(),
       scheme: this.codeUri.scheme,
-      fragment
+      fragment,
     });
     return new URI(newCodeUri);
   }
@@ -255,7 +249,12 @@ export class URI {
   }
 
   isEqual(uri: URI): boolean {
-    return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqual(uri.path) && this.query === uri.query;
+    return (
+      this.authority === uri.authority &&
+      this.scheme === uri.scheme &&
+      this.path.isEqual(uri.path) &&
+      this.query === uri.query
+    );
   }
 
   matchGlobPattern(pattern: string | IRelativePattern): boolean {
@@ -290,8 +289,7 @@ export class URI {
       if (value !== undefined) {
         values.push(encodeURIComponent(key) + '=' + value);
       }
-    })
+    });
     return values.join('&');
   }
-
 }

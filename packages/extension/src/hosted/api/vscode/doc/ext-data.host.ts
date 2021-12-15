@@ -27,15 +27,22 @@ export function regExpLeadsToEndlessLoop(regexp: RegExp): boolean {
 }
 
 export class ExtHostDocumentData extends MirrorTextModel {
-
   private _proxy: IMainThreadDocumentsShape;
   private _languageId: string;
   private _isDirty: boolean;
   private _document: vscode.TextDocument;
   private _textLines: vscode.TextLine[] = [];
-  private _isDisposed: boolean = false;
+  private _isDisposed = false;
 
-  constructor(proxy: IMainThreadDocumentsShape, uri: Uri, lines: string[], eol: string, languageId: string, versionId: number, isDirty: boolean) {
+  constructor(
+    proxy: IMainThreadDocumentsShape,
+    uri: Uri,
+    lines: string[],
+    eol: string,
+    languageId: string,
+    versionId: number,
+    isDirty: boolean,
+  ) {
     super(uri, lines, eol, versionId);
     this._proxy = proxy;
     this._languageId = languageId;
@@ -64,23 +71,57 @@ export class ExtHostDocumentData extends MirrorTextModel {
     if (!this._document) {
       const data = this;
       this._document = {
-        get uri() { return data._uri; },
-        get fileName() { return data._uri.fsPath; },
-        get isUntitled() { return data._uri.scheme === Schemas.untitled; },
-        get languageId() { return data._languageId; },
-        get version() { return data._versionId; },
-        get isClosed() { return data._isDisposed; },
-        get isDirty() { return data._isDirty; },
-        save() { return data._save(); },
-        getText(range?) { return range ? data._getTextInRange(range) : data.getText(); },
-        get eol() { return data._eol === '\n' ? EndOfLine.LF : EndOfLine.CRLF; },
-        get lineCount() { return data._lines.length; },
-        lineAt(lineOrPos: number | vscode.Position) { return data._lineAt(lineOrPos); },
-        offsetAt(pos) { return data._offsetAt(pos); },
-        positionAt(offset) { return data._positionAt(offset); },
-        validateRange(ran) { return data._validateRange(ran); },
-        validatePosition(pos) { return data._validatePosition(pos); },
-        getWordRangeAtPosition(pos, regexp?) { return data._getWordRangeAtPosition(pos, regexp); },
+        get uri() {
+          return data._uri;
+        },
+        get fileName() {
+          return data._uri.fsPath;
+        },
+        get isUntitled() {
+          return data._uri.scheme === Schemas.untitled;
+        },
+        get languageId() {
+          return data._languageId;
+        },
+        get version() {
+          return data._versionId;
+        },
+        get isClosed() {
+          return data._isDisposed;
+        },
+        get isDirty() {
+          return data._isDirty;
+        },
+        save() {
+          return data._save();
+        },
+        getText(range?) {
+          return range ? data._getTextInRange(range) : data.getText();
+        },
+        get eol() {
+          return data._eol === '\n' ? EndOfLine.LF : EndOfLine.CRLF;
+        },
+        get lineCount() {
+          return data._lines.length;
+        },
+        lineAt(lineOrPos: number | vscode.Position) {
+          return data._lineAt(lineOrPos);
+        },
+        offsetAt(pos) {
+          return data._offsetAt(pos);
+        },
+        positionAt(offset) {
+          return data._positionAt(offset);
+        },
+        validateRange(ran) {
+          return data._validateRange(ran);
+        },
+        validatePosition(pos) {
+          return data._validatePosition(pos);
+        },
+        getWordRangeAtPosition(pos, regexp?) {
+          return data._getWordRangeAtPosition(pos, regexp);
+        },
       };
     }
     return Object.freeze(this._document);
@@ -113,10 +154,10 @@ export class ExtHostDocumentData extends MirrorTextModel {
     }
 
     // tslint:disable-next-line:one-variable-per-declaration
-    const lineEnding = this._eol,
-      startLineIndex = range.start.line,
-      endLineIndex = range.end.line,
-      resultLines: string[] = [];
+    const lineEnding = this._eol;
+    const startLineIndex = range.start.line;
+    const endLineIndex = range.end.line;
+    const resultLines: string[] = [];
 
     resultLines.push(this._lines[startLineIndex].substring(range.start.character));
     for (let i = startLineIndex + 1; i < endLineIndex; i++) {
@@ -128,7 +169,6 @@ export class ExtHostDocumentData extends MirrorTextModel {
   }
 
   private _lineAt(lineOrPosition: number | vscode.Position): vscode.TextLine {
-
     let line: number | undefined;
     if (lineOrPosition instanceof Position) {
       line = lineOrPosition.line;
@@ -142,13 +182,10 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
     let result = this._textLines[line];
     if (!result || result.lineNumber !== line || result.text !== this._lines[line]) {
-
       const text = this._lines[line];
       const firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(text)![1].length;
       const range = new Range(line, 0, line, text.length);
-      const rangeIncludingLineBreak = line < this._lines.length - 1
-        ? new Range(line, 0, line + 1, 0)
-        : range;
+      const rangeIncludingLineBreak = line < this._lines.length - 1 ? new Range(line, 0, line + 1, 0) : range;
 
       result = Object.freeze({
         lineNumber: line,
@@ -239,11 +276,12 @@ export class ExtHostDocumentData extends MirrorTextModel {
     if (!regexp) {
       // use default when custom-regexp isn't provided
       regexp = getWordDefinitionFor(this._languageId);
-
     } else if (regExpLeadsToEndlessLoop(regexp)) {
       // use default when custom-regexp is bad
       // tslint:disable-next-line:no-console
-      console.warn(`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`);
+      console.warn(
+        `[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`,
+      );
       regexp = getWordDefinitionFor(this._languageId);
     }
 

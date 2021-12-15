@@ -2,11 +2,9 @@ import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-help
 import { NextToolbarRegistryImpl } from '../src/toolbar/toolbar.registry';
 
 describe('toolbar tests', () => {
-
   const injector = createBrowserInjector([]);
 
   it('toolbar registry test', () => {
-
     const registry: NextToolbarRegistryImpl = injector.get(NextToolbarRegistryImpl);
 
     registry.addLocation('top');
@@ -55,17 +53,25 @@ describe('toolbar tests', () => {
       component: {} as any,
     });
 
-    expect(registry.getToolbarActions({location: 'top', group: 'test-top'})).toEqual(expect.objectContaining({
-      actions: [expect.objectContaining({
-        id: 'test-top-action1',
-      })],
-    }));
+    expect(registry.getToolbarActions({ location: 'top', group: 'test-top' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-top-action1',
+          }),
+        ],
+      }),
+    );
 
-    expect(registry.getToolbarActions({location: 'top', group: '_tail'})).toEqual(expect.objectContaining({
-      actions: [expect.objectContaining({
-        id: 'test-top-action2',
-      })],
-    }));
+    expect(registry.getToolbarActions({ location: 'top', group: '_tail' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-top-action2',
+          }),
+        ],
+      }),
+    );
 
     registry.registerToolbarAction({
       id: 'test-middle-action',
@@ -86,47 +92,60 @@ describe('toolbar tests', () => {
       component: {} as any,
     });
 
-    expect(registry.getToolbarActions({location: 'bottom', group: '_tail'})).toEqual(expect.objectContaining({
-      actions: [expect.objectContaining({
-        id: 'test-middle-action',
-      })],
-    }));
+    expect(registry.getToolbarActions({ location: 'bottom', group: '_tail' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-middle-action',
+          }),
+        ],
+      }),
+    );
 
-    expect(registry.getToolbarActions({location: 'bottom', group: 'test3'})).toBeUndefined();
+    expect(registry.getToolbarActions({ location: 'bottom', group: 'test3' })).toBeUndefined();
 
     registry.registerToolbarActionGroup({
       id: 'test3',
       preferredLocation: 'bottom',
     });
 
-    expect(registry.getToolbarActions({location: 'bottom', group: 'test3'})).toEqual(expect.objectContaining({
-      actions: [expect.objectContaining({
-        id: 'test-middle-action2',
-      })],
-    }));
+    expect(registry.getToolbarActions({ location: 'bottom', group: 'test3' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-middle-action2',
+          }),
+        ],
+      }),
+    );
 
     disposer1.dispose();
 
-    expect(registry.getToolbarActions({location: 'top', group: 'test-top'})).toBeUndefined();
+    expect(registry.getToolbarActions({ location: 'top', group: 'test-top' })).toBeUndefined();
 
-    expect(registry.getToolbarActions({location: 'top', group: '_tail'})).toEqual(expect.objectContaining({
-      actions: [ expect.objectContaining({
-        id: 'test-top-action1',
-      }), expect.objectContaining({
-        id: 'test-top-action2',
+    expect(registry.getToolbarActions({ location: 'top', group: '_tail' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-top-action1',
+          }),
+          expect.objectContaining({
+            id: 'test-top-action2',
+          }),
+        ],
       }),
-     ],
-    }));
+    );
 
     disposer2.dispose();
 
-    expect(registry.getToolbarActions({location: 'top', group: '_tail'})).toEqual(expect.objectContaining({
-      actions: [ expect.objectContaining({
-        id: 'test-top-action2',
+    expect(registry.getToolbarActions({ location: 'top', group: '_tail' })).toEqual(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            id: 'test-top-action2',
+          }),
+        ],
       }),
-     ],
-    }));
-
+    );
   });
-
 });

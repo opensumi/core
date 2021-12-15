@@ -1,11 +1,16 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { INativeMenuTemplate, Domain, isWindows, IDisposable, IElectronMainMenuService } from '@opensumi/ide-core-common';
+import {
+  INativeMenuTemplate,
+  Domain,
+  isWindows,
+  IDisposable,
+  IElectronMainMenuService,
+} from '@opensumi/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
 import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
 @Injectable()
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
-
   private windowAppMenuDisposers = new Map<number, IDisposable>();
 
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
@@ -44,7 +49,6 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
         window.setMenu(menu);
       }
     }
-
   }
 
   async runNativeRoleAction(actionName: string): Promise<void> {
@@ -71,9 +75,11 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
     return {
       label: template.label,
       accelerator: template.accelerator,
-      click: template.action ? () => {
-        this.eventEmitter.fire('menuClick', targetId, template.id);
-      } : undefined,
+      click: template.action
+        ? () => {
+            this.eventEmitter.fire('menuClick', targetId, template.id);
+          }
+        : undefined,
       submenu: template.submenu ? template.submenu.map((t) => this.getElectronTemplate(t, targetId)) : undefined,
       type: template.type,
       role: template.role as any,
@@ -81,17 +87,14 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
       checked: template.checked,
     };
   }
-
 }
 
 @Domain(ElectronMainContribution)
 export class MenuElectronMainContribution implements ElectronMainContribution {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
   registerMainApi(registry: ElectronMainApiRegistry) {
     registry.registerMainApi(IElectronMainMenuService, this.injector.get(ElectronMainMenuService));
   }
-
 }

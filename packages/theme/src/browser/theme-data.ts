@@ -45,10 +45,7 @@ import {
   TokenStyleDefinitions,
   TokenStyleValue,
 } from '../common/semantic-tokens-registry';
-import {
-  editorBackground,
-  editorForeground,
-} from '../common/color-tokens/editor';
+import { editorBackground, editorForeground } from '../common/color-tokens/editor';
 
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   const ruleScope = rule.scope;
@@ -76,9 +73,7 @@ function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   };
 }
 
-function isSemanticTokenColorizationSetting(
-  style: any,
-): style is ISemanticTokenColorizationSetting {
+function isSemanticTokenColorizationSetting(style: any): style is ISemanticTokenColorizationSetting {
   return (
     style &&
     (isString(style.foreground) ||
@@ -146,12 +141,7 @@ export class ThemeData implements IThemeData {
     }
   }
 
-  public async initializeThemeData(
-    id: string,
-    name: string,
-    base: string,
-    themeLocation: URI,
-  ) {
+  public async initializeThemeData(id: string, name: string, base: string, themeLocation: URI) {
     this.id = id;
     this.name = name;
     this.base = base as BuiltinTheme;
@@ -168,9 +158,7 @@ export class ThemeData implements IThemeData {
     this.doInitTokenRules();
     for (const setting of customSettings) {
       this.transform(setting, (rule) => {
-        const existIndex = this.rules.findIndex(
-          (item) => item.token === rule.token,
-        );
+        const existIndex = this.rules.findIndex((item) => item.token === rule.token);
         if (existIndex > -1) {
           this.rules.splice(existIndex, 1, rule);
         } else {
@@ -245,8 +233,7 @@ export class ThemeData implements IThemeData {
     selectorString: string,
     settings: ISemanticTokenColorizationSetting | string | boolean | undefined,
   ): SemanticTokenRule | undefined {
-    const selector =
-      this.semanticTokenRegistry.parseTokenSelector(selectorString);
+    const selector = this.semanticTokenRegistry.parseTokenSelector(selectorString);
     let style: TokenStyle | undefined;
     if (typeof settings === 'string') {
       style = TokenStyle.fromSettings(settings, undefined);
@@ -271,9 +258,7 @@ export class ThemeData implements IThemeData {
     resultColors: IColorMap,
   ): Promise<any> {
     const timer = this.reporter.time(REPORT_NAME.THEME_LOAD);
-    const ret = await this.fileServiceClient.resolveContent(
-      themeLocation.toString(),
-    );
+    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
     const themeContent = ret.content;
     timer.timeEnd(themeLocation.toString());
     const themeLocationPath = themeLocation.path.toString();
@@ -283,15 +268,9 @@ export class ThemeData implements IThemeData {
       if (theme.include) {
         this.inherit = true;
         // http 的不作支持
-        const includePath = themeLocation.path.dir.join(
-          theme.include.replace(/^\.\//, ''),
-        );
+        const includePath = themeLocation.path.dir.join(theme.include.replace(/^\.\//, ''));
         const includeLocation = themeLocation.withPath(includePath);
-        includeCompletes = this.loadColorTheme(
-          includeLocation,
-          resultRules,
-          resultColors,
-        );
+        includeCompletes = this.loadColorTheme(includeLocation, resultRules, resultColors);
       }
       await includeCompletes;
       // settings
@@ -308,10 +287,7 @@ export class ThemeData implements IThemeData {
         /* tslint:disable forin */
         for (const key in semanticTokenColors) {
           try {
-            const rule = this.readSemanticTokenRule(
-              key,
-              semanticTokenColors[key],
-            );
+            const rule = this.readSemanticTokenRule(key, semanticTokenColors[key]);
             if (rule) {
               this.semanticTokenRules.push(rule);
             }
@@ -337,7 +313,7 @@ export class ThemeData implements IThemeData {
         }
         // new JSON color themes format
         // tslint:disable-next-line
-        for (let colorId in colors) {
+        for (const colorId in colors) {
           const colorHex = colors[colorId];
           if (typeof colorHex === 'string') {
             // ignore colors tht are null
@@ -352,9 +328,7 @@ export class ThemeData implements IThemeData {
           resultRules.push(...tokenColors);
           return null;
         } else if (typeof tokenColors === 'string') {
-          const tokenPath = themeLocation.path.dir.join(
-            tokenColors.replace(/^\.\//, ''),
-          );
+          const tokenPath = themeLocation.path.dir.join(tokenColors.replace(/^\.\//, ''));
           const tokenLocation = themeLocation.withPath(tokenPath);
           // tmTheme
           return this.loadSyntaxTokens(tokenLocation);
@@ -377,50 +351,28 @@ export class ThemeData implements IThemeData {
     }
   }
 
-  private async loadSyntaxTokens(
-    themeLocation: URI,
-  ): Promise<ITokenColorizationRule[]> {
-    const ret = await this.fileServiceClient.resolveContent(
-      themeLocation.toString(),
-    );
+  private async loadSyntaxTokens(themeLocation: URI): Promise<ITokenColorizationRule[]> {
+    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
     try {
       const theme = parsePList(ret.content);
       const settings = theme.settings;
       if (!Array.isArray(settings)) {
         return Promise.reject(
           new Error(
-            localize(
-              'error.plist.invalidformat',
-              "Problem parsing tmTheme file: {0}. 'settings' is not array.",
-            ),
+            localize('error.plist.invalidformat', "Problem parsing tmTheme file: {0}. 'settings' is not array."),
           ),
         );
       }
       convertSettings(settings, this.themeSettings, this.colorMap);
       return Promise.resolve(settings);
     } catch (e) {
-      return Promise.reject(
-        new Error(
-          localize(
-            'error.cannotparse',
-            'Problems parsing tmTheme file: {0}',
-            e.message,
-          ),
-        ),
-      );
+      return Promise.reject(new Error(localize('error.cannotparse', 'Problems parsing tmTheme file: {0}', e.message)));
     }
   }
 
   // 将 ITokenColorizationRule 转化为 ITokenThemeRule
-  protected transform(
-    tokenColor: ITokenColorizationRule,
-    acceptor: (rule: monaco.editor.ITokenThemeRule) => void,
-  ) {
-    if (
-      tokenColor.scope &&
-      tokenColor.settings &&
-      tokenColor.scope === 'token.info-token'
-    ) {
+  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: monaco.editor.ITokenThemeRule) => void) {
+    if (tokenColor.scope && tokenColor.settings && tokenColor.scope === 'token.info-token') {
       this.hasDefaultTokens = true;
     }
     if (typeof tokenColor.scope === 'undefined') {
@@ -432,41 +384,34 @@ export class ThemeData implements IThemeData {
 
     for (const scope of tokenColor.scope) {
       // Converting numbers into a format that monaco understands
-      const settings = Object.keys(tokenColor.settings).reduce(
-        (previous: { [key: string]: string }, current) => {
-          let value: string = tokenColor.settings[current];
-          if (
-            current !== 'foreground' &&
-            current !== 'background' &&
-            current !== 'fontStyle'
-          ) {
-            delete tokenColor.settings[current];
-            return previous;
-          }
-          if (current !== 'fontStyle' && typeof value === 'string') {
-            if (value.indexOf('#') === -1) {
-              // 兼容 white、red 类型色值
-              const color = Color[value];
-              if (color) {
-                value = Color.Format.CSS.formatHex(color);
-                tokenColor.settings[current] = value;
-              } else {
-                // 去掉主题瞎写的值
-                delete tokenColor.settings[current];
-                return previous;
-              }
-            } else {
-              const color = Color.fromHex(value);
-              value = Color.Format.CSS.formatHex(color);
-              // 主题只会识别 Hex 的色值
-              tokenColor.settings[current] = value;
-            }
-          }
-          previous[current] = value;
+      const settings = Object.keys(tokenColor.settings).reduce((previous: { [key: string]: string }, current) => {
+        let value: string = tokenColor.settings[current];
+        if (current !== 'foreground' && current !== 'background' && current !== 'fontStyle') {
+          delete tokenColor.settings[current];
           return previous;
-        },
-        {},
-      );
+        }
+        if (current !== 'fontStyle' && typeof value === 'string') {
+          if (value.indexOf('#') === -1) {
+            // 兼容 white、red 类型色值
+            const color = Color[value];
+            if (color) {
+              value = Color.Format.CSS.formatHex(color);
+              tokenColor.settings[current] = value;
+            } else {
+              // 去掉主题瞎写的值
+              delete tokenColor.settings[current];
+              return previous;
+            }
+          } else {
+            const color = Color.fromHex(value);
+            value = Color.Format.CSS.formatHex(color);
+            // 主题只会识别 Hex 的色值
+            tokenColor.settings[current] = value;
+          }
+        }
+        previous[current] = value;
+        return previous;
+      }, {});
 
       acceptor({
         ...settings,
@@ -533,11 +478,7 @@ export class ThemeData implements IThemeData {
       }
     }
 
-    function _processStyle(
-      matchScore: number,
-      style: TokenStyle,
-      definition: TokenStyleDefinition,
-    ) {
+    function _processStyle(matchScore: number, style: TokenStyle, definition: TokenStyleDefinition) {
       if (style.foreground && score.foreground <= matchScore) {
         score.foreground = matchScore;
         result.foreground = style.foreground;
@@ -594,16 +535,11 @@ export class ThemeData implements IThemeData {
   /**
    * @param tokenStyleValue Resolve a tokenStyleValue in the context of a theme
    */
-  public resolveTokenStyleValue(
-    tokenStyleValue: TokenStyleValue | undefined,
-  ): TokenStyle | undefined {
+  public resolveTokenStyleValue(tokenStyleValue: TokenStyleValue | undefined): TokenStyle | undefined {
     if (tokenStyleValue === undefined) {
       return undefined;
     } else if (typeof tokenStyleValue === 'string') {
-      const { type, modifiers, language } = parseClassifierString(
-        tokenStyleValue,
-        '',
-      );
+      const { type, modifiers, language } = parseClassifierString(tokenStyleValue, '');
       return this.getTokenStyle(type, modifiers, language);
     } else if (typeof tokenStyleValue === 'object') {
       return tokenStyleValue;
@@ -611,10 +547,7 @@ export class ThemeData implements IThemeData {
     return undefined;
   }
 
-  public resolveScopes(
-    scopes: ProbeScope[],
-    definitions?: TextMateThemingRuleDefinitions,
-  ): TokenStyle | undefined {
+  public resolveScopes(scopes: ProbeScope[], definitions?: TextMateThemingRuleDefinitions): TokenStyle | undefined {
     if (!this.themeTokenScopeMatchers) {
       this.themeTokenScopeMatchers = this.themeSettings.map(getScopeMatcher);
     }
@@ -650,18 +583,12 @@ export class ThemeData implements IThemeData {
         }
       }
 
-      findTokenStyleForScopeInScopes(
-        this.themeTokenScopeMatchers,
-        this.themeSettings,
-      );
+      findTokenStyleForScopeInScopes(this.themeTokenScopeMatchers, this.themeSettings);
 
       if (foreground !== undefined || fontStyle !== undefined) {
         if (definitions) {
           definitions.foreground = foregroundThemingRule;
-          definitions.bold =
-            definitions.italic =
-            definitions.underline =
-              fontStyleThemingRule;
+          definitions.bold = definitions.italic = definitions.underline = fontStyleThemingRule;
           definitions.scope = scope;
         }
 
@@ -672,9 +599,7 @@ export class ThemeData implements IThemeData {
   }
 }
 
-function normalizeColor(
-  color: string | Color | undefined | null,
-): string | undefined {
+function normalizeColor(color: string | Color | undefined | null): string | undefined {
   if (!color) {
     return undefined;
   }
@@ -682,10 +607,7 @@ function normalizeColor(
     color = Color.Format.CSS.formatHexA(color, true);
   }
   const len = color.length;
-  if (
-    color.charCodeAt(0) !== CharCode.Hash ||
-    (len !== 4 && len !== 5 && len !== 7 && len !== 9)
-  ) {
+  if (color.charCodeAt(0) !== CharCode.Hash || (len !== 4 && len !== 5 && len !== 7 && len !== 9)) {
     return undefined;
   }
   const result = [CharCode.Hash];
@@ -701,11 +623,7 @@ function normalizeColor(
     }
   }
 
-  if (
-    result.length === 9 &&
-    result[7] === CharCode.F &&
-    result[8] === CharCode.F
-  ) {
+  if (result.length === 9 && result[7] === CharCode.F && result[8] === CharCode.F) {
     result.length = 7;
   }
   return String.fromCharCode(...result);

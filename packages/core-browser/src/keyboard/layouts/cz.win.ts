@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     Equal: ['´', 'ˇ', '¸', '', 0, 'VK_OEM_2'],
     BracketLeft: ['ú', '/', '÷', '', 0, 'VK_OEM_4'],
     BracketRight: [')', '(', '×', '', 0, 'VK_OEM_6'],
-    Backslash: ['¨', '\'', '¤', '', 0, 'VK_OEM_5'],
+    Backslash: ['¨', "'", '¤', '', 0, 'VK_OEM_5'],
     Semicolon: ['ů', '"', '$', '', 0, 'VK_OEM_1'],
     Quote: ['§', '!', 'ß', '', 0, 'VK_OEM_7'],
     Backquote: [';', '°', '', '', 0, 'VK_OEM_3'],

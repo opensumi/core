@@ -2,8 +2,24 @@ import type vscode from 'vscode';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILogger, Disposable, PreferenceService, IDisposable } from '@opensumi/ide-core-browser';
-import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@opensumi/ide-terminal-next';
-import { IEnvironmentVariableService, SerializableEnvironmentVariableCollection, EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import {
+  ITerminalApiService,
+  ITerminalGroupViewService,
+  ITerminalController,
+  ITerminalInfo,
+  ITerminalProcessExtHostProxy,
+  IStartExtensionTerminalRequest,
+  ITerminalDimensions,
+  ITerminalDimensionsDto,
+  ITerminalExternalLinkProvider,
+  ITerminalClient,
+  ITerminalLink,
+} from '@opensumi/ide-terminal-next';
+import {
+  IEnvironmentVariableService,
+  SerializableEnvironmentVariableCollection,
+  EnvironmentVariableServiceToken,
+} from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { deserializeEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
@@ -51,16 +67,24 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   private bindEvent() {
-    this.disposable.addDispose(this.terminalApi.onDidChangeActiveTerminal((id) => {
-      this.proxy.$onDidChangeActiveTerminal(id);
-    }));
-    this.disposable.addDispose(this.terminalApi.onDidCloseTerminal((e) => {
-      this.proxy.$onDidCloseTerminal(e);
-    }));
-    this.disposable.addDispose(this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
-      this.proxy.$onDidOpenTerminal(info);
-    }));
-    this.disposable.addDispose(this.controller.onInstanceRequestStartExtensionTerminal((e) => this._onRequestStartExtensionTerminal(e)));
+    this.disposable.addDispose(
+      this.terminalApi.onDidChangeActiveTerminal((id) => {
+        this.proxy.$onDidChangeActiveTerminal(id);
+      }),
+    );
+    this.disposable.addDispose(
+      this.terminalApi.onDidCloseTerminal((e) => {
+        this.proxy.$onDidCloseTerminal(e);
+      }),
+    );
+    this.disposable.addDispose(
+      this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
+        this.proxy.$onDidOpenTerminal(info);
+      }),
+    );
+    this.disposable.addDispose(
+      this.controller.onInstanceRequestStartExtensionTerminal((e) => this._onRequestStartExtensionTerminal(e)),
+    );
   }
 
   private initData() {
@@ -117,15 +141,15 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
     // Note that onReisze is not being listened to here as it needs to fire when max dimensions
     // change, excluding the dimension override
-    const initialDimensions: ITerminalDimensionsDto | undefined = request.cols && request.rows ? {
-      columns: request.cols,
-      rows: request.rows,
-    } : undefined;
+    const initialDimensions: ITerminalDimensionsDto | undefined =
+      request.cols && request.rows
+        ? {
+            columns: request.cols,
+            rows: request.rows,
+          }
+        : undefined;
 
-    this.proxy.$startExtensionTerminal(
-      proxy.terminalId,
-      initialDimensions,
-    ).then(request.callback);
+    this.proxy.$startExtensionTerminal(proxy.terminalId, initialDimensions).then(request.callback);
 
     proxy.onInput((data) => this.proxy.$acceptProcessInput(proxy.terminalId, data));
     proxy.onShutdown((immediate) => this.proxy.$acceptProcessShutdown(proxy.terminalId, immediate));
@@ -196,10 +220,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
         persistent,
         map: deserializeEnvironmentVariableCollection(collection),
       };
-      this.environmentVariableService.set(
-        extensionIdentifier,
-        translatedCollection,
-      );
+      this.environmentVariableService.set(extensionIdentifier, translatedCollection);
     } else {
       this.environmentVariableService.delete(extensionIdentifier);
     }
@@ -207,10 +228,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 }
 
 class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
-  constructor(
-    private readonly _proxy: IExtHostTerminal,
-  ) {
-  }
+  constructor(private readonly _proxy: IExtHostTerminal) {}
 
   async provideLinks(instance: ITerminalClient, line: string): Promise<ITerminalLink[] | undefined> {
     const proxy = this._proxy;

@@ -11,7 +11,7 @@ describe('Debug Hover Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugHoverTreeModelService: DebugHoverTreeModelService;
   const mockDebugHoverSource = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
 
   const mockCtxMenuRenderer = {
@@ -23,7 +23,7 @@ describe('Debug Hover Model', () => {
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
     },
     watchEvents: {
       get: jest.fn(() => mockWatcher),
@@ -116,7 +116,7 @@ describe('Debug Hover Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => {} } as any;
     debugHoverTreeModelService.handleTreeHandler(treeHandle);
     expect(debugHoverTreeModelService.treeHandle).toEqual(treeHandle);
   });

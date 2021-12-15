@@ -8,7 +8,6 @@ import { DebugStackFrame, DebugThread } from '../../model';
 
 @Injectable()
 export class DebugCallStackService {
-
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
 
@@ -30,8 +29,10 @@ export class DebugCallStackService {
     }
   }
 
-  public handleContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, data: DebugSession | DebugStackFrame | DebugThread): void => {
-
+  public handleContextMenu = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    data: DebugSession | DebugStackFrame | DebugThread,
+  ): void => {
     this.stackFrameSupportsRestart.reset();
     event.stopPropagation();
     event.preventDefault();
@@ -49,7 +50,10 @@ export class DebugCallStackService {
 
     const { x, y } = event.nativeEvent;
 
-    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugCallStackContext, contextKeyService: this.debugContextKey.contextKeyScoped });
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.DebugCallStackContext,
+      contextKeyService: this.debugContextKey.contextKeyScoped,
+    });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
 
@@ -71,18 +75,23 @@ export class DebugCallStackService {
       return '';
     };
 
-    const toAgrsContext = () => {
-      return data instanceof DebugStackFrame ? {
-        sessionId: data.session.id,
-        threadId: data.thread.id,
-        frameId: data.id,
-      } : data instanceof DebugThread ? {
-        sessionId: data.session.id,
-        threadId: data.id,
-      } : data instanceof DebugSession ? {
-        sessionId: data.id,
-      } : undefined;
-    };
+    const toAgrsContext = () =>
+      data instanceof DebugStackFrame
+        ? {
+            sessionId: data.session.id,
+            threadId: data.thread.id,
+            frameId: data.id,
+          }
+        : data instanceof DebugThread
+        ? {
+            sessionId: data.session.id,
+            threadId: data.id,
+          }
+        : data instanceof DebugSession
+        ? {
+            sessionId: data.id,
+          }
+        : undefined;
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
@@ -90,6 +99,5 @@ export class DebugCallStackService {
       args: [toArgs(), toAgrsContext()],
       contextKeyService: this.debugContextKey.contextKeyScoped,
     });
-  }
-
+  };
 }

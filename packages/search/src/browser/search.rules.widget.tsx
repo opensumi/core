@@ -15,7 +15,9 @@ const IncludeRuleContent = () => (
       <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
       <li>? : {localize('search.help.matchOne')}</li>
       <li>** : {localize('search.help.matchAny')}</li>
-      <li>{} : {localize('search.help.matchWithGroup')}</li>
+      <li>
+        {} : {localize('search.help.matchWithGroup')}
+      </li>
       <li>[] : {localize('search.help.matchRange')}</li>
     </ul>
   </div>
@@ -25,20 +27,20 @@ const ExcludeRuleContent = React.memo(() => {
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
   const searchBrowserService = injector.get(ContentSearchClientService);
-  const excludeList = React.useMemo(() => {
-    return searchBrowserService.getPreferenceSearchExcludes();
-  }, [searchBrowserService]);
+  const excludeList = React.useMemo(() => searchBrowserService.getPreferenceSearchExcludes(), [searchBrowserService]);
 
-  return (<div className={cls(styles.exclude_rule_content)}>
-    <div>
-      {excludeList.map((exclude, index) => {
-        if (index === excludeList.length - 1) {
-          return exclude;
-        }
-        return `${exclude}, `;
-      })}
+  return (
+    <div className={cls(styles.exclude_rule_content)}>
+      <div>
+        {excludeList.map((exclude, index) => {
+          if (index === excludeList.length - 1) {
+            return exclude;
+          }
+          return `${exclude}, `;
+        })}
+      </div>
     </div>
-  </div>);
+  );
 });
 
 interface SearchRulesWidgetProps {
@@ -63,11 +65,7 @@ const IncludeInput = React.memo(
     onOnlyOpenEditorsToggle,
   }: Pick<
     SearchRulesWidgetProps,
-    | 'includeValue'
-    | 'onSearch'
-    | 'onChangeInclude'
-    | 'isOnlyOpenEditors'
-    | 'onOnlyOpenEditorsToggle'
+    'includeValue' | 'onSearch' | 'onChangeInclude' | 'isOnlyOpenEditors' | 'onOnlyOpenEditorsToggle'
   >) => (
     <div className={cls(styles.glob_field)}>
       <div className={cls(styles.label)}>
@@ -102,12 +100,8 @@ const IncludeInput = React.memo(
       />
     </div>
   ),
-  (prevProps, nextProps) => {
-    return (
-      prevProps.includeValue === nextProps.includeValue &&
-      prevProps.isOnlyOpenEditors === nextProps.isOnlyOpenEditors
-    );
-  },
+  (prevProps, nextProps) =>
+    prevProps.includeValue === nextProps.includeValue && prevProps.isOnlyOpenEditors === nextProps.isOnlyOpenEditors,
 );
 
 const ExcludeInput = React.memo(
@@ -120,12 +114,7 @@ const ExcludeInput = React.memo(
     onSearch,
   }: Pick<
     SearchRulesWidgetProps,
-    | 'isIncludeIgnored'
-    | 'onIncludeIgnoredToggle'
-    | 'onOpenPreference'
-    | 'excludeValue'
-    | 'onSearch'
-    | 'onChangeExclude'
+    'isIncludeIgnored' | 'onIncludeIgnoredToggle' | 'onOpenPreference' | 'excludeValue' | 'onSearch' | 'onChangeExclude'
   >) => (
     <div className={cls(styles.glob_field, styles.search_excludes)}>
       <div className={styles.label}>
@@ -149,10 +138,7 @@ const ExcludeInput = React.memo(
             delay={500}
             position={PopoverPosition.right}
           >
-            <span
-              className={cls(getIcon('question-circle'))}
-              style={{ opacity: '0.7', cursor: 'pointer' }}
-            ></span>
+            <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }}></span>
           </Popover>
         </div>
       </div>
@@ -165,37 +151,32 @@ const ExcludeInput = React.memo(
       />
     </div>
   ),
-  (prevProps, nextProps) => {
-    return (
-      prevProps.excludeValue === nextProps.excludeValue &&
-      prevProps.isIncludeIgnored === nextProps.isIncludeIgnored
-    );
-  },
+  (prevProps, nextProps) =>
+    prevProps.excludeValue === nextProps.excludeValue && prevProps.isIncludeIgnored === nextProps.isIncludeIgnored,
 );
 
-function isSearchRulesPropsEqual(
-  prevProps: SearchRulesWidgetProps,
-  nextProps: SearchRulesWidgetProps,
-) {
-  return prevProps.includeValue === nextProps.includeValue
-    && prevProps.excludeValue === nextProps.excludeValue
-    && prevProps.isOnlyOpenEditors === nextProps.isOnlyOpenEditors
-    && prevProps.isIncludeIgnored === nextProps.isIncludeIgnored;
+function isSearchRulesPropsEqual(prevProps: SearchRulesWidgetProps, nextProps: SearchRulesWidgetProps) {
+  return (
+    prevProps.includeValue === nextProps.includeValue &&
+    prevProps.excludeValue === nextProps.excludeValue &&
+    prevProps.isOnlyOpenEditors === nextProps.isOnlyOpenEditors &&
+    prevProps.isIncludeIgnored === nextProps.isIncludeIgnored
+  );
 }
 
-export const SearchRulesWidget = React.memo(({
-  includeValue,
-  excludeValue,
-  onChangeExclude,
-  onChangeInclude,
-  isOnlyOpenEditors,
-  onOnlyOpenEditorsToggle,
-  isIncludeIgnored,
-  onIncludeIgnoredToggle,
-  onSearch,
-  onOpenPreference,
-}: SearchRulesWidgetProps) => {
-  return (
+export const SearchRulesWidget = React.memo(
+  ({
+    includeValue,
+    excludeValue,
+    onChangeExclude,
+    onChangeInclude,
+    isOnlyOpenEditors,
+    onOnlyOpenEditorsToggle,
+    isIncludeIgnored,
+    onIncludeIgnoredToggle,
+    onSearch,
+    onOpenPreference,
+  }: SearchRulesWidgetProps) => (
     <div className='glob_field-container'>
       <IncludeInput
         includeValue={includeValue}
@@ -213,5 +194,6 @@ export const SearchRulesWidget = React.memo(({
         onSearch={onSearch}
       />
     </div>
-  );
-}, isSearchRulesPropsEqual);
+  ),
+  isSearchRulesPropsEqual,
+);

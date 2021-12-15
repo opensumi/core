@@ -1,6 +1,17 @@
 .default-file-icons.show-file-icons {
-  .folder-icon::before, .rootfolder-icon::before { content: ' '; -webkit-mask: data-uri("./fileicons/folder-default.svg") no-repeat 50% 50%; -webkit-mask-size: 14px; background-color: var(--foreground); }
-  .file-icon::before { content: ' '; -webkit-mask: data-uri("./fileicons/file-default.svg") no-repeat 50% 50%; -webkit-mask-size: 14px; background-color: var(--foreground); }
+  .folder-icon::before,
+  .rootfolder-icon::before {
+    content: ' ';
+    -webkit-mask: data-uri('./fileicons/folder-default.svg') no-repeat 50% 50%;
+    -webkit-mask-size: 14px;
+    background-color: var(--foreground);
+  }
+  .file-icon::before {
+    content: ' ';
+    -webkit-mask: data-uri('./fileicons/file-default.svg') no-repeat 50% 50%;
+    -webkit-mask-size: 14px;
+    background-color: var(--foreground);
+  }
 }
 .file-icon,
 .folder-icon,

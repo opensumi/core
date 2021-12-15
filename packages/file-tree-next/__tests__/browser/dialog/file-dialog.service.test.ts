@@ -59,11 +59,13 @@ describe('FileDialogService should be work', () => {
       {
         token: IWorkspaceService,
         useValue: {
-          roots: [{
-            uri: rootUri.toString(),
-            lastModification: new Date().getTime(),
-            isDirectory: true,
-          } as FileStat],
+          roots: [
+            {
+              uri: rootUri.toString(),
+              lastModification: new Date().getTime(),
+              isDirectory: true,
+            } as FileStat,
+          ],
         },
       },
       {
@@ -131,5 +133,4 @@ describe('FileDialogService should be work', () => {
     expect(res).toBe(0);
     res = fileTreeDialogService.sortComparator(newFileByName('a'), newFileByName('a'));
   });
-
 });

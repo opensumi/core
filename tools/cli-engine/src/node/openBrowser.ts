@@ -17,9 +17,7 @@ function getBrowserEnv() {
   // It is specific to the operating system.
   // See https://github.com/sindresorhus/open#app for documentation.
   const value = process.env.BROWSER;
-  const args = process.env.BROWSER_ARGS
-    ? process.env.BROWSER_ARGS.split(' ')
-    : [];
+  const args = process.env.BROWSER_ARGS ? process.env.BROWSER_ARGS.split(' ') : [];
   let action;
   if (!value) {
     // Default.
@@ -42,11 +40,7 @@ function executeNodeScript(scriptPath, url) {
   child.on('close', (code) => {
     if (code !== 0) {
       console.log();
-      console.log(
-        chalk.red(
-          'The script specified as BROWSER environment variable failed.',
-        ),
-      );
+      console.log(chalk.red('The script specified as BROWSER environment variable failed.'));
       console.log(chalk.cyan(scriptPath) + ' exited with code ' + code + '.');
       console.log();
       return;
@@ -61,8 +55,7 @@ function startBrowserProcess(browser, url, args) {
   // Chrome with AppleScript. This lets us reuse an
   // existing tab when possible instead of creating a new one.
   const shouldTryOpenChromeWithAppleScript =
-    process.platform === 'darwin' &&
-    (typeof browser !== 'string' || browser === OSX_CHROME);
+    process.platform === 'darwin' && (typeof browser !== 'string' || browser === OSX_CHROME);
 
   if (shouldTryOpenChromeWithAppleScript) {
     try {

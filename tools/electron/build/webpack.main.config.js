@@ -7,7 +7,7 @@ const path = require('path');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const srcDir = path.join(__dirname, '../src/main');
-const distDir = path.join(__dirname, '../app/dist/main')
+const distDir = path.join(__dirname, '../app/dist/main');
 
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
@@ -20,26 +20,31 @@ module.exports = {
   resolve: {
     mainFields: ['main'],
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.json', '.less'],
-    plugins: [new TsconfigPathsPlugin({
-      configFile: tsConfigPath,
-    })],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
   },
   mode: 'development',
   devtool: 'source-map',
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
-    rules: [{
-      test: /\.tsx?$/,
-      loader: 'ts-loader',
-      options: {
-        configFile: tsConfigPath,
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        options: {
+          configFile: tsConfigPath,
+        },
       },
-    }, {
-      test: /\.mjs$/,
-      include: /node_modules/,
-      type: 'javascript/auto',
-    }],
+      {
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: 'javascript/auto',
+      },
+    ],
   },
   resolveLoader: {
     modules: [path.join(__dirname, '../node_modules')],
@@ -53,6 +58,6 @@ module.exports = {
         return callback(null, 'commonjs ' + request);
       }
       callback();
-    }
+    },
   ],
 };

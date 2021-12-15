@@ -1,11 +1,47 @@
 import { Injectable, Provider } from '@opensumi/di';
 import path from 'path';
 import fs from 'fs';
-import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService, RequireInterceptorService, RequireInterceptorContribution } from '../../../src/common';
+import {
+  ExtensionService,
+  IExtensionNodeClientService,
+  IExtraMetaData,
+  IExtensionMetaData,
+  IExtension,
+  IExtensionProps,
+  ExtensionNodeServiceServerPath,
+  IExtCommandManagement,
+  AbstractExtensionManagementService,
+  IRequireInterceptorService,
+  RequireInterceptorService,
+  RequireInterceptorContribution,
+} from '../../../src/common';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
-import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, IJSONSchemaRegistry, ISchemaStore, URI, Disposable, ICryptrService, ICredentialsService, Emitter } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  ILoggerManagerClient,
+  StorageProvider,
+  DefaultStorageProvider,
+  createContributionProvider,
+  StorageResolverContribution,
+  PreferenceProvider,
+  AppConfig,
+  Uri,
+  CommandRegistryImpl,
+  CommandRegistry,
+  IPreferenceSettingsService,
+  KeybindingRegistryImpl,
+  KeybindingRegistry,
+  IFileServiceClient,
+  IJSONSchemaRegistry,
+  ISchemaStore,
+  URI,
+  Disposable,
+  ICryptrService,
+  ICredentialsService,
+  Emitter,
+} from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
@@ -16,7 +52,11 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WSChanneHandler, WSChannel } from '@opensumi/ide-connection';
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+  IEditorActionRegistry,
+} from '@opensumi/ide-editor/lib/browser';
 import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
@@ -28,13 +68,20 @@ import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
-import { AbstractExtInstanceManagementService, IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
+import {
+  AbstractExtInstanceManagementService,
+  IActivationEventService,
+} from '@opensumi/ide-extension/lib/browser/types';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
 import { ExtInstanceManagementService } from '../../../src/browser/extension-instance-management';
 import { ExtensionManagementService } from '../../../src/browser/extension-management.service';
-import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractWorkerExtProcessService } from '../../../src/common/extension.service';
+import {
+  AbstractNodeExtProcessService,
+  AbstractViewExtProcessService,
+  AbstractWorkerExtProcessService,
+} from '../../../src/common/extension.service';
 import { NodeExtProcessService } from '../../../src/browser/extension-node.service';
 import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
 import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
@@ -48,15 +95,13 @@ import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/seman
 
 @Injectable()
 class MockLoggerManagerClient {
-  getLogger = () => {
-    return {
-      log() { },
-      debug() { },
-      error() { },
-      verbose() { },
-      warn() { },
-    };
-  }
+  getLogger = () => ({
+    log() {},
+    debug() {},
+    error() {},
+    verbose() {},
+    warn() {},
+  });
 }
 
 const mockExtensionProps: IExtensionProps = {
@@ -76,10 +121,7 @@ const mockExtensionProps: IExtensionProps = {
     name: 'sumi-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
     kaitianContributes: {
-      viewsProxies: [
-        'Leftview',
-        'TitleView',
-      ],
+      viewsProxies: ['Leftview', 'TitleView'],
       browserViews: {
         left: {
           type: 'add',
@@ -101,91 +143,91 @@ const mockExtensionProps: IExtensionProps = {
       browserMain: path.join(__dirname, '../../__mocks__/extension/browser.js'),
     },
     contributes: {
-      'actions': [
-        { type: 'action', title: 'test action' },
-      ],
-      'commands': [{
-        'command': 'HelloKaitian',
-        'title': 'HelloKaitian',
-        'icon': 'icon.svg',
-      }],
-      'keybindings': [
+      actions: [{ type: 'action', title: 'test action' }],
+      commands: [
         {
-          'command': 'HelloKaitian',
-          'key': 'ctrl+f1',
-          'mac': 'cmd+f1',
-          'when': 'editorTextFocus',
+          command: 'HelloKaitian',
+          title: 'HelloKaitian',
+          icon: 'icon.svg',
         },
       ],
-      'menus': {
+      keybindings: [
+        {
+          command: 'HelloKaitian',
+          key: 'ctrl+f1',
+          mac: 'cmd+f1',
+          when: 'editorTextFocus',
+        },
+      ],
+      menus: {
         'editor/title': [
           {
-            'when': '!isIdeRunning',
-            'command': 'HelloKaitian',
-            'group': 'navigation',
+            when: '!isIdeRunning',
+            command: 'HelloKaitian',
+            group: 'navigation',
           },
         ],
         'editor/context': [
           {
-            'when': 'isIdeRunning',
-            'command': 'HelloKaitian',
+            when: 'isIdeRunning',
+            command: 'HelloKaitian',
           },
         ],
       },
-      'viewsContainers': {
-        'activitybar': [
+      viewsContainers: {
+        activitybar: [
           {
-            'id': 'package-explorer',
-            'title': 'Package Explorer',
-            'icon': 'icon.svg',
+            id: 'package-explorer',
+            title: 'Package Explorer',
+            icon: 'icon.svg',
           },
           {
-            'id': 'hold-container',
-            'title': 'Test Hold',
-            'icon': 'icon.svg',
+            id: 'hold-container',
+            title: 'Test Hold',
+            icon: 'icon.svg',
           },
         ],
       },
-      'views': {
-        'explorer': [
+      views: {
+        explorer: [
           {
-            'id': 'mockviews',
-            'name': 'Mock Views',
-            'when': 'workspaceHasPackageJSON',
+            id: 'mockviews',
+            name: 'Mock Views',
+            when: 'workspaceHasPackageJSON',
           },
         ],
         'package-explorer': [
           {
-            'id': 'mockviews',
-            'name': 'Mock Views',
+            id: 'mockviews',
+            name: 'Mock Views',
           },
         ],
       },
-      'configuration': {
-        'title': 'Mock Extension Config',
-        'properties': {
+      configuration: {
+        title: 'Mock Extension Config',
+        properties: {
           'mockext.useCodeSnippetsOnMethodSuggest': {
-            'type': 'boolean',
-            'default': false,
-            'description': 'Complete functions with their parameter signature.',
+            type: 'boolean',
+            default: false,
+            description: 'Complete functions with their parameter signature.',
           },
         },
       },
-      'colors': [
+      colors: [
         {
-          'id': 'mock.superstatus.error',
-          'description': 'Color for error message in the status bar.',
-          'defaults': {
-            'dark': '#ff004f',
-            'light': '#ff004f',
-            'highContrast': '#010203',
+          id: 'mock.superstatus.error',
+          description: 'Color for error message in the status bar.',
+          defaults: {
+            dark: '#ff004f',
+            light: '#ff004f',
+            highContrast: '#010203',
           },
         },
       ],
-      'snippets': [
+      snippets: [
         {
-          'language': 'javascript',
-          'path': './javascript.json',
+          language: 'javascript',
+          path: './javascript.json',
         },
       ],
     },
@@ -202,8 +244,8 @@ const mockExtensionProps: IExtensionProps = {
 
 @Injectable()
 class MockWorkbenchEditorService {
-  open() { }
-  apply() { }
+  open() {}
+  apply() {}
   editorGroups = [];
   onActiveResourceChange = () => Disposable.NULL;
   onActiveEditorUriChange = () => Disposable.NULL;
@@ -212,14 +254,15 @@ class MockWorkbenchEditorService {
 const mockExtension = {
   ...mockExtensionProps,
   uri: Uri.file(mockExtensionProps.path),
-  contributes: Object.assign(mockExtensionProps.packageJSON.contributes, mockExtensionProps.packageJSON.kaitianContributes),
-  activate: () => {
-    return true;
-  },
-  reset() { },
-  enable() { },
+  contributes: Object.assign(
+    mockExtensionProps.packageJSON.contributes,
+    mockExtensionProps.packageJSON.kaitianContributes,
+  ),
+  activate: () => true,
+  reset() {},
+  enable() {},
   toJSON: () => mockExtensionProps,
-  addDispose() { },
+  addDispose() {},
 };
 
 export const MOCK_EXTENSIONS: IExtension[] = [mockExtension];
@@ -229,13 +272,22 @@ class MockExtNodeClientService implements IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]> {
+  getAllExtensions(
+    scan: string[],
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]> {
     return Promise.resolve(MOCK_EXTENSIONS);
   }
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData | undefined,
+  ): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   restartExtProcessByClient(): void {
@@ -267,7 +319,6 @@ function mockGlobals() {
 
   (global as any).Worker = MockWorker;
   (global as any).MessagePort = MessagePort;
-
 }
 
 export const mockKaitianExtensionProviders: Provider[] = [
@@ -304,13 +355,19 @@ export const mockKaitianExtensionProviders: Provider[] = [
 export function setupExtensionServiceInjector() {
   mockGlobals();
 
-  const injector = createBrowserInjector([], new MockInjector([DatabaseStorageContribution, {
-    token: AppConfig,
-    useValue: {
-      noExtHost: true,
-      extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
-    },
-  }]));
+  const injector = createBrowserInjector(
+    [],
+    new MockInjector([
+      DatabaseStorageContribution,
+      {
+        token: AppConfig,
+        useValue: {
+          noExtHost: true,
+          extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
+        },
+      },
+    ]),
+  );
   injector.addProviders(
     ...mockKaitianExtensionProviders,
     {
@@ -386,10 +443,10 @@ export function setupExtensionServiceInjector() {
       useValue: {
         whenReady: Promise.resolve(true),
         extensionStoragePath: {},
-        set() { },
-        get() { },
-        getAll() { },
-        reConnectInit() { },
+        set() {},
+        get() {},
+        getAll() {},
+        reConnectInit() {},
       },
     },
     {
@@ -416,16 +473,18 @@ export function setupExtensionServiceInjector() {
     {
       token: IEditorDocumentModelContentRegistry,
       useValue: {
-        registerEditorDocumentModelContentProvider() { },
-        getProvider() { },
-        getContentForUri() { },
+        registerEditorDocumentModelContentProvider() {},
+        getProvider() {},
+        getContentForUri() {},
       },
     },
     {
       token: IEditorDocumentModelService,
       useValue: {
-        createModelReference() { },
-        getAllModels() { return []; },
+        createModelReference() {},
+        getAllModels() {
+          return [];
+        },
       },
     },
     {
@@ -454,11 +513,7 @@ export function setupExtensionServiceInjector() {
     },
     {
       token: StorageProvider,
-      useFactory: () => {
-        return (storageId) => {
-          return injector.get(DefaultStorageProvider).get(storageId);
-        };
-      },
+      useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
     },
     {
       token: PreferenceProvider,
@@ -495,16 +550,18 @@ export function setupExtensionServiceInjector() {
     BrowserRequireInterceptorContribution,
   );
 
-  injector.overrideProviders({
-    token: ICryptrService,
-    useValue: mockService({}),
-  },
+  injector.overrideProviders(
+    {
+      token: ICryptrService,
+      useValue: mockService({}),
+    },
     {
       token: ICredentialsService,
       useValue: mockService({
         onDidChangePassword: new Emitter().event,
       }),
-    });
+    },
+  );
 
   createContributionProvider(injector, StorageResolverContribution);
   createContributionProvider(injector, MainLayoutContribution);

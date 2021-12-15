@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -22,7 +22,7 @@ export interface LabelIcon {
 
 export namespace LabelIcon {
   export function is(val: object): val is LabelIcon {
-      return 'name' in val;
+    return 'name' in val;
   }
 }
 
@@ -34,38 +34,38 @@ export function parseLabel(text: string): LabelPart[] {
   let potentialIcon = '';
 
   for (let idx = 0; idx < text.length; idx++) {
-      const char = text.charAt(idx);
-      parserArray[arrPointer] = parserArray[arrPointer] || '';
-      if (potentialIcon === '') {
-          if (char === '$') {
-              potentialIcon += char;
-          } else {
-              parserArray[arrPointer] += char;
-          }
-      } else if (potentialIcon === '$') {
-          if (char === '(') {
-              potentialIcon += char;
-          } else {
-              parserArray[arrPointer] += potentialIcon + char;
-              potentialIcon = '';
-          }
+    const char = text.charAt(idx);
+    parserArray[arrPointer] = parserArray[arrPointer] || '';
+    if (potentialIcon === '') {
+      if (char === '$') {
+        potentialIcon += char;
       } else {
-          if (char === ')') {
-              const iconClassArr = potentialIcon.substring(2, potentialIcon.length).split('~');
-              if (parserArray[arrPointer] !== '') {
-                  arrPointer++;
-              }
-              parserArray[arrPointer] = { name: iconClassArr[0], animation: iconClassArr[1] };
-              arrPointer++;
-              potentialIcon = '';
-          } else {
-              potentialIcon += char;
-          }
+        parserArray[arrPointer] += char;
       }
+    } else if (potentialIcon === '$') {
+      if (char === '(') {
+        potentialIcon += char;
+      } else {
+        parserArray[arrPointer] += potentialIcon + char;
+        potentialIcon = '';
+      }
+    } else {
+      if (char === ')') {
+        const iconClassArr = potentialIcon.substring(2, potentialIcon.length).split('~');
+        if (parserArray[arrPointer] !== '') {
+          arrPointer++;
+        }
+        parserArray[arrPointer] = { name: iconClassArr[0], animation: iconClassArr[1] };
+        arrPointer++;
+        potentialIcon = '';
+      } else {
+        potentialIcon += char;
+      }
+    }
   }
 
   if (potentialIcon !== '') {
-      parserArray[arrPointer] += potentialIcon;
+    parserArray[arrPointer] += potentialIcon;
   }
 
   return parserArray;

@@ -1,4 +1,10 @@
-import { ISettingGroup, ISettingSection, IDisposable, IPreferenceViewDesc, PreferenceScope } from '@opensumi/ide-core-browser';
+import {
+  ISettingGroup,
+  ISettingSection,
+  IDisposable,
+  IPreferenceViewDesc,
+  PreferenceScope,
+} from '@opensumi/ide-core-browser';
 
 export const SettingContribution = Symbol('SettingContribution');
 
@@ -8,8 +14,8 @@ export interface SettingContribution {
    * @param registry
    */
   registerSetting?(registy: {
-    registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable,
-    registerSettingSection: (key: string, section: ISettingSection) => IDisposable,
+    registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable;
+    registerSettingSection: (key: string, section: ISettingSection) => IDisposable;
   }): void;
 
   /**

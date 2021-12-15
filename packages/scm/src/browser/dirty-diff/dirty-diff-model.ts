@@ -4,7 +4,13 @@ import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@opensumi/ide-core-common';
 import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
-import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import {
+  IDisposable,
+  dispose,
+  Disposable,
+  DisposableStore,
+  toDisposable,
+} from '@opensumi/ide-core-common/lib/disposable';
 import { first } from '@opensumi/ide-core-common/lib/async';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { EditorCollectionService } from '@opensumi/ide-editor';
@@ -18,10 +24,14 @@ import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/comm
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private _originalModel: IEditorDocumentModel | null;
-  get original(): IEditorDocumentModel | null { return this._originalModel; }
+  get original(): IEditorDocumentModel | null {
+    return this._originalModel;
+  }
 
   private _editorModel: IEditorDocumentModel | null;
-  get modified(): IEditorDocumentModel | null { return this._editorModel; }
+  get modified(): IEditorDocumentModel | null {
+    return this._editorModel;
+  }
 
   private diffDelayer: ThrottledDelayer<IChange[] | null> | null;
   private _originalURIPromise?: Promise<Uri | null>;
@@ -57,21 +67,21 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return StaticServices.editorWorkerService.get();
   }
 
-  constructor(
-    @Optional() editorModel: IEditorDocumentModel,
-  ) {
+  constructor(@Optional() editorModel: IEditorDocumentModel) {
     super();
     this._editorModel = editorModel;
     this.diffDelayer = new ThrottledDelayer<IChange[]>(200);
 
     this.addDispose(editorModel.getMonacoModel().onDidChangeContent(() => this.triggerDiff()));
-    this.addDispose(editorModel.onDidChangeEncoding(() => {
-      this.diffDelayer?.cancel();
-      this._originalModel = null;
-      this._originalURIPromise = undefined;
-      this._changes = [];
-      this.triggerDiff();
-    }));
+    this.addDispose(
+      editorModel.onDidChangeEncoding(() => {
+        this.diffDelayer?.cancel();
+        this._originalModel = null;
+        this._originalURIPromise = undefined;
+        this._changes = [];
+        this.triggerDiff();
+      }),
+    );
     this.addDispose(this.scmService.onDidAddRepository(this.onDidAddRepository, this));
     this.scmService.repositories.forEach((r) => this.onDidAddRepository(r));
 
@@ -104,7 +114,12 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return this.diffDelayer
       .trigger(() => this.diff())
       .then((changes) => {
-        if (!this._editorModel || this._editorModel.getMonacoModel().isDisposed() || !this._originalModel || this._originalModel.getMonacoModel().isDisposed()) {
+        if (
+          !this._editorModel ||
+          this._editorModel.getMonacoModel().isDisposed() ||
+          !this._originalModel ||
+          this._originalModel.getMonacoModel().isDisposed()
+        ) {
           return; // disposed
         }
 
@@ -127,7 +142,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
     const diffLimit = DirtyDiffModel.maxFileSize * 1024 * 1024; // MB
     const bufferTextLength = model.getValueLength();
-    return (diffLimit === 0 || bufferTextLength <= diffLimit);
+    return diffLimit === 0 || bufferTextLength <= diffLimit;
   }
 
   // 计算 diff
@@ -138,7 +153,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
 
     // 复用 monaco 内部的 canSyncModelForDiff
-    if (!this.canSyncModelForDiff(this._originalModel?.getMonacoModel()) || !this.canSyncModelForDiff(this._editorModel.getMonacoModel())) {
+    if (
+      !this.canSyncModelForDiff(this._originalModel?.getMonacoModel()) ||
+      !this.canSyncModelForDiff(this._editorModel.getMonacoModel())
+    ) {
       return []; // Files too large
     }
 
@@ -160,7 +178,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
 
     this._originalURIPromise = this.getOriginalResource().then((originalUri) => {
-      if (!this._editorModel) { // disposed
+      if (!this._editorModel) {
+        // disposed
         return null;
       }
 
@@ -173,26 +192,26 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
         return originalUri;
       }
 
-      return this.documentModelManager.createModelReference(new URI(originalUri))
-        .then((docModelRef) => {
-          if (!this._editorModel) { // disposed
-            return null;
-          }
+      return this.documentModelManager.createModelReference(new URI(originalUri)).then((docModelRef) => {
+        if (!this._editorModel) {
+          // disposed
+          return null;
+        }
 
-          if (!docModelRef) {
-            return null;
-          }
+        if (!docModelRef) {
+          return null;
+        }
 
-          this._originalModel = docModelRef.instance;
-          this._originalModel.updateEncoding(this._editorModel.encoding);
+        this._originalModel = docModelRef.instance;
+        this._originalModel.updateEncoding(this._editorModel.encoding);
 
-          const textEditorModel = this._originalModel.getMonacoModel();
+        const textEditorModel = this._originalModel.getMonacoModel();
 
-          this.originalModelDisposables.clear();
-          this.originalModelDisposables.add(docModelRef);
-          this.originalModelDisposables.add(textEditorModel.onDidChangeContent(() => this.triggerDiff()));
-          return originalUri;
-        });
+        this.originalModelDisposables.clear();
+        this.originalModelDisposables.add(docModelRef);
+        this.originalModelDisposables.add(textEditorModel.onDidChangeContent(() => this.triggerDiff()));
+        return originalUri;
+      });
     });
 
     return this._originalURIPromise.finally(() => {
@@ -281,7 +300,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this._originalModel && this._editorModel) {
       const originalUri = this._originalModel.uri;
       const editorUri = this._editorModel.uri;
-      const editor = this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false });
+      const editor = this.editorService.createDiffEditor(widget.getContentNode(), {
+        automaticLayout: true,
+        renderSideBySide: false,
+      });
       const original = await this.documentModelManager.createModelReference(originalUri);
       const edit = await this.documentModelManager.createModelReference(editorUri);
 
@@ -291,16 +313,21 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       editor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
 
       editor.modifiedEditor.monacoEditor.revealLineInCenter(
-        range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2));
+        range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2),
+      );
 
-      widget.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
-        widget.relayout(DirtyDiffModel.heightInLines);
-      }));
+      widget.addDispose(
+        editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
+          widget.relayout(DirtyDiffModel.heightInLines);
+        }),
+      );
 
-      widget.addDispose(this.onDidChange(() => {
-        const { change, count } = this.getChangeFromRange(range) || {};
-        refreshWidget(count, change);
-      }));
+      widget.addDispose(
+        this.onDidChange(() => {
+          const { change, count } = this.getChangeFromRange(range) || {};
+          refreshWidget(count, change);
+        }),
+      );
 
       const { change, count } = this.getChangeFromRange(range) || {};
       if (count && change) {

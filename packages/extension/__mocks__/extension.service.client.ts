@@ -2,16 +2,16 @@ import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExten
 import { mockExtensionProps } from './extensions';
 import { Injectable } from '@opensumi/di';
 
-const mockExtensions: IExtension[] = [{
-  ...mockExtensionProps,
-  contributes: mockExtensionProps.packageJSON.contributes,
-  activate: () => {
-    return true;
+const mockExtensions: IExtension[] = [
+  {
+    ...mockExtensionProps,
+    contributes: mockExtensionProps.packageJSON.contributes,
+    activate: () => true,
+    reset() {},
+    enable() {},
+    toJSON: () => mockExtensionProps,
   },
-  reset() {},
-  enable() {},
-  toJSON: () => mockExtensionProps,
-}];
+];
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
@@ -24,7 +24,11 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData | undefined,
+  ): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   restartExtProcessByClient(): void {

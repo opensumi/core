@@ -2,12 +2,16 @@ import { join } from 'path';
 import { URI, uuid } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
-import { BreakpointManager, DebugBreakpoint, isRuntimeBreakpoint, isDebugBreakpoint, DebugDecorator } from '@opensumi/ide-debug/lib/browser';
+import {
+  BreakpointManager,
+  DebugBreakpoint,
+  isRuntimeBreakpoint,
+  isDebugBreakpoint,
+  DebugDecorator,
+} from '@opensumi/ide-debug/lib/browser';
 
 describe('Debug Breakpoints', () => {
-  const mockInjector = createBrowserInjector([
-    FileServiceClientModule,
-  ]);
+  const mockInjector = createBrowserInjector([FileServiceClientModule]);
   const fileUri = URI.parse(`file://${join(__dirname, 'debug-breakpoint.test.ts')}`);
   const customBreakpointSource = { line: 8 };
   const nextLine = 10;
@@ -39,8 +43,7 @@ describe('Debug Breakpoints', () => {
         verified: true,
       });
       expect(isRuntimeBreakpoint(breakpoint)).toBeTruthy();
-      expect(decorator.getDecoration(breakpoint, true).className)
-        .toEqual('sumi-debug-breakpoint');
+      expect(decorator.getDecoration(breakpoint, true).className).toEqual('sumi-debug-breakpoint');
     });
 
     it('Runtime Unverified Breakpoint', () => {
@@ -50,8 +53,7 @@ describe('Debug Breakpoints', () => {
         verified: false,
       });
       expect(isRuntimeBreakpoint(breakpoint)).toBeFalsy();
-      expect(decorator.getDecoration(breakpoint, true).className)
-        .toEqual('sumi-debug-breakpoint-unverified');
+      expect(decorator.getDecoration(breakpoint, true).className).toEqual('sumi-debug-breakpoint-unverified');
     });
   });
 
@@ -147,13 +149,13 @@ describe('Debug Breakpoints', () => {
         }
       });
 
-      manager.setExceptionBreakpoints(exceptionDescriptors.map((filter) => {
-        return {
+      manager.setExceptionBreakpoints(
+        exceptionDescriptors.map((filter) => ({
           filter,
           label: `${filter} exceptions`,
           default: true,
-        };
-      }));
+        })),
+      );
     });
   });
 });

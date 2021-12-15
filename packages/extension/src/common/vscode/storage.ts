@@ -1,6 +1,10 @@
 import { ExtensionStorageUri } from '@opensumi/ide-extension-storage';
-export interface KeysToAnyValues { [key: string]: any; }
-export interface KeysToKeysToAnyValue { [key: string]: KeysToAnyValues; }
+export interface KeysToAnyValues {
+  [key: string]: any;
+}
+export interface KeysToKeysToAnyValue {
+  [key: string]: KeysToAnyValues;
+}
 
 export interface IMainThreadStorage {
   $getValue(shared: boolean, key: string): Promise<KeysToAnyValues>;

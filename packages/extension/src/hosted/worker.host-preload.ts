@@ -8,7 +8,7 @@ setPerformance(self.performance);
 // make sure Worker cors
 if (self.Worker) {
   const _Worker = self.Worker;
-  Worker = function(stringUrl: string | URL, options?: WorkerOptions) {
+  Worker = function (stringUrl: string | URL, options?: WorkerOptions) {
     const js = `importScripts('${stringUrl}');`;
     options = options || {};
     options.name = options.name || path.basename(stringUrl.toString());

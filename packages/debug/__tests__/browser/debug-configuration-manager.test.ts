@@ -1,4 +1,12 @@
-import { Disposable, QuickPickService, IContextKeyService, PreferenceService, URI, FileStat, StorageProvider } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  QuickPickService,
+  IContextKeyService,
+  PreferenceService,
+  URI,
+  FileStat,
+  StorageProvider,
+} from '@opensumi/ide-core-browser';
 import { DebugConfigurationManager, DebugPreferences } from '@opensumi/ide-debug/lib/browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -33,8 +41,8 @@ describe('Debug Configuration Manager', () => {
     },
     getModel: () => mockMonacoEditorModel,
     setPosition: jest.fn(),
-    getValue: () => {
-      return JSON.stringify({
+    getValue: () =>
+      JSON.stringify({
         configUri: root.resolve('.sumi/launch.json'),
         value: {
           version: '0.2.0',
@@ -44,12 +52,11 @@ describe('Debug Configuration Manager', () => {
               request: 'attach',
               name: 'Attach to BackEnd',
               port: 9999,
-              'restart': true,
+              restart: true,
             },
           ],
         },
-      });
-    },
+      }),
     trigger: jest.fn(),
   };
 
@@ -75,7 +82,7 @@ describe('Debug Configuration Manager', () => {
             request: 'attach',
             name: 'Attach to BackEnd',
             port: 9999,
-            'restart': true,
+            restart: true,
           },
         ],
       },
@@ -163,9 +170,7 @@ describe('Debug Configuration Manager', () => {
     done();
   });
 
-  afterAll(() => {
-
-  });
+  afterAll(() => {});
 
   it('debugModelManager should be init success', () => {
     expect(mockPreferenceService.onPreferenceChanged).toBeCalledTimes(2);
@@ -229,42 +234,56 @@ describe('Debug Configuration Manager', () => {
   it('canSetBreakpointsIn method should be work', () => {
     // jsonc
     let mockGetLanguageIdentifier = jest.fn(() => ({ language: 'jsonc' }));
-    let expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    let expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeFalsy();
     // log
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'log' }));
-    expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeFalsy();
     // undefined model
     expected = debugConfigurationManager.canSetBreakpointsIn(null as any);
     expect(expected).toBeFalsy();
     // if allowBreakpointsEverywhere = true
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'c' }));
-    expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeTruthy();
     // if allowBreakpointsEverywhere = false
     mockDebugPreferences['preference.debug.allowBreakpointsEverywhere'] = false;
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'c' }));
-    expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeFalsy();
     // while debug server support node language
     debugConfigurationManager.addSupportBreakpoints('node');
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'node' }));
-    expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeTruthy();
   });
 
   it('addSupportBreakpoints method should be work', () => {
     const mockGetLanguageIdentifier = jest.fn(() => ({ language: 'abc' }));
     debugConfigurationManager.addSupportBreakpoints('abc');
-    const expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    const expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeTruthy();
   });
 
   it('removeSupportBreakpoints method should be work', () => {
     const mockGetLanguageIdentifier = jest.fn(() => ({ language: 'abc' }));
     debugConfigurationManager.removeSupportBreakpoints('abc');
-    const expected = debugConfigurationManager.canSetBreakpointsIn({getLanguageIdentifier: mockGetLanguageIdentifier} as any);
+    const expected = debugConfigurationManager.canSetBreakpointsIn({
+      getLanguageIdentifier: mockGetLanguageIdentifier,
+    } as any);
     expect(expected).toBeFalsy();
   });
 

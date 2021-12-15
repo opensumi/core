@@ -5,7 +5,16 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  IEventBus,
+  trim,
+  isUndefined,
+  localize,
+  IReporterService,
+  IReporterTimer,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
 import * as arrays from '@opensumi/ide-core-common/lib/arrays';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import {
@@ -123,15 +132,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   workbenchEditorService: WorkbenchEditorService;
 
   @observable
-  replaceValue: string = '';
+  replaceValue = '';
   @observable
-  searchValue: string = '';
+  searchValue = '';
   @observable
-  includeValue: string = '';
+  includeValue = '';
   @observable
-  excludeValue: string = '';
+  excludeValue = '';
   @observable
-  searchError: string = '';
+  searchError = '';
   @observable
   searchState: SEARCH_STATE;
   @observable
@@ -153,21 +162,21 @@ export class ContentSearchClientService implements IContentSearchClientService {
   resultTotal: ResultTotal = resultTotalDefaultValue;
   // Replace state
   @observable
-  isReplaceDoing: boolean = false;
+  isReplaceDoing = false;
 
   @observable
-  isSearchDoing: boolean = false;
+  isSearchDoing = false;
 
   @observable
-  isShowValidateMessage: boolean = true;
+  isShowValidateMessage = true;
 
   @observable
-  isExpandAllResult: boolean = true;
+  isExpandAllResult = true;
 
   _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
-  currentSearchId: number = -1;
+  currentSearchId = -1;
 
   searchInputEl = createRef<HTMLInputElement>();
   replaceInputEl = createRef<HTMLInputElement>();
@@ -239,7 +248,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
     // 长期看需要改造，以支持 registerFileSearchProvider
     if (this.UIState.isOnlyOpenEditors) {
       rootDirs = [];
-      const openResources = arrays.coalesce(arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)));
+      const openResources = arrays.coalesce(
+        arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)),
+      );
       const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
       const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
       const openResourcesInFilter = openResources.filter((resource) => {
@@ -253,11 +264,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
         return true;
       });
       const include: string[] = [];
-      const isAbsolutePath = (resource: URI): boolean => {
-        return !!resource.codeUri.path && resource.codeUri.path[0] === '/';
-      };
+      const isAbsolutePath = (resource: URI): boolean => !!resource.codeUri.path && resource.codeUri.path[0] === '/';
       openResourcesInFilter.forEach(({ uri }) => {
-        if (uri.scheme === Schemas.walkThrough) { return; }
+        if (uri.scheme === Schemas.walkThrough) {
+          return;
+        }
         if (isAbsolutePath(uri)) {
           const searchRoot = this.workspaceService.getWorkspaceRootUri(uri) ?? uri.withPath(uri.path.dir);
           const relPath = searchRoot.path.relative(uri.path);
@@ -297,7 +308,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     transaction(() => {
       this.watchDocModelContentChange(searchOptions, rootDirs);
     });
-  }
+  };
 
   /**
    * 监听正在编辑文件变化，并同步结果
@@ -326,12 +337,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (!docModel) {
         return;
       }
-      const resultData = this.searchFromDocModel(
-        searchOptions,
-        docModel.instance,
-        this.searchValue,
-        rootDirs,
-      );
+      const resultData = this.searchFromDocModel(searchOptions, docModel.instance, this.searchValue, rootDirs);
 
       const oldResults = this.searchResults.get(uriString);
 
@@ -420,12 +426,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
 
     transaction(() => {
-      this.mergeSameUriResult(
-        data,
-        this.searchResults!,
-        this.docModelSearchedList,
-        this.resultTotal,
-      );
+      this.mergeSameUriResult(data, this.searchResults!, this.docModelSearchedList, this.resultTotal);
     });
 
     if (docModelSearchedList) {
@@ -452,7 +453,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   refreshIsEnable() {
-    return !!((this.searchState !== SEARCH_STATE.doing) && this.searchValue);
+    return !!(this.searchState !== SEARCH_STATE.doing && this.searchValue);
   }
 
   clean() {
@@ -475,7 +476,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.excludeValue ||
       this.includeValue ||
       this.searchError ||
-      (this.searchResults && this.searchResults.size > 0));
+      (this.searchResults && this.searchResults.size > 0)
+    );
   }
 
   foldIsEnable() {
@@ -486,22 +488,22 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
-  }
+  };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.replaceValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
-  }
+  };
 
   onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.excludeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
-  }
+  };
 
   onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.includeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
-  }
+  };
 
   setSearchValueFromActivatedEditor = () => {
     if (!this.workbenchEditorService) {
@@ -512,41 +514,30 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (currentEditor) {
       const selections = currentEditor.getSelections();
       if (selections && selections.length > 0 && currentEditor.currentDocumentModel) {
-        const {
-          selectionStartLineNumber,
-          selectionStartColumn,
-          positionLineNumber,
-          positionColumn,
-        } = selections[0];
+        const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selections[0];
         const selectionText = currentEditor.currentDocumentModel.getText(
-          new monaco.Range(
-            selectionStartLineNumber,
-            selectionStartColumn,
-            positionLineNumber,
-            positionColumn,
-          ),
+          new monaco.Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
         );
 
         const searchText = trim(selectionText) === '' ? this.searchValue : selectionText;
         this.searchValue = searchText;
       }
     }
-  }
+  };
 
   get onTitleStateChange() {
     return this.titleStateEmitter.event;
   }
 
-  private shouldSearch = (uiState: Partial<typeof this.UIState>) => {
-    return uiState.isWholeWord
-      || uiState.isMatchCase
-      || uiState.isUseRegexp
-      || uiState.isIncludeIgnored
-      || uiState.isOnlyOpenEditors;
-  }
+  private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
+    uiState.isWholeWord ||
+    uiState.isMatchCase ||
+    uiState.isUseRegexp ||
+    uiState.isIncludeIgnored ||
+    uiState.isOnlyOpenEditors;
 
   updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
-    if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
+    if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
       this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
       // 搜索框状态发现变化，重置搜索历史的当前位置
       this.searchHistory.reset();
@@ -559,7 +550,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       return;
     }
     this.search(e, newUIState);
-  }
+  };
 
   getPreferenceSearchExcludes(): string[] {
     const excludes: string[] = [];
@@ -614,7 +605,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       }
       this.search();
     });
-  }
+  };
 
   dispose() {
     this.titleStateEmitter.dispose();
@@ -642,12 +633,14 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   private setDefaultIncludeValue() {
     const searchIncludes = this.searchPreferences['search.include'] || {};
-    this.includeValue = Object.keys(searchIncludes).reduce<string[]>((includes, key) => {
-      if (searchIncludes[key]) {
-        includes.push(key);
-      }
-      return includes;
-    }, []).join(',');
+    this.includeValue = Object.keys(searchIncludes)
+      .reduce<string[]>((includes, key) => {
+        if (searchIncludes[key]) {
+          includes.push(key);
+        }
+        return includes;
+      }, [])
+      .join(',');
     // 如有 inlcude 填充，则显示搜索条件
     if (this.includeValue) {
       this.updateUIState({ isDetailOpen: true });
@@ -660,7 +653,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     docSearchedList: string[],
     total?: ResultTotal,
   ) {
-
     const theTotal = total || { fileNum: 0, resultNum: 0 };
     data.forEach((result: ContentSearchResult) => {
       const oldData: ContentSearchResult[] | undefined = searchResultMap.get(result.fileUri);
@@ -692,8 +684,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     rootDirs: string[],
     codeEditor?,
   ): {
-    result: ContentSearchResult[],
-    searchedList: string[],
+    result: ContentSearchResult[];
+    searchedList: string[];
   } {
     let matcherList: ParsedPattern[] = [];
     const uriString = docModel.uri.toString();
@@ -705,9 +697,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       searchOptions.include.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
       });
-      const isInclude = matcherList.some((matcher) => {
-        return matcher(uriString);
-      });
+      const isInclude = matcherList.some((matcher) => matcher(uriString));
       matcherList = [];
       if (!isInclude) {
         return {
@@ -723,9 +713,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         matcherList.push(parse(anchorGlob(str)));
       });
 
-      const isExclude = matcherList.some((matcher) => {
-        return matcher(uriString);
-      });
+      const isExclude = matcherList.some((matcher) => matcher(uriString));
       matcherList = [];
       if (isExclude) {
         return {
@@ -737,11 +725,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     const textModel = docModel.getMonacoModel();
     searchedList.push(docModel.uri.toString());
-    const findResults = textModel.findMatches(searchValue,
+    const findResults = textModel.findMatches(
+      searchValue,
       true,
       !!searchOptions.useRegExp,
       !!searchOptions.matchCase,
-      !!searchOptions.matchWholeWord ? '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/? \n' : null,
+      searchOptions.matchWholeWord ? '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/? \n' : null,
       false,
     );
     findResults.forEach((find: monaco.editor.FindMatch, index) => {
@@ -749,13 +738,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
         // 给打开文件添加选中状态
         codeEditor.setSelection(find.range);
       }
-      result.push(cutShortSearchResult({
-        fileUri: docModel.uri.toString(),
-        line: find.range.startLineNumber,
-        matchStart: find.range.startColumn,
-        matchLength: find.range.endColumn - find.range.startColumn,
-        lineText: textModel.getLineContent(find.range.startLineNumber),
-      }));
+      result.push(
+        cutShortSearchResult({
+          fileUri: docModel.uri.toString(),
+          line: find.range.startLineNumber,
+          matchStart: find.range.startColumn,
+          matchLength: find.range.endColumn - find.range.startColumn,
+          lineText: textModel.getLineContent(find.range.startLineNumber),
+        }),
+      );
     });
 
     return {
@@ -765,8 +756,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private searchAllFromDocModel(options: SearchAllFromDocModelOptions): {
-    result: ContentSearchResult[],
-    searchedList: string[],
+    result: ContentSearchResult[];
+    searchedList: string[];
   } {
     const searchValue = options.searchValue;
     const searchOptions = options.searchOptions;
@@ -794,13 +785,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         return;
       }
 
-      const data = this.searchFromDocModel(
-        searchOptions,
-        docModel,
-        searchValue,
-        rootDirs,
-        group.codeEditor,
-      );
+      const data = this.searchFromDocModel(searchOptions, docModel, searchValue, rootDirs, group.codeEditor);
 
       result = result.concat(data.result);
       searchedList = searchedList.concat(data.searchedList);
@@ -811,5 +796,4 @@ export class ContentSearchClientService implements IContentSearchClientService {
       searchedList,
     };
   }
-
 }

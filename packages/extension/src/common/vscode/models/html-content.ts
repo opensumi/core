@@ -11,7 +11,7 @@ export interface IMarkdownString {
 
 const escapeCodiconsRegex = /(\\)?\$\([a-z0-9\-]+?(?:~[a-z0-9\-]*?)?\)/gi;
 export function escapeCodicons(text: string): string {
-  return text.replace(escapeCodiconsRegex, (match, escaped) => escaped ? match : `\\${match}`);
+  return text.replace(escapeCodiconsRegex, (match, escaped) => (escaped ? match : `\\${match}`));
 }
 
 export const enum MarkdownStringTextNewlineStyle {
@@ -25,15 +25,11 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
 }
 
 export class MarkdownString implements IMarkdownString {
-
   public value: string;
   public isTrusted?: boolean;
   public supportThemeIcons?: boolean;
 
-  constructor(
-    value: string = '',
-    isTrustedOrOptions: boolean | { isTrusted?: boolean, supportThemeIcons?: boolean } = false,
-  ) {
+  constructor(value = '', isTrustedOrOptions: boolean | { isTrusted?: boolean; supportThemeIcons?: boolean } = false) {
     this.value = value;
     if (typeof this.value !== 'string') {
       throw illegalArgument('value');
@@ -48,7 +44,10 @@ export class MarkdownString implements IMarkdownString {
     }
   }
 
-  appendText(value: string, newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph): MarkdownString {
+  appendText(
+    value: string,
+    newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph,
+  ): MarkdownString {
     this.value += escapeMarkdownSyntaxTokens(this.supportThemeIcons ? escapeCodicons(value) : value)
       .replace(/([ \t]+)/g, (_match, g1) => '&nbsp;'.repeat(g1.length))
       .replace(/^>/gm, '\\>')
@@ -77,14 +76,18 @@ export function isMarkdownString(thing: any): thing is IMarkdownString {
   if (thing instanceof MarkdownString) {
     return true;
   } else if (thing && typeof thing === 'object') {
-    return typeof (thing as IMarkdownString).value === 'string'
-      && (typeof (thing as IMarkdownString).isTrusted === 'boolean' || (thing as IMarkdownString).isTrusted === undefined)
-      && (typeof (thing as IMarkdownString).supportThemeIcons === 'boolean' || (thing as IMarkdownString).supportThemeIcons === undefined);
+    return (
+      typeof (thing as IMarkdownString).value === 'string' &&
+      (typeof (thing as IMarkdownString).isTrusted === 'boolean' ||
+        (thing as IMarkdownString).isTrusted === undefined) &&
+      (typeof (thing as IMarkdownString).supportThemeIcons === 'boolean' ||
+        (thing as IMarkdownString).supportThemeIcons === undefined)
+    );
   }
   return false;
 }
 
-export function parseHrefAndDimensions(href: string): { href: string, dimensions: string[] } {
+export function parseHrefAndDimensions(href: string): { href: string; dimensions: string[] } {
   const dimensions: string[] = [];
   const splitted = href.split('|').map((s) => s.trim());
   href = splitted[0];

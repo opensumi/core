@@ -14,7 +14,10 @@ export interface MockClientApp extends ClientApp {
   injector: MockInjector;
 }
 
-export async function createBrowserApp(modules: Array<ConstructorOf<BrowserModule>>, inj?: MockInjector): Promise<MockClientApp> {
+export async function createBrowserApp(
+  modules: Array<ConstructorOf<BrowserModule>>,
+  inj?: MockInjector,
+): Promise<MockClientApp> {
   const injector = inj || new MockInjector();
   // 需要依赖前后端模块
   injector.addProviders({
@@ -23,7 +26,11 @@ export async function createBrowserApp(modules: Array<ConstructorOf<BrowserModul
       getLogger() {},
     },
   });
-  const app = new ClientApp({ modules: [MockMainLayout, ...modules], injector, layoutConfig: {} } as any) as MockClientApp;
+  const app = new ClientApp({
+    modules: [MockMainLayout, ...modules],
+    injector,
+    layoutConfig: {},
+  } as any) as MockClientApp;
   await app.start(document.getElementById('main')!);
   return app;
 }

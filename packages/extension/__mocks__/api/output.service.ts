@@ -6,16 +6,19 @@ const maxChannelHistory = 1000;
 export class MockOutputChannel {
   private lines: string[] = [];
   private currentLine: string | undefined;
-  private visible: boolean = true;
+  private visible = true;
   private shouldLogToBrowser = false;
 
-  constructor(public readonly name: string) {
-  }
+  constructor(public readonly name: string) {}
 
   append(value: string): void {
     this.lines.push(value);
     if (this.shouldLogToBrowser) {
-      getDebugLogger().log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+      getDebugLogger().log(
+        `%c[${this.name}]` + `%c ${value}`,
+        'background:rgb(50, 150, 250); color: #fff',
+        'background: none; color: inherit',
+      );
     }
   }
 
@@ -30,7 +33,11 @@ export class MockOutputChannel {
       this.lines.splice(0, this.lines.length - maxChannelHistory);
     }
     if (this.shouldLogToBrowser) {
-      getDebugLogger().log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+      getDebugLogger().log(
+        `%c[${this.name}]` + `%c ${line}}`,
+        'background:rgb(50, 150, 250); color: #fff',
+        'background: none; color: inherit',
+      );
     }
   }
 
@@ -55,8 +62,7 @@ export class MockOutputChannel {
 @Injectable()
 export class MockOutputService {
   public channels: Map<string, MockOutputChannel> = new Map();
-  constructor() {
-  }
+  constructor() {}
 
   getChannel(name: string): MockOutputChannel {
     const existing = this.channels.get(name);

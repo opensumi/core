@@ -38,15 +38,13 @@ import { IReporter, DefaultReporter } from '@opensumi/ide-core-common';
 
 @Injectable()
 class MockLoggerManagerClient {
-  getLogger = () => {
-    return {
-      log() { },
-      debug() { },
-      error() { },
-      verbose() { },
-      warn() {},
-    };
-  }
+  getLogger = () => ({
+    log() {},
+    debug() {},
+    error() {},
+    verbose() {},
+    warn() {},
+  });
 }
 
 @Injectable()
@@ -75,98 +73,117 @@ const rpcProtocolMain = new RPCProtocol(mockClientB);
 
 describe('MainThreadExtensions Test Suites', () => {
   const extHostInjector = new Injector();
-  extHostInjector.addProviders({
-    token: NodeAppConfig,
-    useValue: {},
-  }, {
-    token: IReporter,
-    useClass: DefaultReporter,
-  });
-  const injector = createBrowserInjector([], new MockInjector([
-    ...mockKaitianExtensionProviders,
+  extHostInjector.addProviders(
     {
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
-      },
-    },  {
-      token: AppConfig,
-      useValue: {
-        noExtHost: false,
-      },
-    }, {
-      token: WorkbenchEditorService,
-      useClass: MockWorkbenchEditorService,
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: ExtensionNodeServiceServerPath,
-      useClass: MockExtNodeClientService,
+      token: NodeAppConfig,
+      useValue: {},
     },
     {
-      token: IExtensionStorageService,
-      useValue: {
-        whenReady: Promise.resolve(true),
-        extensionStoragePath: {},
-        set() { },
-        get() { },
-        getAll() { },
-        reConnectInit() { },
-      },
-    }, {
-      token: IWorkspaceService,
-      useClass: WorkspaceService,
-    }, {
-      token: FileSearchServicePath,
-      useValue: {
-        find: () => Promise.resolve([]),
-      },
-    }, {
-      token: ideCoreCommon.StorageProvider,
-      useValue: MockedStorageProvider,
-    }, {
-      token: StaticResourceService,
-      useClass: MockStaticResourceService,
-    }, {
-      token: IThemeService,
-      useValue: {
-        applyTheme: () => {
-        },
-      },
-    }, {
-      token: IGlobalStorageServer,
-      useValue: {
-        getItems() {
-          return JSON.stringify({ language: 'zh_CN' });
-        },
-        init() {
-          return Promise.resolve();
-        },
-        get() {
-          return '';
-        },
-      },
-    }, {
-      token: IIconService,
-      useClass: IconService,
-    }, {
-      token: ideCoreCommon.ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    }, {
-      token: ideCoreCommon.IFileServiceClient,
-      useClass: MockFileServiceClient,
-    }, {
-      token: WorkspacePreferences,
-      useValue: {
-        onPreferenceChanged: () => {},
-      },
+      token: IReporter,
+      useClass: DefaultReporter,
     },
-    {
-      token: IWebviewService,
-      useValue: mockService({}),
-    },
-  ]));
+  );
+  const injector = createBrowserInjector(
+    [],
+    new MockInjector([
+      ...mockKaitianExtensionProviders,
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
+      },
+      {
+        token: AppConfig,
+        useValue: {
+          noExtHost: false,
+        },
+      },
+      {
+        token: WorkbenchEditorService,
+        useClass: MockWorkbenchEditorService,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: ExtensionNodeServiceServerPath,
+        useClass: MockExtNodeClientService,
+      },
+      {
+        token: IExtensionStorageService,
+        useValue: {
+          whenReady: Promise.resolve(true),
+          extensionStoragePath: {},
+          set() {},
+          get() {},
+          getAll() {},
+          reConnectInit() {},
+        },
+      },
+      {
+        token: IWorkspaceService,
+        useClass: WorkspaceService,
+      },
+      {
+        token: FileSearchServicePath,
+        useValue: {
+          find: () => Promise.resolve([]),
+        },
+      },
+      {
+        token: ideCoreCommon.StorageProvider,
+        useValue: MockedStorageProvider,
+      },
+      {
+        token: StaticResourceService,
+        useClass: MockStaticResourceService,
+      },
+      {
+        token: IThemeService,
+        useValue: {
+          applyTheme: () => {},
+        },
+      },
+      {
+        token: IGlobalStorageServer,
+        useValue: {
+          getItems() {
+            return JSON.stringify({ language: 'zh_CN' });
+          },
+          init() {
+            return Promise.resolve();
+          },
+          get() {
+            return '';
+          },
+        },
+      },
+      {
+        token: IIconService,
+        useClass: IconService,
+      },
+      {
+        token: ideCoreCommon.ILoggerManagerClient,
+        useClass: MockLoggerManagerClient,
+      },
+      {
+        token: ideCoreCommon.IFileServiceClient,
+        useClass: MockFileServiceClient,
+      },
+      {
+        token: WorkspacePreferences,
+        useValue: {
+          onPreferenceChanged: () => {},
+        },
+      },
+      {
+        token: IWebviewService,
+        useValue: mockService({}),
+      },
+    ]),
+  );
   let extHostExtension: ReturnType<typeof createExtensionsApiFactory>;
   let mainthreadService: MainThreadExtensionService;
   let extensionHostService: ExtensionHostServiceImpl;
@@ -181,7 +198,11 @@ describe('MainThreadExtensions Test Suites', () => {
   beforeAll(async (done) => {
     injector.get(WorkbenchEditorService);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
-    extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt, new MockLoggerManagerClient().getLogger(), extHostInjector);
+    extensionHostService = new ExtensionHostServiceImpl(
+      rpcProtocolExt,
+      new MockLoggerManagerClient().getLogger(),
+      extHostInjector,
+    );
     mainthreadService = new MainThreadExtensionService();
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));

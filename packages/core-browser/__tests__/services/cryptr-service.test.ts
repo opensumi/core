@@ -15,13 +15,16 @@ describe('test for core-browser/src/services/cryptr-service.ts', () => {
   };
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ICryptrService,
-      useClass: CryptrService,
-    }, {
-      token: CryptrServicePath,
-      useValue: mockCryptrService,
-    });
+    injector.addProviders(
+      {
+        token: ICryptrService,
+        useClass: CryptrService,
+      },
+      {
+        token: CryptrServicePath,
+        useValue: mockCryptrService,
+      },
+    );
     cryptrService = injector.get<ICryptrService>(ICryptrService);
   });
 

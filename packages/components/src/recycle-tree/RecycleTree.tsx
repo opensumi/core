@@ -149,7 +149,10 @@ export interface IRecycleTreeHandle {
    *
    * @param pathOrTreeNode 节点或者节点路径
    */
-  promptRename(pathOrTreeNode: string | TreeNode | CompositeTreeNode, defaultName?: string): Promise<RenamePromptHandle>;
+  promptRename(
+    pathOrTreeNode: string | TreeNode | CompositeTreeNode,
+    defaultName?: string,
+  ): Promise<RenamePromptHandle>;
   /**
    * 展开节点
    *
@@ -169,7 +172,11 @@ export interface IRecycleTreeHandle {
    * @param align IRecycleTreeAlign
    * @param untilStable 是否在节点稳定时再进行定位操作，部分Tree可能在定位过程中会有不断传入的变化，如文件树
    */
-  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: IRecycleTreeAlign, untilStable?: boolean): Promise<TreeNode | undefined>;
+  ensureVisible(
+    pathOrTreeNode: string | TreeNode | CompositeTreeNode,
+    align?: IRecycleTreeAlign,
+    untilStable?: boolean,
+  ): Promise<TreeNode | undefined>;
   /**
    * 获取当前Tree的宽高信息
    *
@@ -223,27 +230,27 @@ interface IFilterNodeRendererProps {
 
 const InnerElementType = React.forwardRef((props, ref) => {
   const { style, ...rest } = props as any;
-  return <div
-    ref={ref!}
-    style={{
-      ...style,
-      height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
-    }}
-    {...rest}
-  />;
+  return (
+    <div
+      ref={ref!}
+      style={{
+        ...style,
+        height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
+      }}
+      {...rest}
+    />
+  );
 });
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
-  public static PADDING_BOTTOM_SIZE: number = 22;
-  private static DEFAULT_ITEM_HEIGHT: number = 22;
-  private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 100;
-  private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
+  public static PADDING_BOTTOM_SIZE = 22;
+  private static DEFAULT_ITEM_HEIGHT = 22;
+  private static BATCHED_UPDATE_MAX_DEBOUNCE_MS = 100;
+  private static TRY_ENSURE_VISIBLE_MAX_TIMES = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
     post: '</match>',
-    extract: (node: TreeNode) => {
-      return node?.name || '';
-    },
+    extract: (node: TreeNode) => node?.name || '',
   };
   private static DEFAULT_OVER_SCAN_COUNT = 50;
 
@@ -258,7 +265,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private onDidUpdateEmitter: Emitter<void> = new Emitter();
   private onDidModelChangeEmitter: Emitter<IModelChange> = new Emitter();
   // 索引应该比目标折叠节点索引+1，即位于折叠节点下的首个节点
-  private newPromptInsertionIndex: number = -1;
+  private newPromptInsertionIndex = -1;
   // 目标索引
   private promptTargetID: number;
   // 尝试定位次数
@@ -277,8 +284,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     let timer: number;
     const commitUpdate = () => {
       const { root } = this.props.model;
-      let newFilePromptInsertionIndex: number = -1;
-      if (this.promptTargetID > -1 &&
+      let newFilePromptInsertionIndex = -1;
+      if (
+        this.promptTargetID > -1 &&
         this.promptHandle instanceof NewPromptHandle &&
         this.promptHandle.parent &&
         this.promptHandle.parent.expanded &&
@@ -319,7 +327,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     };
     return () => {
       if (!this.batchUpdatePromise) {
-        this.batchUpdatePromise = new Promise((res) => this.batchUpdateResolver = res);
+        this.batchUpdatePromise = new Promise((res) => (this.batchUpdateResolver = res));
         this.batchUpdatePromise.then(() => {
           this.batchUpdatePromise = null;
           this.batchUpdateResolver = null;
@@ -371,9 +379,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const { model } = this.props;
       this.listRef.current?.scrollTo(model.state.scrollOffset);
       this.disposables.push(model.onChange(this.batchUpdate));
-      this.disposables.push(model.state.onDidLoadState(() => {
-        this.listRef.current?.scrollTo(model.state.scrollOffset);
-      }));
+      this.disposables.push(
+        model.state.onDidLoadState(() => {
+          this.listRef.current?.scrollTo(model.state.scrollOffset);
+        }),
+      );
       this.onDidModelChangeEmitter.fire({
         preModel: prevProps.model,
         nextModel: model,
@@ -381,14 +391,17 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType = TreeNodeType.TreeNode): Promise<NewPromptHandle> {
+  private async promptNew(
+    pathOrTreeNode: string | CompositeTreeNode,
+    type: TreeNodeType = TreeNodeType.TreeNode,
+  ): Promise<NewPromptHandle> {
     const { root } = this.props.model;
-    let node = typeof pathOrTreeNode === 'string'
-      ? await root.getTreeNodeByPath(pathOrTreeNode)
-      : pathOrTreeNode;
+    let node = typeof pathOrTreeNode === 'string' ? await root.getTreeNodeByPath(pathOrTreeNode) : pathOrTreeNode;
 
     if (type !== TreeNodeType.TreeNode && type !== TreeNodeType.CompositeTreeNode) {
-      throw new TypeError(`Invalid type supplied. Expected 'TreeNodeType.TreeNode' or 'TreeNodeType.CompositeTreeNode', got ${type}`);
+      throw new TypeError(
+        `Invalid type supplied. Expected 'TreeNodeType.TreeNode' or 'TreeNodeType.CompositeTreeNode', got ${type}`,
+      );
     }
 
     if (!!node && !CompositeTreeNode.is(node)) {
@@ -404,7 +417,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const promptHandle = new NewPromptHandle(type, node as CompositeTreeNode);
     this.promptHandle = promptHandle;
     this.promptTargetID = node!.id;
-    if (node !== root && (!(node as CompositeTreeNode).expanded || !root.isItemVisibleAtSurface(node as CompositeTreeNode))) {
+    if (
+      node !== root &&
+      (!(node as CompositeTreeNode).expanded || !root.isItemVisibleAtSurface(node as CompositeTreeNode))
+    ) {
       // 调用setExpanded即会在之后调用batchUpdate函数
       await (node as CompositeTreeNode).setExpanded(true);
     } else {
@@ -421,19 +437,20 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   // 使用箭头函数绑定当前this
-  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
-    return this.promptNew(pathOrTreeNode);
-  }
+  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> =>
+    this.promptNew(pathOrTreeNode);
 
-  private promptNewCompositeTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
-    return this.promptNew(pathOrTreeNode, TreeNodeType.CompositeTreeNode);
-  }
+  private promptNewCompositeTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> =>
+    this.promptNew(pathOrTreeNode, TreeNodeType.CompositeTreeNode);
 
-  private promptRename = async (pathOrTreeNode: string | TreeNode, defaultName?: string): Promise<RenamePromptHandle> => {
+  private promptRename = async (
+    pathOrTreeNode: string | TreeNode,
+    defaultName?: string,
+  ): Promise<RenamePromptHandle> => {
     const { root } = this.props.model;
-    const node = (typeof pathOrTreeNode === 'string'
-      ? await root.getTreeNodeByPath(pathOrTreeNode)
-      : pathOrTreeNode) as (TreeNode | CompositeTreeNode);
+    const node = (
+      typeof pathOrTreeNode === 'string' ? await root.getTreeNodeByPath(pathOrTreeNode) : pathOrTreeNode
+    ) as TreeNode | CompositeTreeNode;
 
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
       throw new TypeError(`Cannot rename object of type ${typeof node}`);
@@ -448,41 +465,46 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     this.listRef.current?.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
     return this.promptHandle as RenamePromptHandle;
-  }
+  };
 
   private expandNode = async (pathOrCompositeTreeNode: string | CompositeTreeNode) => {
     const { root } = this.props.model;
-    const directory = typeof pathOrCompositeTreeNode === 'string'
-      ? await root.getTreeNodeByPath(pathOrCompositeTreeNode) as CompositeTreeNode
-      : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
+    const directory =
+      typeof pathOrCompositeTreeNode === 'string'
+        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
+        : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
 
     if (directory && CompositeTreeNode.is(directory)) {
       return (directory as CompositeTreeNode).setExpanded(true);
     }
-  }
+  };
 
   private collapseNode = async (pathOrCompositeTreeNode: string | CompositeTreeNode) => {
     const { root } = this.props.model;
-    const directory = typeof pathOrCompositeTreeNode === 'string'
-      ? await root.getTreeNodeByPath(pathOrCompositeTreeNode) as CompositeTreeNode
-      : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
+    const directory =
+      typeof pathOrCompositeTreeNode === 'string'
+        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
+        : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
 
     if (directory && CompositeTreeNode.is(directory)) {
       return (directory as CompositeTreeNode).setCollapsed();
     }
-  }
+  };
 
-  private _isEnsuring: boolean = false;
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: IRecycleTreeAlign = 'smart', untilStable: boolean = false): Promise<TreeNode | undefined> => {
+  private _isEnsuring = false;
+  private ensureVisible = async (
+    pathOrTreeNode: string | TreeNode | CompositeTreeNode,
+    align: IRecycleTreeAlign = 'smart',
+    untilStable = false,
+  ): Promise<TreeNode | undefined> => {
     if (this._isEnsuring) {
       // 同一时间段只能让一次定位节点的操作生效
       return;
     }
     this._isEnsuring = true;
     const { root } = this.props.model;
-    const node = typeof pathOrTreeNode === 'string'
-      ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
-      : pathOrTreeNode;
+    const node =
+      typeof pathOrTreeNode === 'string' ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode) : pathOrTreeNode;
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
       // 异常
       return;
@@ -501,7 +523,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     this._isEnsuring = false;
     return node as TreeNode;
-  }
+  };
 
   private tryScrollIntoView(node: TreeNode | CompositeTreeNode | PromptHandle, align: IRecycleTreeAlign = 'auto') {
     const { root } = this.props.model;
@@ -512,7 +534,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: IRecycleTreeAlign = 'auto') {
+  private tryScrollIntoViewWhileStable(
+    node: TreeNode | CompositeTreeNode | PromptHandle,
+    align: IRecycleTreeAlign = 'auto',
+  ) {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
       this.tryEnsureVisibleTimes = 0;
@@ -536,9 +561,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { model, onReady } = this.props;
     this.listRef.current?.scrollTo(model.state.scrollOffset);
     this.disposables.push(model.onChange(this.batchUpdate));
-    this.disposables.push(model.state.onDidLoadState(() => {
-      this.listRef.current?.scrollTo(model.state.scrollOffset);
-    }));
+    this.disposables.push(
+      model.state.onDidLoadState(() => {
+        this.listRef.current?.scrollTo(model.state.scrollOffset);
+      }),
+    );
     if (typeof onReady === 'function') {
       const api: IRecycleTreeHandle = {
         promptNewTreeNode: this.promptNewTreeNode,
@@ -567,7 +594,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private set promptHandle(handle: NewPromptHandle | RenamePromptHandle) {
-    if (this._promptHandle === handle) { return; }
+    if (this._promptHandle === handle) {
+      return;
+    }
     if (this._promptHandle instanceof PromptHandle && !this._promptHandle.destroyed) {
       this._promptHandle.destroy();
     }
@@ -589,9 +618,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const promptInsertionIdx = this.newPromptInsertionIndex;
       const { root } = this.props.model;
       // 存在新建输入框
-      if (promptInsertionIdx > -1 &&
-        this.promptHandle && this.promptHandle.constructor === NewPromptHandle &&
-        !this.promptHandle.destroyed) {
+      if (
+        promptInsertionIdx > -1 &&
+        this.promptHandle &&
+        this.promptHandle.constructor === NewPromptHandle &&
+        !this.promptHandle.destroyed
+      ) {
         if (index === promptInsertionIdx) {
           cached = {
             itemType: TreeNodeType.NewPrompt,
@@ -607,7 +639,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       } else {
         const item = root.getTreeNodeAtIndex(index);
         // 检查是否为重命名节点
-        if (item &&
+        if (
+          item &&
           item.id === this.promptTargetID &&
           this.promptHandle &&
           this.promptHandle.constructor === RenamePromptHandle &&
@@ -627,24 +660,24 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.idxToRendererPropsCache.set(index, cached!);
     }
     return cached!;
-  }
+  };
 
   private handleListScroll = ({ scrollOffset }) => {
     const { model } = this.props;
     model.state.saveScrollOffset(scrollOffset);
-  }
+  };
 
   // 根据是否携带新建输入框计算行数
   private get adjustedRowCount() {
     const { root } = this.props.model;
     const { filter } = this.props;
-    if (!!filter) {
+    if (filter) {
       return this.filterFlattenBranch.length;
     }
-    return (
-      this.newPromptInsertionIndex > -1 &&
-      this.promptHandle && this.promptHandle.constructor === NewPromptHandle &&
-      !this.promptHandle.destroyed)
+    return this.newPromptInsertionIndex > -1 &&
+      this.promptHandle &&
+      this.promptHandle.constructor === NewPromptHandle &&
+      !this.promptHandle.destroyed
       ? root.branchSize + 1
       : root.branchSize;
   }
@@ -654,11 +687,14 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { getItemKey } = this.props;
     const id = getItemKey ? getItemKey(node) : undefined;
     return id ?? index;
-  }
+  };
 
   // 过滤Root节点展示
   private filterItems = (filter: string) => {
-    const { model: { root }, filterProvider } = this.props;
+    const {
+      model: { root },
+      filterProvider,
+    } = this.props;
     this.filterWatcherDisposeCollection.dispose();
     this.idToFilterRendererPropsCache.clear();
     if (!filter) {
@@ -696,14 +732,17 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         const node = (item as any).original as TreeNode;
         idSets.add(node.id);
         let parent = node.parent;
-        idToRenderTemplate.set(node.id, () => {
-          return <div style={{
-            flex: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }} dangerouslySetInnerHTML={{ __html: item.string || '' }}></div>;
-        });
+        idToRenderTemplate.set(node.id, () => (
+          <div
+            style={{
+              flex: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+            dangerouslySetInnerHTML={{ __html: item.string || '' }}
+          ></div>
+        ));
         // 不应包含根节点
         while (parent && !CompositeTreeNode.isRoot(parent)) {
           idSets.add(parent.id);
@@ -734,32 +773,36 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
     }
     // 根据折叠情况变化裁剪filterFlattenBranch
-    this.filterWatcherDisposeCollection.push(root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target, nowExpanded) => {
-      const expandItemIndex = this.filterFlattenBranch.indexOf(target.id);
-      if (!nowExpanded) {
-        const collapesArray: number[] = [];
-        for (let i = expandItemIndex + 1; i < this.filterFlattenBranch.length; i++) {
-          const node = root.getTreeNodeById(this.filterFlattenBranch[i]);
-          if (node && node.depth > target.depth) {
-            collapesArray.push(node.id);
-          } else {
-            break;
+    this.filterWatcherDisposeCollection.push(
+      root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target, nowExpanded) => {
+        const expandItemIndex = this.filterFlattenBranch.indexOf(target.id);
+        if (!nowExpanded) {
+          const collapesArray: number[] = [];
+          for (let i = expandItemIndex + 1; i < this.filterFlattenBranch.length; i++) {
+            const node = root.getTreeNodeById(this.filterFlattenBranch[i]);
+            if (node && node.depth > target.depth) {
+              collapesArray.push(node.id);
+            } else {
+              break;
+            }
+          }
+          this.filterFlattenBranchChildrenCache.set(target.id, collapesArray);
+          this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, collapesArray.length);
+        } else {
+          const spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
+          if (spliceUint32Array && spliceUint32Array.length > 0) {
+            this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
+            this.filterFlattenBranchChildrenCache.delete(target.id);
           }
         }
-        this.filterFlattenBranchChildrenCache.set(target.id, collapesArray);
-        this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, collapesArray.length);
-      } else {
-        const spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
-        if (spliceUint32Array && spliceUint32Array.length > 0) {
-          this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
-          this.filterFlattenBranchChildrenCache.delete(target.id);
-        }
-      }
-    }));
-    this.filterWatcherDisposeCollection.push(Disposable.create(() => {
-      this.filterFlattenBranchChildrenCache.clear();
-    }));
-  }
+      }),
+    );
+    this.filterWatcherDisposeCollection.push(
+      Disposable.create(() => {
+        this.filterFlattenBranchChildrenCache.clear();
+      }),
+    );
+  };
 
   private renderItem = ({ index, style }): JSX.Element => {
     this.shouldComponentUpdate = shouldComponentUpdate.bind(this);
@@ -798,7 +841,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         return RecycleTree.DEFAULT_ITEM_HEIGHT;
       }
 
-      let size: number = 0;
+      let size = 0;
       if (wrapRef.current) {
         const ref = wrapRef.current as unknown as HTMLDivElement;
         size = Array.from(ref.children).reduce((pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height, 0);
@@ -810,20 +853,26 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
     };
 
-    const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
+    const itemStyle =
+      overflow === 'ellipsis'
+        ? style
+        : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
 
-    return <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
-      <NodeRendererWrap
-        item={item}
-        depth={item.depth}
-        itemType={type}
-        template={template}
-        hasPrompt={!!this.promptHandle && !this.promptHandle.destroyed}
-        expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}>
-        {children as INodeRenderer}
-      </NodeRendererWrap>
-    </div>;
-  }
+    return (
+      <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
+        <NodeRendererWrap
+          item={item}
+          depth={item.depth}
+          itemType={type}
+          template={template}
+          hasPrompt={!!this.promptHandle && !this.promptHandle.destroyed}
+          expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}
+        >
+          {children as INodeRenderer}
+        </NodeRendererWrap>
+      </div>
+    );
+  };
 
   private layoutItem = () => {
     if (!this.props.supportDynamicHeights) {
@@ -842,7 +891,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         });
       }
     }
-  }
+  };
 
   private getItemSize(index: number) {
     return this.dynamicSizeMap.get(index) || this.props.itemHeight;
@@ -866,7 +915,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const Placeholder = placeholder;
       return <Placeholder />;
     }
-    const addonProps: {[key in keyof ListProps]: any} = {
+    const addonProps: { [key in keyof ListProps]: any } = {
       children,
       height,
       width,
@@ -888,11 +937,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
     return (
       supportDynamicHeights
-      ? <VariableSizeList ref={this.listRef as React.RefObject<VariableSizeList>} itemSize={this.getItemSize.bind(this)} {...addonProps}>
+      ? (<VariableSizeList
+          ref={this.listRef as React.RefObject<VariableSizeList>}
+          itemSize={this.getItemSize.bind(this)} {...addonProps}
+        >
         {this.renderItem}
       </VariableSizeList>
-      : <FixedSizeList ref={this.listRef as React.RefObject<FixedSizeList>} itemSize={itemHeight} {...addonProps}>
+    ) : (
+      <FixedSizeList ref={this.listRef as React.RefObject<FixedSizeList>} itemSize={itemHeight} {...addonProps}>
         {this.renderItem}
-      </FixedSizeList>);
+      </FixedSizeList>
+    ));
   }
 }

@@ -67,7 +67,7 @@ export class WSChannelHandler {
         if (channel) {
           if (msg.kind === 'data' && !(channel as any).fireMessage) {
             // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
-            this.logger.error(`channel not ready!`, msg);
+            this.logger.error('channel not ready!', msg);
           }
           channel.handleMessage(msg);
         } else {
@@ -98,15 +98,13 @@ export class WSChannelHandler {
       });
     });
   }
-  private getChannelSend = (connection) => {
-    return (content: string) => {
-      connection.send(content, (err: Error) => {
-        if (err) {
-          this.logger.warn(err);
-        }
-      });
-    };
-  }
+  private getChannelSend = (connection) => (content: string) => {
+    connection.send(content, (err: Error) => {
+      if (err) {
+        this.logger.warn(err);
+      }
+    });
+  };
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;

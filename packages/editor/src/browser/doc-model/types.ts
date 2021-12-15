@@ -1,13 +1,23 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@opensumi/ide-core-browser';
+import {
+  URI,
+  MaybePromise,
+  IRef,
+  IDisposable,
+  Event,
+  IRange,
+  BasicEvent,
+  IEditOperation,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
+} from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { EndOfLineSequence, EOL, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
 export interface IEditorDocumentModel extends IDisposable {
-
   /**
    * 文档URI
    */
@@ -90,7 +100,6 @@ export interface IEditorDocumentModel extends IDisposable {
   // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
 
   updateOptions(options: IDocModelUpdateOptions);
-
 }
 
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
@@ -98,7 +107,6 @@ export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOp
 }
 
 export interface IEditorDocumentModelContentProvider {
-
   /**
    * 是否处理这个Scheme的uri
    * 权重等级等同于 handlesUri => 10
@@ -133,7 +141,15 @@ export interface IEditorDocumentModelContentProvider {
    * @param baseContent dirty前的内容
    * @param ignoreDiff 无视diff错误, 强行覆盖保存
    */
-  saveDocumentModel?(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean, eol?: EOL): MaybePromise<IEditorDocumentModelSaveResult>;
+  saveDocumentModel?(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding?: string,
+    ignoreDiff?: boolean,
+    eol?: EOL,
+  ): MaybePromise<IEditorDocumentModelSaveResult>;
 
   /**
    * 为一个uri提供喜好的语言id，返回undefined则交由编辑器自己去判断
@@ -188,7 +204,6 @@ export interface IPreferredModelOptions {
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface IEditorDocumentModelService {
-
   hasLanguage(languageId: string): boolean;
 
   createModelReference(uri: URI, reason?: string): Promise<IEditorDocumentModelRef>;
@@ -196,12 +211,12 @@ export interface IEditorDocumentModelService {
   /**
    * 获取一个文本文档，
    * 当文档从来没有被打开过时，返回null
-  */
+   */
   getModelReference(uri: URI, reason?: string): IEditorDocumentModelRef | null;
 
   /**
-    * 获得全部model
-  */
+   * 获得全部model
+   */
   getAllModels(): IEditorDocumentModel[];
 
   /**
@@ -211,24 +226,28 @@ export interface IEditorDocumentModelService {
    */
   changeModelOptions(uri: URI, options: IPreferredModelOptions);
 
-  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
-
+  saveEditorDocumentModel(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding?: string,
+    ignoreDiff?: boolean,
+  ): MaybePromise<IEditorDocumentModelSaveResult>;
 }
 
 export const IEditorDocumentModelService = Symbol('IEditorDocumentModelService');
 
 export interface IEditorDocumentModelContentRegistry {
-
   /**
-  * 注册文本源数据的提供商
-  * @param provider
-  */
+   * 注册文本源数据的提供商
+   * @param provider
+   */
   registerEditorDocumentModelContentProvider(provider: IEditorDocumentModelContentProvider): IDisposable;
 
   getProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined>;
 
   getContentForUri(uri: URI, encoding?: string): Promise<string>;
-
 }
 
 export const IEditorDocumentModelContentRegistry = Symbol('IEditorDocumentModelContentRegistry');
@@ -249,7 +268,7 @@ export interface IEditorDocumentModelContentChangedEventPayload {
 
 export class EditorDocumentModelOptionChangedEvent extends BasicEvent<IEditorDocumentModelOptionChangedEventPayload> {}
 
-export class EditorDocumentModelOptionExternalUpdatedEvent  extends BasicEvent<URI> {}
+export class EditorDocumentModelOptionExternalUpdatedEvent extends BasicEvent<URI> {}
 
 export interface IEditorDocumentModelOptionChangedEventPayload {
   uri: URI;
@@ -275,9 +294,9 @@ export class EditorDocumentModelRemovalEvent extends BasicEvent<URI> {}
 export class EditorDocumentModelSavedEvent extends BasicEvent<URI> {}
 
 export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
-  uri: URI,
-  reason: SaveReason,
-  language: string,
+  uri: URI;
+  reason: SaveReason;
+  language: string;
 }> {}
 export interface IStackElement {
   readonly beforeVersionId: number;
@@ -292,7 +311,7 @@ export interface IEditStackElement extends IStackElement {
   afterCursorState: Selection[] | null;
   afterVersionId: number;
 
-  editOperations: Array<{operations: IEditOperation[]}>;
+  editOperations: Array<{ operations: IEditOperation[] }>;
 }
 
 export interface IEOLStackElement extends IStackElement {
@@ -308,7 +327,6 @@ export interface IEOLStackElement extends IStackElement {
 export const ORIGINAL_DOC_SCHEME = 'original_doc';
 
 export const enum EncodingMode {
-
   /**
    * Instructs the encoding support to encode the current input with the provided encoding
    */

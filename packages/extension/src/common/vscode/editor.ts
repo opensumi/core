@@ -1,6 +1,12 @@
 import type { RenderLineNumbersType as MonacoRenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { ISelection, IRange, ILineChange } from '@opensumi/ide-core-common';
-import { IUndoStopOptions, ISingleEditOperation, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@opensumi/ide-editor';
+import {
+  IUndoStopOptions,
+  ISingleEditOperation,
+  IDecorationRenderOptions,
+  IDecorationApplyOptions,
+  IResourceOpenOptions,
+} from '@opensumi/ide-editor';
 import { ViewColumn } from './enums';
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 export * from './custom-editor';
@@ -14,19 +20,23 @@ export interface IMainThreadEditorsService {
   $createTextEditorDecorationType(key: string, resolved: IDecorationRenderOptions): Promise<void>;
   $deleteTextEditorDecorationType(key: string): void;
   $applyDecoration(id: string, decorationKey: string, options: IDecorationApplyOptions[]): Promise<void>;
-  $applyEdits(id: string, documentVersionId: number, edits: ISingleEditOperation[], options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean; }): Promise<boolean>;
+  $applyEdits(
+    id: string,
+    documentVersionId: number,
+    edits: ISingleEditOperation[],
+    options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean },
+  ): Promise<boolean>;
   $revealRange(id: string, range: IRange, type?: TextEditorRevealType): Promise<void>;
   $getInitialState(): Promise<IEditorChangeDTO>;
   $closeEditor(id: string): Promise<void>;
   $insertSnippet(id: string, snippet: string, ranges?: IRange[], options?: IUndoStopOptions): Promise<void>;
   $openResource(uri: string, options: IResourceOpenOptions): Promise<string>;
-  $setSelections(id: string, selections: ISelection[]): Promise<void> ;
+  $setSelections(id: string, selections: ISelection[]): Promise<void>;
   $updateOptions(id: string, options: ITextEditorUpdateConfiguration): Promise<void>;
   $getDiffInformation(id: string): Promise<ILineChange[]>;
 }
 
 export interface IEditorStatusChangeDTO {
-
   id: string;
 
   selections?: ISelectionChangeEvent;
@@ -36,21 +46,17 @@ export interface IEditorStatusChangeDTO {
   visibleRanges?: IRange[];
 
   viewColumn?: number;
-
 }
 
 export interface IEditorChangeDTO {
-
   created?: IEditorCreatedDTO[];
 
   removed?: string[];
 
   actived?: string;
-
 }
 
 export interface IEditorCreatedDTO extends IEditorChangeDTO {
-
   id: string;
 
   selections: ISelection[];
@@ -128,36 +134,39 @@ export enum TextEditorSelectionChangeKind {
 export namespace TextEditorSelectionChangeKind {
   export function fromValue(s: string | undefined) {
     switch (s) {
-      case 'keyboard': return TextEditorSelectionChangeKind.Keyboard;
-      case 'mouse': return TextEditorSelectionChangeKind.Mouse;
-      case 'api': return TextEditorSelectionChangeKind.Command;
+      case 'keyboard':
+        return TextEditorSelectionChangeKind.Keyboard;
+      case 'mouse':
+        return TextEditorSelectionChangeKind.Mouse;
+      case 'api':
+        return TextEditorSelectionChangeKind.Command;
     }
     return undefined;
   }
 }
 
 /**
-   * Represents different [reveal](#TextEditor.revealRange) strategies in a text editor.
-   */
+ * Represents different [reveal](#TextEditor.revealRange) strategies in a text editor.
+ */
 export enum TextEditorRevealType {
-    /**
-     * The range will be revealed with as little scrolling as possible.
-     */
-    Default = 0,
-    /**
-     * The range will always be revealed in the center of the viewport.
-     */
-    InCenter = 1,
-    /**
-     * If the range is outside the viewport, it will be revealed in the center of the viewport.
-     * Otherwise, it will be revealed with as little scrolling as possible.
-     */
-    InCenterIfOutsideViewport = 2,
-    /**
-     * The range will always be revealed at the top of the viewport.
-     */
-    AtTop = 3,
-  }
+  /**
+   * The range will be revealed with as little scrolling as possible.
+   */
+  Default = 0,
+  /**
+   * The range will always be revealed in the center of the viewport.
+   */
+  InCenter = 1,
+  /**
+   * If the range is outside the viewport, it will be revealed in the center of the viewport.
+   * Otherwise, it will be revealed with as little scrolling as possible.
+   */
+  InCenterIfOutsideViewport = 2,
+  /**
+   * The range will always be revealed at the top of the viewport.
+   */
+  AtTop = 3,
+}
 
 export interface TextDocumentShowOptions {
   /**

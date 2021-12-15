@@ -13,26 +13,29 @@ module.exports = {
   },
   target: 'webworker',
   node: {
-    net: "empty",
+    net: 'empty',
   },
   devtool: 'none',
   mode: 'production',
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
-    plugins: [new TsconfigPathsPlugin({
-      configFile: tsConfigPath,
-    })],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
   },
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
-    rules: [{
-      test: /\.tsx?$/,
-      loader: 'ts-loader',
-      options: {
-        configFile: tsConfigPath,
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        options: {
+          configFile: tsConfigPath,
+        },
       },
-    },
     ],
   },
   resolveLoader: {

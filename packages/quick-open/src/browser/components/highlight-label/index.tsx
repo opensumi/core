@@ -12,14 +12,13 @@ export interface HighlightLabelProp {
 }
 
 export const HighlightLabel: React.FC<HighlightLabelProp> = ({
-    text = '',
-    highlights = [],
-    className = '',
-    labelClassName = '',
-    hightLightClassName = '',
-    OutElementType = 'span',
-  }) => {
-
+  text = '',
+  highlights = [],
+  className = '',
+  labelClassName = '',
+  hightLightClassName = '',
+  OutElementType = 'span',
+}) => {
   const renderLabel = React.useMemo(() => {
     const children: string[] = [];
     let pos = 0;
@@ -50,6 +49,7 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
       // @ts-ignore
       title={text}
       className={className}
-      dangerouslySetInnerHTML={{ __html: renderLabel}}></OutElementType>
+      dangerouslySetInnerHTML={{ __html: renderLabel }}
+    ></OutElementType>
   );
 };

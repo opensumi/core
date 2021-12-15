@@ -18,15 +18,7 @@ interface AccordionContainerProps {
   className?: string;
 }
 
-export const AccordionContainer = observer(({
-  alignment = 'vertical',
-  views,
-  containerId,
-  headerSize = 24,
-  minSize = 120,
-  className,
-  noRestore,
-}: AccordionContainerProps) => {
+export const AccordionContainer = observer(({ alignment = 'vertical', views, containerId, headerSize = 24, minSize = 120, className, noRestore }: AccordionContainerProps) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
   React.useEffect(() => {
     // 解决视图在渲染前注册的问题
@@ -90,8 +82,5 @@ export interface PanelProps extends React.PropsWithChildren<any> {
   flex: number;
 }
 
-export const Panel: React.FC<PanelProps> = ({ children }) => {
-  return <div>{children}</div>;
-};
-
+export const Panel: React.FC<PanelProps> = ({ children }) => <div>{children}</div>;
 Panel.displayName = 'Panel';

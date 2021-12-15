@@ -32,7 +32,7 @@ export class DebugConsoleFilterService implements IDebugConsoleFilter {
     return this._onDidFocus.event;
   }
 
-  private _filterText: string = '';
+  private _filterText = '';
 
   public focusInput(): void {
     this._onDidFocus.fire();
@@ -68,12 +68,10 @@ export class DebugConsoleFilterService implements IDebugConsoleFilter {
       return [];
     }
 
-    const res: IFilterMatches[] = matchs.map((m) => {
-      return {
-        startIndex: m.index !== undefined ? m.index : -1,
-        count: textLen,
-      };
-    });
+    const res: IFilterMatches[] = matchs.map((m) => ({
+      startIndex: m.index !== undefined ? m.index : -1,
+      count: textLen,
+    }));
 
     return res.filter((r) => r.startIndex >= 0);
   }

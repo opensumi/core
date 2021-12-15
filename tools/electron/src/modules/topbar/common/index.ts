@@ -11,7 +11,5 @@ export interface ITopbarNodeServer {
 
 export const ITopbarService = 'ITopbarService';
 export interface ITopbarService {
-
   sayHelloFromNode: () => void;
-
 }

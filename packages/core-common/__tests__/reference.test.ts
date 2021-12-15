@@ -1,20 +1,16 @@
-import { ReferenceManager } from "../src/reference"
-
+import { ReferenceManager } from '../src/reference';
 
 describe('reference Manager Test', () => {
-
   let refManager: ReferenceManager<TestClass>;
 
   beforeAll(() => {
-    refManager = new ReferenceManager<TestClass>(async (id: string) => {
-      return new TestClass(id);
-    })
-  })
+    refManager = new ReferenceManager<TestClass>(async (id: string) => new TestClass(id));
+  });
 
   it('can create ref', async (done) => {
     const ref1 = await refManager.getReference('test1', 'ref1');
     const ref2 = await refManager.getReference('test1', 'ref2');
-    
+
     expect(ref1.instance).toBeDefined();
     expect(ref1.instance).toBeInstanceOf(TestClass);
     expect(ref1.reason).toBe('ref1');
@@ -40,10 +36,9 @@ describe('reference Manager Test', () => {
     expect(refManager.getReferenceIfHasInstance('tes1')).toBeNull();
 
     done();
-  })
+  });
 
   it('events', async (done) => {
-
     const createdListener = jest.fn();
     const disposedListener = jest.fn();
 
@@ -54,7 +49,6 @@ describe('reference Manager Test', () => {
     expect(createdListener).toBeCalledTimes(1);
     const ref2 = await refManager.getReference('test1', 'ref2');
     expect(createdListener).toBeCalledTimes(1);
-    
 
     ref1.dispose();
     expect(disposedListener).toBeCalledTimes(0);
@@ -65,11 +59,9 @@ describe('reference Manager Test', () => {
     d2.dispose();
 
     done();
-  
-  })
+  });
 
   it('edge cases', async (done) => {
-
     // 创建时回调获取并销毁ref
     const d1 = refManager.onInstanceCreated((testClass) => {
       const tempRef = refManager.getReferenceIfHasInstance(testClass.id);
@@ -91,17 +83,11 @@ describe('reference Manager Test', () => {
     d1.dispose();
     d2.dispose();
     done();
-  })
-
-}) 
-
+  });
+});
 
 class TestClass {
+  public data = '';
 
-  public data: string = '';
-
-  constructor(public readonly id: string) {
-    
-  }
-
+  constructor(public readonly id: string) {}
 }

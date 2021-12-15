@@ -4,7 +4,6 @@ import { IOpener } from '.';
 
 @Injectable()
 export class CommandOpener implements IOpener {
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 

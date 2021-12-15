@@ -3,9 +3,7 @@ import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../.
 import { IRPCProtocol } from '@opensumi/ide-connection';
 
 export class ExtHostOutput implements IExtHostOutput {
-  constructor(private rpcProtocol: IRPCProtocol) {
-
-  }
+  constructor(private rpcProtocol: IRPCProtocol) {}
 
   createOutputChannel(name: string): types.OutputChannel {
     return new OutputChannelImpl(name, this.rpcProtocol);
@@ -13,51 +11,50 @@ export class ExtHostOutput implements IExtHostOutput {
 }
 
 export class OutputChannelImpl implements types.OutputChannel {
+  private disposed: boolean;
 
-    private disposed: boolean;
+  private proxy: IMainThreadOutput;
 
-    private proxy: IMainThreadOutput;
+  constructor(readonly name: string, private rpcProtocol: IRPCProtocol) {
+    this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
+  }
 
-    constructor(readonly name: string, private rpcProtocol: IRPCProtocol) {
-      this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
+  dispose(): void {
+    if (!this.disposed) {
+      this.proxy.$dispose(this.name).then(() => {
+        this.disposed = true;
+      });
     }
+  }
 
-    dispose(): void {
-        if (!this.disposed) {
-            this.proxy.$dispose(this.name).then(() => {
-                this.disposed = true;
-            });
-        }
-    }
+  append(value: string): void {
+    this.validate();
+    this.proxy.$append(this.name, value);
+  }
 
-    append(value: string): void {
-      this.validate();
-      this.proxy.$append(this.name, value);
-    }
+  appendLine(value: string): void {
+    this.validate();
+    this.append(value + '\n');
+  }
 
-    appendLine(value: string): void {
-        this.validate();
-        this.append(value + '\n');
-    }
+  clear(): void {
+    this.validate();
+    this.proxy.$clear(this.name);
+  }
 
-    clear(): void {
-        this.validate();
-        this.proxy.$clear(this.name);
-    }
+  show(preserveFocus: boolean | undefined): void {
+    this.validate();
+    this.proxy.$reveal(this.name, !!preserveFocus);
+  }
 
-    show(preserveFocus: boolean | undefined): void {
-        this.validate();
-        this.proxy.$reveal(this.name, !!preserveFocus);
-    }
+  hide(): void {
+    this.validate();
+    this.proxy.$close(this.name);
+  }
 
-    hide(): void {
-        this.validate();
-        this.proxy.$close(this.name);
+  private validate(): void {
+    if (this.disposed) {
+      throw new Error('Channel has been closed');
     }
-
-    private validate(): void {
-        if (this.disposed) {
-            throw new Error('Channel has been closed');
-        }
-    }
+  }
 }

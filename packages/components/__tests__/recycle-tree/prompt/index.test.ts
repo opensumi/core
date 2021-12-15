@@ -20,14 +20,9 @@ describe('NewPromptHandle', () => {
       return true;
     }
   }
-  class Folder extends CompositeTreeNode {
-  }
+  class Folder extends CompositeTreeNode {}
   class File extends TreeNode {
-    constructor(
-      tree: TreeA,
-      parent: Folder | Root,
-      metadata: { [key: string]: string },
-    ) {
+    constructor(tree: TreeA, parent: Folder | Root, metadata: { [key: string]: string }) {
       super(tree, parent, undefined, metadata);
     }
   }
@@ -174,14 +169,9 @@ describe('RenamePromptHandle', () => {
       return true;
     }
   }
-  class Folder extends CompositeTreeNode {
-  }
+  class Folder extends CompositeTreeNode {}
   class File extends TreeNode {
-    constructor(
-      tree: TreeA,
-      parent: Folder | Root,
-      metadata: { [key: string]: string },
-    ) {
+    constructor(tree: TreeA, parent: Folder | Root, metadata: { [key: string]: string }) {
       super(tree, parent, undefined, metadata);
     }
   }
@@ -210,5 +200,4 @@ describe('RenamePromptHandle', () => {
     expect(typeof prompt.onBlur).toBe('function');
     expect(typeof prompt.onDestroy).toBe('function');
   });
-
 });

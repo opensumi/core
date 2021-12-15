@@ -38,15 +38,9 @@ export interface CallHierarchyProvider {
     token: CancellationToken,
   ): ProviderResult<CallHierarchySession>;
 
-  provideIncomingCalls(
-    item: CallHierarchyItem,
-    token: CancellationToken,
-  ): ProviderResult<IncomingCall[]>;
+  provideIncomingCalls(item: CallHierarchyItem, token: CancellationToken): ProviderResult<IncomingCall[]>;
 
-  provideOutgoingCalls(
-    item: CallHierarchyItem,
-    token: CancellationToken,
-  ): ProviderResult<OutgoingCall[]>;
+  provideOutgoingCalls(item: CallHierarchyItem, token: CancellationToken): ProviderResult<OutgoingCall[]>;
 }
 
 export const CallHierarchyProviderRegistry = new LanguageFeatureRegistry<CallHierarchyProvider>();

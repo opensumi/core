@@ -3,11 +3,13 @@ import * as runtime from 'serviceworker-webpack-plugin/lib/runtime';
 export function register() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      runtime.register()
+      runtime
+        .register()
         .then((registration) => {
           // tslint:disable-next-line:no-console
           console.log('SW registered: ', registration);
-        }).catch((registrationError) => {
+        })
+        .catch((registrationError) => {
           // tslint:disable-next-line:no-console
           console.log('SW registration failed: ', registrationError);
         });

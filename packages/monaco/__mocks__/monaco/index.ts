@@ -27,42 +27,37 @@ export function createMockedMonaco() {
     //   },
     // },
     // textModel: createMockedMonacoTextModelApi(),
-     /** -------------------------------- IMPORTANT @deprecated -------------------------------- */
+    /** -------------------------------- IMPORTANT @deprecated -------------------------------- */
     // @ts-ignore
     services: {
       // @ts-ignore
       StaticServices: {
         modeService: {
           get: () => ({
-            getOrCreateModeByFilenameOrFirstLine: (filename, firstLine) => {
-              return Promise.resolve({
-                getId: () => {
-
-                },
-                getLanguageIdentifier: () => {
-
-                },
-              });
-            },
+            getOrCreateModeByFilenameOrFirstLine: (filename, firstLine) =>
+              Promise.resolve({
+                getId: () => {},
+                getLanguageIdentifier: () => {},
+              }),
             getModeIdByFilepathOrFirstLine: () => {},
           }),
         },
         modelService: {
           get: () => ({
-            getModel: () => {
-              return {
-                getModeId: () => {
-                  return 'typescript';
-                },
-              };
-            },
+            getModel: () => ({
+              getModeId: () => 'typescript',
+            }),
           }),
         },
         editorWorkerService: {
           get(): any {
             return {
               canComputeDiff: (original: Uri, modified: Uri): boolean => true,
-              computeDiff: (original: MockedMonacoUri, modified: MockedMonacoUri, ignoreTrimWhitespace: boolean): Promise<IDiffComputationResult | null> => {
+              computeDiff: (
+                original: MockedMonacoUri,
+                modified: MockedMonacoUri,
+                ignoreTrimWhitespace: boolean,
+              ): Promise<IDiffComputationResult | null> => {
                 const model = mockEditor.getModel(modified);
                 if (!model) {
                   return Promise.resolve(null);
@@ -72,24 +67,26 @@ export function createMockedMonaco() {
                 return Promise.resolve({
                   identical: false,
                   quitEarly: true,
-                  changes: [{
-                    originalStartLineNumber: 1,
-                    originalEndLineNumber: 5,
-                    modifiedStartLineNumber: 0,
-                    modifiedEndLineNumber: model.getValue().length - oldValue.length,
-                    charChanges: [
-                      {
-                        modifiedEndColumn: 0,
-                        modifiedEndLineNumber: 0,
-                        modifiedStartColumn: 0,
-                        modifiedStartLineNumber: 0,
-                        originalEndColumn: 0,
-                        originalEndLineNumber: 0,
-                        originalStartColumn: 0,
-                        originalStartLineNumber: 0,
-                      },
-                    ],
-                  }],
+                  changes: [
+                    {
+                      originalStartLineNumber: 1,
+                      originalEndLineNumber: 5,
+                      modifiedStartLineNumber: 0,
+                      modifiedEndLineNumber: model.getValue().length - oldValue.length,
+                      charChanges: [
+                        {
+                          modifiedEndColumn: 0,
+                          modifiedEndLineNumber: 0,
+                          modifiedStartColumn: 0,
+                          modifiedStartLineNumber: 0,
+                          originalEndColumn: 0,
+                          originalEndLineNumber: 0,
+                          originalStartColumn: 0,
+                          originalStartLineNumber: 0,
+                        },
+                      ],
+                    },
+                  ],
                 });
               },
             };
@@ -100,6 +97,4 @@ export function createMockedMonaco() {
   };
 }
 
-export function mockMonaco() {
-
-}
+export function mockMonaco() {}

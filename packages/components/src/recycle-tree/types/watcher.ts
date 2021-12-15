@@ -114,8 +114,16 @@ export interface ITreeWatcher {
 
   // 事件分发
 
-  notifyWillChangeParent(target: ITreeNodeOrCompositeTreeNode, prevParent: ICompositeTreeNode, newParent: ICompositeTreeNode);
-  notifyDidChangeParent(target: ITreeNodeOrCompositeTreeNode, prevParent: ICompositeTreeNode, newParent: ICompositeTreeNode);
+  notifyWillChangeParent(
+    target: ITreeNodeOrCompositeTreeNode,
+    prevParent: ICompositeTreeNode,
+    newParent: ICompositeTreeNode,
+  );
+  notifyDidChangeParent(
+    target: ITreeNodeOrCompositeTreeNode,
+    prevParent: ICompositeTreeNode,
+    newParent: ICompositeTreeNode,
+  );
 
   notifyWillDispose(target: ITreeNodeOrCompositeTreeNode);
   notifyDidDispose(target: ITreeNodeOrCompositeTreeNode);

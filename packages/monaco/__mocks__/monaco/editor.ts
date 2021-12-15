@@ -30,7 +30,6 @@ enum MouseTargetType {
 }
 
 export function createMockedMonacoEditorApi(): any {
-
   const models = new Map<string, MockedMonacoModel>();
 
   const mockedMonacoEditorApi = {
@@ -46,30 +45,20 @@ export function createMockedMonacoEditorApi(): any {
       quickFireEvent('onDidCreateEditor', editor.getModifiedEditor());
       return editor;
     },
-    createDiffNavigator: (diffEditor, opts) => {
-      return new MockedDiffNavigator(diffEditor, opts);
-    },
+    createDiffNavigator: (diffEditor, opts) => new MockedDiffNavigator(diffEditor, opts),
     onDidCreateModel: quickEvent(' onDidCreateModel'),
     createModel: (value, language, uri) => {
       const model = new MockedMonacoModel(value, language, uri);
-      models.set(uri ? uri.toString() : ('model_' + Math.random() * 1000), model);
+      models.set(uri ? uri.toString() : 'model_' + Math.random() * 1000, model);
       return model as unknown as monaco.editor.ITextModel;
     },
     setModelLanguage: (model, languageId) => {
       (model as unknown as MockedMonacoModel).language = languageId;
     },
-    setModelMarkers: () => {
-
-    },
-    getModelMarkers: () => {
-      return [];
-    },
-    getModel: (uri) => {
-      return models.get(uri.toString()) as unknown as monaco.editor.ITextModel || null;
-    },
-    getModels: () => {
-      return [];
-    },
+    setModelMarkers: () => {},
+    getModelMarkers: () => [],
+    getModel: (uri) => (models.get(uri.toString()) as unknown as monaco.editor.ITextModel) || null,
+    getModels: () => [],
     TrackedRangeStickiness,
     MouseTargetType,
   };

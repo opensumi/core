@@ -3,20 +3,53 @@ import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/edito
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, Optional } from '@opensumi/di';
-import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../common/vscode';
-import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@opensumi/ide-editor';
+import {
+  IMainThreadEditorsService,
+  IExtensionHostEditorService,
+  ExtHostAPIIdentifier,
+  IEditorChangeDTO,
+  IResolvedTextEditorConfiguration,
+  TextEditorRevealType,
+  ITextEditorUpdateConfiguration,
+  TextEditorCursorStyle,
+} from '../../../common/vscode';
+import {
+  WorkbenchEditorService,
+  IEditorGroup,
+  IResource,
+  IUndoStopOptions,
+  ISingleEditOperation,
+  IDecorationApplyOptions,
+  IEditorOpenType,
+  IResourceOpenOptions,
+  EditorCollectionService,
+  IDecorationRenderOptions,
+  IThemeDecorationRenderOptions,
+} from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@opensumi/ide-core-common';
-import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, IDiffResource } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorGroupChangeEvent,
+  IEditorDecorationCollectionService,
+  EditorSelectionChangeEvent,
+  EditorVisibleChangeEvent,
+  EditorConfigurationChangedEvent,
+  EditorGroupIndexChangedEvent,
+  IDiffResource,
+} from '@opensumi/ide-editor/lib/browser';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import {
+  IMonacoImplEditor,
+  EditorCollectionServiceImpl,
+  BrowserDiffEditor,
+} from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
@@ -32,7 +65,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   private readonly proxy: IExtensionHostEditorService;
 
-  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
+  constructor(
+    @Optional(Symbol()) private rpcProtocol: IRPCProtocol,
+    private documents: MainThreadExtensionDocumentData,
+  ) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
     this.$getInitialState().then((change) => {
@@ -42,31 +78,34 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   async $getInitialState() {
     this.startEvents();
-    const editors = this.editorService.editorGroups.map((group) => {
-      if (group.currentOpenType && isEditor(group.currentOpenType)) {
-        const editor = group.currentEditor as IMonacoImplEditor;
-        if (!editor.currentDocumentModel) {
-          return undefined;
+    const editors = this.editorService.editorGroups
+      .map((group) => {
+        if (group.currentOpenType && isEditor(group.currentOpenType)) {
+          const editor = group.currentEditor as IMonacoImplEditor;
+          if (!editor.currentDocumentModel) {
+            return undefined;
+          }
+          if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+            return undefined;
+          }
+          return {
+            id: getTextEditorId(group, group.currentResource!.uri),
+            uri: editor.currentDocumentModel.uri.toString(),
+            selections: editor!.getSelections() || [],
+            options: getEditorOption(editor.monacoEditor),
+            viewColumn: getViewColumn(group),
+            visibleRanges: editor.monacoEditor.getVisibleRanges(),
+          };
         }
-        if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
-          return undefined;
-        }
-        return {
-          id: getTextEditorId(group, group.currentResource!.uri),
-          uri: editor.currentDocumentModel.uri.toString(),
-          selections: editor!.getSelections() || [],
-          options: getEditorOption(editor.monacoEditor),
-          viewColumn: getViewColumn(group),
-          visibleRanges: editor.monacoEditor.getVisibleRanges(),
-        };
-      }
-    }).filter((c) => !!c);
-    const activedEditor =  this.editorService.currentResource && editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
+      })
+      .filter((c) => !!c);
+    const activedEditor =
+      this.editorService.currentResource &&
+      editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
     return {
       created: editors,
       actived: activedEditor && this.documents.isDocSyncEnabled(activedEditor.uri) && activedEditor.id,
     } as IEditorChangeDTO;
-
   }
 
   async $closeEditor(id: string) {
@@ -75,7 +114,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       const group = this.getGroup(id)!;
       group.close(group.currentResource!.uri);
     }
-
   }
 
   async $revealRange(id: string, range: IRange, type?: TextEditorRevealType) {
@@ -83,15 +121,14 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     if (editor) {
       switch (type) {
         case TextEditorRevealType.InCenter:
-            return editor.monacoEditor.revealRangeInCenter(range);
+          return editor.monacoEditor.revealRangeInCenter(range);
         case TextEditorRevealType.AtTop:
-            return editor.monacoEditor.revealRangeAtTop(range);
+          return editor.monacoEditor.revealRangeAtTop(range);
         case TextEditorRevealType.InCenterIfOutsideViewport:
-            return editor.monacoEditor.revealRangeInCenterIfOutsideViewport(range);
+          return editor.monacoEditor.revealRangeInCenterIfOutsideViewport(range);
         default:
-            return editor.monacoEditor.revealRange(range);
+          return editor.monacoEditor.revealRange(range);
       }
-
     }
   }
 
@@ -131,14 +168,19 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $insertSnippet(id: string, snippet: string, ranges: IRange[] = [], options: IUndoStopOptions = {undoStopAfter: true, undoStopBefore: true}) {
+  async $insertSnippet(
+    id: string,
+    snippet: string,
+    ranges: IRange[] = [],
+    options: IUndoStopOptions = { undoStopAfter: true, undoStopBefore: true },
+  ) {
     const editor = this.getEditor(id);
     if (editor) {
-      editor.insertSnippet(snippet, ranges, options );
+      editor.insertSnippet(snippet, ranges, options);
     }
   }
 
-  async $updateOptions(id: string , update: ITextEditorUpdateConfiguration) {
+  async $updateOptions(id: string, update: ITextEditorUpdateConfiguration) {
     const editor = this.getEditor(id);
     if (editor) {
       await this.setConfiguration(editor.monacoEditor, update);
@@ -155,7 +197,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       if (id === getTextEditorId(group, currentResource.uri)) {
         return group.currentEditor as IMonacoImplEditor;
       }
-      if (group.currentOpenType?.type === 'diff' && id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, true)) {
+      if (
+        group.currentOpenType?.type === 'diff' &&
+        id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, true)
+      ) {
         return group.diffEditor.originalEditor;
       }
     }
@@ -168,74 +213,95 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   startEvents() {
-    this.addDispose(this.eventBus.on(EditorGroupChangeEvent, (event) => {
-      const payload = event.payload;
-      if (!resourceEquals(payload.newResource, payload.oldResource) || !openTypeEquals(payload.newOpenType, payload.oldOpenType)) {
-        const change: IEditorChangeDTO = {};
-        if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
-          const editor = payload.group.currentEditor as IMonacoImplEditor;
-          if (!editor.currentDocumentModel) {
-            // noop
-          } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
-            // noop
-          } else {
-            change.created = [
-              {
-                id: getTextEditorId(payload.group, payload.newResource!.uri),
-                uri: editor.currentDocumentModel!.uri.toString(),
-                selections: editor!.getSelections() || [],
-                options: getEditorOption(editor.monacoEditor),
-                viewColumn: getViewColumn(payload.group),
-                visibleRanges: editor.monacoEditor.getVisibleRanges(),
-              },
-            ];
-            if (payload.newOpenType.type === 'diff') {
-              const diffOriginalEditor = payload.group.diffEditor.originalEditor;
-              change.created.push({
-                id: getTextEditorId(payload.group, (payload.newResource as IDiffResource).metadata!.original, true),
-                uri: diffOriginalEditor.currentUri!.toString(),
-                selections: diffOriginalEditor!.getSelections() || [],
-                options: getEditorOption(diffOriginalEditor.monacoEditor),
-                viewColumn: getViewColumn(payload.group),
-                visibleRanges: diffOriginalEditor.monacoEditor.getVisibleRanges(),
-              });
+    this.addDispose(
+      this.eventBus.on(EditorGroupChangeEvent, (event) => {
+        const payload = event.payload;
+        if (
+          !resourceEquals(payload.newResource, payload.oldResource) ||
+          !openTypeEquals(payload.newOpenType, payload.oldOpenType)
+        ) {
+          const change: IEditorChangeDTO = {};
+          if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
+            const editor = payload.group.currentEditor as IMonacoImplEditor;
+            if (!editor.currentDocumentModel) {
+              // noop
+            } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+              // noop
+            } else {
+              change.created = [
+                {
+                  id: getTextEditorId(payload.group, payload.newResource!.uri),
+                  uri: editor.currentDocumentModel!.uri.toString(),
+                  selections: editor!.getSelections() || [],
+                  options: getEditorOption(editor.monacoEditor),
+                  viewColumn: getViewColumn(payload.group),
+                  visibleRanges: editor.monacoEditor.getVisibleRanges(),
+                },
+              ];
+              if (payload.newOpenType.type === 'diff') {
+                const diffOriginalEditor = payload.group.diffEditor.originalEditor;
+                change.created.push({
+                  id: getTextEditorId(payload.group, (payload.newResource as IDiffResource).metadata!.original, true),
+                  uri: diffOriginalEditor.currentUri!.toString(),
+                  selections: diffOriginalEditor!.getSelections() || [],
+                  options: getEditorOption(diffOriginalEditor.monacoEditor),
+                  viewColumn: getViewColumn(payload.group),
+                  visibleRanges: diffOriginalEditor.monacoEditor.getVisibleRanges(),
+                });
+              }
+            }
+            // 来自切换打开类型
+            if (
+              resourceEquals(payload.newResource, payload.oldResource) &&
+              !openTypeEquals(payload.newOpenType, payload.oldOpenType) &&
+              payload.newResource === this.editorService.currentResource
+            ) {
+              change.actived = getTextEditorId(payload.group, payload.newResource!.uri);
             }
           }
-          // 来自切换打开类型
-          if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
-            change.actived = getTextEditorId(payload.group, payload.newResource!.uri);
+          if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
+            change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
+            if (payload.oldOpenType.type === 'diff') {
+              change.removed.push(
+                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original),
+              );
+            }
           }
+          this.proxy.$acceptChange(change);
         }
-        if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
-          change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
-          if (payload.oldOpenType.type === 'diff') {
-            change.removed.push(getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original));
-          }
-        }
-        this.proxy.$acceptChange(change);
-      }
-    }));
+      }),
+    );
 
-    this.addDispose(this.editorService.onActiveEditorUriChange((uri) => {
-      if (uri && this.editorService.currentEditorGroup && isEditor(this.editorService.currentEditorGroup.currentOpenType)) {
-        const isDiffOriginal = this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
-          this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
-        if (isDiffOriginal) {
-          this.proxy.$acceptChange({
-            actived: getTextEditorId(this.editorService.currentEditorGroup, uri, true),
-          });
+    this.addDispose(
+      this.editorService.onActiveEditorUriChange((uri) => {
+        if (
+          uri &&
+          this.editorService.currentEditorGroup &&
+          isEditor(this.editorService.currentEditorGroup.currentOpenType)
+        ) {
+          const isDiffOriginal =
+            this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
+            this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
+          if (isDiffOriginal) {
+            this.proxy.$acceptChange({
+              actived: getTextEditorId(this.editorService.currentEditorGroup, uri, true),
+            });
+          } else {
+            // 这里 id 还是兼容旧逻辑不做改动
+            this.proxy.$acceptChange({
+              actived: getTextEditorId(
+                this.editorService.currentEditorGroup,
+                this.editorService.currentEditorGroup.currentResource?.uri!,
+              ),
+            });
+          }
         } else {
-          // 这里 id 还是兼容旧逻辑不做改动
           this.proxy.$acceptChange({
-            actived: getTextEditorId(this.editorService.currentEditorGroup, this.editorService.currentEditorGroup.currentResource?.uri!),
+            actived: '-1',
           });
         }
-      } else {
-        this.proxy.$acceptChange({
-          actived: '-1',
-        });
-      }
-    }));
+      }),
+    );
 
     const selectionChange = (e: EditorSelectionChangeEvent) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
@@ -248,9 +314,11 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       });
     };
 
-    const debouncedSelectionChange = debounce((e) => {
-      return selectionChange(e);
-    }, 50, {maxWait: 200, leading: true, trailing: true});
+    const debouncedSelectionChange = debounce((e) => selectionChange(e), 50, {
+      maxWait: 200,
+      leading: true,
+      trailing: true,
+    });
 
     this.addDispose(
       this.eventBus.on(EditorSelectionChangeEvent, (e) => {
@@ -260,36 +328,58 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           debouncedSelectionChange.cancel();
           selectionChange(e);
         }
-      }));
+      }),
+    );
 
-    this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e: EditorVisibleChangeEvent) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
-      this.proxy.$acceptPropertiesChange({
-        id: editorId,
-        visibleRanges: e.payload.visibleRanges,
-      });
-    }, 50, {maxWait: 200, leading: true, trailing: true})));
-    this.addDispose(this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
-      if (e.payload.group.currentEditor && (e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor.getModel()) {
-        this.proxy.$acceptPropertiesChange({
-          id: editorId,
-          options: getEditorOption((e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor),
-        });
-      }
-    }));
-    this.addDispose(this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
-      if (isGroupEditorState(e.payload.group)) {
-        const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!.uri);
-        this.proxy.$acceptPropertiesChange({
-          id: editorId,
-          viewColumn: getViewColumn(e.payload.group),
-        });
-      }
-    }));
+    this.addDispose(
+      this.eventBus.on(
+        EditorVisibleChangeEvent,
+        debounce(
+          (e: EditorVisibleChangeEvent) => {
+            const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
+            this.proxy.$acceptPropertiesChange({
+              id: editorId,
+              visibleRanges: e.payload.visibleRanges,
+            });
+          },
+          50,
+          { maxWait: 200, leading: true, trailing: true },
+        ),
+      ),
+    );
+    this.addDispose(
+      this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
+        const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
+        if (
+          e.payload.group.currentEditor &&
+          (e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor.getModel()
+        ) {
+          this.proxy.$acceptPropertiesChange({
+            id: editorId,
+            options: getEditorOption((e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor),
+          });
+        }
+      }),
+    );
+    this.addDispose(
+      this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
+        if (isGroupEditorState(e.payload.group)) {
+          const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!.uri);
+          this.proxy.$acceptPropertiesChange({
+            id: editorId,
+            viewColumn: getViewColumn(e.payload.group),
+          });
+        }
+      }),
+    );
   }
 
-  async $applyEdits(id: string, documentVersionId: number, edits: ISingleEditOperation[], options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean; }): Promise<boolean> {
+  async $applyEdits(
+    id: string,
+    documentVersionId: number,
+    edits: ISingleEditOperation[],
+    options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean },
+  ): Promise<boolean> {
     const editor = this.getEditor(id);
     if (editor && editor.currentDocumentModel) {
       const model: ITextModel = editor.currentDocumentModel.getMonacoModel();
@@ -297,13 +387,13 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         if (typeof options.setEndOfLine !== 'undefined') {
           model.pushEOL(options.setEndOfLine as any);
         }
-        const transformedEdits = edits.map((edit): monaco.editor.IIdentifiedSingleEditOperation => {
-          return {
+        const transformedEdits = edits.map(
+          (edit): monaco.editor.IIdentifiedSingleEditOperation => ({
             range: monaco.Range.lift(edit.range)!,
             text: edit.text,
             forceMoveMarkers: edit.forceMoveMarkers,
-          };
-        });
+          }),
+        );
         if (options.undoStopBefore) {
           editor.monacoEditor.pushUndoStop();
         }
@@ -334,7 +424,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     throw new Error('Editor Open uri ' + uri.toString() + ' Failed');
   }
 
-  $setSelections(id: string, selections: ISelection[]): Promise<void>  {
+  $setSelections(id: string, selections: ISelection[]): Promise<void> {
     if (!this.getEditor(id)) {
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
@@ -390,7 +480,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const codeEditorId = codeEditor.getId();
 
     const diffEditors = this.codeEditorService.listDiffEditors();
-    const [diffEditor] = diffEditors.filter((d) => d.originalEditor.getId() === codeEditorId || d.modifiedEditor.getId() === codeEditorId);
+    const [diffEditor] = diffEditors.filter(
+      (d) => d.originalEditor.getId() === codeEditorId || d.modifiedEditor.getId() === codeEditorId,
+    );
 
     if (diffEditor) {
       return Promise.resolve((diffEditor as BrowserDiffEditor).monacoDiffEditor.getLineChanges() || []);
@@ -406,7 +498,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   private _setIndentConfiguration(model: ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
-    const creationOpts = StaticServices.modelService.get().getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
+    const creationOpts = StaticServices.modelService
+      .get()
+      .getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
 
     if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
       // one of the options was set to 'auto' => detect indentation
@@ -443,8 +537,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 }
 
-function getTextEditorId(group: IEditorGroup, uri: URI, isDiffOriginal?: boolean ): string {
-  return group.name + '.' + (isDiffOriginal ? 'diffOriginal.' : '') + uri.toString() ;
+function getTextEditorId(group: IEditorGroup, uri: URI, isDiffOriginal?: boolean): string {
+  return group.name + '.' + (isDiffOriginal ? 'diffOriginal.' : '') + uri.toString();
 }
 
 function getGroupIdFromTextEditorId(id: string): string {

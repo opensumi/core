@@ -6,13 +6,16 @@ import * as Converter from '../../../../common/vscode/converter';
 import { isNonEmptyArray } from '@opensumi/ide-core-common';
 
 export class SelectionRangeAdapter {
-
   constructor(
     private readonly documents: ExtensionDocumentDataManager,
     private readonly _provider: vscode.SelectionRangeProvider,
-  ) { }
+  ) {}
 
-  async provideSelectionRanges(resource: URI, pos: Position[], token: vscode.CancellationToken): Promise<SelectionRange[][]> {
+  async provideSelectionRanges(
+    resource: URI,
+    pos: Position[],
+    token: vscode.CancellationToken,
+  ): Promise<SelectionRange[][]> {
     const documentData = this.documents.getDocumentData(resource);
     if (!documentData) {
       return Promise.reject(new Error(`There is no document for ${resource}`));

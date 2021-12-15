@@ -12,10 +12,7 @@ export interface DebugStackOperationViewProps {
 }
 
 export const DebugStackOperationView = (props: DebugStackOperationViewProps) => {
-  const {
-    session,
-    thread,
-  } = props;
+  const { session, thread } = props;
   const {
     doStop,
     doStepIn,
@@ -34,9 +31,9 @@ export const DebugStackOperationView = (props: DebugStackOperationViewProps) => 
     };
 
     return (
-      <div className={ styles.debug_stack_session_operations }>
-        <DebugAction run={ () => selectSession(doRestart) } icon={ 'reload' } label={ localize('debug.action.restart') } />
-        <DebugAction run={ () => selectSession(doStop) } icon={ 'stop' } label={ localize('debug.action.stop') } />
+      <div className={styles.debug_stack_session_operations}>
+        <DebugAction run={() => selectSession(doRestart)} icon={'reload'} label={localize('debug.action.restart')} />
+        <DebugAction run={() => selectSession(doStop)} icon={'stop'} label={localize('debug.action.stop')} />
       </div>
     );
   }
@@ -50,17 +47,45 @@ export const DebugStackOperationView = (props: DebugStackOperationViewProps) => 
 
     const renderContinue = (isStop: boolean): React.ReactNode => {
       if (isStop) {
-        return <DebugAction run={ () => selectThread(doContinue) } icon={ 'continue' } label={ localize('debug.action.continue') } />;
+        return (
+          <DebugAction
+            run={() => selectThread(doContinue)}
+            icon={'continue'}
+            label={localize('debug.action.continue')}
+          />
+        );
       }
-      return <DebugAction run={ () => selectThread(doPause) } enabled={ true } icon={ 'pause' } label={ localize('debug.action.pause') } />;
+      return (
+        <DebugAction
+          run={() => selectThread(doPause)}
+          enabled={true}
+          icon={'pause'}
+          label={localize('debug.action.pause')}
+        />
+      );
     };
 
     return (
-      <div className={ styles.debug_stack_thread_operations }>
-        { renderContinue(stopped) }
-        <DebugAction run={ () => selectThread(doStepOver) } enabled={ stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
-        <DebugAction run={ () => selectThread(doStepIn) } enabled={ stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
-        <DebugAction run={ () => selectThread(doStepOut) } enabled={ stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
+      <div className={styles.debug_stack_thread_operations}>
+        {renderContinue(stopped)}
+        <DebugAction
+          run={() => selectThread(doStepOver)}
+          enabled={stopped}
+          icon={'step'}
+          label={localize('debug.action.step-over')}
+        />
+        <DebugAction
+          run={() => selectThread(doStepIn)}
+          enabled={stopped}
+          icon={'step-in'}
+          label={localize('debug.action.step-into')}
+        />
+        <DebugAction
+          run={() => selectThread(doStepOut)}
+          enabled={stopped}
+          icon={'step-out'}
+          label={localize('debug.action.step-out')}
+        />
       </div>
     );
   }

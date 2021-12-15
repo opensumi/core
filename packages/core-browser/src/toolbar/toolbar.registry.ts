@@ -1,5 +1,14 @@
-
-import { IToolbarRegistry, IToolbarActionGroup, IToolbarAction, IToolbarActionGroupForRender, IToolbarActionPosition, ToolbarActionsChangedEvent, ToolBarActionContribution, ToolbarActionGroupsChangedEvent, ToolbarRegistryReadyEvent } from './types';
+import {
+  IToolbarRegistry,
+  IToolbarActionGroup,
+  IToolbarAction,
+  IToolbarActionGroupForRender,
+  IToolbarActionPosition,
+  ToolbarActionsChangedEvent,
+  ToolBarActionContribution,
+  ToolbarActionGroupsChangedEvent,
+  ToolbarRegistryReadyEvent,
+} from './types';
 import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution } from '../common';
@@ -11,7 +20,6 @@ type ActionId = string;
 
 @Injectable()
 export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarRegistry {
-
   private locations: string[] = [];
 
   private _preferredDefaultLocation: string | undefined = undefined;
@@ -89,7 +97,10 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     });
     this._onGroupAdded.event((groupId) => {
       this.actions.forEach((action) => {
-        if ((action.strictPosition && action.strictPosition.group === groupId) || (action.preferredPosition && action.preferredPosition.group === groupId)) {
+        if (
+          (action.strictPosition && action.strictPosition.group === groupId) ||
+          (action.preferredPosition && action.preferredPosition.group === groupId)
+        ) {
           this.calculateActionPosition(action);
         }
       });
@@ -177,12 +188,11 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   }
 
   applyPosition(action: IToolbarAction, position: IToolbarActionPosition | null) {
-
     const changedPositions: IToolbarActionPosition[] = [];
     // 先删除之前的
     if (this.computedReverse.has(action.id)) {
       const previousPos = this.computedReverse.get(action.id)!;
-      if (position && (previousPos.location === position.location && previousPos.group === position.group)) {
+      if (position && previousPos.location === position.location && previousPos.group === position.group) {
         // 未改变
         return;
       }
@@ -203,7 +213,7 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
       const nextActions = this.computed.get(position.location)!.get(position.group)!;
 
       let i = 0;
-      for (; i < nextActions.length; i ++) {
+      for (; i < nextActions.length; i++) {
         if (nextActions[i] && (nextActions[i].weight || 0) < (action.weight || 0)) {
           break;
         }
@@ -215,12 +225,13 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
 
     if (this._inited) {
       changedPositions.forEach((position) => {
-        this.eventBus.fire(new ToolbarActionsChangedEvent({
-          position,
-        }));
+        this.eventBus.fire(
+          new ToolbarActionsChangedEvent({
+            position,
+          }),
+        );
       });
     }
-
   }
 
   getGroupLocation(group: IToolbarActionGroup): string {
@@ -244,14 +255,14 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     const groups = this.computedGroups.get(location)!;
 
     let i = 0;
-    for (; i < groups.length; i ++) {
+    for (; i < groups.length; i++) {
       if (groups[i] && (groups[i].weight || 0) < (group.weight || 0)) {
         break;
       }
     }
     groups.splice(i, 0, group);
 
-    this.eventBus.fire(new ToolbarActionGroupsChangedEvent({location}));
+    this.eventBus.fire(new ToolbarActionGroupsChangedEvent({ location }));
 
     return location;
   }
@@ -306,12 +317,10 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
 
 @Domain(ClientAppContribution)
 export class ToolbarClientAppContribution implements ClientAppContribution {
-
   @Autowired(IToolbarRegistry)
   toolbarRegistry: IToolbarRegistry;
 
   onStart() {
     (this.toolbarRegistry as NextToolbarRegistryImpl).init();
   }
-
 }

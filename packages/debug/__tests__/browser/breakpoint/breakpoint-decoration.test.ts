@@ -7,18 +7,26 @@ describe('Breakpoints Decoration', () => {
   describe('Get breakpoint decoration with debugMode', () => {
     const decoration: DebugDecorator = new DebugDecorator();
     it('when breakpoint is disabled', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-      }, false);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+        },
+        false,
+      );
       const dec = decoration.getDecoration(breakpoint, true);
       expect(dec.className).toBe(`${prefix}-disabled`);
       expect(dec.message[0]).toBe('');
     });
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-      }, true);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+        },
+        true,
+      );
       breakpoint.status = new Map();
       breakpoint.status.set(breakpoint.id, {
         verified: false,
@@ -29,23 +37,31 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is logPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-        logMessage: 'console',
-      }, true);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+          logMessage: 'console',
+        },
+        true,
+      );
       breakpoint.status = new Map();
       breakpoint.status.set('test', {
         verified: true,
       });
       const dec = decoration.getDecoration(breakpoint, true);
-      expect(dec.className).toBe(`sumi-debug-logpoint`);
+      expect(dec.className).toBe('sumi-debug-logpoint');
     });
 
     it('when breakpoint is conditionPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-        condition: 'console',
-      }, true);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+          condition: 'console',
+        },
+        true,
+      );
       breakpoint.status = new Map();
       breakpoint.status.set('test', {
         verified: true,
@@ -55,15 +71,19 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is normal breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-      }, true);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+        },
+        true,
+      );
       breakpoint.status = new Map();
       breakpoint.status.set('test', {
         verified: true,
       });
       const dec = decoration.getDecoration(breakpoint, true);
-      expect(dec.className).toBe(`sumi-debug-breakpoint`);
+      expect(dec.className).toBe('sumi-debug-breakpoint');
     });
   });
 
@@ -71,9 +91,13 @@ describe('Breakpoints Decoration', () => {
     const decoration: DebugDecorator = new DebugDecorator();
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
-        line: 1,
-      }, true);
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+        new URI('test.js'),
+        {
+          line: 1,
+        },
+        true,
+      );
       breakpoint.status = new Map();
       breakpoint.status.set(breakpoint.id, {
         verified: false,

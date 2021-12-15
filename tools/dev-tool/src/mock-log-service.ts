@@ -1,4 +1,3 @@
-
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 import { ILogService, ILogServiceOptions, LogLevel } from '@opensumi/ide-core-common';
 

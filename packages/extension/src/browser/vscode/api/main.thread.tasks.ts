@@ -1,15 +1,56 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  IMainThreadTasks, IExtHostTasks, RunOptionsDTO, TaskPresentationOptionsDTO, TaskDefinitionDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecution2DTO, CustomExecutionDTO,
-  TaskDTO, ShellExecutionOptionsDTO, TaskSourceDTO, TaskFilterDTO, TaskExecutionDTO, TaskHandleDTO, TaskProcessStartedDTO, TaskProcessEndedDTO,
+  IMainThreadTasks,
+  IExtHostTasks,
+  RunOptionsDTO,
+  TaskPresentationOptionsDTO,
+  TaskDefinitionDTO,
+  ProcessExecutionOptionsDTO,
+  ShellExecutionDTO,
+  ProcessExecutionDTO,
+  CustomExecution2DTO,
+  CustomExecutionDTO,
+  TaskDTO,
+  ShellExecutionOptionsDTO,
+  TaskSourceDTO,
+  TaskFilterDTO,
+  TaskExecutionDTO,
+  TaskHandleDTO,
+  TaskProcessStartedDTO,
+  TaskProcessEndedDTO,
 } from '../../../common/vscode/tasks';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ILogger, IDisposable, uuid, formatLocalize, Uri, withNullAsUndefined, ITaskDefinitionRegistry, isString, URI, Disposable } from '@opensumi/ide-core-common';
+import {
+  ILogger,
+  IDisposable,
+  uuid,
+  formatLocalize,
+  Uri,
+  withNullAsUndefined,
+  ITaskDefinitionRegistry,
+  isString,
+  URI,
+  Disposable,
+} from '@opensumi/ide-core-common';
 import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-task/lib/common';
 import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@opensumi/ide-task/lib/common/task';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { PresentationOptions, RunOptions, CommandOptions, CommandConfiguration, RuntimeType, TaskSource, TaskSourceKind, ExtensionTaskSource, TaskScope, Task, ConfiguringTask, CustomTask, ContributedTask } from '@opensumi/ide-task/lib/common/task';
+import {
+  PresentationOptions,
+  RunOptions,
+  CommandOptions,
+  CommandConfiguration,
+  RuntimeType,
+  TaskSource,
+  TaskSourceKind,
+  ExtensionTaskSource,
+  TaskScope,
+  Task,
+  ConfiguringTask,
+  CustomTask,
+  ContributedTask,
+} from '@opensumi/ide-task/lib/common/task';
 
 namespace TaskHandleDTO {
   export function is(value: any): value is TaskHandleDTO {
@@ -115,13 +156,15 @@ namespace ProcessExecutionOptionsDTO {
 }
 
 namespace ProcessExecutionDTO {
-  export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO): value is ProcessExecutionDTO {
+  export function is(
+    value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO,
+  ): value is ProcessExecutionDTO {
     const candidate = value as ProcessExecutionDTO;
     return candidate && !!candidate.process;
   }
   export function from(value: CommandConfiguration): ProcessExecutionDTO {
     const process: string = isString(value.name) ? value.name : value.name!.value;
-    const args: string[] = value.args ? value.args.map((value) => isString(value) ? value : value.value) : [];
+    const args: string[] = value.args ? value.args.map((value) => (isString(value) ? value : value.value)) : [];
     const result: ProcessExecutionDTO = {
       process,
       args,
@@ -183,13 +226,19 @@ namespace ShellExecutionOptionsDTO {
 }
 
 namespace ShellExecutionDTO {
-  export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO): value is ShellExecutionDTO {
+  export function is(
+    value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO,
+  ): value is ShellExecutionDTO {
     const candidate = value as ShellExecutionDTO;
     return candidate && (!!candidate.commandLine || !!candidate.command);
   }
   export function from(value: CommandConfiguration): ShellExecutionDTO {
     const result: ShellExecutionDTO = {};
-    if (value.name && isString(value.name) && (value.args === undefined || value.args === null || value.args.length === 0)) {
+    if (
+      value.name &&
+      isString(value.name) &&
+      (value.args === undefined || value.args === null || value.args.length === 0)
+    ) {
       result.commandLine = value.name;
     } else {
       result.command = value.name;
@@ -215,7 +264,9 @@ namespace ShellExecutionDTO {
 }
 
 namespace CustomExecutionDTO {
-  export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO): value is CustomExecutionDTO {
+  export function is(
+    value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO,
+  ): value is CustomExecutionDTO {
     const candidate = value as CustomExecutionDTO;
     return candidate && candidate.customExecution === 'customExecution';
   }
@@ -235,7 +286,9 @@ namespace CustomExecutionDTO {
 }
 
 namespace CustomExecution2DTO {
-  export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO): value is CustomExecution2DTO {
+  export function is(
+    value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | CustomExecution2DTO,
+  ): value is CustomExecution2DTO {
     const candidate = value as CustomExecution2DTO;
     return candidate && candidate.customExecution === 'customExecution2';
   }
@@ -276,7 +329,7 @@ namespace TaskSourceDTO {
     let scope: TaskScope;
     let workspaceFolder: IWorkspaceFolder | undefined;
     const folders = workspace.tryGetRoots().map((stat) => Uri.parse(stat.uri));
-    if ((value.scope === undefined) || ((typeof value.scope === 'number') && (value.scope !== TaskScope.Global))) {
+    if (value.scope === undefined || (typeof value.scope === 'number' && value.scope !== TaskScope.Global)) {
       if (workspace.tryGetRoots().map((stat) => Uri.file(stat.uri)).length === 0) {
         scope = TaskScope.Global;
         workspaceFolder = undefined;
@@ -307,7 +360,11 @@ namespace TaskSourceDTO {
 
 namespace TaskDTO {
   export function from(task: Task | ConfiguringTask): TaskDTO | undefined {
-    if (task === undefined || task === null || (!CustomTask.is(task) && !ContributedTask.is(task) && !ConfiguringTask.is(task))) {
+    if (
+      task === undefined ||
+      task === null ||
+      (!CustomTask.is(task) && !ContributedTask.is(task) && !ConfiguringTask.is(task))
+    ) {
       return undefined;
     }
     const result: TaskDTO = {
@@ -316,7 +373,10 @@ namespace TaskDTO {
       definition: TaskDefinitionDTO.from(task.getDefinition()),
       source: TaskSourceDTO.from(task._source),
       execution: undefined,
-      presentationOptions: !ConfiguringTask.is(task) && task.command ? TaskPresentationOptionsDTO.from(task.command.presentation) : undefined,
+      presentationOptions:
+        !ConfiguringTask.is(task) && task.command
+          ? TaskPresentationOptionsDTO.from(task.command.presentation)
+          : undefined,
       isBackground: task.configurationProperties.isBackground,
       problemMatchers: [],
       hasDefinedMatchers: ContributedTask.is(task) ? task.hasDefinedMatchers : false,
@@ -342,8 +402,13 @@ namespace TaskDTO {
     return result;
   }
 
-  export function to(task: TaskDTO | undefined, workspace: IWorkspaceService, executeOnly: boolean, context): ContributedTask | undefined {
-    if (!task || (typeof task.name !== 'string')) {
+  export function to(
+    task: TaskDTO | undefined,
+    workspace: IWorkspaceService,
+    executeOnly: boolean,
+    context,
+  ): ContributedTask | undefined {
+    if (!task || typeof task.name !== 'string') {
       return undefined;
     }
 
@@ -390,7 +455,6 @@ namespace TaskDTO {
 
 @Injectable({ multiple: true })
 export class MainthreadTasks extends Disposable implements IMainThreadTasks {
-
   protected readonly proxy: IExtHostTasks;
 
   private providers: Map<number, { disposable: IDisposable; provider: ITaskProvider }>;
@@ -414,27 +478,28 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTasks);
     this.providers = new Map();
     this.context = {
-      createTaskIdentifier: (identifier, reporter) => {
-        return this.taskDefinitionRegistry.createTaskIdentifier(identifier, reporter);
-      },
+      createTaskIdentifier: (identifier, reporter) =>
+        this.taskDefinitionRegistry.createTaskIdentifier(identifier, reporter),
     };
 
-    this.addDispose(this.taskService.onDidStateChange((event) => {
-      const task = event.__task!;
-      if (event.kind === TaskEventKind.Start) {
-        this.logger.verbose(`task ${task._label || task._id} start`, event.terminalId);
-        this.proxy.$onDidStartTask(TaskExecutionDTO.from(task.getTaskExecution()), event.terminalId!);
-      } else if (event.kind === TaskEventKind.ProcessStarted) {
-        this.logger.verbose(`task ${task._label || task._id} process start`, event.processId);
-        this.proxy.$onDidStartTaskProcess(TaskProcessStartedDTO.from(task.getTaskExecution(), event.processId!));
-      } else if (event.kind === TaskEventKind.ProcessEnded) {
-        this.logger.verbose(`task ${task._label || task._id} process end`, event.exitCode);
-        this.proxy.$onDidEndTaskProcess(TaskProcessEndedDTO.from(task.getTaskExecution(), event.exitCode!));
-      } else if (event.kind === TaskEventKind.End) {
-        this.logger.verbose(`task ${task._label || task._id} end`);
-        this.proxy.$onDidEndTask(TaskExecutionDTO.from(task.getTaskExecution()));
-      }
-    }));
+    this.addDispose(
+      this.taskService.onDidStateChange((event) => {
+        const task = event.__task!;
+        if (event.kind === TaskEventKind.Start) {
+          this.logger.verbose(`task ${task._label || task._id} start`, event.terminalId);
+          this.proxy.$onDidStartTask(TaskExecutionDTO.from(task.getTaskExecution()), event.terminalId!);
+        } else if (event.kind === TaskEventKind.ProcessStarted) {
+          this.logger.verbose(`task ${task._label || task._id} process start`, event.processId);
+          this.proxy.$onDidStartTaskProcess(TaskProcessStartedDTO.from(task.getTaskExecution(), event.processId!));
+        } else if (event.kind === TaskEventKind.ProcessEnded) {
+          this.logger.verbose(`task ${task._label || task._id} process end`, event.exitCode);
+          this.proxy.$onDidEndTaskProcess(TaskProcessEndedDTO.from(task.getTaskExecution(), event.exitCode!));
+        } else if (event.kind === TaskEventKind.End) {
+          this.logger.verbose(`task ${task._label || task._id} end`);
+          this.proxy.$onDidEndTask(TaskExecutionDTO.from(task.getTaskExecution()));
+        }
+      }),
+    );
   }
 
   dispose() {
@@ -450,23 +515,28 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
       // @ts-ignore
       provideTasks: (validTypes: Record<string, boolean>) => {
         this.logger.verbose(`${type} provideTask`);
-        return Promise.resolve(this.proxy.$provideTask(handler, validTypes))
-          .then((result) => {
-            const tasks: Task[] = [];
-            for (const dto of result.tasks) {
-              const task = TaskDTO.to(dto, this.workspaceService, true, this.context);
-              if (task) {
-                tasks.push(task);
-              } else {
-                this.logger.error(`Task System: can not convert task: ${JSON.stringify(dto.definition, undefined, 0)}. Task will be dropped`);
-              }
+        return Promise.resolve(this.proxy.$provideTask(handler, validTypes)).then((result) => {
+          const tasks: Task[] = [];
+          for (const dto of result.tasks) {
+            const task = TaskDTO.to(dto, this.workspaceService, true, this.context);
+            if (task) {
+              tasks.push(task);
+            } else {
+              this.logger.error(
+                `Task System: can not convert task: ${JSON.stringify(
+                  dto.definition,
+                  undefined,
+                  0,
+                )}. Task will be dropped`,
+              );
             }
-            return {
-              tasks,
-              extension: result.extension,
-              type,
-            };
-          });
+          }
+          return {
+            tasks,
+            extension: result.extension,
+            type,
+          };
+        });
       },
       // @ts-ignore
       resolveTask: (task: ConfiguringTask) => {
@@ -503,36 +573,39 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
 
   $executeTask(value: TaskHandleDTO | TaskDTO): Promise<TaskExecutionDTO> {
     return new Promise<TaskExecutionDTO>((resolve, reject) => {
-    if (TaskHandleDTO.is(value)) {
-      const workspaceFolder = this.workspaceService.getWorkspaceRootUri(URI.from(value.workspaceFolder));
-      if (workspaceFolder) {
-        this.taskService.getTask(workspaceFolder.codeUri, value.id, true).then((task: Task) => {
-          this.taskService.run(task).then(() => {
-            // eat the error, it has already been surfaced to the user and we don't care about it here
-          });
-          const result: TaskExecutionDTO = {
-            id: value.id,
-            task: TaskDTO.from(task),
-          };
-          resolve(result);
-        }, (_error) => {
-          reject(new Error('Task not found'));
-        });
+      if (TaskHandleDTO.is(value)) {
+        const workspaceFolder = this.workspaceService.getWorkspaceRootUri(URI.from(value.workspaceFolder));
+        if (workspaceFolder) {
+          this.taskService.getTask(workspaceFolder.codeUri, value.id, true).then(
+            (task: Task) => {
+              this.taskService.run(task).then(() => {
+                // eat the error, it has already been surfaced to the user and we don't care about it here
+              });
+              const result: TaskExecutionDTO = {
+                id: value.id,
+                task: TaskDTO.from(task),
+              };
+              resolve(result);
+            },
+            (_error) => {
+              reject(new Error('Task not found'));
+            },
+          );
+        } else {
+          reject(new Error('No workspace folder'));
+        }
       } else {
-        reject(new Error('No workspace folder'));
+        const task = TaskDTO.to(value, this.workspaceService, true, this.context)!;
+        this.taskService.run(task).then(() => {
+          // eat the error, it has already been surfaced to the user and we don't care about it here
+        });
+        const result: TaskExecutionDTO = {
+          id: task._id,
+          task: TaskDTO.from(task),
+        };
+        resolve(result);
       }
-    } else {
-      const task = TaskDTO.to(value, this.workspaceService, true, this.context)!;
-      this.taskService.run(task).then(() => {
-        // eat the error, it has already been surfaced to the user and we don't care about it here
-      });
-      const result: TaskExecutionDTO = {
-        id: task._id,
-        task: TaskDTO.from(task),
-      };
-      resolve(result);
-    }
-  });
+    });
   }
 
   $createTaskId(taskDTO: TaskDTO): Promise<string> {

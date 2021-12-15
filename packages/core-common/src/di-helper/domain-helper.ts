@@ -3,16 +3,15 @@ import { ConstructorOf } from '../declare';
 
 /**
  * 修饰一个 Class 是某个特定的 DI 分组的装饰器
- * @param domains 
+ * @param domains
  */
 export function Domain(...domains: Domain[]) {
   return (target: ConstructorOf<any>) => {
     const opts = getInjectableOpts(target) || {};
     opts.domain = domains;
     markInjectable(target, opts);
-  }
+  };
 }
-
 
 const domainMap = new Map<Domain, ConstructorOf<any>>();
 
@@ -25,12 +24,12 @@ export function EffectDomain(domain: Domain) {
     const opts = getInjectableOpts(target) || {};
     opts.domain = domain;
     markInjectable(target, opts);
-    
+
     const tmp = domainMap.get(domain);
     if (!tmp) {
       domainMap.set(domain, target);
     }
-  }
+  };
 }
 
 export function getDomainConstructors(...domains: Domain[]) {

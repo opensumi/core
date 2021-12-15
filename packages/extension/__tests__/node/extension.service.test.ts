@@ -22,40 +22,43 @@ describe('Extension Serivce', () => {
 
   beforeAll(async (done) => {
     injector = createNodeInjector([]);
-    injector.addProviders({
-      token: AppConfig,
-      useValue: {
-        marketplace: {
-          extensionDir,
-          ignoreId: [],
+    injector.addProviders(
+      {
+        token: AppConfig,
+        useValue: {
+          marketplace: {
+            extensionDir,
+            ignoreId: [],
+          },
         },
       },
-    }, {
-      token: IReporterService,
-      useValue: {
-        point() {
-          //
-        },
-        performance() {
-          //
-        },
-        time() {
-          return {
-            timeEnd: () => {
-              //
-            },
-          };
+      {
+        token: IReporterService,
+        useValue: {
+          point() {
+            //
+          },
+          performance() {
+            //
+          },
+          time() {
+            return {
+              timeEnd: () => {
+                //
+              },
+            };
+          },
         },
       },
-    }, {
-      token: INodeLogger,
-      useValue: {
-        /* tslint:disable */
-        log: console.log,
-        error: console.error,
-        /* tslint:enable */
+      {
+        token: INodeLogger,
+        useValue: {
+          /* tslint:disable */
+          log: console.log,
+          error: console.error,
+          /* tslint:enable */
+        },
       },
-    },
       {
         token: IActivationEventService,
         useClass: ActivationEventServiceImpl,
@@ -108,13 +111,14 @@ describe('Extension Serivce', () => {
     });
 
     it('should return a extension and contains extraMetadata', async () => {
-      const extension = await extensionService.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', { readme: './README.md' });
+      const extension = await extensionService.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', {
+        readme: './README.md',
+      });
       expect(extension?.extraMetadata.readme.trim()).toBe(testExtReadme);
     });
   });
 
   describe('extension host process', () => {
-
     it('should create extension host process', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);

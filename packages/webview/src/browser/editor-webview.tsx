@@ -7,15 +7,19 @@ import { WebviewServiceImpl } from './webview.service';
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
 
-export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMetaData> = ({resource}) => {
-
+export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMetaData> = ({ resource }) => {
   const webviewService = useInjectable(IWebviewService) as WebviewServiceImpl;
   const webview = webviewService.editorWebviewComponents.get(resource.metadata!.id)?.webview;
   let container: HTMLDivElement | null = null;
 
   React.useEffect(() => {
     if (webview && container) {
-      const mounter = new WebviewMounter(webview, container, document.getElementById('workbench-editor')!, document.getElementById('workbench-editor')!);
+      const mounter = new WebviewMounter(
+        webview,
+        container,
+        document.getElementById('workbench-editor')!,
+        document.getElementById('workbench-editor')!,
+      );
       webview.onRemove(() => {
         mounter.dispose();
       });
@@ -25,15 +29,23 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
     }
   });
 
-  return <div style={{height: '100%', width: '100%', position: 'relative' }} className='editor-webview-webview-component' ref = {(el) => container = el}></div>;
-
+  return (
+    <div
+      style={{ height: '100%', width: '100%', position: 'relative' }}
+      className='editor-webview-webview-component'
+      ref={(el) => (container = el)}
+    ></div>
+  );
 };
 
 /**
  * 同一个ID创建的webview会保存在内存以便重复使用，不要使用这个组件进行大量不同webview的创建
  */
-export const PlainWebview: React.ComponentType<{id: string, renderRoot?: HTMLElement, appendToChild?: boolean }> = ({id, renderRoot = document.body, appendToChild}) => {
-
+export const PlainWebview: React.ComponentType<{ id: string; renderRoot?: HTMLElement; appendToChild?: boolean }> = ({
+  id,
+  renderRoot = document.body,
+  appendToChild,
+}) => {
   let container: HTMLDivElement | null = null;
   const webviewService = useInjectable(IWebviewService) as IWebviewService;
 
@@ -43,7 +55,12 @@ export const PlainWebview: React.ComponentType<{id: string, renderRoot?: HTMLEle
       if (appendToChild) {
         component.webview.appendTo(container);
       } else {
-        const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!, renderRoot);
+        const mounter = new WebviewMounter(
+          component.webview,
+          container,
+          document.getElementById('workbench-editor')!,
+          renderRoot,
+        );
         component.webview.onRemove(() => {
           mounter.dispose();
         });
@@ -55,18 +72,22 @@ export const PlainWebview: React.ComponentType<{id: string, renderRoot?: HTMLEle
     }
   }, []);
 
-  return <div style={{height: '100%', width: '100%', position: 'relative' }} ref = {(el) => container = el}></div>;
+  return <div style={{ height: '100%', width: '100%', position: 'relative' }} ref={(el) => (container = el)}></div>;
 };
 
 // 将iframe挂载在一个固定的位置，以overlay的形式覆盖在container中，
 // 防止它在DOM树改变时被重载
 export class WebviewMounter extends Disposable {
-
   private mounting: number;
 
   private _container: HTMLElement | null;
 
-  constructor(private webview: IWebview | IPlainWebview, private container: HTMLElement, mutationRoot: HTMLElement, private renderRoot: HTMLElement = document.body) {
+  constructor(
+    private webview: IWebview | IPlainWebview,
+    private container: HTMLElement,
+    mutationRoot: HTMLElement,
+    private renderRoot: HTMLElement = document.body,
+  ) {
     super();
     if (!this.webview.getDomNode()) {
       return;
@@ -83,7 +104,7 @@ export class WebviewMounter extends Disposable {
         ancestors.add(ancestor);
         ancestor = ancestor.parentElement;
       }
-      for (const { addedNodes, removedNodes} of mutations) {
+      for (const { addedNodes, removedNodes } of mutations) {
         for (const node of addedNodes) {
           if (ancestors.has(node)) {
             this.doMount();
@@ -97,10 +118,9 @@ export class WebviewMounter extends Disposable {
           }
         }
       }
-
     });
     resizeObserver.observe(container);
-    mutationObserver.observe(mutationRoot, {childList: true, subtree: true});
+    mutationObserver.observe(mutationRoot, { childList: true, subtree: true });
 
     this.doMount();
 
@@ -109,7 +129,7 @@ export class WebviewMounter extends Disposable {
         if (this._container) {
           this._container.remove();
           this._container = null;
-          this.webview  = null as any;
+          this.webview = null as any;
           this.container = null as any;
         }
         resizeObserver.disconnect();
@@ -117,19 +137,22 @@ export class WebviewMounter extends Disposable {
       },
     });
 
-    this.addDispose(new DomListener(window, 'resize', () => {
-      this.doMount();
-    }));
+    this.addDispose(
+      new DomListener(window, 'resize', () => {
+        this.doMount();
+      }),
+    );
 
     // 监听滚动
     let parent = container.parentElement;
     while (parent) {
-      this.addDispose(new DomListener(parent, 'scroll', () => {
-        this.doMount();
-      }));
+      this.addDispose(
+        new DomListener(parent, 'scroll', () => {
+          this.doMount();
+        }),
+      );
       parent = parent.parentElement;
     }
-
   }
 
   doMount() {
@@ -153,8 +176,8 @@ export class WebviewMounter extends Disposable {
         }
       }
       const renderRootRects = this.renderRoot.getBoundingClientRect();
-      this.webview.getDomNode()!.style.top = (rect.top - renderRootRects.top) + 'px';
-      this.webview.getDomNode()!.style.left = (rect.left - renderRootRects.left) + 'px';
+      this.webview.getDomNode()!.style.top = rect.top - renderRootRects.top + 'px';
+      this.webview.getDomNode()!.style.left = rect.left - renderRootRects.left + 'px';
       this.webview.getDomNode()!.style.height = rect.height + 'px';
       this.webview.getDomNode()!.style.width = rect.width + 'px';
       this.mounting = 0;
@@ -179,5 +202,4 @@ export class WebviewMounter extends Disposable {
     mountContainer!.appendChild(this._container);
     return this._container!;
   }
-
 }

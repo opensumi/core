@@ -7,9 +7,11 @@ export enum ContentChangeType {
 }
 
 export class ContentChangeEventPayload {
-  constructor(public channelName: string, public changeType: ContentChangeType, public value: string, public lines: string[]) {
-
-  }
-
+  constructor(
+    public channelName: string,
+    public changeType: ContentChangeType,
+    public value: string,
+    public lines: string[],
+  ) {}
 }
 export class ContentChangeEvent extends BasicEvent<ContentChangeEventPayload> {}

@@ -39,8 +39,7 @@ const attrs = {
   tabIndex: 0,
 };
 
-export const AccordionSection = (
-{
+export const AccordionSection = ({
     header,
     headerClass,
     onItemClick,
@@ -91,32 +90,38 @@ export const AccordionSection = (
   const indicator = progressService.getIndicator(viewId)!;
 
   const Component: any = children;
-  return  (
-    <div className={ styles.kt_split_panel } data-view-id={viewId}>
-      {!noHeader && <div
-      onFocus={ headerFocusHandler }
-      onBlur={ headerBlurHandler }
-      {...attrs}
-      className={ cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
-      onClick={clickHandler}
-      onContextMenu={(e) => onContextMenuHandler(e, viewId)}
-      style={{height: headerSize + 'px', lineHeight: headerSize + 'px'}}
-      >
-        <div className={styles.label_wrap}>
-          <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
-          <div className={styles.section_label} style={{lineHeight: headerSize + 'px'}}>{header}</div>
+  return (
+    <div className={styles.kt_split_panel} data-view-id={viewId}>
+      {!noHeader && (
+        <div
+          onFocus={headerFocusHandler}
+          onBlur={headerBlurHandler}
+          {...attrs}
+          className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+          onClick={clickHandler}
+          onContextMenu={(e) => onContextMenuHandler(e, viewId)}
+          style={{ height: headerSize + 'px', lineHeight: headerSize + 'px' }}
+        >
+          <div className={styles.label_wrap}>
+            <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+            <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
+              {header}
+            </div>
+          </div>
+          {expanded && titleMenu && (
+            <div className={styles.actions_wrap}>
+              {isIMenu(titleMenu) ? (
+                <InlineActionBar menus={titleMenu} context={titleMenuContext} />
+              ) : (
+                <InlineMenuBar menus={titleMenu} />
+              )}
+            </div>
+          )}
         </div>
-        {expanded && titleMenu && <div className={styles.actions_wrap}>
-          {
-            isIMenu(titleMenu)
-              ? <InlineActionBar menus={titleMenu} context={titleMenuContext} />
-              : <InlineMenuBar menus={titleMenu} />
-          }
-        </div>}
-      </div>}
+      )}
       <div
-        className={ cls([styles.kt_split_panel_body, {[styles.hide]: !expanded}]) }
-        style={ bodyStyle }
+        className={cls([styles.kt_split_panel_body, { [styles.hide]: !expanded }])}
+        style={bodyStyle}
         ref={contentRef}
       >
         <ProgressBar className={styles.progressBar} progressModel={indicator.progressModel} />

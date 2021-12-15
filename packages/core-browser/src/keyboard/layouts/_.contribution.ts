@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -16,8 +16,7 @@ export class KeyboardLayoutContribution {
     return this._layoutInfos;
   }
 
-  private constructor() {
-  }
+  private constructor() {}
 
   registerKeyboardLayout(layout: IKeymapInfo) {
     this._layoutInfos.push(layout);

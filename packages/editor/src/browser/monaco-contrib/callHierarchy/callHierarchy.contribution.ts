@@ -1,8 +1,20 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandContribution, CommandRegistry, Event, IContextKeyService, IContextKey, Uri } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandContribution,
+  CommandRegistry,
+  Event,
+  IContextKeyService,
+  IContextKey,
+  Uri,
+} from '@opensumi/ide-core-browser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
-import { CallHierarchyItem, CallHierarchyProviderRegistry, ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+import {
+  CallHierarchyItem,
+  CallHierarchyProviderRegistry,
+  ICallHierarchyService,
+} from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 
 import { BrowserEditorContribution, IEditor, IEditorFeatureRegistry } from '../../types';
 
@@ -22,7 +34,6 @@ const _ctxHasCallHierarchyProvider = new RawContextKey<boolean>('editorHasCallHi
 
 @Domain(CommandContribution, BrowserEditorContribution)
 export class CallHierarchyContribution implements CommandContribution, BrowserEditorContribution {
-
   private ctxHasProvider: IContextKey<boolean>;
 
   @Autowired(IContextKeyService)
@@ -33,21 +44,16 @@ export class CallHierarchyContribution implements CommandContribution, BrowserEd
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(executePrepareCallHierarchyCommand, {
-      execute: (resource: Uri, position: Position) => {
-        return this.callHierarchyService.prepareCallHierarchyProvider(resource, position);
-      },
+      execute: (resource: Uri, position: Position) =>
+        this.callHierarchyService.prepareCallHierarchyProvider(resource, position),
     });
 
     commands.registerCommand(executeProvideIncomingCallsCommand, {
-      execute: (item: CallHierarchyItem) => {
-        return this.callHierarchyService.provideIncomingCalls(item);
-      },
+      execute: (item: CallHierarchyItem) => this.callHierarchyService.provideIncomingCalls(item),
     });
 
     commands.registerCommand(executeProvideOutgoingCallsCommand, {
-      execute: (item: CallHierarchyItem) => {
-        return this.callHierarchyService.provideOutgoingCalls(item);
-      },
+      execute: (item: CallHierarchyItem) => this.callHierarchyService.provideOutgoingCalls(item),
     });
   }
 

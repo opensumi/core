@@ -16,7 +16,6 @@ export interface IClipboardService {
 
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 

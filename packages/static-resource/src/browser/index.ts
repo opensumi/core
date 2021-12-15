@@ -15,12 +15,10 @@ export class StaticResourceModule extends BrowserModule {
   ];
 
   contributionProvider = StaticResourceContribution;
-
 }
 
 @Domain(ClientAppContribution)
 export class StaticResourceClientAppContribution implements ClientAppContribution {
-
   @Autowired()
   private readonly staticResourceService: StaticResourceService;
 

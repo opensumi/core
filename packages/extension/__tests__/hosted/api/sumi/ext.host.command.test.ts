@@ -10,9 +10,7 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
   let mainService: IMainThreadCommands;
   const map = new Map();
   const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => {
-      return map.get(key);
-    },
+    getProxy: (key) => map.get(key),
     set: (key, value) => {
       map.set(key, value);
       return value;
@@ -21,8 +19,7 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
   };
 
   beforeEach(() => {
-    mainService = mockService({
-    });
+    mainService = mockService({});
     const editorService = mockService({});
     const extension = mockService({
       id: 'vscode.vim',
@@ -39,7 +36,9 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
       const extTest = jest.fn();
       const commandId = 'ext.test';
       sumiCommand.registerCommandWithPermit(commandId, extTest, (extension) => extension.isBuiltin);
-      expect(sumiCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      expect(sumiCommand.executeCommand(commandId)).rejects.toThrowError(
+        new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
+      );
       // 实际命令执行注册一次
       expect(extTest).toBeCalledTimes(0);
     });
@@ -53,5 +52,4 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
       expect(extTest).toBeCalledTimes(1);
     });
   });
-
 });

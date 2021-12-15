@@ -1,12 +1,23 @@
-import { ExpressionContainer, ExpressionNode, DebugVariable, DebugVariableContainer, DebugScope, DebugWatchNode, DebugConsoleNode, DebugConsoleVariableContainer, DebugConsoleRoot, DebugWatchRoot, DebugVariableRoot, DebugHoverVariableRoot } from '@opensumi/ide-debug/lib/browser/tree';
+import {
+  ExpressionContainer,
+  ExpressionNode,
+  DebugVariable,
+  DebugVariableContainer,
+  DebugScope,
+  DebugWatchNode,
+  DebugConsoleNode,
+  DebugConsoleVariableContainer,
+  DebugConsoleRoot,
+  DebugWatchRoot,
+  DebugVariableRoot,
+  DebugHoverVariableRoot,
+} from '@opensumi/ide-debug/lib/browser/tree';
 
 describe('ExpressionContainer', () => {
   let rootNode: ExpressionContainer;
   let node: ExpressionContainer;
 
-  const mockSession = {
-
-  } as any;
+  const mockSession = {} as any;
 
   const mockRootNodeOptions = {
     session: mockSession,
@@ -14,7 +25,7 @@ describe('ExpressionContainer', () => {
     namedVariables: 0,
     indexedVariables: 0,
     startOfVariables: 8,
-    source: { name : 'test'},
+    source: { name: 'test' },
     line: 1,
   };
 
@@ -24,7 +35,7 @@ describe('ExpressionContainer', () => {
     namedVariables: 0,
     indexedVariables: 0,
     startOfVariables: 8,
-    source: { name : 'test'},
+    source: { name: 'test' },
     line: 1,
   };
 
@@ -55,9 +66,7 @@ describe('ExpressionNode', () => {
   let rootNode: ExpressionContainer;
   let node: ExpressionNode;
 
-  const mockSession = {
-
-  } as any;
+  const mockSession = {} as any;
 
   const mockRootNodeOptions = {
     session: mockSession,
@@ -65,7 +74,7 @@ describe('ExpressionNode', () => {
     namedVariables: 0,
     indexedVariables: 0,
     startOfVariables: 8,
-    source: { name : 'test'},
+    source: { name: 'test' },
     line: 1,
   };
 
@@ -75,7 +84,7 @@ describe('ExpressionNode', () => {
     namedVariables: 0,
     indexedVariables: 0,
     startOfVariables: 8,
-    source: { name : 'test'},
+    source: { name: 'test' },
     line: 1,
   };
 
@@ -103,7 +112,7 @@ describe('DebugVariableRoot —— DebugVariable —— DebugVariableContainer',
     capabilities: {
       supportsSetVariable: true,
     },
-    sendRequest: jest.fn(() => ({body: {}})),
+    sendRequest: jest.fn(() => ({ body: {} })),
   } as any;
 
   const mockRootNodeOptions = {
@@ -174,15 +183,12 @@ describe('DebugVariableRoot —— DebugVariable —— DebugVariableContainer',
     expect(mockSession.sendRequest).toBeCalledTimes(2);
     done();
   });
-
 });
 
 describe('DebugScope', () => {
   let scope: DebugScope;
 
-  const mockSession = {
-
-  } as any;
+  const mockSession = {} as any;
 
   const mockScope = {
     name: 'global',
@@ -211,7 +217,7 @@ describe('DebugWatchRoot —— DebugWatchNode', () => {
   let root: DebugWatchRoot;
 
   const mockSession = {
-    evaluate: jest.fn(() => ({body: {}})),
+    evaluate: jest.fn(() => ({ body: {} })),
     capabilities: {
       supportsValueFormattingOptions: true,
     },
@@ -255,8 +261,8 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
   let root: DebugConsoleRoot;
 
   const mockSession = {
-    evaluate: jest.fn(() => ({body: {}})),
-    sendRequest: jest.fn(() => ({body: {}})),
+    evaluate: jest.fn(() => ({ body: {} })),
+    sendRequest: jest.fn(() => ({ body: {} })),
     capabilities: {
       supportsValueFormattingOptions: true,
     },
@@ -278,7 +284,11 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
 
   beforeAll(() => {
     root = new DebugConsoleRoot(mockSession, undefined);
-    containerNode = new DebugConsoleVariableContainer(mockContainerNodeOptions.session, mockContainerNodeOptions.variable, root);
+    containerNode = new DebugConsoleVariableContainer(
+      mockContainerNodeOptions.session,
+      mockContainerNodeOptions.variable,
+      root,
+    );
     node = new DebugConsoleNode(mockSession, expression, root);
   });
 
@@ -292,7 +302,6 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
     expect(containerNode.tooltip).toBe(mockContainerNodeOptions.variable.value);
 
     expect(root.expanded).toBeTruthy();
-
   });
 
   it('static method should be work', () => {
@@ -324,7 +333,7 @@ describe('DebugHoverVariableRoot', () => {
   let root: DebugHoverVariableRoot;
 
   const mockSession = {
-    evaluate: jest.fn(() => ({body: {}})),
+    evaluate: jest.fn(() => ({ body: {} })),
     capabilities: {
       supportsValueFormattingOptions: true,
     },

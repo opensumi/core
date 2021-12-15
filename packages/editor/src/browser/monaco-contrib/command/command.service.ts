@@ -1,8 +1,32 @@
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Injectable, Autowired } from '@opensumi/di';
-import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import {
+  Command,
+  Emitter,
+  CommandRegistry,
+  CommandHandler,
+  HANDLER_NOT_FOUND,
+  ILogger,
+  EDITOR_COMMANDS,
+  CommandService,
+  IReporterService,
+  REPORT_NAME,
+  ServiceNames,
+  memoize,
+  Uri,
+  MonacoOverrideServiceRegistry,
+} from '@opensumi/ide-core-browser';
 
-import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import {
+  CommandsRegistry as MonacoCommandsRegistry,
+  EditorExtensionsRegistry,
+  ICommandEvent,
+  ICommandService,
+  IMonacoActionRegistry,
+  IMonacoCommandService,
+  IMonacoCommandsRegistry,
+  MonacoEditorCommandHandler,
+} from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { StaticServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
@@ -12,8 +36,8 @@ import { EditorCollectionService, WorkbenchEditorService } from '../../types';
  */
 const MonacoCommandAlias = {
   'editor.action.smartSelect.grow': 'editor.action.smartSelect.expand',
-  'cursorWordPartStartLeft': 'cursorWordPartLeft',
-  'cursorWordPartStartLeftSelect': 'cursorWordPartLeftSelect',
+  cursorWordPartStartLeft: 'cursorWordPartLeft',
+  cursorWordPartStartLeftSelect: 'cursorWordPartLeftSelect',
   'editor.action.previewDeclaration': 'editor.action.peekDefinition',
   'editor.action.openDeclarationToTheSide': 'editor.action.revealDefinitionAside',
   'editor.action.goToDeclaration': 'editor.action.revealDefinition',
@@ -91,7 +115,10 @@ export class MonacoCommandService implements IMonacoCommandService {
       }
     }
     if (this.delegate) {
-      const res = this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
+      const res = this.delegate.executeCommand(
+        MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId,
+        ...args,
+      );
       this._onDidExecuteCommand.fire({ commandId, args });
       return res;
     }
@@ -102,7 +129,6 @@ export class MonacoCommandService implements IMonacoCommandService {
 
 @Injectable()
 export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
-
   @Autowired(CommandRegistry)
   private commands: CommandRegistry;
 
@@ -189,20 +215,19 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
 
 @Injectable()
 export class MonacoActionRegistry implements IMonacoActionRegistry {
-
-  private static COMMON_ACTIONS = new Map<string, string>( [
+  private static COMMON_ACTIONS = new Map<string, string>([
     ['undo', EDITOR_COMMANDS.UNDO.id],
     ['redo', EDITOR_COMMANDS.REDO.id],
     ['editor.action.selectAll', EDITOR_COMMANDS.SELECT_ALL.id],
   ]);
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
-    [ 'editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args] ],
-    [ 'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args] ],
+    ['editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args]],
+    ['editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args]],
   ]);
 
   private static CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID = new Map<string, string>([
-    [ 'editor.action.rename',  'editor.contrib.renameController'],
+    ['editor.action.rename', 'editor.contrib.renameController'],
   ]);
 
   /**
@@ -255,10 +280,13 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
       }
       const label = editorActions.has(id) ? editorActions.get(id) : '';
       const handler = this.actAndComHandler(editorActions, id);
-      this.monacoCommandRegistry.registerCommand({
-        id,
-        label,
-      }, handler);
+      this.monacoCommandRegistry.registerCommand(
+        {
+          id,
+          label,
+        },
+        handler,
+      );
       // 将 monaco 命令处理函数代理到有 label 的空命令上
       const command = MonacoActionRegistry.COMMON_ACTIONS.get(id);
       if (command) {
@@ -293,7 +321,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
     if (this.isInternalExecuteCommand(commandId)) {
-      return args.map((arg) => arg instanceof Uri ? URI.revive(arg) : arg);
+      return args.map((arg) => (arg instanceof Uri ? URI.revive(arg) : arg));
     } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
       return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
     }
@@ -311,17 +339,21 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         if (!editor) {
           return;
         }
-        const editorCommand = !!this.monacoEditorRegistry.getEditorCommand(commandId) ||
-          !(this.isInternalExecuteCommand(commandId) || commandId === 'setContext' || MonacoActionRegistry.COMMON_ACTIONS.has(commandId));
-        const instantiationService = editorCommand ? editor && editor['_instantiationService'] : this.globalInstantiationService;
+        const editorCommand =
+          !!this.monacoEditorRegistry.getEditorCommand(commandId) ||
+          !(
+            this.isInternalExecuteCommand(commandId) ||
+            commandId === 'setContext' ||
+            MonacoActionRegistry.COMMON_ACTIONS.has(commandId)
+          );
+        const instantiationService = editorCommand
+          ? editor && editor['_instantiationService']
+          : this.globalInstantiationService;
         if (!instantiationService) {
           return;
         }
         const commandArgs = this.processInternalCommandArgument(commandId, args);
-        return instantiationService.invokeFunction(
-          this.monacoCommands.get(commandId)?.handler,
-          ...commandArgs,
-        );
+        return instantiationService.invokeFunction(this.monacoCommands.get(commandId)?.handler, ...commandArgs);
       },
     };
   }

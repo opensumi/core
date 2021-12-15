@@ -1,7 +1,15 @@
-
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@opensumi/ide-core-browser';
+import {
+  KeybindingContribution,
+  KeybindingRegistry,
+  Logger,
+  ClientAppContribution,
+  IToolbarRegistry,
+  ToolBarActionContribution,
+  createToolbarActionBtn,
+  createToolbarActionSelect,
+} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
@@ -13,8 +21,25 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/id
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExamplePopover } from './exmaple-popover';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, MenuContribution, BrowserEditorContribution)
-export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, MenuContribution, BrowserEditorContribution {
+@Domain(
+  ClientAppContribution,
+  CommandContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  ToolBarActionContribution,
+  MenuContribution,
+  BrowserEditorContribution,
+)
+export class StartupContribution
+  implements
+    CommandContribution,
+    KeybindingContribution,
+    ClientAppContribution,
+    ComponentContribution,
+    ToolBarActionContribution,
+    MenuContribution,
+    BrowserEditorContribution
+{
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -33,42 +58,40 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  onStart() {
-  }
+  onStart() {}
 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorSideWidget({
       id: 'example-bottom',
       component: ExampleEditorBottomWidget,
-      displaysOnResource: (r) => {
-        return r.uri.scheme === 'file';
-      },
+      displaysOnResource: (r) => r.uri.scheme === 'file',
     });
   }
 
-  registerComponent(registry: ComponentRegistry) {
-  }
+  registerComponent(registry: ComponentRegistry) {}
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand({
-      id: 'gitCommitAndPush',
-    }, {
-      execute: async (provider: ISCMProvider, commitMsg: string) => {
-        // 强依赖了 git 插件的命令
-        const mergeChanges = provider.groups.elements.filter((n) => n.id === 'merge');
-        if (mergeChanges.length > 0) {
-          // console.log('有冲突尚未解决，请先解决');
-          return;
-        }
-        await this.commandService.executeCommand('git.stageAll', provider);
-        await this.commandService.executeCommand('git.commit', provider);
-        await this.commandService.executeCommand('git.push', provider);
+    commands.registerCommand(
+      {
+        id: 'gitCommitAndPush',
       },
-    });
+      {
+        execute: async (provider: ISCMProvider, commitMsg: string) => {
+          // 强依赖了 git 插件的命令
+          const mergeChanges = provider.groups.elements.filter((n) => n.id === 'merge');
+          if (mergeChanges.length > 0) {
+            // console.log('有冲突尚未解决，请先解决');
+            return;
+          }
+          await this.commandService.executeCommand('git.stageAll', provider);
+          await this.commandService.executeCommand('git.commit', provider);
+          await this.commandService.executeCommand('git.push', provider);
+        },
+      },
+    );
   }
 
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-  }
+  registerKeybindings(keybindings: KeybindingRegistry): void {}
 
   registerToolbarActions(registry: IToolbarRegistry) {
     registry.addLocation('menu-left');
@@ -76,8 +99,8 @@ export class StartupContribution implements CommandContribution, KeybindingContr
       id: 'test-compact',
       compact: true,
       preferredLocation: 'menu-right',
-    })
-    for (let i = 0; i < 6; i ++ ) {
+    });
+    for (let i = 0; i < 6; i++) {
       registry.registerToolbarAction({
         id: 'test-' + i,
         description: 'test-' + i + '按钮',
@@ -93,23 +116,23 @@ export class StartupContribution implements CommandContribution, KeybindingContr
           popoverStyle: {
             noContainerStyle: i % 2 === 0,
           },
-          delegate: ((d) => {
+          delegate: (d) => {
             d?.onClick(() => {
               console.log('test ' + i + ' clicked');
               d.showPopOver({
                 horizontalOffset: i * 10,
               });
             });
-          }),
+          },
         }),
         neverCollapse: i > 4,
         preferredPosition: {
           location: 'menu-right',
-          group: i === 1 || i === 2 || i === 3 ? 'test-compact' : undefined
-        }
+          group: i === 1 || i === 2 || i === 3 ? 'test-compact' : undefined,
+        },
       });
     }
-    for (let i = 7; i < 10; i ++ ) {
+    for (let i = 7; i < 10; i++) {
       registry.registerToolbarAction({
         id: 'test-' + i,
         description: 'test-' + i + '按钮',
@@ -120,11 +143,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
           defaultStyle: {
             btnStyle: i > 3 ? 'button' : 'inline',
           },
-          delegate: ((d) => {
+          delegate: (d) => {
             d?.onClick(() => {
               console.log('test ' + i + ' clicked');
             });
-          }),
+          },
         }),
         preferredPosition: {
           location: 'menu-left',
@@ -137,11 +160,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
       weight: 11,
       component: createToolbarActionSelect({
         name: 'test-1',
-        delegate: ((d) => {
+        delegate: (d) => {
           d?.onSelect((value) => {
             console.log('value ' + value + ' selected');
           });
-        }),
+        },
         options: [
           {
             label: '选项a',
@@ -165,11 +188,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
       description: '选项框2',
       component: createToolbarActionSelect({
         name: 'test-2',
-        delegate: ((d) => {
+        delegate: (d) => {
           d?.onSelect((value) => {
             console.log('value ' + value + ' selected');
           });
-        }),
+        },
         options: [
           {
             groupName: 'TestGroup1',

@@ -1,4 +1,3 @@
-
 export interface IMainThreadCommon {
   $subscribeEvent(eventName): Promise<void>;
   $unSubscribeEvent(eventName): Promise<void>;

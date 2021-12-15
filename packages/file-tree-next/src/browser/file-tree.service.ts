@@ -15,9 +15,22 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, IFileTreeService } from '../common';
-import { FileChange, IFileServiceClient, FileChangeType, FileStat, IFileServiceWatcher } from '@opensumi/ide-file-service/lib/common';
+import {
+  FileChange,
+  IFileServiceClient,
+  FileChangeType,
+  FileStat,
+  IFileServiceWatcher,
+} from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@opensumi/ide-components';
+import {
+  Tree,
+  ITree,
+  WatchEvent,
+  ITreeNodeOrCompositeTreeNode,
+  IWatcherEvent,
+  TreeNodeType,
+} from '@opensumi/ide-components';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -37,7 +50,6 @@ export interface ITreeIndent {
 
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
-
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
   private static readonly EXPLORER_FILE_CHANGES_REACT_DELAY = 500;
 
@@ -94,7 +106,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _roots: FileStat[] | null;
 
   // 是否进行文件事件监听标志值
-  private _readyToWatch: boolean = false;
+  private _readyToWatch = false;
   // 等待监听的路径队列
   private _watchRootsQueue: URI[] = [];
 
@@ -110,7 +122,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
 
   // 筛选模式开关
-  private _filterMode: boolean = false;
+  private _filterMode = false;
   private _baseIndent: number;
   private _indent: number;
 
@@ -169,43 +181,58 @@ export class FileTreeService extends Tree implements IFileTreeService {
     this._indent = this.corePreferences['explorer.fileTree.indent'] || 8;
     this._isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
-    this.toDispose.push(this.workspaceService.onWorkspaceChanged((roots) => {
-      this._roots = roots;
-      // 切换工作区时更新文件树
-      const newRootUri = new URI(roots[0].uri);
-      const newRoot = new Directory(this, undefined, newRootUri, newRootUri.displayName, roots[0], this.fileTreeAPI.getReadableTooltip(newRootUri));
-      this._root = newRoot;
-      this.onWorkspaceChangeEmitter.fire(newRoot);
-      this.refresh();
-    }));
-
-    this.toDispose.push(this.workspaceService.onWorkspaceFileExcludeChanged(() => {
-      this.refresh();
-    }));
-
-    this.toDispose.push(Disposable.create(() => {
-      this._cacheNodesMap.clear();
-      this._roots = null;
-    }));
-
-    this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
-      if (change.preferenceName === 'explorer.fileTree.baseIndent') {
-        this._baseIndent = change.newValue as number || 8;
-        this.onTreeIndentChangeEmitter.fire({
-          indent: this.indent,
-          baseIndent: this.baseIndent,
-        });
-      } else if (change.preferenceName === 'explorer.fileTree.indent') {
-        this._indent = change.newValue as number || 8;
-        this.onTreeIndentChangeEmitter.fire({
-          indent: this.indent,
-          baseIndent: this.baseIndent,
-        });
-      } else if (change.preferenceName === 'explorer.compactFolders') {
-        this._isCompactMode = change.newValue as boolean;
+    this.toDispose.push(
+      this.workspaceService.onWorkspaceChanged((roots) => {
+        this._roots = roots;
+        // 切换工作区时更新文件树
+        const newRootUri = new URI(roots[0].uri);
+        const newRoot = new Directory(
+          this,
+          undefined,
+          newRootUri,
+          newRootUri.displayName,
+          roots[0],
+          this.fileTreeAPI.getReadableTooltip(newRootUri),
+        );
+        this._root = newRoot;
+        this.onWorkspaceChangeEmitter.fire(newRoot);
         this.refresh();
-      }
-    }));
+      }),
+    );
+
+    this.toDispose.push(
+      this.workspaceService.onWorkspaceFileExcludeChanged(() => {
+        this.refresh();
+      }),
+    );
+
+    this.toDispose.push(
+      Disposable.create(() => {
+        this._cacheNodesMap.clear();
+        this._roots = null;
+      }),
+    );
+
+    this.toDispose.push(
+      this.corePreferences.onPreferenceChanged((change) => {
+        if (change.preferenceName === 'explorer.fileTree.baseIndent') {
+          this._baseIndent = (change.newValue as number) || 8;
+          this.onTreeIndentChangeEmitter.fire({
+            indent: this.indent,
+            baseIndent: this.baseIndent,
+          });
+        } else if (change.preferenceName === 'explorer.fileTree.indent') {
+          this._indent = (change.newValue as number) || 8;
+          this.onTreeIndentChangeEmitter.fire({
+            indent: this.indent,
+            baseIndent: this.baseIndent,
+          });
+        } else if (change.preferenceName === 'explorer.compactFolders') {
+          this._isCompactMode = change.newValue as boolean;
+          this.refresh();
+        }
+      }),
+    );
   }
 
   initContextKey(dom: HTMLDivElement) {
@@ -236,7 +263,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
           ...this.workspaceService.workspace,
           isDirectory: true,
         } as FileStat;
-        const root = new Directory(this, undefined, rootUri, rootName, fileStat, this.fileTreeAPI.getReadableTooltip(rootUri));
+        const root = new Directory(
+          this,
+          undefined,
+          rootUri,
+          rootName,
+          fileStat,
+          this.fileTreeAPI.getReadableTooltip(rootUri),
+        );
         // 创建Root节点并引入root文件目录
         this.cacheNodes([root]);
         this.root = root;
@@ -263,7 +297,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
         // 加载根目录
         const roots = await this.workspaceService.roots;
         for (const fileStat of roots) {
-          const child = this.fileTreeAPI.toNode(this as ITree, fileStat, parent, this.workspaceService.getWorkspaceName(new URI(fileStat.uri)));
+          const child = this.fileTreeAPI.toNode(
+            this as ITree,
+            fileStat,
+            parent,
+            this.workspaceService.getWorkspaceName(new URI(fileStat.uri)),
+          );
           this.watchFilesChange(new URI(fileStat.uri));
           children = children.concat(child);
         }
@@ -272,13 +311,23 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
       // 加载子目录
       if (parent.uri) {
-        const data = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent, this.isCompactMode && !Directory.isRoot(parent));
+        const data = await this.fileTreeAPI.resolveChildren(
+          this,
+          parent.uri.toString(),
+          parent,
+          this.isCompactMode && !Directory.isRoot(parent),
+        );
         children = data.children;
         // 有概率获取不到Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (!!childrenParentStat && this.isCompactMode && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
+        if (
+          !!childrenParentStat &&
+          this.isCompactMode &&
+          !parent.filestat.isSymbolicLink &&
+          !Directory.isRoot(parent)
+        ) {
           const parentURI = new URI(childrenParentStat.uri);
           if (parent && parent.parent) {
             const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
@@ -310,9 +359,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
     const watcher = await this.fileServiceClient.watchFileChanges(uri);
     this.toDispose.push(watcher);
-    this.toDispose.push(watcher.onFilesChanged((changes: FileChange[]) => {
-      this.onFilesChanged(changes);
-    }));
+    this.toDispose.push(
+      watcher.onFilesChanged((changes: FileChange[]) => {
+        this.onFilesChanged(changes);
+      }),
+    );
     this._fileServiceWatchers.set(uri.toString(), watcher);
   }
 
@@ -336,11 +387,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
-    if (!!this._roots) {
-      return changes.some((change) =>
-        change.type > FileChangeType.UPDATED && this._roots && this._roots.find((root) => {
-          return change.uri.indexOf(root.uri) >= 0;
-        }),
+    if (this._roots) {
+      return changes.some(
+        (change) =>
+          change.type > FileChangeType.UPDATED &&
+          this._roots &&
+          this._roots.find((root) => change.uri.indexOf(root.uri) >= 0),
       );
     }
     return false;
@@ -348,7 +400,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private async onFilesChanged(changes: FileChange[]) {
     // 过滤掉内置触发的事件
-    if (!!this._cacheIgnoreFileEventOnce) {
+    if (this._cacheIgnoreFileEventOnce) {
       let filtered = false;
       changes = changes.filter((change) => {
         if (this._cacheIgnoreFileEventOnce!.isEqualOrParent(new URI(change.uri))) {
@@ -373,7 +425,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     });
     // 处理除了删除/添加/移动事件外的异常事件
-    if (!await this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
+    if (!(await this.refreshAffectedNodes(this.getAffectedUris(changes))) && this.isRootAffected(changes)) {
       // 在文件树场景下，我们无法保证内部事件及真实响应事件的响应时机
       // 即，如果无法保证内部事件执行完，直接再次响应真实事件，将会遇到不可预期的问题
       // 如，渲染异常
@@ -402,14 +454,15 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (!this._roots) {
         this._roots = await this.workspaceService.roots;
       }
-      rootStr = this._roots.find((root) => {
-        return new URI(root.uri).isEqualOrParent(uri);
-      })?.uri;
+      rootStr = this._roots.find((root) => new URI(root.uri).isEqualOrParent(uri))?.uri;
       if (rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(uri)) {
           // 多工作区模式下，路径需要拼接项目名称
-          return new Path(this.root?.path || '/').join(rootUri.displayName).join(rootUri.relative(uri)!.toString()).toString();
+          return new Path(this.root?.path || '/')
+            .join(rootUri.displayName)
+            .join(rootUri.relative(uri)!.toString())
+            .toString();
         }
       }
     }
@@ -429,8 +482,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
   public async moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string, refreshParent?: boolean) {
     if (oldPath && newPath && newPath !== oldPath) {
       if (!this.isMultipleWorkspace) {
-        this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(), FileChangeType.DELETED);
-        this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(), FileChangeType.ADDED);
+        this._cacheIgnoreFileEvent.set(
+          (this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(),
+          FileChangeType.DELETED,
+        );
+        this._cacheIgnoreFileEvent.set(
+          (this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(),
+          FileChangeType.ADDED,
+        );
       }
       this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
       // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
@@ -461,7 +520,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
-      if (await this.appService.backendOS === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OS.Type.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
       }
@@ -480,7 +539,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       tempName = newName;
-      if (await this.appService.backendOS === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OS.Type.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
       }
@@ -493,7 +552,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       lastModification: new Date().getTime(),
     };
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
-    if (!!addNode) {
+    if (addNode) {
       this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
       this.dispatchWatchEvent(node.path, { type: WatchEvent.Added, node: addNode, id: node.id });
@@ -523,7 +582,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const nodes: File[] = [];
     for (const uri of uris) {
       const node = this.getNodeByPathOrUri(uri);
-      if (!!node) {
+      if (node) {
         nodes.push(node as File);
       }
     }
@@ -618,10 +677,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
       let rootStr;
       if (!this.isMultipleWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
-      } else if (!!this._roots) {
-        rootStr = this._roots.find((root) => {
-          return new URI(root.uri).isEqualOrParent(pathURI!);
-        })?.uri;
+      } else if (this._roots) {
+        rootStr = this._roots.find((root) => new URI(root.uri).isEqualOrParent(pathURI!))?.uri;
       }
       if (this.root && rootStr) {
         const rootUri = new URI(rootStr);
@@ -631,7 +688,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     }
 
-    if (!!path) {
+    if (path) {
       // 压缩模式下查找不到对应节点时，需要查看是否已有包含的文件夹存在
       // 如当收到的变化是 /root/test_folder/test_file，而当前缓存中的路径只有/root/test_folder/test_folder2的情况
       // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
@@ -655,7 +712,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
             };
           }
         }
-        if (!!nearestPath) {
+        if (nearestPath) {
           return this._cacheNodesMap.get(nearestPath.path);
         }
       }
@@ -668,9 +725,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       // numeric 参数确保数字为第一排序优先级
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
-    return a.type === TreeNodeType.CompositeTreeNode ? -1
-      : b.type === TreeNodeType.CompositeTreeNode ? 1
-        : 0;
+    return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
   }
 
   get contextMenuContextKeyService() {
@@ -700,7 +755,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: Directory = this.root as Directory, needReload: boolean = true) {
+  async refresh(node: Directory = this.root as Directory, needReload = true) {
     this.willRefreshDeferred = new Deferred();
     if (!node) {
       return;
@@ -759,17 +814,19 @@ export class FileTreeService extends Tree implements IFileTreeService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
+  };
 
   /**
    * 打开文件
@@ -786,7 +843,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * @param uri
    */
   public openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false, focus: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, {
+      disableNavigate: true,
+      preview: false,
+      focus: true,
+    });
   }
 
   /**
@@ -795,7 +856,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * @memberof FileTreeService
    */
   public openToTheSide(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, split: 4 /** right */ });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, {
+      disableNavigate: true,
+      split: 4 /** right */,
+    });
   }
 
   /**
@@ -826,5 +890,5 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   public locationToCurrentFile = () => {
     this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
-  }
+  };
 }

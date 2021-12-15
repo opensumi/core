@@ -1,12 +1,17 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
+import {
+  QuickInputOptions,
+  IQuickInputService,
+  QuickOpenItem,
+  QuickOpenService,
+  Mode,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
 import { Deferred, localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 @Injectable()
 export class QuickInputService implements IQuickInputService {
-
   @Autowired(QuickOpenService)
   protected readonly quickOpenService: QuickOpenService;
 
@@ -24,42 +29,47 @@ export class QuickInputService implements IQuickInputService {
       this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
     }
 
-    this.quickOpenService.open({
-      onType: async (lookFor, acceptor) => {
-        this.onDidChangeValueEmitter.fire(lookFor);
-        const error = validateInput && lookFor !== undefined ? await validateInput(lookFor) : undefined;
-        label = error || prompt;
-        if (error) {
-          this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
-        } else {
-          this.quickOpenService.hideDecoration();
-        }
-        acceptor([new QuickOpenItem({
-          label,
-          run: (mode) => {
-            if (!error && mode === Mode.OPEN) {
-              result.resolve(currentText);
-              this.onDidAcceptEmitter.fire(undefined);
-              this.quickTitleBar.hide();
-              return true;
-            }
-            return false;
-          },
-        })]);
-        currentText = lookFor;
+    this.quickOpenService.open(
+      {
+        onType: async (lookFor, acceptor) => {
+          this.onDidChangeValueEmitter.fire(lookFor);
+          const error = validateInput && lookFor !== undefined ? await validateInput(lookFor) : undefined;
+          label = error || prompt;
+          if (error) {
+            this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
+          } else {
+            this.quickOpenService.hideDecoration();
+          }
+          acceptor([
+            new QuickOpenItem({
+              label,
+              run: (mode) => {
+                if (!error && mode === Mode.OPEN) {
+                  result.resolve(currentText);
+                  this.onDidAcceptEmitter.fire(undefined);
+                  this.quickTitleBar.hide();
+                  return true;
+                }
+                return false;
+              },
+            }),
+          ]);
+          currentText = lookFor;
+        },
       },
-    }, {
-      prefix: options.value,
-      placeholder: options.placeHolder,
-      password: options.password,
-      ignoreFocusOut: options.ignoreFocusOut,
-      enabled: options.enabled,
-      valueSelection: options.valueSelection,
-      onClose: () => {
-        result.resolve(undefined);
-        this.quickTitleBar.hide();
+      {
+        prefix: options.value,
+        placeholder: options.placeHolder,
+        password: options.password,
+        ignoreFocusOut: options.ignoreFocusOut,
+        enabled: options.enabled,
+        valueSelection: options.valueSelection,
+        onClose: () => {
+          result.resolve(undefined);
+          this.quickTitleBar.hide();
+        },
       },
-    });
+    );
     return result.promise;
   }
 
@@ -86,5 +96,4 @@ export class QuickInputService implements IQuickInputService {
   get onDidChangeValue(): Event<string> {
     return this.onDidChangeValueEmitter.event;
   }
-
 }

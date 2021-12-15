@@ -13,10 +13,13 @@ export interface IFileServiceWatcher {
   dispose(): void;
 }
 
-export type INsfwFunction = (dir: string, eventHandler: (events: INsfw.ChangeEvent[]) => void, options?: INsfw.Options) => Promise<INsfw.NSFW>;
+export type INsfwFunction = (
+  dir: string,
+  eventHandler: (events: INsfw.ChangeEvent[]) => void,
+  options?: INsfw.Options,
+) => Promise<INsfw.NSFW>;
 
 export namespace INsfw {
-
   export interface NSFW {
     start(): Promise<void>;
     stop(): Promise<void>;
@@ -42,5 +45,4 @@ export namespace INsfw {
     MODIFIED,
     RENAMED,
   }
-
 }

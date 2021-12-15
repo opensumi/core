@@ -33,11 +33,9 @@ import { DebugPreferences } from './debug-preferences';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 // tslint:disable-next-line:no-empty-interface
-export interface WillProvideDebugConfiguration extends WaitUntilEvent {
-}
+export type WillProvideDebugConfiguration = WaitUntilEvent;
 // tslint:disable-next-line:no-empty-interface
-export interface WillInitialConfiguration extends WaitUntilEvent {
-}
+export type WillInitialConfiguration = WaitUntilEvent;
 
 export interface IDebugConfigurationData {
   current?: {
@@ -49,8 +47,7 @@ export interface IDebugConfigurationData {
 
 @Injectable()
 export class DebugConfigurationManager {
-
-  static DEFAULT_UPDATE_MODEL_TIMEOUT: number = 500;
+  static DEFAULT_UPDATE_MODEL_TIMEOUT = 500;
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
@@ -99,10 +96,13 @@ export class DebugConfigurationManager {
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
 
   protected readonly onWillProvideDebugConfigurationEmitter = new Emitter<WillProvideDebugConfiguration>();
-  readonly onWillProvideDebugConfiguration: Event<WillProvideDebugConfiguration> = this.onWillProvideDebugConfigurationEmitter.event;
+  readonly onWillProvideDebugConfiguration: Event<WillProvideDebugConfiguration> =
+    this.onWillProvideDebugConfigurationEmitter.event;
 
   private _whenReadyDeferred: Deferred<void> = new Deferred();
-  protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT);
+  protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(
+    DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT,
+  );
 
   private debugConfigurationStorage: IStorage;
   constructor() {
@@ -122,8 +122,8 @@ export class DebugConfigurationManager {
 
   protected readonly models = new Map<string, DebugConfigurationModel>();
 
-  protected updateModels = () => {
-    return this.updateModelDelayer.trigger(async () => {
+  protected updateModels = () =>
+    this.updateModelDelayer.trigger(async () => {
       const roots = await this.workspaceService.roots;
       const toDelete = new Set(this.models.keys());
       for (const rootStat of roots) {
@@ -154,7 +154,6 @@ export class DebugConfigurationManager {
         this._whenReadyDeferred.resolve();
       }
     });
-  }
 
   get whenReady() {
     return this._whenReadyDeferred.promise;
@@ -167,9 +166,9 @@ export class DebugConfigurationManager {
   protected getAll(): DebugSessionOptions[] {
     const debugSessionOptions: DebugSessionOptions[] = [];
     for (const model of this.models.values()) {
-      for (let index = 0, len = model.configurations.length; index < len; index ++) {
+      for (let index = 0, len = model.configurations.length; index < len; index++) {
         debugSessionOptions.push({
-          configuration:  model.configurations[index],
+          configuration: model.configurations[index],
           workspaceFolderUri: model.workspaceFolderUri,
           index,
         });
@@ -207,8 +206,7 @@ export class DebugConfigurationManager {
   }
 
   protected updateCurrent(options: DebugSessionOptions | undefined = this._currentOptions): void {
-    this._currentOptions = options
-      && this.find(options.configuration.name, options.workspaceFolderUri, options.index);
+    this._currentOptions = options && this.find(options.configuration.name, options.workspaceFolderUri, options.index);
     if (!this._currentOptions) {
       const { model } = this;
       if (model) {
@@ -239,7 +237,7 @@ export class DebugConfigurationManager {
           }
         } else {
           // 兼容无index的查找逻辑
-          for (let index = 0, len = model.configurations.length; index < len; index ++) {
+          for (let index = 0, len = model.configurations.length; index < len; index++) {
             if (model.configurations[index].name === name) {
               return {
                 configuration: model.configurations[index],
@@ -400,7 +398,10 @@ export class DebugConfigurationManager {
     return uri;
   }
 
-  protected async provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]> {
+  protected async provideDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration[]> {
     await this.fireWillProvideDebugConfiguration();
     return this.debug.provideDebugConfigurations(debugType, workspaceFolderUri);
   }
@@ -418,7 +419,11 @@ export class DebugConfigurationManager {
   // ${comment2}
   // ${comment3}
   "version": "0.2.0",
-  "configurations": ${JSON.stringify(initialConfigurations, undefined, '  ').split('\n').map((line) => '  ' + line).join('\n').trim()}
+  "configurations": ${JSON.stringify(initialConfigurations, undefined, '  ')
+    .split('\n')
+    .map((line) => '  ' + line)
+    .join('\n')
+    .trim()}
 }
 `;
   }
@@ -433,9 +438,8 @@ export class DebugConfigurationManager {
       return undefined;
     }
     const debuggers = await this.debug.getDebuggersForLanguage(document.languageId);
-    return this.quickPick.show(debuggers.map(
-      ({ label, type }) => ({ label, value: type }),
-      { placeholder: 'Select Environment' }),
+    return this.quickPick.show(
+      debuggers.map(({ label, type }) => ({ label, value: type }), { placeholder: 'Select Environment' }),
     );
   }
 

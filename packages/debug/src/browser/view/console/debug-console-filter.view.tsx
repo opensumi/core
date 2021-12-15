@@ -62,7 +62,15 @@ export const DebugConsoleFilterView = observer(() => {
 
   return (
     <div className={styles.debug_console_filter}>
-      <HistoryInputBox hasClear className={styles.filter_input} value={filterValue} placeholder={localize('debug.console.filter.placeholder')} onValueChange={onDebounceValueChange} onReady={onReady} onKeyDown={onKeyDown}></HistoryInputBox>
+      <HistoryInputBox
+        hasClear
+        className={styles.filter_input}
+        value={filterValue}
+        placeholder={localize('debug.console.filter.placeholder')}
+        onValueChange={onDebounceValueChange}
+        onReady={onReady}
+        onKeyDown={onKeyDown}
+      ></HistoryInputBox>
     </div>
   );
 });

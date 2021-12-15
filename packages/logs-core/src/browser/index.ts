@@ -15,8 +15,10 @@ export class LogModule extends BrowserModule {
     },
   ];
 
-  backServices = [{
-    servicePath: LogServiceForClientPath,
-    clientToken: ILoggerManagerClient,
-  }];
+  backServices = [
+    {
+      servicePath: LogServiceForClientPath,
+      clientToken: ILoggerManagerClient,
+    },
+  ];
 }

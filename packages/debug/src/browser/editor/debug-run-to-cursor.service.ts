@@ -9,7 +9,6 @@ import { IDebugSessionManager, DebugState } from './../../common/debug-session';
 
 @Injectable()
 export class DebugRunToCursorService {
-
   @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
@@ -26,7 +25,7 @@ export class DebugRunToCursorService {
    * @param isForce 为 true 表示强制运行到光标处，不管中间有没有启用的断点，它就是要畅通无阻
    * @returns
    */
-  public async run(uri: URI, isForce: boolean = false): Promise<void> {
+  public async run(uri: URI, isForce = false): Promise<void> {
     const currentSession = this.sessionManager.currentSession;
     if (!currentSession) {
       return;
@@ -56,16 +55,19 @@ export class DebugRunToCursorService {
       return;
     }
 
-    const bpExists = !!(sessionModel.getBreakpoints(uri, { column: position.column, lineNumber: position.lineNumber }).length);
+    const bpExists = !!sessionModel.getBreakpoints(uri, { column: position.column, lineNumber: position.lineNumber })
+      .length;
 
     let breakpointToRemove: DebugBreakpoint | undefined;
     let threadToContinue = currentSession.currentThread;
     let enabledBreakpoints: DebugBreakpoint[] = [];
 
     if (!bpExists) {
-
       if (isForce) {
-        enabledBreakpoints = sessionModel.getBreakpoints().filter((bk) => bk.enabled).filter((bk) => bk.raw.column !== position.column && bk.raw.line !== position.lineNumber);
+        enabledBreakpoints = sessionModel
+          .getBreakpoints()
+          .filter((bk) => bk.enabled)
+          .filter((bk) => bk.raw.column !== position.column && bk.raw.line !== position.lineNumber);
         // 先将所有断点禁用，并收集起来，continue 之后再恢复状态
         enabledBreakpoints.forEach((bk) => {
           this.debugBreakpointsService.toggleBreakpointEnable(bk);
@@ -104,7 +106,6 @@ export class DebugRunToCursorService {
 
     await threadToContinue.continue();
     this.recoverStatus(enabledBreakpoints);
-
   }
 
   private async addBreakpoints(uri: URI, position: Position) {
@@ -152,9 +153,7 @@ export class DebugRunToCursorService {
     }
 
     if (bestScore < Score.VerifiedAndPausedInFile) {
-      const pausedInThisFile = threads.find((t) => {
-        return t.topFrame;
-      });
+      const pausedInThisFile = threads.find((t) => t.topFrame);
 
       if (pausedInThisFile) {
         bestThread = pausedInThisFile;
@@ -175,5 +174,4 @@ export class DebugRunToCursorService {
       this.debugBreakpointsService.toggleBreakpointEnable(bk);
     });
   }
-
 }

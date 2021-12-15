@@ -8,7 +8,10 @@ import { DirectDebugAdapter } from './abstract-debug-adapter-session';
 /**
  * 启动调试适配器进程
  */
-export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?: CustomeChildProcessModule): DebugStreamConnection {
+export function startDebugAdapter(
+  executable: vscode.DebugAdapterExecutable,
+  cp?: CustomeChildProcessModule,
+): DebugStreamConnection {
   const options: any = { stdio: ['pipe', 'pipe', 2] };
 
   if (executable.options) {
@@ -39,7 +42,6 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?
     }
 
     childProcess = cp ? cp.spawn(command, args, options) : spawn(command, args, options);
-
   } else if ('modulePath' in executable) {
     const forkExecutable = executable as unknown as DebugAdapterForkExecutable;
     const { modulePath, args } = forkExecutable;
@@ -72,10 +74,12 @@ export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStr
  * 这里通过 server 服务来拉起适配器
  */
 export function directDebugAdapter(id: string, da: vscode.DebugAdapter): DebugStreamConnection {
-  const server = net.createServer((socket: net.Socket) => {
-    const session = new DirectDebugAdapter(id, da);
-    session.start(socket as NodeJS.ReadableStream, socket);
-  }).listen(0);
+  const server = net
+    .createServer((socket: net.Socket) => {
+      const session = new DirectDebugAdapter(id, da);
+      session.start(socket as NodeJS.ReadableStream, socket);
+    })
+    .listen(0);
   return connectDebugAdapter({ port: (server.address() as net.AddressInfo).port });
 }
 

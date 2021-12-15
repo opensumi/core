@@ -8,7 +8,6 @@ import { IOpenerService } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
-
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
@@ -16,7 +15,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
   private preMessage: string | React.ReactNode;
 
   // 当前组件展示的时间
-  private showTime: number = 0;
+  private showTime = 0;
 
   // 相同文案返回的间隔时间
   protected static SAME_MESSAGE_DURATION = 3000;
@@ -36,10 +35,20 @@ export class MessageService extends AbstractMessageService implements IMessageSe
    * @param closable true | false
    * @param from from extension
    */
-  open<T = string>(rawMessage: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true, from?: string): Promise<T | undefined> {
+  open<T = string>(
+    rawMessage: string | React.ReactNode,
+    type: MessageType,
+    buttons?: string[],
+    closable = true,
+    from?: string,
+  ): Promise<T | undefined> {
     let message = rawMessage;
     // 如果两秒内提示信息相同，则直接返回上一个提示
-    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && typeof message === 'string' && this.preMessage === message) {
+    if (
+      Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION &&
+      typeof message === 'string' &&
+      this.preMessage === message
+    ) {
       return Promise.resolve(undefined);
     }
     this.preMessage = typeof message === 'string' && message;
@@ -61,8 +70,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
 
 const DATA_SET_COMMAND = 'data-command';
 
-const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) => {
-
+const RenderWrapper = (props: { html: HTMLElement; opener?: IOpenerService }) => {
   const ref = useRef<HTMLDivElement | undefined>();
   const { html, opener } = props;
 
@@ -90,27 +98,35 @@ const RenderWrapper = (props: { html: HTMLElement, opener?: IOpenerService }) =>
     }
   };
 
-  return (
-    <div ref={ref as unknown as RefObject<HTMLDivElement>}></div>
-  );
+  return <div ref={ref as unknown as RefObject<HTMLDivElement>}></div>;
 };
 
 const toMarkdown = (message: string | React.ReactNode, opener: IOpenerService) => {
   const renderer = new marked.Renderer();
 
-  renderer.link = ( href, title, text ) => {
-    return `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
-  };
+  renderer.link = (href, title, text) =>
+    `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
 
-  return typeof message !== 'string' ? message : <RenderWrapper opener={opener} html={new DOMParser().parseFromString(marked(message, {
-    gfm: true,
-    tables: true,
-    breaks: false,
-    pedantic: false,
-    sanitize: true,
-    smartLists: true,
-    smartypants: false,
-    renderer,
-  }), 'text/xml').documentElement}></RenderWrapper>;
-
+  return typeof message !== 'string' ? (
+    message
+  ) : (
+    <RenderWrapper
+      opener={opener}
+      html={
+        new DOMParser().parseFromString(
+          marked(message, {
+            gfm: true,
+            tables: true,
+            breaks: false,
+            pedantic: false,
+            sanitize: true,
+            smartLists: true,
+            smartypants: false,
+            renderer,
+          }),
+          'text/xml',
+        ).documentElement
+      }
+    ></RenderWrapper>
+  );
 };

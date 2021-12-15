@@ -83,11 +83,7 @@ function notice(args: ArgsProps): MessageType {
         duration,
         style: {},
         content: (
-          <div
-            className={`${prefixCls}-custom-content${
-              args.type ? ` ${prefixCls}-${args.type}` : ''
-            }`}
-          >
+          <div className={`${prefixCls}-custom-content${args.type ? ` ${prefixCls}-${args.type}` : ''}`}>
             {args.icon || (IconComponent && <IconComponent />)}
             <span>{args.content}</span>
           </div>
@@ -101,8 +97,7 @@ function notice(args: ArgsProps): MessageType {
       messageInstance.removeNotice(target);
     }
   };
-  result.then = (filled: ThenableArgument, rejected: ThenableArgument) =>
-    closePromise.then(filled, rejected);
+  result.then = (filled: ThenableArgument, rejected: ThenableArgument) => closePromise.then(filled, rejected);
   result.promise = closePromise;
   return result;
 }
@@ -113,10 +108,7 @@ type JointContent = ConfigContent | ArgsProps;
 export type ConfigOnClose = () => void;
 
 function isArgsProps(content: JointContent): content is ArgsProps {
-  return (
-    Object.prototype.toString.call(content) === '[object Object]' &&
-    !!(content as ArgsProps).content
-  );
+  return Object.prototype.toString.call(content) === '[object Object]' && !!(content as ArgsProps).content;
 }
 
 export interface ConfigOptions {

@@ -5,14 +5,8 @@ import {
   MessageConnection,
 } from '@opensumi/vscode-jsonrpc/lib/node/main';
 
-export {
-  SocketMessageReader,
-  SocketMessageWriter,
-};
-import {
-  RPCProxy,
-  NOTREGISTERMETHOD,
-} from './proxy';
+export { SocketMessageReader, SocketMessageWriter };
+import { RPCProxy, NOTREGISTERMETHOD } from './proxy';
 import net from 'net';
 
 export type RPCServiceMethod = (...args: any[]) => any;
@@ -33,9 +27,7 @@ export function initRPCService(center: RPCServiceCenter) {
 
       return proxy;
     },
-    getRPCService: (name: string): any => {
-      return new RPCServiceStub(name, center, ServiceType.Stub).getProxy();
-    },
+    getRPCService: (name: string): any => new RPCServiceStub(name, center, ServiceType.Stub).getProxy(),
   };
 }
 
@@ -106,7 +98,6 @@ export class RPCServiceCenter {
 
     const serviceProxy = rpcProxy.createProxy();
     this.serviceProxy.push(serviceProxy);
-
   }
 
   removeConnection(connection: MessageConnection) {
@@ -118,7 +109,6 @@ export class RPCServiceCenter {
     }
 
     return removeIndex !== -1;
-
   }
   onRequest(name, method: RPCServiceMethod) {
     if (!this.connection.length) {
@@ -130,18 +120,13 @@ export class RPCServiceCenter {
     }
   }
   broadcast(name, ...args): Promise<any> {
-    return Promise.all(this.serviceProxy.map((proxy) => {
-      return proxy[name](...args);
-    }) as Promise<any>[]).then((result) => {
-      return result.filter((res) => res !== NOTREGISTERMETHOD);
-    }).then((result) => {
-      return result.length === 1 ? result[0] : result;
-    });
+    return Promise.all(this.serviceProxy.map((proxy) => proxy[name](...args)) as Promise<any>[])
+      .then((result) => result.filter((res) => res !== NOTREGISTERMETHOD))
+      .then((result) => (result.length === 1 ? result[0] : result));
   }
 }
 
 export class RPCServiceStub {
-
   constructor(private serviceName: string, private center, private type: ServiceType) {
     if (this.type === ServiceType.Service) {
       this.center.registerService(serviceName, this.type);
@@ -168,10 +153,8 @@ export class RPCServiceStub {
       let obj = service;
       do {
         props = props.concat(Object.getOwnPropertyNames(obj));
-      } while (obj = Object.getPrototypeOf(obj));
-      props = props.sort().filter((e, i, arr) => {
-        return e !== arr[i + 1] && typeof service[e] === 'function';
-      });
+      } while ((obj = Object.getPrototypeOf(obj)));
+      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
     } else {
       for (const prop in service) {
         if (service[prop] && typeof service[prop] === 'function') {
@@ -198,38 +181,29 @@ export class RPCServiceStub {
   getMethodName(name) {
     return name.startsWith('on') ? this.getNotificationName(name) : this.getRequestName(name);
   }
-  getProxy = () => {
-    return new Proxy(this, {
+  getProxy = () =>
+    new Proxy(this, {
       // 调用方
       get: (target, prop: string) => {
         if (!target[prop]) {
           if (typeof prop === 'symbol') {
             return Promise.resolve();
           } else {
-            return (...args) => {
-              return this.ready().then(() => {
+            return (...args) =>
+              this.ready().then(() => {
                 const name = this.getMethodName(prop);
-                return Promise.all(this.center.serviceProxy.map((proxy) => {
-                  return proxy[name](...args);
-                })).then((result) => {
-                  return result.filter((res) => res !== NOTREGISTERMETHOD);
-                }).then((result) => {
-                  return result.length === 1 ? result[0] : result;
-                });
+                return Promise.all(this.center.serviceProxy.map((proxy) => proxy[name](...args)))
+                  .then((result) => result.filter((res) => res !== NOTREGISTERMETHOD))
+                  .then((result) => (result.length === 1 ? result[0] : result));
               });
-            };
           }
         } else {
           return target[prop];
         }
       },
     });
-  }
 }
 
 export function createSocketConnection(socket: net.Socket) {
-  return createMessageConnection(
-    new SocketMessageReader(socket),
-    new SocketMessageWriter(socket),
-  );
+  return createMessageConnection(new SocketMessageReader(socket), new SocketMessageWriter(socket));
 }

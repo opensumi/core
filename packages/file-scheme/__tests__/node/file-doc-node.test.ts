@@ -9,10 +9,12 @@ import { join, dirname } from 'path';
 import { ensureDir, writeFile, readFile } from 'fs-extra';
 import { URI } from '@opensumi/ide-core-common';
 import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
-import { HashCalculateServiceImpl, IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('node file doc service test', () => {
-
   const injector = createNodeInjector([FileSchemeNodeModule]);
   injector.addProviders(
     ...[
@@ -34,34 +36,41 @@ describe('node file doc service test', () => {
   });
 
   it('file doc node service', async (done) => {
-
     injector.addProviders({
       token: IFileSchemeDocNodeService,
       useClass: FileSchemeDocNodeServiceImpl,
     });
 
-    injector.mock(IFileService, 'getFileStat', jest.fn((uriString: string) => {
-      if (uriString.indexOf('notexist') > -1) {
-        return undefined;
-      }
-      const stat: FileStat = {
-        uri: uriString,
-        isDirectory: false,
-        lastModification: Date.now(),
-      };
-      return stat;
-    }));
+    injector.mock(
+      IFileService,
+      'getFileStat',
+      jest.fn((uriString: string) => {
+        if (uriString.indexOf('notexist') > -1) {
+          return undefined;
+        }
+        const stat: FileStat = {
+          uri: uriString,
+          isDirectory: false,
+          lastModification: Date.now(),
+        };
+        return stat;
+      }),
+    );
 
-    injector.mock(IFileService, 'resolveContent', jest.fn((stat: FileStat) => {
-      return {
+    injector.mock(
+      IFileService,
+      'resolveContent',
+      jest.fn((stat: FileStat) => ({
         stat,
         content: 'current content',
-      };
-    }));
+      })),
+    );
 
-    injector.mock(IFileService, 'access', jest.fn((uri: string) => {
-      return uri.indexOf('notexist') === -1;
-    }));
+    injector.mock(
+      IFileService,
+      'access',
+      jest.fn((uri: string) => uri.indexOf('notexist') === -1),
+    );
 
     injector.mock(IFileService, 'createFile', jest.fn());
     injector.mock(IFileService, 'setContent', jest.fn());
@@ -95,10 +104,15 @@ describe('node file doc service test', () => {
 
     expect(fileService.setContent).toBeCalledTimes(1);
 
-    const res3 = await fileDocNodeService.$saveByContent('file:///anyFile', {
-      baseMd5: hashCalculateService.calculate('old content'),
-      content: 'next content',
-    }, 'utf-8', true);
+    const res3 = await fileDocNodeService.$saveByContent(
+      'file:///anyFile',
+      {
+        baseMd5: hashCalculateService.calculate('old content'),
+        content: 'next content',
+      },
+      'utf-8',
+      true,
+    );
 
     expect(res3.state).toBe('success');
 
@@ -165,25 +179,29 @@ describe('node file doc service test', () => {
     const file2 = await createFixtureFile();
     await writeFile(file2, encode('\n\n测试', 'gbk'));
 
-    const res7 = await fileDocNodeService.$saveByChange(URI.file(file2).toString(), {
-      baseMd5: hashCalculateService.calculate('\n\n测试'),
-      changes: [
-        {
-          changes: [
-            {
-              range: {
-                startColumn: 1,
-                startLineNumber: 1,
-                endColumn: 1,
-                endLineNumber: 1,
+    const res7 = await fileDocNodeService.$saveByChange(
+      URI.file(file2).toString(),
+      {
+        baseMd5: hashCalculateService.calculate('\n\n测试'),
+        changes: [
+          {
+            changes: [
+              {
+                range: {
+                  startColumn: 1,
+                  startLineNumber: 1,
+                  endColumn: 1,
+                  endLineNumber: 1,
+                },
+                text: '测试',
               },
-              text: '测试',
-            },
-          ],
-        },
-      ],
-      eol: '\n',
-    }, 'gbk');
+            ],
+          },
+        ],
+        eol: '\n',
+      },
+      'gbk',
+    );
 
     expect(res7.state).toBe('success');
 
@@ -191,12 +209,14 @@ describe('node file doc service test', () => {
 
     done();
   });
-
 });
 
 async function createFixtureFile(): Promise<string> {
-  const fixtureFile = join(tmpdir(), `_test_/file-scheme-fixture-${new Date().getTime()}-${Math.floor(1000 * Math.random())}`, 'tempFile.js');
+  const fixtureFile = join(
+    tmpdir(),
+    `_test_/file-scheme-fixture-${new Date().getTime()}-${Math.floor(1000 * Math.random())}`,
+    'tempFile.js',
+  );
   await ensureDir(dirname(fixtureFile));
   return fixtureFile;
-
 }

@@ -4,19 +4,22 @@ import { isWindows, isOSX } from '@opensumi/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@opensumi/ide-debug';
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 
-export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: IDebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {
+export async function resolveDebugAdapterExecutable(
+  pluginPath: string,
+  debuggerContribution: IDebuggerContribution,
+): Promise<vscode.DebugAdapterExecutable | undefined> {
   const info = toPlatformInfo(debuggerContribution);
-  let program = (info && info.program || debuggerContribution.program);
+  let program = (info && info.program) || debuggerContribution.program;
   if (!program) {
     return undefined;
   }
   program = path.join(pluginPath, program);
-  const programArgs = info && info.args || debuggerContribution.args || [];
-  let runtime = info && info.runtime || debuggerContribution.runtime;
+  const programArgs = (info && info.args) || debuggerContribution.args || [];
+  let runtime = (info && info.runtime) || debuggerContribution.runtime;
   if (runtime && runtime.indexOf('./') === 0) {
     runtime = path.join(pluginPath, runtime);
   }
-  const runtimeArgs = info && info.runtimeArgs || debuggerContribution.runtimeArgs || [];
+  const runtimeArgs = (info && info.runtimeArgs) || debuggerContribution.runtimeArgs || [];
   const command = runtime ? runtime : program;
   const args = runtime ? [...runtimeArgs, program, ...programArgs] : programArgs;
   return new DebugAdapterExecutable(command, args);

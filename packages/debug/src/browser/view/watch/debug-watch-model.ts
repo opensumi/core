@@ -5,7 +5,6 @@ import { ExpressionContainer } from '../../tree/debug-tree-node.define';
 
 @Injectable({ multiple: true })
 export class DebugWatchModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugWatchModel.DEFAULT_FLUSH_DELAY);

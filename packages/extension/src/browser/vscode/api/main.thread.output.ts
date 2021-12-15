@@ -6,7 +6,6 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 @Injectable({ multiple: true })
 export class MainThreadOutput implements IMainThreadOutput {
-
   @Autowired(OutputService)
   private outputService: OutputService;
 

@@ -1,5 +1,13 @@
 import path from 'path';
-import { Emitter, FileUri, ILoggerManagerClient, LogServiceForClientPath, LogLevel, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  FileUri,
+  ILoggerManagerClient,
+  LogServiceForClientPath,
+  LogLevel,
+  ITaskDefinitionRegistry,
+  TaskDefinitionRegistryImpl,
+} from '@opensumi/ide-core-common';
 import { Injectable } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { ExtHostTasks, createTaskApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
@@ -57,14 +65,11 @@ const extension = Object.assign({}, mockExtensions[0], {
 
 class TestTaskProvider {
   provideTasks(token) {
-    return [
-      new Task({ type: 'test-taskprovider' }, 2, 'Echo Task', 'echo', new ShellExecution('echo')),
-    ];
+    return [new Task({ type: 'test-taskprovider' }, 2, 'Echo Task', 'echo', new ShellExecution('echo'))];
   }
   resolveTask(task, token) {
     return undefined;
   }
-
 }
 
 const emitterA = new Emitter<any>();
@@ -86,7 +91,7 @@ const rpcProtocolMain = new RPCProtocol(mockClientB);
 class MockLogServiceForClient {
   private level: LogLevel;
 
-  hasDisposeAll: boolean = false;
+  hasDisposeAll = false;
 
   async setGlobalLogLevel(level) {
     this.level = level;
@@ -107,72 +112,75 @@ class MockLogServiceForClient {
 
 describe('MainThreadTask Test Suite', () => {
   const injector = createBrowserInjector([VariableModule]);
-  injector.addProviders(...[
-    {
-      token: ITerminalInternalService,
-      useClass: TerminalInternalService,
-    },
-    {
-      token: ITerminalController,
-      useClass: TerminalController,
-    },
-    {
-      token: ITaskDefinitionRegistry,
-      useClass: TaskDefinitionRegistryImpl,
-    },
-    {
-      token: MonacoService,
-      useClass: MockedMonacoService,
-    },
-    {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    },
-    {
-      token: ITaskSystem,
-      useClass: TerminalTaskSystem,
-    },
-    {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    },
-    {
-      token: ITaskService,
-      useClass: TaskService,
-    },
-    {
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
+  injector.addProviders(
+    ...[
+      {
+        token: ITerminalInternalService,
+        useClass: TerminalInternalService,
       },
-    },
-    {
-      token: IMainLayoutService,
-      useClass: LayoutService,
-    },
-    {
-      token: ILoggerManagerClient,
-      useClass: LoggerManagerClient,
-    },
-    {
-      token: IExtensionStorageService,
-      useValue: {
-        whenReady: Promise.resolve(true),
-        extensionStoragePath: {},
-        set() { },
-        get() { },
-        getAll() { },
-        reConnectInit() { },
+      {
+        token: ITerminalController,
+        useClass: TerminalController,
       },
-    },
-    {
-      token: LogServiceForClientPath,
-      useClass: MockLogServiceForClient,
-    },
-    {
-      token: ExtensionService,
-      useClass: ExtensionServiceImpl,
-    }]);
+      {
+        token: ITaskDefinitionRegistry,
+        useClass: TaskDefinitionRegistryImpl,
+      },
+      {
+        token: MonacoService,
+        useClass: MockedMonacoService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: ITaskSystem,
+        useClass: TerminalTaskSystem,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: ITaskService,
+        useClass: TaskService,
+      },
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
+      },
+      {
+        token: IMainLayoutService,
+        useClass: LayoutService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: LoggerManagerClient,
+      },
+      {
+        token: IExtensionStorageService,
+        useValue: {
+          whenReady: Promise.resolve(true),
+          extensionStoragePath: {},
+          set() {},
+          get() {},
+          getAll() {},
+          reConnectInit() {},
+        },
+      },
+      {
+        token: LogServiceForClientPath,
+        useClass: MockLogServiceForClient,
+      },
+      {
+        token: ExtensionService,
+        useClass: ExtensionServiceImpl,
+      },
+    ],
+  );
   const testProvider = new TestTaskProvider();
   let extHostTask: ExtHostTasks;
   let mainthreadTask: MainthreadTasks;
@@ -203,7 +211,10 @@ describe('MainThreadTask Test Suite', () => {
     const monacoService = injector.get(MonacoService);
     await monacoService.loadMonaco();
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
-    const extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
+    const extHostDocs = rpcProtocolExt.set(
+      ExtHostAPIIdentifier.ExtHostDocuments,
+      injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]),
+    );
     const extHostTerminal = new ExtHostTerminal(rpcProtocolExt);
     const extHostWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
     extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extHostWorkspace);
@@ -212,7 +223,10 @@ describe('MainThreadTask Test Suite', () => {
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTasks, extHostTask);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadTasks, mainthreadTask);
-    rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [rpcProtocolMain]));
+    rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadWorkspace,
+      injector.get(MainThreadWorkspace, [rpcProtocolMain]),
+    );
     extHostTaskApi = createTaskApiFactory(extHostTask, mockExtensions[0]);
   });
 
@@ -252,6 +266,5 @@ describe('MainThreadTask Test Suite', () => {
       expect(execution.task.name).toBe('Echo Task');
       expect(typeof execution).toBe('object');
     });
-
   });
 });

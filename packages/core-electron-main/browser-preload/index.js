@@ -8,12 +8,12 @@ const urlParams = new URLSearchParams(decodeURIComponent(window.location.search)
 window.id = Number(urlParams.get('windowId'));
 const webContentsId = Number(urlParams.get('webContentsId'));
 
-async function createRPCNetConnection () {
+async function createRPCNetConnection() {
   const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
   return net.createConnection(rpcListenPath);
 }
 
-function createNetConnection (connectPath) {
+function createNetConnection(connectPath) {
   return net.createConnection(connectPath);
 }
 

@@ -1,18 +1,22 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Disposable, IDisposable, DisposableCollection } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IExtHostIDEWindow, IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtPlainWebviewWindow, IWindowInfo } from '../../../common/sumi/window';
+import {
+  IExtHostIDEWindow,
+  IMainThreadIDEWindow,
+  IIDEWindowWebviewOptions,
+  IIDEWindowWebviewEnv,
+  IExtPlainWebviewWindow,
+  IWindowInfo,
+} from '../../../common/sumi/window';
 import { IExtHostCommands } from '../../../common/vscode';
 
 export class ExtHostIDEWindow implements IExtHostIDEWindow {
-
   private proxy: IMainThreadIDEWindow;
 
   private _windowMaps: Map<string, ExtIDEWebviewWindow> = new Map();
 
-  constructor(
-    private rpcProtocol: IRPCProtocol,
-  ) {
+  constructor(private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadIDEWindow);
   }
 
@@ -23,9 +27,14 @@ export class ExtHostIDEWindow implements IExtHostIDEWindow {
       return window;
     }
     const windowInfo = await this.proxy.$createWebviewWindow(webviewId, options, env);
-    const window = new ExtIDEWebviewWindow(webviewId, windowInfo, this.proxy, Disposable.create(() => {
-      this._windowMaps.delete(webviewId);
-    }));
+    const window = new ExtIDEWebviewWindow(
+      webviewId,
+      windowInfo,
+      this.proxy,
+      Disposable.create(() => {
+        this._windowMaps.delete(webviewId);
+      }),
+    );
     this._windowMaps.set(webviewId, window);
     return window;
   }
@@ -46,18 +55,23 @@ export class ExtHostIDEWindow implements IExtHostIDEWindow {
 }
 
 export class ExtIDEWebviewWindow implements IExtPlainWebviewWindow {
-
   private _onMessageEmitter: Emitter<any> = new Emitter();
   private _onClosedEmitter: Emitter<void> = new Emitter();
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  constructor(private webviewId: string, private info: IWindowInfo, private proxy: IMainThreadIDEWindow, dispose: IDisposable) {
+  constructor(
+    private webviewId: string,
+    private info: IWindowInfo,
+    private proxy: IMainThreadIDEWindow,
+    dispose: IDisposable,
+  ) {
     this.disposableCollection.push(dispose);
-    this.disposableCollection.push(Disposable.create(() => {
-      this.proxy.$destroy(this.webviewId);
-    }));
-
+    this.disposableCollection.push(
+      Disposable.create(() => {
+        this.proxy.$destroy(this.webviewId);
+      }),
+    );
   }
 
   get webContentsId() {
@@ -91,7 +105,7 @@ export class ExtIDEWebviewWindow implements IExtPlainWebviewWindow {
     return await this.proxy.$loadURL(this.webviewId, url);
   }
 
-  async setSize(size: {width: number; height: number}) {
+  async setSize(size: { width: number; height: number }) {
     return await this.proxy.$setSize(this.webviewId, size);
   }
 
@@ -112,16 +126,10 @@ export class ExtIDEWebviewWindow implements IExtPlainWebviewWindow {
   }
 }
 
-export function createWindowApiFactory(
-  extHostCommands: IExtHostCommands,
-  extHostWindow: ExtHostIDEWindow,
-) {
+export function createWindowApiFactory(extHostCommands: IExtHostCommands, extHostWindow: ExtHostIDEWindow) {
   return {
-    reloadWindow: async () => {
-      return await extHostCommands.executeCommand('reload_window');
-    },
-    createWebviewWindow: async (webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv) => {
-      return await extHostWindow.createWebviewWindow(webviewId, options, env);
-    },
+    reloadWindow: async () => await extHostCommands.executeCommand('reload_window'),
+    createWebviewWindow: async (webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv) =>
+      await extHostWindow.createWebviewWindow(webviewId, options, env),
   };
 }

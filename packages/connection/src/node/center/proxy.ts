@@ -20,15 +20,18 @@ export class ProxyClient {
     this.reservedWords = reservedWords;
   }
   public getClient() {
-    return new Proxy({}, {
-      get: (target, prop: string | symbol) => {
-        if (this.reservedWords.includes(prop as string) || typeof prop === 'symbol') {
-          return Promise.resolve();
-        } else {
-          return this.proxy[prop];
-        }
+    return new Proxy(
+      {},
+      {
+        get: (target, prop: string | symbol) => {
+          if (this.reservedWords.includes(prop as string) || typeof prop === 'symbol') {
+            return Promise.resolve();
+          } else {
+            return this.proxy[prop];
+          }
+        },
       },
-    });
+    );
   }
 }
 
@@ -81,8 +84,8 @@ export class RPCProxy {
   public get(target: any, p: PropertyKey) {
     const prop = p.toString();
 
-    return (...args: any[]) => {
-      return this.connectionPromise.then((connection) => {
+    return (...args: any[]) =>
+      this.connectionPromise.then((connection) => {
         connection = this.connection || connection;
         return new Promise((resolve, reject) => {
           try {
@@ -107,25 +110,25 @@ export class RPCProxy {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
               }
 
-              requestResult.catch((err) => { reject(err); })
-              .then((result: IRPCResult) => {
-                if (result.error) {
-                  const error = new Error(result.data.message);
-                  if (result.data.stack) {
-                    error.stack = result.data.stack;
+              requestResult
+                .catch((err) => {
+                  reject(err);
+                })
+                .then((result: IRPCResult) => {
+                  if (result.error) {
+                    const error = new Error(result.data.message);
+                    if (result.data.stack) {
+                      error.stack = result.data.stack;
+                    }
+                    reject(error);
+                  } else {
+                    resolve(result.data);
                   }
-                  reject(error);
-                } else {
-                  resolve(result.data);
-                }
-
-              });
+                });
             }
           } catch (e) {}
         });
       });
-
-    };
   }
   private getServiceMethod(service): string[] {
     let props: any[] = [];
@@ -133,11 +136,9 @@ export class RPCProxy {
     if (/^\s*class/.test(service.constructor.toString())) {
       let obj = service;
       do {
-          props = props.concat(Object.getOwnPropertyNames(obj));
-      } while (obj = Object.getPrototypeOf(obj));
-      props = props.sort().filter((e, i, arr) => {
-        return e !== arr[i + 1] && typeof service[e] === 'function';
-      });
+        props = props.concat(Object.getOwnPropertyNames(obj));
+      } while ((obj = Object.getPrototypeOf(obj)));
+      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
     } else {
       for (const prop in service) {
         if (service[prop] && typeof service[prop] === 'function') {
@@ -193,11 +194,7 @@ export class RPCProxy {
    */
   private serializeArguments(args: any[]): any[] {
     const maybeCancellationToken = args[args.length - 1];
-    if (
-      args.length === 2 &&
-      Array.isArray(args[0]) &&
-      maybeCancellationToken.hasOwnProperty('_isCancelled')
-    ) {
+    if (args.length === 2 && Array.isArray(args[0]) && maybeCancellationToken.hasOwnProperty('_isCancelled')) {
       return [...args[0], maybeCancellationToken];
     }
 
@@ -205,22 +202,22 @@ export class RPCProxy {
   }
 
   private async onRequest(prop: PropertyKey, ...args: any[]) {
-      try {
-        const result = await this.proxyService[prop](...this.serializeArguments(args));
+    try {
+      const result = await this.proxyService[prop](...this.serializeArguments(args));
 
-        return {
-          error: false,
-          data: result,
-        };
-      } catch (e) {
-        return {
-          error: true,
-          data: {
-            message: e.message,
-            stack: e.stack,
-          },
-        };
-      }
+      return {
+        error: false,
+        data: result,
+      };
+    } catch (e) {
+      return {
+        error: true,
+        data: {
+          message: e.message,
+          stack: e.stack,
+        },
+      };
+    }
   }
 
   private onNotification(prop: PropertyKey, ...args: any[]) {
@@ -230,5 +227,4 @@ export class RPCProxy {
       this.logger.warn('notification', e);
     }
   }
-
 }

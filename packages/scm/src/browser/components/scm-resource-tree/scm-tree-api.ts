@@ -26,7 +26,10 @@ export interface ISCMTreeNodeDescription<T = ISCMResource | ISCMResourceGroup> {
 /**
  * children collector for `ISCMTreeNodeDescription`
  */
-export function collectSCMResourceDesc(node: ISCMTreeNodeDescription<ISCMResource>, result: ISCMResource[]): ISCMResource[] {
+export function collectSCMResourceDesc(
+  node: ISCMTreeNodeDescription<ISCMResource>,
+  result: ISCMResource[],
+): ISCMResource[] {
   if (node.type === 'file') {
     result.push(node.resource);
   }
@@ -60,9 +63,8 @@ export class SCMTreeAPI extends Disposable {
       .map((resource: ISCMResourceGroup) => ({
         id: this.providerId + '_' + resource.id,
         name: resource.id,
-        children: mode === SCMViewModelMode.Tree
-          ? this.pathToTree(resource.elements)
-          : this.pathToList(resource.elements),
+        children:
+          mode === SCMViewModelMode.Tree ? this.pathToTree(resource.elements) : this.pathToList(resource.elements),
         resource,
         type: 'group',
       }));
@@ -97,7 +99,8 @@ export class SCMTreeAPI extends Disposable {
       // 取 workspace 的相对路径
       const path = this._getPathDesc(element);
       // 初始的 accumulator 为 level
-      path.split(paths.Path.separator)
+      path
+        .split(paths.Path.separator)
         .filter(Boolean)
         .reduce((acc, cur, index, pathList) => {
           // 每次返回 path 对应的 desc 作为下一个 path 的 parent
@@ -120,7 +123,7 @@ export class SCMTreeAPI extends Disposable {
           // 返回当前 path 对应的 desc 作为下一次遍历的 parent
           return acc[cur];
         }, accumulator);
-      });
+    });
     if (this.shouldCompactFolders) {
       this.walkTreeToFold(result);
     }

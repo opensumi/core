@@ -4,9 +4,9 @@ import { useInjectable, ComponentRegistryInfo } from '@opensumi/ide-core-browser
 import { Button, Badge } from '@opensumi/ide-components';
 import { ITopbarService } from '../common';
 
-export const TopbarBadge: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => {
-  return (component.options!.badge && <Badge></Badge>) || null;
-});
+export const TopbarBadge: React.FC<{ component: ComponentRegistryInfo }> = observer(
+  ({ component }) => (component.options!.badge && <Badge></Badge>) || null,
+);
 
 export const Topbar = observer(() => {
   const topbarService = useInjectable<ITopbarService>(ITopbarService);
@@ -15,7 +15,9 @@ export const Topbar = observer(() => {
     topbarService.sayHelloFromNode();
   };
 
-  return <div>
-    <Button onClick={onClick}> hello </Button>
-  </div>;
+  return (
+    <div>
+      <Button onClick={onClick}> hello </Button>
+    </div>
+  );
 });

@@ -19,10 +19,7 @@ class MockEditorDocumentModelService {
   private readonly injector: Injector;
 
   async createModelReference(uri: URI) {
-    const instance = this.injector.get(EditorDocumentModel, [
-      uri,
-      'test-content',
-    ]);
+    const instance = this.injector.get(EditorDocumentModel, [uri, 'test-content']);
 
     return { instance };
   }
@@ -54,28 +51,28 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
 
     const codeEditor = mockedMonaco.editor!.create(document.createElement('div'));
     beforeEach(() => {
-      injector = createBrowserInjector([], new MockInjector([
-        {
-          token: IDocPersistentCacheProvider,
-          useClass: EmptyDocCacheImpl,
-        },
-        {
-          token: IEditorDocumentModelService,
-          useClass: MockEditorDocumentModelService,
-        },
-        {
-          token: CommandService,
-          useValue: {
-            executeCommand: fakeExecCmd,
+      injector = createBrowserInjector(
+        [],
+        new MockInjector([
+          {
+            token: IDocPersistentCacheProvider,
+            useClass: EmptyDocCacheImpl,
           },
-        },
-        SCMService,
-      ]));
+          {
+            token: IEditorDocumentModelService,
+            useClass: MockEditorDocumentModelService,
+          },
+          {
+            token: CommandService,
+            useValue: {
+              executeCommand: fakeExecCmd,
+            },
+          },
+          SCMService,
+        ]),
+      );
 
-      editorModel = injector.get(EditorDocumentModel, [
-        URI.file('/test/workspace/abc.ts'),
-        'test',
-      ]);
+      editorModel = injector.get(EditorDocumentModel, [URI.file('/test/workspace/abc.ts'), 'test']);
       codeEditor.setModel(editorModel.getMonacoModel());
 
       commandService = injector.get(CommandService);
@@ -209,13 +206,9 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       expect(actions.className).toBe('file-actions');
       const actionList = Array.from(actions.children) as HTMLElement[];
       expect(actionList.length).toBe(5);
-      expect(actionList.map((n) => n.className)).toEqual([
-        'plus',
-        'rollback',
-        'up',
-        'down',
-        'close',
-      ].map((n) => `kaitian-icon kticon-${n}`));
+      expect(actionList.map((n) => n.className)).toEqual(
+        ['plus', 'rollback', 'up', 'down', 'close'].map((n) => `kaitian-icon kticon-${n}`),
+      );
       // onclick test
 
       // add

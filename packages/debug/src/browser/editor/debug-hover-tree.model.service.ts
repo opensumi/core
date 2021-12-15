@@ -1,5 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, WatchEvent, TreeNodeEvent } from '@opensumi/ide-components';
+import {
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  WatchEvent,
+  TreeNodeEvent,
+} from '@opensumi/ide-components';
 import { Emitter, Deferred, Event, DisposableCollection } from '@opensumi/ide-core-browser';
 import { DebugHoverModel } from './debug-hover-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
@@ -116,20 +122,26 @@ export class DebugHoverTreeModelService {
 
   listenTreeViewChange() {
     this.dispose();
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-        this.selectedDecoration.addTarget(node as ExpressionNode);
-      }
-    }));
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.selectedNodes.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+          this.selectedDecoration.addTarget(node as ExpressionNode);
+        }
+      }),
+    );
   }
 
   async initTreeModel(root: ExpressionVariable) {
@@ -151,7 +163,7 @@ export class DebugHoverTreeModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange: boolean = true) => {
+  activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange = true) => {
     if (this.preContextMenuFocusedNode) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
@@ -178,23 +190,23 @@ export class DebugHoverTreeModelService {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: ExpressionContainer | ExpressionNode, removePreFocusedDecoration: boolean = false) => {
+  activeNodeFocusedDecoration = (target: ExpressionContainer | ExpressionNode, removePreFocusedDecoration = false) => {
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
         // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
         if (this.preContextMenuFocusedNode) {
           this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
           this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-        } else if (!!this.focusedNode) {
+        } else if (this.focusedNode) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedNode);
         }
         this.preContextMenuFocusedNode = target;
-      } else if (!!this.focusedNode) {
+      } else if (this.focusedNode) {
         this.preContextMenuFocusedNode = null;
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
@@ -207,7 +219,7 @@ export class DebugHoverTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -216,7 +228,7 @@ export class DebugHoverTreeModelService {
       this.treeModel.dispatchChange();
     }
     this._focusedNode = undefined;
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -233,7 +245,7 @@ export class DebugHoverTreeModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleTwistierClick = (item: ExpressionContainer | ExpressionNode) => {
     // 单选操作默认先更新选中状态
@@ -243,7 +255,7 @@ export class DebugHoverTreeModelService {
       this.activeNodeDecoration(item, false);
       this.toggleDirectory(item as ExpressionContainer);
     }
-  }
+  };
 
   toggleDirectory = async (item: ExpressionContainer) => {
     if (item.expanded) {
@@ -251,7 +263,7 @@ export class DebugHoverTreeModelService {
     } else {
       this.treeHandle.expandNode(item);
     }
-  }
+  };
 
   /**
    * 刷新指定下的所有子节点
@@ -302,16 +314,17 @@ export class DebugHoverTreeModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
-
+  };
 }

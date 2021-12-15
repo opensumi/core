@@ -1,4 +1,3 @@
-
 .scm_tree_node {
   height: 22px;
   line-height: 22px;
@@ -18,7 +17,8 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
-    .expansion_toggle, .scm_tree_node_description  {
+    .expansion_toggle,
+    .scm_tree_node_description {
       color: var(--kt-tree-inactiveSelectionForeground) !important;
     }
   }
@@ -26,10 +26,11 @@
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
-    color: var(--kt-tree-activeSelectionForeground) !important;;
+    color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
-    .expansion_toggle, .scm_tree_node_description {
-      color: var(--kt-tree-activeSelectionForeground) !important;;
+    .expansion_toggle,
+    .scm_tree_node_description {
+      color: var(--kt-tree-activeSelectionForeground) !important;
     }
     .scm_tree_node_display_name {
       .compact_name {
@@ -66,7 +67,7 @@
   }
 
   &_status {
-    opacity: .75;
+    opacity: 0.75;
     text-align: center;
     font-size: 12px;
     padding-right: 0;
@@ -91,7 +92,7 @@
   &_display_name {
     margin-right: 6px;
     display: inline;
-    white-space:pre;
+    white-space: pre;
     .compact_name {
       color: inherit;
       display: inline;
@@ -102,7 +103,7 @@
     }
     .compact_name_separator {
       margin: 0 2px;
-      opacity: .5;
+      opacity: 0.5;
     }
   }
 

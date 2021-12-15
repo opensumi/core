@@ -50,7 +50,7 @@ export namespace MapMap {
   export function keys(map: MapMap<any>): string[] {
     const result: string[] = [];
     if (map) {
-      for (let key in map) {
+      for (const key in map) {
         result.push(key);
       }
     }
@@ -69,11 +69,9 @@ export enum MarkerSeverity {
 }
 
 export namespace MarkerSeverity {
-
   export function compare(a: MarkerSeverity, b: MarkerSeverity): number {
     return b - a;
   }
-
 }
 
 export const enum MarkerTag {
@@ -123,4 +121,3 @@ export interface MarkerStatistics {
   infos: number;
   unknowns: number;
 }
-

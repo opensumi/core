@@ -1,4 +1,1 @@
-
-function installExtensions() {
-  
-}
+function installExtensions() {}

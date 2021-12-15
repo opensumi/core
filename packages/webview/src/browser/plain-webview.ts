@@ -2,7 +2,6 @@ import { IPlainWebview } from './types';
 import { Disposable, DomListener, electronEnv, Emitter, Deferred, Event } from '@opensumi/ide-core-browser';
 
 export class IframePlainWebview extends Disposable implements IPlainWebview {
-
   private _url: string | undefined;
 
   private _iframe: HTMLIFrameElement | null;
@@ -34,14 +33,18 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     this.wrapper.style.position = 'absolute';
     this.wrapper.style.border = 'none';
     this.wrapper.style.zIndex = '2';
-    const disposer = this.addDispose(new DomListener(this.wrapper, 'load', () => {
-      this.addDispose(new DomListener(this.wrapper!.contentWindow!, 'message', (e) => {
-        this._onMessage.fire(e.data);
-      }));
-      this.wrapper!.contentDocument!.body.style.margin = '0';
-      this._ready.resolve();
-      disposer.dispose();
-    }));
+    const disposer = this.addDispose(
+      new DomListener(this.wrapper, 'load', () => {
+        this.addDispose(
+          new DomListener(this.wrapper!.contentWindow!, 'message', (e) => {
+            this._onMessage.fire(e.data);
+          }),
+        );
+        this.wrapper!.contentDocument!.body.style.margin = '0';
+        this._ready.resolve();
+        disposer.dispose();
+      }),
+    );
 
     this.addDispose(this._onMessage);
   }
@@ -52,7 +55,7 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 
   async loadURL(url: string): Promise<void> {
     if (!this.wrapper) {
-      return ;
+      return;
     }
     await this.ready;
     if (!this.wrapper) {
@@ -70,9 +73,11 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     this._iframe.setAttribute('src', url);
     this._onLoadURL.fire(url);
     return new Promise<void>((resolve) => {
-      this.addDispose(new DomListener(this._iframe!, 'load', () => {
-        resolve();
-      }));
+      this.addDispose(
+        new DomListener(this._iframe!, 'load', () => {
+          resolve();
+        }),
+      );
     });
   }
 
@@ -121,11 +126,9 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
       this._onRemove.fire();
     }
   }
-
 }
 
 export class ElectronPlainWebview extends Disposable implements IPlainWebview {
-
   private _url: string | undefined;
 
   // @ts-ignore
@@ -166,7 +169,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   async loadURL(url: string): Promise<void> {
     if (!this.wrapper) {
-      return ;
+      return;
     }
     this._url = url;
     if (!this.webview) {
@@ -183,12 +186,16 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
           this._onMessage.fire(event.args[0]);
         }
       });
-      this.addDispose(new DomListener(this.webview!, 'dom-ready', () => {
-        this.webviewDomReady.resolve();
-      }));
-      this.addDispose(new DomListener(this.webview!, 'destroyed', () => {
-        this.webviewDomReady = new Deferred();
-      }));
+      this.addDispose(
+        new DomListener(this.webview!, 'dom-ready', () => {
+          this.webviewDomReady.resolve();
+        }),
+      );
+      this.addDispose(
+        new DomListener(this.webview!, 'destroyed', () => {
+          this.webviewDomReady = new Deferred();
+        }),
+      );
     }
     this._url = url;
     if (document.body.contains(this.wrapper)) {
@@ -198,13 +205,15 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   private async doLoadURL(): Promise<void> {
     return new Promise<void>(async (resolve) => {
-      await this.webviewDomReady.promise ;
+      await this.webviewDomReady.promise;
       this.webview!.loadURL(this.url!);
-      const disposer = this.addDispose(new DomListener(this.webview!, 'did-finish-load', () => {
-        disposer.dispose();
-        this._onLoadURL.fire(this.url!);
-        resolve();
-      }));
+      const disposer = this.addDispose(
+        new DomListener(this.webview!, 'did-finish-load', () => {
+          disposer.dispose();
+          this._onLoadURL.fire(this.url!);
+          resolve();
+        }),
+      );
     });
   }
 
@@ -234,5 +243,4 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
       this._onRemove.fire();
     }
   }
-
 }

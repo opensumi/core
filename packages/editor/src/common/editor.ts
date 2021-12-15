@@ -2,7 +2,18 @@ import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/
 import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@opensumi/di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition, IThemeColor } from '@opensumi/ide-core-common';
+import {
+  URI,
+  Event,
+  BasicEvent,
+  IDisposable,
+  MaybeNull,
+  IRange,
+  ISelection,
+  ILineChange,
+  IPosition,
+  IThemeColor,
+} from '@opensumi/ide-core-common';
 import { IResource } from './resource';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
 import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
@@ -31,7 +42,6 @@ export enum EditorType {
  * 一个IEditor代表了一个最小的编辑器单元，可以是CodeEditor中的一个，也可以是DiffEditor中的两个
  */
 export interface IEditor {
-
   /**
    * 获得当前编辑器
    */
@@ -70,7 +80,7 @@ export interface IEditor {
 
   getSelections(): ISelection[] | null;
 
-  onSelectionsChanged: Event<{ selections: ISelection[], source: string }>;
+  onSelectionsChanged: Event<{ selections: ISelection[]; source: string }>;
 
   onVisibleRangesChanged: Event<IRange[]>;
 
@@ -115,15 +125,18 @@ export interface ICodeEditor extends IEditor, IDisposable {
   onCursorPositionChanged: Event<CursorStatus>;
 
   onRefOpen: Event<IEditorDocumentModelRef>;
-
 }
 
 /**
  * Diff 编辑器抽象
  */
 export interface IDiffEditor extends IDisposable {
-
-  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options?: IResourceOpenOptions, rawUri?: URI);
+  compare(
+    originalDocModelRef: IEditorDocumentModelRef,
+    modifiedDocModelRef: IEditorDocumentModelRef,
+    options?: IResourceOpenOptions,
+    rawUri?: URI,
+  );
 
   originalEditor: IEditor;
 
@@ -149,7 +162,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): ICodeEditor;
+  public abstract createCodeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): ICodeEditor;
 
   /**
    * 创建一个 monaco diffEditor 实例
@@ -157,7 +170,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): IDiffEditor;
+  public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor;
 
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
@@ -166,21 +179,21 @@ export abstract class EditorCollectionService {
   public abstract onDiffEditorCreate: Event<IDiffEditor>;
 }
 
-export type IOpenResourceResult = { group: IEditorGroup, resource: IResource } | false;
+export type IOpenResourceResult = { group: IEditorGroup; resource: IResource } | false;
 /**
  * 当前显示的Editor列表发生变化时
  */
-export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> { }
+export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> {}
 
 /**
  * 当EditorGroup中打开的uri发生改变时
  */
-export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
+export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> {}
 
 /**
  * 当 Decoration Provider 收集完 monaco decoration option 并设置后
  */
-export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: string; uri: URI }> {  }
+export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: string; uri: URI }> {}
 
 /**
  * 编辑器组
@@ -188,7 +201,6 @@ export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: str
  * 一个 workbenchEditorService 会拥有多个（至少一个）编辑器组，它会在类似 “向右拆分” 这样的功能被使用时创建，在该组tab完全关闭时销毁。
  */
 export interface IEditorGroup {
-
   /**
    * 当前 editorGroup 在 workbenchEditorService.sortedEditorGroups 中的 index
    */
@@ -275,7 +287,6 @@ export interface IEditorGroup {
   saveResource(resource: IResource, reason: SaveReason): Promise<void>;
 }
 export abstract class WorkbenchEditorService {
-
   /**
    * 当前 resource 发生变更
    */
@@ -374,7 +385,6 @@ export interface IUntitledOptions extends IResourceOpenOptions {
 }
 
 export interface IResourceOpenOptions {
-
   /**
    * 跳转到指定的编辑器位置
    */
@@ -585,9 +595,7 @@ export interface UriComponents {
 }
 
 export interface ITextEditorDecorationType extends IDisposable {
-
   key: string;
-
 }
 
 export const enum TrackedRangeStickiness {
@@ -605,13 +613,11 @@ export enum OverviewRulerLane {
 }
 
 export interface IDecorationApplyOptions {
-
   hoverMessage?: IHoverMessage;
 
   range: IRange;
 
   renderOptions?: IDecorationRenderOptions;
-
 }
 export interface IMarkdownString {
   value: string;
@@ -625,7 +631,6 @@ export type IHoverMessage = IMarkdownString | IMarkdownString[] | string;
 
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
-
   type: 'code' | 'diff' | 'component';
 
   componentId?: string;
@@ -652,7 +657,6 @@ export interface IEditorOpenType {
   undo?(resource: IResource);
 
   redo?(resource: IResource);
-
 }
 
 export enum DragOverPosition {
@@ -660,7 +664,7 @@ export enum DragOverPosition {
   RIGHT = 'right',
   TOP = 'top',
   BOTTOM = 'bottom',
-  CENTER= 'center',
+  CENTER = 'center',
 }
 
 export enum EditorGroupSplitAction {
@@ -671,7 +675,6 @@ export enum EditorGroupSplitAction {
 }
 
 export interface IEditorGroupState {
-
   uris: string[];
 
   current?: string;

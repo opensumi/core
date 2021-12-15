@@ -104,13 +104,11 @@ export class RawContextKey<T> implements IRawContextKey<T> {
    * matches regex
    */
   public regexMatches(regexp: RegExp): string {
-    const regexpStr = regexp
-      ? `/${regexp.source}/${regexp.ignoreCase ? 'i' : ''}`
-      : '/invalid/';
+    const regexpStr = regexp ? `/${regexp.source}/${regexp.ignoreCase ? 'i' : ''}` : '/invalid/';
     return this.raw + ' =~ ' + regexpStr;
   }
 
   public evaluate(target: IContextKeyService): boolean {
-    return (!!target.getValue(this.key));
+    return !!target.getValue(this.key);
   }
 }

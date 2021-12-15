@@ -2,10 +2,21 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { URI } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE, CONTEXT_SET_VARIABLE_SUPPORTED } from './../../../common/constants';
+import {
+  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_SET_VARIABLE_SUPPORTED,
+} from './../../../common/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandContribution,
+  CommandRegistry,
+  localize,
+  IQuickInputService,
+  IReporterService,
+} from '@opensumi/ide-core-browser';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -137,7 +148,9 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         id: DEBUG_COMMANDS.ADD_TO_WATCH_ID.id,
         label: localize('deugger.menu.addToWatchExpressions'),
       },
-      when: ContextKeyExpr.and(EditorContextKeys.hasNonEmptySelection, EditorContextKeys.editorTextFocus)?.keys().reduce((p, c) => p + ' && ' + c, CONTEXT_IN_DEBUG_MODE.raw),
+      when: ContextKeyExpr.and(EditorContextKeys.hasNonEmptySelection, EditorContextKeys.editorTextFocus)
+        ?.keys()
+        .reduce((p, c) => p + ' && ' + c, CONTEXT_IN_DEBUG_MODE.raw),
       group: 'debug',
       order: 1,
     });

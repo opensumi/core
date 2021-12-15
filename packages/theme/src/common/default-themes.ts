@@ -1,10 +1,17 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/editor/standalone/common/themes.ts
 
-import { editorActiveIndentGuides, editorIndentGuides, editorBackground, editorForeground, editorInactiveSelection, editorSelectionHighlight } from './color-registry';
+import {
+  editorActiveIndentGuides,
+  editorIndentGuides,
+  editorBackground,
+  editorForeground,
+  editorInactiveSelection,
+  editorSelectionHighlight,
+} from './color-registry';
 import { IStandaloneThemeData } from './theme.service';
 // tslint:disable:variable-name
 /* -------------------------------- Begin vs theme -------------------------------- */

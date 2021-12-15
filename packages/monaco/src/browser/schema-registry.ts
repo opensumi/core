@@ -49,7 +49,6 @@ function normalizeId(id: string) {
 
 @Injectable()
 export class SchemaRegistry implements IJSONSchemaRegistry {
-
   @Autowired(ISchemaStore)
   schemaStore: ISchemaStore;
 
@@ -81,5 +80,4 @@ export class SchemaRegistry implements IJSONSchemaRegistry {
       schemas: this.schemasById,
     };
   }
-
 }

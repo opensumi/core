@@ -1,7 +1,11 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { ExtensionGlobalMemento, ExtensionMemento, ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
+import {
+  ExtensionGlobalMemento,
+  ExtensionMemento,
+  ExtHostStorage,
+} from '../../../../src/hosted/api/vscode/ext.host.storage';
 import { URI, StoragePaths } from '@opensumi/ide-core-common';
 
 const cache = {
@@ -9,9 +13,7 @@ const cache = {
   unShared: {},
 };
 const moackMainThreadStorage = {
-  $getValue: jest.fn(async (shared: boolean, key: string) => {
-    return shared ? cache.shared[key] : cache.unShared[key];
-  }),
+  $getValue: jest.fn(async (shared: boolean, key: string) => (shared ? cache.shared[key] : cache.unShared[key])),
   $setValue: jest.fn(async (shared: boolean, key: string, value: any) => {
     if (shared) {
       cache.shared[key] = value;
@@ -24,9 +26,7 @@ const moackMainThreadStorage = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;

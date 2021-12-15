@@ -4,7 +4,8 @@ import { ReporterService } from '../src/reporter';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('packages/core-common/__tests__/reporter.test.ts', () => {
-  let reporter, reporterService;
+  let reporter;
+  let reporterService;
   beforeEach(() => {
     reporter = {
       performance: jest.fn(),
@@ -35,13 +36,13 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
       await sleep(1000);
       const reporterTimer = reporterService.time('test');
       await sleep(1000);
-      reporterTimer.timeEnd('test')
-    }
+      reporterTimer.timeEnd('test');
+    };
     const func2 = async () => {
       const reporterTimer = reporterService.time('test');
       await sleep(3000);
-      reporterTimer.timeEnd('test')
-    }
+      reporterTimer.timeEnd('test');
+    };
     await Promise.all([func1(), func2()]);
     expect(reporter.performance.mock.calls[0][0]).toBe('test');
     expect(reporter.performance.mock.calls[1][0]).toBe('test');

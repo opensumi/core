@@ -1,4 +1,27 @@
-import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  IApplicationService,
+  URI,
+  ClientAppContribution,
+  localize,
+  CommandContribution,
+  KeybindingContribution,
+  TabBarToolbarContribution,
+  FILE_COMMANDS,
+  CommandRegistry,
+  CommandService,
+  SEARCH_COMMANDS,
+  IElectronNativeDialogService,
+  ToolbarRegistry,
+  KeybindingRegistry,
+  IWindowService,
+  IClipboardService,
+  PreferenceService,
+  formatLocalize,
+  OS,
+  isElectronRenderer,
+  WORKSPACE_COMMANDS,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { FileTreeService } from './file-tree.service';
@@ -8,22 +31,44 @@ import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } 
 import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { MenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  MenuContribution,
+  IMenuRegistry,
+  MenuId,
+  ExplorerContextCallback,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory } from '../common/file-tree-node.define';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
-import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
+import {
+  FilesExplorerFocusedContext,
+  FilesExplorerInputFocusedContext,
+} from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import { IFileTreeService, PasteTypes } from '../common';
 import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
-@Domain(MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
-export class FileTreeContribution implements MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
-
+@Domain(
+  MenuContribution,
+  CommandContribution,
+  KeybindingContribution,
+  TabBarToolbarContribution,
+  ClientAppContribution,
+  MainLayoutContribution,
+)
+export class FileTreeContribution
+  implements
+    MenuContribution,
+    CommandContribution,
+    KeybindingContribution,
+    TabBarToolbarContribution,
+    ClientAppContribution,
+    MainLayoutContribution
+{
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -86,14 +131,17 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       order: 1,
     });
     await this.fileTreeService.init();
-    this.mainLayoutService.collectViewComponent({
-      id: ExplorerResourceViewId,
-      name: this.getWorkspaceTitle(),
-      weight: 3,
-      priority: 9,
-      collapsed: false,
-      component: FileTree,
-    }, ExplorerContainerId);
+    this.mainLayoutService.collectViewComponent(
+      {
+        id: ExplorerResourceViewId,
+        name: this.getWorkspaceTitle(),
+        weight: 3,
+        priority: 9,
+        collapsed: false,
+        component: FileTree,
+      },
+      ExplorerContainerId,
+    );
     // 监听工作区变化更新标题
     this.workspaceService.onWorkspaceLocationChanged(() => {
       const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
@@ -128,8 +176,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     if (workspace) {
       const uri = new URI(workspace.uri);
       resourceTitle = uri.displayName;
-      if (!workspace.isDirectory &&
-        (resourceTitle.endsWith(`.${this.workspaceSuffixName}`))) {
+      if (!workspace.isDirectory && resourceTitle.endsWith(`.${this.workspaceSuffixName}`)) {
         resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
         if (resourceTitle === UNTITLED_WORKSPACE) {
           return localize('file.workspace.defaultTip');
@@ -337,9 +384,8 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         }
         this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath! });
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile);
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile),
     });
 
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
@@ -391,9 +437,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         }
         this.fileTreeModelService.deleteFileByUris(uris);
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile;
-      },
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
@@ -409,9 +453,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         }
         this.fileTreeModelService.renamePrompt(uri);
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile;
-      },
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
@@ -473,27 +515,24 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
         }
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile);
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_RESOURCES, {
       execute: (uri) => {
         this.fileTreeService.openAndFixedFile(uri);
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile);
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
       execute: (uri) => {
         this.fileTreeService.openToTheSide(uri);
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile);
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
@@ -501,14 +540,12 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
-        if (await this.appService.backendOS === OS.Type.Windows) {
+        if ((await this.appService.backendOS) === OS.Type.Windows) {
           pathStr = pathStr.slice(1);
         }
         await this.clipboardService.writeText(pathStr);
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile;
-      },
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
@@ -535,9 +572,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
         }
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile;
-      },
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
@@ -551,9 +586,8 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
         }
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0;
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
@@ -567,9 +601,8 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
         }
       },
-      isVisible: () => {
-        return !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0;
-      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
@@ -586,13 +619,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           this.fileTreeModelService.pasteFile(uri);
         }
       },
-      isVisible: () => {
-        return (!!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile)) ||
-          (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile));
-      },
-      isEnabled: () => {
-        return this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE;
-      },
+      isVisible: () =>
+        (!!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile)) ||
+        (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile)),
+      isEnabled: () =>
+        this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
     });
 
     if (isElectronRenderer()) {
@@ -618,16 +649,16 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         execute: (options: { newWindow: boolean }) => {
           const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
           const windowService: IWindowService = this.injector.get(IWindowService);
-          dialogService.showOpenDialog({
-            title: localize('workspace.openDirectory'),
-            properties: [
-              'openDirectory',
-            ],
-          }).then((paths) => {
-            if (paths && paths.length > 0) {
-              windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
-            }
-          });
+          dialogService
+            .showOpenDialog({
+              title: localize('workspace.openDirectory'),
+              properties: ['openDirectory'],
+            })
+            .then((paths) => {
+              if (paths && paths.length > 0) {
+                windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+              }
+            });
         },
       });
 
@@ -639,20 +670,22 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
           const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
           const windowService: IWindowService = this.injector.get(IWindowService);
-          dialogService.showOpenDialog({
-            title: localize('workspace.openWorkspace'),
-            properties: [
-              'openFile',
-            ],
-            filters: [{
-              name: localize('workspace.openWorkspaceTitle'),
-              extensions: [this.workspaceSuffixName],
-            }],
-          }).then((paths) => {
-            if (paths && paths.length > 0) {
-              windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
-            }
-          });
+          dialogService
+            .showOpenDialog({
+              title: localize('workspace.openWorkspace'),
+              properties: ['openFile'],
+              filters: [
+                {
+                  name: localize('workspace.openWorkspaceTitle'),
+                  extensions: [this.workspaceSuffixName],
+                },
+              ],
+            })
+            .then((paths) => {
+              if (paths && paths.length > 0) {
+                windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+              }
+            });
         },
       });
     }
@@ -686,23 +719,17 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
     // open file
     commands.registerCommand(FILE_COMMANDS.OPEN_FILE, {
-      execute: (options: IOpenDialogOptions) => {
-        return this.windowDialogService.showOpenDialog(options);
-      },
+      execute: (options: IOpenDialogOptions) => this.windowDialogService.showOpenDialog(options),
     });
 
     // save file
     commands.registerCommand(FILE_COMMANDS.SAVE_FILE, {
-      execute: (options: ISaveDialogOptions) => {
-        return this.windowDialogService.showSaveDialog(options);
-      },
+      execute: (options: ISaveDialogOptions) => this.windowDialogService.showSaveDialog(options),
     });
 
     // filter in filetree
     commands.registerCommand(FILE_COMMANDS.FILTER_TOGGLE, {
-      execute: () => {
-        return this.fileTreeService.toggleFilterMode();
-      },
+      execute: () => this.fileTreeService.toggleFilterMode(),
     });
 
     commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
@@ -748,24 +775,24 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
       execute: async (_: URI, uris: URI[]) => {
         if (!uris.length || !this.workspaceService.isMultiRootWorkspaceOpened) {
-          return ;
+          return;
         }
         const roots = await this.workspaceService.roots;
-        const workspaceUris = uris.filter((uri) => {
-          return roots.find((file) => file.uri === uri.toString());
-        });
+        const workspaceUris = uris.filter((uri) => roots.find((file) => file.uri === uri.toString()));
         if (workspaceUris.length > 0) {
           await this.workspaceService.removeRoots(workspaceUris);
         }
       },
-      isVisible: () => {
-        return this.workspaceService.isMultiRootWorkspaceOpened && !!this.fileTreeModelService.contextMenuFile && !!this.workspaceService.tryGetRoots().find((wp) => wp.uri === this.fileTreeModelService.contextMenuFile?.uri.toString());
-      },
+      isVisible: () =>
+        this.workspaceService.isMultiRootWorkspaceOpened &&
+        !!this.fileTreeModelService.contextMenuFile &&
+        !!this.workspaceService
+          .tryGetRoots()
+          .find((wp) => wp.uri === this.fileTreeModelService.contextMenuFile?.uri.toString()),
     });
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
-
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
@@ -891,5 +918,4 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       order: 5,
     });
   }
-
 }

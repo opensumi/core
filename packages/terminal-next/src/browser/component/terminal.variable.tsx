@@ -1,6 +1,10 @@
 import React from 'react';
 import { localize } from '@opensumi/ide-core-common';
-import { IExtensionOwnedEnvironmentVariableMutator, IMergedEnvironmentVariableCollectionDiff, mutatorTypeLabel } from '../../common/environmentVariable';
+import {
+  IExtensionOwnedEnvironmentVariableMutator,
+  IMergedEnvironmentVariableCollectionDiff,
+  mutatorTypeLabel,
+} from '../../common/environmentVariable';
 
 import styles from './variable.module.less';
 
@@ -14,9 +18,7 @@ function mergeChanges(
 ): void {
   source.forEach((mutators, variable) => {
     mutators.forEach((mutator) => {
-      target.add(
-        mutatorTypeLabel(mutator.type, mutator.value, variable),
-      );
+      target.add(mutatorTypeLabel(mutator.type, mutator.value, variable));
     });
   });
 }
@@ -46,22 +48,26 @@ export const TerminalVariable = ({ diff }: ITerminalVariableProps) => {
 
   return (
     <div className={styles.variable_container}>
-      {addsAndChanges.length > 0 && <>
-        <h3>{localize('terminal.environment.changes')}</h3>
-        {addsAndChanges.map((c, idx) => (
-          <p key={c + idx} className={styles.variable_change}>
-            {c}
-          </p>
-        ))}
-      </>}
-      {removals.length > 0 && <>
-        <h3>{localize('terminal.environment.removal')}</h3>
-        {removals.map((c, idx) => (
-          <p key={c + idx} className={styles.variable_change}>
-            {c}
-          </p>
-        ))}
-      </>}
+      {addsAndChanges.length > 0 && (
+        <>
+          <h3>{localize('terminal.environment.changes')}</h3>
+          {addsAndChanges.map((c, idx) => (
+            <p key={c + idx} className={styles.variable_change}>
+              {c}
+            </p>
+          ))}
+        </>
+      )}
+      {removals.length > 0 && (
+        <>
+          <h3>{localize('terminal.environment.removal')}</h3>
+          {removals.map((c, idx) => (
+            <p key={c + idx} className={styles.variable_change}>
+              {c}
+            </p>
+          ))}
+        </>
+      )}
     </div>
   );
 };

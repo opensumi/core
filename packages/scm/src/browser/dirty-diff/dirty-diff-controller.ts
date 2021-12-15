@@ -5,7 +5,6 @@ import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/
 import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 
 export class DirtyDiffController extends Disposable {
-
   private static readonly ID = 'editor.contrib.dirtydiff';
 
   static get(editor: IMonacoCodeEditor): DirtyDiffController {

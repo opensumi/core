@@ -1,6 +1,12 @@
 import {
-  MenuItemNode, SubmenuItemNode, SeparatorMenuItemNode,
-  TupleMenuNodeResult, IMenu, IMenuSeparator, IMenuConfig, ComponentMenuItemNode,
+  MenuItemNode,
+  SubmenuItemNode,
+  SeparatorMenuItemNode,
+  TupleMenuNodeResult,
+  IMenu,
+  IMenuSeparator,
+  IMenuConfig,
+  ComponentMenuItemNode,
 } from './menu.interface';
 
 export const isPrimaryGroup = (group: string) => group === 'navigation';
@@ -14,9 +20,9 @@ export function splitMenuItems(
   groups: Array<[string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]>,
   separator: IMenuSeparator = 'navigation',
 ): TupleMenuNodeResult {
-  const result: TupleMenuNodeResult = [ [], [] ];
+  const result: TupleMenuNodeResult = [[], []];
   for (const tuple of groups) {
-    const [ groupIdentity, menuNodes ] = tuple;
+    const [groupIdentity, menuNodes] = tuple;
 
     const splitFn = separator === 'inline' ? isInlineGroup : isPrimaryGroup;
 
@@ -38,8 +44,8 @@ interface IExtendMenuConfig extends IMenuConfig {
 }
 
 export function mergeTupleMenuNodeResult(payload: TupleMenuNodeResult) {
-  const [ primary, secondary ] = payload;
-  const result = [ ...primary ];
+  const [primary, secondary] = payload;
+  const result = [...primary];
   if (result.length > 0 && secondary.length > 0) {
     result.push(new SeparatorMenuItemNode());
   }

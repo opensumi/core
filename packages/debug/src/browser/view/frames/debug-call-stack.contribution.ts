@@ -3,14 +3,20 @@ import { DebugStackFrame } from './../../model/debug-stack-frame';
 import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugSessionManager } from './../../debug-session-manager';
 import { CallStackContext } from './../../../common/types';
-import { CONTEXT_CALLSTACK_ITEM_TYPE, CONTEXT_RESTART_FRAME_SUPPORTED, CONTEXT_STACK_FRAME_SUPPORTS_RESTART } from './../../../common/constants';
+import {
+  CONTEXT_CALLSTACK_ITEM_TYPE,
+  CONTEXT_RESTART_FRAME_SUPPORTED,
+  CONTEXT_STACK_FRAME_SUPPORTS_RESTART,
+} from './../../../common/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Autowired } from '@opensumi/di';
 import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 
 function isStackFrameContext(obj: any): obj is CallStackContext {
-  return obj && typeof obj.sessionId === 'string' && typeof obj.threadId === 'string' && typeof obj.frameId === 'string';
+  return (
+    obj && typeof obj.sessionId === 'string' && typeof obj.threadId === 'string' && typeof obj.frameId === 'string'
+  );
 }
 
 function getFrame(debugService: DebugSessionManager, context: CallStackContext | unknown): DebugStackFrame | undefined {
@@ -29,7 +35,6 @@ function getFrame(debugService: DebugSessionManager, context: CallStackContext |
 
 @Domain(MenuContribution, CommandContribution)
 export class DebugCallStackContribution implements MenuContribution, CommandContribution {
-
   @Autowired(IDebugSessionManager)
   protected readonly debugSessionManager: DebugSessionManager;
 
@@ -49,9 +54,10 @@ export class DebugCallStackContribution implements MenuContribution, CommandCont
       execute: async (_: string, context: CallStackContext) => {
         const frame = getFrame(this.debugSessionManager, context);
         if (frame) {
-          const callStacks = frame.thread.frames.map((e: DebugStackFrame) => {
-            return `${e.raw && e.raw.name} (${e.raw && e.raw.source && e.raw.source.path}:${e.raw && e.raw.line})`;
-          });
+          const callStacks = frame.thread.frames.map(
+            (e: DebugStackFrame) =>
+              `${e.raw && e.raw.name} (${e.raw && e.raw.source && e.raw.source.path}:${e.raw && e.raw.line})`,
+          );
           this.clipboardService.writeText(callStacks.join('\n'));
         }
       },

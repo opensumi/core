@@ -12,21 +12,24 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
   private readonly commandService: CommandService;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand({
-      id: 'gitCommitAndPush',
-    }, {
-      execute: async (provider: ISCMProvider) => {
-        // 强依赖了 git 插件的命令
-        const mergeChanges = provider.groups.elements.filter((n) => n.id === 'merge');
-        if (mergeChanges.length > 0) {
-          // console.log('有冲突尚未解决，请先解决');
-          return;
-        }
-        await this.commandService.executeCommand('git.stageAll', provider);
-        await this.commandService.executeCommand('git.commit', provider);
-        await this.commandService.executeCommand('git.push', provider);
+    commands.registerCommand(
+      {
+        id: 'gitCommitAndPush',
       },
-    });
+      {
+        execute: async (provider: ISCMProvider) => {
+          // 强依赖了 git 插件的命令
+          const mergeChanges = provider.groups.elements.filter((n) => n.id === 'merge');
+          if (mergeChanges.length > 0) {
+            // console.log('有冲突尚未解决，请先解决');
+            return;
+          }
+          await this.commandService.executeCommand('git.stageAll', provider);
+          await this.commandService.executeCommand('git.commit', provider);
+          await this.commandService.executeCommand('git.push', provider);
+        },
+      },
+    );
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
@@ -72,20 +75,24 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
       submenu: testSubContextMenuId,
     });
 
-    menuRegistry.registerMenuItems(testSubContextMenuId, [{
-      command: FILE_COMMANDS.NEW_FILE.id,
-      group: '1_new',
-    }]);
+    menuRegistry.registerMenuItems(testSubContextMenuId, [
+      {
+        command: FILE_COMMANDS.NEW_FILE.id,
+        group: '1_new',
+      },
+    ]);
 
     menuRegistry.registerMenuItem(testSubContextMenuId, {
       label: 'sumi sub_submenu',
       submenu: 'sub_submenu',
     });
 
-    menuRegistry.registerMenuItems(testSubContextMenuId, [{
-      command: FILE_COMMANDS.NEW_FOLDER.id,
-      group: '1_new',
-    }]);
+    menuRegistry.registerMenuItems(testSubContextMenuId, [
+      {
+        command: FILE_COMMANDS.NEW_FOLDER.id,
+        group: '1_new',
+      },
+    ]);
 
     menuRegistry.registerMenuItem('sub_submenu', {
       command: COMMON_COMMANDS.ABOUT_COMMAND.id,

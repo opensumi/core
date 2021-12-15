@@ -21,9 +21,10 @@ export function App(props: AppProps) {
   const injector = props.app.injector;
   const eventBus: IEventBus = injector.get(IEventBus);
   const labelService: LabelService = injector.get(LabelService);
-  const getResourceIcon = React.useCallback((uri: string, options: IIconResourceOptions) => {
-    return labelService.getIcon(URI.parse(uri), options);
-  }, []);
+  const getResourceIcon = React.useCallback(
+    (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
+    [],
+  );
   React.useEffect(() => {
     let lastFrame: number | null;
     const handle = () => {
@@ -33,16 +34,18 @@ export function App(props: AppProps) {
       lastFrame = window.requestAnimationFrame(() => {
         lastFrame = null;
         allSlot.forEach((item) => {
-          eventBus.fire(new ResizeEvent({slotLocation: item.slot}));
+          eventBus.fire(new ResizeEvent({ slotLocation: item.slot }));
         });
       });
     };
     window.addEventListener('resize', handle);
-    return () => { window.removeEventListener('resize', handle); };
+    return () => {
+      window.removeEventListener('resize', handle);
+    };
   }, []);
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
-      <ConfigProvider value={ props.app.config }>
+      <ConfigProvider value={props.app.config}>
         {<props.main />}
         {props.overlays && props.overlays.map((Component, index) => <Component key={index} />)}
       </ConfigProvider>
@@ -52,9 +55,10 @@ export function App(props: AppProps) {
 
 export type IAppRenderer = (app: React.ReactElement) => Promise<void>;
 
-const defaultAppRender = (dom: HTMLElement, onDidRendered?: () => void): IAppRenderer => {
-  return (app) => {
-    return new Promise((resolve) => {
+const defaultAppRender =
+  (dom: HTMLElement, onDidRendered?: () => void): IAppRenderer =>
+  (app) =>
+    new Promise((resolve) => {
       ReactDom.render(app, dom, () => {
         if (onDidRendered && typeof onDidRendered === 'function') {
           onDidRendered();
@@ -62,24 +66,22 @@ const defaultAppRender = (dom: HTMLElement, onDidRendered?: () => void): IAppRen
         resolve();
       });
     });
-  };
-};
 
 export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {
   const Layout = app.config.layoutComponent || DefaultLayout;
-  const overlayComponents = app.browserModules.filter((module) => module.isOverlay).map((module) => {
-    if (!module.component) {
-      getDebugLogger().warn('检测到空的overlay模块', module);
-      return () => <></>;
-    }
-    return module.component;
-  });
+  const overlayComponents = app.browserModules
+    .filter((module) => module.isOverlay)
+    .map((module) => {
+      if (!module.component) {
+        getDebugLogger().warn('检测到空的overlay模块', module);
+        return () => <></>;
+      }
+      return module.component;
+    });
 
   const IdeApp = <App app={app} main={Layout} overlays={overlayComponents} />;
 
-  const render = typeof container === 'function'
-    ? container
-    : defaultAppRender(container, app.config.didRendered);
+  const render = typeof container === 'function' ? container : defaultAppRender(container, app.config.didRendered);
 
   return render(IdeApp);
 }

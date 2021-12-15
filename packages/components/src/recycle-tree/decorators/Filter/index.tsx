@@ -13,9 +13,7 @@ const TREE_FILTER_DELAY = 500;
 
 type FilterHoc<Props, ExtraProps = any> = (
   Component: React.ComponentType<Props>,
-) => React.ComponentType<
-  Props & (ExtraProps extends undefined ? never : ExtraProps)
->;
+) => React.ComponentType<Props & (ExtraProps extends undefined ? never : ExtraProps)>;
 
 const FilterInput: React.FC<IInputBaseProps> = (props) => {
   const { localize } = React.useContext(LocalizeContext);
@@ -29,12 +27,13 @@ const FilterInput: React.FC<IInputBaseProps> = (props) => {
         size='small'
         {...props}
         placeholder={props.placeholder || localize('tree.filter.placeholder')}
-        addonBefore={<Icon className='kt-recycle-tree-filter-icon' icon='retrieval' />} />
+        addonBefore={<Icon className='kt-recycle-tree-filter-icon' icon='retrieval' />}
+      />
     </div>
   );
 };
 
-export interface IRecycleTreeFilterHandle  extends IRecycleTreeHandle {
+export interface IRecycleTreeFilterHandle extends IRecycleTreeHandle {
   clearFilter: () => void;
 }
 
@@ -50,12 +49,12 @@ export interface IRecycleTreeFilterHandle  extends IRecycleTreeHandle {
 export const RecycleTreeFilterDecorator: FilterHoc<
   IRecycleTreeProps,
   {
-    filterEnabled?: boolean,
+    filterEnabled?: boolean;
     // 用于在filter变化前进行额外处理，例如展开所有目录
     beforeFilterValueChange?: (value: string) => Promise<void>;
-    filterAfterClear?: IInputBaseProps['afterClear'],
-    filterPlaceholder?: IInputBaseProps['placeholder'],
-    filterAutoFocus?: IInputBaseProps['autoFocus'],
+    filterAfterClear?: IInputBaseProps['afterClear'];
+    filterPlaceholder?: IInputBaseProps['placeholder'];
+    filterAutoFocus?: IInputBaseProps['autoFocus'];
   }
 > = (recycleTreeComp) => (props) => {
   const [value, setValue] = React.useState<string>('');
@@ -63,9 +62,14 @@ export const RecycleTreeFilterDecorator: FilterHoc<
   const [filter, setFilter] = React.useState<string>('');
 
   const {
-    beforeFilterValueChange, filterEnabled, height,
-    filterPlaceholder, filterAfterClear, onReady,
-    filterAutoFocus, ...recycleTreeProps
+    beforeFilterValueChange,
+    filterEnabled,
+    height,
+    filterPlaceholder,
+    filterAfterClear,
+    onReady,
+    filterAutoFocus,
+    ...recycleTreeProps
   } = props;
 
   const handleFilterChange = throttle(async (value: string) => {
@@ -81,27 +85,27 @@ export const RecycleTreeFilterDecorator: FilterHoc<
   };
 
   const filterTreeReadyHandle = (api: IRecycleTreeHandle) => {
-    onReady && onReady({
-      ...api,
-      clearFilter: () => {
-        setFilter('');
-        setValue('');
-      },
-    } as IRecycleTreeFilterHandle);
+    onReady &&
+      onReady({
+        ...api,
+        clearFilter: () => {
+          setFilter('');
+          setValue('');
+        },
+      } as IRecycleTreeFilterHandle);
   };
 
   return (
     <>
-      {
-        filterEnabled && (
-          <FilterInput
-            afterClear={filterAfterClear}
-            placeholder={filterPlaceholder}
-            value={value}
-            autoFocus={filterAutoFocus}
-            onValueChange={handleFilterInputChange} />
-        )
-      }
+      {filterEnabled && (
+        <FilterInput
+          afterClear={filterAfterClear}
+          placeholder={filterPlaceholder}
+          value={value}
+          autoFocus={filterAutoFocus}
+          onValueChange={handleFilterInputChange}
+        />
+      )}
       {React.createElement(recycleTreeComp, {
         ...recycleTreeProps,
         height: height - (filterEnabled ? FILTER_AREA_HEIGHT : 0),

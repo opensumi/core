@@ -52,12 +52,11 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
   private async filterAvailablePaths(paths: string[]) {
     try {
       const promises: Promise<FileStat | undefined>[] = [];
-      paths.map((absolute) => promises
-        .push(this._fileService.getFileStat(URI.file(absolute).toString())));
+      paths.map((absolute) => promises.push(this._fileService.getFileStat(URI.file(absolute).toString())));
       const stats = await Promise.all(promises);
       return stats
-        .filter((s) => !!s && !s.isDirectory && (new URI(s!.uri).scheme === 'file'))
-        .map((s) => (new URI(s!.uri)).codeUri.fsPath);
+        .filter((s) => !!s && !s.isDirectory && new URI(s!.uri).scheme === 'file')
+        .map((s) => new URI(s!.uri).codeUri.fsPath);
     } catch {
       return [];
     }
@@ -90,14 +89,19 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
 
     for (const path of uriInfo.paths) {
       const fileUri = URI.file(path);
-      this._editorService.open(fileUri, uriInfo.row && uriInfo.col ? {
-        range: {
-          startLineNumber: uriInfo.row,
-          endLineNumber: uriInfo.row,
-          startColumn: uriInfo.col,
-          endColumn: uriInfo.col,
-        },
-      } : {});
+      this._editorService.open(
+        fileUri,
+        uriInfo.row && uriInfo.col
+          ? {
+              range: {
+                startLineNumber: uriInfo.row,
+                endLineNumber: uriInfo.row,
+                startColumn: uriInfo.col,
+                endColumn: uriInfo.col,
+              },
+            }
+          : {},
+      );
       break;
     }
   }
@@ -149,9 +153,11 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
         }),
       );
       if (connection.onExit) {
-        this._disposeConnection.addDispose(connection.onExit((code) => {
-          this._onExit.fire(code);
-        }));
+        this._disposeConnection.addDispose(
+          connection.onExit((code) => {
+            this._onExit.fire(code);
+          }),
+        );
       }
     }
   }

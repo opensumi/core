@@ -45,8 +45,8 @@ export class ExtensionConnection implements Connection {
   constructor(
     readonly reader: ExtensionMessageReader,
     readonly writer: ExtensionMessageWriter,
-    readonly dispose: () => void) {
-  }
+    readonly dispose: () => void,
+  ) {}
 
   forward(to: Connection, map: (message: Message) => Message = (message) => message): void {
     this.reader.listen((input) => {
@@ -60,7 +60,7 @@ export class ExtensionConnection implements Connection {
 export const IMainThreadConnectionService = Symbol('MainThreadConnectionService');
 
 export class ExtensionWSChannel implements IWebSocket {
-  constructor(protected readonly connection: ExtensionConnection) { }
+  constructor(protected readonly connection: ExtensionConnection) {}
 
   send(content: string): void {
     this.connection.writer.write(content);

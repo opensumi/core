@@ -3,11 +3,10 @@ import antdMessage from './message';
 import './style.less';
 
 function generateSnackbar(funName: string) {
-  return (content: string | React.ReactNode, duration?: number): Promise<void> => {
-    return new Promise((resolve) => {
+  return (content: string | React.ReactNode, duration?: number): Promise<void> =>
+    new Promise((resolve) => {
       antdMessage[funName](content, duration, resolve);
     });
-  };
 }
 
 export const message = {

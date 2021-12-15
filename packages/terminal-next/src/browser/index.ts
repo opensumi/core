@@ -18,9 +18,7 @@ import {
   ITerminalRenderProvider,
   ITerminalNetwork,
 } from '../common';
-import {
-  ITerminalPreference,
-} from '../common/preference';
+import { ITerminalPreference } from '../common/preference';
 import {
   TerminalCommandContribution,
   TerminalMenuContribution,
@@ -99,9 +97,8 @@ export class TerminalNextModule extends BrowserModule {
     },
     {
       token: ITerminalClientFactory,
-      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) => {
-        return TerminalClientFactory.createClient(injector, widget, options);
-      },
+      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) =>
+        TerminalClientFactory.createClient(injector, widget, options),
     },
     {
       token: ITerminalNetwork,

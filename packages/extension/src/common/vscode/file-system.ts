@@ -10,7 +10,6 @@ import { IWorkspaceEditDto } from './model.api';
  * Enumeration of file change types.
  */
 export enum FileChangeType {
-
   /**
    * The contents or metadata of a file have changed.
    */
@@ -31,7 +30,6 @@ export enum FileChangeType {
  * The event filesystem providers must use to signal a file change.
  */
 export interface FileChangeEvent {
-
   /**
    * The type of change.
    */
@@ -100,7 +98,6 @@ export interface FileOverwriteOptions {
 }
 
 export interface FileReadStreamOptions {
-
   /**
    * Is an integer specifying where to begin reading from in the file. If position is undefined,
    * data will be read from the current file position.
@@ -152,7 +149,7 @@ export enum FileSystemProviderErrorCode {
 }
 
 export function markAsFileSystemProviderError(error: Error, code: FileSystemProviderErrorCode): Error {
-  error.name = code ? `${code} (FileSystemError)` : `FileSystemError`;
+  error.name = code ? `${code} (FileSystemError)` : 'FileSystemError';
   return error;
 }
 
@@ -164,7 +161,6 @@ export function markAsFileSystemProviderError(error: Error, code: FileSystemProv
  */
 @es5ClassCompat
 export class FileSystemError extends Error {
-
   static FileExists(messageOrUri?: string | URI): FileSystemError {
     return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileExists, FileSystemError.FileExists);
   }
@@ -172,10 +168,18 @@ export class FileSystemError extends Error {
     return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotFound, FileSystemError.FileNotFound);
   }
   static FileNotADirectory(messageOrUri?: string | URI): FileSystemError {
-    return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotADirectory, FileSystemError.FileNotADirectory);
+    return new FileSystemError(
+      messageOrUri,
+      FileSystemProviderErrorCode.FileNotADirectory,
+      FileSystemError.FileNotADirectory,
+    );
   }
   static FileIsADirectory(messageOrUri?: string | URI): FileSystemError {
-    return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileIsADirectory, FileSystemError.FileIsADirectory);
+    return new FileSystemError(
+      messageOrUri,
+      FileSystemProviderErrorCode.FileIsADirectory,
+      FileSystemError.FileIsADirectory,
+    );
   }
   static NoPermissions(messageOrUri?: string | URI): FileSystemError {
     return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.NoPermissions, FileSystemError.NoPermissions);
@@ -187,7 +191,11 @@ export class FileSystemError extends Error {
   readonly code: string;
 
   // tslint:disable-next-line:ban-types
-  constructor(uriOrMessage?: string | URI, code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown, terminator?: Function) {
+  constructor(
+    uriOrMessage?: string | URI,
+    code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown,
+    terminator?: Function,
+  ) {
     super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);
     this.code = terminator?.name ?? 'Unknown';
     // mark the error as file system provider error so that
@@ -220,7 +228,6 @@ export class FileSystemError extends Error {
  * folders, symbolic links, and regular files.
  */
 export interface FileSystemProvider {
-
   /**
    * An event to signal that a resource has been created, changed, or deleted. This
    * event should fire for resources that are being [watched](#FileSystemProvider.watch)
@@ -293,7 +300,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void>;
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }): void | Thenable<void>;
 
   /**
    * Delete a file.
@@ -373,7 +380,12 @@ export interface FileSystemEvents {
 
 export interface IExtHostFileSystemEvent {
   $onFileEvent(events: FileSystemEvents): void;
-  $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined>;
+  $onWillRunFileOperation(
+    operation: FileOperation,
+    files: SourceTargetPair[],
+    timeout: number,
+    token: CancellationToken,
+  ): Promise<IWillRunFileOperationParticipation | undefined>;
   $onDidRunFileOperation(operation: FileOperation, files: SourceTargetPair[]): void;
 }
 

@@ -1,4 +1,12 @@
-import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution, STORAGE_SCHEMA, AppConfig } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  StorageResolverContribution,
+  URI,
+  IStorage,
+  ClientAppContribution,
+  STORAGE_SCHEMA,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
 import { Storage } from './storage';
 import { IStorageServer, IWorkspaceStorageServer, IGlobalStorageServer } from '../common';
@@ -6,7 +14,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 @Domain(StorageResolverContribution, ClientAppContribution)
 export class DatabaseStorageContribution implements StorageResolverContribution, ClientAppContribution {
-
   @Autowired(IWorkspaceStorageServer)
   private workspaceStorage: IStorageServer;
 

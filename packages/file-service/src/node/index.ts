@@ -1,6 +1,14 @@
 import { NodeModule } from '@opensumi/ide-core-node';
 import { Injectable, Injector } from '@opensumi/di';
-import { IFileService, IDiskFileProvider, ShadowFileServicePath, FileServicePath, IShadowFileProvider, FileSystemProvider, DiskFileServicePath } from '../common';
+import {
+  IFileService,
+  IDiskFileProvider,
+  ShadowFileServicePath,
+  FileServicePath,
+  IShadowFileProvider,
+  FileSystemProvider,
+  DiskFileServicePath,
+} from '../common';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';
 
@@ -19,10 +27,9 @@ export function getFileservice(injector: Injector, providerToken: string | symbo
 
 @Injectable()
 export class FileServiceModule extends NodeModule {
-
   providers = [
-    { token: IFileService, useFactory: (injector: Injector) => getSafeFileservice(injector)},
-    { token: IDiskFileProvider, useFactory: (injector: Injector) => getFileservice(injector, DiskFileSystemProvider)},
+    { token: IFileService, useFactory: (injector: Injector) => getSafeFileservice(injector) },
+    { token: IDiskFileProvider, useFactory: (injector: Injector) => getFileservice(injector, DiskFileSystemProvider) },
   ];
 
   backServices = [

@@ -6,7 +6,7 @@ import { IDocPersistentCacheProvider, IDocStatus } from '../../common/doc-cache'
  * 一个空的，什么都不做的缓存对象，提供一个空的缓存对象实现
  */
 @Injectable()
-export class EmptyDocCacheImpl implements IDocPersistentCacheProvider  {
+export class EmptyDocCacheImpl implements IDocPersistentCacheProvider {
   hasCache(_uri: URI) {
     return false;
   }

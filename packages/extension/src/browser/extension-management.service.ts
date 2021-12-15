@@ -2,7 +2,14 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { getPreferenceLanguageId } from '@opensumi/ide-core-browser';
 import { ILogger, WithEventBus } from '@opensumi/ide-core-common';
 
-import { AbstractExtensionManagementService, ChangeExtensionOptions, ExtensionNodeServiceServerPath, IExtensionNodeClientService, IExtensionProps, IExtraMetaData } from '../common';
+import {
+  AbstractExtensionManagementService,
+  ChangeExtensionOptions,
+  ExtensionNodeServiceServerPath,
+  IExtensionNodeClientService,
+  IExtensionProps,
+  IExtraMetaData,
+} from '../common';
 import { Extension } from './extension';
 import { AbstractExtInstanceManagementService, ExtensionDidEnabledEvent, ExtensionDidUninstalledEvent } from './types';
 
@@ -23,8 +30,15 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   /**
    * 通过 extensionPath 获取插件实例序列化数据及从 node 层获取的 extraMetadata
    */
-  public async getExtensionProps(extensionPath: string, extraMetaData?: IExtraMetaData): Promise<IExtensionProps | undefined> {
-    const extensionMetaData = await this.extensionNodeClient.getExtension(extensionPath, getPreferenceLanguageId(), extraMetaData);
+  public async getExtensionProps(
+    extensionPath: string,
+    extraMetaData?: IExtraMetaData,
+  ): Promise<IExtensionProps | undefined> {
+    const extensionMetaData = await this.extensionNodeClient.getExtension(
+      extensionPath,
+      getPreferenceLanguageId(),
+      extraMetaData,
+    );
     if (extensionMetaData) {
       const extension = this.getExtensionByPath(extensionPath);
       if (extension) {
@@ -55,15 +69,19 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
    */
   public async postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string): Promise<void>;
-  public async postChangedExtension(_upgrade: boolean | ChangeExtensionOptions, path?: string, _oldExtensionPath?: string) {
+  public async postChangedExtension(
+    _upgrade: boolean | ChangeExtensionOptions,
+    path?: string,
+    _oldExtensionPath?: string,
+  ) {
     const { upgrade, extensionPath, oldExtensionPath, isBuiltin } =
       typeof _upgrade === 'boolean'
         ? {
-          upgrade: _upgrade,
-          extensionPath: path!,
-          oldExtensionPath: _oldExtensionPath,
-          isBuiltin: false,
-        }
+            upgrade: _upgrade,
+            extensionPath: path!,
+            oldExtensionPath: _oldExtensionPath,
+            isBuiltin: false,
+          }
         : _upgrade;
 
     // 如果已经加载了一个 id 一样的插件，则不激活当前插件
@@ -73,7 +91,10 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
       return;
     }
 
-    const extensionInstance = await this.extInstanceManagementService.createExtensionInstance(extensionPath, !!isBuiltin);
+    const extensionInstance = await this.extInstanceManagementService.createExtensionInstance(
+      extensionPath,
+      !!isBuiltin,
+    );
     if (extensionInstance) {
       if (upgrade) {
         this.disableExtension(oldExtensionPath!);

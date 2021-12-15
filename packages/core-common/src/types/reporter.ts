@@ -48,7 +48,7 @@ export enum REPORT_HOST {
 
 export enum REPORT_TYPE {
   PERFORMANCE = 'performance',
-  POINT = 'point'
+  POINT = 'point',
 }
 
 export const ReporterMetadata = Symbol('ReporterMetadata');
@@ -90,7 +90,7 @@ export interface IReporter {
 }
 
 export interface ReporterProcessMessage {
-  reportType: REPORT_TYPE,
-  name: string,
-  data: PerformanceData | PointData,
+  reportType: REPORT_TYPE;
+  name: string;
+  data: PerformanceData | PointData;
 }

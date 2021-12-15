@@ -14,7 +14,6 @@ export interface IResourceCreator {
 
 // Copy from VS Code src/vs/workbench/contrib/output/common/outputLinkComputer.ts
 class OutputLinkComputer {
-
   private patterns = new Map<string /* folder uri */, RegExp[]>();
 
   private workspaceUris: Set<string> = new Set();
@@ -52,22 +51,30 @@ class OutputLinkComputer {
     const strictPathPattern = `${validPathCharacterPattern}+`;
 
     // Example: /workspaces/express/server.js on line 8, column 13
-    patterns.push(new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`, 'gi'));
+    patterns.push(
+      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`, 'gi'),
+    );
 
     // Example: /workspaces/express/server.js:line 8, column 13
-    patterns.push(new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}):line ((\\d+)(, column (\\d+))?)`, 'gi'));
+    patterns.push(
+      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}):line ((\\d+)(, column (\\d+))?)`, 'gi'),
+    );
 
     // Example: /workspaces/mankala/Features.ts(45): error
     // Example: /workspaces/mankala/Features.ts (45): error
     // Example: /workspaces/mankala/Features.ts(45,18): error
     // Example: /workspaces/mankala/Features.ts (45,18): error
     // Example: /workspaces/mankala/Features Special.ts (45,18): error
-    patterns.push(new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`, 'gi'));
+    patterns.push(
+      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`, 'gi'),
+    );
 
     // Example: at /workspaces/mankala/Game.ts
     // Example: at /workspaces/mankala/Game.ts:336
     // Example: at /workspaces/mankala/Game.ts:336:9
-    patterns.push(new RegExp(escapeRegExpCharacters(workspaceUri) + `(${strictPathPattern})(:(\\d+))?(:(\\d+))?`, 'gi'));
+    patterns.push(
+      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${strictPathPattern})(:(\\d+))?(:(\\d+))?`, 'gi'),
+    );
     return patterns;
   }
 
@@ -121,7 +128,7 @@ class OutputLinkComputer {
           }
         }
 
-        const fullMatch = multiRightTrim(match[0], [`'`, ';', '.', '。']);
+        const fullMatch = multiRightTrim(match[0], ["'", ';', '.', '。']);
         const index = line.indexOf(fullMatch, offset);
         offset += index + fullMatch.length;
 
@@ -138,7 +145,7 @@ class OutputLinkComputer {
 
         links.push({
           range: linkRange,
-          url: multiRightTrim(resourceString!, [`'`, ';', '.', '。']),
+          url: multiRightTrim(resourceString!, ["'", ';', '.', '。']),
         });
       }
     });
@@ -148,7 +155,6 @@ class OutputLinkComputer {
 
 @Injectable()
 export class OutputLinkProvider extends Disposable implements monaco.languages.LinkProvider {
-
   private linkComputer: OutputLinkComputer;
 
   @Autowired(IWorkspaceService)
@@ -156,22 +162,25 @@ export class OutputLinkProvider extends Disposable implements monaco.languages.L
 
   constructor() {
     super();
-    this.linkComputer = new OutputLinkComputer(
-      this.workspaceService.workspace?.uri,
+    this.linkComputer = new OutputLinkComputer(this.workspaceService.workspace?.uri);
+
+    this.addDispose(
+      this.workspaceService.onWorkspaceChanged((e) => {
+        for (const fileStat of e) {
+          this.linkComputer.updateWorkspaceUri(fileStat.uri);
+        }
+      }),
     );
-
-    this.addDispose(this.workspaceService.onWorkspaceChanged((e) => {
-      for (const fileStat of e) {
-        this.linkComputer.updateWorkspaceUri(fileStat.uri);
-      }
-    }));
-
   }
 
   provideLinks(model: ITextModel): monaco.languages.ProviderResult<monaco.languages.ILinksList> {
     return { links: this.linkComputer.computeLinks(model) };
   }
 
-  resolveLink?: ((link: monaco.languages.ILink, token: monaco.CancellationToken) => monaco.languages.ProviderResult<monaco.languages.ILink>) | undefined;
-
+  resolveLink?:
+    | ((
+        link: monaco.languages.ILink,
+        token: monaco.CancellationToken,
+      ) => monaco.languages.ProviderResult<monaco.languages.ILink>)
+    | undefined;
 }

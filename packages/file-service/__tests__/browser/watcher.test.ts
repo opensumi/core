@@ -8,7 +8,8 @@ describe('ExtensionFileSystemManage', () => {
     {
       uri: URI.file('/root/test.txt').toString(),
       type: FileChangeType.ADDED,
-    }];
+    },
+  ];
   const mockFileServiceClient: any = {
     onFilesChanged(callback) {
       calledMap.set('onFilesChanged', callback);

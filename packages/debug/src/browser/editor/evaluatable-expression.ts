@@ -16,7 +16,10 @@ interface SerializedDocumentFilter {
 const EvaluatableExpressionRegistry = new LanguageFeatureRegistry<EvaluatableExpressionProvider>();
 
 export interface IEvaluatableExpressionService {
-  registerEvaluatableExpressionProvider(selector: SerializedDocumentFilter[], provider: EvaluatableExpressionProvider): IDisposable;
+  registerEvaluatableExpressionProvider(
+    selector: SerializedDocumentFilter[],
+    provider: EvaluatableExpressionProvider,
+  ): IDisposable;
 
   getSupportedEvaluatableExpressionProvider(model: ITextModel): EvaluatableExpressionProvider[];
 
@@ -31,12 +34,14 @@ export class EvaluatableExpressionServiceImpl implements IEvaluatableExpressionS
     return EvaluatableExpressionRegistry.ordered(model);
   }
 
-  registerEvaluatableExpressionProvider(selector: SerializedDocumentFilter[], provider: EvaluatableExpressionProvider): IDisposable {
+  registerEvaluatableExpressionProvider(
+    selector: SerializedDocumentFilter[],
+    provider: EvaluatableExpressionProvider,
+  ): IDisposable {
     return EvaluatableExpressionRegistry.register(selector, provider);
   }
 
   hasEvaluatableExpressProvider(model: ITextModel): boolean {
     return EvaluatableExpressionRegistry.has(model);
   }
-
 }

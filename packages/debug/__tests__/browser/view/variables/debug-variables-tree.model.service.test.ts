@@ -14,7 +14,7 @@ describe('Debug Variables Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugVariablesModelService: DebugVariablesModelService;
   const mockDebugHoverSource = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
 
   const mockWatcher = {
@@ -22,7 +22,7 @@ describe('Debug Variables Tree Model', () => {
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
     },
     watchEvents: {
       get: jest.fn(() => mockWatcher),
@@ -31,14 +31,14 @@ describe('Debug Variables Tree Model', () => {
   } as any;
 
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => { },
+      dispose: () => {},
     })),
   };
 
@@ -179,7 +179,7 @@ describe('Debug Variables Tree Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { }, getModel: () => debugVariablesModelService.treeModel! } as any;
+    const treeHandle = { ensureVisible: () => {}, getModel: () => debugVariablesModelService.treeModel! } as any;
     debugVariablesModelService.handleTreeHandler(treeHandle);
     expect(debugVariablesModelService.treeHandle.getModel()).toEqual(treeHandle.getModel());
   });
@@ -203,11 +203,11 @@ describe('Debug Variables Tree Model', () => {
 
   it('handleTwistierClick method should be work', () => {
     const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn() } as any;
-    let mockNode = { expanded: false, setExpanded: () => { }, setCollapsed: () => { }, getRawScope: () => { } };
+    let mockNode = { expanded: false, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
     debugVariablesModelService.handleTreeHandler(treeHandle);
     debugVariablesModelService.toggleDirectory(mockNode as any);
     expect(treeHandle.expandNode).toBeCalledTimes(0);
-    mockNode = { expanded: true, setExpanded: () => { }, setCollapsed: () => { }, getRawScope: () => { } };
+    mockNode = { expanded: true, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
     debugVariablesModelService.toggleDirectory(mockNode as any);
     expect(treeHandle.collapseNode).toBeCalledTimes(0);
   });
@@ -226,6 +226,5 @@ describe('Debug Variables Tree Model', () => {
     expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
     expect(mockEvent.stopPropagation).toBeCalledTimes(1);
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
-
   });
 });

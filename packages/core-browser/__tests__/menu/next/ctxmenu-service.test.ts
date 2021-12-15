@@ -4,17 +4,24 @@ import { Injector } from '@opensumi/di';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, AbstractContextMenuService, ContextMenuServiceImpl } from '../../../src/menu/next';
+import {
+  AbstractMenuService,
+  MenuRegistryImpl,
+  MenuServiceImpl,
+  IMenuRegistry,
+  AbstractContextMenuService,
+  ContextMenuServiceImpl,
+} from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 
 jest.useFakeTimers();
 
 // tslint:disable-next-line:new-parens
-const contextKeyService = new class extends MockContextKeyService {
+const contextKeyService = new (class extends MockContextKeyService {
   match(bool) {
     return true;
   }
-};
+})();
 
 describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () => {
   let injector: MockInjector;
@@ -25,21 +32,27 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   const testMenuId = 'mock/test/menu';
 
   beforeEach(() => {
-    injector = createBrowserInjector([], new Injector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      }, {
-        token: IMenuRegistry,
-        useClass: MenuRegistryImpl,
-      }, {
-        token: CommandRegistry,
-        useClass: CoreCommandRegistryImpl,
-      }, {
-        token: AbstractMenuService,
-        useClass: MenuServiceImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
+        {
+          token: CommandRegistry,
+          useClass: CoreCommandRegistryImpl,
+        },
+        {
+          token: AbstractMenuService,
+          useClass: MenuServiceImpl,
+        },
+      ]),
+    );
 
     injector.addProviders({
       token: AbstractContextMenuService,
@@ -57,12 +70,14 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   });
 
   it('basic', () => {
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: {
-        id: 'b',
-        label: 'a1',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: {
+          id: 'b',
+          label: 'a1',
+        },
+      }),
+    );
 
     const menus = ctxmenuService.createMenu({ id: testMenuId, contextKeyService });
     expect(menus.getMergedMenuNodes().length).toBe(1);
@@ -70,43 +85,55 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   });
 
   it('submenu', () => {
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      command: {
-        id: 'first_id',
-        label: 'first',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        command: {
+          id: 'first_id',
+          label: 'first',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
-      submenu: 'test_submenu_id',
-      label: 'test submenu',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenuId, {
+        submenu: 'test_submenu_id',
+        label: 'test submenu',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('test_submenu_id', {
-      command: {
-        id: 'hello_id',
-        label: 'hello',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('test_submenu_id', {
+        command: {
+          id: 'hello_id',
+          label: 'hello',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('test_submenu_id', {
-      command: {
-        id: 'world_id',
-        label: 'world',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('test_submenu_id', {
+        command: {
+          id: 'world_id',
+          label: 'world',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('test_submenu_id', {
-      submenu: 'sub_submenu_id',
-      label: 'sub_submenu',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('test_submenu_id', {
+        submenu: 'sub_submenu_id',
+        label: 'sub_submenu',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('sub_submenu_id', {
-      command: {
-        id: 'nested_sub_id',
-        label: 'nested submenu',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('sub_submenu_id', {
+        command: {
+          id: 'nested_sub_id',
+          label: 'nested submenu',
+        },
+      }),
+    );
 
     const menus = ctxmenuService.createMenu({ id: testMenuId, contextKeyService });
     const ret = menus.getMergedMenuNodes();

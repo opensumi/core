@@ -28,7 +28,6 @@ export interface RequireInterceptorContribution {
 
 @Injectable()
 export class RequireInterceptorService<T> implements IRequireInterceptorService<T> {
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 

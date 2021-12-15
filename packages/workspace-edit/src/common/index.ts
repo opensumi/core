@@ -1,4 +1,14 @@
-import { Uri, URI, IRange, BasicEvent, FileStat, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@opensumi/ide-core-common';
+import {
+  Uri,
+  URI,
+  IRange,
+  BasicEvent,
+  FileStat,
+  CancellationToken,
+  WaitUntilEvent,
+  IDisposable,
+  Event,
+} from '@opensumi/ide-core-common';
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { IBulkEditService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
@@ -7,13 +17,13 @@ export interface IResourceFileEdit {
   oldResource?: URI;
   newResource?: URI;
   options: {
-    overwrite?: boolean,
-    ignoreIfNotExists?: boolean,
+    overwrite?: boolean;
+    ignoreIfNotExists?: boolean;
     ignoreIfExists?: boolean;
-    recursive?: boolean,
-    showInEditor?: boolean,
-    isDirectory?: boolean,
-    copy?: boolean,
+    recursive?: boolean;
+    showInEditor?: boolean;
+    isDirectory?: boolean;
+    copy?: boolean;
   };
 }
 
@@ -23,8 +33,8 @@ export interface IResourceTextEdit {
   versionId?: number; // monaco's version id
   textEdit: ITextEdit;
   options?: {
-    openDirtyInEditor?: boolean
-    dirtyIfInEditor?: boolean,
+    openDirtyInEditor?: boolean;
+    dirtyIfInEditor?: boolean;
   };
 }
 
@@ -41,12 +51,10 @@ export interface IWorkspaceEdit {
 export const IWorkspaceEditService = Symbol('IWorkspaceEditService');
 
 export interface IWorkspaceEditService {
-
   apply(edit: IWorkspaceEdit): Promise<void>;
 
   // 回复最上层的文件变更
   revertTopFileEdit(): Promise<void>;
-
 }
 
 export const IWorkspaceFileService = Symbol('IWorkspaceFileService');
@@ -65,7 +73,6 @@ export const enum FileOperation {
 export const FILE_OPERATION_TIMEOUT = 5000;
 
 export interface SourceTargetPair {
-
   /**
    * The source resource that is defined for move operations.
    */
@@ -81,7 +88,6 @@ export interface SourceTargetPair {
  * not supported yet
  */
 export interface IFileOperationUndoRedoInfo {
-
   /**
    * Id of the undo group that the file operation belongs to.
    */
@@ -94,7 +100,6 @@ export interface IFileOperationUndoRedoInfo {
 }
 
 export interface IWorkspaceFileOperationParticipant {
-
   /**
    * Participate in a file operation of working copies. Allows to
    * change the working copies before they are being saved to disk.
@@ -109,7 +114,6 @@ export interface IWorkspaceFileOperationParticipant {
 }
 
 export interface WorkspaceFileEvent extends WaitUntilEvent {
-
   /**
    * An identifier to correlate the operation through the
    * different event types (before, after, error).
@@ -136,10 +140,10 @@ export interface IWorkspaceFileService {
   createFolder(resource: URI): Promise<FileStat>;
   move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
   copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
-  delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void>;
+  delete(resources: URI[], options?: { useTrash?: boolean; recursive?: boolean }): Promise<void>;
 
   registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable;
 }
 
-export class WorkspaceEditDidRenameFileEvent extends BasicEvent<{oldUri: URI, newUri: URI}> {}
-export class WorkspaceEditDidDeleteFileEvent extends BasicEvent<{oldUri: URI}> {}
+export class WorkspaceEditDidRenameFileEvent extends BasicEvent<{ oldUri: URI; newUri: URI }> {}
+export class WorkspaceEditDidDeleteFileEvent extends BasicEvent<{ oldUri: URI }> {}

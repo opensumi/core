@@ -1,14 +1,27 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { OutlineCompositeTreeNode, OutlineTreeNode, OutlineRoot } from '../outline-node.define';
-import { URI, Emitter, MaybeNull, IdleValue, compareRangesUsingStarts, getSymbolIcon, Event, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@opensumi/ide-core-browser';
-import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import {
+  URI,
+  Emitter,
+  MaybeNull,
+  IdleValue,
+  compareRangesUsingStarts,
+  getSymbolIcon,
+  Event,
+  StorageProvider,
+  STORAGE_NAMESPACE,
+  IStorage,
+} from '@opensumi/ide-core-browser';
+import {
+  DocumentSymbolStore,
+  INormalizedDocumentSymbol,
+} from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { OutlineSortOrder } from '../../common';
 import { OutlineContextKeyService } from './outline-contextkey.service';
 
 @Injectable()
 export class OutlineTreeService extends Tree {
-
   @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
 
@@ -23,7 +36,7 @@ export class OutlineTreeService extends Tree {
   private readonly cacheOutlineNodes: Map<string, OutlineCompositeTreeNode | OutlineTreeNode> = new Map();
 
   private _sortType: OutlineSortOrder = OutlineSortOrder.ByPosition;
-  private _followCursor: boolean = false;
+  private _followCursor = false;
 
   private _currentUri: MaybeNull<URI>;
 
@@ -90,7 +103,9 @@ export class OutlineTreeService extends Tree {
     this.onDidChangeEmitter.fire();
   }
 
-  async resolveChildren(parent?: OutlineCompositeTreeNode): Promise<(OutlineCompositeTreeNode | OutlineRoot | OutlineTreeNode)[]> {
+  async resolveChildren(
+    parent?: OutlineCompositeTreeNode,
+  ): Promise<(OutlineCompositeTreeNode | OutlineRoot | OutlineTreeNode)[]> {
     let children: (OutlineCompositeTreeNode | OutlineRoot | OutlineTreeNode)[] = [];
     if (!parent) {
       children = [new OutlineRoot(this, this.currentUri)];
@@ -99,22 +114,40 @@ export class OutlineTreeService extends Tree {
         if (!((parent as OutlineRoot).currentUri || this.currentUri)) {
           return [];
         }
-        const symbols = this.documentSymbolStore.getDocumentSymbol(((parent as OutlineRoot).currentUri || this.currentUri)!);
-        children = symbols?.map((symbol: INormalizedDocumentSymbol) => {
-          const cache = this.cacheOutlineNodes.get(symbol.id);
-          if (!!symbol.children?.length) {
-            return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
-          }
-          return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
-        }) || [];
+        const symbols = this.documentSymbolStore.getDocumentSymbol(
+          ((parent as OutlineRoot).currentUri || this.currentUri)!,
+        );
+        children =
+          symbols?.map((symbol: INormalizedDocumentSymbol) => {
+            const cache = this.cacheOutlineNodes.get(symbol.id);
+            if (symbol.children?.length) {
+              return new OutlineCompositeTreeNode(
+                this,
+                parent,
+                symbol,
+                getSymbolIcon(symbol.kind) + ' outline-icon',
+                cache?.id,
+              );
+            }
+            return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
+          }) || [];
       } else if (parent.raw) {
-        children = parent.raw.children?.map((symbol: INormalizedDocumentSymbol) => {
-          const cache = this.cacheOutlineNodes.get(symbol.id);
-          if (!!symbol.children?.length) {
-            return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
-          }
-          return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
-        }).filter((node) => !!node.name) || [];
+        children =
+          parent.raw.children
+            ?.map((symbol: INormalizedDocumentSymbol) => {
+              const cache = this.cacheOutlineNodes.get(symbol.id);
+              if (symbol.children?.length) {
+                return new OutlineCompositeTreeNode(
+                  this,
+                  parent,
+                  symbol,
+                  getSymbolIcon(symbol.kind) + ' outline-icon',
+                  cache?.id,
+                );
+              }
+              return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
+            })
+            .filter((node) => !!node.name) || [];
       }
     }
     this.cacheNodes(children);
@@ -131,7 +164,7 @@ export class OutlineTreeService extends Tree {
   }
 
   getTreeNodeBySymbol(symbol: INormalizedDocumentSymbol) {
-    if (!!symbol) {
+    if (symbol) {
       const cache = this.cacheOutlineNodes.get(symbol.id);
       return cache;
     }
@@ -139,11 +172,20 @@ export class OutlineTreeService extends Tree {
 
   sortComparator = (a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) => {
     if (this.sortType === OutlineSortOrder.ByKind) {
-      return (a as OutlineTreeNode).raw.kind - (b as OutlineTreeNode).raw.kind || this.collator.getValue().compare(a.name, b.name);
+      return (
+        (a as OutlineTreeNode).raw.kind - (b as OutlineTreeNode).raw.kind ||
+        this.collator.getValue().compare(a.name, b.name)
+      );
     } else if (this.sortType === OutlineSortOrder.ByName) {
-      return this.collator.getValue().compare(a.name, b.name) || compareRangesUsingStarts((a as OutlineTreeNode).raw.range, (b as OutlineTreeNode).raw.range);
+      return (
+        this.collator.getValue().compare(a.name, b.name) ||
+        compareRangesUsingStarts((a as OutlineTreeNode).raw.range, (b as OutlineTreeNode).raw.range)
+      );
     } else {
-      return compareRangesUsingStarts((a as OutlineTreeNode).raw.range, (b as OutlineTreeNode).raw.range) || this.collator.getValue().compare(a.name, b.name);
+      return (
+        compareRangesUsingStarts((a as OutlineTreeNode).raw.range, (b as OutlineTreeNode).raw.range) ||
+        this.collator.getValue().compare(a.name, b.name)
+      );
     }
-  }
+  };
 }

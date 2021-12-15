@@ -12,7 +12,6 @@ export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
 export interface Terminal {
-
   readonly xterm: XTerm;
 
   /**
@@ -119,23 +118,23 @@ export interface TerminalOptions {
   hideFromUser?: boolean;
 
   /**
-		 * A message to write to the terminal on first launch, note that this is not sent to the
-		 * process but, rather written directly to the terminal. This supports escape sequences such
-		 * a setting text style.
-		 */
-   message?: string;
+   * A message to write to the terminal on first launch, note that this is not sent to the
+   * process but, rather written directly to the terminal. This supports escape sequences such
+   * a setting text style.
+   */
+  message?: string;
 
-   /**
-    * The icon path or {@link ThemeIcon} for the terminal.
-    */
-   iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
+  /**
+   * The icon path or {@link ThemeIcon} for the terminal.
+   */
+  iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
 
-   /**
-    * The icon {@link ThemeColor} for the terminal.
-    * The `terminal.ansi*` theme keys are
-    * recommended for the best contrast and consistency across themes.
-    */
-   color?: vscode.ThemeColor;
+  /**
+   * The icon {@link ThemeColor} for the terminal.
+   * The `terminal.ansi*` theme keys are
+   * recommended for the best contrast and consistency across themes.
+   */
+  color?: vscode.ThemeColor;
 
   /**
    * pty 进程退出后是否自动关闭 terminal 控件
@@ -177,13 +176,20 @@ export interface ITerminalProcessService {
 }
 
 export interface ITerminalServiceClient {
-  create(id: string, rows: number, cols: number, options: TerminalOptions): Promise<{
-    pid: number,
-    name: string,
-  }> | {
-    pid: number,
-    name: string,
-  };
+  create(
+    id: string,
+    rows: number,
+    cols: number,
+    options: TerminalOptions,
+  ):
+    | Promise<{
+        pid: number;
+        name: string;
+      }>
+    | {
+        pid: number;
+        name: string;
+      };
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number);
   disposeById(id: string);
@@ -200,9 +206,9 @@ export interface ITerminalServiceClient {
 }
 
 export interface ITerminalInfo {
- id: string;
- name: string;
- isActive: boolean;
+  id: string;
+  name: string;
+  isActive: boolean;
 }
 
 /**

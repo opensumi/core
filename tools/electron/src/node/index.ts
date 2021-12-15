@@ -35,9 +35,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
 ];
 
 startServer({
-  modules: [
-    ...CommonNodeModules,
-  ],
+  modules: [...CommonNodeModules],
 }).then(() => {
   console.log('ready');
   if (process.send) {

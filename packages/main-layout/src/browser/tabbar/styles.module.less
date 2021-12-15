@@ -1,5 +1,5 @@
 .dragging {
-  background-color: var(--kt-activityBar-dropUpBackground)!important;
+  background-color: var(--kt-activityBar-dropUpBackground) !important;
 }
 .tab_badge {
   background-color: var(--activityBarBadge-background) !important;
@@ -28,7 +28,7 @@
   background-color: transparent;
   border: none;
   line-height: normal;
-  display:flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 48px;
@@ -88,13 +88,13 @@
 }
 :global(.left-slot) {
   height: 100%;
-  .panel_wrap{
+  .panel_wrap {
     border-right: 1px solid var(--sideBar-border);
   }
 }
 
 :global(.bottom-slot) {
-  .panel_wrap{
+  .panel_wrap {
     border-top: 1px solid var(--sideBar-border);
   }
 }
@@ -118,7 +118,7 @@
       }
     }
   }
-  .panel_wrap{
+  .panel_wrap {
     border-left: 1px solid var(--sideBar-border);
   }
 }
@@ -159,7 +159,7 @@
   user-select: none;
   height: 28px;
   align-items: center;
-  border-bottom: 1px solid var(--kt-panelTab-border);;
+  border-bottom: 1px solid var(--kt-panelTab-border);
   box-sizing: border-box;
   h1 {
     margin: 0;
@@ -221,11 +221,12 @@
       -moz-appearance: none;
       appearance: none;
       color: var(--input-foreground);
-      background: url(https://img.alicdn.com/tfs/TB1rFGZrYr1gK0jSZR0XXbP8XXa-200-200.png) no-repeat var(--input-background);
+      background: url(https://img.alicdn.com/tfs/TB1rFGZrYr1gK0jSZR0XXbP8XXa-200-200.png) no-repeat
+        var(--input-background);
       background-position: right 8px top 4px;
       background-size: 14px;
-      &>option {
-        background-color: var(--dropdown-listBackground)
+      & > option {
+        background-color: var(--dropdown-listBackground);
       }
     }
   }
@@ -287,10 +288,10 @@
   }
   &:global(.active) {
     color: var(--panelTitle-activeForeground);
-    >div {
+    > div {
       position: relative;
     }
-    >div::after {
+    > div::after {
       content: '';
       position: absolute;
       bottom: 0;
@@ -301,7 +302,7 @@
     }
   }
   &.dragging {
-    >div::after{
+    > div::after {
       display: none;
     }
   }
@@ -347,7 +348,7 @@
 .left_tab_bar .vertical_icons {
   height: auto;
   flex-direction: column;
-  >span {
+  > span {
     width: 24px;
     height: 24px;
     font-size: 24px;

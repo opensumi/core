@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -25,7 +25,6 @@ import { DebugState, IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()
 export class DebugViewModel implements IDisposable {
-
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
 
@@ -41,10 +40,7 @@ export class DebugViewModel implements IDisposable {
     this.onDidChangeBreakpointsEmitter.fire(uri);
   }
 
-  protected readonly toDispose = new DisposableCollection(
-    this.onDidChangeEmitter,
-    this.onDidChangeBreakpointsEmitter,
-  );
+  protected readonly toDispose = new DisposableCollection(this.onDidChangeEmitter, this.onDidChangeBreakpointsEmitter);
 
   protected readonly _sessions = new Set<DebugSession>();
 
@@ -77,10 +73,10 @@ export class DebugViewModel implements IDisposable {
   }
 
   get id(): string {
-    return this.session && this.session.id || '-1';
+    return (this.session && this.session.id) || '-1';
   }
   get label(): string {
-    return this.session && this.session.label || 'Unknown Session';
+    return (this.session && this.session.label) || 'Unknown Session';
   }
   has(session: DebugSession | undefined): session is DebugSession {
     return !!session && this._sessions.has(session);
@@ -90,21 +86,27 @@ export class DebugViewModel implements IDisposable {
     if (seesion) {
       this.push(seesion);
     }
-    this.toDispose.push(this.manager.onDidChangeActiveDebugSession(({ previous, current }) => {
-      if (this.has(previous) && !this.has(current)) {
-        this.fireDidChange();
-      }
-    }));
-    this.toDispose.push(this.manager.onDidChange((current) => {
-      if (this.has(current)) {
-        this.fireDidChange();
-      }
-    }));
-    this.toDispose.push(this.manager.onDidDestroyDebugSession((current) => {
-      if (this.has(current)) {
-        this.fireDidChange();
-      }
-    }));
+    this.toDispose.push(
+      this.manager.onDidChangeActiveDebugSession(({ previous, current }) => {
+        if (this.has(previous) && !this.has(current)) {
+          this.fireDidChange();
+        }
+      }),
+    );
+    this.toDispose.push(
+      this.manager.onDidChange((current) => {
+        if (this.has(current)) {
+          this.fireDidChange();
+        }
+      }),
+    );
+    this.toDispose.push(
+      this.manager.onDidDestroyDebugSession((current) => {
+        if (this.has(current)) {
+          this.fireDidChange();
+        }
+      }),
+    );
   }
 
   dispose(): void {
@@ -118,7 +120,7 @@ export class DebugViewModel implements IDisposable {
   }
   get currentSession(): DebugSession | undefined {
     const { currentSession } = this.manager;
-    return this.has(currentSession) && currentSession || this.session;
+    return (this.has(currentSession) && currentSession) || this.session;
   }
   set currentSession(currentSession: DebugSession | undefined) {
     this.manager.updateCurrentSession(currentSession);
@@ -126,7 +128,7 @@ export class DebugViewModel implements IDisposable {
 
   get state(): DebugState {
     const { currentSession } = this;
-    return currentSession && currentSession.state || DebugState.Inactive;
+    return (currentSession && currentSession.state) || DebugState.Inactive;
   }
   get currentThread(): DebugThread | undefined {
     const { currentSession } = this;

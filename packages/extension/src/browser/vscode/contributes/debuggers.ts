@@ -27,11 +27,11 @@ export interface DebuggersContributionScheme extends VSCodePlatformSpecificAdapt
   label?: string;
   languages?: string[];
   enableBreakpointsFor?: {
-    languageIds: string[],
+    languageIds: string[];
   };
   configurationSnippets?: IJSONSchemaSnippet[];
   configurationAttributes?: {
-    [request: string]: IJSONSchema,
+    [request: string]: IJSONSchema;
   };
   variables?: ScopeMap;
   adapterExecutableCommand?: string;
@@ -55,7 +55,10 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
   contribute() {
-    this.debugService.registerDebugContributionPoints(this.extension.path, this.resolveDebuggers(this.json) as IJSONSchema[]);
+    this.debugService.registerDebugContributionPoints(
+      this.extension.path,
+      this.resolveDebuggers(this.json) as IJSONSchema[],
+    );
     this.debugSchemaUpdater.update();
   }
 
@@ -70,20 +73,24 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   private doResolveDebuggers(debuggersContributionPoint: DebuggersContributionScheme): IDebuggerContribution {
     const result: IDebuggerContribution = {
       type: debuggersContributionPoint.type,
-      label: debuggersContributionPoint.label ? replaceLocalizePlaceholder(debuggersContributionPoint.label, this.extension.id) : '',
+      label: debuggersContributionPoint.label
+        ? replaceLocalizePlaceholder(debuggersContributionPoint.label, this.extension.id)
+        : '',
       languages: debuggersContributionPoint.languages,
       enableBreakpointsFor: debuggersContributionPoint.enableBreakpointsFor,
       variables: debuggersContributionPoint.variables,
       adapterExecutableCommand: debuggersContributionPoint.adapterExecutableCommand,
-      configurationSnippets: (debuggersContributionPoint.configurationSnippets || []).map((config: IJSONSchemaSnippet) => {
-        if (config.label) {
-          config.label = replaceLocalizePlaceholder(config.label, this.extension.id);
-        }
-        if (config.description) {
-          config.description = replaceLocalizePlaceholder(config.description, this.extension.id);
-        }
-        return config;
-      }),
+      configurationSnippets: (debuggersContributionPoint.configurationSnippets || []).map(
+        (config: IJSONSchemaSnippet) => {
+          if (config.label) {
+            config.label = replaceLocalizePlaceholder(config.label, this.extension.id);
+          }
+          if (config.description) {
+            config.description = replaceLocalizePlaceholder(config.description, this.extension.id);
+          }
+          return config;
+        },
+      ),
       win: debuggersContributionPoint.win,
       winx86: debuggersContributionPoint.winx86,
       windows: debuggersContributionPoint.windows,
@@ -95,12 +102,17 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       runtimeArgs: debuggersContributionPoint.runtimeArgs,
     };
 
-    result.configurationAttributes = debuggersContributionPoint.configurationAttributes && this.resolveSchemaAttributes(debuggersContributionPoint.type, debuggersContributionPoint.configurationAttributes);
+    result.configurationAttributes =
+      debuggersContributionPoint.configurationAttributes &&
+      this.resolveSchemaAttributes(debuggersContributionPoint.type, debuggersContributionPoint.configurationAttributes);
 
     return result;
   }
 
-  protected resolveSchemaAttributes(type: string, configurationAttributes: { [request: string]: IJSONSchema }): IJSONSchema[] {
+  protected resolveSchemaAttributes(
+    type: string,
+    configurationAttributes: { [request: string]: IJSONSchema },
+  ): IJSONSchema[] {
     const taskSchema = {};
     const recursionPropertiesDescription = (prop: IJSONSchemaMap) => {
       Object.keys(prop).forEach((name) => {
@@ -114,7 +126,10 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
     return Object.keys(configurationAttributes).map((request) => {
       const attributes: IJSONSchema = deepClone(configurationAttributes[request]);
       const defaultRequired = ['name', 'type', 'request'];
-      attributes.required = attributes.required && attributes.required.length ? defaultRequired.concat(attributes.required) : defaultRequired;
+      attributes.required =
+        attributes.required && attributes.required.length
+          ? defaultRequired.concat(attributes.required)
+          : defaultRequired;
       attributes.additionalProperties = false;
       attributes.type = 'object';
       if (!attributes.properties) {
@@ -143,16 +158,22 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
         default: 4711,
       };
       properties.preLaunchTask = {
-        anyOf: [taskSchema, {
-          type: ['string', 'null'],
-        }],
+        anyOf: [
+          taskSchema,
+          {
+            type: ['string', 'null'],
+          },
+        ],
         default: '',
         description: localize('debug.launch.configurations.debugPrelaunchTask'),
       };
       properties.postDebugTask = {
-        anyOf: [taskSchema, {
-          type: ['string', 'null'],
-        }],
+        anyOf: [
+          taskSchema,
+          {
+            type: ['string', 'null'],
+          },
+        ],
         default: '',
         description: localize('debug.launch.configurations.debugPostDebugTask'),
       };
@@ -176,9 +197,14 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       };
       Object.keys(attributes.properties).forEach((name) => {
         // 为每一个属性创建独立的错误信息
-        attributes!.properties![name].pattern = attributes!.properties![name].pattern || '^(?!.*\\$\\{(env|config|command)\\.)';
-        attributes!.properties![name].patternErrorMessage = attributes!.properties![name].patternErrorMessage ||
-          localize('deprecatedVariables', "'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead.");
+        attributes!.properties![name].pattern =
+          attributes!.properties![name].pattern || '^(?!.*\\$\\{(env|config|command)\\.)';
+        attributes!.properties![name].patternErrorMessage =
+          attributes!.properties![name].patternErrorMessage ||
+          localize(
+            'deprecatedVariables',
+            "'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead.",
+          );
       });
 
       recursionPropertiesDescription(attributes.properties);

@@ -1,5 +1,11 @@
 import { Injectable, Injector } from '@opensumi/di';
-import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
+import {
+  IStorageServer,
+  IStoragePathServer,
+  IUpdateRequest,
+  IWorkspaceStorageServer,
+  IGlobalStorageServer,
+} from '../../src/common';
 import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@opensumi/ide-core-node';
 import temp from 'temp';
 import path from 'path';
@@ -18,7 +24,6 @@ let root: URI;
 root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 @Injectable()
 export class MockDatabaseStoragePathServer implements IStoragePathServer {
-
   async getLastWorkspaceStoragePath() {
     return root.resolve('datas').toString();
   }
@@ -34,7 +39,6 @@ export class MockDatabaseStoragePathServer implements IStoragePathServer {
   async provideGlobalStorageDirPath(): Promise<string | undefined> {
     return root.toString();
   }
-
 }
 
 describe('WorkspaceStorage should be work', () => {
@@ -44,7 +48,7 @@ describe('WorkspaceStorage should be work', () => {
   let databaseStorageContribution: DatabaseStorageContribution;
   const storageName = 'testStorage';
   const MockWorkspaceService = {
-    onWorkspaceChanged: jest.fn(() => Disposable.create(() => { })),
+    onWorkspaceChanged: jest.fn(() => Disposable.create(() => {})),
     workspace: {
       uri: 'file://home',
     },
@@ -54,31 +58,35 @@ describe('WorkspaceStorage should be work', () => {
     getLogger: jest.fn(),
   };
   beforeAll(() => {
-    injector = createBrowserInjector([
-      StorageModule,
-    ]);
+    injector = createBrowserInjector([StorageModule]);
 
     injector.addProviders({
       token: AppConfig,
       useValue: {},
     });
 
-    injector.overrideProviders({
-      token: IFileServiceClient,
-      useClass: FileServiceClient,
-    }, {
-      token: IDiskFileProvider,
-      useClass: DiskFileSystemProvider,
-    }, {
-      token: IStoragePathServer,
-      useClass: MockDatabaseStoragePathServer,
-    }, {
-      token: IWorkspaceService,
-      useValue: MockWorkspaceService,
-    }, {
-      token: ILoggerManagerClient,
-      useValue: MockLoggerManagerClient,
-    });
+    injector.overrideProviders(
+      {
+        token: IFileServiceClient,
+        useClass: FileServiceClient,
+      },
+      {
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
+      },
+      {
+        token: IStoragePathServer,
+        useClass: MockDatabaseStoragePathServer,
+      },
+      {
+        token: IWorkspaceService,
+        useValue: MockWorkspaceService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useValue: MockLoggerManagerClient,
+      },
+    );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     workspaceStorage = injector.get(IWorkspaceStorageServer);
@@ -116,8 +124,8 @@ describe('WorkspaceStorage should be work', () => {
     it('storage with single storageName should be updated.', async () => {
       const updateRequest: IUpdateRequest = {
         insert: {
-          'id': 2,
-          'name': 'test',
+          id: 2,
+          name: 'test',
         },
         delete: ['id'],
       };
@@ -134,8 +142,8 @@ describe('WorkspaceStorage should be work', () => {
       const longStorageName = `${storageName}/path`;
       const updateRequest: IUpdateRequest = {
         insert: {
-          'id': 2,
-          'name': 'test',
+          id: 2,
+          name: 'test',
         },
         delete: ['id'],
       };
@@ -153,8 +161,8 @@ describe('WorkspaceStorage should be work', () => {
     it('storage with single storageName should be updated.', async () => {
       const updateRequest: IUpdateRequest = {
         insert: {
-          'id': 2,
-          'name': 'test',
+          id: 2,
+          name: 'test',
         },
         delete: ['id'],
       };
@@ -171,8 +179,8 @@ describe('WorkspaceStorage should be work', () => {
       const longStorageName = `${storageName}/path`;
       const updateRequest: IUpdateRequest = {
         insert: {
-          'id': 2,
-          'name': 'test',
+          id: 2,
+          name: 'test',
         },
         delete: ['id'],
       };
@@ -200,6 +208,5 @@ describe('WorkspaceStorage should be work', () => {
       expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(2);
       done();
     });
-
   });
 });

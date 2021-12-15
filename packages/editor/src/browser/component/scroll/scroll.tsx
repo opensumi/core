@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './scroll.module.less';
 import classnames from 'classnames';
-import {MouseEvent, UIEvent } from 'react';
+import { MouseEvent, UIEvent } from 'react';
 
 export interface ScrollAreaProps {
   className?: string;
@@ -29,7 +29,6 @@ export interface ScrollSizes {
 }
 
 export class Scroll extends React.Component<ScrollAreaProps, any> {
-
   public ref: HTMLDivElement;
 
   public container: HTMLDivElement;
@@ -49,17 +48,17 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     left: 0,
   };
 
-  private dragging: boolean = false;
+  private dragging = false;
 
-  private draggingStart: number = 0;
+  private draggingStart = 0;
 
-  private draggingStartPos: number = 0;
+  private draggingStartPos = 0;
 
   private requestFrame: any;
 
-  private shouldHideThumb: boolean = true;
+  private shouldHideThumb = true;
 
-  private isAtTop: boolean = true;
+  private isAtTop = true;
 
   onScroll(e: UIEvent<HTMLDivElement>) {
     this.position = {
@@ -74,8 +73,8 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
       const width = this.ref.offsetWidth;
       const contentHeight = this.ref.scrollHeight;
       const height = this.ref.offsetHeight;
-      this.thumbH.style.left = (this.position.left * width) / contentWidth  + 'px';
-      this.thumbV.style.top = (this.position.top * height) / contentHeight  + 'px';
+      this.thumbH.style.left = (this.position.left * width) / contentWidth + 'px';
+      this.thumbV.style.top = (this.position.top * height) / contentHeight + 'px';
     });
     if (!this.isAtTop && this.ref.scrollTop === 0) {
       this.isAtTop = true;
@@ -108,7 +107,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     }
     const move = e.pageX - this.draggingStart;
     this.ref.scrollLeft = this.draggingStartPos + this.calculateXToLeft(move);
-  }
+  };
 
   onMouseUpHorizontal = (e) => {
     this.dragging = false;
@@ -117,14 +116,14 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     if (this.shouldHideThumb) {
       this.hideThumb();
     }
-  }
+  };
 
   onMouseDownOnTrack(e: MouseEvent<HTMLDivElement>) {
     const track = e.target as HTMLDivElement;
     const x = e.clientX - track.getBoundingClientRect().left;
     const contentWidth = this.ref.scrollWidth;
     const width = this.ref.offsetWidth;
-    const left = x * contentWidth / width - 0.5 * width;
+    const left = (x * contentWidth) / width - 0.5 * width;
     this.scrollTo({
       left,
       top: this.position.top,
@@ -134,7 +133,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   calculateXToLeft(x) {
     const contentWidth = this.ref.scrollWidth;
     const width = this.ref.offsetWidth;
-    return x * contentWidth / width;
+    return (x * contentWidth) / width;
   }
 
   onMouseDownVertical(e: MouseEvent<HTMLDivElement>) {
@@ -154,7 +153,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     }
     const move = e.pageY - this.draggingStart;
     this.ref.scrollTop = this.draggingStartPos + this.calculateYToTop(move);
-  }
+  };
 
   onMouseUpVertical = (e) => {
     this.dragging = false;
@@ -163,14 +162,14 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     if (this.shouldHideThumb) {
       this.hideThumb();
     }
-  }
+  };
 
   onMouseDownOnTrackVertical(e: MouseEvent<HTMLDivElement>) {
     const track = e.target as HTMLDivElement;
     const x = e.clientY - track.getBoundingClientRect().top;
     const contentHeight = this.ref.scrollHeight;
     const height = this.ref.offsetHeight;
-    const top = x * contentHeight / height - 0.5 * height;
+    const top = (x * contentHeight) / height - 0.5 * height;
     this.scrollTo({
       left: this.position.left,
       top,
@@ -184,12 +183,12 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
       // scrollLeft 内部有边界判断
       this.ref.scrollLeft += e.deltaY;
     }
-  }
+  };
 
   calculateYToTop(y) {
     const contentHeight = this.ref.scrollHeight;
-    const height  = this.ref.offsetHeight;
-    return y * contentHeight / height;
+    const height = this.ref.offsetHeight;
+    return (y * contentHeight) / height;
   }
 
   componentDidUpdate() {
@@ -217,7 +216,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
 
   onMouseEnter = () => {
     this.update();
-  }
+  };
 
   componentWillUnmount() {
     if (this.ref) {
@@ -232,12 +231,17 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
 
   handleWindowResize = () => {
     this.update();
-  }
+  };
 
   sizeEqual(size1: ScrollSizes, size2: ScrollSizes): boolean {
-    return size1 && size2 && size1.offsetHeight === size2.offsetHeight
-      && size1.scrollHeight === size2.scrollHeight && size1.offsetWidth === size2.offsetWidth
-      && size1.scrollWidth === size2.scrollWidth;
+    return (
+      size1 &&
+      size2 &&
+      size1.offsetHeight === size2.offsetHeight &&
+      size1.scrollHeight === size2.scrollHeight &&
+      size1.offsetWidth === size2.offsetWidth &&
+      size1.scrollWidth === size2.scrollWidth
+    );
   }
 
   update = (callback?) => {
@@ -250,7 +254,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
         callback();
       }
     });
-  }
+  };
 
   _update() {
     if (this.ref) {
@@ -270,7 +274,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     const contentWidth = this.ref.scrollWidth;
     const width = this.ref.offsetWidth;
     if (width < contentWidth) {
-      const thumbHWidth = width * width / contentWidth;
+      const thumbHWidth = (width * width) / contentWidth;
       this.thumbH.style.width = thumbHWidth + 'px';
       this.trackH.parentElement!.style.display = 'block';
     } else {
@@ -279,7 +283,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     const contentHeight = this.ref.scrollHeight;
     const height = this.ref.offsetHeight;
     if (height < contentHeight) {
-      this.thumbV.style.height = height * height / contentHeight + 'px';
+      this.thumbV.style.height = (height * height) / contentHeight + 'px';
       this.trackV.parentElement!.style.display = 'block';
     } else {
       this.trackV.parentElement!.style.display = 'none';
@@ -300,7 +304,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
 
   setCss() {
     this.container.className = classnames({
-      [styles.scroll] : true,
+      [styles.scroll]: true,
       [styles['hide-thumb']]: this.shouldHideThumb && !this.dragging,
     });
     const cls = {};
@@ -314,7 +318,6 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   }
 
   render() {
-
     return (
       <div
         className={classnames(styles.scroll, styles['hide-thumb'])}
@@ -328,7 +331,6 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
           className={classnames(this.props.className)}
           onScroll={this.onScroll.bind(this)}
           ref={(e) => e && (this.ref = e)}
-
           onMouseDown={() => this.update()}
           onMouseUp={() => this.update()}
         >

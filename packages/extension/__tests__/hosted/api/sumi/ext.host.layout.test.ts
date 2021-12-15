@@ -17,9 +17,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
 
   const map = new Map();
   const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => {
-      return map.get(key);
-    },
+    getProxy: (key) => map.get(key),
     set: (key, value) => {
       map.set(key, value);
       return value;

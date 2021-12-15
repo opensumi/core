@@ -1,7 +1,15 @@
 'use strict';
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  Event,
+  IBaseMarkerManager,
+  IMarkerData,
+  MarkerManager,
+  OnEvent,
+  URI,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType } from '@opensumi/ide-theme';
@@ -33,7 +41,7 @@ export class MarkerService extends Themable implements IMarkerService {
   private markerViewModel: MarkerViewModel;
 
   @observable
-  public viewSize: ViewSize = {h: 0};
+  public viewSize: ViewSize = { h: 0 };
 
   public rootEle = createRef<HTMLDivElement>();
 
@@ -116,5 +124,4 @@ export class MarkerService extends Themable implements IMarkerService {
     }
     return undefined;
   }
-
 }

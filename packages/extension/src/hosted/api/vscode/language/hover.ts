@@ -6,11 +6,10 @@ import { Range } from '../../../../common/vscode/ext-types';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 
 export class HoverAdapter {
-
   constructor(
     private readonly provider: vscode.HoverProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
   provideHover(resource: Uri, position: IPosition, token: vscode.CancellationToken) {
     const documentData = this.documents.getDocumentData(resource.toString());

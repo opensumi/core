@@ -1,6 +1,15 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileUri, URI, Disposable, StorageProvider, IApplicationService, isWindows, isLinux, OS } from '@opensumi/ide-core-common';
+import {
+  FileUri,
+  URI,
+  Disposable,
+  StorageProvider,
+  IApplicationService,
+  isWindows,
+  isLinux,
+  OS,
+} from '@opensumi/ide-core-common';
 import { FileTreeNextModule } from '../../src';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
@@ -60,9 +69,9 @@ describe('FileTree should be work while on single workspace model', () => {
       expandNode: jest.fn() as any,
       collapseNode: jest.fn() as any,
       ensureVisible: jest.fn() as any,
-      getModel: (() => { }) as any,
-      onDidChangeModel: (() => { }) as any,
-      onDidUpdate: (() => { }) as any,
+      getModel: (() => {}) as any,
+      onDidChangeModel: (() => {}) as any,
+      onDidUpdate: (() => {}) as any,
       getCurrentSize: () => ({
         width: 100,
         height: 500,
@@ -94,18 +103,14 @@ describe('FileTree should be work while on single workspace model', () => {
     done();
   });
   beforeEach(async (done) => {
-    injector = createBrowserInjector([
-      FileTreeNextModule,
-    ]);
+    injector = createBrowserInjector([FileTreeNextModule]);
 
     // mock used instance
     injector.overrideProviders(
       {
         token: PreferenceService,
         useValue: {
-          get: (key) => {
-            return mockCorePreference[key];
-          },
+          get: (key) => mockCorePreference[key],
         },
       },
       {
@@ -119,7 +124,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IMessageService,
         useValue: {
-          error: () => { },
+          error: () => {},
         },
       },
       {
@@ -129,7 +134,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: INodeLogger,
         useValue: {
-          debug: () => { },
+          debug: () => {},
         },
       },
       {
@@ -143,13 +148,13 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IDialogService,
         useValue: {
-          warning: () => { },
+          warning: () => {},
         },
       },
       {
         token: IThemeService,
         useValue: {
-          onThemeChange: () => Disposable.create(() => { }),
+          onThemeChange: () => Disposable.create(() => {}),
         },
       },
       {
@@ -380,7 +385,11 @@ describe('FileTree should be work while on single workspace model', () => {
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       await location(fileNode.uri);
       await sleep(500);
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'smart', true);
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(
+        await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
+        'smart',
+        true,
+      );
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();
@@ -395,7 +404,11 @@ describe('FileTree should be work while on single workspace model', () => {
       locationOnShow(fileNode.uri);
       await performLocationOnHandleShow();
       await sleep(500);
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'smart', true);
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(
+        await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
+        'smart',
+        true,
+      );
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();

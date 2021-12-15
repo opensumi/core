@@ -73,7 +73,7 @@ export class MockSocketService implements ITerminalService {
       onData: (handler: (json: any) => void) => {
         this._handleStdoutMessage(sessionId, handler);
         return {
-          dispose: () => { },
+          dispose: () => {},
         };
       },
       sendData: (message: string) => {
@@ -135,8 +135,7 @@ export class MockSocketService implements ITerminalService {
 
     this._handleMethod(sessionId);
 
-    await this._doMethod(sessionId, MessageMethod.create,
-      { sessionId, cols: term.cols, rows: term.rows });
+    await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols: term.cols, rows: term.rows });
 
     return this._custommConnection(sessionId);
   }
@@ -158,7 +157,9 @@ export class MockSocketService implements ITerminalService {
     if (socket) {
       try {
         socket.close();
-      } catch { /** nothing */ }
+      } catch {
+        /** nothing */
+      }
     }
   }
 
@@ -166,13 +167,15 @@ export class MockSocketService implements ITerminalService {
     return -1;
   }
 
-  onError() { return new Disposable(); }
-  onExit() { return new Disposable(); }
+  onError() {
+    return new Disposable();
+  }
+  onExit() {
+    return new Disposable();
+  }
 }
 
-export class MockEditorService {
-
-}
+export class MockEditorService {}
 
 export class MockFileService {
   getFileStat(uri: URI) {
@@ -189,9 +192,7 @@ export class MockMainLayoutService {
     return {
       onActivate: MainLayoutTabbarOnActivate.event,
       onInActivate: MainLayoutTabbarOnInActivate.event,
-      isActivated: () => {
-        return true;
-      },
+      isActivated: () => true,
     };
   }
 
@@ -221,8 +222,12 @@ export class MockTerminalThemeService {
 
 /** Mock Preference Service */
 export class MockPreferenceService {
-  get() { return undefined; }
-  onPreferenceChanged() { return new Disposable(); }
+  get() {
+    return undefined;
+  }
+  onPreferenceChanged() {
+    return new Disposable();
+  }
 }
 /** End */
 
@@ -238,6 +243,6 @@ export class MockTerminalWidget {
 export class MockErrorService {
   errors = new Map<string, ITerminalError>();
 
-  async fix(_sessionId: string) { }
+  async fix(_sessionId: string) {}
 }
 /** End */

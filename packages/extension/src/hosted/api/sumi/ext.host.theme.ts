@@ -4,28 +4,21 @@ import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostTheme, IMainThreadTheme } from '../../../common/sumi/theme';
 
-export function createThemeApi(
-  theme: ExtHostTheme,
-) {
+export function createThemeApi(theme: ExtHostTheme) {
   return {
-    getThemeColors: async (dir: string) => {
-      return theme.getThemeColors();
-    },
+    getThemeColors: async (dir: string) => theme.getThemeColors(),
     onThemeChanged: theme.onThemeChanged,
   };
 }
 
 export class ExtHostTheme implements IExtHostTheme {
-
   private proxy: IMainThreadTheme;
 
   private _onThemeChanged = new Emitter<void>();
 
   public readonly onThemeChanged = this._onThemeChanged.event;
 
-  constructor(
-    private rpcProtocol: IRPCProtocol,
-  ) {
+  constructor(private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadTheme);
   }
 
@@ -33,7 +26,7 @@ export class ExtHostTheme implements IExtHostTheme {
     this._onThemeChanged.fire();
   }
 
-  async getThemeColors(): Promise<{[key: string]: string}> {
+  async getThemeColors(): Promise<{ [key: string]: string }> {
     return this.proxy.$getThemeColors();
   }
 }

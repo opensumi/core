@@ -4,29 +4,28 @@ import { Injector } from '@opensumi/di';
 
 const mockedWindows = new Map<number, any>();
 
-jest.mock('electron', () => {
-  return {
-    Menu: mockService({
-      buildFromTemplate: (p) => {
-        return p;
-      },
-    }),
-    BrowserWindow: {
-      fromId: (id) => {
-        if (!mockedWindows.has(id)) {
-          const eventEmitter = new EventEmitter();
-          mockedWindows.set(id, mockService<any>({
+jest.mock('electron', () => ({
+  Menu: mockService({
+    buildFromTemplate: (p) => p,
+  }),
+  BrowserWindow: {
+    fromId: (id) => {
+      if (!mockedWindows.has(id)) {
+        const eventEmitter = new EventEmitter();
+        mockedWindows.set(
+          id,
+          mockService<any>({
             on: eventEmitter.on.bind(eventEmitter) as any,
             removeListener: eventEmitter.removeListener.bind(eventEmitter) as any,
             eventEmitter,
             isFocused: () => false,
-          } as any));
-        }
-        return mockedWindows.get(id);
-      },
+          } as any),
+        );
+      }
+      return mockedWindows.get(id);
     },
-  };
-});
+  },
+}));
 
 import { ElectronMainMenuService } from '../src/bootstrap/services/menu';
 import { BrowserWindow, Menu } from 'electron';
@@ -41,7 +40,6 @@ async function delay(ms: number) {
 }
 
 describe('electron main menu tests', () => {
-
   it('menu leak should not happen', async (done) => {
     if (isWindows) {
       return;
@@ -50,14 +48,17 @@ describe('electron main menu tests', () => {
 
     const menuService: ElectronMainMenuService = injector.get(ElectronMainMenuService);
 
-    menuService.setApplicationMenu({
-      label: 'test',
-      submenu: [
-        {
-          label: 'test1',
-        },
-      ],
-    }, 100);
+    menuService.setApplicationMenu(
+      {
+        label: 'test',
+        submenu: [
+          {
+            label: 'test1',
+          },
+        ],
+      },
+      100,
+    );
 
     const emitter: EventEmitter = (BrowserWindow.fromId(100)! as any).eventEmitter;
 
@@ -67,29 +68,39 @@ describe('electron main menu tests', () => {
     emitter.emit('focus');
 
     await delay(1);
-    expect(Menu.setApplicationMenu).toBeCalledWith(expect.arrayContaining([expect.objectContaining({
-      label: 'test1',
-    })]));
+    expect(Menu.setApplicationMenu).toBeCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'test1',
+        }),
+      ]),
+    );
 
-    menuService.setApplicationMenu({
-      label: 'test2',
-      submenu: [
-        {
-          label: 'test2',
-        },
-      ],
-    }, 100);
+    menuService.setApplicationMenu(
+      {
+        label: 'test2',
+        submenu: [
+          {
+            label: 'test2',
+          },
+        ],
+      },
+      100,
+    );
 
     expect(emitter.listenerCount('focus')).toBe(1);
 
     (Menu.setApplicationMenu as jest.Mock).mockClear();
     emitter.emit('focus');
     await delay(1);
-    expect(Menu.setApplicationMenu).toBeCalledWith(expect.arrayContaining([expect.objectContaining({
-      label: 'test2',
-    })]));
+    expect(Menu.setApplicationMenu).toBeCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'test2',
+        }),
+      ]),
+    );
 
     done();
   });
-
 });

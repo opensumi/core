@@ -1,7 +1,14 @@
 import { observable, computed, action } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@opensumi/ide-core-browser';
-import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor, StatusBarCommand, StatusBarState } from '@opensumi/ide-core-browser/lib/services';
+import {
+  IStatusBarService,
+  StatusBarEntry,
+  StatusBarAlignment,
+  StatusBarEntryAccessor,
+  StatusBarCommand,
+  StatusBarState,
+} from '@opensumi/ide-core-browser/lib/services';
 import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-core-common';
 import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
@@ -9,7 +16,6 @@ import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {
-
   @observable
   private backgroundColor: string | undefined;
 
@@ -125,7 +131,10 @@ export class StatusBarService extends Disposable implements IStatusBarService {
       toggleContextKey.bind(this.contextKeyService);
       // 如果当前状态栏在左侧，权重越大，排序越靠前，右侧反之
       // 负数为左，正数为右
-      const order = entry.alignment === StatusBarAlignment.LEFT ? -1 * (entry.priority ?? 0) : Number.MAX_SAFE_INTEGER - (entry.priority ?? 0);
+      const order =
+        entry.alignment === StatusBarAlignment.LEFT
+          ? -1 * (entry.priority ?? 0)
+          : Number.MAX_SAFE_INTEGER - (entry.priority ?? 0);
       const menuDisposer = this.menuRegistry.registerMenuItem(MenuId.StatusBarContext, {
         command: {
           id: StatusBarCommand.toggleElement.id,
@@ -138,9 +147,11 @@ export class StatusBarService extends Disposable implements IStatusBarService {
       disposables.push(menuDisposer);
     }
     this.entries.set(entryId, entry);
-    disposables.push(Disposable.create(() => {
-      this.entries.delete(entryId);
-    }));
+    disposables.push(
+      Disposable.create(() => {
+        this.entries.delete(entryId);
+      }),
+    );
     this.disposableCollection.set(entryId, disposables);
     return {
       dispose: () => {
@@ -208,12 +219,11 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    */
   @computed
   get entriesArray(): StatusBarEntry[] {
-    return Array.from(this.entries.values())
-        .sort((left, right) => {
-        const lp = left.priority || 0;
-        const rp = right.priority || 0;
-        return rp - lp;
-      });
+    return Array.from(this.entries.values()).sort((left, right) => {
+      const lp = left.priority || 0;
+      const rp = right.priority || 0;
+      return rp - lp;
+    });
   }
 
   /**
@@ -254,19 +264,11 @@ export class StatusBarService extends Disposable implements IStatusBarService {
 
   @memoize
   get contextKeyService() {
-    return this.registerDispose(
-      this.globalContextKeyService.createScoped(),
-    );
+    return this.registerDispose(this.globalContextKeyService.createScoped());
   }
 
   @memoize
   public get contextMenu(): IMenu {
-    return this.registerDispose(
-      this.menuService.createMenu(
-        MenuId.StatusBarContext,
-        this.contextKeyService,
-      ),
-    );
+    return this.registerDispose(this.menuService.createMenu(MenuId.StatusBarContext, this.contextKeyService));
   }
-
 }

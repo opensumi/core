@@ -1,7 +1,6 @@
 import { URI, BasicEvent, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
 
 export interface IResourceProvider {
-
   scheme?: string; // 相当于 handlesUri => 10
 
   /**
@@ -22,7 +21,6 @@ export interface IResourceProvider {
 }
 
 export abstract class ResourceService {
-
   /**
    * 注册一个新的 ResourceProvider 会触发该事件
    */
@@ -82,9 +80,7 @@ export class ResourceDecorationNeedChangeEvent extends BasicEvent<IResourceDecor
 export type IResourceUpdateType = 'change' | 'remove';
 
 export interface IResourceDecoration {
-
   dirty: boolean;
-
 }
 
 export interface IResourceDecorationChangeEventPayload {
@@ -97,7 +93,6 @@ export interface IResourceDecorationChangeEventPayload {
  * 一个资源代表了一个能够在编辑器区域被打开的东西
  */
 export interface IResource<MetaData = any> {
-
   /**
    * 是否允许刷新后恢复
    */
@@ -115,7 +110,7 @@ export interface IResource<MetaData = any> {
   deleted?: any;
 }
 
-export type IDiffResource  = IResource<{ original: URI, modified: URI }>;
+export type IDiffResource = IResource<{ original: URI; modified: URI }>;
 
 export const DIFF_SCHEME = 'diff';
 

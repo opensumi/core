@@ -9,7 +9,6 @@ import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
 import { IThemeService, IIconService } from '@opensumi/ide-theme';
 
 describe(__filename, () => {
-
   let injector: MockInjector;
   let quickPickService: QuickPickService;
   let container: HTMLDivElement;
@@ -27,20 +26,25 @@ describe(__filename, () => {
   });
 
   beforeEach(() => {
-    injector = createBrowserInjector([ QuickOpenModule ]);
-    injector.addProviders({
-      token: MonacoContextKeyService,
-      useValue: mockService({}),
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IThemeService,
-      useValue: mockService({}),
-    }, {
-      token: IIconService,
-      useValue: mockService({}),
-    });
+    injector = createBrowserInjector([QuickOpenModule]);
+    injector.addProviders(
+      {
+        token: MonacoContextKeyService,
+        useValue: mockService({}),
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: IThemeService,
+        useValue: mockService({}),
+      },
+      {
+        token: IIconService,
+        useValue: mockService({}),
+      },
+    );
     quickOpenService = injector.get(QuickOpenService);
     // 以下 initWidgetView 与 widget 为私有变量
     // @ts-ignore
@@ -58,19 +62,21 @@ describe(__filename, () => {
       expect(item).toBe('sumi');
       done();
     });
-    const [ item ] = widget.items;
+    const [item] = widget.items;
     item.run(QuickOpenMode.OPEN);
   });
 
   it('show quick-open with canPickMany', (done) => {
-    quickPickService.show(['sumi', 'vscode'], {
-      canPickMany: true,
-    }).then((items) => {
-      expect(items).toHaveLength(2);
-      expect(items![0]).toBe('sumi');
-      expect(items![1]).toBe('vscode');
-      done();
-    });
+    quickPickService
+      .show(['sumi', 'vscode'], {
+        canPickMany: true,
+      })
+      .then((items) => {
+        expect(items).toHaveLength(2);
+        expect(items![0]).toBe('sumi');
+        expect(items![1]).toBe('vscode');
+        done();
+      });
     widget.callbacks.onConfirm(widget.items);
   });
 });

@@ -25,7 +25,7 @@ export interface IMarkerService {
  * marker 过滤条件
  */
 // tslint:disable-next-line: no-empty-interface
-export interface IFilterOptions { }
+export interface IFilterOptions {}
 
 /**
  * 过滤后的marker
@@ -72,7 +72,13 @@ export interface IRenderableMarkerModel {
 }
 
 export class MarkerModelBuilder {
-  public static buildModel(resource: string, icon: string, filename: string, longname: string, markers: IRenderableMarker[]): IRenderableMarkerModel {
+  public static buildModel(
+    resource: string,
+    icon: string,
+    filename: string,
+    longname: string,
+    markers: IRenderableMarker[],
+  ): IRenderableMarkerModel {
     return {
       match: true,
       resource,
@@ -84,7 +90,13 @@ export class MarkerModelBuilder {
     };
   }
 
-  public static buildFilterModel(model: IRenderableMarkerModel, markers: IRenderableMarker[], parentMatch: boolean, childrenMatch: boolean, matches?: IFilterMatches): IRenderableMarkerModel {
+  public static buildFilterModel(
+    model: IRenderableMarkerModel,
+    markers: IRenderableMarker[],
+    parentMatch: boolean,
+    childrenMatch: boolean,
+    matches?: IFilterMatches,
+  ): IRenderableMarkerModel {
     const match = parentMatch || childrenMatch;
     return {
       ...model,
@@ -97,7 +109,9 @@ export class MarkerModelBuilder {
         }
         let count = 0;
         markers.forEach((m) => {
-          if (m.match) { count++; }
+          if (m.match) {
+            count++;
+          }
         });
         return count;
       },

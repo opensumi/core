@@ -16,8 +16,7 @@ import {
 
 @Injectable()
 export class ProcessFactory {
-  constructor(
-  ) { }
+  constructor() {}
 
   @Autowired(IProcessManage)
   private readonly processManage: ProcessManage;
@@ -28,21 +27,17 @@ export class ProcessFactory {
 }
 
 export class Process extends Disposable implements IProcess {
-
   readonly process: ChildProcess | undefined;
   readonly outputStream: stream.Readable;
   readonly errorStream: stream.Readable;
   readonly inputStream: stream.Writable;
-  protected _killed: boolean = false;
+  protected _killed = false;
 
   protected readonly startEmitter: Emitter<IProcessStartEvent> = new Emitter<IProcessStartEvent>();
   protected readonly exitEmitter: Emitter<IProcessExitEvent> = new Emitter<IProcessExitEvent>();
   protected readonly errorEmitter: Emitter<ProcessErrorEvent> = new Emitter<ProcessErrorEvent>();
 
-  constructor(
-    options: ProcessOptions | ForkOptions,
-    readonly processManage: ProcessManage,
-  ) {
+  constructor(options: ProcessOptions | ForkOptions, readonly processManage: ProcessManage) {
     super();
     // About catching errors: spawn will sometimes throw directly
     // (EACCES on Linux), sometimes return a Process object with the pid
@@ -51,15 +46,9 @@ export class Process extends Disposable implements IProcess {
     // event.
     try {
       if (this.isForkOptions(options)) {
-        this.process = fork(
-          options.modulePath,
-          options.args,
-          options.options);
+        this.process = fork(options.modulePath, options.args, options.options);
       } else {
-        this.process = spawn(
-          options.command,
-          options.args,
-          options.options);
+        this.process = spawn(options.command, options.args, options.options);
       }
 
       this.process.on('error', (error: NodeJS.ErrnoException) => {

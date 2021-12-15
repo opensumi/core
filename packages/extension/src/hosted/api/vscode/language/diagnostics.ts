@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -18,15 +18,15 @@
 import type vscode from 'vscode';
 import { Emitter, Event, IMarkerData, MarkerSeverity } from '@opensumi/ide-core-common';
 import { IMainThreadLanguages } from '../../../../common/vscode';
-import {
-  DiagnosticSeverity,
-  Uri as URI,
-} from '../../../../common/vscode/ext-types';
+import { DiagnosticSeverity, Uri as URI } from '../../../../common/vscode/ext-types';
 import { convertDiagnosticToMarkerData } from '../../../../common/vscode/converter';
 
 export class DiagnosticCollection implements vscode.DiagnosticCollection {
   private static DIAGNOSTICS_PRIORITY = [
-    DiagnosticSeverity.Error, DiagnosticSeverity.Warning, DiagnosticSeverity.Information, DiagnosticSeverity.Hint,
+    DiagnosticSeverity.Error,
+    DiagnosticSeverity.Warning,
+    DiagnosticSeverity.Information,
+    DiagnosticSeverity.Hint,
   ];
 
   private collectionName: string;
@@ -38,7 +38,12 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
   private isDisposed: boolean;
   private onDisposeCallback: (() => void) | undefined;
 
-  constructor(name: string, maxCountPerFile: number, proxy: IMainThreadLanguages, onDidChangeDiagnosticsEmitter: Emitter<vscode.DiagnosticChangeEvent>) {
+  constructor(
+    name: string,
+    maxCountPerFile: number,
+    proxy: IMainThreadLanguages,
+    onDidChangeDiagnosticsEmitter: Emitter<vscode.DiagnosticChangeEvent>,
+  ) {
     this.collectionName = name;
     this.diagnosticsLimitPerResource = maxCountPerFile;
     this.proxy = proxy;
@@ -55,7 +60,10 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 
   set(uri: vscode.Uri, diagnostics: vscode.Diagnostic[] | undefined): void;
   set(entries: [vscode.Uri, vscode.Diagnostic[] | undefined][]): void;
-  set(arg: vscode.Uri | [vscode.Uri, vscode.Diagnostic[] | undefined][], diagnostics?: vscode.Diagnostic[] | undefined) {
+  set(
+    arg: vscode.Uri | [vscode.Uri, vscode.Diagnostic[] | undefined][],
+    diagnostics?: vscode.Diagnostic[] | undefined,
+  ) {
     this.ensureNotDisposed();
 
     if (arg instanceof URI) {
@@ -127,7 +135,10 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
   }
 
   // tslint:disable-next-line:no-any
-  forEach(callback: (uri: URI, diagnostics: vscode.Diagnostic[], collection: vscode.DiagnosticCollection) => any, thisArg?: any): void {
+  forEach(
+    callback: (uri: URI, diagnostics: vscode.Diagnostic[], collection: vscode.DiagnosticCollection) => any,
+    thisArg?: any,
+  ): void {
     this.ensureNotDisposed();
     this.diagnostics.forEach((diagnostics, uriString) => {
       const uri = URI.parse(uriString);
@@ -142,7 +153,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 
   has(uri: URI): boolean {
     this.ensureNotDisposed();
-    return (this.diagnostics.get(uri.toString()) instanceof Array);
+    return this.diagnostics.get(uri.toString()) instanceof Array;
   }
 
   dispose(): void {
@@ -173,7 +184,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 
   private getDiagnosticsByUri(uri: URI): vscode.Diagnostic[] | undefined {
     const diagnostics = this.diagnostics.get(uri.toString());
-    return (diagnostics instanceof Array) ? Object.freeze(diagnostics) as vscode.Diagnostic[] : undefined;
+    return diagnostics instanceof Array ? (Object.freeze(diagnostics) as vscode.Diagnostic[]) : undefined;
   }
 
   private fireDiagnosticChangeEvent(arg: string | string[] | URI | URI[]): void {
@@ -206,8 +217,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 
   private sendChangesToEditor(uris: URI[]): void {
     const markers: [string, IMarkerData[]][] = [];
-    nextUri:
-    for (const uri of uris) {
+    nextUri: for (const uri of uris) {
       const uriMarkers: IMarkerData[] = [];
       const uriDiagnostics = this.diagnostics.get(uri.toString());
       if (uriDiagnostics) {
@@ -215,11 +225,17 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
           for (const severity of DiagnosticCollection.DIAGNOSTICS_PRIORITY) {
             for (const diagnostic of uriDiagnostics) {
               if (severity === diagnostic.severity) {
-                if (uriMarkers.push(convertDiagnosticToMarkerData(diagnostic)) + 1 === this.diagnosticsLimitPerResource) {
+                if (
+                  uriMarkers.push(convertDiagnosticToMarkerData(diagnostic)) + 1 ===
+                  this.diagnosticsLimitPerResource
+                ) {
                   const lastMarker = uriMarkers[uriMarkers.length - 1];
                   uriMarkers.push({
                     severity: MarkerSeverity.Info,
-                    message: 'Limit of diagnostics is reached. ' + (uriDiagnostics.length - this.diagnosticsLimitPerResource) + ' items are hidden',
+                    message:
+                      'Limit of diagnostics is reached. ' +
+                      (uriDiagnostics.length - this.diagnosticsLimitPerResource) +
+                      ' items are hidden',
                     startLineNumber: lastMarker.startLineNumber,
                     startColumn: lastMarker.startColumn,
                     endLineNumber: lastMarker.endLineNumber,
@@ -282,7 +298,12 @@ export class Diagnostics {
       console.warn(`Diagnostic collection with name '${name}' already exist.`);
     }
 
-    const diagnosticCollection = new DiagnosticCollection(name, Diagnostics.MAX_DIAGNOSTICS_PER_FILE, this.proxy, this.diagnosticsChangedEmitter);
+    const diagnosticCollection = new DiagnosticCollection(
+      name,
+      Diagnostics.MAX_DIAGNOSTICS_PER_FILE,
+      this.proxy,
+      this.diagnosticsChangedEmitter,
+    );
     diagnosticCollection.setOnDisposeCallback(() => {
       this.diagnosticCollections.delete(name!);
     });

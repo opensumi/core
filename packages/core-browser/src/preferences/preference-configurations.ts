@@ -19,7 +19,6 @@ export function injectPreferenceConfigurations(injector: Injector): void {
 
 @Injectable()
 export class PreferenceConfigurations {
-
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -67,8 +66,11 @@ export class PreferenceConfigurations {
     return configUri.parent.path.base;
   }
 
-  public createUri(folder: URI, configPath: string = this.getPaths()[0], configName: string = this.getConfigName()): URI {
+  public createUri(
+    folder: URI,
+    configPath: string = this.getPaths()[0],
+    configName: string = this.getConfigName(),
+  ): URI {
     return folder.resolve(configPath).resolve(configName + '.json');
   }
-
 }

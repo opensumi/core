@@ -44,7 +44,7 @@ const layoutConfig = {
 // serviceWorker.register();
 
 renderApp({
-  modules: [ ...CommonBrowserModules, WebLiteModule ],
+  modules: [...CommonBrowserModules, WebLiteModule],
   layoutConfig,
   layoutComponent: LayoutComponent,
   useCdnIcon: true,
@@ -59,7 +59,11 @@ renderApp({
     'general.language': 'en-US',
   },
   workspaceDir: '/ide-s/TypeScript-Node-Starter',
-  extraContextProvider: (props) => <div id='#hi' style={{ width: '100%', height: '100%' }}>{props.children}</div>,
+  extraContextProvider: (props) => (
+    <div id='#hi' style={{ width: '100%', height: '100%' }}>
+      {props.children}
+    </div>
+  ),
   iconStyleSheets: [
     {
       iconMap: {

@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2019 Ericsson and others.
  *
  * This program and the accompanying materials are made available under the
@@ -15,7 +15,18 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-abstract-line-matcher.ts
 
-import { isWindows, ProblemLocationKind, ProblemPattern, ProblemMatcher, ProblemMatch, ProblemMatchData, Severity, FileLocationKind, URI, WatchingPattern } from '@opensumi/ide-core-common';
+import {
+  isWindows,
+  ProblemLocationKind,
+  ProblemPattern,
+  ProblemMatcher,
+  ProblemMatch,
+  ProblemMatchData,
+  Severity,
+  FileLocationKind,
+  URI,
+  WatchingPattern,
+} from '@opensumi/ide-core-common';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
 
 const endOfLine: string = isWindows ? '\r\n' : '\n';
@@ -34,15 +45,12 @@ export interface ProblemData {
 }
 
 export abstract class AbstractLineMatcher {
-
   protected patterns: ProblemPattern[] = [];
-  protected activePatternIndex: number = 0;
+  protected activePatternIndex = 0;
   protected activePattern: ProblemPattern | undefined;
   protected cachedProblemData: ProblemData;
 
-  constructor(
-    protected matcher: ProblemMatcher,
-  ) {
+  constructor(protected matcher: ProblemMatcher) {
     if (Array.isArray(matcher.pattern)) {
       this.patterns = matcher.pattern;
     } else {
@@ -51,7 +59,7 @@ export abstract class AbstractLineMatcher {
     this.cachedProblemData = this.getEmptyProblemData();
 
     if (this.patterns.slice(0, this.patternCount - 1).some((p) => !!p.loop)) {
-       // tslint:disable-next-line:no-console
+      // tslint:disable-next-line:no-console
       console.error('Problem Matcher: Only the last pattern can loop');
     }
   }
@@ -76,7 +84,11 @@ export abstract class AbstractLineMatcher {
     return Object.create(null) as ProblemData;
   }
 
-  protected fillProblemData(data: ProblemData | null, pattern: ProblemPattern, matches: RegExpExecArray): data is ProblemData {
+  protected fillProblemData(
+    data: ProblemData | null,
+    pattern: ProblemPattern,
+    matches: RegExpExecArray,
+  ): data is ProblemData {
     if (data) {
       this.fillProperty(data, 'file', pattern, matches, true);
       this.appendProperty(data, 'message', pattern, matches, true);
@@ -92,7 +104,13 @@ export abstract class AbstractLineMatcher {
     return false;
   }
 
-  private appendProperty(data: ProblemData, property: keyof ProblemData, pattern: ProblemPattern, matches: RegExpExecArray, trim: boolean = false): void {
+  private appendProperty(
+    data: ProblemData,
+    property: keyof ProblemData,
+    pattern: ProblemPattern,
+    matches: RegExpExecArray,
+    trim = false,
+  ): void {
     const patternProperty = pattern[property];
     if (data[property] === undefined) {
       this.fillProperty(data, property, pattern, matches, trim);
@@ -105,7 +123,13 @@ export abstract class AbstractLineMatcher {
     }
   }
 
-  private fillProperty(data: ProblemData, property: keyof ProblemData, pattern: ProblemPattern, matches: RegExpExecArray, trim: boolean = false): void {
+  private fillProperty(
+    data: ProblemData,
+    property: keyof ProblemData,
+    pattern: ProblemPattern,
+    matches: RegExpExecArray,
+    trim = false,
+  ): void {
     const patternAtProperty = pattern[property];
     if (data[property] === undefined && patternAtProperty !== undefined && patternAtProperty < matches.length) {
       let value = matches[patternAtProperty];
@@ -182,23 +206,43 @@ export abstract class AbstractLineMatcher {
     }
   }
 
-  private createRange(startLine: number, startColumn: number | undefined, endLine: number | undefined, endColumn: number | undefined): Range {
+  private createRange(
+    startLine: number,
+    startColumn: number | undefined,
+    endLine: number | undefined,
+    endColumn: number | undefined,
+  ): Range {
     let range: Range;
     if (startColumn !== undefined) {
       if (endColumn !== undefined) {
-        range = { start: { line: startLine, character: startColumn }, end: { line: endLine || startLine, character: endColumn } } as Range;
+        range = {
+          start: { line: startLine, character: startColumn },
+          end: { line: endLine || startLine, character: endColumn },
+        } as Range;
       } else {
-        range = { start: { line: startLine, character: startColumn }, end: { line: startLine, character: startColumn } } as Range;
+        range = {
+          start: { line: startLine, character: startColumn },
+          end: { line: startLine, character: startColumn },
+        } as Range;
       }
     } else {
-      range = { start: { line: startLine, character: 1 }, end: { line: startLine, character: Number.MAX_VALUE } } as Range;
+      range = {
+        start: { line: startLine, character: 1 },
+        end: { line: startLine, character: Number.MAX_VALUE },
+      } as Range;
     }
 
     // range indexes should be zero-based
     return {
-      start: { line: this.getZeroBasedRangeIndex(range.start.line), character: this.getZeroBasedRangeIndex(range.start.character) },
-      end: { line: this.getZeroBasedRangeIndex(range.end.line), character:  this.getZeroBasedRangeIndex(range.end.character) },
-    }  as Range;
+      start: {
+        line: this.getZeroBasedRangeIndex(range.start.line),
+        character: this.getZeroBasedRangeIndex(range.start.character),
+      },
+      end: {
+        line: this.getZeroBasedRangeIndex(range.end.line),
+        character: this.getZeroBasedRangeIndex(range.end.character),
+      },
+    } as Range;
   }
 
   private getZeroBasedRangeIndex(ind: number): number {
@@ -239,7 +283,7 @@ export abstract class AbstractLineMatcher {
     let fullPath: string | undefined;
     if (kind === FileLocationKind.Absolute) {
       fullPath = filename;
-    } else if ((kind === FileLocationKind.Relative) && matcher.filePrefix) {
+    } else if (kind === FileLocationKind.Relative && matcher.filePrefix) {
       let relativeFileName = filename.replace(/\\/g, '/');
       if (relativeFileName.startsWith('./')) {
         relativeFileName = relativeFileName.slice(2);
@@ -247,7 +291,9 @@ export abstract class AbstractLineMatcher {
       fullPath = new URI(matcher.filePrefix).resolve(relativeFileName).path.toString();
     }
     if (fullPath === undefined) {
-      throw new Error('FileLocationKind is not actionable. Does the matcher have a filePrefix? This should never happen.');
+      throw new Error(
+        'FileLocationKind is not actionable. Does the matcher have a filePrefix? This should never happen.',
+      );
     }
     fullPath = fullPath.replace(/\\/g, '/');
     if (fullPath[0] !== '/') {
@@ -306,10 +352,7 @@ export abstract class AbstractLineMatcher {
 }
 
 export class StartStopLineMatcher extends AbstractLineMatcher {
-
-  constructor(
-    protected matcher: ProblemMatcher,
-  ) {
+  constructor(protected matcher: ProblemMatcher) {
     super(matcher);
   }
 
@@ -341,7 +384,8 @@ export class StartStopLineMatcher extends AbstractLineMatcher {
         }
       } else {
         this.resetCachedProblemData();
-        if (this.activePatternIndex !== 0) { // if no match, use the first pattern to parse the same line
+        if (this.activePatternIndex !== 0) {
+          // if no match, use the first pattern to parse the same line
           this.resetActivePatternIndex();
           return this.match(line);
         }
@@ -352,14 +396,11 @@ export class StartStopLineMatcher extends AbstractLineMatcher {
 }
 
 export class WatchModeLineMatcher extends StartStopLineMatcher {
-
   private beginsPattern: WatchingPattern;
   private endsPattern: WatchingPattern;
-  activeOnStart: boolean = false;
+  activeOnStart = false;
 
-  constructor(
-    protected matcher: ProblemMatcher,
-  ) {
+  constructor(protected matcher: ProblemMatcher) {
     super(matcher);
     this.beginsPattern = matcher.watching!.beginsPattern;
     this.endsPattern = matcher.watching!.endsPattern;

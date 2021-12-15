@@ -6,12 +6,9 @@ import { ZoneWidget } from './zone-widget';
 import { IFoldedCodeWidgetContentProvider } from '../common';
 
 export class FoldedCodeWidget extends ZoneWidget {
+  protected applyClass() {}
 
-  protected applyClass() {
-  }
-
-  protected applyStyle() {
-  }
+  protected applyStyle() {}
 
   constructor(
     protected readonly editor: IMonacoCodeEditor,
@@ -22,12 +19,15 @@ export class FoldedCodeWidget extends ZoneWidget {
   }
 
   show(where: monaco.IRange) {
-    super.show({
-      startLineNumber: where.startLineNumber,
-      endLineNumber: where.startLineNumber,
-      startColumn: where.startColumn,
-      endColumn: where.endColumn,
-    }, 1);
+    super.show(
+      {
+        startLineNumber: where.startLineNumber,
+        endLineNumber: where.startLineNumber,
+        startColumn: where.startColumn,
+        endColumn: where.endColumn,
+      },
+      1,
+    );
     this.provider.renderInforOverlay(this._container, this.index);
   }
 }
@@ -67,10 +67,7 @@ export class FoldedCodeWidgetGroup extends Disposable {
     return another;
   }
 
-  constructor(
-    protected readonly editor: IMonacoCodeEditor,
-    protected provider: IFoldedCodeWidgetContentProvider,
-  ) {
+  constructor(protected readonly editor: IMonacoCodeEditor, protected provider: IFoldedCodeWidgetContentProvider) {
     super();
 
     this.editor.updateOptions({
@@ -89,7 +86,6 @@ export class FoldedCodeWidgetGroup extends Disposable {
   }
 
   fold(showRanges: monaco.IRange[]) {
-
     if (!this.editor.getModel()) {
       throw new Error('Can not fold a editor without any text model');
     }

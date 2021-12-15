@@ -1,12 +1,17 @@
 import { observable, computed, action } from 'mobx';
 import { Injectable } from '@opensumi/di';
-import { IAutoFocus, IQuickOpenCallbacks, IQuickOpenModel, IQuickOpenWidget, QuickOpenInputOptions } from './quick-open.type';
+import {
+  IAutoFocus,
+  IQuickOpenCallbacks,
+  IQuickOpenModel,
+  IQuickOpenWidget,
+  QuickOpenInputOptions,
+} from './quick-open.type';
 import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 @Injectable({ multiple: true })
 export class QuickOpenWidget implements IQuickOpenWidget {
-
   public MAX_HEIGHT = 440;
 
   @observable
@@ -48,7 +53,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @observable
   private _valueSelection?: [number, number];
 
-   @computed
+  @computed
   get valueSelection() {
     return this._valueSelection;
   }
@@ -56,7 +61,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @observable
   private _canSelectMany?: boolean;
 
-   @computed
+  @computed
   get canSelectMany() {
     return this._canSelectMany;
   }
@@ -98,10 +103,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
-  constructor(
-    public callbacks: IQuickOpenCallbacks,
-  ) {
-  }
+  constructor(public callbacks: IQuickOpenCallbacks) {}
 
   @action
   show(prefix: string, options: QuickOpenInputOptions): void {

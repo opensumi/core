@@ -8,9 +8,7 @@ describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
   let dialogService: IDialogService;
 
   beforeAll(async (done) => {
-    app = await createBrowserApp([
-      OverlayModule,
-    ]);
+    app = await createBrowserApp([OverlayModule]);
     dialogService = app.injector.get<IDialogService>(IDialogService);
     done();
   });
@@ -73,8 +71,7 @@ describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
 
   it.skip('select btn', (done) => {
     act(() => {
-      dialogService.info('hello', ['btnA', 'btnB'])
-      .then((select) => {
+      dialogService.info('hello', ['btnA', 'btnB']).then((select) => {
         expect(select).toBe('btnA');
         done();
       });
@@ -85,13 +82,11 @@ describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
 
   it('close dialog will recieve undefined', (done) => {
     act(() => {
-      dialogService.info('hello', ['btnA', 'btnB'])
-      .then((select) => {
+      dialogService.info('hello', ['btnA', 'btnB']).then((select) => {
         expect(select).toBe(undefined);
         done();
       });
       dialogService.hide();
     });
   });
-
 });

@@ -1,5 +1,5 @@
 declare module 'sumi-worker' {
-  //#region Comments
+  // #region Comments
 
   /**
    * Collapsible state of a [comment thread](#CommentThread)

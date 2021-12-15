@@ -1,9 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@opensumi/ide-core-common';
+import {
+  OS,
+  IApplicationService,
+  CommonServerPath,
+  ICommonServer,
+  isElectronRenderer,
+  Deferred,
+} from '@opensumi/ide-core-common';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {
-
   @Autowired(CommonServerPath)
   protected readonly commonServer: ICommonServer;
 
@@ -28,7 +34,9 @@ export class ApplicationService implements IApplicationService {
     if (isElectronRenderer()) {
       return this.frontendOS;
     }
-    throw new Error(`Can't get backend os type before initialize, if you want wait to get backend os, please use async method: getBackendOS`);
+    throw new Error(
+      "Can't get backend os type before initialize, if you want wait to get backend os, please use async method: getBackendOS",
+    );
   }
 
   async getBackendOS() {

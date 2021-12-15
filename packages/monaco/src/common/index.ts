@@ -1,5 +1,10 @@
 import { URI } from '@opensumi/ide-core-common';
-import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../browser/monaco-api/types';
+import {
+  FoldingRules,
+  IAutoClosingPair,
+  IAutoClosingPairConditional,
+  LanguageConfiguration,
+} from '../browser/monaco-api/types';
 
 export * from '@opensumi/ide-core-browser/lib/monaco';
 
@@ -70,12 +75,12 @@ export interface ILanguageConfiguration {
  */
 export interface CommentRule {
   /**
-	 * The line comment token, like `// this is a comment`
-	 */
+   * The line comment token, like `// this is a comment`
+   */
   lineComment?: string | null;
   /**
-	 * The block comment character pair, like `/* block comment *&#47;`
-	 */
+   * The block comment character pair, like `/* block comment *&#47;`
+   */
   blockComment?: CharacterPair | null;
 }
 

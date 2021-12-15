@@ -29,7 +29,7 @@ export interface IModelChangedEvent {
 export interface IMainThreadDocumentsShape extends IDisposable {
   $unregisterDocumentProviderWithScheme(scheme: string);
   $registerDocumentProviderWithScheme(scheme: string);
-  $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
+  $tryCreateDocument(options?: { language?: string; content?: string }): Promise<string>;
   $tryOpenDocument(uri: string): Promise<void>;
   $trySaveDocument(uri: string): Promise<boolean>;
 
@@ -50,7 +50,6 @@ export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
   onWillSaveTextDocument: Event<vscode.TextDocumentWillSaveEvent>;
   onDidSaveTextDocument: Event<vscode.TextDocument>;
   setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void;
-
 }
 
 export interface IExtensionDocumentModelChangedEvent {

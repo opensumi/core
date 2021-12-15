@@ -17,23 +17,28 @@ describe(__filename, () => {
     let extensionHostManager: IExtensionHostManager;
     beforeEach(async () => {
       injector = createNodeInjector([]);
-      injector.addProviders({
-        token: INodeLogger,
-        useValue: {
-          /* tslint:disable */
-          log: console.log,
-          error: console.error,
-          warn: console.warn,
-          /* tslint:enable */
+      injector.addProviders(
+        {
+          token: INodeLogger,
+          useValue: {
+            /* tslint:disable */
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            /* tslint:enable */
+          },
         },
-      }, {
-        token: IExtensionHostManager,
-        useFactory(injector) {
-          return injector.get(ExtensionHostProxyManager, [{
-            port: PROXY_PORT,
-          }]);
+        {
+          token: IExtensionHostManager,
+          useFactory(injector) {
+            return injector.get(ExtensionHostProxyManager, [
+              {
+                port: PROXY_PORT,
+              },
+            ]);
+          },
         },
-      });
+      );
       extHostProxy = new ExtHostProxy({
         socketConnectOpts: {
           port: PROXY_PORT,
@@ -67,9 +72,11 @@ describe(__filename, () => {
       await sleep(3000);
       // 重新启动 IDE 后端
       // 传入构造函数参数，以便重新生成 di 实例
-      extensionHostManager = injector.get(ExtensionHostProxyManager, [{
-        port: PROXY_PORT,
-      }]);
+      extensionHostManager = injector.get(ExtensionHostProxyManager, [
+        {
+          port: PROXY_PORT,
+        },
+      ]);
       await extensionHostManager.init();
       // 等待连接成功
       await sleep(2000);

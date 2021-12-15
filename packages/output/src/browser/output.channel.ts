@@ -1,5 +1,14 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes, Schemas } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  uuid,
+  URI,
+  localize,
+  Deferred,
+  IEventBus,
+  removeAnsiEscapeCodes,
+  Schemas,
+} from '@opensumi/ide-core-common';
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { PreferenceService } from '@opensumi/ide-core-browser';
@@ -14,7 +23,7 @@ const DEFAULT_MAX_CHANNEL_LINE = 50000;
 @Injectable({ multiple: true })
 export class OutputChannel extends Disposable {
   private outputLines: string[] = [];
-  private visible: boolean = true;
+  private visible = true;
   private shouldLogToBrowser = false;
 
   @Autowired(IMainLayoutService)
@@ -40,7 +49,7 @@ export class OutputChannel extends Disposable {
 
   private maxChannelLine: number = DEFAULT_MAX_CHANNEL_LINE;
 
-  private enableHighlight: boolean = true;
+  private enableHighlight = true;
 
   constructor(@Optional() public readonly name: string) {
     super();
@@ -54,34 +63,35 @@ export class OutputChannel extends Disposable {
 
     this.setShouldLogToBrowser();
 
-    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
-      switch (e.preferenceName) {
-        case 'output.maxChannelLine':
-          this.onDidMaxChannelLineChange(e);
-          break;
-        case 'output.logWhenNoPanel':
-          this.setShouldLogToBrowser();
-          break;
-        case 'output.enableLogHighlight':
-          this.onDidLogHighlightChange(e);
-          break;
-        default:
-          break;
-      }
-    }));
+    this.addDispose(
+      this.preferenceService.onPreferenceChanged((e) => {
+        switch (e.preferenceName) {
+          case 'output.maxChannelLine':
+            this.onDidMaxChannelLineChange(e);
+            break;
+          case 'output.logWhenNoPanel':
+            this.setShouldLogToBrowser();
+            break;
+          case 'output.enableLogHighlight':
+            this.onDidLogHighlightChange(e);
+            break;
+          default:
+            break;
+        }
+      }),
+    );
 
     const uri = new URI(`${Schemas.walkThroughSnippet}://output/${name || uuid()}`);
-    this.documentService.createModelReference(uri)
-      .then((model) => {
-        this.outputModel = model;
-        this.monacoModel = this.outputModel.instance.getMonacoModel();
-        this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
+    this.documentService.createModelReference(uri).then((model) => {
+      this.outputModel = model;
+      this.monacoModel = this.outputModel.instance.getMonacoModel();
+      this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
 
-        if (this.enableHighlight) {
-          this.outputModel.instance.languageId = 'log';
-        }
-        this.modelReady.resolve();
-      });
+      if (this.enableHighlight) {
+        this.outputModel.instance.languageId = 'log';
+      }
+      this.modelReady.resolve();
+    });
   }
 
   private onDidMaxChannelLineChange(event) {
@@ -117,11 +127,17 @@ export class OutputChannel extends Disposable {
     const lineCount = this.monacoModel.getLineCount();
     const character = value.length;
     // 用 pushEditOperations 插入文本，直接替换 content 会触发重新计算高亮
-    this.monacoModel.pushEditOperations([], [{
-      range: new monaco.Range(lineCount, 0, lineCount + 1, character),
-      text: value,
-      forceMoveMarkers: true,
-    }], () => []);
+    this.monacoModel.pushEditOperations(
+      [],
+      [
+        {
+          range: new monaco.Range(lineCount, 0, lineCount + 1, character),
+          text: value,
+          forceMoveMarkers: true,
+        },
+      ],
+      () => [],
+    );
   }
 
   private isEmptyChannel(): boolean {
@@ -146,7 +162,11 @@ export class OutputChannel extends Disposable {
   }
 
   append(value: string): void {
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.outputLines)));
+    this.eventBus.fire(
+      new ContentChangeEvent(
+        new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.outputLines),
+      ),
+    );
     this.doAppend(removeAnsiEscapeCodes(value));
   }
 
@@ -155,18 +175,30 @@ export class OutputChannel extends Disposable {
     if (!line.endsWith('\r\n')) {
       value = line + '\r\n';
     }
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines)));
+    this.eventBus.fire(
+      new ContentChangeEvent(
+        new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines),
+      ),
+    );
     this.doAppend(removeAnsiEscapeCodes(value));
     if (this.shouldLogToBrowser) {
       // tslint:disable no-console
-      console.log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+      console.log(
+        `%c[${this.name}]` + `%c ${line}}`,
+        'background:rgb(50, 150, 250); color: #fff',
+        'background: none; color: inherit',
+      );
     }
   }
 
   clear(): void {
     this.outputLines = [];
     this.modelReady.promise.then(() => this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出')));
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, '', this.outputLines)));
+    this.eventBus.fire(
+      new ContentChangeEvent(
+        new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, '', this.outputLines),
+      ),
+    );
   }
 
   setVisibility(visible: boolean): void {

@@ -4,10 +4,7 @@ import { ClickParam } from '.';
 import MenuContext, { MenuContextProps } from './MenuContext';
 
 export interface MenuItemProps
-  extends Omit<
-    React.HTMLAttributes<HTMLLIElement>,
-    'title' | 'onClick' | 'onMouseEnter' | 'onMouseLeave'
-  > {
+  extends Omit<React.HTMLAttributes<HTMLLIElement>, 'title' | 'onClick' | 'onMouseEnter' | 'onMouseLeave'> {
   rootPrefixCls?: string;
   disabled?: boolean;
   level?: number;
@@ -27,11 +24,11 @@ export default class MenuItem extends React.Component<MenuItemProps> {
 
   onKeyDown = (e: React.MouseEvent<HTMLElement>) => {
     this.menuItem.onKeyDown(e);
-  }
+  };
 
   saveMenuItem = (menuItem: this) => {
     this.menuItem = menuItem;
-  }
+  };
 
   renderItem = () => {
     const { title, ...rest } = this.props;
@@ -47,7 +44,7 @@ export default class MenuItem extends React.Component<MenuItemProps> {
         }}
       </MenuContext.Consumer>
     );
-  }
+  };
 
   render() {
     return this.renderItem();

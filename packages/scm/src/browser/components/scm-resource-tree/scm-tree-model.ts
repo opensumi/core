@@ -1,5 +1,5 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Injectable, Optional, Autowired} from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
@@ -14,7 +14,7 @@ export class SCMTreeModel extends TreeModel {
 
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(SCMTreeModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(SCMTreeModel.DEFAULT_FLUSH_DELAY);
 
   constructor(@Optional() root: SCMResourceFolder | SCMResourceRoot) {
     super();

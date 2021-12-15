@@ -5,21 +5,59 @@ import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/comm
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
-import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@opensumi/ide-core-common';
+import {
+  DisposableCollection,
+  Emitter,
+  IMarkerData,
+  IRange,
+  LRUMap,
+  MarkerManager,
+  REPORT_NAME,
+  URI,
+} from '@opensumi/ide-core-common';
 import { extname } from '@opensumi/ide-core-common/lib/path';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, RangeSuggestDataDto, testGlob } from '../../../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  ICodeActionDto,
+  ICodeActionProviderMetadataDto,
+  IExtHostLanguages,
+  IMainThreadLanguages,
+  ISuggestDataDto,
+  ISuggestDataDtoField,
+  ISuggestResultDtoField,
+  MonacoModelIdentifier,
+  RangeSuggestDataDto,
+  testGlob,
+} from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { IExtensionDescription } from '../../../common/vscode/extension';
-import { ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ILinkDto } from '../../../common/vscode/model.api';
+import {
+  ILink,
+  ISerializedSignatureHelpProviderMetadata,
+  LanguageSelector,
+  SemanticTokensLegend,
+  SerializedDocumentFilter,
+  SerializedLanguageConfiguration,
+  WorkspaceSymbolProvider,
+  ICallHierarchyItemDto,
+  CallHierarchyItem,
+  IWorkspaceEditDto,
+  ResourceTextEditDto,
+  ResourceFileEditDto,
+  ILinkDto,
+} from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from '../../../common/vscode/model.api';
 import { ILanguageService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
+import {
+  DocumentRangeSemanticTokensProviderImpl,
+  DocumentSemanticTokensProvider,
+} from './semantic-tokens/semantic-token-provider';
 import { CancellationToken } from 'vscode';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
@@ -100,7 +138,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   isLanguageFeatureEnabled(model: ITextModel) {
     const uriString = model.uri.toString();
     if (!this.languageFeatureEnabled.has(uriString)) {
-      this.languageFeatureEnabled.set(uriString, model.getValueLength() < (this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024));
+      this.languageFeatureEnabled.set(
+        uriString,
+        model.getValueLength() <
+          (this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024),
+      );
     }
     return this.languageFeatureEnabled.get(uriString);
   }
@@ -178,7 +220,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return label;
   }
 
-  private inflateSuggestDto(defaultRange: IRange | { insert: IRange, replace: IRange }, data: ISuggestDataDto): modes.CompletionItem {
+  private inflateSuggestDto(
+    defaultRange: IRange | { insert: IRange; replace: IRange },
+    data: ISuggestDataDto,
+  ): modes.CompletionItem {
     if (!this.isDeflatedSuggestDto(data)) {
       return data as unknown as modes.CompletionItem;
     }
@@ -204,53 +249,67 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
+  $registerCompletionSupport(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    triggerCharacters: string[],
+    supportsResolveDetails: boolean,
+  ): void {
     // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
-    this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
-      triggerCharacters,
-      provideCompletionItems: async (model: ITextModel, position: monaco.Position, context, token: monaco.CancellationToken) => {
-        if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
-        }
-        const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
-        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
-        if (!result) {
-          return undefined!;
-        }
+    this.disposables.set(
+      handle,
+      monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
+        triggerCharacters,
+        provideCompletionItems: async (
+          model: ITextModel,
+          position: monaco.Position,
+          context,
+          token: monaco.CancellationToken,
+        ) => {
+          if (!this.isLanguageFeatureEnabled(model)) {
+            return undefined!;
+          }
+          const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
+          const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
+          if (!result) {
+            return undefined!;
+          }
 
-        if (result[ISuggestResultDtoField.completions].length) {
-          timer.timeEnd(extname(model.uri.fsPath), {
-            extDuration: result.d,
-          });
-        }
-        const suggestions = result[ISuggestResultDtoField.completions].map((data) => this.inflateSuggestDto(result[ISuggestResultDtoField.defaultRanges], data)) as unknown as monaco.languages.CompletionItem[];
-        return {
-          suggestions,
-          duration: result[ISuggestResultDtoField.duration],
-          incomplete: result[ISuggestResultDtoField.isIncomplete] || false,
-          dispose: () => {
-            if (result.x) {
-              setTimeout(() => {
-                this.proxy.$releaseCompletionItems(handle, result.x!);
-              }, 0);
-            }
-          },
-        };
-      },
-      resolveCompletionItem: supportsResolveDetails
-        ? async (suggestion, token) => {
-          this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
-          return this.proxy.$resolveCompletionItem(handle, suggestion._id!, token)
-            .then((result) => {
-              if (!result) {
-                return suggestion;
-              }
-              const newSuggestion = this.inflateSuggestDto(suggestion.range, result);
-              return mixin(suggestion, newSuggestion, true);
+          if (result[ISuggestResultDtoField.completions].length) {
+            timer.timeEnd(extname(model.uri.fsPath), {
+              extDuration: result.d,
             });
-        }
-        : undefined,
-    }));
+          }
+          const suggestions = result[ISuggestResultDtoField.completions].map((data) =>
+            this.inflateSuggestDto(result[ISuggestResultDtoField.defaultRanges], data),
+          ) as unknown as monaco.languages.CompletionItem[];
+          return {
+            suggestions,
+            duration: result[ISuggestResultDtoField.duration],
+            incomplete: result[ISuggestResultDtoField.isIncomplete] || false,
+            dispose: () => {
+              if (result.x) {
+                setTimeout(() => {
+                  this.proxy.$releaseCompletionItems(handle, result.x!);
+                }, 0);
+              }
+            },
+          };
+        },
+        resolveCompletionItem: supportsResolveDetails
+          ? async (suggestion, token) => {
+              this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
+              return this.proxy.$resolveCompletionItem(handle, suggestion._id!, token).then((result) => {
+                if (!result) {
+                  return suggestion;
+                }
+                const newSuggestion = this.inflateSuggestDto(suggestion.range, result);
+                return mixin(suggestion, newSuggestion, true);
+              });
+            }
+          : undefined,
+      }),
+    );
   }
 
   protected matchLanguage(selector: LanguageSelector | undefined, languageId: string): boolean {
@@ -308,7 +367,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
+  protected createDefinitionProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DefinitionProvider {
     return {
       provideDefinition: async (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
@@ -355,7 +417,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createTypeDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.TypeDefinitionProvider {
+  protected createTypeDefinitionProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.TypeDefinitionProvider {
     return {
       provideTypeDefinition: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -388,7 +453,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
+  $registerFoldingRangeProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void {
     const languageSelector = fromLanguageSelector(selector);
     const provider = this.createFoldingRangeProvider(handle, languageSelector);
 
@@ -478,20 +547,22 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_COLOR_PRESENTATIONS);
-        return this.proxy.$provideColorPresentations(handle, model.uri, {
-          color: [
-            colorInfo.color.red,
-            colorInfo.color.green,
-            colorInfo.color.blue,
-            colorInfo.color.alpha,
-          ],
-          range: colorInfo.range,
-        }, token).then((v) => {
-          if (v) {
-            timer.timeEnd(extname(model.uri.fsPath));
-          }
-          return v;
-        }) as unknown as PromiseLike<monaco.languages.IColorPresentation[]>;
+        return this.proxy
+          .$provideColorPresentations(
+            handle,
+            model.uri,
+            {
+              color: [colorInfo.color.red, colorInfo.color.green, colorInfo.color.blue, colorInfo.color.alpha],
+              range: colorInfo.range,
+            },
+            token,
+          )
+          .then((v) => {
+            if (v) {
+              timer.timeEnd(extname(model.uri.fsPath));
+            }
+            return v;
+          }) as unknown as PromiseLike<monaco.languages.IColorPresentation[]>;
       },
     };
   }
@@ -508,7 +579,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createDocumentHighlightProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentHighlightProvider {
+  protected createDocumentHighlightProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DocumentHighlightProvider {
     return {
       provideDocumentHighlights: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -526,35 +600,47 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             timer.timeEnd(extname(model.uri.fsPath));
             const highlights: monaco.languages.DocumentHighlight[] = [];
             for (const item of result) {
-              highlights.push(
-                {
-                  ...item,
-                  kind: (item.kind !== undefined ? item.kind : monaco.languages.DocumentHighlightKind.Text),
-                });
+              highlights.push({
+                ...item,
+                kind: item.kind !== undefined ? item.kind : monaco.languages.DocumentHighlightKind.Text,
+              });
             }
             return highlights;
           }
 
           return undefined!;
         });
-
       },
     };
   }
 
-  $registerDocumentFormattingProvider(handle: number, extension: IExtensionDescription, selector: SerializedDocumentFilter[]) {
+  $registerDocumentFormattingProvider(
+    handle: number,
+    extension: IExtensionDescription,
+    selector: SerializedDocumentFilter[],
+  ) {
     const languageSelector = fromLanguageSelector(selector);
-    const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(handle, extension, languageSelector);
+    const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(
+      handle,
+      extension,
+      languageSelector,
+    );
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(monaco.languages.registerDocumentFormattingEditProvider(language, documentFormattingEditProvider));
+        disposable.push(
+          monaco.languages.registerDocumentFormattingEditProvider(language, documentFormattingEditProvider),
+        );
       }
     }
     this.disposables.set(handle, disposable);
   }
 
-  createDocumentFormattingEditProvider(handle: number, extension: IExtensionDescription, selector: LanguageSelector | undefined): monaco.languages.DocumentFormattingEditProvider {
+  createDocumentFormattingEditProvider(
+    handle: number,
+    extension: IExtensionDescription,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DocumentFormattingEditProvider {
     return {
       displayName: extension.displayName,
       extensionId: extension.id,
@@ -577,19 +663,33 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerRangeFormattingProvider(handle: number, extension: IExtensionDescription, selector: SerializedDocumentFilter[]) {
+  $registerRangeFormattingProvider(
+    handle: number,
+    extension: IExtensionDescription,
+    selector: SerializedDocumentFilter[],
+  ) {
     const languageSelector = fromLanguageSelector(selector);
-    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, extension, languageSelector);
+    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(
+      handle,
+      extension,
+      languageSelector,
+    );
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(monaco.languages.registerDocumentRangeFormattingEditProvider(language, documentHighlightProvider));
+        disposable.push(
+          monaco.languages.registerDocumentRangeFormattingEditProvider(language, documentHighlightProvider),
+        );
       }
     }
     this.disposables.set(handle, disposable);
   }
 
-  createDocumentRangeFormattingEditProvider(handle: number, extension: IExtensionDescription, selector: LanguageSelector | undefined): monaco.languages.DocumentRangeFormattingEditProvider {
+  createDocumentRangeFormattingEditProvider(
+    handle: number,
+    extension: IExtensionDescription,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DocumentRangeFormattingEditProvider {
     return {
       displayName: extension.displayName,
       extensionId: extension.id,
@@ -612,9 +712,17 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], autoFormatTriggerCharacters: string[]): void {
+  $registerOnTypeFormattingProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    autoFormatTriggerCharacters: string[],
+  ): void {
     const languageSelector = fromLanguageSelector(selector);
-    const onTypeFormattingProvider = this.createOnTypeFormattingProvider(handle, languageSelector, autoFormatTriggerCharacters);
+    const onTypeFormattingProvider = this.createOnTypeFormattingProvider(
+      handle,
+      languageSelector,
+      autoFormatTriggerCharacters,
+    );
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -639,14 +747,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_ON_TYPE_FORMATTING_EDITS);
-        return this.proxy.$provideOnTypeFormattingEditsWithDuration(handle, model.uri, position, ch, options).then(({ result, _dur }) => {
-          if (result) {
-            timer.timeEnd(extname(model.uri.fsPath), {
-              extDuration: _dur,
-            });
-          }
-          return result!;
-        });
+        return this.proxy
+          .$provideOnTypeFormattingEditsWithDuration(handle, model.uri, position, ch, options)
+          .then(({ result, _dur }) => {
+            if (result) {
+              timer.timeEnd(extname(model.uri.fsPath), {
+                extDuration: _dur,
+              });
+            }
+            return result!;
+          });
       },
     };
   }
@@ -739,7 +849,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createImplementationProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ImplementationProvider {
+  protected createImplementationProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.ImplementationProvider {
     return {
       provideImplementation: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -775,24 +888,40 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ICodeActionProviderMetadataDto, displayName: string, supportResolve: boolean): void {
+  $registerQuickFixProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    metadata: ICodeActionProviderMetadataDto,
+    displayName: string,
+    supportResolve: boolean,
+  ): void {
     const languageSelector = fromLanguageSelector(selector);
-    const quickFixProvider = this.createQuickFixProvider(handle, languageSelector, metadata, displayName, supportResolve);
+    const quickFixProvider = this.createQuickFixProvider(
+      handle,
+      languageSelector,
+      metadata,
+      displayName,
+      supportResolve,
+    );
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         // 这里直接使用 modes.CodeActionProviderRegistry 来注册 QuickFixProvider,
         // 因为 monaco.languages.registerCodeActionProvider 过滤掉了 CodeActionKinds 参数
         // 会导致 supportedCodeAction ContextKey 失效，右键菜单缺失了 Refactor 和 Source Action
-        disposable.push(
-          modes.CodeActionProviderRegistry.register(language, quickFixProvider),
-        );
+        disposable.push(modes.CodeActionProviderRegistry.register(language, quickFixProvider));
       }
     }
     this.disposables.set(handle, disposable);
   }
 
-  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, metadata: ICodeActionProviderMetadataDto, displayName: string, supportsResolve: boolean): modes.CodeActionProvider {
+  protected createQuickFixProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+    metadata: ICodeActionProviderMetadataDto,
+    displayName: string,
+    supportsResolve: boolean,
+  ): modes.CodeActionProvider {
     const provider: modes.CodeActionProvider = {
       provideCodeActions: async (model: any, rangeOrSelection, monacoContext) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -802,10 +931,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
-        const listDto = await this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext).then((v) => {
-          timer.timeEnd(extname(model.uri.fsPath));
-          return v;
-        });
+        const listDto = await this.proxy
+          .$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext)
+          .then((v) => {
+            timer.timeEnd(extname(model.uri.fsPath));
+            return v;
+          });
         if (!listDto) {
           return undefined;
         }
@@ -905,7 +1036,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createReferenceProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ReferenceProvider {
+  protected createReferenceProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.ReferenceProvider {
     return {
       provideReferences: (model, position, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -915,24 +1049,26 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_REFERENCES);
-        return this.proxy.$provideReferencesWithDuration(handle, model.uri, position, context, token).then(({ result, _dur }) => {
-          if (!result) {
-            return undefined!;
-          }
-
-          if (Array.isArray(result)) {
-            timer.timeEnd(extname(model.uri.fsPath), {
-              extDuration: _dur,
-            });
-            const references: monaco.languages.Location[] = [];
-            for (const item of result) {
-              references.push({ ...item, uri: monaco.Uri.revive(item.uri) });
+        return this.proxy
+          .$provideReferencesWithDuration(handle, model.uri, position, context, token)
+          .then(({ result, _dur }) => {
+            if (!result) {
+              return undefined!;
             }
-            return references;
-          }
 
-          return undefined!;
-        });
+            if (Array.isArray(result)) {
+              timer.timeEnd(extname(model.uri.fsPath), {
+                extDuration: _dur,
+              });
+              const references: monaco.languages.Location[] = [];
+              for (const item of result) {
+                references.push({ ...item, uri: monaco.Uri.revive(item.uri) });
+              }
+              return references;
+            }
+
+            return undefined!;
+          });
       },
     };
   }
@@ -962,7 +1098,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createDocumentSymbolProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentSymbolProvider {
+  protected createDocumentSymbolProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DocumentSymbolProvider {
     return {
       provideDocumentSymbols: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -979,7 +1118,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ISerializedSignatureHelpProviderMetadata): void {
+  $registerSignatureHelpProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    metadata: ISerializedSignatureHelpProviderMetadata,
+  ): void {
     const languageSelector = fromLanguageSelector(selector);
     const signatureHelpProvider = this.createSignatureHelpProvider(handle, languageSelector, metadata);
     const disposable = new DisposableCollection();
@@ -991,7 +1134,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createSignatureHelpProvider(handle: number, selector: LanguageSelector | undefined, metadata: ISerializedSignatureHelpProviderMetadata): monaco.languages.SignatureHelpProvider {
+  protected createSignatureHelpProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+    metadata: ISerializedSignatureHelpProviderMetadata,
+  ): monaco.languages.SignatureHelpProvider {
     return {
       signatureHelpTriggerCharacters: metadata.triggerCharacters,
       signatureHelpRetriggerCharacters: metadata.retriggerCharacters,
@@ -1017,7 +1164,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
     };
   }
-  $registerRenameProvider(handle: number, selector: SerializedDocumentFilter[], supportsResolveLocation: boolean): void {
+  $registerRenameProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    supportsResolveLocation: boolean,
+  ): void {
     const languageSelector = fromLanguageSelector(selector);
     const renameProvider = this.createRenameProvider(handle, languageSelector, supportsResolveLocation);
     const disposable = new DisposableCollection();
@@ -1029,7 +1180,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createRenameProvider(handle: number, selector: LanguageSelector | undefined, supportsResolveLocation: boolean): monaco.languages.RenameProvider {
+  protected createRenameProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+    supportsResolveLocation: boolean,
+  ): monaco.languages.RenameProvider {
     return {
       provideRenameEdits: (model, position, newName, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -1039,24 +1194,23 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_RENAME_EDITS);
-        return this.proxy.$provideRenameEdits(handle, model.uri, position, newName, token)
-          .then((v) => {
-            if (v) {
-              timer.timeEnd(extname(model.uri.fsPath));
-            }
-            return this.reviveWorkspaceEditDto(v!);
-          });
+        return this.proxy.$provideRenameEdits(handle, model.uri, position, newName, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return this.reviveWorkspaceEditDto(v!);
+        });
       },
       resolveRenameLocation: supportsResolveLocation
         ? (model, position, token) => {
-          if (!this.isLanguageFeatureEnabled(model)) {
-            return undefined!;
+            if (!this.isLanguageFeatureEnabled(model)) {
+              return undefined!;
+            }
+            if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+              return undefined!;
+            }
+            return this.proxy.$resolveRenameLocation(handle, model.uri, position, token).then((v) => v!);
           }
-          if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-            return undefined!;
-          }
-          return this.proxy.$resolveRenameLocation(handle, model.uri, position, token).then((v) => v!);
-        }
         : undefined,
     };
   }
@@ -1091,7 +1245,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createSelectionProvider(handle: number, selector?: LanguageSelector): monaco.languages.SelectionRangeProvider {
+  protected createSelectionProvider(
+    handle: number,
+    selector?: LanguageSelector,
+  ): monaco.languages.SelectionRangeProvider {
     return {
       provideSelectionRanges: (model, positions, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
@@ -1142,7 +1299,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
 
       provideOutgoingCalls: async (item, token) => {
-        const outgoing = await this.proxy.$provideCallHierarchyOutgoingCalls(handle, item._sessionId, item._itemId, token);
+        const outgoing = await this.proxy.$provideCallHierarchyOutgoingCalls(
+          handle,
+          item._sessionId,
+          item._itemId,
+          token,
+        );
         if (!outgoing) {
           return outgoing;
         }
@@ -1152,7 +1314,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         return outgoing;
       },
       provideIncomingCalls: async (item, token) => {
-        const incoming = await this.proxy.$provideCallHierarchyIncomingCalls(handle, item._sessionId, item._itemId, token);
+        const incoming = await this.proxy.$provideCallHierarchyIncomingCalls(
+          handle,
+          item._sessionId,
+          item._itemId,
+          token,
+        );
         if (!incoming) {
           return incoming;
         }
@@ -1163,35 +1330,65 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
     };
   }
-  //#region Semantic Tokens
-  $registerDocumentSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void {
+  // #region Semantic Tokens
+  $registerDocumentSemanticTokensProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    legend: SemanticTokensLegend,
+  ): void {
     const provider = new DocumentSemanticTokensProvider(this.proxy, handle, legend);
-    this.disposables.set(handle, modes.DocumentSemanticTokensProviderRegistry.register(fromLanguageSelector(selector)! as unknown as string, provider));
+    this.disposables.set(
+      handle,
+      modes.DocumentSemanticTokensProviderRegistry.register(
+        fromLanguageSelector(selector)! as unknown as string,
+        provider,
+      ),
+    );
   }
 
-  $registerDocumentRangeSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void {
+  $registerDocumentRangeSemanticTokensProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    legend: SemanticTokensLegend,
+  ): void {
     const provider = new DocumentRangeSemanticTokensProviderImpl(this.proxy, handle, legend);
-    this.disposables.set(handle, modes.DocumentRangeSemanticTokensProviderRegistry.register(fromLanguageSelector(selector)! as unknown as string, provider));
+    this.disposables.set(
+      handle,
+      modes.DocumentRangeSemanticTokensProviderRegistry.register(
+        fromLanguageSelector(selector)! as unknown as string,
+        provider,
+      ),
+    );
   }
-  //#endregion Semantic Tokens
+  // #endregion Semantic Tokens
 
-  //#region EvaluatableExpression
+  // #region EvaluatableExpression
   $registerEvaluatableExpressionProvider(handler: number, selector: SerializedDocumentFilter[]): void {
     const provider = {
-      provideEvaluatableExpression: (model: ITextModel, position: monaco.Position, token: CancellationToken) => {
-        return this.proxy.$provideEvaluatableExpression(handler, model.uri, position, token);
-      },
+      provideEvaluatableExpression: (model: ITextModel, position: monaco.Position, token: CancellationToken) =>
+        this.proxy.$provideEvaluatableExpression(handler, model.uri, position, token),
     };
-    this.disposables.set(handler, this.evaluatableExpressionService.registerEvaluatableExpressionProvider(selector, provider));
+    this.disposables.set(
+      handler,
+      this.evaluatableExpressionService.registerEvaluatableExpressionProvider(selector, provider),
+    );
   }
-  //#endregion EvaluatableExpression
+  // #endregion EvaluatableExpression
 
-  //#region Inline Values
-  $registerInlineValuesProvider(handler: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
+  // #region Inline Values
+  $registerInlineValuesProvider(
+    handler: number,
+    selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void {
     const provider = {
-      provideInlineValues: (model: ITextModel, viewPort: IRange, context: InlineValueContext, token: CancellationToken): Promise<InlineValue[] | undefined> => {
-        return this.proxy.$provideInlineValues(handler, model.uri, viewPort, context, token);
-      },
+      provideInlineValues: (
+        model: ITextModel,
+        viewPort: IRange,
+        context: InlineValueContext,
+        token: CancellationToken,
+      ): Promise<InlineValue[] | undefined> =>
+        this.proxy.$provideInlineValues(handler, model.uri, viewPort, context, token),
     } as InlineValuesProvider;
 
     if (typeof eventHandle === 'number') {
@@ -1209,13 +1406,17 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       obj.fire(event);
     }
   }
-  //#endregion Inline Values
+  // #endregion Inline Values
 
-  //#region Linked Editing Range
+  // #region Linked Editing Range
   $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector)!;
-    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, <modes.LinkedEditingRangeProvider> {
-      provideLinkedEditingRanges: async (model: ITextModel, position: monaco.Position, token: CancellationToken): Promise<modes.LinkedEditingRanges | undefined> => {
+    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, <modes.LinkedEditingRangeProvider>{
+      provideLinkedEditingRanges: async (
+        model: ITextModel,
+        position: monaco.Position,
+        token: CancellationToken,
+      ): Promise<modes.LinkedEditingRanges | undefined> => {
         const res = await this.proxy.$provideLinkedEditingRanges(handle, model.uri, position, token);
         if (res) {
           return {
@@ -1228,12 +1429,20 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     });
   }
 
-  //#endregion Linked Editing Range
+  // #endregion Linked Editing Range
 
-  //#region InlayHints
-  $registerInlayHintsProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
-    const provider = <modes.InlayHintsProvider> {
-      provideInlayHints: async (model: ITextModel, range: monaco.Range, token: CancellationToken): Promise<modes.InlayHint[] | undefined> => {
+  // #region InlayHints
+  $registerInlayHintsProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void {
+    const provider = <modes.InlayHintsProvider>{
+      provideInlayHints: async (
+        model: ITextModel,
+        range: monaco.Range,
+        token: CancellationToken,
+      ): Promise<modes.InlayHint[] | undefined> => {
         const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
         return result?.hints;
       },
@@ -1253,5 +1462,5 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       obj.fire(event);
     }
   }
-  //#endregion InlayHints
+  // #endregion InlayHints
 }

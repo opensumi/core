@@ -1,15 +1,37 @@
 import Ajv from 'ajv';
 import { Injectable, Autowired, Injector } from '@opensumi/di';
-import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import {
+  Mutable,
+  ContributionProvider,
+  Emitter,
+  Event,
+  ILogger,
+  Disposable,
+  IDisposable,
+} from '@opensumi/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
 import {
-  PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType,
+  PreferenceSchema,
+  PreferenceSchemaProperties,
+  PreferenceDataSchema,
+  PreferenceItem,
+  PreferenceSchemaProperty,
+  PreferenceDataProperty,
+  JsonType,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
 import { AppConfig } from '../react-providers';
 
-export { PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType };
+export {
+  PreferenceSchema,
+  PreferenceSchemaProperties,
+  PreferenceDataSchema,
+  PreferenceItem,
+  PreferenceSchemaProperty,
+  PreferenceDataProperty,
+  JsonType,
+};
 
 export const PreferenceContribution = Symbol('PreferenceContribution');
 export interface PreferenceContribution {
@@ -80,11 +102,13 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     super();
     this.init();
 
-    this.toDispose.push(Disposable.create(() => {
-      this.preferences = {};
-      this.validationFunctions.clear();
-      this.combinedSchema = { properties: {}, patternProperties: {} };
-    }));
+    this.toDispose.push(
+      Disposable.create(() => {
+        this.preferences = {};
+        this.validationFunctions.clear();
+        this.combinedSchema = { properties: {}, patternProperties: {} };
+      }),
+    );
 
     this.toDispose.push(this.onDidPreferenceSchemaChangedEmitter);
   }
@@ -132,24 +156,34 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
         this.logger.error('Preference name collision detected in the schema for property: ' + preferenceName);
         continue;
       } else {
-        const schemaProps = PreferenceDataProperty.fromPreferenceSchemaProperty(schema.properties[preferenceName], defaultScope);
+        const schemaProps = PreferenceDataProperty.fromPreferenceSchemaProperty(
+          schema.properties[preferenceName],
+          defaultScope,
+        );
         if (typeof schemaProps.overridable !== 'boolean' && overridable) {
           schemaProps.overridable = true;
         }
         this.combinedSchema.properties[preferenceName] = schemaProps;
         this.unsupportedPreferences.delete(preferenceName);
 
-        const value = schemaProps.defaultValue = this.getDefaultValue(schemaProps, preferenceName);
+        const value = (schemaProps.defaultValue = this.getDefaultValue(schemaProps, preferenceName));
         changes.push(this.doSetPreferenceValue(preferenceName, value, { scope, domain }));
       }
     }
     return changes;
   }
 
-  protected doSetPreferenceValue(preferenceName: string, newValue: any, { scope, domain }: {
-    scope: PreferenceScope,
-    domain?: string[],
-  }): PreferenceProviderDataChange {
+  protected doSetPreferenceValue(
+    preferenceName: string,
+    newValue: any,
+    {
+      scope,
+      domain,
+    }: {
+      scope: PreferenceScope;
+      domain?: string[];
+    },
+  ): PreferenceProviderDataChange {
     const oldValue = this.preferences[preferenceName];
     this.preferences[preferenceName] = newValue;
     return { preferenceName, oldValue, newValue, scope, domain };
@@ -204,7 +238,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   protected readonly unsupportedPreferences = new Set<string>();
 
-  public validate(name: string, value: any): { valid: boolean, reason?: string } {
+  public validate(name: string, value: any): { valid: boolean; reason?: string } {
     if (this.configurations.isSectionName(name)) {
       return { valid: true };
     }
@@ -225,7 +259,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
         this.logger.warn(`"${name}" preference is not supported`);
       }
     }
-    const errorReason = validationFn.errors && validationFn.errors[0] ? normalizeAjvValidationError(validationFn.errors[0]) : undefined;
+    const errorReason =
+      validationFn.errors && validationFn.errors[0] ? normalizeAjvValidationError(validationFn.errors[0]) : undefined;
     return { valid: result, reason: errorReason };
   }
 
@@ -283,7 +318,6 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   public getPreferenceProperty(preferenceName: string): PreferenceItem | undefined {
     return this.combinedSchema.properties[preferenceName];
   }
-
 }
 
 @Injectable()

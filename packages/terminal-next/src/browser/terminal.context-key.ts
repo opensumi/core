@@ -4,7 +4,6 @@ import { IsTerminalFocused, IsTerminalViewInitialized } from '@opensumi/ide-core
 
 @Injectable()
 export class TerminalContextKey {
-
   @Autowired(IContextKeyService)
   private readonly globalContextkeyService: IContextKeyService;
 

@@ -11,15 +11,13 @@ describe(__filename, () => {
     injector.addProviders({
       token: ILoggerManagerClient,
       useValue: {
-        getLogger: () => {
-          return {
-            log() { },
-            debug() { },
-            error() { },
-            verbose() { },
-            warn() {},
-          };
-        },
+        getLogger: () => ({
+          log() {},
+          debug() {},
+          error() {},
+          verbose() {},
+          warn() {},
+        }),
       },
     });
     clipboardService = injector.get<IClipboardService>(IClipboardService);

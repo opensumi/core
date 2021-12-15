@@ -7,7 +7,7 @@ import { PreferenceProvider } from './preference-provider';
 export interface IExternalPreferenceProvider<T = any> {
   get(scope: PreferenceScope): T | undefined;
   set(value: T, scope: PreferenceScope): void;
-  onDidChange?: Event<{newValue?: T, oldValue?: T, scope: PreferenceScope}>;
+  onDidChange?: Event<{ newValue?: T; oldValue?: T; scope: PreferenceScope }>;
 }
 
 const providers = new Map<string, IExternalPreferenceProvider>();
@@ -24,7 +24,7 @@ export function getExternalPreferenceProvider(name) {
   if (!provider) {
     // 尝试使用delegate的配置名获取
     const delegate = PreferenceProvider.PreferenceDelegates[name];
-    if (!!delegate) {
+    if (delegate) {
       provider = providers.get(delegate.delegateTo);
     }
   }
@@ -81,8 +81,14 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
   });
 }
 
-export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem, untilScope?: PreferenceScope): {value: T | undefined, scope: PreferenceScope } {
-  const scopes = untilScope ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope) : PreferenceScope.getReversedScopes();
+export function getExternalPreference<T>(
+  preferenceName: string,
+  schema?: PreferenceItem,
+  untilScope?: PreferenceScope,
+): { value: T | undefined; scope: PreferenceScope } {
+  const scopes = untilScope
+    ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope)
+    : PreferenceScope.getReversedScopes();
   for (const scope of scopes) {
     const value = providers.get(preferenceName)!.get(scope);
     if (value !== undefined) {

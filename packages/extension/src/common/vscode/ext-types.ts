@@ -14,7 +14,6 @@ Object.keys(UriUtils).forEach((funcName) => {
 
 export { Uri };
 export enum ProgressLocation {
-
   /**
    * Show progress for the source control viewlet, as overlay for the icon and as progress bar
    * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
@@ -55,7 +54,6 @@ export enum IndentAction {
 
 @es5ClassCompat
 export class Range {
-
   static isRange(thing: any): thing is vscode.Range {
     if (thing instanceof Range) {
       return true;
@@ -63,8 +61,7 @@ export class Range {
     if (!thing) {
       return false;
     }
-    return Position.isPosition((thing as Range).start)
-      && Position.isPosition((thing as Range).end);
+    return Position.isPosition((thing as Range).start) && Position.isPosition((thing as Range).end);
   }
 
   protected _start: Position;
@@ -80,11 +77,21 @@ export class Range {
 
   constructor(start: Position, end: Position);
   constructor(startLine: number, startColumn: number, endLine: number, endColumn: number);
-  constructor(startLineOrStart: number | Position, startColumnOrEnd: number | Position, endLine?: number, endColumn?: number) {
+  constructor(
+    startLineOrStart: number | Position,
+    startColumnOrEnd: number | Position,
+    endLine?: number,
+    endColumn?: number,
+  ) {
     let start: Position | undefined;
     let end: Position | undefined;
 
-    if (typeof startLineOrStart === 'number' && typeof startColumnOrEnd === 'number' && typeof endLine === 'number' && typeof endColumn === 'number') {
+    if (
+      typeof startLineOrStart === 'number' &&
+      typeof startColumnOrEnd === 'number' &&
+      typeof endLine === 'number' &&
+      typeof endColumn === 'number'
+    ) {
       start = new Position(startLineOrStart, startColumnOrEnd);
       end = new Position(endLine, endColumn);
     } else if (startLineOrStart instanceof Position && startColumnOrEnd instanceof Position) {
@@ -107,9 +114,7 @@ export class Range {
 
   contains(positionOrRange: Position | Range): boolean {
     if (positionOrRange instanceof Range) {
-      return this.contains(positionOrRange._start)
-        && this.contains(positionOrRange._end);
-
+      return this.contains(positionOrRange._start) && this.contains(positionOrRange._end);
     } else if (positionOrRange instanceof Position) {
       if (positionOrRange.isBefore(this._start)) {
         return false;
@@ -157,10 +162,9 @@ export class Range {
     return this._start.line === this._end.line;
   }
 
-  with(change: { start?: Position, end?: Position }): Range;
+  with(change: { start?: Position; end?: Position }): Range;
   with(start?: Position, end?: Position): Range;
-  with(startOrChange: Position | undefined | { start?: Position, end?: Position }, end: Position = this.end): Range {
-
+  with(startOrChange: Position | undefined | { start?: Position; end?: Position }, end: Position = this.end): Range {
     if (startOrChange === null || end === null) {
       throw new Error('illegal argument');
     }
@@ -168,10 +172,8 @@ export class Range {
     let start: Position;
     if (!startOrChange) {
       start = this.start;
-
     } else if (Position.isPosition(startOrChange)) {
       start = startOrChange;
-
     } else {
       start = startOrChange.start || this.start;
       end = startOrChange.end || this.end;
@@ -190,7 +192,6 @@ export class Range {
 
 @es5ClassCompat
 export class CodeLens {
-
   range: Range;
 
   command: vscode.Command | undefined;
@@ -211,7 +212,6 @@ export enum Schemas {
 
 @es5ClassCompat
 export class Position {
-
   static Min(...positions: Position[]): Position {
     if (positions.length === 0) {
       throw new TypeError();
@@ -326,10 +326,12 @@ export class Position {
     }
   }
 
-  translate(change: { lineDelta?: number; characterDelta?: number; }): Position;
+  translate(change: { lineDelta?: number; characterDelta?: number }): Position;
   translate(lineDelta?: number, characterDelta?: number): Position;
-  translate(lineDeltaOrChange: number | undefined | { lineDelta?: number; characterDelta?: number; }, characterDelta: number = 0): Position {
-
+  translate(
+    lineDeltaOrChange: number | undefined | { lineDelta?: number; characterDelta?: number },
+    characterDelta = 0,
+  ): Position {
     if (lineDeltaOrChange === null || characterDelta === null) {
       throw new Error('illegal argument');
     }
@@ -350,10 +352,12 @@ export class Position {
     return new Position(this.line + lineDelta, this.character + characterDelta);
   }
 
-  with(change: { line?: number; character?: number; }): Position;
+  with(change: { line?: number; character?: number }): Position;
   with(line?: number, character?: number): Position;
-  with(lineOrChange: number | undefined | { line?: number; character?: number; }, character: number = this.character): Position {
-
+  with(
+    lineOrChange: number | undefined | { line?: number; character?: number },
+    character: number = this.character,
+  ): Position {
     if (lineOrChange === null || character === null) {
       throw new Error('illegal argument');
     }
@@ -361,10 +365,8 @@ export class Position {
     let line: number;
     if (typeof lineOrChange === 'undefined') {
       line = this.line;
-
     } else if (typeof lineOrChange === 'number') {
       line = lineOrChange;
-
     } else {
       line = typeof lineOrChange.line === 'number' ? lineOrChange.line : this.line;
       character = typeof lineOrChange.character === 'number' ? lineOrChange.character : this.character;
@@ -405,7 +407,6 @@ export enum EndOfLine {
 
 @es5ClassCompat
 export class RelativePattern {
-
   base: string;
 
   constructor(base: vscode.WorkspaceFolder | string, public pattern: string) {
@@ -437,8 +438,7 @@ export class Location {
     if (!thing) {
       return false;
     }
-    return Range.isRange((thing as Location).range)
-      && Uri.isUri((thing as Location).uri);
+    return Range.isRange((thing as Location).range) && Uri.isUri((thing as Location).uri);
   }
 
   uri: Uri;
@@ -514,7 +514,6 @@ export class Disposable {
 
 @es5ClassCompat
 export class Hover {
-
   public contents: MarkdownString[] | vscode.MarkedString[];
   public range?: Range;
 
@@ -538,7 +537,6 @@ export class Hover {
 
 @es5ClassCompat
 export class SnippetString {
-
   static isSnippetString(thing: {}): thing is SnippetString {
     if (thing instanceof SnippetString) {
       return true;
@@ -553,7 +551,7 @@ export class SnippetString {
     return value.replace(/\$|}|\\/g, '\\$&');
   }
 
-  private _tabstop: number = 1;
+  private _tabstop = 1;
 
   value: string;
 
@@ -573,7 +571,6 @@ export class SnippetString {
   }
 
   appendPlaceholder(value: string | ((snippet: SnippetString) => void), num: number = this._tabstop++): SnippetString {
-
     if (typeof value === 'function') {
       const nested = new SnippetString();
       nested._tabstop = this._tabstop;
@@ -606,14 +603,12 @@ export class SnippetString {
   }
 
   appendVariable(name: string, defaultValue?: string | ((snippet: SnippetString) => void)): SnippetString {
-
     if (typeof defaultValue === 'function') {
       const nested = new SnippetString();
       nested._tabstop = this._tabstop;
       defaultValue(nested);
       this._tabstop = nested._tabstop;
       defaultValue = nested.value;
-
     } else if (typeof defaultValue === 'string') {
       defaultValue = defaultValue.replace(/\$|}/g, '\\$&');
     }
@@ -632,7 +627,6 @@ export class SnippetString {
 
 @es5ClassCompat
 export class TextEdit {
-
   protected _range: Range;
   protected _newText: string;
   protected _newEol: EndOfLine;
@@ -682,8 +676,7 @@ export class TextEdit {
     if (!thing) {
       return false;
     }
-    return Range.isRange((thing as TextEdit).range)
-      && typeof (thing as TextEdit).newText === 'string';
+    return Range.isRange((thing as TextEdit).range) && typeof (thing as TextEdit).newText === 'string';
   }
 
   static replace(range: Range, newText: string): TextEdit {
@@ -761,12 +754,11 @@ export enum CompletionItemTag {
 
 @es5ClassCompat
 export class MarkdownString {
-
   value: string;
   isTrusted?: boolean;
   readonly supportThemeIcons?: boolean;
 
-  constructor(value?: string, supportThemeIcons: boolean = false) {
+  constructor(value?: string, supportThemeIcons = false) {
     this.value = value ?? '';
     this.supportThemeIcons = supportThemeIcons;
   }
@@ -786,7 +778,7 @@ export class MarkdownString {
     return this;
   }
 
-  appendCodeblock(code: string, language: string = ''): MarkdownString {
+  appendCodeblock(code: string, language = ''): MarkdownString {
     this.value += '\n```';
     this.value += language;
     this.value += '\n';
@@ -799,7 +791,7 @@ export class MarkdownString {
     if (thing instanceof MarkdownString) {
       return true;
     }
-    return thing && thing.appendCodeblock && thing.appendMarkdown && thing.appendText && (thing.value !== undefined);
+    return thing && thing.appendCodeblock && thing.appendMarkdown && thing.appendText && thing.value !== undefined;
   }
 }
 
@@ -811,7 +803,6 @@ export interface CompletionItemLabel {
 
 @es5ClassCompat
 export class CompletionItem implements vscode.CompletionItem {
-
   label: string | CompletionItemLabel;
   label2?: CompletionItemLabel;
   kind?: vscode.CompletionItemKind;
@@ -823,7 +814,7 @@ export class CompletionItem implements vscode.CompletionItem {
   preselect?: boolean;
   insertText: string | SnippetString;
   keepWhitespace?: boolean;
-  range?: Range | { inserting: Range; replacing: Range; };
+  range?: Range | { inserting: Range; replacing: Range };
   commitCharacters?: string[];
   textEdit?: TextEdit;
   additionalTextEdits: TextEdit[];
@@ -852,12 +843,11 @@ export class CompletionItem implements vscode.CompletionItem {
 
 @es5ClassCompat
 export class CompletionList {
-
   isIncomplete?: boolean;
 
   items: vscode.CompletionItem[];
 
-  constructor(items: vscode.CompletionItem[] = [], isIncomplete: boolean = false) {
+  constructor(items: vscode.CompletionItem[] = [], isIncomplete = false) {
     this.items = items;
     this.isIncomplete = isIncomplete;
   }
@@ -866,7 +856,7 @@ export class CompletionList {
 export enum ConfigurationTarget {
   /**
    * Global configuration
-  */
+   */
   Global = 1,
 
   /**
@@ -905,13 +895,12 @@ export class ThemeColor {
 
 @es5ClassCompat
 export class FileDecoration {
-
   static validate(d: FileDecoration): void {
     if (d.badge && d.badge.length !== 1 && d.badge.length !== 2) {
-      throw new Error(`The 'badge'-property must be undefined or a short character`);
+      throw new Error("The 'badge'-property must be undefined or a short character");
     }
     if (!d.color && !d.badge && !d.tooltip) {
-      throw new Error(`The decoration is empty`);
+      throw new Error('The decoration is empty');
     }
   }
 
@@ -991,14 +980,10 @@ export enum DocumentHighlightKind {
 
 @es5ClassCompat
 export class DocumentHighlight {
-
   public range: Range;
   public kind?: DocumentHighlightKind;
 
-  constructor(
-    range: Range,
-    kind: DocumentHighlightKind = DocumentHighlightKind.Text,
-  ) {
+  constructor(range: Range, kind: DocumentHighlightKind = DocumentHighlightKind.Text) {
     this.range = range;
     this.kind = kind;
   }
@@ -1044,9 +1029,7 @@ export class CodeActionKind {
   public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
   public static readonly SourceFixAll = CodeActionKind.Source.append('sourceFixAll');
 
-  constructor(
-    public readonly value: string,
-  ) { }
+  constructor(public readonly value: string) {}
 
   public append(parts: string): CodeActionKind {
     return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
@@ -1088,7 +1071,6 @@ export class CodeAction {
 
 @es5ClassCompat
 export class Selection extends Range {
-
   static isSelection(thing: any): thing is Selection {
     if (thing instanceof Selection) {
       return true;
@@ -1096,10 +1078,12 @@ export class Selection extends Range {
     if (!thing) {
       return false;
     }
-    return Range.isRange(thing)
-      && Position.isPosition((thing as Selection).anchor)
-      && Position.isPosition((thing as Selection).active)
-      && typeof (thing as Selection).isReversed === 'boolean';
+    return (
+      Range.isRange(thing) &&
+      Position.isPosition((thing as Selection).anchor) &&
+      Position.isPosition((thing as Selection).active) &&
+      typeof (thing as Selection).isReversed === 'boolean'
+    );
   }
 
   private _anchor: Position;
@@ -1116,11 +1100,21 @@ export class Selection extends Range {
 
   constructor(anchor: Position, active: Position);
   constructor(anchorLine: number, anchorColumn: number, activeLine: number, activeColumn: number);
-  constructor(anchorLineOrAnchor: number | Position, anchorColumnOrActive: number | Position, activeLine?: number, activeColumn?: number) {
+  constructor(
+    anchorLineOrAnchor: number | Position,
+    anchorColumnOrActive: number | Position,
+    activeLine?: number,
+    activeColumn?: number,
+  ) {
     let anchor: Position | undefined;
     let active: Position | undefined;
 
-    if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {
+    if (
+      typeof anchorLineOrAnchor === 'number' &&
+      typeof anchorColumnOrActive === 'number' &&
+      typeof activeLine === 'number' &&
+      typeof activeColumn === 'number'
+    ) {
       anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);
       active = new Position(activeLine, activeColumn);
     } else if (anchorLineOrAnchor instanceof Position && anchorColumnOrActive instanceof Position) {
@@ -1177,18 +1171,30 @@ export const enum WorkspaceEditType {
 
 @es5ClassCompat
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
-
   private _edits = new Array<WorkspaceEditEntry>();
 
-  renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+  renameFile(
+    from: vscode.Uri,
+    to: vscode.Uri,
+    options?: { overwrite?: boolean; ignoreIfExists?: boolean },
+    metadata?: vscode.WorkspaceEditEntryMetadata,
+  ): void {
     this._edits.push({ _type: WorkspaceEditType.File, from, to, options, metadata });
   }
 
-  createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+  createFile(
+    uri: vscode.Uri,
+    options?: { overwrite?: boolean; ignoreIfExists?: boolean },
+    metadata?: vscode.WorkspaceEditEntryMetadata,
+  ): void {
     this._edits.push({ _type: WorkspaceEditType.File, from: undefined, to: uri, options, metadata });
   }
 
-  deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+  deleteFile(
+    uri: vscode.Uri,
+    options?: { recursive?: boolean; ignoreIfNotExists?: boolean },
+    metadata?: vscode.WorkspaceEditEntryMetadata,
+  ): void {
     this._edits.push({ _type: WorkspaceEditType.File, from: uri, to: undefined, options, metadata });
   }
 
@@ -1282,7 +1288,7 @@ export class DocumentLink {
   tooltip?: string;
 
   constructor(range: Range, target: Uri | undefined) {
-    if (target && !(Uri.isUri(target))) {
+    if (target && !Uri.isUri(target)) {
       throw illegalArgument('target');
     }
     if (!Range.isRange(range) || range.isEmpty) {
@@ -1297,7 +1303,6 @@ export class DocumentLink {
  * Represents the alignment of status bar items.
  */
 export enum StatusBarAlignment {
-
   /**
    * Aligned to the left side.
    */
@@ -1317,7 +1322,6 @@ export interface Memento {
 }
 
 export interface OutputChannel {
-
   /**
    * The name of this output channel.
    */
@@ -1367,7 +1371,6 @@ export interface WindowState {
 
 @es5ClassCompat
 export class SymbolInformation {
-
   static validate(candidate: SymbolInformation): void {
     if (!candidate.name) {
       throw new Error('Should provide a name inside candidate field');
@@ -1381,7 +1384,13 @@ export class SymbolInformation {
   containerName: undefined | string;
   constructor(name: string, kind: SymbolKind, containerName: string | undefined, location: Location);
   constructor(name: string, kind: SymbolKind, range: Range, uri?: Uri, containerName?: string);
-  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | undefined | Range, locationOrUri?: Location | Uri, containerName?: string) {
+  constructor(
+    name: string,
+    kind: SymbolKind,
+    rangeOrContainer: string | undefined | Range,
+    locationOrUri?: Location | Uri,
+    containerName?: string,
+  ) {
     this.name = name;
     this.kind = kind;
     this.containerName = containerName;
@@ -1441,7 +1450,6 @@ export enum SymbolKind {
 
 @es5ClassCompat
 export class DocumentSymbol {
-
   static validate(candidate: DocumentSymbol): void {
     if (!candidate.name) {
       throw new Error('Should provide a name inside candidate field');
@@ -1474,8 +1482,8 @@ export class DocumentSymbol {
   }
 }
 /**
-   * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
-   */
+ * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
+ */
 export enum SignatureHelpTriggerKind {
   /**
    * Signature help was invoked manually by the user or by a command.
@@ -1536,12 +1544,11 @@ export enum TreeItemCollapsibleState {
 }
 
 /**
-  * A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
-  * Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
-*/
+ * A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
+ * Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
+ */
 @es5ClassCompat
 export class ThemeIcon {
-
   static File: ThemeIcon;
   static Folder: ThemeIcon;
 
@@ -1565,8 +1572,11 @@ export class TreeItem {
   contextValue?: string;
   tooltip?: string;
 
-  constructor(label: string | vscode.TreeItemLabel, collapsibleState?: vscode.TreeItemCollapsibleState)
-  constructor(arg1: string | vscode.TreeItemLabel | Uri, public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
+  constructor(label: string | vscode.TreeItemLabel, collapsibleState?: vscode.TreeItemCollapsibleState);
+  constructor(
+    arg1: string | vscode.TreeItemLabel | Uri,
+    public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None,
+  ) {
     if (arg1 instanceof Uri) {
       this.resourceUri = arg1;
     } else {
@@ -1633,7 +1643,6 @@ export class DebugAdapterExecutable {
  */
 @es5ClassCompat
 export class DebugAdapterServer {
-
   /**
    * The port.
    */
@@ -1655,8 +1664,7 @@ export class DebugAdapterServer {
 
 @es5ClassCompat
 export class DebugAdapterNamedPipeServer implements vscode.DebugAdapterNamedPipeServer {
-  constructor(public readonly path: string) {
-  }
+  constructor(public readonly path: string) {}
 }
 
 @es5ClassCompat
@@ -1670,7 +1678,6 @@ export class DebugAdapterInlineImplementation implements vscode.DebugAdapterInli
 
 @es5ClassCompat
 export class SelectionRange {
-
   range: Range;
   parent?: SelectionRange;
 
@@ -1723,12 +1730,11 @@ export class Breakpoint {
     }
     return this._id;
   }
-
 }
 
 /**
-* A breakpoint specified by a source location.
-*/
+ * A breakpoint specified by a source location.
+ */
 @es5ClassCompat
 export class SourceBreakpoint extends Breakpoint {
   /**
@@ -1746,8 +1752,8 @@ export class SourceBreakpoint extends Breakpoint {
 }
 
 /**
-* A breakpoint specified by a function name.
-*/
+ * A breakpoint specified by a function name.
+ */
 @es5ClassCompat
 export class FunctionBreakpoint extends Breakpoint {
   /**
@@ -1769,17 +1775,17 @@ export interface QuickInputButton {
   readonly tooltip?: string | undefined;
 }
 
-//#region debug
+// #region debug
 export enum DebugConsoleMode {
   /**
-  * Debug session should have a separate debug console.
-  */
+   * Debug session should have a separate debug console.
+   */
   Separate = 0,
 
   /**
-  * Debug session should share debug console with its parent session.
-  * This value has no effect for sessions which do not have a parent session.
-  */
+   * Debug session should share debug console with its parent session.
+   * This value has no effect for sessions which do not have a parent session.
+   */
   MergeWithParent = 1,
 }
 
@@ -1794,7 +1800,7 @@ export enum DebugConfigurationProviderTriggerKind {
   Dynamic = 2,
 }
 
-//#endregion
+// #endregion
 
 @es5ClassCompat
 export class QuickInputButtons {
@@ -1821,7 +1827,6 @@ export { TextEditorRevealType } from './editor';
 
 @es5ClassCompat
 export class TaskGroup implements vscode.TaskGroup {
-
   isDefault?: boolean;
   private _id: string;
 
@@ -1864,7 +1869,7 @@ export class TaskGroup implements vscode.TaskGroup {
 }
 
 function computeTaskExecutionId(values: string[]): string {
-  let id: string = '';
+  let id = '';
   // tslint:disable-next-line: prefer-for-of
   for (let i = 0; i < values.length; i++) {
     id += values[i].replace(/,/g, ',,') + ',';
@@ -1894,22 +1899,23 @@ export interface ProcessExecutionOptions {
  * The shell quoting options.
  */
 export interface ShellQuotingOptions {
-
   /**
    * The character used to do character escaping. If a string is provided only spaces
    * are escaped. If a `{ escapeChar, charsToEscape }` literal is provide all characters
    * in `charsToEscape` are escaped using the `escapeChar`.
    */
-  escape?: string | {
-    /**
-     * The escape character.
-     */
-    escapeChar: string;
-    /**
-     * The characters to escape.
-     */
-    charsToEscape: string;
-  };
+  escape?:
+    | string
+    | {
+        /**
+         * The escape character.
+         */
+        escapeChar: string;
+        /**
+         * The characters to escape.
+         */
+        charsToEscape: string;
+      };
 
   /**
    * The character used for strong quoting. The string's length must be 1.
@@ -1923,8 +1929,8 @@ export interface ShellQuotingOptions {
 }
 
 /**
-   * Options for a shell execution
-   */
+ * Options for a shell execution
+ */
 export interface ShellExecutionOptions {
   /**
    * The shell executable.
@@ -1960,7 +1966,6 @@ export interface ShellExecutionOptions {
 
 @es5ClassCompat
 export class ProcessExecution implements vscode.ProcessExecution {
-
   private _process: string;
   private _args: string[];
   private _options: ProcessExecutionOptions | undefined;
@@ -2037,18 +2042,25 @@ export class ProcessExecution implements vscode.ProcessExecution {
 
 @es5ClassCompat
 export class ShellExecution implements vscode.ShellExecution {
-
   private _commandLine: string;
   private _command: string | vscode.ShellQuotedString;
   private _args: (string | vscode.ShellQuotedString)[];
   private _options: ShellExecutionOptions | undefined;
 
   constructor(commandLine: string, options?: ShellExecutionOptions);
-  constructor(command: string | vscode.ShellQuotedString, args: (string | vscode.ShellQuotedString)[], options?: ShellExecutionOptions);
-  constructor(arg0: string | vscode.ShellQuotedString, arg1?: ShellExecutionOptions | (string | vscode.ShellQuotedString)[], arg2?: ShellExecutionOptions) {
+  constructor(
+    command: string | vscode.ShellQuotedString,
+    args: (string | vscode.ShellQuotedString)[],
+    options?: ShellExecutionOptions,
+  );
+  constructor(
+    arg0: string | vscode.ShellQuotedString,
+    arg1?: ShellExecutionOptions | (string | vscode.ShellQuotedString)[],
+    arg2?: ShellExecutionOptions,
+  ) {
     if (Array.isArray(arg1)) {
       if (!arg0) {
-        throw illegalArgument('command can\'t be undefined or null');
+        throw illegalArgument("command can't be undefined or null");
       }
       if (typeof arg0 !== 'string' && typeof arg0.value !== 'string') {
         throw illegalArgument('command');
@@ -2151,7 +2163,7 @@ export class CustomExecution2 implements vscode.CustomExecution {
     this._callback = value;
   }
 
-  public get callback(): (() => Promise<vscode.Pseudoterminal>) {
+  public get callback(): () => Promise<vscode.Pseudoterminal> {
     return this._callback;
   }
 }
@@ -2171,7 +2183,7 @@ export class CustomExecution implements vscode.CustomExecution {
     this._callback = value;
   }
 
-  public get callback(): ((resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal>) {
+  public get callback(): (resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal> {
     return this._callback;
   }
 }
@@ -2206,11 +2218,10 @@ export interface TaskDefinition {
 
 @es5ClassCompat
 export class Task implements vscode.Task2 {
-
-  private static ExtensionCallbackType: string = 'customExecution';
-  private static ProcessType: string = 'process';
-  private static ShellType: string = 'shell';
-  private static EmptyType: string = '$empty';
+  private static ExtensionCallbackType = 'customExecution';
+  private static ProcessType = 'process';
+  private static ShellType = 'shell';
+  private static EmptyType = '$empty';
 
   // tslint:disable-next-line: variable-name
   private __id: string | undefined;
@@ -2228,9 +2239,29 @@ export class Task implements vscode.Task2 {
   private _runOptions: vscode.RunOptions;
   private _detail: string | undefined;
 
-  constructor(definition: TaskDefinition, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution, problemMatchers?: string | string[]);
-  constructor(definition: TaskDefinition, scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution, problemMatchers?: string | string[]);
-  constructor(definition: TaskDefinition, arg2: string | (vscode.TaskScope.Global | vscode.TaskScope.Workspace) | vscode.WorkspaceFolder, arg3: any, arg4?: any, arg5?: any, arg6?: any) {
+  constructor(
+    definition: TaskDefinition,
+    name: string,
+    source: string,
+    execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution,
+    problemMatchers?: string | string[],
+  );
+  constructor(
+    definition: TaskDefinition,
+    scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder,
+    name: string,
+    source: string,
+    execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution,
+    problemMatchers?: string | string[],
+  );
+  constructor(
+    definition: TaskDefinition,
+    arg2: string | (vscode.TaskScope.Global | vscode.TaskScope.Workspace) | vscode.WorkspaceFolder,
+    arg3: any,
+    arg4?: any,
+    arg5?: any,
+    arg6?: any,
+  ) {
     this.definition = definition;
     let problemMatchers: string | string[];
     if (typeof arg2 === 'string') {
@@ -2313,7 +2344,7 @@ export class Task implements vscode.Task2 {
 
   set definition(value: TaskDefinition) {
     if (value === undefined || value === null) {
-      throw illegalArgument('Kind can\'t be undefined or null');
+      throw illegalArgument("Kind can't be undefined or null");
     }
     this.clear();
     this._definition = value;
@@ -2359,7 +2390,12 @@ export class Task implements vscode.Task2 {
     this.clear();
     this._execution = value;
     const type = this._definition.type;
-    if (Task.EmptyType === type || Task.ProcessType === type || Task.ShellType === type || Task.ExtensionCallbackType === type) {
+    if (
+      Task.EmptyType === type ||
+      Task.ProcessType === type ||
+      Task.ShellType === type ||
+      Task.ExtensionCallbackType === type
+    ) {
       this.computeDefinitionBasedOnExecution();
     }
   }
@@ -2458,7 +2494,6 @@ export class Task implements vscode.Task2 {
 }
 
 export enum ExtensionKind {
-
   /**
    * Extension runs where the UI runs.
    */
@@ -2471,7 +2506,6 @@ export enum ExtensionKind {
 }
 
 export enum TaskPanelKind {
-
   /**
    * Shares a panel with other tasks. This is the default.
    */
@@ -2543,12 +2577,11 @@ export enum CommentThreadCollapsibleState {
   Expanded = 1,
 }
 
-//#region Theming
+// #region Theming
 
 @es5ClassCompat
 export class ColorTheme implements vscode.ColorTheme {
-  constructor(public readonly kind: ColorThemeKind) {
-  }
+  constructor(public readonly kind: ColorThemeKind) {}
 }
 
 export enum ColorThemeKind {
@@ -2582,11 +2615,10 @@ export enum ExtensionMode {
   Test = 3,
 }
 
-//#endregion Theming
+// #endregion Theming
 
 @es5ClassCompat
 export class CallHierarchyItem {
-
   _sessionId?: string;
   _itemId?: string;
 
@@ -2608,7 +2640,6 @@ export class CallHierarchyItem {
 }
 
 export class CallHierarchyIncomingCall {
-
   from: vscode.CallHierarchyItem;
   fromRanges: vscode.Range[];
 
@@ -2618,7 +2649,6 @@ export class CallHierarchyIncomingCall {
   }
 }
 export class CallHierarchyOutgoingCall {
-
   to: vscode.CallHierarchyItem;
   fromRanges: vscode.Range[];
 
@@ -2641,7 +2671,7 @@ export enum ViewColumn {
   Eight = 8,
   Nine = 9,
 }
-//#region Semantic Coloring
+// #region Semantic Coloring
 
 @es5ClassCompat
 export class SemanticTokensLegend {
@@ -2655,11 +2685,10 @@ export class SemanticTokensLegend {
 }
 
 function isStrArrayOrUndefined(arg: any): arg is string[] | undefined {
-  return ((typeof arg === 'undefined') || isStringArray(arg));
+  return typeof arg === 'undefined' || isStringArray(arg);
 }
 
 export class SemanticTokensBuilder {
-
   private _prevLine: number;
   private _prevChar: number;
   private _dataIsSortedAndDeltaEncoded: boolean;
@@ -2692,7 +2721,13 @@ export class SemanticTokensBuilder {
   public push(line: number, char: number, length: number, tokenType: number, tokenModifiers?: number): void;
   public push(range: Range, tokenType: string, tokenModifiers?: string[]): void;
   public push(arg0: any, arg1: any, arg2: any, arg3?: any, arg4?: any): void {
-    if (typeof arg0 === 'number' && typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && (typeof arg4 === 'number' || typeof arg4 === 'undefined')) {
+    if (
+      typeof arg0 === 'number' &&
+      typeof arg1 === 'number' &&
+      typeof arg2 === 'number' &&
+      typeof arg3 === 'number' &&
+      (typeof arg4 === 'number' || typeof arg4 === 'undefined')
+    ) {
       if (typeof arg4 === 'undefined') {
         arg4 = 0;
       }
@@ -2734,7 +2769,10 @@ export class SemanticTokensBuilder {
   }
 
   private _pushEncoded(line: number, char: number, length: number, tokenType: number, tokenModifiers: number): void {
-    if (this._dataIsSortedAndDeltaEncoded && (line < this._prevLine || (line === this._prevLine && char < this._prevChar))) {
+    if (
+      this._dataIsSortedAndDeltaEncoded &&
+      (line < this._prevLine || (line === this._prevLine && char < this._prevChar))
+    ) {
       // push calls were ordered and are no longer ordered
       this._dataIsSortedAndDeltaEncoded = false;
 
@@ -2810,7 +2848,7 @@ export class SemanticTokensBuilder {
       const tokenModifiers = data[srcOffset + 4];
 
       const pushLine = line - prevLine;
-      const pushChar = (pushLine === 0 ? char - prevChar : char);
+      const pushChar = pushLine === 0 ? char - prevChar : char;
 
       const dstOffset = 5 * i;
       result[dstOffset + 0] = pushLine;
@@ -2866,9 +2904,9 @@ export class SemanticTokensEdits {
   }
 }
 
-//#endregion Semantic Coloring
+// #endregion Semantic Coloring
 
-//#region EvaluatableExpression
+// #region EvaluatableExpression
 
 @es5ClassCompat
 export class EvaluatableExpression implements vscode.EvaluatableExpression {
@@ -2881,13 +2919,13 @@ export class EvaluatableExpression implements vscode.EvaluatableExpression {
     this.expression = expression;
   }
 }
-//#endregion EvaluatableExpression
+// #endregion EvaluatableExpression
 
-//#region Timeline
+// #region Timeline
 
 @es5ClassCompat
 export class TimelineItem implements vscode.TimelineItem {
-  constructor(public label: string, public timestamp: number) { }
+  constructor(public label: string, public timestamp: number) {}
 }
 
 const canceledName = 'Canceled';
@@ -2899,11 +2937,12 @@ export class CancellationError extends Error {
   }
 }
 
-//#endregion Timeline
+// #endregion Timeline
 
-//#region Inline Values
+// #region Inline Values
 
-@es5ClassCompat @es5ClassCompat
+@es5ClassCompat
+@es5ClassCompat
 export class InlineValueText implements vscode.InlineValueText {
   readonly range: Range;
   readonly text: string;
@@ -2920,7 +2959,7 @@ export class InlineValueVariableLookup implements vscode.InlineValueVariableLook
   readonly variableName?: string;
   readonly caseSensitiveLookup: boolean;
 
-  constructor(range: Range, variableName?: string, caseSensitiveLookup: boolean = true) {
+  constructor(range: Range, variableName?: string, caseSensitiveLookup = true) {
     this.range = range;
     this.variableName = variableName;
     this.caseSensitiveLookup = caseSensitiveLookup;
@@ -2940,7 +2979,6 @@ export class InlineValueEvaluatableExpression implements vscode.InlineValueEvalu
 
 @es5ClassCompat
 export class InlineValueContext implements vscode.InlineValueContext {
-
   readonly frameId: number;
   readonly stoppedLocation: vscode.Range;
 
@@ -2949,9 +2987,9 @@ export class InlineValueContext implements vscode.InlineValueContext {
     this.stoppedLocation = range;
   }
 }
-//#endregion Inline Values
+// #endregion Inline Values
 
-//#region InlayHint
+// #region InlayHint
 
 export enum InlayHintKind {
   Other = 0,

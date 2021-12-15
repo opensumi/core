@@ -8,25 +8,25 @@ import { ExtensionStorageServer } from './storage';
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
 export class ExtensionStorageModule extends BrowserModule {
-  providers: Provider[] = [{
-    token: IExtensionStorageService,
-    useClass: ExtensionStorageService,
-  },
-  {
-    token: IExtensionStoragePathServer,
-    useClass: ExtensionStoragePathServer,
-  },
-  {
-    token: IExtensionStorageServer,
-    useClass: ExtensionStorageServer,
-  },
-  ExtensionStorageContribution,
-];
+  providers: Provider[] = [
+    {
+      token: IExtensionStorageService,
+      useClass: ExtensionStorageService,
+    },
+    {
+      token: IExtensionStoragePathServer,
+      useClass: ExtensionStoragePathServer,
+    },
+    {
+      token: IExtensionStorageServer,
+      useClass: ExtensionStorageServer,
+    },
+    ExtensionStorageContribution,
+  ];
 }
 
 @Domain(ClientAppContribution)
 export class ExtensionStorageContribution implements ClientAppContribution {
-
   @Autowired(IExtensionStorageService)
   private extensionStorageService;
 

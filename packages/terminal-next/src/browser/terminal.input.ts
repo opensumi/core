@@ -3,7 +3,7 @@ import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 
 @Injectable()
 export class TerminalKeyBoardInputService {
-  private _isCommandOrCtrl: boolean = false;
+  private _isCommandOrCtrl = false;
 
   get isCommandOrCtrl() {
     return this._isCommandOrCtrl;
@@ -13,13 +13,13 @@ export class TerminalKeyBoardInputService {
     const key = isMacintosh ? 'Meta' : 'Control';
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === key)  {
+      if (e.key === key) {
         this._isCommandOrCtrl = true;
       }
     });
 
     document.addEventListener('keyup', (e) => {
-      if (e.key === key)  {
+      if (e.key === key) {
         this._isCommandOrCtrl = false;
       }
     });

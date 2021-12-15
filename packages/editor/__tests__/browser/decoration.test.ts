@@ -1,5 +1,9 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDecorationCollectionService,
+  EditorDecorationChangeEvent,
+  EditorDecorationTypeRemovedEvent,
+} from '@opensumi/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
 import { URI, Emitter, IEventBus, Disposable } from '@opensumi/ide-core-browser';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
@@ -8,18 +12,17 @@ import { MonacoEditorDecorationApplier } from '../../src/browser/decoration-appl
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 
 describe('editor decoration service test', () => {
-
   const injector = createBrowserInjector([]);
 
   injector.addProviders({
     token: IEditorDecorationCollectionService,
-    useClass : EditorDecorationCollectionService,
+    useClass: EditorDecorationCollectionService,
   });
 
   const decorationService: IEditorDecorationCollectionService = injector.get(IEditorDecorationCollectionService);
   const decorationServiceImpl = decorationService as EditorDecorationCollectionService;
 
-  const _decorationChange = (new Emitter<URI>());
+  const _decorationChange = new Emitter<URI>();
   let className = 'testDecoration';
   const provider = {
     schemes: ['file'],
@@ -56,7 +59,6 @@ describe('editor decoration service test', () => {
     disposer.dispose();
 
     expect(decorationServiceImpl.decorationProviders.get(provider.key)).toBeUndefined();
-
   });
 
   it('should be able to correctly resolve decoration', async (done) => {
@@ -94,34 +96,32 @@ describe('editor decoration service test', () => {
   });
 
   it('decoration applier test', async (done) => {
-
     injector.mockService(IThemeService, {
-      getCurrentThemeSync: jest.fn(() => {
-        return {
-          type: 'dark',
-        };
-      }),
+      getCurrentThemeSync: jest.fn(() => ({
+        type: 'dark',
+      })),
     });
-    injector.mockService(ICSSStyleService, ({
-      addClass: jest.fn(() => {
-        return new Disposable();
-      }),
-    }));
+    injector.mockService(ICSSStyleService, {
+      addClass: jest.fn(() => new Disposable()),
+    });
 
-    const disposer = decorationService.createTextEditorDecorationType({
-      backgroundColor: 'black',
-      after: {
-        backgroundColor: 'red',
+    const disposer = decorationService.createTextEditorDecorationType(
+      {
+        backgroundColor: 'black',
+        after: {
+          backgroundColor: 'red',
+        },
+        before: {
+          backgroundColor: 'green',
+        },
       },
-      before: {
-        backgroundColor: 'green',
-      },
-    }, 'test2');
+      'test2',
+    );
     const disposer2 = decorationService.registerDecorationProvider(provider);
 
     const editor = mockedMonaco.editor!.create(document.createElement('div'));
 
-    editor.setModel(mockedMonaco.editor!.createModel('', undefined , mockedMonaco.Uri!.parse('file:///test/test.js')));
+    editor.setModel(mockedMonaco.editor!.createModel('', undefined, mockedMonaco.Uri!.parse('file:///test/test.js')));
 
     const applier = injector.get(MonacoEditorDecorationApplier, [editor]);
 
@@ -152,10 +152,12 @@ describe('editor decoration service test', () => {
     expect(editor.deltaDecorations).toBeCalled();
     (editor.deltaDecorations as any).mockClear();
 
-    await eventBus.fireAndAwait(new EditorDecorationChangeEvent({
-      uri: new URI('file:///test/test.js'),
-      key: 'test',
-    }));
+    await eventBus.fireAndAwait(
+      new EditorDecorationChangeEvent({
+        uri: new URI('file:///test/test.js'),
+        key: 'test',
+      }),
+    );
 
     expect(editor.deltaDecorations).toBeCalled();
     (editor.deltaDecorations as any).mockClear();
@@ -168,5 +170,4 @@ describe('editor decoration service test', () => {
   afterAll(() => {
     injector.disposeAll();
   });
-
 });

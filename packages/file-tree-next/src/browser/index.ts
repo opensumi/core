@@ -15,7 +15,6 @@ const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
 @ModuleDependencies([WorkspaceModule])
 export class FileTreeNextModule extends BrowserModule {
-
   providers: Provider[] = [
     {
       token: IFileTreeAPI,

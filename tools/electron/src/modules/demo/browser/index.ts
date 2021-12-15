@@ -6,7 +6,6 @@ import { DemoContribution } from './demo';
 
 @Injectable()
 export class DemoModule extends ElectronBasicModule {
-
   providers = [
     {
       token: IHelloService,

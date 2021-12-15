@@ -139,25 +139,35 @@ export class DebugModelManager extends Disposable {
       }
     });
 
-    const handleMonacoModelEvent = (type: DebugModelSupportedEventType, event: monaco.editor.IPartialEditorMouseEvent) => {
+    const handleMonacoModelEvent = (
+      type: DebugModelSupportedEventType,
+      event: monaco.editor.IPartialEditorMouseEvent,
+    ) => {
       const model = monacoEditor.getModel();
       if (!model) {
         throw new Error('Not find model');
       }
 
-      this.handleMouseEvent(new URI(model.uri.toString()),
-        type, event as monaco.editor.IEditorMouseEvent, monacoEditor);
+      this.handleMouseEvent(
+        new URI(model.uri.toString()),
+        type,
+        event as monaco.editor.IEditorMouseEvent,
+        monacoEditor,
+      );
     };
     this.toDispose.push(
-      monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)));
+      monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)),
+    );
     this.toDispose.push(
-      monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)));
+      monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)),
+    );
     this.toDispose.push(
-      monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
+      monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)),
+    );
     this.toDispose.push(
-      monacoEditor.onContextMenu((event) => handleMonacoModelEvent(DebugModelSupportedEventType.contextMenu, event)));
-    this.toDispose.push(
-      monacoEditor.onDidChangeModel((event) => this._onModelChanged.fire(event)));
+      monacoEditor.onContextMenu((event) => handleMonacoModelEvent(DebugModelSupportedEventType.contextMenu, event)),
+    );
+    this.toDispose.push(monacoEditor.onDidChangeModel((event) => this._onModelChanged.fire(event)));
   }
 
   resolve(uri: URI) {
@@ -168,7 +178,12 @@ export class DebugModelManager extends Disposable {
     return model;
   }
 
-  handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: IMonacoCodeEditor) {
+  handleMouseEvent(
+    uri: URI,
+    type: DebugModelSupportedEventType,
+    event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
+    monacoEditor: IMonacoCodeEditor,
+  ) {
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {
       return;
@@ -193,7 +208,8 @@ export class DebugModelManager extends Disposable {
           case DebugModelSupportedEventType.move:
             model.onMouseMove(event);
             break;
-          default: break;
+          default:
+            break;
         }
         break;
       }

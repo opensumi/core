@@ -6,7 +6,11 @@ import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.comm
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { URI } from '@opensumi/ide-core-common';
 import path from 'path';
-import { DebugAdapterServer, DebugAdapterExecutable, DebugAdapterInlineImplementation } from '../../../../src/common/vscode/ext-types';
+import {
+  DebugAdapterServer,
+  DebugAdapterExecutable,
+  DebugAdapterInlineImplementation,
+} from '../../../../src/common/vscode/ext-types';
 
 const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
@@ -16,9 +20,7 @@ const mockMainThreadCommandProxy = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -87,30 +89,36 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     extHostCommands.registerCommand(true, 'extHostDebug.test', (() => ({
       modulePath: path.join(__dirname, 'fork.js'),
     })) as any);
-    const contributions = [{
-      type: 'node',
-      adapterExecutableCommand: 'extHostDebug.test',
-    }];
+    const contributions = [
+      {
+        type: 'node',
+        adapterExecutableCommand: 'extHostDebug.test',
+      },
+    ];
     extHostDebug.registerDebuggersContributions(URI.file('home/extension/test').toString(), contributions);
     expect(mockMainThreadDebug.$registerDebuggerContribution).toBeCalledTimes(1);
     mockMainThreadDebug.$registerDebuggerContribution.mockClear();
   });
 
   it('addBreakpoints method should be work', () => {
-    const breakpoints = [{
-      id: '1',
-      enabled: true,
-    }];
+    const breakpoints = [
+      {
+        id: '1',
+        enabled: true,
+      },
+    ];
     extHostDebug.addBreakpoints(breakpoints);
     expect(mockMainThreadDebug.$addBreakpoints).toBeCalledTimes(1);
     mockMainThreadDebug.$addBreakpoints.mockClear();
   });
 
   it('removeBreakpoints method should be work', () => {
-    const breakpoints = [{
-      id: '1',
-      enabled: true,
-    }];
+    const breakpoints = [
+      {
+        id: '1',
+        enabled: true,
+      },
+    ];
     extHostDebug.removeBreakpoints(breakpoints);
     expect(mockMainThreadDebug.$removeBreakpoints).toBeCalledTimes(1);
     mockMainThreadDebug.$removeBreakpoints.mockClear();
@@ -125,14 +133,18 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
       id: 2,
     } as any;
     // 当有传入session的情况
-    expect(extHostDebug.asDebugSourceUri(source, session).toString()).toBe(`debug:/file/a.js?${encodeURIComponent(`session=${session.id}&ref=${source.sourceReference}`)}`);
+    expect(extHostDebug.asDebugSourceUri(source, session).toString()).toBe(
+      `debug:/file/a.js?${encodeURIComponent(`session=${session.id}&ref=${source.sourceReference}`)}`,
+    );
     // 不传入session的情况
-    expect(extHostDebug.asDebugSourceUri(source).toString()).toBe(`debug:/file/a.js?${encodeURIComponent(`ref=${source.sourceReference}`)}`);
+    expect(extHostDebug.asDebugSourceUri(source).toString()).toBe(
+      `debug:/file/a.js?${encodeURIComponent(`ref=${source.sourceReference}`)}`,
+    );
 
     const localSource = {
       path: '/file/b.js',
     } as any;
-    expect(extHostDebug.asDebugSourceUri(localSource).toString()).toBe(`file:///file/b.js`);
+    expect(extHostDebug.asDebugSourceUri(localSource).toString()).toBe('file:///file/b.js');
   });
 
   it('startDebugging method should be work', () => {
@@ -146,15 +158,19 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
   });
 
   it('registerDebugAdapterDescriptorFactory method should be work', () => {
-    expect(typeof extHostDebug.registerDebugAdapterDescriptorFactory('debug', {
-      createDebugAdapterDescriptor: (() => { }) as any,
-    }).dispose).toBe('function');
+    expect(
+      typeof extHostDebug.registerDebugAdapterDescriptorFactory('debug', {
+        createDebugAdapterDescriptor: (() => {}) as any,
+      }).dispose,
+    ).toBe('function');
   });
 
   it('registerDebugAdapterTrackerFactory method should be work', () => {
-    expect(typeof extHostDebug.registerDebugAdapterTrackerFactory('debug', {
-      createDebugAdapterTracker: (() => { }) as any,
-    }).dispose).toBe('function');
+    expect(
+      typeof extHostDebug.registerDebugAdapterTrackerFactory('debug', {
+        createDebugAdapterTracker: (() => {}) as any,
+      }).dispose,
+    ).toBe('function');
   });
 
   it('RPC methods all should be work', async (done) => {
@@ -182,9 +198,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
   it('convertToDto method should be work', async (done) => {
     const execDADescriptor = async (id: string, adDescriptor) => {
       extHostDebug.registerDebugAdapterDescriptorFactory(id, {
-        createDebugAdapterDescriptor: (() => {
-          return adDescriptor;
-        }) as any,
+        createDebugAdapterDescriptor: (() => adDescriptor) as any,
       });
       const debugConfiguration = {
         type: 'node',
@@ -214,13 +228,15 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorExec);
     expect(adapterDescriptor.type).toBe('executable');
 
-    const descriptorI = await execDADescriptor('mockI', new DebugAdapterInlineImplementation({
-      start: (input, output) => { },
-    } as any));
+    const descriptorI = await execDADescriptor(
+      'mockI',
+      new DebugAdapterInlineImplementation({
+        start: (input, output) => {},
+      } as any),
+    );
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorI);
     expect(adapterDescriptor.type).toBe('implementation');
 
     done();
-
   });
 });

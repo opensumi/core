@@ -1,6 +1,15 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import type { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type {
+  IBulkEditPreviewHandler,
+  IBulkEditResult,
+  IBulkEditService,
+  IBulkEditOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import {
+  ResourceEdit,
+  ResourceFileEdit,
+  ResourceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, ILogger, revive } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
@@ -45,7 +54,10 @@ export class MonacoBulkEditService implements IBulkEditService {
     return `Made ${totalEdits} text edits in one file`;
   }
 
-  async apply(resourceEdits: ResourceEdit[], options?: IBulkEditOptions): Promise<IBulkEditResult & { success: boolean }> {
+  async apply(
+    resourceEdits: ResourceEdit[],
+    options?: IBulkEditOptions,
+  ): Promise<IBulkEditResult & { success: boolean }> {
     let edits = reviveWorkspaceEditDto2(resourceEdits);
 
     if (options?.showPreview && this._previewHandler) {
@@ -91,7 +103,11 @@ export class MonacoBulkEditService implements IBulkEditService {
     };
   }
 
-  private convertWorkspaceEdit(edit: ResourceEdit[]): { workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number } {
+  private convertWorkspaceEdit(edit: ResourceEdit[]): {
+    workspaceEdit: IWorkspaceEdit;
+    totalEdits: number;
+    totalFiles: number;
+  } {
     const workspaceEdit: IWorkspaceEdit = { edits: [] };
     let totalEdits = 0;
     let totalFiles = 0;

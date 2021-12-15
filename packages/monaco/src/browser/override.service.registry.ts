@@ -3,7 +3,6 @@ import { MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-
 
 @Injectable()
 export class MonacoOverrideServiceRegistryImpl implements MonacoOverrideServiceRegistry {
-
   private overrideServices: { [serviceId: string]: any } = {};
 
   registerOverrideService(serviceId: ServiceNames, service: any): void {

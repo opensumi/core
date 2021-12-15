@@ -8,7 +8,7 @@ import defaultTheme from './default-theme';
 @Injectable()
 export class ThemeStore {
   private themes: {
-    [themeId: string]: ThemeData,
+    [themeId: string]: ThemeData;
   } = {};
 
   @Autowired(INJECTOR_TOKEN)

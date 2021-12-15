@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -57,8 +57,10 @@ export class FileChangeCollection {
   }
 
   protected shouldSkip(current: FileChange, change: FileChange): boolean {
-    return (current.type === FileChangeType.ADDED && change.type === FileChangeType.UPDATED) ||
-      (current.type === FileChangeType.UPDATED && change.type === FileChangeType.ADDED);
+    return (
+      (current.type === FileChangeType.ADDED && change.type === FileChangeType.UPDATED) ||
+      (current.type === FileChangeType.UPDATED && change.type === FileChangeType.ADDED)
+    );
   }
 
   values(): FileChange[] {

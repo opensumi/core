@@ -1,6 +1,18 @@
 import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@opensumi/di';
-import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@opensumi/ide-core-common';
+import {
+  ILogger,
+  isOSX,
+  Emitter,
+  Event,
+  CommandRegistry,
+  ContributionProvider,
+  IDisposable,
+  Disposable,
+  formatLocalize,
+  CommandService,
+  isUndefined,
+} from '@opensumi/ide-core-common';
 import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { IContextKeyService } from '../context-key';
@@ -29,7 +41,6 @@ export namespace KeybindingScope {
 }
 
 export namespace Keybinding {
-
   /**
    * 返回带有绑定的字符串表达式
    * 仅序列化关键的快捷键及command
@@ -139,7 +150,10 @@ export interface KeybindingRegistry {
   acceleratorForKeyCode(keyCode: KeyCode, separator: string): string;
   acceleratorForKey(key: Key): string;
   acceleratorForKeyString(keyString: string, separator?: string): string;
-  getKeybindingsForKeySequence(keySequence: KeySequence, event?: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult;
+  getKeybindingsForKeySequence(
+    keySequence: KeySequence,
+    event?: KeyboardEvent,
+  ): KeybindingsResultCollection.KeybindingsResult;
   getKeybindingsForCommand(commandId: string): ScopedKeybinding[];
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
@@ -178,7 +192,6 @@ export interface KeybindingService {
 
 @Injectable()
 export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingService {
-
   // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
   public static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
   protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
@@ -272,13 +285,20 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
   // tslint:disable-next-line:unified-signatures
   public unregisterKeybinding(key: string, scope?: KeybindingScope): void;
-  public unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
+  public unregisterKeybinding(
+    keyOrBinding: Keybinding | string,
+    scope: KeybindingScope = KeybindingScope.DEFAULT,
+  ): void {
     const key = Keybinding.is(keyOrBinding) ? keyOrBinding.keybinding : keyOrBinding;
     const keymap = this.keymaps[scope];
     let bindings;
     // 当传入的keybinding存在when条件时，严格匹配
     if (Keybinding.is(keyOrBinding) && !!keyOrBinding.when) {
-      bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, keyOrBinding.keybinding) && this.isKeybindingWhenEqual(el.when, keyOrBinding.when));
+      bindings = keymap.filter(
+        (el) =>
+          this.isKeybindingEqual(el.keybinding, keyOrBinding.keybinding) &&
+          this.isKeybindingWhenEqual(el.when, keyOrBinding.when),
+      );
     } else {
       bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, key));
     }
@@ -303,7 +323,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   // 解析快捷键字符串为统一的结果
   private acceleratorForSequenceKeyString(key: string) {
-    const keyCodeStrings  = key.split(' ');
+    const keyCodeStrings = key.split(' ');
     const keySequence: KeySequence = keyCodeStrings.map((key) => KeyCode.parse(key));
     return this.acceleratorForSequence(keySequence, '+').join(' ');
   }
@@ -376,25 +396,35 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   public containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean {
     const bindingKeySequence = this.resolveKeybinding(binding);
-    const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
-      .filter((b) => b.when === binding.when);
+    const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence).filter(
+      (b) => b.when === binding.when,
+    );
 
     if (collisions.full.length > 0) {
-      this.logger.warn('Collided keybinding is ignored; ',
-        Keybinding.stringify(binding), ' collided with ',
-        collisions.full.map((b) => Keybinding.stringify(b)).join(', '));
+      this.logger.warn(
+        'Collided keybinding is ignored; ',
+        Keybinding.stringify(binding),
+        ' collided with ',
+        collisions.full.map((b) => Keybinding.stringify(b)).join(', '),
+      );
       return true;
     }
     if (collisions.partial.length > 0) {
-      this.logger.warn('Shadowing keybinding is ignored; ',
-        Keybinding.stringify(binding), ' shadows ',
-        collisions.partial.map((b) => Keybinding.stringify(b)).join(', '));
+      this.logger.warn(
+        'Shadowing keybinding is ignored; ',
+        Keybinding.stringify(binding),
+        ' shadows ',
+        collisions.partial.map((b) => Keybinding.stringify(b)).join(', '),
+      );
       return true;
     }
     if (collisions.shadow.length > 0) {
-      this.logger.warn('Shadowed keybinding is ignored; ',
-        Keybinding.stringify(binding), ' would be shadowed by ',
-        collisions.shadow.map((b) => Keybinding.stringify(b)).join(', '));
+      this.logger.warn(
+        'Shadowed keybinding is ignored; ',
+        Keybinding.stringify(binding),
+        ' would be shadowed by ',
+        collisions.shadow.map((b) => Keybinding.stringify(b)).join(', '),
+      );
       return true;
     }
     return false;
@@ -408,23 +438,39 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   public validateKeybinding(bindings: Keybinding[], binding: Keybinding): string {
     const bindingKeySequence = this.resolveKeybinding(binding);
-    const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
-      .filter((b) => b.when === binding.when);
+    const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence).filter(
+      (b) => b.when === binding.when,
+    );
 
     if (collisions.full.length > 0) {
       const collision = collisions.full[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.full.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
+      return formatLocalize(
+        'keymaps.keybinding.full.collide',
+        `${command ? command?.label || command.id : collision.command}${
+          collision.when ? `{${collision.when}}` : collision.when
+        }`,
+      );
     }
     if (collisions.partial.length > 0) {
       const collision = collisions.partial[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.partial.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
+      return formatLocalize(
+        'keymaps.keybinding.partial.collide',
+        `${command ? command?.label || command.id : collision.command}${
+          collision.when ? `{${collision.when}}` : collision.when
+        }`,
+      );
     }
     if (collisions.shadow.length > 0) {
       const collision = collisions.shadow[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.shadow.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
+      return formatLocalize(
+        'keymaps.keybinding.shadow.collide',
+        `${command ? command?.label || command.id : collision.command}${
+          collision.when ? `{${collision.when}}` : collision.when
+        }`,
+      );
     }
     return '';
   }
@@ -455,7 +501,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keybinding
    * @param separator
    */
-  public acceleratorFor(keybinding: Keybinding, separator: string = ' '): string[] {
+  public acceleratorFor(keybinding: Keybinding, separator = ' '): string[] {
     const bindingKeySequence = this.resolveKeybinding(keybinding);
     return this.acceleratorForSequence(bindingKeySequence, separator);
   }
@@ -465,11 +511,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keySequence
    * @param separator
    */
-  public acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
+  public acceleratorForSequence(keySequence: KeySequence, separator = ' '): string[] {
     return keySequence.map((keyCode) => this.acceleratorForKeyCode(keyCode, separator));
   }
 
-  public acceleratorForKeyString(keyString: string, separator: string = ' '): string {
+  public acceleratorForKeyString(keyString: string, separator = ' '): string {
     const keyCode = KeyCode.parse(keyString);
     return this.acceleratorForKeyCode(keyCode, separator);
   }
@@ -479,7 +525,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param str 字符串
    */
   private capitalizeFirstLetter(str: string) {
-    return str.replace(/^\S/, function(s) {return s.toUpperCase(); });
+    return str.replace(/^\S/, function (s) {
+      return s.toUpperCase();
+    });
   }
 
   /**
@@ -487,7 +535,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keyCode
    * @param separator
    */
-  public acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
+  public acceleratorForKeyCode(keyCode: KeyCode, separator = ' '): string {
     const keyCodeResult: string[] = [];
     if (keyCode.ctrl) {
       keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.CTRL));
@@ -537,8 +585,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       }
     }
     const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);
-    if (key.keyCode >= Key.KEY_A.keyCode && key.keyCode <= Key.KEY_Z.keyCode ||
-      key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode) {
+    if (
+      (key.keyCode >= Key.KEY_A.keyCode && key.keyCode <= Key.KEY_Z.keyCode) ||
+      (key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode)
+    ) {
       return keyString.toUpperCase();
     } else if (keyString.length > 1) {
       return keyString.charAt(0).toUpperCase() + keyString.slice(1);
@@ -555,7 +605,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param bindings
    * @param candidate
    */
-  protected getKeySequenceCollisions(bindings: Keybinding[], candidate: KeySequence): KeybindingsResultCollection.KeybindingsResult {
+  protected getKeySequenceCollisions(
+    bindings: Keybinding[],
+    candidate: KeySequence,
+  ): KeybindingsResultCollection.KeybindingsResult {
     const result = new KeybindingsResultCollection.KeybindingsResult();
     for (const binding of bindings) {
       try {
@@ -587,16 +640,17 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 列表按优先级排序 （见sortKeybindingsByPriority方法）
    * @param keySequence
    */
-  public getKeybindingsForKeySequence(keySequence: KeySequence, event?: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
+  public getKeybindingsForKeySequence(
+    keySequence: KeySequence,
+    event?: KeyboardEvent,
+  ): KeybindingsResultCollection.KeybindingsResult {
     const result = new KeybindingsResultCollection.KeybindingsResult();
 
-    for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT;) {
+    for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT; ) {
       const matches = this.getKeySequenceCollisions(this.keymaps[scope], keySequence);
 
-      matches.full = matches.full
-        .sort(this.sortKeybindingsByPriority);
-      matches.partial = matches.partial
-        .sort(this.sortKeybindingsByPriority);
+      matches.full = matches.full.sort(this.sortKeybindingsByPriority);
+      matches.partial = matches.partial.sort(this.sortKeybindingsByPriority);
 
       result.merge(matches);
     }
@@ -687,7 +741,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param event
    */
   public isEnabled(binding: Keybinding, event?: KeyboardEvent): boolean {
-    if (binding.when && !this.whenContextService.match(binding.when, event && event.target as HTMLElement)) {
+    if (binding.when && !this.whenContextService.match(binding.when, event && (event.target as HTMLElement))) {
       return false;
     }
     return true;
@@ -789,12 +843,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
-  * 返回快捷键文本
-  *
-  * @param event 键盘事件
-  */
-  public convert(event: KeyboardEvent, separator: string = ' '): string {
-
+   * 返回快捷键文本
+   *
+   * @param event 键盘事件
+   */
+  public convert(event: KeyboardEvent, separator = ' '): string {
     const keyCode = KeyCode.createKeyCode(event);
 
     // 当传入的Keycode仅为修饰符，返回上次输出结果
@@ -835,7 +888,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         } else {
           const command = this.commandRegistry.getCommand(binding.command);
           if (command) {
-            this.commandService.executeCommand(command.id, binding.args)
+            this.commandService
+              .executeCommand(command.id, binding.args)
               .catch((err) => this.logger.error('Failed to execute command:', err, binding.command));
             /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
             event.preventDefault();

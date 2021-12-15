@@ -27,40 +27,39 @@ export function renderInfoItem(props: ItemProps) {
   return (
     <div
       ref={ref}
-      className={ clx({
+      className={clx({
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
-      }) }
-      onClick={ () => handleSelect() }
-      onContextMenu={ (event) => props.onContextMenu && props.onContextMenu(event) }
+      })}
+      onClick={() => handleSelect()}
+      onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >
-      {
-        props.editable ?
-          <input
-            autoFocus
-            ref={ (ele) => ele && ele.select() }
-            className={ styles.item_info_input }
-            defaultValue={ props.name }
-            onClick={ (e) => e.stopPropagation() }
-            onBlur={ () => (props.onInputBlur && props.id) && props.onInputBlur(props.id) }
-            onKeyDown={ (e) => handleOnKeyDown(e) }
-          ></input> :
-          <div
-            id={ props.id }
-            className={ styles.item_info_name }
-            title={ props.name }>{ props.name }</div>
-      }
-      {
-        props.editable ?
-          <div></div> :
-          <div
-            className={ clx([getIcon('close'), styles.close_icon]) }
-            onClick={ (event) => {
-              event.stopPropagation();
-              handleClose();
-            } }
-          ></div>
-      }
+      {props.editable ? (
+        <input
+          autoFocus
+          ref={(ele) => ele && ele.select()}
+          className={styles.item_info_input}
+          defaultValue={props.name}
+          onClick={(e) => e.stopPropagation()}
+          onBlur={() => props.onInputBlur && props.id && props.onInputBlur(props.id)}
+          onKeyDown={(e) => handleOnKeyDown(e)}
+        ></input>
+      ) : (
+        <div id={props.id} className={styles.item_info_name} title={props.name}>
+          {props.name}
+        </div>
+      )}
+      {props.editable ? (
+        <div></div>
+      ) : (
+        <div
+          className={clx([getIcon('close'), styles.close_icon])}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleClose();
+          }}
+        ></div>
+      )}
     </div>
   );
 }
@@ -70,11 +69,11 @@ export function renderAddItem(props: ItemProps) {
 
   return (
     <div
-      className={ clx({
+      className={clx({
         [getIcon('plus')]: true,
         [styles.item_add]: true,
-      }) }
-      onClick={ () => handleAdd() }
+      })}
+      onClick={() => handleAdd()}
     ></div>
   );
 }

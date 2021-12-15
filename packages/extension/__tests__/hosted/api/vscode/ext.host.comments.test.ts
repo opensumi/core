@@ -1,7 +1,15 @@
 import { Injector } from '@opensumi/di';
-import { ExtHostComments, createCommentsApiFactory, ExtHostCommentThread } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
+import {
+  ExtHostComments,
+  createCommentsApiFactory,
+  ExtHostCommentThread,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadComments, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadComments,
+  ExtHostAPIIdentifier,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { Uri, Emitter, Disposable, IEventBus, URI } from '@opensumi/ide-core-common';
 import * as types from '@opensumi/ide-extension/lib/common/vscode/ext-types';
@@ -40,10 +48,11 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ICommentsService,
-      useClass: CommentsService,
-    },
+    injector.addProviders(
+      {
+        token: ICommentsService,
+        useClass: CommentsService,
+      },
       {
         token: ICommentsFeatureRegistry,
         useClass: CommentsFeatureRegistry,
@@ -51,13 +60,16 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       {
         token: IMainLayoutService,
         useClass: LayoutService,
-      }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: WorkbenchEditorService,
-      useClass: WorkbenchEditorServiceImpl,
-    });
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: WorkbenchEditorService,
+        useClass: WorkbenchEditorServiceImpl,
+      },
+    );
     const extCommands = mockService({});
     const extDocument = mockService({});
     const mainCommands = mockService({
@@ -68,8 +80,14 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       extensionId: 'cloud-ide.vim',
       isBuiltin: false,
     });
-    extComments = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocolMain, extCommands, extDocument));
-    mainThreadComments = rpcProtocolExt.set(MainThreadAPIIdentifier.MainThreadComments, injector.get(MainthreadComments, [rpcProtocolExt, mainCommands]));
+    extComments = rpcProtocolMain.set(
+      ExtHostAPIIdentifier.ExtHostComments,
+      new ExtHostComments(rpcProtocolMain, extCommands, extDocument),
+    );
+    mainThreadComments = rpcProtocolExt.set(
+      MainThreadAPIIdentifier.MainThreadComments,
+      injector.get(MainthreadComments, [rpcProtocolExt, mainCommands]),
+    );
     vscodeComments = createCommentsApiFactory(extension, extComments);
   });
 
@@ -105,13 +123,15 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     const $createCommentThread = jest.spyOn(mainThreadComments, '$createCommentThread');
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
-      body,
-      author: {
-        name: author,
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
+      {
+        body,
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
       },
-      mode: types.CommentMode.Preview,
-    }]);
+    ]);
     expect(thread.range.start.line).toBe(1);
     expect(thread.comments.length).toBe(1);
     expect(thread.comments[0].body).toBe(body);
@@ -129,13 +149,15 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     const $updateCommentThread = jest.spyOn(mainThreadComments, '$updateCommentThread');
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
-      body,
-      author: {
-        name: author,
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
+      {
+        body,
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
       },
-      mode: types.CommentMode.Preview,
-    }]);
+    ]);
     thread.collapsibleState = types.CommentThreadCollapsibleState.Collapsed;
     thread.contextValue = 'test';
     thread.label = 'test';
@@ -148,13 +170,15 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
 
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
-    thread.comments = [{
-      body: 'body2',
-      author: {
-        name: author,
+    thread.comments = [
+      {
+        body: 'body2',
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
       },
-      mode: types.CommentMode.Preview,
-    }];
+    ];
     expect($updateCommentThread).toBeCalledTimes(2);
   });
 
@@ -195,25 +219,29 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       done();
     };
 
-    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
-      body,
-      author: {
-        name: author,
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
+      {
+        body,
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
       },
-      mode: types.CommentMode.Preview,
-    }]);
+    ]);
     thread.collapsibleState = types.CommentThreadCollapsibleState.Collapsed;
     thread.contextValue = 'test';
     thread.label = 'test';
     thread.range = new types.Range(2, 1, 2, 1);
-    thread.comments = [{
-      body: 'body2',
-      author: {
-        name: author,
+    thread.comments = [
+      {
+        body: 'body2',
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
+        reactions: [reaction],
       },
-      mode: types.CommentMode.Preview,
-      reactions: [reaction],
-    }];
+    ];
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
     expect($updateCommentControllerFeatures).toBeCalled();
@@ -222,19 +250,21 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       iconPath: URI.parse(reaction.iconPath.toString()),
     };
 
-    eventBus.fire(new CommentReactionClick({
-      thread: mockService({
-        data: {
-          commentThreadHandle: 0,
-        },
+    eventBus.fire(
+      new CommentReactionClick({
+        thread: mockService({
+          data: {
+            commentThreadHandle: 0,
+          },
+        }),
+        comment: mockService({
+          // 1 表示为第一个 comment
+          id: 1,
+          reactions: [modelReaction],
+        }),
+        reaction: modelReaction,
       }),
-      comment: mockService({
-        // 1 表示为第一个 comment
-        id: 1,
-        reactions: [modelReaction],
-      }),
-      reaction: modelReaction,
-    }));
+    );
   });
 
   it('comment canReply', async () => {
@@ -247,7 +277,13 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
     expect($updateCommentThread).toBeCalled();
-    expect($updateCommentThread).toBeCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), { 'canReply': false, 'comments': [] });
+    expect($updateCommentThread).toBeCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      { canReply: false, comments: [] },
+    );
   });
 
   it('dispose', async () => {
@@ -262,17 +298,18 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       },
     };
 
-    controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
-      body: 'body',
-      author: {
-        name: '蛋总',
+    controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
+      {
+        body: 'body',
+        author: {
+          name: '蛋总',
+        },
+        mode: types.CommentMode.Preview,
       },
-      mode: types.CommentMode.Preview,
-    }]);
+    ]);
 
     controller.dispose();
     await 0;
     expect($deleteCommentThread).toBeCalledTimes(1);
   });
-
 });

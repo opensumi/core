@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -15,11 +15,30 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-event-service-ext-impl.ts
 
-import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, getDebugLogger } from '@opensumi/ide-core-common';
+import {
+  Event,
+  Emitter,
+  Disposable,
+  URI,
+  AsyncEmitter,
+  WaitUntilEvent,
+  CancellationToken,
+  getDebugLogger,
+} from '@opensumi/ide-core-common';
 import vscode from 'vscode';
-import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
+import {
+  ExtensionDocumentDataManager,
+  IMainThreadWorkspace,
+  MainThreadAPIIdentifier,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
-import { FileSystemEvents, IExtHostFileSystemEvent, IWillRunFileOperationParticipation, SourceTargetPair } from '../../../common/vscode/file-system';
+import {
+  FileSystemEvents,
+  IExtHostFileSystemEvent,
+  IWillRunFileOperationParticipation,
+  SourceTargetPair,
+} from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -27,7 +46,6 @@ import { FileOperation } from '@opensumi/ide-workspace-edit';
 import * as model from '../../../common/vscode/model.api';
 
 class FileSystemWatcher implements vscode.FileSystemWatcher {
-
   private readonly _onDidCreate = new Emitter<vscode.Uri>();
   private readonly _onDidChange = new Emitter<vscode.Uri>();
   private readonly _onDidDelete = new Emitter<vscode.Uri>();
@@ -46,8 +64,13 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
     return Boolean(this._config & 0b100);
   }
 
-  constructor(dispatcher: Event<FileSystemEvents>, globPattern: string | IRelativePattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean) {
-
+  constructor(
+    dispatcher: Event<FileSystemEvents>,
+    globPattern: string | IRelativePattern,
+    ignoreCreateEvents?: boolean,
+    ignoreChangeEvents?: boolean,
+    ignoreDeleteEvents?: boolean,
+  ) {
     this._config = 0;
     if (ignoreCreateEvents) {
       this._config += 0b001;
@@ -114,7 +137,6 @@ interface IExtensionListener<E> {
 }
 
 export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
-
   private readonly _onFileSystemEvent = new Emitter<FileSystemEvents>();
 
   private readonly _onDidRenameFile = new Emitter<vscode.FileRenameEvent>();
@@ -132,14 +154,28 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
 
   private readonly _proxy: IMainThreadWorkspace;
 
-  constructor(private readonly rpcProtocol: IRPCProtocol, private _extHostDocumentsAndEditors: ExtensionDocumentDataManager) {
+  constructor(
+    private readonly rpcProtocol: IRPCProtocol,
+    private _extHostDocumentsAndEditors: ExtensionDocumentDataManager,
+  ) {
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
   }
 
   // --- file events
 
-  createFileSystemWatcher(globPattern: string | IRelativePattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean): vscode.FileSystemWatcher {
-    return new FileSystemWatcher(this._onFileSystemEvent.event, globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents);
+  createFileSystemWatcher(
+    globPattern: string | IRelativePattern,
+    ignoreCreateEvents?: boolean,
+    ignoreChangeEvents?: boolean,
+    ignoreDeleteEvents?: boolean,
+  ): vscode.FileSystemWatcher {
+    return new FileSystemWatcher(
+      this._onFileSystemEvent.event,
+      globPattern,
+      ignoreCreateEvents,
+      ignoreChangeEvents,
+      ignoreDeleteEvents,
+    );
   }
 
   $onFileEvent(events: FileSystemEvents) {
@@ -151,7 +187,9 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
   $onDidRunFileOperation(operation: FileOperation, files: SourceTargetPair[]): void {
     switch (operation) {
       case FileOperation.MOVE:
-        this._onDidRenameFile.fire(Object.freeze({ files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }));
+        this._onDidRenameFile.fire(
+          Object.freeze({ files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }),
+        );
         break;
       case FileOperation.DELETE:
         this._onDidDeleteFile.fire(Object.freeze({ files: files.map((f) => URI.revive(f.target)) }));
@@ -176,28 +214,58 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
     return this._createWillExecuteEvent(extension, this._onWillDeleteFile);
   }
 
-  private _createWillExecuteEvent<E extends WaitUntilEvent>(extension: IExtensionDescription, emitter: AsyncEmitter<E>): Event<E> {
+  private _createWillExecuteEvent<E extends WaitUntilEvent>(
+    extension: IExtensionDescription,
+    emitter: AsyncEmitter<E>,
+  ): Event<E> {
     return (listener, thisArg, disposables) => {
-      const wrappedListener: IExtensionListener<E> = function wrapped(e: E) { listener.call(thisArg, e); };
+      const wrappedListener: IExtensionListener<E> = function wrapped(e: E) {
+        listener.call(thisArg, e);
+      };
       wrappedListener.extension = extension;
       return emitter.event(wrappedListener, undefined, disposables);
     };
   }
 
-  async $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined> {
+  async $onWillRunFileOperation(
+    operation: FileOperation,
+    files: SourceTargetPair[],
+    timeout: number,
+    token: CancellationToken,
+  ): Promise<IWillRunFileOperationParticipation | undefined> {
     switch (operation) {
       case FileOperation.MOVE:
-        return await this._fireWillEvent(this._onWillRenameFile, { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }, timeout, token);
+        return await this._fireWillEvent(
+          this._onWillRenameFile,
+          { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) },
+          timeout,
+          token,
+        );
       case FileOperation.DELETE:
-        return await this._fireWillEvent(this._onWillDeleteFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
+        return await this._fireWillEvent(
+          this._onWillDeleteFile,
+          { files: files.map((f) => URI.revive(f.target)) },
+          timeout,
+          token,
+        );
       case FileOperation.CREATE:
-        return await this._fireWillEvent(this._onWillCreateFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
+        return await this._fireWillEvent(
+          this._onWillCreateFile,
+          { files: files.map((f) => URI.revive(f.target)) },
+          timeout,
+          token,
+        );
       default:
         return undefined;
     }
   }
 
-  private async _fireWillEvent<E extends WaitUntilEvent>(emitter: AsyncEmitter<E>, data: Omit<E, 'waitUntil'>, timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined> {
+  private async _fireWillEvent<E extends WaitUntilEvent>(
+    emitter: AsyncEmitter<E>,
+    data: Omit<E, 'waitUntil'>,
+    timeout: number,
+    token: CancellationToken,
+  ): Promise<IWillRunFileOperationParticipation | undefined> {
     const extensionNames = new Set<string>();
     const edits: WorkspaceEdit[] = [];
 
@@ -207,7 +275,10 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       const result = await Promise.resolve(thenable);
       if (result instanceof WorkspaceEdit) {
         edits.push(result);
-        extensionNames.add((listener as IExtensionListener<E>).extension.displayName ?? (listener as IExtensionListener<E>).extension.identifier.value);
+        extensionNames.add(
+          (listener as IExtensionListener<E>).extension.displayName ??
+            (listener as IExtensionListener<E>).extension.identifier.value,
+        );
       }
 
       if (Date.now() - now > timeout) {
@@ -238,5 +309,4 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       // return this._proxy.$tryApplyWorkspaceEdit(dto);
     }
   }
-
 }

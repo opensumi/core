@@ -1,12 +1,30 @@
 import path from 'path';
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@opensumi/ide-core-common';
+import {
+  getDebugLogger,
+  Emitter,
+  IReporterService,
+  REPORT_HOST,
+  REPORT_NAME,
+  IExtensionProps,
+  Uri,
+  timeout,
+  ReporterService,
+  IReporter,
+  IExtensionLogger,
+} from '@opensumi/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  MainThreadAPIIdentifier,
+  VSCodeExtensionService,
+  IExtensionDescription,
+  ExtensionIdentifier,
+} from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
@@ -16,8 +34,8 @@ import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
  */
-declare var __webpack_require__: any;
-declare var __non_webpack_require__: any;
+declare let __webpack_require__: any;
+declare let __non_webpack_require__: any;
 
 // https://github.com/webpack/webpack/issues/4175#issuecomment-342931035
 export function getNodeRequire() {
@@ -55,12 +73,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
       this.injector.get(AppConfig),
     );
-    this.sumiAPIFactory = createSumiAPIFactory(
-      this.rpcProtocol,
-      this,
-      'node',
-      reporter,
-    );
+    this.sumiAPIFactory = createSumiAPIFactory(this.rpcProtocol, this, 'node', reporter);
 
     this.vscodeExtAPIImpl = new Map();
     this.sumiAPIImpl = new Map();
@@ -102,15 +115,16 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public getExtensions(): KTExtension[] {
-    return this.extensions.map((ext) => {
-      return new KTExtension(
-        ext,
-        this as unknown as IExtensionHostService,
-        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
-        this.getExtensionExports(ext.id),
-        this.getExtendExports(ext.id),
-      );
-    });
+    return this.extensions.map(
+      (ext) =>
+        new KTExtension(
+          ext,
+          this as unknown as IExtensionHostService,
+          this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
+          this.getExtensionExports(ext.id),
+          this.getExtendExports(ext.id),
+        ),
+    );
   }
 
   private _extHostErrorStackTraceExtended = false;
@@ -141,11 +155,12 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
       return traceMassage;
     };
-
   }
 
   public async $updateExtHostData() {
-    const extensions: IExtensionProps[] = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
+    const extensions: IExtensionProps[] = await this.rpcProtocol
+      .getProxy(MainThreadAPIIdentifier.MainThreadExtensionService)
+      .$getExtensions();
     // node 层 extensionLocation 不使用 static 直接使用 file
     // node 层 extension 实例和 vscode 保持一致，并继承 IExtensionProps
     this.extensions = extensions.map((item) => ({
@@ -159,9 +174,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       uuid: item.packageJSON?.__metadata?.id,
       extensionLocation: Uri.file(item.path),
     }));
-    this.logger.debug('extensions', this.extensions.map((extension) => {
-      return extension.packageJSON.name;
-    }));
+    this.logger.debug(
+      'extensions',
+      this.extensions.map((extension) => extension.packageJSON.name),
+    );
 
     this.extendExtHostErrorStackTrace();
   }
@@ -183,9 +199,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public getExtension(extensionId: string): KTExtension<any> | undefined {
-    const extensionDescription = this.extensions.find((extension) => {
-      return getExtensionId(extensionId) === getExtensionId(extension.id);
-    });
+    const extensionDescription = this.extensions.find(
+      (extension) => getExtensionId(extensionId) === getExtensionId(extension.id),
+    );
 
     if (extensionDescription) {
       return this.createExtension(extensionDescription);
@@ -207,7 +223,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     if (extensionModule.parent) {
-      return this.lookup(extensionModule.parent, depth += 1);
+      return this.lookup(extensionModule.parent, (depth += 1));
     }
 
     return undefined;
@@ -265,7 +281,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
         return { ...vscodeAPIImpl, ...sumiAPIImpl };
       }
-
     };
   }
 
@@ -314,9 +329,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public async activateExtension(id: string) {
     this.logger.debug('exthost $activateExtension', id);
 
-    const extension: IExtensionDescription | undefined = this.extensions.find((ext) => {
-      return ext.id === id;
-    });
+    const extension: IExtensionDescription | undefined = this.extensions.find((ext) => ext.id === id);
 
     if (!extension) {
       this.logger.error(`extension ${id} not found`);
@@ -361,12 +374,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         // FIXME: 考虑在 Context 这里直接注入服务注册的能力
         try {
           const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
-          const extensionExports = await extensionModule.activate(context) || extensionModule;
+          const extensionExports = (await extensionModule.activate(context)) || extensionModule;
           reportTimer.timeEnd(extension.id, {
             version: extension.packageJSON.version,
           });
           exportsData = extensionExports;
-
         } catch (e) {
           activationFailed = true;
           activationFailedError = e;
@@ -409,20 +421,23 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         getDebugLogger().error(e);
       }
     }
-    this.extensionsActivator.set(id, new ActivatedExtension(
+    this.extensionsActivator.set(
       id,
-      extension.packageJSON.displayName || extension.name,
-      extension.packageJSON.description || '',
-      'node',
-      activationFailed,
-      activationFailedError,
-      extensionModule,
-      exportsData,
-      context.subscriptions,
-      undefined,
-      extendExports,
-      extendModule,
-    ));
+      new ActivatedExtension(
+        id,
+        extension.packageJSON.displayName || extension.name,
+        extension.packageJSON.description || '',
+        'node',
+        activationFailed,
+        activationFailedError,
+        extensionModule,
+        exportsData,
+        context.subscriptions,
+        undefined,
+        extendExports,
+        extendModule,
+      ),
+    );
     // 如果有异常，则向上抛出
     if (activationFailedError) {
       throw activationFailedError;
@@ -455,16 +470,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
      *  "viewsProxies": ["ViewComponentID"],
      * }
      */
-    if (isSumiContributes &&
+    if (
+      isSumiContributes &&
       extension.packageJSON.kaitianContributes &&
       extension.packageJSON.kaitianContributes.viewsProxies
     ) {
       return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
-    } else if (
-      extension.extendConfig &&
-      extension.extendConfig.browser &&
-      extension.extendConfig.browser.componentId
-    ) {
+    } else if (extension.extendConfig && extension.extendConfig.browser && extension.extendConfig.browser.componentId) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {
       return {};
@@ -482,19 +494,25 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     this.logger.debug('extension extend service', extension.id, 'service', service);
-    this.rpcProtocol.set({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` } as ProxyIdentifier<any>, service);
+    this.rpcProtocol.set(
+      { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` } as ProxyIdentifier<any>,
+      service,
+    );
   }
 
   public async $activateExtension(id: string) {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extensionDescription: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, secretProxy: ExtHostSecret, extendProxy: IExtendProxy) {
-
+  private async loadExtensionContext(
+    extensionDescription: IExtensionDescription,
+    modulePath: string,
+    storageProxy: ExtHostStorage,
+    secretProxy: ExtHostSecret,
+    extendProxy: IExtendProxy,
+  ) {
     const extensionId = extensionDescription.id;
-    const registerExtendFn = (exportsData) => {
-      return this.registerExtendModuleService(exportsData, extensionDescription);
-    };
+    const registerExtendFn = (exportsData) => this.registerExtendModuleService(exportsData, extensionDescription);
 
     const exthostTermianl = this.rpcProtocol.get(ExtHostAPIIdentifier.ExtHostTerminal);
 
@@ -511,12 +529,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       exthostTerminal: exthostTermianl,
     });
 
-    return Promise.all([
-      context.globalState.whenReady,
-      context.workspaceState.whenReady,
-    ]).then(() => {
-      return Object.freeze(context);
-    });
+    return Promise.all([context.globalState.whenReady, context.workspaceState.whenReady]).then(() =>
+      Object.freeze(context),
+    );
   }
-
 }

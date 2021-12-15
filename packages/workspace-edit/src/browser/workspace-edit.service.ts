@@ -1,5 +1,13 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { IResourceTextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
+import {
+  IResourceTextEdit,
+  IWorkspaceEditService,
+  IWorkspaceEdit,
+  IResourceFileEdit,
+  WorkspaceEditDidRenameFileEvent,
+  WorkspaceEditDidDeleteFileEvent,
+  IWorkspaceFileService,
+} from '../common';
 import { URI, IEventBus, isWindows, isUndefined } from '@opensumi/ide-core-browser';
 import { FileSystemError } from '@opensumi/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@opensumi/di';
@@ -14,7 +22,6 @@ type WorkspaceEdit = ResourceTextEditTask | ResourceFileEdit;
 
 @Injectable()
 export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
-
   private editStack: BulkEdit[] = [];
 
   @Autowired(IEditorDocumentModelService)
@@ -41,14 +48,17 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   revertTopFileEdit(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-
 }
 
 export class BulkEdit {
-
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService, workspaceFS: IWorkspaceFileService, eventBus: IEventBus) {
+  async apply(
+    documentModelService: IEditorDocumentModelService,
+    editorService: WorkbenchEditorService,
+    workspaceFS: IWorkspaceFileService,
+    eventBus: IEventBus,
+  ) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
         await edit.apply(documentModelService, editorService, workspaceFS, eventBus);
@@ -89,19 +99,16 @@ export class BulkEdit {
     }
   }
 
-  revert(onlyFileEdits: true) {
-  }
-
+  revert(onlyFileEdits: true) {}
 }
 
 export class ResourceTextEditTask {
-
   public edits: IResourceTextEdit[];
   public resource: URI;
   public versionId: number | undefined;
   public options: {
-    openDirtyInEditor?: boolean
-    dirtyIfInEditor?: boolean,
+    openDirtyInEditor?: boolean;
+    dirtyIfInEditor?: boolean;
   } = {};
 
   constructor(edit: IResourceTextEdit) {
@@ -175,13 +182,10 @@ export class ResourceTextEditTask {
     return true;
   }
 
-  async revert(): Promise<void> {
-  }
-
+  async revert(): Promise<void> {}
 }
 
 export class ResourceFileEdit implements IResourceFileEdit {
-
   oldResource?: URI;
   newResource?: URI;
   options: {
@@ -221,7 +225,12 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
   }
 
-  async notifyOnResource(oldResource: URI, newResource: URI, editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
+  async notifyOnResource(
+    oldResource: URI,
+    newResource: URI,
+    editorService: WorkbenchEditorService,
+    documentModelService: IEditorDocumentModelService,
+  ) {
     const docRef = documentModelService.getModelReference(oldResource, 'bulk-file-move');
     let dirtyContent: string | undefined;
     let dirtyEOL: EOL | undefined;
@@ -234,20 +243,22 @@ export class ResourceFileEdit implements IResourceFileEdit {
       docRef.dispose();
     }
     // 如果之前的文件在编辑器中被打开，重新打开文件
-    await Promise.all([editorService.editorGroups.map(async (g) => {
-      const index = g.resources.findIndex((r) => r.uri.isEqual(oldResource));
-      if (index !== -1) {
-        await runInAction(async () => {
-          await g.open(newResource, {
-            index,
-            backend: !(g.currentResource && g.currentResource.uri.isEqual(oldResource)),
-            // 如果旧的是preview模式，应该保持，如果不是，应该不要关闭其他处于preview模式的资源tab
-            preview: (g as EditorGroup).previewURI ? (g as EditorGroup).previewURI!.isEqual(oldResource) : false,
+    await Promise.all([
+      editorService.editorGroups.map(async (g) => {
+        const index = g.resources.findIndex((r) => r.uri.isEqual(oldResource));
+        if (index !== -1) {
+          await runInAction(async () => {
+            await g.open(newResource, {
+              index,
+              backend: !(g.currentResource && g.currentResource.uri.isEqual(oldResource)),
+              // 如果旧的是preview模式，应该保持，如果不是，应该不要关闭其他处于preview模式的资源tab
+              preview: (g as EditorGroup).previewURI ? (g as EditorGroup).previewURI!.isEqual(oldResource) : false,
+            });
+            await g.close(oldResource);
           });
-          await g.close(oldResource);
-        });
-      }
-    })]);
+        }
+      }),
+    ]);
 
     if (dirtyContent) {
       const newDocRef = await documentModelService.createModelReference(newResource, 'bulk-file-move');
@@ -256,14 +267,17 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
   }
 
-  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService, workspaceFS: IWorkspaceFileService, eventBus: IEventBus) {
+  async apply(
+    documentModelService: IEditorDocumentModelService,
+    editorService: WorkbenchEditorService,
+    workspaceFS: IWorkspaceFileService,
+    eventBus: IEventBus,
+  ) {
     const options = this.options || {};
 
     if (this.newResource && this.oldResource) {
-
       if (options.copy) {
         await workspaceFS.copy([{ source: this.oldResource.codeUri, target: this.newResource.codeUri }], options);
-
       } else {
         // rename
         await workspaceFS.move([{ source: this.oldResource.codeUri, target: this.newResource.codeUri }], options);
@@ -277,12 +291,13 @@ export class ResourceFileEdit implements IResourceFileEdit {
       if (options.showInEditor) {
         editorService.open(this.newResource);
       }
-
     } else if (!this.newResource && this.oldResource) {
       // 删除文件
       try {
         // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await workspaceFS.delete([this.oldResource], { useTrash: !(isWindows && this.oldResource.path.name === 'node_modules') });
+        await workspaceFS.delete([this.oldResource], {
+          useTrash: !(isWindows && this.oldResource.path.name === 'node_modules'),
+        });
         // 默认recursive
         await editorService.close(this.oldResource, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldResource }));
@@ -319,12 +334,11 @@ export class ResourceFileEdit implements IResourceFileEdit {
     return err.message.includes('already exists.');
   }
 
-  async revert(): Promise<void> {
-  }
+  async revert(): Promise<void> {}
 }
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {
-  return (!!((thing as ResourceFileEdit).newResource) || !!((thing as ResourceFileEdit).oldResource));
+  return !!(thing as ResourceFileEdit).newResource || !!(thing as ResourceFileEdit).oldResource;
 }
 
 /**

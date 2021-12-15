@@ -74,14 +74,8 @@ import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes'
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
-  $registerDocumentHighlightProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $registerHoverProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $registerDocumentHighlightProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $getLanguages(): string[];
   $changeLanguage(resource: UriComponents, languageId: string): Promise<void>;
   $registerCompletionSupport(
@@ -90,27 +84,15 @@ export interface IMainThreadLanguages {
     triggerCharacters: string[],
     supportsResolveDetails: boolean,
   ): void;
-  $registerDefinitionProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $registerTypeDefinitionProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerFoldingRangeProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
     eventHandle: number | undefined,
   ): void;
-  $emitFoldingRangeEvent(
-    eventHandle: number,
-    event?: any,
-  ): void;
-  $registerDocumentColorProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $emitFoldingRangeEvent(eventHandle: number, event?: any): void;
+  $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentFormattingProvider(
     handle: number,
     extension: IExtensionDescription,
@@ -126,11 +108,7 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     triggerCharacter: string[],
   ): void;
-  $registerCodeLensSupport(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-    eventHandle?: number,
-  ): void;
+  $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
   $emitCodeLensEvent(eventHandle: number, event?: any): void;
   $clearDiagnostics(id: string): void;
   $changeDiagnostics(id: string, delta: [string, IMarkerData[]][]): void;
@@ -141,28 +119,11 @@ export interface IMainThreadLanguages {
     displayName: string,
     supportResolve: boolean,
   ): void;
-  $registerImplementationProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $setLanguageConfiguration(
-    handle: number,
-    languageId: string,
-    configuration: SerializedLanguageConfiguration,
-  ): void;
-  $registerReferenceProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $registerDocumentLinkProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-    supportResolve: boolean,
-  ): void;
-  $registerOutlineSupport(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void;
+  $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[], supportResolve: boolean): void;
+  $registerOutlineSupport(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerWorkspaceSymbolProvider(handle: number): void;
   $registerSignatureHelpProvider(
     handle: number,
@@ -174,18 +135,9 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     supportsResoveInitialValues: boolean,
   ): void;
-  $registerSelectionRangeProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $registerDeclarationProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
-  $registerCallHierarchyProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerCallHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentSemanticTokensProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
@@ -196,21 +148,19 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     legend: SemanticTokensLegend,
   ): void;
-  $registerEvaluatableExpressionProvider(
-    handle: number,
-    selector: SerializedDocumentFilter[],
-  ): void;
+  $registerEvaluatableExpressionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerInlineValuesProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
     eventHandle: number | undefined,
   ): void;
-  $emitInlineValuesEvent(
-    eventHandle: number,
-    event?: any,
-  ): void;
+  $emitInlineValuesEvent(eventHandle: number, event?: any): void;
   $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerInlayHintsProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void;
+  $registerInlayHintsProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void;
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
 }
 
@@ -218,12 +168,7 @@ export interface IExtHostLanguages {
   getLanguages(): Promise<string[]>;
 
   registerHoverProvider(selector, provider): Disposable;
-  $provideHover(
-    handle: number,
-    resource: any,
-    position: any,
-    token: any,
-  ): Promise<Hover | undefined>;
+  $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
   $provideHoverWithDuration(
     handle: number,
     resource: any,
@@ -262,10 +207,7 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): Promise<WithDuration<Definition | DefinitionLink[] | undefined>>;
-  registerDefinitionProvider(
-    selector: DocumentSelector,
-    provider: DefinitionProvider,
-  ): Disposable;
+  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
 
   $provideTypeDefinition(
     handle: number,
@@ -273,15 +215,9 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): Promise<Definition | DefinitionLink[] | undefined>;
-  registerTypeDefinitionProvider(
-    selector: DocumentSelector,
-    provider: TypeDefinitionProvider,
-  ): Disposable;
+  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
 
-  registerFoldingRangeProvider(
-    selector: DocumentSelector,
-    provider: FoldingRangeProvider,
-  ): Disposable;
+  registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
   $provideFoldingRange(
     handle: number,
     resource: UriComponents,
@@ -289,15 +225,8 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<FoldingRange[] | undefined>;
 
-  registerColorProvider(
-    selector: DocumentSelector,
-    provider: DocumentColorProvider,
-  ): Disposable;
-  $provideDocumentColors(
-    handle: number,
-    resource: UriComponents,
-    token: CancellationToken,
-  ): Promise<RawColorInfo[]>;
+  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
+  $provideDocumentColors(handle: number, resource: UriComponents, token: CancellationToken): Promise<RawColorInfo[]>;
   $provideColorPresentations(
     handle: number,
     resource: UriComponents,
@@ -355,15 +284,8 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     token: CancellationToken,
   ): Promise<ICodeLensListDto | undefined>;
-  $resolveCodeLens(
-    handle: number,
-    codeLens: CodeLens,
-    token: CancellationToken,
-  ): Promise<CodeLens | undefined>;
-  $releaseCodeLens(
-    handle: number,
-    cacheId: number,
-  ): Promise<void>;
+  $resolveCodeLens(handle: number, codeLens: CodeLens, token: CancellationToken): Promise<CodeLens | undefined>;
+  $releaseCodeLens(handle: number, cacheId: number): Promise<void>;
 
   $provideImplementation(
     handle: number,
@@ -382,7 +304,11 @@ export interface IExtHostLanguages {
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
   ): Promise<ICodeActionListDto | undefined>;
-  $resolveCodeAction(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IWorkspaceEditDto | undefined>;
+  $resolveCodeAction(
+    handle: number,
+    id: ChainedCacheId,
+    token: CancellationToken,
+  ): Promise<IWorkspaceEditDto | undefined>;
   $releaseCodeActions(handle: number, cacheId: number): void;
 
   $provideDocumentLinks(
@@ -390,11 +316,7 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     token: CancellationToken,
   ): Promise<ILinksListDto | undefined>;
-  $resolveDocumentLink(
-    handle: number,
-    id: ChainedCacheId,
-    token: CancellationToken,
-  ): Promise<ILink | undefined>;
+  $resolveDocumentLink(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<ILink | undefined>;
   $releaseDocumentLinks(handle: number, id: number): void;
 
   $provideReferences(
@@ -418,11 +340,7 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<DocumentSymbol[] | undefined>;
 
-  $provideWorkspaceSymbols(
-    handle: number,
-    query: string,
-    token: CancellationToken,
-  ): PromiseLike<SymbolInformation[]>;
+  $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
   $resolveWorkspaceSymbol(
     handle: number,
     symbol: SymbolInformation,
@@ -437,10 +355,7 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<ISignatureHelpDto | undefined | null>;
 
-  $releaseSignatureHelp(
-    handle: number,
-    cacheId: number,
-  ): Promise<void>;
+  $releaseSignatureHelp(handle: number, cacheId: number): Promise<void>;
 
   $provideRenameEdits(
     handle: number,
@@ -463,10 +378,7 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<SelectionRange[][]>;
 
-  registerCallHierarchyProvider(
-    selector: DocumentSelector,
-    provider: CallHierarchyProvider,
-  ): Disposable;
+  registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
   $prepareCallHierarchy(
     handle: number,
     resource: UriComponents,
@@ -492,10 +404,7 @@ export interface IExtHostLanguages {
     previousResultId: number,
     token: CancellationToken,
   ): Promise<Uint8Array | null>;
-  $releaseDocumentSemanticTokens(
-    handle: number,
-    semanticColoringResultId: number,
-  ): void;
+  $releaseDocumentSemanticTokens(handle: number, semanticColoringResultId: number): void;
   $provideDocumentRangeSemanticTokens(
     handle: number,
     resource: UriComponents,
@@ -518,9 +427,23 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<InlineValue[] | undefined>;
 
-  $provideLinkedEditingRanges(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ILinkedEditingRangesDto | undefined>;
-  registerInlayHintsProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: InlayHintsProvider): Disposable;
-  $provideInlayHints(handle: number, resource: UriComponents, range: IRange, token: CancellationToken): Promise<IInlayHintsDto | undefined>;
+  $provideLinkedEditingRanges(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<ILinkedEditingRangesDto | undefined>;
+  registerInlayHintsProvider(
+    extension: IExtensionDescription,
+    selector: DocumentSelector,
+    provider: InlayHintsProvider,
+  ): Disposable;
+  $provideInlayHints(
+    handle: number,
+    resource: UriComponents,
+    range: IRange,
+    token: CancellationToken,
+  ): Promise<IInlayHintsDto | undefined>;
 }
 
 export interface ILinkedEditingRangesDto {
@@ -575,17 +498,19 @@ export namespace RangeSuggestDataDto {
     return [range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn] as ISuggestRangeDto;
   }
   export function from(range: ISuggestRangeDto | { insert: IRange; replace: IRange }) {
-    return (Array.isArray(range) && range.length === 4) ? MonacoRange.lift({
-      startLineNumber: range[0],
-      startColumn: range[1],
-      endLineNumber: range[2],
-      endColumn: range[3],
-    }) : range;
+    return Array.isArray(range) && range.length === 4
+      ? MonacoRange.lift({
+          startLineNumber: range[0],
+          startColumn: range[1],
+          endLineNumber: range[2],
+          endColumn: range[3],
+        })
+      : range;
   }
 }
 
 export interface ISuggestResultDto {
-  [ISuggestResultDtoField.defaultRanges]: { insert: IRange, replace: IRange; };
+  [ISuggestResultDtoField.defaultRanges]: { insert: IRange; replace: IRange };
   [ISuggestResultDtoField.completions]: ISuggestDataDto[];
   [ISuggestResultDtoField.isIncomplete]: undefined | true;
   [ISuggestResultDtoField.duration]: number;
@@ -638,17 +563,13 @@ export interface MonacoModelIdentifier {
 }
 
 export namespace MonacoModelIdentifier {
-  export function fromDocument(
-    document: DocumentIdentifier,
-  ): MonacoModelIdentifier {
+  export function fromDocument(document: DocumentIdentifier): MonacoModelIdentifier {
     return {
       uri: Uri.parse(document.uri),
       languageId: document.languageId,
     };
   }
-  export function fromModel(
-    model: ITextModel,
-  ): MonacoModelIdentifier {
+  export function fromModel(model: ITextModel): MonacoModelIdentifier {
     return {
       uri: model.uri,
       languageId: model.getModeId(),
@@ -674,5 +595,5 @@ export interface ICodeActionListDto {
 
 export interface ICodeActionProviderMetadataDto {
   readonly providedKinds?: readonly string[];
-  readonly documentation?: ReadonlyArray<{ readonly kind: string, readonly command: Command }>;
+  readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: Command }>;
 }

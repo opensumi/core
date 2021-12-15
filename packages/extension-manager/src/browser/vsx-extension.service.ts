@@ -1,10 +1,22 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { IStatusBarService, localize, StatusBarAlignment, StatusBarEntryAccessor, URI } from '@opensumi/ide-core-browser';
+import {
+  IStatusBarService,
+  localize,
+  StatusBarAlignment,
+  StatusBarEntryAccessor,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 
-import { InstallState, IVSXExtensionBackService, IVSXExtensionService, VSXExtension, VSXExtensionServicePath } from '../common';
+import {
+  InstallState,
+  IVSXExtensionBackService,
+  IVSXExtensionService,
+  VSXExtension,
+  VSXExtensionServicePath,
+} from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
 import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
 
@@ -98,7 +110,9 @@ export class VSXExtensionService implements IVSXExtensionService {
   }
 
   async openExtensionEditor(extensionId: string, state: InstallState) {
-    this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}&state=${state}`), { preview: true });
+    this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}&state=${state}`), {
+      preview: true,
+    });
   }
 
   async search(keyword: string): Promise<void> {

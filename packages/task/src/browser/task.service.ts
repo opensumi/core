@@ -1,17 +1,44 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@opensumi/ide-core-common';
-import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString, Mode } from '@opensumi/ide-core-browser';
+import {
+  ITaskDefinitionRegistry,
+  IProblemMatcherRegistry,
+  Event,
+  IProblemPatternRegistry,
+  Emitter,
+} from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  Uri,
+  PreferenceService,
+  localize,
+  IDisposable,
+  QuickOpenItem,
+  QuickOpenService,
+  formatLocalize,
+  getIcon,
+  IStringDictionary,
+  isString,
+  Mode,
+} from '@opensumi/ide-core-browser';
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
-import { ConfiguringTask, TaskSet, Task, ContributedTask, CustomTask, TaskIdentifier, KeyedTaskIdentifier, TaskEvent } from '../common/task';
+import {
+  ConfiguringTask,
+  TaskSet,
+  Task,
+  ContributedTask,
+  CustomTask,
+  TaskIdentifier,
+  KeyedTaskIdentifier,
+  TaskEvent,
+} from '../common/task';
 import { parse, IProblemReporter, createCustomTask } from './task-config';
 import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { ValidationState, ValidationStatus } from './parser';
 
 class ProblemReporter implements IProblemReporter {
-
   private _validationStatus: ValidationStatus;
 
   constructor(private _outputChannel: OutputChannel) {
@@ -45,7 +72,6 @@ class ProblemReporter implements IProblemReporter {
 
 @Injectable()
 export class TaskService extends Disposable implements ITaskService {
-
   @Autowired(OutputService)
   protected readonly outputService: OutputService;
 
@@ -73,7 +99,7 @@ export class TaskService extends Disposable implements ITaskService {
   private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
   public onDidStateChange: Event<TaskEvent> = this._onDidStateChange.event;
 
-  private providerHandler: number = 0;
+  private providerHandler = 0;
 
   private outputChannel: OutputChannel;
 
@@ -87,9 +113,11 @@ export class TaskService extends Disposable implements ITaskService {
     this.outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
     this.providers = new Map();
     this.providerTypes = new Map();
-    this.addDispose(this.taskSystem.onDidStateChange((e) => {
-      this._onDidStateChange.fire(e);
-    }));
+    this.addDispose(
+      this.taskSystem.onDidStateChange((e) => {
+        this._onDidStateChange.fire(e);
+      }),
+    );
   }
 
   private get workspaceFolders() {
@@ -107,9 +135,12 @@ export class TaskService extends Disposable implements ITaskService {
     const groupedTaskSet: TaskSet[] = await this.getGroupedTasks();
     const workspaceTasks = await this.getWorkspaceTasks(groupedTaskSet);
     const [workspaces, grouped] = this.combineQuickItems(groupedTaskSet, workspaceTasks!);
-    this.quickOpenService.open({
-      onType: (lookFor: string, acceptor) => acceptor([...workspaces, ...grouped]),
-    }, { placeholder: formatLocalize('TaskService.pickRunTask') });
+    this.quickOpenService.open(
+      {
+        onType: (lookFor: string, acceptor) => acceptor([...workspaces, ...grouped]),
+      },
+      { placeholder: formatLocalize('TaskService.pickRunTask') },
+    );
   }
 
   public run(task: Task) {
@@ -125,10 +156,14 @@ export class TaskService extends Disposable implements ITaskService {
     }
   }
 
-  public getTask(workspaceFolder: Uri, identifier: string | TaskIdentifier, compareId: boolean = false): Promise<Task | undefined> {
+  public getTask(
+    workspaceFolder: Uri,
+    identifier: string | TaskIdentifier,
+    compareId = false,
+  ): Promise<Task | undefined> {
     const key: string | KeyedTaskIdentifier | undefined = !isString(identifier)
-    ? this.taskDefinitionRegistry.createTaskIdentifier(identifier, console)
-    : identifier;
+      ? this.taskDefinitionRegistry.createTaskIdentifier(identifier, console)
+      : identifier;
 
     if (key === undefined) {
       return Promise.resolve(undefined);
@@ -212,10 +247,13 @@ export class TaskService extends Disposable implements ITaskService {
     return result;
   }
 
-  private toQuickOpenItem = (task: Task | ConfiguringTask): QuickOpenItem => {
-    return new QuickOpenItem({
+  private toQuickOpenItem = (task: Task | ConfiguringTask): QuickOpenItem =>
+    new QuickOpenItem({
       label: task._label || '',
-      detail: task instanceof ContributedTask ? `${task.command.name || ''} ${task.command.args ? task.command.args?.join(' ') : ''}` : undefined,
+      detail:
+        task instanceof ContributedTask
+          ? `${task.command.name || ''} ${task.command.args ? task.command.args?.join(' ') : ''}`
+          : undefined,
       run: (mode: Mode) => {
         if (mode === Mode.OPEN) {
           this.runTask(task);
@@ -224,30 +262,40 @@ export class TaskService extends Disposable implements ITaskService {
         return false;
       },
     });
-  }
 
   private toQuickOpenGroupItem(showBorder: boolean, run, type?: string): QuickOpenItem {
-    return new QuickOpenItem({ groupLabel: showBorder ? '贡献' : undefined, run, showBorder, label: type, value: { type, grouped: true }, iconClass: getIcon('folder') });
+    return new QuickOpenItem({
+      groupLabel: showBorder ? '贡献' : undefined,
+      run,
+      showBorder,
+      label: type,
+      value: { type, grouped: true },
+      iconClass: getIcon('folder'),
+    });
   }
 
   private combineQuickItems(contributedTaskSet: TaskSet[], workspaceTasks: Map<string, WorkspaceFolderTaskResult>) {
     const groups: QuickOpenItem[] = [];
     const workspace: QuickOpenItem[] = [];
-    let showBorder: boolean = true;
+    let showBorder = true;
     for (const taskSet of contributedTaskSet) {
       const run = (mode: Mode) => {
         if (mode === Mode.OPEN) {
           this.quickOpenService.open({
             onType: (lookFor, acceptor) => {
               if (taskSet.tasks.length === 0) {
-                return acceptor([new QuickOpenItem({
-                  value: 'none', label: `未找到 ${taskSet.type} 的任务，按回车键返回`, run: (mode: Mode) => {
-                    if (mode === Mode.OPEN) {
-                      return true;
-                    }
-                    return false;
-                  },
-                })]);
+                return acceptor([
+                  new QuickOpenItem({
+                    value: 'none',
+                    label: `未找到 ${taskSet.type} 的任务，按回车键返回`,
+                    run: (mode: Mode) => {
+                      if (mode === Mode.OPEN) {
+                        return true;
+                      }
+                      return false;
+                    },
+                  }),
+                ]);
               }
               return acceptor(taskSet.tasks.map(this.toQuickOpenItem));
             },
@@ -274,13 +322,15 @@ export class TaskService extends Disposable implements ITaskService {
             workspace.push(this.toQuickOpenItem(task));
           }
         }
-    }
+      }
     }
 
     return [workspace, groups];
   }
 
-  private async getWorkspaceTasks(groupedTaskSet: TaskSet[]): Promise<Map<string, WorkspaceFolderTaskResult> | undefined> {
+  private async getWorkspaceTasks(
+    groupedTaskSet: TaskSet[],
+  ): Promise<Map<string, WorkspaceFolderTaskResult> | undefined> {
     return this.updateWorkspaceTasks(groupedTaskSet);
   }
 
@@ -292,12 +342,11 @@ export class TaskService extends Disposable implements ITaskService {
        * 由于 registerSchema 不支持 **\/tasks.json 通配符
        * 多 workspace 下无法默认从 preferences 获取到 tasks.json
        */
-      return this.computeWorkspaceFolderTasks(this.workspaceFolders[0], groupedTaskSet)
-        .then((configuringTasks) => {
-          const taskMap = new Map<string, WorkspaceFolderTaskResult>();
-          taskMap.set(this.workspaceFolders[0].toString(), configuringTasks);
-          return taskMap;
-        });
+      return this.computeWorkspaceFolderTasks(this.workspaceFolders[0], groupedTaskSet).then((configuringTasks) => {
+        const taskMap = new Map<string, WorkspaceFolderTaskResult>();
+        taskMap.set(this.workspaceFolders[0].toString(), configuringTasks);
+        return taskMap;
+      });
     } else {
       return Promise.resolve(undefined);
       // TODO 多工作区支持
@@ -317,11 +366,19 @@ export class TaskService extends Disposable implements ITaskService {
         }
       }
       if (tasksConfig && tasksConfig.tasks) {
-        let customizedTasks: { byIdentifier: IStringDictionary<ConfiguringTask>; } | undefined;
+        let customizedTasks: { byIdentifier: IStringDictionary<ConfiguringTask> } | undefined;
         const taskSet: CustomTask[] = [];
         let hasErrors = false;
         const problemReporter = new ProblemReporter(this.outputChannel);
-        const parseResult = parse({ uri: folderUri, name: folderUri.path, index: 0 }, platform, tasksConfig!, problemReporter, this.taskDefinitionRegistry, this.problemMatcher, this.problemPattern);
+        const parseResult = parse(
+          { uri: folderUri, name: folderUri.path, index: 0 },
+          platform,
+          tasksConfig!,
+          problemReporter,
+          this.taskDefinitionRegistry,
+          this.problemMatcher,
+          this.problemPattern,
+        );
         if (!parseResult.validationStatus.isOK()) {
           hasErrors = true;
           this.showOutput();
@@ -342,15 +399,28 @@ export class TaskService extends Disposable implements ITaskService {
         if (customizedTasks && customizedTasks.byIdentifier) {
           Object.keys(customizedTasks.byIdentifier).forEach((key) => {
             if (contributedTask.has(key)) {
-              const customTask = createCustomTask(contributedTask.get(key) as ContributedTask, customizedTasks!.byIdentifier[key]);
+              const customTask = createCustomTask(
+                contributedTask.get(key) as ContributedTask,
+                customizedTasks!.byIdentifier[key],
+              );
               // @ts-ignore
               customizedTasks.byIdentifier[key] = customTask;
             }
           });
         }
-        resolve({ workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 }, set: { tasks: taskSet }, configurations: customizedTasks, hasErrors });
+        resolve({
+          workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 },
+          set: { tasks: taskSet },
+          configurations: customizedTasks,
+          hasErrors,
+        });
       } else {
-        resolve({ workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 }, set: { tasks: [] }, configurations: { byIdentifier: {} }, hasErrors: false });
+        resolve({
+          workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 },
+          set: { tasks: [] },
+          configurations: { byIdentifier: {} },
+          hasErrors: false,
+        });
       }
     });
   }
@@ -360,7 +430,7 @@ export class TaskService extends Disposable implements ITaskService {
   }
 
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {
-    const handler = this.providerHandler += 1;
+    const handler = (this.providerHandler += 1);
     this.providers.set(handler, provider);
     this.providerTypes.set(handler, type);
     return {

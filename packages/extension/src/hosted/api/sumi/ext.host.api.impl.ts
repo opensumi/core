@@ -19,20 +19,37 @@ export function createAPIFactory(
   type: string,
   reporterEmitter: IReporter,
 ) {
-
   if (type === 'worker') {
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
   }
 
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
   const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;
-  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.SumiExtHostWebview, new ExtHostWebview(rpcProtocol)) as  ExtHostWebview;
-  const extHostLifeCycle = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostLifeCycle, new ExtHostLifeCycle(rpcProtocol));
+  const extHostWebview = rpcProtocol.set(
+    ExtHostAPIIdentifier.SumiExtHostWebview,
+    new ExtHostWebview(rpcProtocol),
+  ) as ExtHostWebview;
+  const extHostLifeCycle = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostLifeCycle,
+    new ExtHostLifeCycle(rpcProtocol),
+  );
   const extHostLayout = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostLayout, new ExtHostLayout(rpcProtocol));
-  const extHostTheme = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostTheme, new ExtHostTheme(rpcProtocol)) as  ExtHostTheme;
-  const extHostCommon = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostCommon, new ExtHostCommon(rpcProtocol)) as ExtHostCommon;
-  const extHostToolbar = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostToolbar, new ExtHostToolbarActionService(extHostCommands, extHostCommon, rpcProtocol)) as ExtHostToolbarActionService;
-  const extHostWindow = rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostIDEWindow, new ExtHostIDEWindow(rpcProtocol)) as ExtHostIDEWindow;
+  const extHostTheme = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostTheme,
+    new ExtHostTheme(rpcProtocol),
+  ) as ExtHostTheme;
+  const extHostCommon = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostCommon,
+    new ExtHostCommon(rpcProtocol),
+  ) as ExtHostCommon;
+  const extHostToolbar = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostToolbar,
+    new ExtHostToolbarActionService(extHostCommands, extHostCommon, rpcProtocol),
+  ) as ExtHostToolbarActionService;
+  const extHostWindow = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostIDEWindow,
+    new ExtHostIDEWindow(rpcProtocol),
+  ) as ExtHostIDEWindow;
 
   return (extension: IExtensionDescription) => {
     const reporter = new ReporterService(reporterEmitter, {

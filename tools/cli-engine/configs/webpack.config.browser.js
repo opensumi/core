@@ -18,7 +18,7 @@ module.exports = {
   entry: `${dir}/index.ts`,
   node: {
     net: 'empty',
-    'child_process': 'empty',
+    child_process: 'empty',
     path: 'empty',
     url: false,
     fs: 'empty',
@@ -103,8 +103,7 @@ module.exports = {
             options: {
               name: '[name].[ext]',
               outputPath: 'fonts/',
-              publicPath:
-                'https://dev.g.alicdn.com/tao-ide/ide-core/0.0.1/fonts', // "http://localhost:8080/fonts"
+              publicPath: 'https://dev.g.alicdn.com/tao-ide/ide-core/0.0.1/fonts', // "http://localhost:8080/fonts"
             },
           },
         ],

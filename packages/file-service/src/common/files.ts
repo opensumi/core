@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -16,10 +16,25 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
 import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
-import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@opensumi/ide-core-common';
+import {
+  ApplicationError,
+  Event,
+  IDisposable,
+  Uri,
+  URI,
+  isUndefinedOrNull,
+  hasProperty,
+  isFunction,
+  FileChangeEvent,
+} from '@opensumi/ide-core-common';
 import { FileSystemProvider, FileStat } from '@opensumi/ide-core-common/lib/types/file';
 import { Range } from 'vscode-languageserver-types';
-export { FileSystemProviderCapabilities, FileSystemProvider, FileType, FileStat } from '@opensumi/ide-core-common/lib/types/file';
+export {
+  FileSystemProviderCapabilities,
+  FileSystemProvider,
+  FileType,
+  FileStat,
+} from '@opensumi/ide-core-common/lib/types/file';
 export * from '@opensumi/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');
@@ -44,7 +59,6 @@ export interface TextDocumentContentChangeEvent {
 }
 
 export interface IFileService extends FileSystemWatcherServer {
-
   /**
    * Returns the file stat for the given URI.
    *
@@ -57,7 +71,7 @@ export interface IFileService extends FileSystemWatcherServer {
   /**
    * Resolve the contents of a file identified by the resource.
    */
-  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }>;
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat; content: string }>;
 
   /**
    * Updates the content replacing its previous value.
@@ -67,7 +81,11 @@ export interface IFileService extends FileSystemWatcherServer {
   /**
    * Updates the content replacing its previous value.
    */
-  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat>;
+  updateContent(
+    file: FileStat,
+    contentChanges: TextDocumentContentChangeEvent[],
+    options?: FileSetContentOptions,
+  ): Promise<FileStat>;
 
   /**
    * Moves the file to a new path identified by the resource.
@@ -97,7 +115,7 @@ export interface IFileService extends FileSystemWatcherServer {
    *
    * The optional parameter content can be used as value to fill into the new file.
    */
-  createFile(uri: string, options?: { content?: string, encoding?: string }): Promise<FileStat>;
+  createFile(uri: string, options?: { content?: string; encoding?: string }): Promise<FileStat>;
 
   /**
    * Creates a new folder with the given path. The returned promise
@@ -177,33 +195,29 @@ export interface IFileService extends FileSystemWatcherServer {
 }
 
 export namespace FileAccess {
-
   export namespace Constants {
-
     /**
      * Flag indicating that the file is visible to the calling process.
      * This is useful for determining if a file exists, but says nothing about rwx permissions. Default if no mode is specified.
      */
-    export const F_OK: number = 0;
+    export const F_OK = 0;
 
     /**
      * Flag indicating that the file can be read by the calling process.
      */
-    export const R_OK: number = 4;
+    export const R_OK = 4;
 
     /**
      * Flag indicating that the file can be written by the calling process.
      */
-    export const W_OK: number = 2;
+    export const W_OK = 2;
 
     /**
      * Flag indicating that the file can be executed by the calling process.
      * This has no effect on Windows (will behave like `FileAccess.F_OK`).
      */
-    export const X_OK: number = 1;
-
+    export const X_OK = 1;
   }
-
 }
 
 export interface FileMoveOptions {
@@ -292,33 +306,29 @@ export const enum FileOperationResult {
  * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
  * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
  */
-export interface FileCopyFn {
-  /* tslint:disable callable-types */
-  (source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
-}
+/* tslint:disable callable-types */
+export type FileCopyFn = (
+  source: Uri,
+  destination: Uri,
+  options: { overwrite: boolean },
+) => void | Thenable<void | FileStat>;
 
 /**
  * @param {(string)} uri
  * @returns {Promise<boolean>}
  */
-export interface FileAccessFn {
-  /* tslint:disable callable-types */
-  (uri: Uri, mode: number): Promise<boolean>;
-}
+/* tslint:disable callable-types */
+export type FileAccessFn = (uri: Uri, mode: number) => Promise<boolean>;
 
-export interface FileGetCurrentUserHomeFn {
-  /* tslint:disable callable-types */
-  (): Promise<FileStat | undefined>;
-}
+/* tslint:disable callable-types */
+export type FileGetCurrentUserHomeFn = () => Promise<FileStat | undefined>;
 
 /**
  * 返回文件的后缀名，目录则返回 'directory'，找不到则返回 undefined
  * @param uri string
  */
-export interface FileGetFileTypeFn {
-  /* tslint:disable callable-types */
-  (uri: string): Promise<string | undefined>;
-}
+/* tslint:disable callable-types */
+export type FileGetFileTypeFn = (uri: string) => Promise<string | undefined>;
 
 interface ExtendedFileFns {
   copy: FileCopyFn;
@@ -332,7 +342,10 @@ interface ExtendedFileFns {
  * @param obj object
  * @param prop string
  */
-export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFileFns>(obj: X, prop: Y): obj is X & Record<Y, ExtendedFileFns[Y]> {
+export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFileFns>(
+  obj: X,
+  prop: Y,
+): obj is X & Record<Y, ExtendedFileFns[Y]> {
   return hasProperty<X, Y>(obj, prop) && isFunction<ExtendedFileFns[Y]>(obj[prop]);
 }
 
@@ -346,7 +359,7 @@ export interface IDiskFileProvider extends FileSystemProvider {
 }
 
 // tslint:disable-next-line: no-empty-interface
-export interface IShadowFileProvider extends FileSystemProvider { }
+export type IShadowFileProvider = FileSystemProvider;
 
 /**
  * Inner FileSystemProvider：内部实现的 Provider，可以直接在NODE主进程使用的，用FileSystemProvider标记

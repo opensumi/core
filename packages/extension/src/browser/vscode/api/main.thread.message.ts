@@ -7,7 +7,6 @@ import { MessageType } from '@opensumi/ide-core-common';
 
 @Injectable({ multiple: true })
 export class MainThreadMessage implements IMainThreadMessage {
-
   protected readonly proxy: IExtHostMessage;
 
   @Autowired(IDialogService)
@@ -20,11 +19,18 @@ export class MainThreadMessage implements IMainThreadMessage {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostMessage);
   }
 
-  public dispose() { }
+  public dispose() {}
 
-  async $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from): Promise<number | undefined> {
-    const action = options.modal ? await this.dialogService.open(message, type, actions) : await this.messageService.open(message, type, actions, true, from);
+  async $showMessage(
+    type: MessageType,
+    message: string,
+    options: vscode.MessageOptions,
+    actions: string[],
+    from,
+  ): Promise<number | undefined> {
+    const action = options.modal
+      ? await this.dialogService.open(message, type, actions)
+      : await this.messageService.open(message, type, actions, true, from);
     return action ? actions.indexOf(action) : undefined;
   }
-
 }

@@ -1,10 +1,21 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandService,
+  CommandContribution,
+  CommandRegistry,
+  EDITOR_COMMANDS,
+  URI,
+} from '@opensumi/ide-core-browser';
 
 import * as VSCodeBuiltinCommands from '@opensumi/ide-extension/lib/browser/vscode/builtin-commands';
 import { UriComponents } from '@opensumi/ide-extension/lib/common/vscode/models';
 import { TextDocumentShowOptions, ViewColumn } from '@opensumi/ide-extension/lib/common/vscode';
-import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@opensumi/ide-extension/lib/common/vscode/converter';
+import {
+  isLikelyVscodeRange,
+  fromRange,
+  viewColumnToResourceOpenOptions,
+} from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@opensumi/ide-editor';
 
 @Domain(CommandContribution)
@@ -18,7 +29,11 @@ export class CommonCommandsContribution implements CommandContribution {
   registerCommands(commandRegistry: CommandRegistry) {
     // vscode.open
     commandRegistry.registerCommand(VSCodeBuiltinCommands.OPEN, {
-      execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
+      execute: (
+        uriComponents: UriComponents,
+        columnOrOptions?: ViewColumn | TextDocumentShowOptions,
+        label?: string,
+      ) => {
         const uri = URI.from(uriComponents);
         const options: IResourceOpenOptions = {};
         if (columnOrOptions) {
@@ -50,11 +65,15 @@ export class CommonCommandsContribution implements CommandContribution {
           revealFirstDiff: true,
           ...options,
         };
-        return this.commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
-          original: URI.from(left),
-          modified: URI.from(right),
-          name: title,
-        }, openOptions);
+        return this.commandService.executeCommand(
+          EDITOR_COMMANDS.COMPARE.id,
+          {
+            original: URI.from(left),
+            modified: URI.from(right),
+            name: title,
+          },
+          openOptions,
+        );
       },
     });
   }

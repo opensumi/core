@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -24,7 +24,6 @@ import { DisposableStore } from '@opensumi/ide-core-common';
 
 /** Adapts the calls from main to extension thread for providing/resolving the code lenses. */
 export class CodeLensAdapter {
-
   private static readonly BAD_CMD: vscode.Command = { command: 'missing', title: '<<MISSING COMMAND>>' };
 
   private readonly cache = new Cache<vscode.CodeLens>('CodeLens');
@@ -34,7 +33,7 @@ export class CodeLensAdapter {
     private readonly provider: vscode.CodeLensProvider,
     private readonly documents: ExtensionDocumentDataManager,
     private readonly commandConverter: CommandsConverter,
-  ) { }
+  ) {}
 
   async provideCodeLenses(resource: URI, token: CancellationToken): Promise<ICodeLensListDto | undefined> {
     const doc = this.documents.getDocumentData(resource.toString());
@@ -75,7 +74,7 @@ export class CodeLensAdapter {
     if (typeof this.provider.resolveCodeLens !== 'function' || lens.isResolved) {
       resolvedLens = lens;
     } else {
-      resolvedLens = await this.provider.resolveCodeLens(lens, token) as any;
+      resolvedLens = (await this.provider.resolveCodeLens(lens, token)) as any;
     }
 
     if (!resolvedLens) {
@@ -88,7 +87,10 @@ export class CodeLensAdapter {
 
     const disposables = new DisposableStore();
 
-    symbol.command = this.commandConverter.toInternal(resolvedLens.command ? resolvedLens.command : CodeLensAdapter.BAD_CMD, disposables);
+    symbol.command = this.commandConverter.toInternal(
+      resolvedLens.command ? resolvedLens.command : CodeLensAdapter.BAD_CMD,
+      disposables,
+    );
     return symbol;
   }
 

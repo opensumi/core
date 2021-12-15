@@ -1,8 +1,33 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter, IScopedContextKeyService } from '@opensumi/ide-core-browser';
+import {
+  View,
+  CommandRegistry,
+  ViewContextKeyRegistry,
+  IContextKeyService,
+  localize,
+  IContextKey,
+  OnEvent,
+  WithEventBus,
+  ResizeEvent,
+  DisposableCollection,
+  ContextKeyChangeEvent,
+  Event,
+  Emitter,
+  IScopedContextKeyService,
+} from '@opensumi/ide-core-browser';
 import { action, observable } from 'mobx';
-import { SplitPanelManager, SplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  SplitPanelManager,
+  SplitPanelService,
+} from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
+import {
+  AbstractContextMenuService,
+  AbstractMenuService,
+  IMenu,
+  IMenuRegistry,
+  ICtxMenuRenderer,
+  MenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -16,7 +41,7 @@ export interface SectionState {
   nextSize?: number;
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class AccordionService extends WithEventBus {
   @Autowired()
   protected splitPanelManager: SplitPanelManager;
@@ -51,7 +76,7 @@ export class AccordionService extends WithEventBus {
   protected splitPanelService: SplitPanelService;
 
   // 用于强制显示功能的contextKey
-  private forceRevealContextKeys = new Map<string, {when: string; key: IContextKey<boolean>}>();
+  private forceRevealContextKeys = new Map<string, { when: string; key: IContextKey<boolean> }>();
   // 所有View的when条件集合
   private viewWhenContextkeys = new Set<string>();
   // 带contextKey且已渲染的视图
@@ -61,9 +86,9 @@ export class AccordionService extends WithEventBus {
 
   @observable.shallow views: View[] = [];
 
-  @observable state: {[viewId: string]: SectionState} = {};
+  @observable state: { [viewId: string]: SectionState } = {};
   // 提供给Mobx强刷，有没有更好的办法？
-  @observable forceUpdate: number = 0;
+  @observable forceUpdate = 0;
 
   rendered = false;
 
@@ -104,11 +129,13 @@ export class AccordionService extends WithEventBus {
         this.popViewKeyIfOnlyOneViewVisible();
       });
     });
-    this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      this.contextKeyService.onDidChangeContext,
-      (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
-      50,
-    )((e) => e && this.handleContextKeyChange(), this));
+    this.addDispose(
+      Event.debounce<ContextKeyChangeEvent, boolean>(
+        this.contextKeyService.onDidChangeContext,
+        (last, event) => last || event.payload.affectsSome(this.viewWhenContextkeys),
+        50,
+      )((e) => e && this.handleContextKeyChange(), this),
+    );
     this.listenWindowResize();
   }
 
@@ -117,9 +144,11 @@ export class AccordionService extends WithEventBus {
   }
 
   restoreState() {
-    if (this.noRestore) { return; }
-    const defaultState: {[containerId: string]: SectionState} = {};
-    this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
+    if (this.noRestore) {
+      return;
+    }
+    const defaultState: { [containerId: string]: SectionState } = {};
+    this.visibleViews.forEach((view) => (defaultState[view.id] = { collapsed: false, hidden: false }));
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     if (restoredState !== defaultState) {
       this.state = restoredState;
@@ -146,12 +175,15 @@ export class AccordionService extends WithEventBus {
       }
     });
     if (finalUncollapsedIndex) {
-      this.setSize(finalUncollapsedIndex, this.state[this.visibleViews[finalUncollapsedIndex].id].size! + availableSize);
+      this.setSize(
+        finalUncollapsedIndex,
+        this.state[this.visibleViews[finalUncollapsedIndex].id].size! + availableSize,
+      );
     }
   }
 
-  initConfig(config: { headerSize: number; minSize: number; }) {
-    const {headerSize, minSize} = config;
+  initConfig(config: { headerSize: number; minSize: number }) {
+    const { headerSize, minSize } = config;
     this.headerSize = headerSize;
     this.minSize = minSize;
   }
@@ -208,15 +240,16 @@ export class AccordionService extends WithEventBus {
     // 创建 scopedContextKeyService
     this.registerContextService(view.id);
 
-    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
-    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
-      command: {
-        id: this.registerVisibleToggleCommand(view.id, disposables),
-        label: view.name || view.id,
-      },
-      group: '1_widgets',
-      // TODO order计算
-    }));
+    disposables.push(
+      this.menuRegistry.registerMenuItem(this.menuId, {
+        command: {
+          id: this.registerVisibleToggleCommand(view.id, disposables),
+          label: view.name || view.id,
+        },
+        group: '1_widgets',
+        // TODO order计算
+      }),
+    );
     this.toDispose.set(view.id, disposables);
     this.popViewKeyIfOnlyOneViewVisible();
     this.afterAppendViewEmitter.fire(view.id);
@@ -290,18 +323,18 @@ export class AccordionService extends WithEventBus {
   }, 16);
 
   private getPanelFullHeight(ignoreViewId?: string) {
-    return Object.keys(this.state).filter(
-      (viewId) =>
-        this.views.find((item) => item.id === viewId) && viewId !== ignoreViewId,
-    ).reduce(
-      (acc, id) => {
-        return acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!));
-      }, 0);
+    return Object.keys(this.state)
+      .filter((viewId) => this.views.find((item) => item.id === viewId) && viewId !== ignoreViewId)
+      .reduce(
+        (acc, id) =>
+          acc + (this.state[id].collapsed ? this.headerSize : this.state[id].hidden ? 0 : this.state[id].size!),
+        0,
+      );
   }
 
   protected listenWindowResize() {
     window.addEventListener('resize', this.doUpdateResize);
-    this.addDispose({dispose: () => window.removeEventListener('resize', this.doUpdateResize)});
+    this.addDispose({ dispose: () => window.removeEventListener('resize', this.doUpdateResize) });
   }
 
   private createRevealContextKey(viewId: string) {
@@ -315,43 +348,51 @@ export class AccordionService extends WithEventBus {
   }
 
   protected storeState = debounce(() => {
-    if (this.noRestore || !this.rendered) { return; }
+    if (this.noRestore || !this.rendered) {
+      return;
+    }
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }, 200);
 
   private registerGlobalToggleCommand() {
     const commandId = `view-container.hide.${this.containerId}`;
-    this.commandRegistry.registerCommand({
-      id: commandId,
-    }, {
-      execute: ({viewId}: {viewId: string}) => {
-        this.doToggleView(viewId);
+    this.commandRegistry.registerCommand(
+      {
+        id: commandId,
       },
-      isEnabled: () => {
-        return this.visibleViews.length > 1;
+      {
+        execute: ({ viewId }: { viewId: string }) => {
+          this.doToggleView(viewId);
+        },
+        isEnabled: () => this.visibleViews.length > 1,
       },
-    });
+    );
     return commandId;
   }
 
   private registerVisibleToggleCommand(viewId: string, disposables: DisposableCollection): string {
     const commandId = `view-container.hide.${viewId}`;
 
-    disposables.push(this.commandRegistry.registerCommand({
-      id: commandId,
-    }, {
-      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
-        this.doToggleView(viewId, forceShow);
-      },
-      isToggled: () => {
-        const state = this.getViewState(viewId);
-        return !state.hidden;
-      },
-      isEnabled: () => {
-        const state = this.getViewState(viewId);
-        return state.hidden || this.visibleViews.length > 1;
-      },
-    }));
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: commandId,
+        },
+        {
+          execute: ({ forceShow }: { forceShow?: boolean } = {}) => {
+            this.doToggleView(viewId, forceShow);
+          },
+          isToggled: () => {
+            const state = this.getViewState(viewId);
+            return !state.hidden;
+          },
+          isEnabled: () => {
+            const state = this.getViewState(viewId);
+            return state.hidden || this.visibleViews.length > 1;
+          },
+        },
+      ),
+    );
 
     return commandId;
   }
@@ -415,15 +456,18 @@ export class AccordionService extends WithEventBus {
     event.preventDefault();
     const menus = this.ctxMenuService.createMenu({
       id: this.menuId,
-      config: { args: [{viewId}] },
+      config: { args: [{ viewId }] },
       contextKeyService: viewId ? this.viewContextKeyRegistry.getContextKeyService(viewId) : undefined,
     });
     const menuNodes = menus.getGroupedMenuNodes();
     menus.dispose();
-    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
-      x: event.clientX,
-      y: event.clientY,
-    } });
+    this.contextMenuRenderer.show({
+      menuNodes: menuNodes[1],
+      anchor: {
+        x: event.clientX,
+        y: event.clientY,
+      },
+    });
   }
 
   public getViewState(viewId: string) {
@@ -444,7 +488,12 @@ export class AccordionService extends WithEventBus {
       sizeIncrement = this.setSize(index, 0, false, noAnimation);
     } else {
       // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, false, noAnimation);
+      sizeIncrement = this.setSize(
+        index,
+        this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize,
+        false,
+        noAnimation,
+      );
     }
     // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
     // 从视图下方最后一个展开的视图起依次减去对应的高度
@@ -464,10 +513,12 @@ export class AccordionService extends WithEventBus {
       }
     }
 
-    this.eventBus.fire(new ViewCollapseChangedEvent({
-      viewId,
-      collapsed: viewState.collapsed,
-    }));
+    this.eventBus.fire(
+      new ViewCollapseChangedEvent({
+        viewId,
+        collapsed: viewState.collapsed,
+      }),
+    );
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
@@ -493,7 +544,7 @@ export class AccordionService extends WithEventBus {
     if (index === this.expandedViews.length - 1) {
       // 最后一个视图需要兼容最大高度超出总视图高度及最大高度不足总视图高度的情况
       if (calcTargetSize + index * this.minSize > fullHeight) {
-        calcTargetSize -= ((calcTargetSize + index * this.minSize) - fullHeight);
+        calcTargetSize -= calcTargetSize + index * this.minSize - fullHeight;
       } else {
         const restSize = this.getPanelFullHeight(this.visibleViews[index].id);
         if (calcTargetSize + restSize < fullHeight) {
@@ -532,7 +583,10 @@ export class AccordionService extends WithEventBus {
 
   private handleContextKeyChange() {
     Array.from(this.viewsWithContextKey.values()).forEach((view) => {
-      if (this.contextKeyService.match(view.when) || this.contextKeyService.match(this.forceRevealContextKeys.get(view.id)!.when)) {
+      if (
+        this.contextKeyService.match(view.when) ||
+        this.contextKeyService.match(this.forceRevealContextKeys.get(view.id)!.when)
+      ) {
         this.appendView(view);
       } else {
         this.disposeView(view.id);
@@ -546,7 +600,6 @@ export class AccordionService extends WithEventBus {
       set.add(key);
     });
   }
-
 }
 
 export const AccordionServiceFactory = Symbol('AccordionServiceFactory');

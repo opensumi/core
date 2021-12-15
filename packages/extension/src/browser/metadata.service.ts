@@ -6,9 +6,8 @@ import { IEventBus, ExtensionEnabledEvent } from '@opensumi/ide-core-common';
 import { VSCodeContributeRunner } from './vscode/contributes';
 import { SumiContributesRunner } from './sumi/contributes';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class ExtensionMetadataService extends Disposable {
-
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -32,10 +31,7 @@ export class ExtensionMetadataService extends Disposable {
       this.addDispose(runner);
       this.addDispose(ktRunner);
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-      await Promise.all([
-        runner.run(),
-        ktRunner.run(),
-      ]);
+      await Promise.all([runner.run(), ktRunner.run()]);
 
       this.addDispose(this.registerActivationEvent(extension));
     } catch (e) {
@@ -55,12 +51,13 @@ export class ExtensionMetadataService extends Disposable {
       if (event === 'onUri') {
         event = `onUri:${extension.id}`;
       }
-      activateDisposer.addDispose(this.activationService.onEvent(event, async () => {
-        await extension.activate();
-      }));
+      activateDisposer.addDispose(
+        this.activationService.onEvent(event, async () => {
+          await extension.activate();
+        }),
+      );
     });
 
     return activateDisposer;
   }
-
 }

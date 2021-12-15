@@ -66,13 +66,14 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
   private readonly logger: ILogger;
 
   async initEnvironmentVariableCollections(): Promise<void> {
-    const serializedCollections = await this.storageService.getData<
-      string | undefined
-    >(ENVIRONMENT_VARIABLE_COLLECTIONS_KEY);
+    const serializedCollections = await this.storageService.getData<string | undefined>(
+      ENVIRONMENT_VARIABLE_COLLECTIONS_KEY,
+    );
 
     if (serializedCollections) {
       try {
-        const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] = JSON.parse(serializedCollections);
+        const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
+          JSON.parse(serializedCollections);
         collectionsJson.forEach((c) => {
           this.collections.set(c.extensionIdentifier, {
             persistent: true,
@@ -80,7 +81,9 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
           });
         });
       } catch (err) {
-        this.logger.warn(`parse environment variable collection error: \n ${err.message}, data: \n ${serializedCollections}`);
+        this.logger.warn(
+          `parse environment variable collection error: \n ${err.message}, data: \n ${serializedCollections}`,
+        );
       }
     }
 
@@ -88,10 +91,7 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
     this.previousMergedCollection = undefined;
   }
 
-  set(
-    extensionIdentifier: string,
-    collection: IEnvironmentVariableCollectionWithPersistence,
-  ): void {
+  set(extensionIdentifier: string, collection: IEnvironmentVariableCollectionWithPersistence): void {
     this.collections.set(extensionIdentifier, collection);
     this.updateCollections();
   }
@@ -102,10 +102,7 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
   }
 
   public async getProcessEnv(): Promise<{ [key in string]: string | undefined } | undefined> {
-    return raceTimeout(
-      this.terminalProcessService.getEnv(),
-      1000,
-    );
+    return raceTimeout(this.terminalProcessService.getEnv(), 1000);
   }
 
   private resolveMergedCollection(): IMergedEnvironmentVariableCollection {
@@ -113,19 +110,18 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
   }
 
   private onDidClickStatusBarEntry(diff: IMergedEnvironmentVariableCollectionDiff) {
-    this.dialogService.warning(
-      React.createElement(TerminalVariable, { diff }),
-      [
+    this.dialogService
+      .warning(React.createElement(TerminalVariable, { diff }), [
         localize('dialog.file.close'),
         localize('terminal.relaunch'),
-      ],
-    ).then((res) => {
-      if (res && res === localize('terminal.relaunch')) {
-        this.commandService.executeCommand(TERMINAL_COMMANDS.RE_LAUNCH.id);
-        this.statusBarEntryAccessor?.dispose();
-        this.statusBarEntryAccessor = undefined;
-      }
-    });
+      ])
+      .then((res) => {
+        if (res && res === localize('terminal.relaunch')) {
+          this.commandService.executeCommand(TERMINAL_COMMANDS.RE_LAUNCH.id);
+          this.statusBarEntryAccessor?.dispose();
+          this.statusBarEntryAccessor = undefined;
+        }
+      });
   }
 
   private updateStatusBarMessage() {
@@ -148,16 +144,13 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
       mutators.forEach((mutator) => changes.push(mutatorTypeLabel(mutator.type, mutator.value, variable)));
     });
 
-    this.statusBarEntryAccessor = this.statusbarService.addElement(
-      ENVIRONMENT_VARIABLE_CHANGED_STATUS,
-      {
-        iconClass: getIcon('warning-circle-fill'),
-        color: 'orange',
-        alignment: StatusBarAlignment.RIGHT,
-        tooltip: localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```',
-        onClick: () => this.onDidClickStatusBarEntry(diff),
-      },
-    );
+    this.statusBarEntryAccessor = this.statusbarService.addElement(ENVIRONMENT_VARIABLE_CHANGED_STATUS, {
+      iconClass: getIcon('warning-circle-fill'),
+      color: 'orange',
+      alignment: StatusBarAlignment.RIGHT,
+      tooltip: localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```',
+      onClick: () => this.onDidClickStatusBarEntry(diff),
+    });
   }
 
   private notifyCollectionUpdates() {
@@ -180,17 +173,12 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
       if (collection.persistent) {
         collectionsJson.push({
           extensionIdentifier,
-          collection: serializeEnvironmentVariableCollection(
-            this.collections.get(extensionIdentifier)!.map,
-          ),
+          collection: serializeEnvironmentVariableCollection(this.collections.get(extensionIdentifier)!.map),
         });
       }
     });
 
     const stringifiedJson = JSON.stringify(collectionsJson);
-    this.storageService.setData(
-      ENVIRONMENT_VARIABLE_COLLECTIONS_KEY,
-      stringifiedJson,
-    );
+    this.storageService.setData(ENVIRONMENT_VARIABLE_COLLECTIONS_KEY, stringifiedJson);
   }
 }

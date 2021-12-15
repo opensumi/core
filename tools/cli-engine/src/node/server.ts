@@ -69,7 +69,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   } = serverParams;
   console.log(extensionCandidate);
 
-  if (!!isDev) {
+  if (isDev) {
     process.env.IS_DEV = '1';
   }
 
@@ -133,7 +133,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
       let content = fs.readFileSync(staticPath).toString();
 
       if (_path === '/index.html') {
-        const assets = fs.readFileSync(path.join(__dirname, `../browser/assets.json`)).toString();
+        const assets = fs.readFileSync(path.join(__dirname, '../browser/assets.json')).toString();
 
         const config = {
           ideWorkspaceDir: workspaceDir,
@@ -154,7 +154,10 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
           engineVersion: pkg.version,
         };
 
-        content = ejs.compile(content, {})({
+        content = ejs.compile(
+          content,
+          {},
+        )({
           config,
           meta,
           assets: JSON.parse(assets),

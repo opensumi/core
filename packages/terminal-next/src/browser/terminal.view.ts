@@ -1,7 +1,13 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
-import { ITerminalGroupViewService, IWidget, ITerminalInternalService, userActionViewUuid, IWidgetGroup } from '../common';
+import {
+  ITerminalGroupViewService,
+  IWidget,
+  ITerminalInternalService,
+  userActionViewUuid,
+  IWidgetGroup,
+} from '../common';
 
 export class Widget extends Disposable implements IWidget {
   protected _id: string;
@@ -11,13 +17,13 @@ export class Widget extends Disposable implements IWidget {
   protected _error: boolean;
 
   @observable
-  dynamic: number = 0;
+  dynamic = 0;
 
   @observable
-  shadowDynamic: number = 0;
+  shadowDynamic = 0;
 
   @observable
-  name: string = '';
+  name = '';
 
   constructor(id: string, public reuse: boolean = false) {
     super();
@@ -103,13 +109,13 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   widgets: Widget[] = [];
 
   @observable
-  editable: boolean = false;
+  editable = false;
 
   @observable
-  activated: boolean = false;
+  activated = false;
 
   @observable
-  name: string = '';
+  name = '';
 
   @observable
   currentId: string;
@@ -150,7 +156,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
       let name = '';
       const length = this.length;
       this.widgets.forEach((widget, index) => {
-        name += `${widget.name}${index !== (length - 1) ? ', ' : ''}`;
+        name += `${widget.name}${index !== length - 1 ? ', ' : ''}`;
       });
       return name;
     }
@@ -201,8 +207,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   }
 
   private _averageLayout() {
-    const average = Math.round((WidgetGroup.whole / this.widgets.length)
-      * WidgetGroup.float) / WidgetGroup.float;
+    const average = Math.round((WidgetGroup.whole / this.widgets.length) * WidgetGroup.float) / WidgetGroup.float;
     this.widgets.forEach((widget) => {
       if (this._isLast(widget)) {
         widget.resize(WidgetGroup.whole - average * (this.widgets.length - 1));
@@ -284,7 +289,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   private _doCreateGroup(id?: string) {
     const group = new WidgetGroup(id);
     this.groups.push(group);
-    return (this.groups.length - 1);
+    return this.groups.length - 1;
   }
 
   createGroup() {
@@ -307,7 +312,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   }
 
   private _doRemoveGroup(index: number) {
-    const [ group ] = this.groups.splice(index, 1);
+    const [group] = this.groups.splice(index, 1);
 
     if (group) {
       group.widgets.forEach((widget) => {
@@ -343,7 +348,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this.selectGroup(index);
   }
 
-  createWidget(group: WidgetGroup, id?: string, reuse?: boolean, isSimpleWidget: boolean = false) {
+  createWidget(group: WidgetGroup, id?: string, reuse?: boolean, isSimpleWidget = false) {
     const widget = new Widget(id || this.service.generateSessionId(), reuse);
     this._widgets.set(widget.id, widget);
     widget.group = group;

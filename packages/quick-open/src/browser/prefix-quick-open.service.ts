@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -17,7 +17,16 @@
 import React from 'react';
 import { localize, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
 import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
-import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenTabConfig, QuickOpenTab, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+import {
+  IQuickOpenHandlerRegistry,
+  QuickOpenHandler,
+  QuickOpenTabConfig,
+  QuickOpenTab,
+  QuickOpenOptions,
+  QuickOpenService,
+  QuickOpenItem,
+  PrefixQuickOpenService,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 import { Injectable, Autowired } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { QuickTitleBar } from './quick-title-bar';
@@ -25,7 +34,12 @@ import { QuickOpenTabs } from './components/quick-open-tabs';
 /**
  * @deprecated import from `@opensumi/ide-core-browser/lib/quick-open` instead
  */
-export { QuickOpenContribution, QuickOpenHandler, IQuickOpenHandlerRegistry, QuickOpenTab } from '@opensumi/ide-core-browser/lib/quick-open';
+export {
+  QuickOpenContribution,
+  QuickOpenHandler,
+  IQuickOpenHandlerRegistry,
+  QuickOpenTab,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 
 @Injectable()
 export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHandlerRegistry {
@@ -127,7 +141,6 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
 
 @Injectable()
 export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
-
   @Autowired(QuickOpenHandlerRegistry)
   protected readonly handlers: QuickOpenHandlerRegistry;
 
@@ -140,15 +153,19 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
-  private activePrefix: string = '';
+  private activePrefix = '';
 
-  private currentLookFor: string = '';
+  private currentLookFor = '';
 
   open(prefix: string): void {
     const handler = this.handlers.getHandlerOrDefault(prefix);
     // 恢复同一 tab 上次的输入，连续输入相同的快捷键也可以保留历史输入
     let shouldSelect = false;
-    if (this.corePreferences['workbench.quickOpen.preserveInput'] && handler && handler === this.currentHandler && this.currentLookFor &&
+    if (
+      this.corePreferences['workbench.quickOpen.preserveInput'] &&
+      handler &&
+      handler === this.currentHandler &&
+      this.currentLookFor &&
       // 同一 handler，不同 tab 切换需要重置
       this.handlers.getTabByHandler(handler, this.currentLookFor) === this.handlers.getTabByHandler(handler, prefix)
     ) {
@@ -163,16 +180,22 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   protected toDisposeCurrent = new DisposableCollection();
   protected currentHandler: QuickOpenHandler | undefined;
 
-  protected async setCurrentHandler(prefix: string, handler: QuickOpenHandler | undefined, select?: boolean): Promise<void> {
+  protected async setCurrentHandler(
+    prefix: string,
+    handler: QuickOpenHandler | undefined,
+    select?: boolean,
+  ): Promise<void> {
     if (handler !== this.currentHandler) {
       this.toDisposeCurrent.dispose();
       this.currentHandler = handler;
-      this.toDisposeCurrent.push(Disposable.create(() => {
-        const closingHandler = handler && handler.getOptions().onClose;
-        if (closingHandler) {
-          closingHandler(true);
-        }
-      }));
+      this.toDisposeCurrent.push(
+        Disposable.create(() => {
+          const closingHandler = handler && handler.getOptions().onClose;
+          if (closingHandler) {
+            closingHandler(true);
+          }
+        }),
+      );
     }
     if (!handler) {
       this.doOpen();
@@ -188,7 +211,9 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     if (this.handlers.isDefaultHandler(handler) && prefix.startsWith(handler.prefix)) {
       optionsPrefix = prefix.substr(handler.prefix.length);
     }
-    const skipPrefix = this.handlers.isDefaultHandler(handler) ? 0 : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
+    const skipPrefix = this.handlers.isDefaultHandler(handler)
+      ? 0
+      : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
     const handlerOptions = handler.getOptions();
     this.doOpen({
       prefix: optionsPrefix,
@@ -204,14 +229,15 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
           handler.onClose(canceled);
         }
       },
-      renderTab: () => React.createElement(QuickOpenTabs, {
-        tabs: this.handlers.getSortedTabs(),
-        activePrefix: this.activePrefix,
-        onChange: (prefix) => {
-          handler.onToggle?.();
-          this.open(prefix);
-        },
-      }),
+      renderTab: () =>
+        React.createElement(QuickOpenTabs, {
+          tabs: this.handlers.getSortedTabs(),
+          activePrefix: this.activePrefix,
+          onChange: (prefix) => {
+            handler.onToggle?.();
+            this.open(prefix);
+          },
+        }),
       toggleTab: () => {
         handler.onToggle?.();
         const tabs = this.handlers.getSortedTabs();
@@ -231,24 +257,31 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   }
 
   protected doOpen(options?: QuickOpenOptions): void {
-
     if (this.quickTitleBar.isAttached) {
       this.quickTitleBar.hide();
     }
 
-    this.quickOpenService.open({
-      onType: (lookFor, acceptor) => this.onType(lookFor, acceptor),
-    }, options);
+    this.quickOpenService.open(
+      {
+        onType: (lookFor, acceptor) => this.onType(lookFor, acceptor),
+      },
+      options,
+    );
   }
 
-  protected onType(lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void): void {
+  protected onType(
+    lookFor: string,
+    acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void,
+  ): void {
     this.currentLookFor = lookFor;
     const handler = this.handlers.getHandlerOrDefault(lookFor);
     if (handler === undefined) {
       const items: QuickOpenItem[] = [];
-      items.push(new QuickOpenItem({
-        label: localize('quickopen.command.nohandler'),
-      }));
+      items.push(
+        new QuickOpenItem({
+          label: localize('quickopen.command.nohandler'),
+        }),
+      );
       acceptor(items);
     } else if (handler !== this.currentHandler) {
       this.setCurrentHandler(lookFor, handler);

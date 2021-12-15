@@ -1,4 +1,19 @@
-import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus, ILoggerManagerClient } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  Domain,
+  PreferenceContribution,
+  URI,
+  FileUri,
+  PreferenceProviderProvider,
+  PreferenceScope,
+  PreferenceProvider,
+  PreferenceService,
+  PreferenceServiceImpl,
+  injectPreferenceConfigurations,
+  injectPreferenceSchemaProvider,
+  IEventBus,
+  ILoggerManagerClient,
+} from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -16,10 +31,7 @@ import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/log
 
 @Injectable()
 export class AddonModule extends BrowserModule {
-  providers: Provider[] = [
-    EditorPreferenceContribution,
-    UserStorageContribution,
-  ];
+  providers: Provider[] = [EditorPreferenceContribution, UserStorageContribution];
 }
 
 @Domain(PreferenceContribution)
@@ -28,17 +40,17 @@ export class EditorPreferenceContribution implements PreferenceContribution {
     type: 'object',
     properties: {
       'editor.fontSize': {
-        'type': 'number',
-        'default': 12,
-        'description': 'Controls the font size in pixels.',
+        type: 'number',
+        default: 12,
+        description: 'Controls the font size in pixels.',
       },
       'java.config.xxx': {
-        'type': 'boolean',
-        'description': '',
+        type: 'boolean',
+        description: '',
       },
       'java.config.yyy': {
-        'type': 'boolean',
-        'description': '',
+        type: 'boolean',
+        description: '',
       },
     },
   } as any;
@@ -52,7 +64,6 @@ describe('PreferenceService should be work', () => {
   let mockWorkspaceService;
 
   beforeAll(async (done) => {
-
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
     await fs.ensureDir(root.path.toString());
@@ -65,11 +76,7 @@ describe('PreferenceService should be work', () => {
       'editor.fontSize': 20,
     });
 
-    injector = createBrowserInjector([
-      FileServiceClientModule,
-      AddonModule,
-      PreferencesModule,
-    ]);
+    injector = createBrowserInjector([FileServiceClientModule, AddonModule, PreferencesModule]);
 
     injector.overrideProviders({
       token: IWorkspaceService,
@@ -78,22 +85,22 @@ describe('PreferenceService should be work', () => {
         workspace: {
           uri: root.toString(),
           isDirectory: true,
-          lastModification: (new Date()).getTime(),
+          lastModification: new Date().getTime(),
         },
         roots: Promise.resolve([
           {
             uri: root.toString(),
             isDirectory: true,
-            lastModification: (new Date()).getTime(),
+            lastModification: new Date().getTime(),
           },
         ]),
-        onWorkspaceChanged: () => { },
-        onWorkspaceLocationChanged: () => { },
+        onWorkspaceChanged: () => {},
+        onWorkspaceLocationChanged: () => {},
         tryGetRoots: () => [
           {
             uri: root!.toString(),
             isDirectory: true,
-            lastModification: (new Date()).getTime(),
+            lastModification: new Date().getTime(),
           },
         ],
       },
@@ -105,15 +112,13 @@ describe('PreferenceService should be work', () => {
     });
 
     // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
-      return {
-        uri: root!.resolve('userhome').toString(),
-        isDirectory: true,
-        lastModification: new Date().getTime(),
-      };
-    });
+    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+      uri: root!.resolve('userhome').toString(),
+      isDirectory: true,
+      lastModification: new Date().getTime(),
+    }));
 
-    injector.mock(IEventBus, 'fireAndAwait', () => { });
+    injector.mock(IEventBus, 'fireAndAwait', () => {});
 
     mockWorkspaceService = {
       roots: [root.toString()],
@@ -122,44 +127,50 @@ describe('PreferenceService should be work', () => {
         lastModification: new Date().getTime(),
         uri: root.toString(),
       },
-      tryGetRoots: () => [{
-        isDirectory: true,
-        lastModification: new Date().getTime(),
-        uri: root!.toString(),
-      }],
+      tryGetRoots: () => [
+        {
+          isDirectory: true,
+          lastModification: new Date().getTime(),
+          uri: root!.toString(),
+        },
+      ],
       onWorkspaceChanged: jest.fn(),
       onWorkspaceLocationChanged: jest.fn(),
       isMultiRootWorkspaceOpened: false,
     };
 
     // Mock
-    injector.addProviders({
-      token: IWorkspaceService,
-      useValue: mockWorkspaceService,
-    }, {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
-    });
+    injector.addProviders(
+      {
+        token: IWorkspaceService,
+        useValue: mockWorkspaceService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+    );
 
     injectPreferenceConfigurations(injector);
     injectPreferenceSchemaProvider(injector);
 
-    const preferencesProviderFactory = () => {
-      return (scope: PreferenceScope) => {
-        const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
-        provider.asScope(scope);
-        return provider;
-      };
+    const preferencesProviderFactory = () => (scope: PreferenceScope) => {
+      const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
+      provider.asScope(scope);
+      return provider;
     };
 
     // 用于获取不同scope下的PreferenceProvider
-    injector.overrideProviders({
-      token: PreferenceProviderProvider,
-      useFactory: preferencesProviderFactory,
-    }, {
-      token: PreferenceService,
-      useClass: PreferenceServiceImpl,
-    });
+    injector.overrideProviders(
+      {
+        token: PreferenceProviderProvider,
+        useFactory: preferencesProviderFactory,
+      },
+      {
+        token: PreferenceService,
+        useClass: PreferenceServiceImpl,
+      },
+    );
 
     // PreferenceService 的初始化时机要更早
     preferenceService = injector.get(PreferenceService);
@@ -184,7 +195,6 @@ describe('PreferenceService should be work', () => {
   });
 
   describe('01 #Init', () => {
-
     it('should have enough API', () => {
       expect(typeof preferenceService.ready).toBe('object');
       expect(typeof preferenceService.dispose).toBe('function');

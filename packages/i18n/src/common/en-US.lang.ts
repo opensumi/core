@@ -3,10 +3,10 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
-    'ButtonAllow': 'Allow',
-    'ButtonOK': 'Confirm',
-    'ButtonCancel': 'Cancel',
-    'extension': 'Extension',
+    ButtonAllow: 'Allow',
+    ButtonOK: 'Confirm',
+    ButtonCancel: 'Cancel',
+    extension: 'Extension',
     'common.yes': 'Yes',
     'common.no': 'No',
 
@@ -46,7 +46,8 @@ export const localizationBundle = {
     'file.confirm.replace': 'Are you sure you want to replace file {0}?',
     'file.confirm.replace.ok': 'Replace',
     'file.confirm.replace.cancel': 'Cancel',
-    'file.move.existMessage': 'The file to be pasted is deleted or moved at the same time. Unable to move/copy. The file already exists at the target location.',
+    'file.move.existMessage':
+      'The file to be pasted is deleted or moved at the same time. Unable to move/copy. The file already exists at the target location.',
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
     'file.workspace.defaultTip': 'Untitled (WORKSPACE)',
@@ -85,9 +86,9 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
-    'selectAll': 'Select All',
+    selectAll: 'Select All',
 
-    'editor': 'Editor',
+    editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
     'editor.saveCurrent': 'Save Current File',
@@ -113,12 +114,15 @@ export const localizationBundle = {
     'editor.changeEol': 'Select End Of Line Sequence',
     'editor.failToOpen': 'Failed to open {0}. Error message: {1}',
     'editor.changeLanguageId': 'Select Language Mode',
-    'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
+    'editor.configuration.maxTokenizationLineLength':
+      'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
-    'editor.configuration.bracketPairColorization.enabled': 'Controls whether bracket pair colorization is enabled or not. Use \'workbench.colorCustomizations\' to override the bracket highlight colors.',
+    'editor.configuration.bracketPairColorization.enabled':
+      "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
     'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
     'editor.lineHeight': 'Line Height',
-    'editor.lineHeight.description': 'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
+    'editor.lineHeight.description':
+      'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -206,24 +210,24 @@ export const localizationBundle = {
     'file-search.quickOpen.leftRight': 'Open on the side',
     'file-search.quickOpen.upDown': 'Open at the bottom',
     'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
-    'fileResults': 'File results',
+    fileResults: 'File results',
     'fileResults.notfound': 'No files matching',
-    'fileSymbolResults': 'symbols ({0})',
+    fileSymbolResults: 'symbols ({0})',
     'fileSymbolResults.notfound': 'No symbols matching',
-    'historyMatches': 'Recently opened',
+    historyMatches: 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
     'search.replace.toggle.button.title': 'Toggle Replace',
-    'caseDescription': 'Match Case',
-    'wordsDescription': 'Match Whole Word',
-    'regexDescription': 'Use Regular Expression',
-    'includeIgnoredFiles': 'Include Ignored Files',
-    'onlyOpenEditors': 'Search only in Open Editors',
-    'noResultsFound': 'No results found. Review your settings for configured exclusions and ignore files',
+    caseDescription: 'Match Case',
+    wordsDescription: 'Match Whole Word',
+    regexDescription: 'Use Regular Expression',
+    includeIgnoredFiles: 'Include Ignored Files',
+    onlyOpenEditors: 'Search only in Open Editors',
+    noResultsFound: 'No results found. Review your settings for configured exclusions and ignore files',
 
     'quickopen.recent-commands': 'recently used',
     'quickopen.other-commands': 'other commands',
     'quickopen.commands.notfound': 'No commands matchings',
-    'mSelection': 'Selection',
+    mSelection: 'Selection',
     'selection.all': 'Select All',
 
     'dialog.confirm': 'confirm',
@@ -305,9 +309,12 @@ export const localizationBundle = {
     'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
     'debug.launch.existed': 'Debug configuration "{0}" is already running',
-    'debug.expression.log.placeholder': 'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
-    'debug.expression.hit.placeholder': 'Break when hit count condition is met. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
-    'debug.expression.condition.placeholder': 'Break when the expression evaluates to true. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
+    'debug.expression.log.placeholder':
+      'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press  "Enter " to confirm and  "Esc " to cancel.',
+    'debug.expression.hit.placeholder':
+      'Break when hit count condition is met. Press  "Enter " to confirm and  "Esc " to cancel.',
+    'debug.expression.condition.placeholder':
+      'Break when the expression evaluates to true. Press  "Enter " to confirm and  "Esc " to cancel.',
     'debug.expression.condition': 'Expression',
     'debug.expression.hitCondition': 'Hit Count',
     'debug.expression.logMessage': 'Log Message',
@@ -324,11 +331,15 @@ export const localizationBundle = {
     'debug.stack.frame.stopped': 'Stopped',
     'debug.stack.frame.running': 'Running',
     'debug.launch.configurations.debugType': 'Type of configuration.',
-    'debug.launch.configurations.debugTypeNotRecognised': 'The debug type is not recognized. Make sure that you have a corresponding debug extension installed and that it is enabled.',
-    'debug.launch.configurations.node2NotSupported': '"node2" is no longer supported, use "node" instead and set the "protocol" attribute to "inspector".',
-    'debug.launch.configurations.debugName': 'Name of configuration; appears in the launch configuration drop down menu.',
+    'debug.launch.configurations.debugTypeNotRecognised':
+      'The debug type is not recognized. Make sure that you have a corresponding debug extension installed and that it is enabled.',
+    'debug.launch.configurations.node2NotSupported':
+      '"node2" is no longer supported, use "node" instead and set the "protocol" attribute to "inspector".',
+    'debug.launch.configurations.debugName':
+      'Name of configuration; appears in the launch configuration drop down menu.',
     'debug.launch.configurations.debugRequest': 'Request type of configuration. Can be "launch" or "attach".',
-    'debug.launch.configurations.debugServer': 'For debug extension development only: if a port is specified VS Code tries to connect to a debug adapter running in server mode',
+    'debug.launch.configurations.debugServer':
+      'For debug extension development only: if a port is specified VS Code tries to connect to a debug adapter running in server mode',
     'debug.launch.configurations.debugPrelaunchTask': 'Task to run before debug session starts.',
     'debug.launch.configurations.debugPostDebugTask': 'Task to run after debug session ends.',
     'debug.launch.configurations.debugWindowsConfiguration': 'Windows specific launch configuration attributes.',
@@ -346,30 +357,40 @@ export const localizationBundle = {
     'output.enableLogHighlight': 'Enable/disable Log Highlight',
     'output.enableLogHighlightDesc': 'Use Log language to tokenization log text, vscode-log extension is required',
     'output.enableSmartScroll': 'Enable/disable Smart scrolling',
-    'output.enableSmartScrollDesc': 'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
+    'output.enableSmartScrollDesc':
+      'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
 
-    'preference.explorer.confirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
+    'preference.explorer.confirm.delete':
+      'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.confirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
-    'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
-    'preference.files.exclude': 'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
-    'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
+    'preference.files.watcherExclude':
+      'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
+    'preference.files.exclude':
+      'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
+    'preference.search.exclude':
+      'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
     'preference.search.include': 'Configure glob patterns for including files and folders in searches.',
     'preference.files.watcherExclude.title': 'Exclusion file watch `files.watcherExclude`',
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
-    'preference.search.useReplacePreview': 'Controls whether to open Replace Preview when selecting or replacing a match.',
+    'preference.search.useReplacePreview':
+      'Controls whether to open Replace Preview when selecting or replacing a match.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
-    'preference.files.associations': 'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
+    'preference.files.associations':
+      'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
     'preference.files.encoding.title': 'File Encoding',
     'preference.files.encoding': 'The default character set encoding to use when reading and writing files.',
-    'preference.files.autoGuessEncoding': 'When enabled, the editor will attempt to guess the character set encoding when opening files. This setting can also be configured per language.',
+    'preference.files.autoGuessEncoding':
+      'When enabled, the editor will attempt to guess the character set encoding when opening files. This setting can also be configured per language.',
     'preference.files.autoGuessEncoding.title': 'Auto Guess Encoding',
     'preference.explorer.fileTree.indent.title': 'Explorer: FileTree Indent',
     'preference.explorer.fileTree.baseIndent.title': 'Explorer: FileTree BaseIndent',
     'preference.explorer.compactFolders.title': 'Explorer: Compact Mode',
-    'preference.explorer.compactFolders': 'Controls whether the explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example.',
-    'preference.explorer.autoReveal': 'Controls whether the explorer should automatically reveal and select files when opening them.',
+    'preference.explorer.compactFolders':
+      'Controls whether the explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example.',
+    'preference.explorer.autoReveal':
+      'Controls whether the explorer should automatically reveal and select files when opening them.',
     'preference.editorTitle.openSource': 'Open Setting (JSON)',
     'preference.editorTitle.openUserSource': 'Open User Setting (JSON)',
     'preference.editorTitle.openWorkspaceSource': 'Open Workspace Setting (JSON)',
@@ -420,7 +441,8 @@ export const localizationBundle = {
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
     'preference.editor.tokenColorCustomizations': 'Overwrite token colors of current color theme',
     'preference.general.language': 'Language',
-    'preference.general.language.change.refresh.info': 'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
+    'preference.general.language.change.refresh.info':
+      'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
     'preference.general.language.change.refresh.now': 'now',
     'preference.general.language.change.refresh.later': 'later',
 
@@ -438,18 +460,20 @@ export const localizationBundle = {
     'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
 
     // workbench
-    'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',
+    'preference.workbench.refactoringChanges.showPreviewStrategy':
+      'Show preview confirm when triggering some refactoring changes',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': 'Refactor Confirm',
 
     'preference.tab.name': 'Settings',
-    'preference.noResults': 'No Setting Found Containing \'{0}\'',
+    'preference.noResults': "No Setting Found Containing '{0}'",
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.overwrittenInUser': '（Set in User Settings）',
     'preference.overwrittenInWorkspace': '（Set in Workspace Settings）',
     'preference.searchPlaceholder': 'Search settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
-    'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
+    'preference.editor.formatOnSaveTimeout':
+      'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
     'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
     'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
@@ -459,7 +483,8 @@ export const localizationBundle = {
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.wrapTab': 'Wrap Editor Tabs',
-    'preference.editor.enablePreviewFromCodeNavigation': 'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
+    'preference.editor.enablePreviewFromCodeNavigation':
+      'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'preference.editor.preferredFormatter': 'Default Formatter',
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
@@ -472,12 +497,15 @@ export const localizationBundle = {
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
     'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
 
-    'editor.configuration.wrapTab': 'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
+    'editor.configuration.wrapTab':
+      'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
-    'editor.configuration.autoSaveDelay': 'Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to \'Save After Delay\'.',
+    'editor.configuration.autoSaveDelay':
+      "Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
-    'editor.configuration.tabSize': 'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
+    'editor.configuration.tabSize':
+      'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
     'editor.configuration.largeFileSize': 'Custom size of the large file',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
@@ -497,8 +525,10 @@ export const localizationBundle = {
 
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
-    'diffEditor.configuration.renderSideBySide': 'Controls whether the diff editor shows the diff side by side or inline.',
-    'diffEditor.configuration.ignoreTrimWhitespace': 'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
+    'diffEditor.configuration.renderSideBySide':
+      'Controls whether the diff editor shows the diff side by side or inline.',
+    'diffEditor.configuration.ignoreTrimWhitespace':
+      'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -574,7 +604,8 @@ export const localizationBundle = {
     'theme.quickopen.plh': 'Select Color Theme（Up/Down Keys to Preview）',
     'icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
 
-    'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
+    'preference.workbench.list.openMode':
+      'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
     'preference.workbench.list.openMode.title': 'Tree/List open mode',
 
     'keymaps.search.placeholder': 'Type to search in keybindings',
@@ -610,8 +641,10 @@ export const localizationBundle = {
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',
-    'marketplace.extension.uninstall.failed.depended': 'Cannot uninstall extension "{0}". Extension "{1}" depends on this.',
-    'marketplace.extension.disabled.failed.depended': 'Cannot disable extension "{0}". Extension "{1}" depends on this.',
+    'marketplace.extension.uninstall.failed.depended':
+      'Cannot uninstall extension "{0}". Extension "{1}" depends on this.',
+    'marketplace.extension.disabled.failed.depended':
+      'Cannot disable extension "{0}". Extension "{1}" depends on this.',
     'marketplace.extension.reload.delay': 'Restart later',
     'marketplace.extension.reload.now': 'Restart now',
     'marketplace.extension.builtin': 'Builtin',
@@ -636,7 +669,8 @@ export const localizationBundle = {
     'marketplace.panel.tab.placeholder.installed': 'Search from installed',
     'marketplace.extension.findUpdate': 'Find Extension {0} has new version {1}，Do you want to update？',
     'marketplace.extension.updateAll': 'Find multiple extensions that can be updated. Do you want to update all?',
-    'marketplace.extension.needreloadFromAll': 'All extensions are updated and will take effect after reload window. Do you want to reload window now?',
+    'marketplace.extension.needreloadFromAll':
+      'All extensions are updated and will take effect after reload window. Do you want to reload window now?',
     'marketplace.extension.needreload': 'Updating extension {0} is completed. Do you want to reload window now?',
     'marketplace.extension.canupdate': 'Can update',
     'marketplace.extension.updating': 'Updating',
@@ -661,8 +695,8 @@ export const localizationBundle = {
     'marketplace.quickopen.install.version.placeholder': 'Extension version',
     'marketplace.quickopen.install.error': 'Install Extension has error',
 
-    'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
-    'file.prompt.dontSave': 'Don\'t Save',
+    saveChangesMessage: 'Do you want to save the changes you made to {0}?',
+    'file.prompt.dontSave': "Don't Save",
     'file.prompt.save': 'Save',
     'file.prompt.cancel': 'Cancel',
 
@@ -680,7 +714,7 @@ export const localizationBundle = {
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',
-    'about': 'About',
+    about: 'About',
 
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information from the active editor',
@@ -708,19 +742,21 @@ export const localizationBundle = {
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
 
-    'extension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Click to refresh to resume this process.',
+    'extension.invalidExthostReload.confirm.content':
+      'Ext-host process is invalid. Click to refresh to resume this process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'extension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
     'extension.exthostRestarting.content': 'Ext-host process is restarting',
 
-    'extension.no.view.found': 'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
+    'extension.no.view.found':
+      'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
     'extension.profilingExtensionHost': 'Profiling Extension Host',
     'extension.profiling.clickStop': 'Click to stop profiling.',
     'extension.profile.save': 'Save Extension Host Profile',
     'extension.label': '{0} (Extension)',
 
-    'comments': 'Comments',
+    comments: 'Comments',
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',
     'comments.zone.title': 'Start discussion',
@@ -741,7 +777,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
-    'reuseTerminal': 'Terminal will be reused by tasks, press any key to close it.',
+    reuseTerminal: 'Terminal will be reused by tasks, press any key to close it.',
 
     'toolbar-customize.buttonDisplay.description': 'Button Style',
     'toolbar-customize.buttonDisplay.icon': 'Icon Only',
@@ -771,7 +807,8 @@ export const localizationBundle = {
     'refactor-preview.title.clear': 'Discard Refactoring',
     'refactor-preview.title.apply': 'Apply Refactoring',
     'refactor-preview.overlay.title': 'Another refactoring is being previewed.',
-    'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
+    'refactor-preview.overlay.detail':
+      "Press 'Continue' to discard the previous refactoring and continue with the current refactoring.",
     'refactor-preview.overlay.continue': 'Continue',
     'refactor-preview.overlay.cancel': 'Cancel',
     'refactor-preview.file.create': 'Creating',
@@ -790,19 +827,19 @@ export const localizationBundle = {
     'authentication.signOutMessage': 'The account {0} has been used by: \n\n{1}\n\n Sign out of these features?',
     'authentication.signOutMessageSimple': 'Sign out of {0}?',
     'authentication.useOtherAccount': 'Sign in to another account',
-    'authentication.selectAccount': `The extension '{0}' wants to access a {1} account`,
-    'authentication.getSessionPlaceholder': `Select an account for '{0}' to use or Esc to cancel`,
-    'authentication.confirmAuthenticationAccess': `The extension '{0}' wants to access the {1} account '{2}'.`,
-    'authentication.confirmLogin': `The extension '{0}' wants to sign in using {1}.`,
-    'authentication.signInRequests': `Sign in to use {0} (1)`,
+    'authentication.selectAccount': "The extension '{0}' wants to access a {1} account",
+    'authentication.getSessionPlaceholder': "Select an account for '{0}' to use or Esc to cancel",
+    'authentication.confirmAuthenticationAccess': "The extension '{0}' wants to access the {1} account '{2}'.",
+    'authentication.confirmLogin': "The extension '{0}' wants to sign in using {1}.",
+    'authentication.signInRequests': 'Sign in to use {0} (1)',
     'authentication.signOut': 'Sign out {0}',
     'authentication.noAccounts': 'You are not signed in to any accounts',
     'authentication.signedOut': 'Successfully signed out.',
     // refactoring changes related
-    'refactoring-changes.ask.1.create': 'Extension \'{0}\' wants to make refactoring changes with this file creation',
-    'refactoring-changes.ask.1.copy': 'Extension \'{0}\' wants to make refactoring changes with this file copy',
-    'refactoring-changes.ask.1.move': 'Extension \'{0}\' wants to make refactoring changes with this file move',
-    'refactoring-changes.ask.1.delete': 'Extension \'{0}\' wants to make refactoring changes with this file deletion',
+    'refactoring-changes.ask.1.create': "Extension '{0}' wants to make refactoring changes with this file creation",
+    'refactoring-changes.ask.1.copy': "Extension '{0}' wants to make refactoring changes with this file copy",
+    'refactoring-changes.ask.1.move': "Extension '{0}' wants to make refactoring changes with this file move",
+    'refactoring-changes.ask.1.delete': "Extension '{0}' wants to make refactoring changes with this file deletion",
     'refactoring-changes.ask.N.create': '{0} extensions want to make refactoring changes with this file creation',
     'refactoring-changes.ask.N.copy': '{0} extensions want to make refactoring changes with this file copy',
     'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
@@ -813,7 +850,7 @@ export const localizationBundle = {
 
     'keyboard.chooseKeyboardLayout': 'Choose keyboard layout',
     'keyboard.autoDetect.label': 'Auto Detect',
-    'keyboard.autoDetect.description': '(Current: \'{0} \')',
+    'keyboard.autoDetect.description': "(Current: '{0} ')",
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
 
     //#region Testing

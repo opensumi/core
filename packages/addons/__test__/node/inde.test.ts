@@ -7,9 +7,7 @@ describe('test for ', () => {
   let injector: MockInjector;
 
   beforeEach(() => {
-    injector = createNodeInjector([
-      AddonsModule,
-    ]);
+    injector = createNodeInjector([AddonsModule]);
   });
 
   it('empty module', () => {

@@ -1,11 +1,15 @@
 import type vscode from 'vscode';
 
 import { Emitter, Event, IExtensionProps } from '@opensumi/ide-core-common';
-import { ExtensionIdentifier, IExtHostSecret, IMainThreadSecret, MainThreadAPIIdentifier } from '../../../common/vscode';
+import {
+  ExtensionIdentifier,
+  IExtHostSecret,
+  IMainThreadSecret,
+  MainThreadAPIIdentifier,
+} from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 
 export class ExtensionSecrets implements vscode.SecretStorage {
-
   protected readonly _id: string;
   private readonly _secret: ExtHostSecret;
 
@@ -38,14 +42,14 @@ export class ExtensionSecrets implements vscode.SecretStorage {
 
 export class ExtHostSecret implements IExtHostSecret {
   private _proxy: IMainThreadSecret;
-  private _onDidChangePassword = new Emitter<{ extensionId: string, key: string }>();
+  private _onDidChangePassword = new Emitter<{ extensionId: string; key: string }>();
   readonly onDidChangePassword = this._onDidChangePassword.event;
 
   constructor(rpc: IRPCProtocol) {
     this._proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadSecret);
   }
 
-  async $onDidChangePassword(e: { extensionId: string, key: string }): Promise<void> {
+  async $onDidChangePassword(e: { extensionId: string; key: string }): Promise<void> {
     this._onDidChangePassword.fire(e);
   }
 

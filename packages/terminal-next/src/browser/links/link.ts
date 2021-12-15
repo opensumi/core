@@ -7,7 +7,9 @@ export class TerminalLink extends Disposable implements ILink {
   private _hoverListeners: DisposableCollection | undefined;
 
   private readonly _onInvalidated = new Emitter<void>();
-  public get onInvalidated(): Event<void> { return this._onInvalidated.event; }
+  public get onInvalidated(): Event<void> {
+    return this._onInvalidated.event;
+  }
 
   constructor(
     private readonly _xterm: Terminal,
@@ -44,33 +46,41 @@ export class TerminalLink extends Disposable implements ILink {
   hover(event: MouseEvent, text: string): void {
     // Listen for modifier before handing it off to the hover to handle so it gets disposed correctly
     this._hoverListeners = new DisposableCollection();
-    this._hoverListeners.push(this._addDisposableListener(document, 'keydown', (e) => {
-      if (!e.repeat && this._isModifierDown(e)) {
-        this._enableDecorations();
-      }
-    }));
-    this._hoverListeners.push(this._addDisposableListener(document, 'keyup', (e) => {
-      if (!e.repeat && !this._isModifierDown(e)) {
-        this._disableDecorations();
-      }
-    }));
+    this._hoverListeners.push(
+      this._addDisposableListener(document, 'keydown', (e) => {
+        if (!e.repeat && this._isModifierDown(e)) {
+          this._enableDecorations();
+        }
+      }),
+    );
+    this._hoverListeners.push(
+      this._addDisposableListener(document, 'keyup', (e) => {
+        if (!e.repeat && !this._isModifierDown(e)) {
+          this._disableDecorations();
+        }
+      }),
+    );
 
     // Listen for when the terminal renders on the same line as the link
-    this._hoverListeners.push(this._xterm.onRender((e) => {
-      const viewportRangeY = this.range.start.y - this._viewportY;
-      if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
-        this._onInvalidated.fire();
-      }
-    }));
+    this._hoverListeners.push(
+      this._xterm.onRender((e) => {
+        const viewportRangeY = this.range.start.y - this._viewportY;
+        if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
+          this._onInvalidated.fire();
+        }
+      }),
+    );
 
-    this._hoverListeners.push(this._addDisposableListener(document, 'mousemove', (e) => {
-      // Update decorations
-      if (this._isModifierDown(e)) {
-        this._enableDecorations();
-      } else {
-        this._disableDecorations();
-      }
-    }));
+    this._hoverListeners.push(
+      this._addDisposableListener(document, 'mousemove', (e) => {
+        // Update decorations
+        if (this._isModifierDown(e)) {
+          this._enableDecorations();
+        } else {
+          this._disableDecorations();
+        }
+      }),
+    );
   }
 
   leave(): void {

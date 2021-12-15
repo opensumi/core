@@ -1,4 +1,8 @@
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import {
+  OutlineRoot,
+  OutlineCompositeTreeNode,
+  OutlineTreeNode,
+} from '@opensumi/ide-outline/lib/browser/outline-node.define';
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
@@ -10,7 +14,7 @@ describe('OutlineCompositeTreeNode', () => {
   const mockOutlineTreeService = {
     resolveChildren: jest.fn((parent?: any) => {
       if (!parent.raw) {
-      return [new OutlineCompositeTreeNode(mockOutlineTreeService, rootNode, mockRaw, '')];
+        return [new OutlineCompositeTreeNode(mockOutlineTreeService, rootNode, mockRaw, '')];
       }
     }) as any,
   } as OutlineTreeService;
@@ -45,7 +49,6 @@ describe('OutlineCompositeTreeNode', () => {
     expect(node.expanded).toBeTruthy();
     expect(node.displayName).toBe(mockRaw.name);
     expect(node.whenReady).toBeDefined();
-
   });
 
   it('expanded node should be init correctly', () => {
@@ -58,7 +61,9 @@ describe('OutlineTreeNode', () => {
   let node: OutlineTreeNode;
 
   const mockOutlineTreeService = {
-    resolveChildren: jest.fn(() => [new OutlineCompositeTreeNode(mockOutlineTreeService, rootNode, mockRaw, '')]) as any,
+    resolveChildren: jest.fn(() => [
+      new OutlineCompositeTreeNode(mockOutlineTreeService, rootNode, mockRaw, ''),
+    ]) as any,
   } as OutlineTreeService;
 
   const mockRaw = {

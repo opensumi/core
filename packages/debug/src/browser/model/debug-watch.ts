@@ -21,7 +21,10 @@ export class DebugWatch implements IDebugWatchData {
 
   protected fireDidChange: () => void = throttle(() => this.onDidChangeEmitter.fire(), 50);
   protected fireVariableChange: () => void = throttle(() => this.onDidVariableChangeEmitter.fire(), 50);
-  protected fireExpressionChange: (expressions: string[]) => void = throttle((expressions: string[]) => this.onDidExExpressionChangeEmitter.fire(expressions), 50);
+  protected fireExpressionChange: (expressions: string[]) => void = throttle(
+    (expressions: string[]) => this.onDidExExpressionChangeEmitter.fire(expressions),
+    50,
+  );
 
   private _expressions: string[] = [];
   private _root: DebugWatchRoot;
@@ -32,10 +35,7 @@ export class DebugWatch implements IDebugWatchData {
   private onDidVariableChangeEmitter: Emitter<void> = new Emitter();
   private onDidExExpressionChangeEmitter: Emitter<string[]> = new Emitter();
 
-  constructor(
-    private readonly manager: DebugSessionManager,
-    private readonly reporterService: IReporterService,
-  ) {
+  constructor(private readonly manager: DebugSessionManager, private readonly reporterService: IReporterService) {
     this.whenReady = this.init();
   }
 
@@ -66,23 +66,29 @@ export class DebugWatch implements IDebugWatchData {
   }
 
   async init() {
-    this.toDispose.push(this.manager.onDidStopDebugSession(() => {
-      this.fireDidChange();
-    }));
-    this.toDispose.push(this.manager.onDidDestroyDebugSession(() => {
-      this.fireDidChange();
-    }));
-    this.toDispose.push(this.manager.onDidChangeActiveDebugSession(() => {
-      const session = this.manager.currentSession;
-      if (session) {
-        session.onVariableChange(() => {
-          this.fireVariableChange();
-        });
-        session.onDidChangeCallStack(() => {
-          this.fireVariableChange();
-        });
-      }
-    }));
+    this.toDispose.push(
+      this.manager.onDidStopDebugSession(() => {
+        this.fireDidChange();
+      }),
+    );
+    this.toDispose.push(
+      this.manager.onDidDestroyDebugSession(() => {
+        this.fireDidChange();
+      }),
+    );
+    this.toDispose.push(
+      this.manager.onDidChangeActiveDebugSession(() => {
+        const session = this.manager.currentSession;
+        if (session) {
+          session.onVariableChange(() => {
+            this.fireVariableChange();
+          });
+          session.onDidChangeCallStack(() => {
+            this.fireVariableChange();
+          });
+        }
+      }),
+    );
   }
 
   async clear() {

@@ -6,14 +6,9 @@ import {
   CommonChannelHandler,
   commonChannelPathHandler,
 } from '../../src/node';
-import {
-  createWebSocketConnection,
-} from '../../src/common/message';
+import { createWebSocketConnection } from '../../src/common/message';
 
-import {
-  RPCProtocol,
-  createMainContextProxyIdentifier,
-} from '../../src/common/rpcProtocol';
+import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 import { RPCService } from '../../src';
 import { WSChannel } from '../../src/common/ws-channel';
 import { parse } from '../../src/common/utils';
@@ -54,7 +49,7 @@ describe('connection', () => {
     const mockHandler = jest.fn();
     commonChannelPathHandler.register('TEST_CHANNEL', {
       handler: mockHandler,
-      dispose: () => { },
+      dispose: () => {},
     });
 
     const connection = new WebSocket('ws://127.0.0.1:7788/service');
@@ -69,8 +64,7 @@ describe('connection', () => {
     });
 
     const channelSend = (content) => {
-      connection.send(content, (err) => {
-      });
+      connection.send(content, (err) => {});
     };
     const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');
     connection.on('message', (msg) => {
@@ -134,10 +128,7 @@ describe('connection', () => {
 
     const remoteService = getRPCService('MockFileServicePath');
     const remoteResult = await remoteService.getContent('1');
-    const remoteDirsResult = await remoteService.fileDirs([
-      '/a.txt',
-      '/b.txt',
-    ]);
+    const remoteDirsResult = await remoteService.fileDirs(['/a.txt', '/b.txt']);
 
     try {
       await remoteService.throwError();
@@ -146,18 +137,10 @@ describe('connection', () => {
     }
 
     expect(remoteResult).toBe('file content 1');
-    expect(remoteDirsResult).toBe(
-      [
-        '/a.txt',
-        '/b.txt',
-      ].join(','),
-    );
+    expect(remoteDirsResult).toBe(['/a.txt', '/b.txt'].join(','));
 
     const remoteNotificationService = getRPCService('MockNotificationService');
-    await remoteNotificationService.onFileChange([
-      'add',
-      '/a.txt',
-    ]);
+    await remoteNotificationService.onFileChange(['add', '/a.txt']);
     await remoteNotificationService.onFileChange('deleteall');
 
     await new Promise<void>((resolve) => {

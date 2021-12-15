@@ -1,7 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler, Uri } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
-import { ExtensionStorageUri, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME, IExtensionStorageTask } from '../common/';
+import {
+  ExtensionStorageUri,
+  IExtensionStoragePathServer,
+  IExtensionStorageServer,
+  KeysToAnyValues,
+  KeysToKeysToAnyValue,
+  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
+  IExtensionStorageTask,
+} from '../common/';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
@@ -27,7 +35,11 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private storageExistPromises: Map<string, Promise<boolean>> = new Map();
 
-  public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStorageUri> {
+  public async init(
+    workspace: FileStat | undefined,
+    roots: FileStat[],
+    extensionStorageDirName?: string,
+  ): Promise<ExtensionStorageUri> {
     this.storageDelayer = new ThrottledDelayer(ExtensionStorageServer.DEFAULT_FLUSH_DELAY);
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
   }
@@ -44,23 +56,31 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   }
 
   private async setupDirectories(workspace, roots, extensionStorageDirName): Promise<ExtensionStorageUri> {
-    const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath(extensionStorageDirName);
+    const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath(
+      extensionStorageDirName,
+    );
     const wsDataFsPath = URI.file(workspaceDataDirPath).toString();
-    if (!await this.fileSystem.access(wsDataFsPath)) {
+    if (!(await this.fileSystem.access(wsDataFsPath))) {
       await this.fileSystem.createFolder(wsDataFsPath);
     }
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = new Path(this.workspaceDataDirPath).join(StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR).toString();
+    this.globalDataPath = new Path(this.workspaceDataDirPath)
+      .join(StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR)
+      .toString();
     const globalFsPath = URI.file(this.globalDataPath).toString();
-    if (!await this.fileSystem.access(globalFsPath)) {
+    if (!(await this.fileSystem.access(globalFsPath))) {
       await this.fileSystem.createFolder(globalFsPath);
     }
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
     const logUri = await this.extensionStoragePathsServer.provideHostLogPath();
-    const storageUri = await this.extensionStoragePathsServer.provideHostStoragePath(workspace, roots, extensionStorageDirName);
+    const storageUri = await this.extensionStoragePathsServer.provideHostStoragePath(
+      workspace,
+      roots,
+      extensionStorageDirName,
+    );
 
     // 返回插件storage存储路径信息
     return {
@@ -86,7 +106,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   }
 
   private doSet() {
-    const tasks = {...this.storageTasks};
+    const tasks = { ...this.storageTasks };
     this.storageTasks = {};
     return this.resolveStorageTask(tasks);
   }
@@ -99,7 +119,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     if (!this.storageTasks[path]) {
       this.storageTasks[path] = [];
     }
-    this.storageTasks[path].push({key, value});
+    this.storageTasks[path].push({ key, value });
     // 延迟100ms后再队列写入
     return this.storageDelayer.trigger(() => this.storageThrottler.queue<void>(this.doSet.bind(this)));
   }

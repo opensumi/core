@@ -2,7 +2,12 @@ import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@opensumi/ide-core-browser';
 import { Domain, localize, replaceLocalizePlaceholder, URI } from '@opensumi/ide-core-common';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { BrowserEditorContribution, EditorComponentRegistry, IResource, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  EditorComponentRegistry,
+  IResource,
+  ResourceService,
+} from '@opensumi/ide-editor/lib/browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { InstallState, IVSXExtensionService, VSXExtensionServiceToken } from '../common';
@@ -12,8 +17,9 @@ import { VSXExtensionRaw } from '../common/vsx-registry-types';
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './const';
 
 @Domain(ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution)
-export class VSXExtensionContribution implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
-
+export class VSXExtensionContribution
+  implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution
+{
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
 
@@ -23,8 +29,7 @@ export class VSXExtensionContribution implements ClientAppContribution, MainLayo
   @Autowired(IIconService)
   private readonly iconService: IIconService;
 
-  initialize() {
-  }
+  initialize() {}
 
   onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID);

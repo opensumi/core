@@ -8,8 +8,7 @@ import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } fr
 import { AbstractMenubarService } from '../../menubar-service';
 import { electronEnv } from '../../../../utils';
 
-export abstract class IElectronCtxMenuRenderer extends ICtxMenuRenderer {
-}
+export abstract class IElectronCtxMenuRenderer extends ICtxMenuRenderer {}
 
 export const IElectronMenuFactory = Symbol('IElectronMenuFactory');
 
@@ -21,7 +20,11 @@ export interface IElectronMenuBarService {
 
 @Injectable()
 export class ElectronMenuFactory extends Disposable {
-  public getTemplate(menuNodes: MenuNode[], map: Map<string, () => void>, context?: any[]): INativeMenuTemplate[] | undefined {
+  public getTemplate(
+    menuNodes: MenuNode[],
+    map: Map<string, () => void>,
+    context?: any[],
+  ): INativeMenuTemplate[] | undefined {
     return menuNodes.map((menuNode) => {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
         return { type: 'separator' };
@@ -42,7 +45,10 @@ export class ElectronMenuFactory extends Disposable {
           action: true,
           role: menuNode.nativeRole,
           disabled: menuNode.disabled,
-          accelerator: menuNode.rawKeybinding && !menuNode.isKeyCombination ? toElectronAccelerator(menuNode.rawKeybinding) : undefined,
+          accelerator:
+            menuNode.rawKeybinding && !menuNode.isKeyCombination
+              ? toElectronAccelerator(menuNode.rawKeybinding)
+              : undefined,
         };
       }
     });
@@ -59,7 +65,6 @@ export class ElectronMenuFactory extends Disposable {
 
 @Injectable()
 export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
-
   private contextMenuActions = new Map<string, () => void>();
 
   @Autowired(CommandService) protected readonly commandService: CommandService;
@@ -94,36 +99,39 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
     // bind actions in this context
     this.contextMenuActions.clear();
     const template = this.factory.getTemplate(menuNodes, this.contextMenuActions, context);
-    this.createNativeContextMenu({submenu: template}, onHide);
+    this.createNativeContextMenu({ submenu: template }, onHide);
   }
 
   createNativeContextMenu(template: INativeMenuTemplate, onHide?: (canceled) => void) {
     this.electronMainMenuService.showContextMenu(template, electronEnv.currentWebContentsId);
     const disposer = new Disposable();
-    disposer.addDispose(this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
-      if (targetId !== electronEnv.currentWebContentsId + '-context') {
-        return;
-      }
-      disposer.dispose();
-      if (onHide) {
-        onHide(true);
-      }
-    }));
+    disposer.addDispose(
+      this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
+        if (targetId !== electronEnv.currentWebContentsId + '-context') {
+          return;
+        }
+        disposer.dispose();
+        if (onHide) {
+          onHide(true);
+        }
+      }),
+    );
 
-    disposer.addDispose(this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
-      if (targetId !== electronEnv.currentWebContentsId + '-context') {
-        return;
-      }
-      const action = this.contextMenuActions.get(menuId);
-      if (action) {
-        action();
-      }
-      if (onHide) {
-        onHide(false);
-      }
-      disposer.dispose();
-    }));
-
+    disposer.addDispose(
+      this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+        if (targetId !== electronEnv.currentWebContentsId + '-context') {
+          return;
+        }
+        const action = this.contextMenuActions.get(menuId);
+        if (action) {
+          action();
+        }
+        if (onHide) {
+          onHide(false);
+        }
+        disposer.dispose();
+      }),
+    );
   }
 }
 
@@ -133,7 +141,6 @@ function toElectronAccelerator(keybinding: string) {
 
 @Injectable()
 export class ElectronMenuBarService implements IElectronMenuBarService {
-
   private menuBarActions = new Map<string, () => void>();
 
   @Autowired(CommandService) protected readonly commandService: CommandService;
@@ -186,6 +193,6 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
         appMenuTemplate.push(template);
       }
     });
-    this.electronMainMenuService.setApplicationMenu({submenu: appMenuTemplate}, electronEnv.currentWindowId);
+    this.electronMainMenuService.setApplicationMenu({ submenu: appMenuTemplate }, electronEnv.currentWindowId);
   }
 }

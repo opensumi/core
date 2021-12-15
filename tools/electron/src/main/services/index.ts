@@ -5,7 +5,6 @@ import { HelloContribution, HelloService } from './hello';
 
 @Injectable()
 export class MainModule extends ElectronMainModule {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -16,5 +15,4 @@ export class MainModule extends ElectronMainModule {
     },
     HelloContribution,
   ];
-
 }

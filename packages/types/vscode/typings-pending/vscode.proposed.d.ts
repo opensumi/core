@@ -1,3 +1,1 @@
-declare module 'vscode' {
-
-}
+declare module 'vscode' {}

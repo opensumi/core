@@ -6,23 +6,22 @@ import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser';
 
 export interface KtToolbarSchema {
-  actions?: Array< IToolbarButtonContribution | IToolbarSelectContribution>;
+  actions?: Array<IToolbarButtonContribution | IToolbarSelectContribution>;
   groups?: Array<{
-    id: string,
-    preferredLocation?: string,
-    weight?: number,
+    id: string;
+    preferredLocation?: string;
+    weight?: number;
   }>;
 }
 
 @Injectable()
 @Contributes('toolbar')
 export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSchema> {
-
   @Autowired()
-  private readonly kaitianExtToolbarService: KaitianExtensionToolbarService ;
+  private readonly kaitianExtToolbarService: KaitianExtensionToolbarService;
 
   @Autowired(IToolbarRegistry)
-  private readonly toolbarRegistry: IToolbarRegistry ;
+  private readonly toolbarRegistry: IToolbarRegistry;
 
   private toLocalized<T extends IToolbarActionBasicContribution>(action: T, props: string[]): T {
     return props.reduce((pre, cur) => {
@@ -36,26 +35,35 @@ export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSch
   contribute() {
     if (this.json.groups) {
       for (const group of this.json.groups) {
-        this.addDispose(this.toolbarRegistry.registerToolbarActionGroup({
-          id: group.id,
-          preferredLocation: group.preferredLocation,
-          weight: group.weight,
-        }));
+        this.addDispose(
+          this.toolbarRegistry.registerToolbarActionGroup({
+            id: group.id,
+            preferredLocation: group.preferredLocation,
+            weight: group.weight,
+          }),
+        );
       }
     }
     if (this.json.actions) {
       for (const toolbarAction of this.json.actions) {
         if (toolbarAction.type === 'button') {
           this.addDispose(
-            this.kaitianExtToolbarService.registerToolbarButton(this.extension.id, this.extension.path, this.toLocalized(toolbarAction, ['title'])),
+            this.kaitianExtToolbarService.registerToolbarButton(
+              this.extension.id,
+              this.extension.path,
+              this.toLocalized(toolbarAction, ['title']),
+            ),
           );
         } else if (toolbarAction.type === 'select') {
           this.addDispose(
-            this.kaitianExtToolbarService.registerToolbarSelect(this.extension.id, this.extension.path, this.toLocalized(toolbarAction, ['description'])),
+            this.kaitianExtToolbarService.registerToolbarSelect(
+              this.extension.id,
+              this.extension.path,
+              this.toLocalized(toolbarAction, ['description']),
+            ),
           );
         }
       }
     }
-
   }
 }

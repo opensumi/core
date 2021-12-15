@@ -1,23 +1,23 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 export function once<T extends Function>(this: any, fn: T): T {
-	const _this = this;
-	let didCall = false;
-	let result: any;
+  const _this = this;
+  let didCall = false;
+  let result: any;
 
-	return function () {
-		if (didCall) {
-			return result;
-		}
+  return function () {
+    if (didCall) {
+      return result;
+    }
 
-		didCall = true;
-		result = fn.apply(_this, arguments);
+    didCall = true;
+    result = fn.apply(_this, arguments);
 
-		return result;
-	} as any as T;
+    return result;
+  } as any as T;
 }
 
 export function makeRandomHexString(length: number): string {
@@ -30,15 +30,14 @@ export function makeRandomHexString(length: number): string {
   return result;
 }
 
-export function removeObjectFromArray<T = any>(array: Array<T>, object: T, comparator?: (o1:T, o2:T) => boolean) {
-	let index: number = -1;
-	if (comparator) {
-		index = array.findIndex((o) => comparator(o, object));
-	}
-	else {
-		index = array.indexOf(object)
-	}
-	if (index !== -1) {
-		array.splice(index, 1);
-	}
+export function removeObjectFromArray<T = any>(array: Array<T>, object: T, comparator?: (o1: T, o2: T) => boolean) {
+  let index = -1;
+  if (comparator) {
+    index = array.findIndex((o) => comparator(o, object));
+  } else {
+    index = array.indexOf(object);
+  }
+  if (index !== -1) {
+    array.splice(index, 1);
+  }
 }

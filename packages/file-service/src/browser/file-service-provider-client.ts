@@ -1,11 +1,23 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux, debounce } from '@opensumi/ide-core-common';
 import {
-  IDiskFileProvider, FileChangeEvent, DiskFileServicePath, FileSystemProvider, DidFilesChangedParams, FileChange,
+  Event,
+  Emitter,
+  Uri,
+  getDebugLogger,
+  FileSystemProviderCapabilities,
+  isLinux,
+  debounce,
+} from '@opensumi/ide-core-common';
+import {
+  IDiskFileProvider,
+  FileChangeEvent,
+  DiskFileServicePath,
+  FileSystemProvider,
+  DidFilesChangedParams,
+  FileChange,
 } from '../common';
 
 export abstract class CoreFileServiceProviderClient implements FileSystemProvider {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -17,7 +29,7 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
   protected readonly onDidChangeFileEmitter = new Emitter<FileChangeEvent>();
   onDidChangeFile: Event<FileChangeEvent> = this.onDidChangeFileEmitter.event;
 
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }) {
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }) {
     return this.fileServiceProvider.watch(uri, options);
   }
 
@@ -46,16 +58,16 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
     return buffer;
   }
 
-  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }) {
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }) {
     // TODO: 转换放到connection抹平
     return this.fileServiceProvider.writeFile(uri, Array.from(content) as any, options);
   }
 
-  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }) {
+  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined }) {
     return this.fileServiceProvider.delete(uri, options);
   }
 
-  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }) {
+  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }) {
     return this.fileServiceProvider.rename(oldUri, newUri, options);
   }
 }
@@ -95,12 +107,13 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
   }
 
   onDidFilesChanged(event: DidFilesChangedParams): void {
-    const changes: FileChange[] = event.changes.map((change) => {
-      return {
-        uri: change.uri,
-        type: change.type,
-      } as FileChange;
-    });
+    const changes: FileChange[] = event.changes.map(
+      (change) =>
+        ({
+          uri: change.uri,
+          type: change.type,
+        } as FileChange),
+    );
     this.onDidChangeFileEmitter.fire(changes);
   }
 

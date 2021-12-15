@@ -2,7 +2,6 @@ import { IMainThreadExtensionLog } from '@opensumi/ide-extension/lib/common/exte
 import { LogLevel } from '@opensumi/ide-core-common';
 
 export class MainThreadExtensionLog implements IMainThreadExtensionLog {
-
   private level: LogLevel = LogLevel.Verbose;
   $getLevel() {
     return this.level;

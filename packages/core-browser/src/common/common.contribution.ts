@@ -1,7 +1,17 @@
 import { Autowired } from '@opensumi/di';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+import {
+  CommandContribution,
+  CommandService,
+  PreferenceSchema,
+  CommandRegistry,
+  localize,
+  Domain,
+  Event,
+  isElectronRenderer,
+  replaceLocalizePlaceholder,
+} from '@opensumi/ide-core-common';
 import { PreferenceContribution } from '../preferences';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
@@ -14,8 +24,14 @@ export const inputFocusedContextKey = 'inputFocus';
 export const locationProtocolContextKey = 'locationProtocol';
 
 @Domain(CommandContribution, ClientAppContribution, PreferenceContribution, MenuContribution, KeybindingContribution)
-export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, MenuContribution, KeybindingContribution {
-
+export class ClientCommonContribution
+  implements
+    CommandContribution,
+    PreferenceContribution,
+    ClientAppContribution,
+    MenuContribution,
+    KeybindingContribution
+{
   @Autowired(CommandService)
   protected commandService: CommandService;
 
@@ -40,7 +56,10 @@ export class ClientCommonContribution implements CommandContribution, Preference
   }
 
   private activeElementIsInput(): boolean {
-    return !!document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+    return (
+      !!document.activeElement &&
+      (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')
+    );
   }
 
   private updateInputContextKeys(): void {
@@ -81,134 +100,160 @@ export class ClientCommonContribution implements CommandContribution, Preference
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     // File 菜单
-    menus.registerMenuItems(MenuId.MenubarFileMenu, [{
-      command: FILE_COMMANDS.OPEN_FOLDER.id,
-      group: '1_open',
-      when: 'config.application.supportsOpenFolder',
-    }, {
-      command: FILE_COMMANDS.OPEN_WORKSPACE.id,
-      group: '1_open',
-      when: 'config.application.supportsOpenWorkspace',
-    }, {
-      command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-      group: '2_new',
-    }, {
-      command: FILE_COMMANDS.NEW_FOLDER.id,
-      group: '2_new',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.SAVE_CURRENT.id,
-        label: localize('file.save'),
+    menus.registerMenuItems(MenuId.MenubarFileMenu, [
+      {
+        command: FILE_COMMANDS.OPEN_FOLDER.id,
+        group: '1_open',
+        when: 'config.application.supportsOpenFolder',
       },
-      group: '3_save',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.SAVE_ALL.id,
-        label: localize('file.saveAll'),
+      {
+        command: FILE_COMMANDS.OPEN_WORKSPACE.id,
+        group: '1_open',
+        when: 'config.application.supportsOpenWorkspace',
       },
-      group: '3_save',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.AUTO_SAVE.id,
-        label: localize('file.autoSave'),
+      {
+        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
+        group: '2_new',
       },
-      toggledWhen: 'config.editor.autoSave != off',
-      group: '4_autosave',
-    }]);
+      {
+        command: FILE_COMMANDS.NEW_FOLDER.id,
+        group: '2_new',
+      },
+      {
+        command: {
+          id: EDITOR_COMMANDS.SAVE_CURRENT.id,
+          label: localize('file.save'),
+        },
+        group: '3_save',
+      },
+      {
+        command: {
+          id: EDITOR_COMMANDS.SAVE_ALL.id,
+          label: localize('file.saveAll'),
+        },
+        group: '3_save',
+      },
+      {
+        command: {
+          id: EDITOR_COMMANDS.AUTO_SAVE.id,
+          label: localize('file.autoSave'),
+        },
+        toggledWhen: 'config.editor.autoSave != off',
+        group: '4_autosave',
+      },
+    ]);
 
-    menus.registerMenuItems(MenuId.MenubarGoMenu, [{
-      command: {
-        id: EDITOR_COMMANDS.GO_BACK.id,
-        label: localize('editor.goBack'),
+    menus.registerMenuItems(MenuId.MenubarGoMenu, [
+      {
+        command: {
+          id: EDITOR_COMMANDS.GO_BACK.id,
+          label: localize('editor.goBack'),
+        },
+        group: '1_go',
       },
-      group: '1_go',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.GO_FORWARD.id,
-        label: localize('editor.goForward'),
+      {
+        command: {
+          id: EDITOR_COMMANDS.GO_FORWARD.id,
+          label: localize('editor.goForward'),
+        },
+        group: '1_go',
       },
-      group: '1_go',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.QUICK_OPEN.id,
-        label: localize('editor.quickOpen'),
+      {
+        command: {
+          id: EDITOR_COMMANDS.QUICK_OPEN.id,
+          label: localize('editor.quickOpen'),
+        },
+        group: '2_go_file',
       },
-      group: '2_go_file',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
-        label: localize('editor.workspaceSymbol.quickopen'),
+      {
+        command: {
+          id: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+          label: localize('editor.workspaceSymbol.quickopen'),
+        },
+        group: '2_go_file',
       },
-      group: '2_go_file',
-    }, {
-      command: {
-        id: EDITOR_COMMANDS.GO_TO_LINE.id,
-        label: localize('editor.goToLine'),
+      {
+        command: {
+          id: EDITOR_COMMANDS.GO_TO_LINE.id,
+          label: localize('editor.goToLine'),
+        },
+        group: '3_go_line',
       },
-      group: '3_go_line',
-    }]);
+    ]);
 
     // Edit 菜单
     if (isElectronRenderer()) {
-      menus.registerMenuItems(MenuId.MenubarEditMenu, [{
-        command: {
-          id: 'electron.undo',
-          label: localize('editor.undo'),
+      menus.registerMenuItems(MenuId.MenubarEditMenu, [
+        {
+          command: {
+            id: 'electron.undo',
+            label: localize('editor.undo'),
+          },
+          nativeRole: 'undo',
+          group: '1_undo',
         },
-        nativeRole: 'undo',
-        group: '1_undo',
-      }, {
-        command: {
-          id: 'electron.redo',
-          label: localize('editor.redo'),
+        {
+          command: {
+            id: 'electron.redo',
+            label: localize('editor.redo'),
+          },
+          group: '1_undo',
+          nativeRole: 'redo',
         },
-        group: '1_undo',
-        nativeRole: 'redo',
-      }, {
-        command: {
-          label: localize('edit.cut'),
-          id: 'electron.cut',
+        {
+          command: {
+            label: localize('edit.cut'),
+            id: 'electron.cut',
+          },
+          nativeRole: 'cut',
+          group: '2_clipboard',
         },
-        nativeRole: 'cut',
-        group: '2_clipboard',
-      }, {
-        command: {
-          label: localize('edit.copy'),
-          id: 'electron.copy',
+        {
+          command: {
+            label: localize('edit.copy'),
+            id: 'electron.copy',
+          },
+          nativeRole: 'copy',
+          group: '2_clipboard',
         },
-        nativeRole: 'copy',
-        group: '2_clipboard',
-      }, {
-        command: {
-          label: localize('edit.paste'),
-          id: 'electron.paste',
+        {
+          command: {
+            label: localize('edit.paste'),
+            id: 'electron.paste',
+          },
+          nativeRole: 'paste',
+          group: '2_clipboard',
         },
-        nativeRole: 'paste',
-        group: '2_clipboard',
-      }, {
-        command: {
-          label: localize('edit.selectAll'),
-          id: 'electron.selectAll',
+        {
+          command: {
+            label: localize('edit.selectAll'),
+            id: 'electron.selectAll',
+          },
+          nativeRole: 'selectAll',
+          group: '2_clipboard',
         },
-        nativeRole: 'selectAll',
-        group: '2_clipboard',
-      }]);
-      menus.registerMenuItems(MenuId.MenubarAppMenu, [{
-        command: {
-          id: 'electron.quit',
-          label: localize('app.quit'),
+      ]);
+      menus.registerMenuItems(MenuId.MenubarAppMenu, [
+        {
+          command: {
+            id: 'electron.quit',
+            label: localize('app.quit'),
+          },
+          nativeRole: 'quit',
+          group: '4_quit',
         },
-        nativeRole: 'quit',
-        group: '4_quit',
-      }]);
+      ]);
     } else {
-      menus.registerMenuItems(MenuId.MenubarEditMenu, [{
-        command: EDITOR_COMMANDS.REDO.id,
-        group: '1_undo',
-      }, {
-        command: EDITOR_COMMANDS.UNDO.id,
-        group: '1_undo',
-      }]);
+      menus.registerMenuItems(MenuId.MenubarEditMenu, [
+        {
+          command: EDITOR_COMMANDS.REDO.id,
+          group: '1_undo',
+        },
+        {
+          command: EDITOR_COMMANDS.UNDO.id,
+          group: '1_undo',
+        },
+      ]);
       // 帮助菜单
       menus.registerMenuItem(MenuId.MenubarHelpMenu, {
         command: {

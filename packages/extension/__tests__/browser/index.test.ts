@@ -1,5 +1,15 @@
 import { WSChannelHandler } from '@opensumi/ide-connection';
-import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@opensumi/ide-core-browser';
+import {
+  CommandRegistry,
+  CommandService,
+  IClientApp,
+  IClipboardService,
+  URI,
+  Uri,
+  isWindows,
+  OS,
+  isLinux,
+} from '@opensumi/ide-core-browser';
 import { IApplicationService, uuid } from '@opensumi/ide-core-common';
 import { IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';

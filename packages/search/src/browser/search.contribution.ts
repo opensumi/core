@@ -1,7 +1,14 @@
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
 import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@opensumi/ide-core-browser';
-import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@opensumi/ide-core-browser';
+import {
+  KeybindingContribution,
+  KeybindingRegistry,
+  ClientAppContribution,
+  ComponentRegistry,
+  ComponentContribution,
+  PreferenceContribution,
+} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
@@ -16,9 +23,28 @@ import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 import { SearchContextKey, SearchInputFocused } from './search-contextkey';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, MenuContribution, ClientAppContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, MenuContribution, ClientAppContribution {
-
+@Domain(
+  ClientAppContribution,
+  CommandContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  TabBarToolbarContribution,
+  PreferenceContribution,
+  MainLayoutContribution,
+  MenuContribution,
+  ClientAppContribution,
+)
+export class SearchContribution
+  implements
+    CommandContribution,
+    KeybindingContribution,
+    ComponentContribution,
+    TabBarToolbarContribution,
+    PreferenceContribution,
+    MainLayoutContribution,
+    MenuContribution,
+    ClientAppContribution
+{
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
@@ -38,20 +64,20 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   private readonly toDispose = new DisposableCollection();
 
-  constructor() {
-
-  }
+  constructor() {}
 
   onStart() {
-    this.toDispose.push(this.searchBrowserService.onTitleStateChange(() => {
-      const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
-      if (!bar) {
-        return;
-      }
+    this.toDispose.push(
+      this.searchBrowserService.onTitleStateChange(() => {
+        const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
+        if (!bar) {
+          return;
+        }
 
-      this.searchContextKey.canClearSearchResult.set(this.searchBrowserService.cleanIsEnable());
-      this.searchContextKey.canRefreshSearchResult.set(this.searchBrowserService.foldIsEnable());
-    }));
+        this.searchContextKey.canClearSearchResult.set(this.searchBrowserService.cleanIsEnable());
+        this.searchContextKey.canRefreshSearchResult.set(this.searchBrowserService.foldIsEnable());
+      }),
+    );
   }
 
   registerCommands(commands: CommandRegistry): void {
@@ -64,7 +90,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         bar.activate();
         if (options && options.includeValue) {
           this.searchBrowserService.includeValue = options.includeValue;
-          this.searchBrowserService.updateUIState({isDetailOpen: true });
+          this.searchBrowserService.updateUIState({ isDetailOpen: true });
           this.searchBrowserService.search();
           return;
         }
@@ -86,12 +112,8 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       execute: (...args: any[]) => {
         this.searchTreeService.foldTree();
       },
-      isVisible: () => {
-        return true;
-      },
-      isEnabled: () => {
-        return this.searchBrowserService.foldIsEnable();
-      },
+      isVisible: () => true,
+      isEnabled: () => this.searchBrowserService.foldIsEnable(),
     });
     commands.registerCommand(SEARCH_COMMANDS.GET_RECENT_SEARCH_WORD, {
       execute: (e) => {
@@ -105,38 +127,22 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
       execute: (e) => {
-        this.searchTreeService.commandActuator(
-          'replaceResult',
-          e.id,
-        );
+        this.searchTreeService.commandActuator('replaceResult', e.id);
       },
-      isVisible: () => {
-        return !this.searchTreeService.isContextmenuOnFile;
-      },
+      isVisible: () => !this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_REPLACE_ALL, {
       execute: (e) => {
-        this.searchTreeService.commandActuator(
-          'replaceResults',
-          e.id,
-        );
+        this.searchTreeService.commandActuator('replaceResults', e.id);
       },
-      isVisible: () => {
-        return this.searchTreeService.isContextmenuOnFile;
-      },
+      isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_HIDE, {
       execute: (e) => {
         if (this.searchTreeService.isContextmenuOnFile) {
-          return this.searchTreeService.commandActuator(
-            'closeResults',
-            e.id,
-          );
+          return this.searchTreeService.commandActuator('closeResults', e.id);
         }
-        this.searchTreeService.commandActuator(
-          'closeResult',
-          e.id,
-        );
+        this.searchTreeService.commandActuator('closeResult', e.id);
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
@@ -185,9 +191,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
           this.clipboardService.writeText(e.path);
         }
       },
-      isVisible: () => {
-        return this.searchTreeService.isContextmenuOnFile;
-      },
+      isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
   }
 

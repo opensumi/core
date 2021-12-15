@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -50,10 +50,13 @@ export class DebugSource extends DebugSourceData {
   async open(options: IResourceOpenOptions, frame?: DebugStackFrame) {
     if (this.uri.scheme === DebugSource.SCHEME) {
       const content = await this.load();
-      await this.fileSystem.setContent({
-        uri: this.uri.toString(),
-        lastModification: 0,
-      } as FileStat, content);
+      await this.fileSystem.setContent(
+        {
+          uri: this.uri.toString(),
+          lastModification: 0,
+        } as FileStat,
+        content,
+      );
     }
 
     if (frame && frame.raw) {

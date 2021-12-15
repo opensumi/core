@@ -44,7 +44,14 @@ export interface IProgressWindowOptions extends IProgressOptions {
 }
 
 export interface IProgressCompositeOptions extends IProgressOptions {
-  readonly location: ProgressLocation.Explorer | ProgressLocation.Extensions | ProgressLocation.Scm | ProgressLocation.Window | ProgressLocation.Notification | ProgressLocation.Dialog | string;
+  readonly location:
+    | ProgressLocation.Explorer
+    | ProgressLocation.Extensions
+    | ProgressLocation.Scm
+    | ProgressLocation.Window
+    | ProgressLocation.Notification
+    | ProgressLocation.Dialog
+    | string;
   readonly delay?: number;
 }
 
@@ -59,13 +66,14 @@ export interface IProgress<T> {
 }
 
 export class Progress<T> implements IProgress<T> {
-
-  static readonly None: IProgress<unknown> = Object.freeze({ report() { } });
+  static readonly None: IProgress<unknown> = Object.freeze({ report() {} });
 
   private _value?: T;
-  get value(): T | undefined { return this._value; }
+  get value(): T | undefined {
+    return this._value;
+  }
 
-  constructor(private callback: (data: T) => void) { }
+  constructor(private callback: (data: T) => void) {}
 
   report(item: T) {
     this._value = item;

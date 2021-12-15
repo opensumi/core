@@ -33,9 +33,9 @@ export interface DiagnosticRelatedInformation {
   message: string;
 }
 /**
-* The DiagnosticRelatedInformation namespace provides helper functions to work with
-* [DiagnosticRelatedInformation](#DiagnosticRelatedInformation) literals.
-*/
+ * The DiagnosticRelatedInformation namespace provides helper functions to work with
+ * [DiagnosticRelatedInformation](#DiagnosticRelatedInformation) literals.
+ */
 export declare namespace DiagnosticRelatedInformation {
   /**
    * Creates a new DiagnosticRelatedInformation literal.
@@ -55,9 +55,9 @@ export enum DiagnosticSeverity {
 }
 
 /**
-* Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
-* are only valid in the scope of a resource.
-*/
+ * Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
+ * are only valid in the scope of a resource.
+ */
 export interface Diagnostic {
   /**
    * The range at which the message applies
@@ -108,7 +108,9 @@ export function asSeverity(severity?: number): MarkerSeverity {
   }
   return MarkerSeverity.Hint;
 }
-export function asRelatedInformations(relatedInformation?: DiagnosticRelatedInformation[]): IRelatedInformation[] | undefined {
+export function asRelatedInformations(
+  relatedInformation?: DiagnosticRelatedInformation[],
+): IRelatedInformation[] | undefined {
   if (!relatedInformation) {
     return undefined;
   }
@@ -152,8 +154,14 @@ export interface WorkspaceSymbolParams {
 }
 
 export interface WorkspaceSymbolProvider {
-  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: CancellationToken): Thenable<LSTypes.SymbolInformation[]>;
-  resolveWorkspaceSymbol(symbol: LSTypes.SymbolInformation, token: CancellationToken): Thenable<LSTypes.SymbolInformation>;
+  provideWorkspaceSymbols(
+    params: WorkspaceSymbolParams,
+    token: CancellationToken,
+  ): Thenable<LSTypes.SymbolInformation[]>;
+  resolveWorkspaceSymbol(
+    symbol: LSTypes.SymbolInformation,
+    token: CancellationToken,
+  ): Thenable<LSTypes.SymbolInformation>;
 }
 
 export interface Language {

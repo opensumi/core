@@ -3,7 +3,7 @@ import { Deferred, IEventBus, BasicEvent } from '@opensumi/ide-core-common';
 
 // 状态本身不带有顺序，以 `reachedState` 时生成 promise，以赋值时 resolve 掉 promise
 export type ClientAppState =
-  'init'
+  | 'init'
   | 'client_connected'
   // contribution initialized 及命令、菜单、快捷键三个核心模块都初始化结束后
   | 'core_module_initialized'
@@ -14,11 +14,10 @@ export type ClientAppState =
   | 'electron_closing'
   | 'closing_window';
 
-export class ClientAppStateEvent extends BasicEvent<ClientAppState> { }
+export class ClientAppStateEvent extends BasicEvent<ClientAppState> {}
 
 @Injectable()
 export class ClientAppStateService {
-
   private _state: ClientAppState = 'init';
 
   protected deferred: { [state: string]: Deferred<void> } = {};
@@ -52,5 +51,4 @@ export class ClientAppStateService {
   public reachedAnyState(...states: ClientAppState[]): Promise<void> {
     return Promise.race(states.map((s) => this.reachedState(s)));
   }
-
 }

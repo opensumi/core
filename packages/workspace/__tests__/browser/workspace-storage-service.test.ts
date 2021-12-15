@@ -19,9 +19,7 @@ describe('WorkspaceContribution should be work', () => {
     executeCommand: jest.fn(),
   };
   beforeEach(async (done) => {
-    injector = createBrowserInjector([
-      WorkspaceModule,
-    ]);
+    injector = createBrowserInjector([WorkspaceModule]);
     injector.overrideProviders({
       token: IContextKeyService,
       useValue: mockContextKeyService,

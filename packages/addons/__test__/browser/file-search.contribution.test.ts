@@ -1,6 +1,18 @@
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { CommandService, CommandServiceImpl, CommandRegistryImpl, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
-import { KeybindingRegistry, KeybindingRegistryImpl, RecentFilesManager, ILogger, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  CommandServiceImpl,
+  CommandRegistryImpl,
+  CommandRegistry,
+  DisposableCollection,
+} from '@opensumi/ide-core-common';
+import {
+  KeybindingRegistry,
+  KeybindingRegistryImpl,
+  RecentFilesManager,
+  ILogger,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
@@ -13,7 +25,13 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { ClientAddonModule } from '../../src/browser';
-import { FileSearchContribution, quickFileOpen, FileSearchQuickCommandHandler, matchLineReg, getValidateInput } from '../../src/browser/file-search.contribution';
+import {
+  FileSearchContribution,
+  quickFileOpen,
+  FileSearchQuickCommandHandler,
+  matchLineReg,
+  getValidateInput,
+} from '../../src/browser/file-search.contribution';
 
 describe('test for browser/file-search.contribution.ts', () => {
   let injector: MockInjector;
@@ -22,27 +40,34 @@ describe('test for browser/file-search.contribution.ts', () => {
   const disposables = new DisposableCollection();
 
   beforeEach(() => {
-    injector = createBrowserInjector([ ClientAddonModule ], new MockInjector([
-      {
-        token: CommandRegistry,
-        useClass: CommandRegistryImpl,
-      }, {
-        token: CommandService,
-        useClass: CommandServiceImpl,
-      }, {
-        token: KeybindingRegistry,
-        useClass: KeybindingRegistryImpl,
-      }, {
-        token: FileSearchQuickCommandHandler,
-        useValue: {},
-      }, {
-        token: PrefixQuickOpenService,
-        useValue: {
-          open: fakeOpenFn,
+    injector = createBrowserInjector(
+      [ClientAddonModule],
+      new MockInjector([
+        {
+          token: CommandRegistry,
+          useClass: CommandRegistryImpl,
         },
-      },
-      QuickOpenHandlerRegistry,
-    ]));
+        {
+          token: CommandService,
+          useClass: CommandServiceImpl,
+        },
+        {
+          token: KeybindingRegistry,
+          useClass: KeybindingRegistryImpl,
+        },
+        {
+          token: FileSearchQuickCommandHandler,
+          useValue: {},
+        },
+        {
+          token: PrefixQuickOpenService,
+          useValue: {
+            open: fakeOpenFn,
+          },
+        },
+        QuickOpenHandlerRegistry,
+      ]),
+    );
 
     // 获取对象实例的时候才开始注册事件
     contribution = injector.get(FileSearchContribution);
@@ -121,7 +146,6 @@ describe('test for browser/file-search.contribution.ts', () => {
 });
 
 describe('file-search-quickopen', () => {
-
   let injector: MockInjector;
   let fileSearchQuickOpenHandler: FileSearchQuickCommandHandler;
 
@@ -168,13 +192,11 @@ describe('file-search-quickopen', () => {
     },
   ];
 
-  modes.DocumentSymbolProviderRegistry['all'] = () => {
-    return [{
-      provideDocumentSymbols: () => {
-        return testDS;
-      },
-    }];
-  };
+  modes.DocumentSymbolProviderRegistry['all'] = () => [
+    {
+      provideDocumentSymbols: () => testDS,
+    },
+  ];
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
@@ -187,10 +209,7 @@ describe('file-search-quickopen', () => {
       {
         token: FileSearchServicePath,
         useValue: {
-          find: () => [
-            '/file/a',
-            '/file/b',
-          ],
+          find: () => ['/file/a', '/file/b'],
         },
       },
       {
@@ -214,20 +233,16 @@ describe('file-search-quickopen', () => {
     injector.mockService(PreferenceService, {});
     injector.mockService(ILogger, {});
     injector.mockService(IEditorDocumentModelService, {
-      createModelReference: (uri) => {
-        return {
-          instance: {
+      createModelReference: (uri) => ({
+        instance: {
+          uri,
+          getMonacoModel: () => ({
             uri,
-            getMonacoModel: () => {
-              return {
-                uri,
-                getLanguageIdentifier: () => 'javascript',
-              };
-            },
-          },
-          dispose: jest.fn(),
-        };
-      },
+            getLanguageIdentifier: () => 'javascript',
+          }),
+        },
+        dispose: jest.fn(),
+      }),
     });
     fileSearchQuickOpenHandler = injector.get(FileSearchQuickCommandHandler);
   });

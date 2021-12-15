@@ -5,7 +5,6 @@ import { IEditor } from '../common';
 
 @Injectable()
 export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {
-
   private contributions: IEditorFeatureContribution[] = [];
 
   private _onDidRegisterFeature = new Emitter<IEditorFeatureContribution>();
@@ -16,7 +15,6 @@ export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {
   logger: ILogger;
 
   registerEditorFeatureContribution(contribution: IEditorFeatureContribution): IDisposable {
-
     const disposer = addElement(this.contributions, contribution);
     this._onDidRegisterFeature.fire(contribution);
     return disposer;
@@ -29,20 +27,23 @@ export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {
   }
 
   async runProvideEditorOptionsForUri(uri: URI) {
-    const result = await Promise.all(this.contributions.map((contribution) => {
-      if (contribution.provideEditorOptionsForUri) {
-        return contribution.provideEditorOptionsForUri(uri);
-      } else {
-        return {};
-      }
-    }));
+    const result = await Promise.all(
+      this.contributions.map((contribution) => {
+        if (contribution.provideEditorOptionsForUri) {
+          return contribution.provideEditorOptionsForUri(uri);
+        } else {
+          return {};
+        }
+      }),
+    );
 
-    return result.reduce((pre, current) => {
-      return {
+    return result.reduce(
+      (pre, current) => ({
         ...pre,
         ...current,
-      };
-    }, {});
+      }),
+      {},
+    );
   }
 
   runOneContribution(editor: IEditor, contribution: IEditorFeatureContribution) {

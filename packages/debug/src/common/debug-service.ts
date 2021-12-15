@@ -1,10 +1,10 @@
-import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError, Event } from '@opensumi/ide-core-common';
+import { IDisposable, IJSONSchema, IJSONSchemaSnippet, ApplicationError, Event } from '@opensumi/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
 
 export interface DebuggerDescription {
-    type: string;
-    label: string;
+  type: string;
+  label: string;
 }
 
 export const DebugAdapterPath = 'DebugAdaptor';
@@ -47,7 +47,10 @@ export interface DebugServer extends IDisposable {
    * @param config 需要处理的配置
    * @param workspaceFolderUri 工作区目录路径
    */
-  resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null>;
+  resolveDebugConfiguration(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null>;
 
   /**
    * 进一步处理调试配置，通过补全缺省值的方式
@@ -55,7 +58,10 @@ export interface DebugServer extends IDisposable {
    * @param {DebugConfiguration} 处理的配置
    * @param {(string | undefined)} 工作区路径
    */
-  resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null>;
+  resolveDebugConfigurationWithSubstitutedVariables(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null>;
   /**
    * 创建一个新的DebugAdapterSession进程
    * @param config 传入配置
@@ -87,7 +93,7 @@ export interface IDebugServiceContributionPoint {
 
 export namespace DebugError {
   export const NotFound = ApplicationError.declare(-41000, (type: string) => ({
-      message: `'${type}' debugger type is not supported.`,
-      data: { type },
+    message: `'${type}' debugger type is not supported.`,
+    data: { type },
   }));
 }

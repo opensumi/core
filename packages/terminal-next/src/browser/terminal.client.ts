@@ -3,7 +3,19 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService, IReporter, REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  Deferred,
+  Emitter,
+  Event,
+  debounce,
+  ILogger,
+  IDisposable,
+  URI,
+  IApplicationService,
+  IReporter,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -11,7 +23,19 @@ import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent, ITerminalConnection, ITerminalExternalLinkProvider } from '../common';
+import {
+  TerminalOptions,
+  ITerminalController,
+  ITerminalClient,
+  ITerminalTheme,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
+  IWidget,
+  ITerminalDataEvent,
+  ITerminalExitEvent,
+  ITerminalConnection,
+  ITerminalExternalLinkProvider,
+} from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
@@ -40,13 +64,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /** end */
 
   /** status */
-  private _ready: boolean = false;
+  private _ready = false;
   private _attached: Deferred<void>;
   private _firstStdout: Deferred<void>;
   private _error: Deferred<void>;
   private _show: Deferred<void> | null;
   private _hasOutput = false;
-  private _areLinksReady: boolean = false;
+  private _areLinksReady = false;
   private _os: OperatingSystem = OS;
   /** end */
 
@@ -145,53 +169,65 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       this.variableResolver.resolve.bind(this.variableResolver),
     );
 
-    this.addDispose(this.environmentService.onDidChangeCollections((collection) => {
-      // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-      collection.applyToProcessEnvironment(
-        this._options.env || {},
-        this.applicationService.backendOS,
-        this.variableResolver.resolve.bind(this.variableResolver),
-      );
-    }));
+    this.addDispose(
+      this.environmentService.onDidChangeCollections((collection) => {
+        // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+        collection.applyToProcessEnvironment(
+          this._options.env || {},
+          this.applicationService.backendOS,
+          this.variableResolver.resolve.bind(this.variableResolver),
+        );
+      }),
+    );
 
-    this.addDispose(this._term.onTitleChange((e) => {
-      this.updateOptions({ name: e });
-    }));
+    this.addDispose(
+      this._term.onTitleChange((e) => {
+        this.updateOptions({ name: e });
+      }),
+    );
 
-    this.addDispose(Disposable.create(() => {
-      TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
-    }));
+    this.addDispose(
+      Disposable.create(() => {
+        TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
+      }),
+    );
 
-    this.addDispose(this.preference.onChange(async ({ name, value }) => {
-      if (!widget.show && !this._show) {
-        this._show = new Deferred();
-      }
-      if (this._show) {
-        await this._show.promise;
-      }
-      this._setOption(name, value);
-    }));
-
-    this.addDispose(widget.onShow((status) => {
-      if (status) {
-        if (this._show) {
-          this._show.resolve();
-          this._show = null;
+    this.addDispose(
+      this.preference.onChange(async ({ name, value }) => {
+        if (!widget.show && !this._show) {
+          this._show = new Deferred();
         }
-        this._layout();
-      }
-    }));
+        if (this._show) {
+          await this._show.promise;
+        }
+        this._setOption(name, value);
+      }),
+    );
 
-    this.addDispose(widget.onError((status) => {
-      if (status) {
-        // fit 操作在对比行列没有发送变化的时候不会做任何操作，
-        // 但是实际上是设置为 display none 了，所以手动 resize 一下
-        // this._term.resize(1, 1);
-      } else {
-        this._error.resolve();
-        this._layout();
-      }
-    }));
+    this.addDispose(
+      widget.onShow((status) => {
+        if (status) {
+          if (this._show) {
+            this._show.resolve();
+            this._show = null;
+          }
+          this._layout();
+        }
+      }),
+    );
+
+    this.addDispose(
+      widget.onError((status) => {
+        if (status) {
+          // fit 操作在对比行列没有发送变化的时候不会做任何操作，
+          // 但是实际上是设置为 display none 了，所以手动 resize 一下
+          // this._term.resize(1, 1);
+        } else {
+          this._error.resolve();
+          this._layout();
+        }
+      }),
+    );
 
     this._apply(widget);
     if (await this._checkWorkspace()) {
@@ -201,7 +237,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   @observable
-  name: string = '';
+  name = '';
 
   get term() {
     return this._term;
@@ -282,11 +318,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private _xtermEvents() {
-    this.addDispose(this._term.onResize((_event) => {
-      if (this._hasOutput) {
-        this._doResize();
-      }
-    }));
+    this.addDispose(
+      this._term.onResize((_event) => {
+        if (this._hasOutput) {
+          this._doResize();
+        }
+      }),
+    );
   }
 
   private _attachXterm() {
@@ -315,11 +353,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const ptyOptions = {
       cwd: this._workspacePath,
       ...this._options,
-      shellArgs: [
-        ...(this._options.shellArgs || []),
-        ...(linuxShellArgs || []),
-        ...extraShellArgs,
-      ],
+      shellArgs: [...(this._options.shellArgs || []), ...(linuxShellArgs || []), ...extraShellArgs],
     };
 
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
@@ -336,7 +370,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       return;
     }
 
-    this.name = (this.name || connection.name) || 'shell';
+    this.name = this.name || connection.name || 'shell';
     this._ready = true;
     this._attached.resolve();
     this._widget.name = this.name;
@@ -390,9 +424,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (this.workspace.isMultiRootWorkspaceOpened) {
       // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
       const roots = this.workspace.tryGetRoots();
-      const choose = await this.quickPick.show(roots.map((file) => {
-        return new URI(file.uri).codeUri.fsPath;
-      }));
+      const choose = await this.quickPick.show(roots.map((file) => new URI(file.uri).codeUri.fsPath));
       return choose;
     } else {
       return new URI(this.workspace.workspace?.uri).codeUri.fsPath;
@@ -434,7 +466,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     try {
       this._term.setOption(name, value);
       this._layout();
-    } catch { /** nothing */ }
+    } catch {
+      /** nothing */
+    }
   }
 
   private _checkReady() {
@@ -486,9 +520,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _apply(widget: IWidget) {
     this._widget = widget;
-    this.addDispose(widget.onResize(async () => {
-      this._debounceResize();
-    }));
+    this.addDispose(
+      widget.onResize(async () => {
+        this._debounceResize();
+      }),
+    );
   }
 
   focus() {
@@ -546,7 +582,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._linkManager.registerExternalLinkProvider(this, provider);
   }
 
-  dispose(clear: boolean = true) {
+  dispose(clear = true) {
     this._container.remove();
     super.dispose();
 
@@ -558,7 +594,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
 @Injectable()
 export class TerminalClientFactory {
-
   static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
     const child = injector.createChild([
       {

@@ -1,5 +1,14 @@
 import { Autowired } from '@opensumi/di';
-import { OUTLINE_COMMANDS, Domain, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
+import {
+  OUTLINE_COMMANDS,
+  Domain,
+  localize,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+  CommandContribution,
+  CommandRegistry,
+  IContextKeyService,
+} from '@opensumi/ide-core-browser';
 import { OutlinePanel } from './outline';
 import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -24,58 +33,76 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
   contextKey: IContextKeyService;
 
   onDidRender() {
-    this.mainLayoutService.collectViewComponent({
-      component: OutlinePanel,
-      collapsed: true,
-      id: 'outline-view',
-      name: localize('outline.title'),
-    }, ExplorerContainerId);
+    this.mainLayoutService.collectViewComponent(
+      {
+        component: OutlinePanel,
+        collapsed: true,
+        id: 'outline-view',
+        name: localize('outline.title'),
+      },
+      ExplorerContainerId,
+    );
   }
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: OUTLINE_COMMANDS.OUTLINE_COLLAPSE_ALL.id,
-      iconClass: getIcon('collapse-all'),
-      label: localize('outline.collapse.all'),
-    }, {
-      execute: () => {
-        this.outlineTreeModelService.collapseAll();
+    registry.registerCommand(
+      {
+        id: OUTLINE_COMMANDS.OUTLINE_COLLAPSE_ALL.id,
+        iconClass: getIcon('collapse-all'),
+        label: localize('outline.collapse.all'),
       },
-    });
-    registry.registerCommand({
-      id: OUTLINE_COMMANDS.OUTLINE_FOLLOW_CURSOR.id,
-      iconClass: getIcon('follow-cursor'),
-      toogleIconClass: getIcon('follow-cursor', { fill: true }),
-      label: localize('outline.follow.cursor'),
-    }, {
-      execute: () => {
-        this.outlineTreeService.followCursor = !this.outlineTreeService.followCursor;
+      {
+        execute: () => {
+          this.outlineTreeModelService.collapseAll();
+        },
       },
-    });
-    registry.registerCommand({
-      id: OUTLINE_COMMANDS.OUTLINE_SORT_KIND.id,
-      label: localize('outline.sort.kind'),
-    }, {
-      execute: () => {
-        this.outlineTreeService.sortType = OutlineSortOrder.ByKind;
+    );
+    registry.registerCommand(
+      {
+        id: OUTLINE_COMMANDS.OUTLINE_FOLLOW_CURSOR.id,
+        iconClass: getIcon('follow-cursor'),
+        toogleIconClass: getIcon('follow-cursor', { fill: true }),
+        label: localize('outline.follow.cursor'),
       },
-    });
-    registry.registerCommand({
-      id: OUTLINE_COMMANDS.OUTLINE_SORT_NAME.id,
-      label: localize('outline.sort.name'),
-    }, {
-      execute: () => {
-        this.outlineTreeService.sortType = OutlineSortOrder.ByName;
+      {
+        execute: () => {
+          this.outlineTreeService.followCursor = !this.outlineTreeService.followCursor;
+        },
       },
-    });
-    registry.registerCommand({
-      id: OUTLINE_COMMANDS.OUTLINE_SORT_POSITION.id,
-      label: localize('outline.sort.position'),
-    }, {
-      execute: () => {
-        this.outlineTreeService.sortType = OutlineSortOrder.ByPosition;
+    );
+    registry.registerCommand(
+      {
+        id: OUTLINE_COMMANDS.OUTLINE_SORT_KIND.id,
+        label: localize('outline.sort.kind'),
       },
-    });
+      {
+        execute: () => {
+          this.outlineTreeService.sortType = OutlineSortOrder.ByKind;
+        },
+      },
+    );
+    registry.registerCommand(
+      {
+        id: OUTLINE_COMMANDS.OUTLINE_SORT_NAME.id,
+        label: localize('outline.sort.name'),
+      },
+      {
+        execute: () => {
+          this.outlineTreeService.sortType = OutlineSortOrder.ByName;
+        },
+      },
+    );
+    registry.registerCommand(
+      {
+        id: OUTLINE_COMMANDS.OUTLINE_SORT_POSITION.id,
+        label: localize('outline.sort.position'),
+      },
+      {
+        execute: () => {
+          this.outlineTreeService.sortType = OutlineSortOrder.ByPosition;
+        },
+      },
+    );
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -114,5 +141,4 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       toggledWhen: `${OutlineSortTypeContext.raw} == ${OutlineSortOrder.ByPosition}`,
     });
   }
-
 }

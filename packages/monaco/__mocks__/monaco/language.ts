@@ -24,9 +24,15 @@ export type DocumentColorProvider = monaco.languages.DocumentColorProvider;
 export type FoldingRangeProvider = monaco.languages.FoldingRangeProvider;
 
 export interface SelectionRangeProvider {
-  provideSelectionRanges(model, position, token): Promise<{
-    range: monaco.Range;
-  }[][]>;
+  provideSelectionRanges(
+    model,
+    position,
+    token,
+  ): Promise<
+    {
+      range: monaco.Range;
+    }[][]
+  >;
 }
 export type IDisposable = monaco.IDisposable;
 
@@ -47,9 +53,7 @@ export function createMockedMonacoLanguageApi(): typeof monaco.languages {
     register: (language) => {
       languageRegistry.set(language.id, language);
     },
-    getEncodedLanguageId: (language) => {
-      return 23;
-    },
+    getEncodedLanguageId: (language) => 23,
     getLanguages: () => {
       const languages: monaco.languages.ILanguageExtensionPoint[] = [];
       for (const value of languageRegistry.values()) {
@@ -58,7 +62,10 @@ export function createMockedMonacoLanguageApi(): typeof monaco.languages {
       return languages;
     },
 
-    setTokensProvider(languageId: string, provider: TokensProvider | EncodedTokensProvider | Thenable<TokensProvider | EncodedTokensProvider>): IDisposable {
+    setTokensProvider(
+      languageId: string,
+      provider: TokensProvider | EncodedTokensProvider | Thenable<TokensProvider | EncodedTokensProvider>,
+    ): IDisposable {
       mockFeatureProviderRegistry.set('setTokensProvider', provider);
       return mockDisposable;
     },
@@ -110,7 +117,10 @@ export function createMockedMonacoLanguageApi(): typeof monaco.languages {
       mockFeatureProviderRegistry.set('registerDocumentFormattingEditProvider', provider);
       return mockDisposable;
     },
-    registerDocumentRangeFormattingEditProvider(languageId: string, provider: DocumentRangeFormattingEditProvider): IDisposable {
+    registerDocumentRangeFormattingEditProvider(
+      languageId: string,
+      provider: DocumentRangeFormattingEditProvider,
+    ): IDisposable {
       mockFeatureProviderRegistry.set('registerDocumentRangeFormattingEditProvider', provider);
       return mockDisposable;
     },

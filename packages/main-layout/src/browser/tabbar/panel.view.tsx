@@ -2,7 +2,15 @@ import React from 'react';
 import clsx from 'classnames';
 import styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  useInjectable,
+  ComponentRenderer,
+  ConfigProvider,
+  AppConfig,
+  ErrorBoundary,
+  useViewState,
+} from '@opensumi/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -14,13 +22,13 @@ import { AccordionServiceFactory, AccordionService } from '../accordion/accordio
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
-const NoUpdateBoundary: React.FC<{visible: boolean, children: React.ReactElement}> = React.memo(
-  ({children}) => children,
+const NoUpdateBoundary: React.FC<{ visible: boolean; children: React.ReactElement }> = React.memo(
+  ({ children }) => children,
   (prev, next) => !(prev.visible || next.visible),
 );
 
 export const BaseTabPanelView: React.FC<{
-  PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
+  PanelView: React.FC<{ component: ComponentRegistryInfo; side: string; titleMenu: IMenu }>;
   // tabPanel的尺寸（横向为宽，纵向高）
   panelSize?: number;
 }> = observer(({ PanelView, panelSize }) => {
@@ -43,17 +51,20 @@ export const BaseTabPanelView: React.FC<{
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
-        return <div
-          key={containerId}
-          className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
-          data-viewlet-id={containerId}
-          style={currentContainerId === containerId ? panelVisible : panelInVisible}>
+        return (
+          <div
+            key={containerId}
+            className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+            data-viewlet-id={containerId}
+            style={currentContainerId === containerId ? panelVisible : panelInVisible}
+          >
             <ErrorBoundary>
               <NoUpdateBoundary visible={currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} />
               </NoUpdateBoundary>
             </ErrorBoundary>
-        </div>;
+          </div>
+        );
       })}
     </div>
   );
@@ -63,7 +74,7 @@ const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = (({ component, titleMenu, side }) => {
+}> = ({ component, titleMenu, side }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const configContext = useInjectable<AppConfig>(AppConfig);
@@ -79,57 +90,65 @@ const ContainerView: React.FC<{
 
   return (
     <div ref={containerRef} className={styles.view_container}>
-      {!CustomComponent && <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
-        {
-          !title ? null :
-          <TitleBar
-            title={title!}
-            menubar={<InlineActionBar menus={titleMenu} />}
-          />
-        }
-        {titleComponent && <div className={styles.panel_component}>
-          <ConfigProvider value={configContext} >
-            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
-          </ConfigProvider>
-        </div>}
-      </div>}
-      <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
+      {!CustomComponent && (
+        <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
+          {!title ? null : <TitleBar title={title!} menubar={<InlineActionBar menus={titleMenu} />} />}
+          {titleComponent && (
+            <div className={styles.panel_component}>
+              <ConfigProvider value={configContext}>
+                <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
+              </ConfigProvider>
+            </div>
+          )}
+        </div>
+      )}
+      <div className={styles.container_wrap} ref={(ele) => (ref.current = ele)}>
         <ProgressBar progressModel={indicator.progressModel} />
-        {CustomComponent ? <ConfigProvider value={configContext} >
-          <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={CustomComponent} />
-        </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
+        {CustomComponent ? (
+          <ConfigProvider value={configContext}>
+            <ComponentRenderer
+              initialProps={{ viewState, ...component.options!.initialProps }}
+              Component={CustomComponent}
+            />
+          </ConfigProvider>
+        ) : (
+          <AccordionContainer views={component.views} containerId={component.options!.containerId} />
+        )}
       </div>
     </div>
   );
-});
+};
 
 const PanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = (({ component, titleMenu, side }) => {
+}> = ({ component, titleMenu, side }) => {
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   return (
-    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
+    <div className={styles.panel_container} ref={(ele) => (contentRef.current = ele)}>
       <div className={styles.float_container}>
-        {titleComponent && <div className={styles.toolbar_container}>
-          <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
-        </div>}
-        <div className='toolbar_container'>
-          {titleMenu && <InlineActionBar menus={titleMenu} />}
-        </div>
+        {titleComponent && (
+          <div className={styles.toolbar_container}>
+            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
+          </div>
+        )}
+        <div className='toolbar_container'>{titleMenu && <InlineActionBar menus={titleMenu} />}</div>
       </div>
-      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component || component.options!.component!} />
+      <ComponentRenderer
+        initialProps={component.options && component.options.initialProps}
+        Component={component.views[0].component || component.options!.component!}
+      />
     </div>
   );
-});
+};
 
 const NextPanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = (({ component, titleMenu, side }) => {
+}> = ({ component, titleMenu, side }) => {
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -143,20 +162,25 @@ const NextPanelView: React.FC<{
       <div className={styles.panel_title_bar}>
         <h1>{component.options!.title}</h1>
         <div className={styles.title_component_container}>
-          {titleComponent && <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />}
+          {titleComponent && (
+            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
+          )}
         </div>
         <div className={styles.panel_toolbar_container}>
-          { titleMenu && <InlineActionBar menus={titleMenu} /> }
+          {titleMenu && <InlineActionBar menus={titleMenu} />}
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
-      <div ref={(ele) => contentRef.current = ele} className={styles.panel_wrapper}>
+      <div ref={(ele) => (contentRef.current = ele)} className={styles.panel_wrapper}>
         <ProgressBar progressModel={indicator.progressModel} />
-        <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.options!.component ? component.options!.component : component.views[0].component!} />
+        <ComponentRenderer
+          initialProps={{ viewState, ...component.options!.initialProps }}
+          Component={component.options!.component ? component.options!.component : component.views[0].component!}
+        />
       </div>
     </div>
   );
-});
+};
 
 export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
@@ -164,4 +188,6 @@ export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView=
 
 export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
 
-export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} panelSize={280} />;
+export const NextBottomTabPanelRenderer: React.FC = () => (
+  <BaseTabPanelView PanelView={NextPanelView} panelSize={280} />
+);

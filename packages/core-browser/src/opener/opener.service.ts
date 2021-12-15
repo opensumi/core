@@ -5,7 +5,6 @@ import { DefaultOpener } from './default-opener';
 
 @Injectable()
 export class OpenerService implements IOpenerService {
-
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -15,17 +14,19 @@ export class OpenerService implements IOpenerService {
   private openers: IOpener[] = [];
 
   private async getOpeners(uri: URI) {
-    const filterResults = await Promise.all(this.openers.map(async (opener) => {
-      try {
-        if (opener.handleURI) {
-          return await opener.handleURI(uri);
+    const filterResults = await Promise.all(
+      this.openers.map(async (opener) => {
+        try {
+          if (opener.handleURI) {
+            return await opener.handleURI(uri);
+          }
+          return await opener.handleScheme(uri.scheme);
+        } catch (e) {
+          this.logger.error(e);
+          return false;
         }
-        return await opener.handleScheme(uri.scheme);
-      } catch (e) {
-        this.logger.error(e);
-        return false;
-      }
-    }));
+      }),
+    );
     return this.openers.filter((_, index) => filterResults[index]);
   }
 
@@ -60,5 +61,4 @@ export class OpenerService implements IOpenerService {
   dispose() {
     this.openers = [];
   }
-
 }

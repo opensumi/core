@@ -4,7 +4,11 @@ import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 import { OutlineSortOrder } from '@opensumi/ide-outline';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import {
+  OutlineRoot,
+  OutlineCompositeTreeNode,
+  OutlineTreeNode,
+} from '@opensumi/ide-outline/lib/browser/outline-node.define';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 
@@ -21,12 +25,12 @@ describe('OutlineTreeService', () => {
     },
     set: jest.fn(),
   };
-  const root = new OutlineRoot({resolveChildren: () => ([])} as any, null);
-  const newTreeNode = (name: string, kind: number = 0, isComposite?: boolean) => {
+  const root = new OutlineRoot({ resolveChildren: () => [] } as any, null);
+  const newTreeNode = (name: string, kind = 0, isComposite?: boolean) => {
     if (isComposite) {
-      return new OutlineCompositeTreeNode({resolveChildren: () => ([])} as any, root as any, { name, kind } as any, '');
+      return new OutlineCompositeTreeNode({ resolveChildren: () => [] } as any, root as any, { name, kind } as any, '');
     } else {
-      return new OutlineTreeNode({resolveChildren: () => ([])} as any, root as any, { name, kind } as any, '');
+      return new OutlineTreeNode({ resolveChildren: () => [] } as any, root as any, { name, kind } as any, '');
     }
   };
   const mockDocumentSymbolStore = {
@@ -120,5 +124,4 @@ describe('OutlineTreeService', () => {
     expect(root).toBeDefined();
     done();
   });
-
 });

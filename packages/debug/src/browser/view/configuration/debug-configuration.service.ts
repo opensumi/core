@@ -2,7 +2,12 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { DebugConfigurationManager } from '../../debug-configuration-manager';
 import { observable, action } from 'mobx';
-import { DebugSessionOptions, DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_NAME_SEPARATOR, DEFAULT_CONFIGURATION_INDEX_SEPARATOR } from '../../../common';
+import {
+  DebugSessionOptions,
+  DEFAULT_ADD_CONFIGURATION_KEY,
+  DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
+} from '../../../common';
 import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
@@ -39,7 +44,7 @@ export class DebugConfigurationService {
   currentValue: string = DEFAULT_ADD_CONFIGURATION_KEY;
 
   @observable
-  float: boolean = true;
+  float = true;
 
   @observable
   isMultiRootWorkspace: boolean;
@@ -114,25 +119,25 @@ export class DebugConfigurationService {
     } else {
       this.debugConfigurationManager.addConfiguration();
     }
-  }
+  };
 
   openConfiguration = () => {
     const { current } = this.debugConfigurationManager;
     const uri = current?.workspaceFolderUri;
     this.debugConfigurationManager.openConfiguration(uri);
-  }
+  };
 
   openDebugConsole = () => {
     this.debugConsoleService.activate();
-  }
+  };
 
   addConfiguration = (eventOrUri?: React.MouseEvent<HTMLElement, MouseEvent> | string) => {
     this.debugConfigurationManager.addConfiguration(typeof eventOrUri === 'string' ? eventOrUri : undefined);
-  }
+  };
 
   updateConfiguration = (name: string, workspaceFolderUri: string, index: number) => {
     this.debugConfigurationManager.current = this.debugConfigurationManager.find(name, workspaceFolderUri, index);
-  }
+  };
 
   toValue({ configuration, workspaceFolderUri, index }: DebugSessionOptions) {
     if (!workspaceFolderUri) {
@@ -145,7 +150,13 @@ export class DebugConfigurationService {
       }
       return this.currentValue;
     }
-    return configuration.name + DEFAULT_CONFIGURATION_NAME_SEPARATOR + workspaceFolderUri + DEFAULT_CONFIGURATION_INDEX_SEPARATOR + index;
+    return (
+      configuration.name +
+      DEFAULT_CONFIGURATION_NAME_SEPARATOR +
+      workspaceFolderUri +
+      DEFAULT_CONFIGURATION_INDEX_SEPARATOR +
+      index
+    );
   }
 
   toName = ({ configuration, workspaceFolderUri }: DebugSessionOptions) => {
@@ -153,5 +164,5 @@ export class DebugConfigurationService {
       return configuration.name;
     }
     return configuration.name + ' (' + new URI(workspaceFolderUri).path.base + ')';
-  }
+  };
 }

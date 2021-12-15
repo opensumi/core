@@ -32,10 +32,7 @@ class MockMenubarServiceImpl extends Disposable implements AbstractMenubarServic
     this._onDidMenuBarChange.fire();
   }
 
-  set menuItems(payload: {
-    menuId: string,
-    data: MenuNode[];
-  }) {
+  set menuItems(payload: { menuId: string; data: MenuNode[] }) {
     this._menuItems.set(payload.menuId, payload.data);
     this._onDidMenuChange.fire(payload.menuId);
   }
@@ -65,10 +62,15 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
   let menubarStore: MenubarStore;
 
   beforeEach(() => {
-    injector = createBrowserInjector([ MenuBarModule ], new MockInjector([{
-      token: AbstractMenubarService,
-      useClass: MockMenubarServiceImpl,
-    }]));
+    injector = createBrowserInjector(
+      [MenuBarModule],
+      new MockInjector([
+        {
+          token: AbstractMenubarService,
+          useClass: MockMenubarServiceImpl,
+        },
+      ]),
+    );
 
     injector.addProviders({
       token: AbstractMenubarStore,
@@ -92,13 +94,9 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
       { id: 'windowMenu', label: 'window' },
     ]);
 
-    menubarService.menubarItems = [
-      { id: 'helpMenu', label: 'help' },
-    ];
+    menubarService.menubarItems = [{ id: 'helpMenu', label: 'help' }];
 
-    expect(menubarStore.menubarItems).toEqual([
-      { id: 'helpMenu', label: 'help' },
-    ]);
+    expect(menubarStore.menubarItems).toEqual([{ id: 'helpMenu', label: 'help' }]);
   });
 
   it('ok for state#menuItems', () => {
@@ -107,14 +105,11 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
 
     menubarService.menuItems = {
       menuId: 'fakeMenuId',
-      data: [
-        fakeMenuNode1,
-        fakeMenuNode2,
-      ],
+      data: [fakeMenuNode1, fakeMenuNode2],
     };
 
     expect(menubarStore.menuItems.get('non-existed-menu-id')).toBeUndefined();
-    expect(menubarStore.menuItems.get('fakeMenuId')).toEqual([ fakeMenuNode1, fakeMenuNode2 ]);
+    expect(menubarStore.menuItems.get('fakeMenuId')).toEqual([fakeMenuNode1, fakeMenuNode2]);
   });
 
   it('ok for fn#handleMenubarClick', () => {

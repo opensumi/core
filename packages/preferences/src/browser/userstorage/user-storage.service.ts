@@ -1,6 +1,15 @@
 import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
 
-import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@opensumi/ide-core-browser';
+import {
+  DisposableCollection,
+  ILogger,
+  Emitter,
+  URI,
+  AppConfig,
+  Uri,
+  FileType,
+  FileChangeEvent,
+} from '@opensumi/ide-core-browser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
@@ -19,7 +28,11 @@ export class UserStorageServiceImpl implements IUserStorageService {
    */
   public static toUserStorageUri(userStorageFolderUri: URI, rawUri: URI): URI {
     const userStorageRelativePath = this.getRelativeUserStoragePath(userStorageFolderUri, rawUri);
-    return new URI('').withScheme(USER_STORAGE_SCHEME).withPath(userStorageRelativePath).withFragment(rawUri.fragment).withQuery(rawUri.query);
+    return new URI('')
+      .withScheme(USER_STORAGE_SCHEME)
+      .withPath(userStorageRelativePath)
+      .withFragment(rawUri.fragment)
+      .withQuery(rawUri.query);
   }
 
   /**
@@ -71,8 +84,10 @@ export class UserStorageServiceImpl implements IUserStorageService {
     // 请求用户路径并存储
     const home = await this.fileServiceClient.getCurrentUserHome();
     if (home) {
-      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-      if (!await this.fileServiceClient.access(userStorageFolderUri.toString())) {
+      const userStorageFolderUri = new URI(home.uri).resolve(
+        this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER,
+      );
+      if (!(await this.fileServiceClient.access(userStorageFolderUri.toString()))) {
         await this.fileServiceClient.createFolder(userStorageFolderUri.toString());
       }
       this.userStorageFolder = userStorageFolderUri;
@@ -88,27 +103,34 @@ export class UserStorageServiceImpl implements IUserStorageService {
     throw new Error('Method not implemented.');
   }
 
-  async watch(uri: Uri, options: { recursive: boolean; excludes: string[] } = { recursive: false, excludes: ['**/logs/**']}) {
+  async watch(
+    uri: Uri,
+    options: { recursive: boolean; excludes: string[] } = { recursive: false, excludes: ['**/logs/**'] },
+  ) {
     await this.whenReady;
     const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
     const watcher = await this.fileServiceClient.watchFileChanges(target.parent, options.excludes);
     this.toDispose.push(watcher);
-    this.toDispose.push(watcher.onFilesChanged((changes) => {
-      const effectedChanges: FileChangeEvent = [];
-      for (const change of changes) {
-        // 在UserStorage的监听模式下，只会存在一个独立的 Change 事件
-        // 故在获取到变更事件时直接推出遍历
-        if (change.uri === target.toString()) {
-          effectedChanges.push(change);
+    this.toDispose.push(
+      watcher.onFilesChanged((changes) => {
+        const effectedChanges: FileChangeEvent = [];
+        for (const change of changes) {
+          // 在UserStorage的监听模式下，只会存在一个独立的 Change 事件
+          // 故在获取到变更事件时直接推出遍历
+          if (change.uri === target.toString()) {
+            effectedChanges.push(change);
+          }
         }
-      }
-      if (effectedChanges.length > 0) {
-        this.onDidChangeFileEmitter.fire(effectedChanges.map((change) => ({
-          uri: UserStorageServiceImpl.toUserStorageUri(this.userStorageFolder, new URI(change.uri)).toString(),
-          type: change.type,
-        })));
-      }
-    }));
+        if (effectedChanges.length > 0) {
+          this.onDidChangeFileEmitter.fire(
+            effectedChanges.map((change) => ({
+              uri: UserStorageServiceImpl.toUserStorageUri(this.userStorageFolder, new URI(change.uri)).toString(),
+              type: change.type,
+            })),
+          );
+        }
+      }),
+    );
     return watcher.watchId;
   }
 
@@ -139,15 +161,15 @@ export class UserStorageServiceImpl implements IUserStorageService {
     }
   }
 
-  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean; }) {
+  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean }) {
     throw new Error('Method not implemented.');
   }
 
-  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }) {
+  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }) {
     throw new Error('Method not implemented.');
   }
 
-  copy(source: Uri, destination: Uri, options: { overwrite: boolean; }) {
+  copy(source: Uri, destination: Uri, options: { overwrite: boolean }) {
     throw new Error('Method not implemented.');
   }
 

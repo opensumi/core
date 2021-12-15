@@ -5,5 +5,4 @@ export interface IExtHostTheming {
 }
 
 // tslint:disable-next-line: no-empty-interface
-export interface IMainThreadTheming extends IDisposable {
-}
+export type IMainThreadTheming = IDisposable;

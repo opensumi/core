@@ -1,7 +1,7 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 import { IProgress, IProgressStep } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { ProgressLocation } from '@opensumi/ide-core-common';
@@ -14,8 +14,7 @@ import { IDebugProgress } from '../common/debug-progress';
 
 @Injectable()
 export class DebugProgressService implements IDebugProgress {
-
-  static DEBUG_PANEL_PROGRESS_ID: string = 'debug';
+  static DEBUG_PANEL_PROGRESS_ID = 'debug';
 
   @Autowired(IProgressService)
   protected readonly progressService: IProgressService;
@@ -24,7 +23,7 @@ export class DebugProgressService implements IDebugProgress {
 
   private toDispose: IDisposable[] = [];
 
-  constructor() { }
+  constructor() {}
 
   public onDebugServiceStateChange(state: DebugState): void {
     if (this.progressResolve) {
@@ -32,10 +31,14 @@ export class DebugProgressService implements IDebugProgress {
       this.progressResolve = undefined;
     }
 
-    if (state === DebugState.Initializing && this.progressService.getIndicator(DebugProgressService.DEBUG_PANEL_PROGRESS_ID)) {
-      this.progressService.withProgress({ location: DebugProgressService.DEBUG_PANEL_PROGRESS_ID }, (_progress) => {
-        return new Promise<void>((resolve) => this.progressResolve = resolve);
-      });
+    if (
+      state === DebugState.Initializing &&
+      this.progressService.getIndicator(DebugProgressService.DEBUG_PANEL_PROGRESS_ID)
+    ) {
+      this.progressService.withProgress(
+        { location: DebugProgressService.DEBUG_PANEL_PROGRESS_ID },
+        (_progress) => new Promise<void>((resolve) => (this.progressResolve = resolve)),
+      );
     }
   }
 
@@ -53,60 +56,68 @@ export class DebugProgressService implements IDebugProgress {
               Event.filter(session.onDidProgressEnd, (e) => e.body.progressId === progressStartEvent.body.progressId),
               session.onDidExitAdapter as Event<any>,
             )(() => {
-                listener.dispose();
-                r();
-              },
-            );
+              listener.dispose();
+              r();
+            });
           });
 
           if (this.progressService.getIndicator(DebugProgressService.DEBUG_PANEL_PROGRESS_ID)) {
-            this.progressService.withProgress({ location: DebugProgressService.DEBUG_PANEL_PROGRESS_ID }, () => promise);
+            this.progressService.withProgress(
+              { location: DebugProgressService.DEBUG_PANEL_PROGRESS_ID },
+              () => promise,
+            );
           }
 
-          this.progressService.withProgress({
-            location: ProgressLocation.Notification,
-            title: progressStartEvent.body.title,
-            cancellable: progressStartEvent.body.cancellable,
-            silent: true,
-            delay: 500,
-          }, (progressStep: IProgress<IProgressStep>) => {
-            let total = 0;
-            const reportProgress = (progress: { message?: string, percentage?: number }) => {
-              let increment: undefined | number;
-              if (typeof progress.percentage === 'number') {
-                increment = progress.percentage - total;
-                total += increment;
+          this.progressService.withProgress(
+            {
+              location: ProgressLocation.Notification,
+              title: progressStartEvent.body.title,
+              cancellable: progressStartEvent.body.cancellable,
+              silent: true,
+              delay: 500,
+            },
+            (progressStep: IProgress<IProgressStep>) => {
+              let total = 0;
+              const reportProgress = (progress: { message?: string; percentage?: number }) => {
+                let increment: undefined | number;
+                if (typeof progress.percentage === 'number') {
+                  increment = progress.percentage - total;
+                  total += increment;
+                }
+                progressStep.report({
+                  message: progress.message,
+                  increment,
+                  total: typeof increment === 'number' ? 100 : undefined,
+                });
+              };
+
+              if (progressStartEvent.body.message) {
+                reportProgress(progressStartEvent.body);
               }
-              progressStep.report({
-                message: progress.message,
-                increment,
-                total: typeof increment === 'number' ? 100 : undefined,
+
+              const progressUpdateListener = session.onDidProgressUpdate((e) => {
+                if (e.body.progressId === progressStartEvent.body.progressId) {
+                  reportProgress(e.body);
+                }
               });
-            };
 
-            if (progressStartEvent.body.message) {
-              reportProgress(progressStartEvent.body);
-            }
-
-            const progressUpdateListener = session.onDidProgressUpdate((e) => {
-              if (e.body.progressId === progressStartEvent.body.progressId) {
-                reportProgress(e.body);
-              }
-            });
-
-            return promise.then(() => progressUpdateListener.dispose());
-          }, () => session.cancel(progressStartEvent.body.progressId));
+              return promise.then(() => progressUpdateListener.dispose());
+            },
+            () => session.cancel(progressStartEvent.body.progressId),
+          );
         });
       }
     };
 
     this.toDispose.push(sessionsManager.onDidChangeActiveDebugSession(({ current }) => listenOnProgress(current)));
     listenOnProgress(sessionsManager.currentSession);
-    this.toDispose.push(sessionsManager.onDidCreateDebugSession((session) => {
-      if (!progressListener) {
-        this.toDispose.push(session.onDidChangeState((state: DebugState) => this.onDebugServiceStateChange(state)));
-        listenOnProgress(session);
-      }
-    }));
+    this.toDispose.push(
+      sessionsManager.onDidCreateDebugSession((session) => {
+        if (!progressListener) {
+          this.toDispose.push(session.onDidChangeState((state: DebugState) => this.onDebugServiceStateChange(state)));
+          listenOnProgress(session);
+        }
+      }),
+    );
   }
 }

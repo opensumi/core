@@ -5,12 +5,10 @@ import { DiagnosticCollection, Diagnostic, asDiagnostics } from '../../common';
 import { DisposableCollection, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 export class MonacoDiagnosticCollection implements DiagnosticCollection {
-
   protected readonly diagnostics = new Map<string, MonacoModelDiagnostics | undefined>();
   protected readonly toDispose = new DisposableCollection();
 
-  constructor(protected readonly name: string) {
-  }
+  constructor(protected readonly name: string) {}
 
   dispose() {
     this.toDispose.dispose();
@@ -18,7 +16,7 @@ export class MonacoDiagnosticCollection implements DiagnosticCollection {
 
   get(uri: string): Diagnostic[] {
     const diagnostics = this.diagnostics.get(uri);
-    return !!diagnostics ? diagnostics.diagnostics : [];
+    return diagnostics ? diagnostics.diagnostics : [];
   }
 
   set(uri: string, diagnostics: Diagnostic[]): void {
@@ -28,24 +26,21 @@ export class MonacoDiagnosticCollection implements DiagnosticCollection {
     } else {
       const modelDiagnostics = new MonacoModelDiagnostics(uri, diagnostics, this.name);
       this.diagnostics.set(uri, modelDiagnostics);
-      this.toDispose.push(Disposable.create(() => {
-        this.diagnostics.delete(uri);
-        modelDiagnostics.dispose();
-      }));
+      this.toDispose.push(
+        Disposable.create(() => {
+          this.diagnostics.delete(uri);
+          modelDiagnostics.dispose();
+        }),
+      );
     }
   }
-
 }
 
 export class MonacoModelDiagnostics implements IDisposable {
   readonly uri: monaco.Uri;
   protected _markers: IMarkerData[] = [];
   protected _diagnostics: Diagnostic[] = [];
-  constructor(
-    uri: string,
-    diagnostics: Diagnostic[],
-    readonly owner: string,
-  ) {
+  constructor(uri: string, diagnostics: Diagnostic[], readonly owner: string) {
     this.uri = monaco.Uri.parse(uri);
     this.diagnostics = diagnostics;
     monaco.editor.onDidCreateModel((model) => this.doUpdateModelMarkers(model));

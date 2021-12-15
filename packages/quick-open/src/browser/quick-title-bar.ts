@@ -99,7 +99,12 @@ export class QuickTitleBar {
   }
 
   @action
-  public attachTitleBar(title: string | undefined, step: number | undefined, totalSteps: number | undefined, buttons: QuickTitleButton[] | undefined): void {
+  public attachTitleBar(
+    title: string | undefined,
+    step: number | undefined,
+    totalSteps: number | undefined,
+    buttons: QuickTitleButton[] | undefined,
+  ): void {
     this._title = title;
     this._step = step;
     this._totalSteps = totalSteps;
@@ -119,7 +124,11 @@ export class QuickTitleBar {
     this._isAttached = false;
   }
 
-  shouldShowTitleBar(title: string | undefined, step: number | undefined, buttons: QuickTitleButton[] | undefined): boolean {
+  shouldShowTitleBar(
+    title: string | undefined,
+    step: number | undefined,
+    buttons: QuickTitleButton[] | undefined,
+  ): boolean {
     return !isUndefined(title) || !isUndefined(step) || (!isUndefined(buttons) && !!buttons.length);
   }
 }

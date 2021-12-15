@@ -10,12 +10,17 @@ export const DebugConsoleToolbarView = observer(() => {
     return (
       <NativeSelect value='default' className={styles.debug_console_select}>
         <option value='default'>{localize('debug.console.panel.default')}</option>
-      </NativeSelect>);
+      </NativeSelect>
+    );
   }
 
-  return <div className={styles.debug_console_toolbar}>
-    <Select size='small' value='default' className={styles.debug_console_select}>
-      <Option value='default' label={localize('debug.console.panel.default')}>{localize('debug.console.panel.default')}</Option>
-    </Select>
-  </div>;
+  return (
+    <div className={styles.debug_console_toolbar}>
+      <Select size='small' value='default' className={styles.debug_console_select}>
+        <Option value='default' label={localize('debug.console.panel.default')}>
+          {localize('debug.console.panel.default')}
+        </Option>
+      </Select>
+    </div>
+  );
 });

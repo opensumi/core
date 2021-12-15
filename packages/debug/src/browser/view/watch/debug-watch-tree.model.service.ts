@@ -2,8 +2,31 @@ import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@opensumi/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey, IReporterService } from '@opensumi/ide-core-browser';
+import {
+  TreeModel,
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  WatchEvent,
+  TreeNodeEvent,
+  NewPromptHandle,
+  IWatcherEvent,
+  RenamePromptHandle,
+} from '@opensumi/ide-components';
+import {
+  Emitter,
+  IContextKeyService,
+  ThrottledDelayer,
+  Deferred,
+  Event,
+  DisposableCollection,
+  StorageProvider,
+  STORAGE_NAMESPACE,
+  IClipboardService,
+  IContextKey,
+  IReporterService,
+} from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugWatchModel } from './debug-watch-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
@@ -183,20 +206,26 @@ export class DebugWatchModelService {
 
   listenTreeViewChange() {
     this.dispose();
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-        this.selectedDecoration.addTarget(node as ExpressionNode);
-      }
-    }));
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.selectedNodes.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+          this.selectedDecoration.addTarget(node as ExpressionNode);
+        }
+      }),
+    );
   }
 
   async initTreeModel() {
@@ -222,7 +251,7 @@ export class DebugWatchModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: IWatchNode, dispatchChange: boolean = true) => {
+  activeNodeDecoration = (target: IWatchNode, dispatchChange = true) => {
     CONTEXT_WATCH_EXPRESSIONS_FOCUSED.bind(this.contextKeyService);
     if (this.contextMenuNode) {
       this.focusedDecoration.removeTarget(this.contextMenuNode);
@@ -250,7 +279,7 @@ export class DebugWatchModelService {
         this.treeModel?.dispatchChange();
       }
     }
-  }
+  };
 
   // 右键菜单焦点态切换
   activeNodeActivedDecoration = (target: IWatchNode) => {
@@ -264,7 +293,7 @@ export class DebugWatchModelService {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuNode = target;
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -277,7 +306,7 @@ export class DebugWatchModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
     this.treeModel?.dispatchChange();
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -309,9 +338,18 @@ export class DebugWatchModelService {
       node = expression;
     }
 
-    this.watchItemType.set(node instanceof DebugWatchNode ? 'expression' : (node instanceof DebugVariable || node instanceof DebugVariableContainer) ? 'variable' : undefined);
+    this.watchItemType.set(
+      node instanceof DebugWatchNode
+        ? 'expression'
+        : node instanceof DebugVariable || node instanceof DebugVariableContainer
+        ? 'variable'
+        : undefined,
+    );
 
-    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugWatchContext, contextKeyService: this.contextMenuContextKeyService });
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.DebugWatchContext,
+      contextKeyService: this.contextMenuContextKeyService,
+    });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
@@ -319,7 +357,7 @@ export class DebugWatchModelService {
       menuNodes,
       args: [node],
     });
-  }
+  };
 
   handleTreeHandler(handle: IDebugWatchHandle) {
     this._debugWatchTreeHandle = handle;
@@ -328,12 +366,12 @@ export class DebugWatchModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleItemClick = (item: IWatchNode) => {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
-  }
+  };
 
   handleTwistierClick = (item: IWatchNode, type: TreeNodeType) => {
     if (type === TreeNodeType.CompositeTreeNode) {
@@ -350,7 +388,7 @@ export class DebugWatchModelService {
       }
     }
     this.activeNodeDecoration(item);
-  }
+  };
 
   toggleDirectory = async (item: ExpressionContainer) => {
     if (item.expanded) {
@@ -358,7 +396,7 @@ export class DebugWatchModelService {
     } else {
       this.treeHandle.expandNode(item);
     }
-  }
+  };
 
   async newDebugWatchNodePrompt() {
     if (this.treeModel) {
@@ -413,7 +451,7 @@ export class DebugWatchModelService {
         return;
       }
       isCommitting = true;
-      if (!!expression) {
+      if (expression) {
         if (promptHandle instanceof NewPromptHandle) {
           const parent = promptHandle.parent as DebugWatchRoot;
           promptHandle.addAddonAfter('loading_indicator');
@@ -445,7 +483,7 @@ export class DebugWatchModelService {
       promptHandle.onCommit(commit);
       promptHandle.onBlur(commit);
     }
-  }
+  };
 
   collapsedAll() {
     this.treeModel?.root.collapsedAll();
@@ -456,7 +494,7 @@ export class DebugWatchModelService {
    */
   async refresh(node?: ExpressionContainer) {
     if (!node) {
-      if (!!this.treeModel) {
+      if (this.treeModel) {
         node = this.treeModel.root as ExpressionContainer;
       } else {
         return;
@@ -507,16 +545,17 @@ export class DebugWatchModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel?.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel?.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
-
+  };
 }

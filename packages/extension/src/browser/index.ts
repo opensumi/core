@@ -4,8 +4,21 @@ import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 
-import { ExtensionHostProfilerServicePath, ExtensionNodeServiceServerPath, ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, RequireInterceptorContribution, IRequireInterceptorService, RequireInterceptorService } from '../common';
-import { AbstractNodeExtProcessService, AbstractWorkerExtProcessService, AbstractViewExtProcessService } from '../common/extension.service';
+import {
+  ExtensionHostProfilerServicePath,
+  ExtensionNodeServiceServerPath,
+  ExtensionService,
+  IExtCommandManagement,
+  AbstractExtensionManagementService,
+  RequireInterceptorContribution,
+  IRequireInterceptorService,
+  RequireInterceptorService,
+} from '../common';
+import {
+  AbstractNodeExtProcessService,
+  AbstractWorkerExtProcessService,
+  AbstractViewExtProcessService,
+} from '../common/extension.service';
 import { ActivationEventServiceImpl } from './activation.service';
 import { ExtCommandManagementImpl as ExtCommandManagementImpl } from './extension-command-management';
 import { ExtInstanceManagementService } from './extension-instance-management';
@@ -21,7 +34,7 @@ import { BrowserRequireInterceptorContribution } from './require-interceptor.con
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {
-  contributionProvider = [ RequireInterceptorContribution ];
+  contributionProvider = [RequireInterceptorContribution];
   providers: Provider[] = [
     {
       token: ExtensionService,

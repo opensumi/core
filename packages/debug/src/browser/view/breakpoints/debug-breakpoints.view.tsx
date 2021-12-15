@@ -6,7 +6,14 @@ import styles from './debug-breakpoints.module.less';
 import cls from 'classnames';
 import { CheckBox } from '@opensumi/ide-components';
 import { observer } from 'mobx-react-lite';
-import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, ISourceBreakpoint } from '../../breakpoint';
+import {
+  DebugBreakpoint,
+  DebugExceptionBreakpoint,
+  isDebugBreakpoint,
+  isRuntimeBreakpoint,
+  getStatus,
+  ISourceBreakpoint,
+} from '../../breakpoint';
 import { Badge, RecycleList } from '@opensumi/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager } from '../../../common';
@@ -18,34 +25,28 @@ export interface BreakpointItem {
   breakpoint: DebugBreakpoint | DebugExceptionBreakpoint;
 }
 
-export const DebugBreakpointView = observer(({
-  viewState,
-}: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const {
-    nodes,
-    enable,
-    inDebugMode,
-    toggleBreakpointEnable,
-  }: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
-  const template = ({ data }: {
-    data: BreakpointItem,
-  }) => {
-    return <BreakpointItem toggle={ () => toggleBreakpointEnable(data.breakpoint) } breakpointEnabled={enable} data={ data } isDebugMode={ inDebugMode }></BreakpointItem>;
-  };
+export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+  const { nodes, enable, inDebugMode, toggleBreakpointEnable }: DebugBreakpointsService =
+    useInjectable(DebugBreakpointsService);
+  const template = ({ data }: { data: BreakpointItem }) => (
+    <BreakpointItem
+      toggle={() => toggleBreakpointEnable(data.breakpoint)}
+      breakpointEnabled={enable}
+      data={data}
+      isDebugMode={inDebugMode}
+    ></BreakpointItem>
+  );
 
   const containerStyle = {
     height: viewState.height,
     width: viewState.width,
   } as React.CSSProperties;
 
-  return <div className={ cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled) }>
-    <RecycleList
-      data={ nodes }
-      itemHeight={22}
-      template={ template }
-      style={ containerStyle }
-    />
-  </div>;
+  return (
+    <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
+      <RecycleList data={nodes} itemHeight={22} template={template} style={containerStyle} />
+    </div>
+  );
 });
 
 export const BreakpointItem = ({
@@ -54,12 +55,12 @@ export const BreakpointItem = ({
   isDebugMode,
   breakpointEnabled,
 }: {
-  data: BreakpointItem,
-  toggle: () => void,
-  isDebugMode: boolean,
-  breakpointEnabled: boolean,
+  data: BreakpointItem;
+  toggle: () => void;
+  isDebugMode: boolean;
+  breakpointEnabled: boolean;
 }) => {
-  const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!(data.breakpoint.default);
+  const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!data.breakpoint.default;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const commandService = useInjectable<CommandService>(CommandService);
   const debugBreakpointsService = useInjectable<DebugBreakpointsService>(DebugBreakpointsService);
@@ -77,7 +78,7 @@ export const BreakpointItem = ({
         preview: true,
         focus: true,
       };
-      if (!!status) {
+      if (status) {
         options['range'] = {
           startColumn: status.column || 0,
           endColumn: status.column || 0,
@@ -92,7 +93,11 @@ export const BreakpointItem = ({
           endLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
         };
       }
-      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI((data.breakpoint as ISourceBreakpoint).uri), options);
+      commandService.executeCommand(
+        EDITOR_COMMANDS.OPEN_RESOURCE.id,
+        new URI((data.breakpoint as ISourceBreakpoint).uri),
+        options,
+      );
     }
   };
 
@@ -113,10 +118,14 @@ export const BreakpointItem = ({
     };
   }, []);
 
-  const verified = !isDebugMode ? true : (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint));
+  const verified = !isDebugMode ? true : isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint);
 
   const getBreakpointIcon = () => {
-    const { className } = debugBreakpointsService.getBreakpointDecoration(data.breakpoint as DebugBreakpoint, isDebugMode, breakpointEnabled && enabled);
+    const { className } = debugBreakpointsService.getBreakpointDecoration(
+      data.breakpoint as DebugBreakpoint,
+      isDebugMode,
+      breakpointEnabled && enabled,
+    );
     return className;
   };
 
@@ -137,27 +146,27 @@ export const BreakpointItem = ({
     debugBreakpointsService.delBreakpoint(data.breakpoint as DebugBreakpoint);
   };
 
-  return <div className={ cls(styles.debug_breakpoints_item) }>
-    <div className={ cls(converBreakpointClsState(), styles.debug_breakpoints_icon) }></div>
-    <CheckBox id={ data.id } onChange={ handleBreakpointChange } checked={ enabled }></CheckBox>
-    <div className={ styles.debug_breakpoints_wrapper } onClick={ handleBreakpointClick }>
-      <span className={ styles.debug_breakpoints_name }>{ data.name }</span>
-      <span className={ styles.debug_breakpoints_description }>{ data.description }</span>
-    </div>
-    {
-      isDebugBreakpoint(data.breakpoint) ? (
+  return (
+    <div className={cls(styles.debug_breakpoints_item)}>
+      <div className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}></div>
+      <CheckBox id={data.id} onChange={handleBreakpointChange} checked={enabled}></CheckBox>
+      <div className={styles.debug_breakpoints_wrapper} onClick={handleBreakpointClick}>
+        <span className={styles.debug_breakpoints_name}>{data.name}</span>
+        <span className={styles.debug_breakpoints_description}>{data.description}</span>
+      </div>
+      {isDebugBreakpoint(data.breakpoint) ? (
         <>
           <a
             title='删除断点'
-            onClick={ (event) => removeBreakpoint(event) }
-            className={ cls(styles.debug_remove_breakpoints_icon, getIcon('close'))} >
-          </a>
-          <Badge className={ styles.debug_breakpoints_badge }>
-            { (data.breakpoint as DebugBreakpoint).raw.line }
-            { !!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
+            onClick={(event) => removeBreakpoint(event)}
+            className={cls(styles.debug_remove_breakpoints_icon, getIcon('close'))}
+          ></a>
+          <Badge className={styles.debug_breakpoints_badge}>
+            {(data.breakpoint as DebugBreakpoint).raw.line}
+            {!!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}`}
           </Badge>
         </>
-      ) : null
-    }
-  </div>;
+      ) : null}
+    </div>
+  );
 };

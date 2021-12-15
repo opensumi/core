@@ -6,9 +6,16 @@ import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import {
-  MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
-  IContextMenu, IMenu, IMenuSeparator, MenuId,
-  SubmenuItemNode, IMenuAction, ComponentMenuItemNode,
+  MenuNode,
+  ICtxMenuRenderer,
+  SeparatorMenuItemNode,
+  IContextMenu,
+  IMenu,
+  IMenuSeparator,
+  MenuId,
+  SubmenuItemNode,
+  IMenuAction,
+  ComponentMenuItemNode,
 } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
 import { useMenus, useContextMenus } from '../../utils';
@@ -21,39 +28,22 @@ const MenuAction: React.FC<{
   data: MenuNode;
   disabled?: boolean;
   hasSubmenu?: boolean;
-}> = ({ data, hasSubmenu, disabled }) => {
+}> = ({ data, hasSubmenu, disabled }) => (
   // 这里遵循 native menu 的原则，保留一个 icon 位置
-  return (
-    <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
-      <div className={styles.icon}>
-        {
-          data.checked
-           ? <Icon icon='check' />
-           : null
-        }
-      </div>
-      <div className={styles.label}>
-        {data.label ? mnemonicButtonLabel(data.label, true) : ''}
-      </div>
-      <div className={styles.tip}>
-        {
-          data.keybinding
-            ? <div className={styles.shortcut}>{data.keybinding}</div>
-            : null
-        }
-        {
-          hasSubmenu
-            ? <div className={styles.submenuIcon}>
-              <Icon icon='right' />
-            </div>
-            : null
-        }
-       {!data.keybinding && !hasSubmenu && data.extraDesc && <div className={styles.extraDesc}>{data.extraDesc}</div>}
-      </div>
+  <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
+    <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
+    <div className={styles.label}>{data.label ? mnemonicButtonLabel(data.label, true) : ''}</div>
+    <div className={styles.tip}>
+      {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
+      {hasSubmenu ? (
+        <div className={styles.submenuIcon}>
+          <Icon icon='right' />
+        </div>
+      ) : null}
+      {!data.keybinding && !hasSubmenu && data.extraDesc && <div className={styles.extraDesc}>{data.extraDesc}</div>}
     </div>
-  );
-};
-
+  </div>
+);
 /**
  * 用于 context menu
  */
@@ -66,70 +56,78 @@ export const MenuActionList: React.FC<{
     return null;
   }
 
-  const handleClick = React.useCallback((params: ClickParam) => {
-    const { key, item } = params;
-    // do nothing when click separator/submenu node
-    if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
-      return;
-    }
-
-    // hacky: read MenuNode from MenuItem.children.props
-    const menuItem = item.props.children.props.data as MenuNode;
-    if (!menuItem) {
-      return;
-    }
-
-    if (typeof menuItem.execute === 'function') {
-      menuItem.execute(context);
-    }
-
-    if (typeof afterClick === 'function') {
-      afterClick(menuItem);
-    }
-  }, [ data, context ]);
-
-  const recursiveRender = React.useCallback((dataSource: MenuNode[]) => {
-    return dataSource.map((menuNode, index) => {
-      if (menuNode.id === SeparatorMenuItemNode.ID) {
-        return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
+  const handleClick = React.useCallback(
+    (params: ClickParam) => {
+      const { key, item } = params;
+      // do nothing when click separator/submenu node
+      if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
+        return;
       }
 
-      if (menuNode.id === SubmenuItemNode.ID) {
-        // 子菜单项为空时不渲染
-        if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
-          return null;
+      // hacky: read MenuNode from MenuItem.children.props
+      const menuItem = item.props.children.props.data as MenuNode;
+      if (!menuItem) {
+        return;
+      }
+
+      if (typeof menuItem.execute === 'function') {
+        menuItem.execute(context);
+      }
+
+      if (typeof afterClick === 'function') {
+        afterClick(menuItem);
+      }
+    },
+    [data, context],
+  );
+
+  const recursiveRender = React.useCallback(
+    (dataSource: MenuNode[]) =>
+      dataSource.map((menuNode, index) => {
+        if (menuNode.id === SeparatorMenuItemNode.ID) {
+          return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
+        }
+
+        if (menuNode.id === SubmenuItemNode.ID) {
+          // 子菜单项为空时不渲染
+          if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
+            return null;
+          }
+
+          return (
+            <Menu.SubMenu
+              key={`${menuNode.id}-${index}`}
+              className={styles.submenuItem}
+              popupClassName='kt-menu'
+              title={<MenuAction hasSubmenu data={menuNode} />}
+            >
+              {recursiveRender(menuNode.children)}
+            </Menu.SubMenu>
+          );
         }
 
         return (
-          <Menu.SubMenu
+          <Menu.Item
+            id={`${menuNode.id}-${index}`}
             key={`${menuNode.id}-${index}`}
-            className={styles.submenuItem}
-            popupClassName='kt-menu'
-            title={<MenuAction hasSubmenu data={menuNode} />}>
-            {recursiveRender(menuNode.children)}
-          </Menu.SubMenu>
+            className={styles.menuItem}
+            disabled={menuNode.disabled}
+          >
+            <MenuAction data={menuNode} disabled={menuNode.disabled} />
+          </Menu.Item>
         );
-      }
-
-      return (
-        <Menu.Item
-          id={`${menuNode.id}-${index}`}
-          key={`${menuNode.id}-${index}`}
-          className={styles.menuItem}
-          disabled={menuNode.disabled}>
-          <MenuAction data={menuNode} disabled={menuNode.disabled} />
-        </Menu.Item>
-      );
-    });
-  }, []);
+      }),
+    [],
+  );
 
   return (
     <Menu
       className='kt-menu'
       selectable={false}
       motion={{ enter: () => null, leave: () => null }}
-      {...{builtinPlacements: placements} as any}
-      onClick={handleClick}>
+      {...({ builtinPlacements: placements } as any)}
+      onClick={handleClick}
+    >
       {recursiveRender(data)}
     </Menu>
   );
@@ -144,11 +142,7 @@ const EllipsisWidget: React.FC<{
   }
 
   return (
-    <Button
-      size='small'
-      type='secondary'
-      className={styles.btnAction}
-      onClick={onClick}>
+    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick}>
       <Icon icon='ellipsis' />
     </Button>
   );
@@ -162,22 +156,25 @@ const InlineActionWidget: React.FC<{
   type?: ActionListType;
   afterClick?: () => void;
 } & React.HTMLAttributes<HTMLElement>> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
-  const handleClick = React.useCallback((event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    if (data.id === SubmenuItemNode.ID && event) {
-      const anchor = { x: event.clientX, y: event.clientY };
-      data.execute([anchor, ...context]);
-    } else if (typeof data.execute === 'function') {
-      data.execute([...context, ...extraArgs]);
-    }
+  const handleClick = React.useCallback(
+    (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (data.id === SubmenuItemNode.ID && event) {
+        const anchor = { x: event.clientX, y: event.clientY };
+        data.execute([anchor, ...context]);
+      } else if (typeof data.execute === 'function') {
+        data.execute([...context, ...extraArgs]);
+      }
 
-    if (typeof afterClick === 'function') {
-      afterClick();
-    }
-  }, [ data, context ]);
+      if (typeof afterClick === 'function') {
+        afterClick();
+      }
+    },
+    [data, context],
+  );
 
   const title = React.useMemo(() => {
     const title = data.tooltip || data.label;
@@ -185,7 +182,7 @@ const InlineActionWidget: React.FC<{
       return `${title} (${data.keybinding.split('').join('+')})`;
     }
     return title;
-  }, [ data ]);
+  }, [data]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
 
@@ -193,13 +190,17 @@ const InlineActionWidget: React.FC<{
   if (type === 'icon' && !data.type) {
     return (
       <Button
-        type={ data.icon ? 'icon' : 'link'}
-        className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled, [styles.submenuIconAction]: isSubmenuNode })}
+        type={data.icon ? 'icon' : 'link'}
+        className={clsx(styles.iconAction, className, {
+          [styles.disabled]: data.disabled,
+          [styles.submenuIconAction]: isSubmenuNode,
+        })}
         title={title}
         iconClass={data.icon}
         onClick={handleClick}
-        {...restProps}>
-        { !data.icon && data.label /* 没有 icon 时渲染 label */ }
+        {...restProps}
+      >
+        {!data.icon && data.label /* 没有 icon 时渲染 label */}
       </Button>
     );
   }
@@ -226,13 +227,10 @@ const InlineActionWidget: React.FC<{
       size='small'
       type={data.type}
       title={title}
-      {...restProps}>
+      {...restProps}
+    >
       {data.label}
-      {
-        isSubmenuNode && (
-          <Icon icon='down' className='kt-button-secondary-more' />
-        )
-      }
+      {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
     </Button>
   );
 });
@@ -242,13 +240,8 @@ InlineActionWidget.displayName = 'InlineAction';
 const CustomActionWidget: React.FC<{
   data: ComponentMenuItemNode;
   context?: any[];
-}> = ({
-  data,
-  context,
-}) => {
-  const getExecuteArgs = React.useCallback(() => {
-    return data.getExecuteArgs(context);
-  }, [data, context]);
+}> = ({ data, context }) => {
+  const getExecuteArgs = React.useCallback(() => data.getExecuteArgs(context), [data, context]);
 
   return React.createElement(data.component, {
     getExecuteArgs,
@@ -301,12 +294,14 @@ interface BaseActionListProps {
  * 请不要直接使用 TitleActionList 组件，请使用 InlineActionBar/InlineMenubar 等组件
  * 目前仅给 tree view 使用，其不带 contextkey service change 事件监听
  */
-export const TitleActionList: React.FC<{
-  menuId: string | MenuId;
-  nav: MenuNode[];
-  more?: MenuNode[];
-  className?: string;
-} & BaseActionListProps> = React.memo(({
+export const TitleActionList: React.FC<
+  {
+    menuId: string | MenuId;
+    nav: MenuNode[];
+    more?: MenuNode[];
+    className?: string;
+  } & BaseActionListProps
+> = React.memo(({
   /**
    * ActionListType 默认为 icon 类型
    * 所有没有增加 type 的 menu 都是 icon 类型
@@ -323,80 +318,73 @@ export const TitleActionList: React.FC<{
   regroup = (...args: [MenuNode[], MenuNode[]]) => args,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const [ primary, secondary ] = regroup(nav, more);
+  const [primary, secondary] = regroup(nav, more);
 
-  const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (secondary) {
-      ctxMenuRenderer.show({
-        anchor: { x: e.clientX, y: e.clientY },
-        // 合并结果
-        menuNodes: secondary,
-        args: context,
-        onHide: afterClick,
-      });
-    }
-  }, [ secondary, context ]);
+  const handleShowMore = React.useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (secondary) {
+        ctxMenuRenderer.show({
+          anchor: { x: e.clientX, y: e.clientY },
+          // 合并结果
+          menuNodes: secondary,
+          args: context,
+          onHide: afterClick,
+        });
+      }
+    },
+    [secondary, context],
+  );
 
   if (primary.length === 0 && secondary.length === 0 && extraNavActions.length === 0) {
     return null;
   }
 
-  const moreAction = secondary.length > 0
-    ? <EllipsisWidget type={type} onClick={handleShowMore} />
-    : null;
+  const moreAction = secondary.length > 0 ? <EllipsisWidget type={type} onClick={handleShowMore} /> : null;
 
   return (
-    <div
-      className={clsx([styles.titleActions, className])}
-      data-menu-id={menuId}>
-      { moreAtFirst && moreAction }
-      {
-        primary.map((item) => {
-          if (item.id === ComponentMenuItemNode.ID) {
-            return (
-              <CustomActionWidget
-                context={context}
-                data={item as ComponentMenuItemNode}
-                key={(item as ComponentMenuItemNode).nodeId}
-              />
-            );
-          }
-
-          // submenu 使用 submenu-id 作为 id 唯一值
-          const id = item.id === SubmenuItemNode.ID
-            ? (item as SubmenuItemNode).submenuId
-            : item.id;
+    <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
+      {moreAtFirst && moreAction}
+      {primary.map((item) => {
+        if (item.id === ComponentMenuItemNode.ID) {
           return (
-            <InlineActionWidget
-              id={id}
-              key={id}
-              className={clsx({ [styles.selected]: item.checked })}
-              type={type}
-              data={item}
-              afterClick={afterClick}
-              context={context} />
+            <CustomActionWidget
+              context={context}
+              data={item as ComponentMenuItemNode}
+              key={(item as ComponentMenuItemNode).nodeId}
+            />
           );
-        })
-      }
-      {
-        Array.isArray(extraNavActions) && extraNavActions.length
-          ? <>
-            {primary.length && <span className={styles.divider} />}
-            {extraNavActions}
-          </>
-          : null
-      }
-      { !moreAtFirst && moreAction }
+        }
+
+        // submenu 使用 submenu-id 作为 id 唯一值
+        const id = item.id === SubmenuItemNode.ID ? (item as SubmenuItemNode).submenuId : item.id;
+        return (
+          <InlineActionWidget
+            id={id}
+            key={id}
+            className={clsx({ [styles.selected]: item.checked })}
+            type={type}
+            data={item}
+            afterClick={afterClick}
+            context={context}
+          />
+        );
+      })}
+      {Array.isArray(extraNavActions) && extraNavActions.length ? (
+        <>
+          {primary.length && <span className={styles.divider} />}
+          {extraNavActions}
+        </>
+      ) : null}
+      {!moreAtFirst && moreAction}
     </div>
   );
 });
 
 TitleActionList.displayName = 'TitleActionList';
 
-type TupleContext<T, U, K, M> = (
-  M extends undefined
+type TupleContext<T, U, K, M> = M extends undefined
   ? K extends undefined
     ? U extends undefined
       ? T extends undefined
@@ -404,8 +392,7 @@ type TupleContext<T, U, K, M> = (
         : [T]
       : [T, U]
     : [T, U, K]
-  : [T, U, K, M]
-);
+  : [T, U, K, M];
 
 // 目前先不放出来 extraNavActions 保持 InlineActionBar 只有一个分组
 // 需要两个分组时考虑组合两个 InlineActionBar 组件使用
@@ -414,7 +401,7 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   menus: IMenu;
   separator?: IMenuSeparator;
   className?: string;
-  debounce?: {delay: number, maxWait?: number};
+  debounce?: { delay: number; maxWait?: number };
 }
 
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
@@ -426,11 +413,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
-    <TitleActionList
-      menuId={menus.menuId}
-      nav={navMenu}
-      more={separator === 'inline' ? [] : moreMenu}
-      {...restProps} />
+    <TitleActionList menuId={menus.menuId} nav={navMenu} more={separator === 'inline' ? [] : moreMenu} {...restProps} />
   );
 }
 
@@ -457,7 +440,8 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
       context={context}
-      {...restProps} />
+      {...restProps}
+    />
   );
 }
 

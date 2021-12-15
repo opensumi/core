@@ -5,7 +5,14 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@open
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IComponentMenuItem, isIComponentMenuItem, IMenuRegistry } from './base';
 import { MenuId } from './menu-id';
-import { AbstractMenuService, IMenu, IMenuNodeOptions, SubmenuItemNode, ComponentMenuItemNode, MenuItemNode } from './menu.interface';
+import {
+  AbstractMenuService,
+  IMenu,
+  IMenuNodeOptions,
+  SubmenuItemNode,
+  ComponentMenuItemNode,
+  MenuItemNode,
+} from './menu.interface';
 
 type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>];
 
@@ -53,24 +60,27 @@ class Menu extends Disposable implements IMenu {
     this._build();
 
     // rebuild this menu whenever the menu registry reports an event for this MenuId
-    this.addDispose(Event.debounce(
-      Event.filter(this.menuRegistry.onDidChangeMenu, (menuId) => menuId === this.id),
-      () => { },
-      50,
-    )(this._build, this));
+    this.addDispose(
+      Event.debounce(
+        Event.filter(this.menuRegistry.onDidChangeMenu, (menuId) => menuId === this.id),
+        () => {},
+        50,
+      )(this._build, this),
+    );
 
     // when context keys change we need to check if the menu also has changed
-    this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      this.contextKeyService.onDidChangeContext,
-      (last, event) => last || event.payload.affectsSome(this._contextKeys),
-      50,
-    )((e) => e && this._onDidChange.fire(undefined), this));
+    this.addDispose(
+      Event.debounce<ContextKeyChangeEvent, boolean>(
+        this.contextKeyService.onDidChangeContext,
+        (last, event) => last || event.payload.affectsSome(this._contextKeys),
+        50,
+      )((e) => e && this._onDidChange.fire(undefined), this),
+    );
 
     this.addDispose(this._onDidChange);
   }
 
   private _build(): void {
-
     // reset
     this._menuGroups = [];
     this._contextKeys = new Set();
@@ -107,7 +117,9 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  public getMenuNodes(config: IMenuNodeOptions = {}): Array<[MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]> {
+  public getMenuNodes(
+    config: IMenuNodeOptions = {},
+  ): Array<[MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]> {
     const result: [MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
@@ -148,29 +160,38 @@ class Menu extends Disposable implements IMenu {
         // menu.enabledWhen 的优先级高于 Command.isEnabled
         // 若设置了 menu.enabledWhen 则忽略 Command.isEnabled
         const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
-        const disabled = item.enabledWhen !== undefined
-          ? !this.contextKeyService.match(item.enabledWhen, options.contextDom)
-          : !commandEnablement;
+        const disabled =
+          item.enabledWhen !== undefined
+            ? !this.contextKeyService.match(item.enabledWhen, options.contextDom)
+            : !commandEnablement;
 
         // menu.toggledWhen 的优先级高于 Command.isToggled
         // 若设置了 menu.toggledWhen 则忽略 Command.isToggled
         const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
-        const checked = item.toggledWhen !== undefined
-          ? this.contextKeyService.match(item.toggledWhen, options.contextDom)
-          : commandToggle;
+        const checked =
+          item.toggledWhen !== undefined
+            ? this.contextKeyService.match(item.toggledWhen, options.contextDom)
+            : commandToggle;
 
-        const action = this.injector.get(
-          MenuItemNode,
-          [
-            menuCommand, item.iconClass || command?.iconClass, options,
-            disabled, checked, item.type, item.nativeRole, item.extraDesc,
-            item.extraTailArgs, item.argsTransformer,
-          ]);
+        const action = this.injector.get(MenuItemNode, [
+          menuCommand,
+          item.iconClass || command?.iconClass,
+          options,
+          disabled,
+          checked,
+          item.type,
+          item.nativeRole,
+          item.extraDesc,
+          item.extraTailArgs,
+          item.argsTransformer,
+        ]);
         return action;
       } else if (isIComponentMenuItem(item)) {
         const action = this.injector.get(ComponentMenuItemNode, [
-          item, options,
-          item.extraTailArgs, item.argsTransformer,
+          item,
+          options,
+          item.extraTailArgs,
+          item.argsTransformer,
         ]);
         return action;
       } else {
@@ -196,7 +217,6 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   const bGroup = b.group;
 
   if (aGroup !== bGroup) {
-
     // Falsy groups come last
     if (!aGroup) {
       return 1;

@@ -50,7 +50,6 @@ export interface IToolbarActionService {
  */
 @Injectable()
 export class ToolbarActionService extends Disposable implements IToolbarActionService {
-
   private groups = new Map<string, IDisposable>();
 
   @Autowired(IToolbarRegistry)
@@ -63,10 +62,12 @@ export class ToolbarActionService extends Disposable implements IToolbarActionSe
   public registryActionGroup(id: string, group: IToolbarActionGroup): IDisposable {
     const disposer = new Disposable();
 
-    disposer.addDispose(this.registry.registerToolbarActionGroup({
-      id,
-      preferredLocation: 'menu-right',
-    }));
+    disposer.addDispose(
+      this.registry.registerToolbarActionGroup({
+        id,
+        preferredLocation: 'menu-right',
+      }),
+    );
 
     disposer.addDispose({
       dispose: () => {
@@ -77,43 +78,43 @@ export class ToolbarActionService extends Disposable implements IToolbarActionSe
     group.forEach((item, i) => {
       const actionId = id + '-action-' + i;
       if (item.type === 'action') {
-        disposer.addDispose(this.registry.registerToolbarAction({
-          id: actionId,
-          description: item.description || actionId,
-          component: createToolbarActionBtn({
-            iconClass: item.iconClass!,
-            title: item.title,
+        disposer.addDispose(
+          this.registry.registerToolbarAction({
             id: actionId,
-            delegate: (delegate) => {
-              if (delegate) {
-                delegate.onClick(item.click);
-              }
+            description: item.description || actionId,
+            component: createToolbarActionBtn({
+              iconClass: item.iconClass!,
+              title: item.title,
+              id: actionId,
+              delegate: (delegate) => {
+                if (delegate) {
+                  delegate.onClick(item.click);
+                }
+              },
+            }),
+            preferredPosition: {
+              group: id,
             },
           }),
-          preferredPosition: {
-            group: id,
-          },
-        }));
+        );
       } else if (item.type === 'enum') {
-        disposer.addDispose(this.registry.registerToolbarAction({
-          id: actionId,
-          description: item.description || actionId,
-          component: createToolbarActionSelect({
-            defaultValue: item.defaultValue || item.title,
-            options: item.enum.map((e) => {
-              return {
+        disposer.addDispose(
+          this.registry.registerToolbarAction({
+            id: actionId,
+            description: item.description || actionId,
+            component: createToolbarActionSelect({
+              defaultValue: item.defaultValue || item.title,
+              options: item.enum.map((e) => ({
                 label: e,
                 value: e,
-              };
+              })),
+              onSelect: (value) => item.select(value),
             }),
-            onSelect: (value) => {
-              return item.select(value);
+            preferredPosition: {
+              group: id,
             },
           }),
-          preferredPosition: {
-            group: id,
-          },
-        }));
+        );
       }
     });
 

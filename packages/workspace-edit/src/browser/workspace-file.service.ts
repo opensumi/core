@@ -1,8 +1,26 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@opensumi/ide-core-common';
+import {
+  URI,
+  Uri,
+  CancellationTokenSource,
+  CancellationToken,
+  Disposable,
+  IDisposable,
+  getDebugLogger,
+  AsyncEmitter,
+  Event,
+  FileStat,
+} from '@opensumi/ide-core-common';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { FileOperation, FILE_OPERATION_TIMEOUT, IWorkspaceFileOperationParticipant, IWorkspaceFileService, SourceTargetPair, WorkspaceFileEvent } from '..';
+import {
+  FileOperation,
+  FILE_OPERATION_TIMEOUT,
+  IWorkspaceFileOperationParticipant,
+  IWorkspaceFileService,
+  SourceTargetPair,
+  WorkspaceFileEvent,
+} from '..';
 
 @Injectable()
 export class WorkspaceFileOperationParticipant extends Disposable {
@@ -21,7 +39,7 @@ export class WorkspaceFileOperationParticipant extends Disposable {
     };
   }
 
-  async participate(files: { source?: Uri, target: Uri }[], operation: FileOperation): Promise<void> {
+  async participate(files: { source?: Uri; target: Uri }[], operation: FileOperation): Promise<void> {
     const cts = new CancellationTokenSource();
     for (const participant of this.participants) {
       if (cts.token.isCancellationRequested) {
@@ -52,13 +70,16 @@ export class WorkspaceFileService implements IWorkspaceFileService {
   private correlationIds = 0;
 
   private readonly _onWillRunWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  public readonly onWillRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onWillRunWorkspaceFileOperation.event;
+  public readonly onWillRunWorkspaceFileOperation: Event<WorkspaceFileEvent> =
+    this._onWillRunWorkspaceFileOperation.event;
 
   private readonly _onDidFailWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  public readonly onDidFailWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidFailWorkspaceFileOperation.event;
+  public readonly onDidFailWorkspaceFileOperation: Event<WorkspaceFileEvent> =
+    this._onDidFailWorkspaceFileOperation.event;
 
   private readonly _onDidRunWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  public readonly onDidRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidRunWorkspaceFileOperation.event;
+  public readonly onDidRunWorkspaceFileOperation: Event<WorkspaceFileEvent> =
+    this._onDidRunWorkspaceFileOperation.event;
 
   public create(resource: URI, contents?: string, options?: { overwrite?: boolean }) {
     return this.doCreate(resource, true, contents, options);
@@ -76,8 +97,7 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     return this.doMoveOrCopy(files, false, options);
   }
 
-  public async delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void> {
-
+  public async delete(resources: URI[], options?: { useTrash?: boolean; recursive?: boolean }): Promise<void> {
     // file operation participant
     const files = resources.map((target) => ({ target: target.codeUri }));
     await this.runOperationParticipant(files, FileOperation.DELETE);
@@ -92,7 +112,6 @@ export class WorkspaceFileService implements IWorkspaceFileService {
         await this.fileService.delete(resource.toString(), { moveToTrash: options?.useTrash });
       }
     } catch (error) {
-
       // error event
       await this._onDidFailWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
 
@@ -111,7 +130,11 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     return this.fileOperationParticipants.participate(files, operation);
   }
 
-  private async doMoveOrCopy(files: Required<SourceTargetPair>[], move: boolean, options?: { overwrite?: boolean }): Promise<FileStat[]> {
+  private async doMoveOrCopy(
+    files: Required<SourceTargetPair>[],
+    move: boolean,
+    options?: { overwrite?: boolean },
+  ): Promise<FileStat[]> {
     const overwrite = options?.overwrite;
     const stats: FileStat[] = [];
 
@@ -119,7 +142,11 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     await this.runOperationParticipant(files, move ? FileOperation.MOVE : FileOperation.COPY);
 
     // before event
-    const event = { correlationId: this.correlationIds++, operation: move ? FileOperation.MOVE : FileOperation.COPY, files };
+    const event = {
+      correlationId: this.correlationIds++,
+      operation: move ? FileOperation.MOVE : FileOperation.COPY,
+      files,
+    };
     await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
 
     try {
@@ -132,7 +159,6 @@ export class WorkspaceFileService implements IWorkspaceFileService {
         }
       }
     } catch (error) {
-
       // error event
       await this._onDidFailWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
 
@@ -149,7 +175,11 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     // file operation participant
     await this.runOperationParticipant([{ target: resource.codeUri }], FileOperation.CREATE);
     // before events
-    const event = { correlationId: this.correlationIds++, operation: FileOperation.CREATE, files: [{ target: resource.codeUri }] };
+    const event = {
+      correlationId: this.correlationIds++,
+      operation: FileOperation.CREATE,
+      files: [{ target: resource.codeUri }],
+    };
     await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
 
     // now actually create on disk
@@ -161,7 +191,6 @@ export class WorkspaceFileService implements IWorkspaceFileService {
         stat = await this.fileService.createFolder(resource.toString());
       }
     } catch (error) {
-
       // error event
       await this._onDidFailWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
 

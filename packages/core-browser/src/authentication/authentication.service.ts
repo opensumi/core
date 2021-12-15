@@ -1,4 +1,28 @@
-import { AllowedExtension, IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession, IAccountUsage, StorageProvider, IStorage, URI, STORAGE_SCHEMA, ILogger, IEventBus, ExtensionActivateEvent, Event, Emitter, AuthenticationProviderInformation, Disposable, SessionRequestInfo, formatLocalize, CommandRegistry, IDisposable, noAccountsId, DisposableCollection } from '@opensumi/ide-core-common';
+import {
+  AllowedExtension,
+  IAuthenticationService,
+  IAuthenticationProvider,
+  AuthenticationSessionsChangeEvent,
+  AuthenticationSession,
+  IAccountUsage,
+  StorageProvider,
+  IStorage,
+  URI,
+  STORAGE_SCHEMA,
+  ILogger,
+  IEventBus,
+  ExtensionActivateEvent,
+  Event,
+  Emitter,
+  AuthenticationProviderInformation,
+  Disposable,
+  SessionRequestInfo,
+  formatLocalize,
+  CommandRegistry,
+  IDisposable,
+  noAccountsId,
+  DisposableCollection,
+} from '@opensumi/ide-core-common';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IMenuRegistry, MenuId } from '../menu/next';
 
@@ -19,14 +43,27 @@ export class AuthenticationService extends Disposable implements IAuthentication
   @Autowired(CommandRegistry)
   protected readonly commands: CommandRegistry;
 
-  private _onDidRegisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> = this.registerDispose(new Emitter<AuthenticationProviderInformation>());
-  public readonly onDidRegisterAuthenticationProvider: Event<AuthenticationProviderInformation> = this._onDidRegisterAuthenticationProvider.event;
+  private _onDidRegisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> = this.registerDispose(
+    new Emitter<AuthenticationProviderInformation>(),
+  );
+  public readonly onDidRegisterAuthenticationProvider: Event<AuthenticationProviderInformation> =
+    this._onDidRegisterAuthenticationProvider.event;
 
-  private _onDidUnregisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> = this.registerDispose(new Emitter<AuthenticationProviderInformation>());
-  readonly onDidUnregisterAuthenticationProvider: Event<AuthenticationProviderInformation> = this._onDidUnregisterAuthenticationProvider.event;
+  private _onDidUnregisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> = this.registerDispose(
+    new Emitter<AuthenticationProviderInformation>(),
+  );
+  readonly onDidUnregisterAuthenticationProvider: Event<AuthenticationProviderInformation> =
+    this._onDidUnregisterAuthenticationProvider.event;
 
-  private _onDidChangeSessions: Emitter<{ providerId: string, label: string, event: AuthenticationSessionsChangeEvent }> = this.registerDispose(new Emitter<{ providerId: string, label: string, event: AuthenticationSessionsChangeEvent }>());
-  readonly onDidChangeSessions: Event<{ providerId: string, label: string, event: AuthenticationSessionsChangeEvent }> = this._onDidChangeSessions.event;
+  private _onDidChangeSessions: Emitter<{
+    providerId: string;
+    label: string;
+    event: AuthenticationSessionsChangeEvent;
+  }> = this.registerDispose(
+    new Emitter<{ providerId: string; label: string; event: AuthenticationSessionsChangeEvent }>(),
+  );
+  readonly onDidChangeSessions: Event<{ providerId: string; label: string; event: AuthenticationSessionsChangeEvent }> =
+    this._onDidChangeSessions.event;
 
   private _storage: IStorage;
 
@@ -52,32 +89,39 @@ export class AuthenticationService extends Disposable implements IAuthentication
             {
               id: signOutCommandId,
               label: formatLocalize('authentication.signOut', e.label),
-            }, {
-            execute: async () => {
-              await this.signOutOfAccount(e.providerId, session.account.label);
             },
-          });
+            {
+              execute: async () => {
+                await this.signOutOfAccount(e.providerId, session.account.label);
+              },
+            },
+          );
           const manageTrustedCommandId = `manage-trusted-${e.providerId}-${session.id}`;
           const manageTrustedCommand = this.commands.registerCommand(
             {
               id: manageTrustedCommandId,
               label: '%authentication.manageTrustedExtensions%',
-            }, {
-            execute: async () => {
-              await this.manageTrustedExtensionsForAccount(e.providerId, session.account.label);
             },
-          });
+            {
+              execute: async () => {
+                await this.manageTrustedExtensionsForAccount(e.providerId, session.account.label);
+              },
+            },
+          );
 
           const accountMenuId = `${e.providerId}${session.account.label}`;
           const accountMenu = this.menus.registerMenuItem(MenuId.AccountsContext, {
             submenu: accountMenuId,
             label: `${session.account.label} (${e.label})`,
           });
-          const menuAction = this.menus.registerMenuItems(accountMenuId, [{
-            command: manageTrustedCommandId,
-          }, {
-            command: signOutCommandId,
-          }]);
+          const menuAction = this.menus.registerMenuItems(accountMenuId, [
+            {
+              command: manageTrustedCommandId,
+            },
+            {
+              command: signOutCommandId,
+            },
+          ]);
           disposables.push(accountMenu);
           disposables.push(menuAction);
           disposables.push(signOutCommand);
@@ -158,7 +202,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
         trustedExtensions = JSON.parse(trustedExtensionSrc);
       }
     } catch (err) {
-      this.logger.warn(`read allow extensions error: ` + err);
+      this.logger.warn('read allow extensions error: ' + err);
     }
 
     return trustedExtensions;
@@ -207,7 +251,8 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
   async getSessions(providerId: string): Promise<ReadonlyArray<AuthenticationSession>> {
     try {
-      const authProvider = this._authenticationProviders.get(providerId) || await this.tryActivateProvider(providerId);
+      const authProvider =
+        this._authenticationProviders.get(providerId) || (await this.tryActivateProvider(providerId));
       return await authProvider.getSessions();
     } catch (_) {
       throw new Error(`No authentication provider '${providerId}' is currently registered.`);
@@ -272,32 +317,36 @@ export class AuthenticationService extends Disposable implements IAuthentication
     if (provider) {
       const providerRequests = this._signInRequestItems.get(providerId);
       const scopesList = scopes.sort().join('');
-      const extensionHasExistingRequest = providerRequests
-        && providerRequests[scopesList]
-        && providerRequests[scopesList].requestingExtensionIds.includes(extensionId);
+      const extensionHasExistingRequest =
+        providerRequests &&
+        providerRequests[scopesList] &&
+        providerRequests[scopesList].requestingExtensionIds.includes(extensionId);
 
       if (extensionHasExistingRequest) {
         return;
       }
 
-      const signInCommand = this.commands.registerCommand({
-        id: `${extensionId}signIn`,
-        label: formatLocalize('authentication.signInRequests', extensionName),
-      }, {
-        execute: async () => {
-          const session = await this.login(providerId, scopes);
-          const accountName = session.account.label;
-          // Add extension to allow list since user explicitly signed in on behalf of it
-          const allowList = await this.getAllowedExtensions(providerId, accountName);
-          if (!allowList.find((allowed) => allowed.id === extensionId)) {
-            allowList.push({ id: extensionId, name: extensionName });
-            await this.setAllowedExtensions(providerId, accountName, allowList);
-          }
-
-          // And also set it as the preferred account for the extension
-          await this.setExtensionSessionId(extensionName, providerId, session.id);
+      const signInCommand = this.commands.registerCommand(
+        {
+          id: `${extensionId}signIn`,
+          label: formatLocalize('authentication.signInRequests', extensionName),
         },
-      });
+        {
+          execute: async () => {
+            const session = await this.login(providerId, scopes);
+            const accountName = session.account.label;
+            // Add extension to allow list since user explicitly signed in on behalf of it
+            const allowList = await this.getAllowedExtensions(providerId, accountName);
+            if (!allowList.find((allowed) => allowed.id === extensionId)) {
+              allowList.push({ id: extensionId, name: extensionName });
+              await this.setAllowedExtensions(providerId, accountName, allowList);
+            }
+
+            // And also set it as the preferred account for the extension
+            await this.setExtensionSessionId(extensionName, providerId, session.id);
+          },
+        },
+      );
 
       const menuItem = this.menus.registerMenuItem(MenuId.AccountsContext, {
         group: '2_signInRequests',
@@ -320,7 +369,6 @@ export class AuthenticationService extends Disposable implements IAuthentication
           },
         });
       }
-
     }
   }
   getLabel(providerId: string): string {
@@ -341,7 +389,8 @@ export class AuthenticationService extends Disposable implements IAuthentication
   }
   async login(providerId: string, scopes: string[]): Promise<AuthenticationSession> {
     try {
-      const authProvider = this._authenticationProviders.get(providerId) || await this.tryActivateProvider(providerId);
+      const authProvider =
+        this._authenticationProviders.get(providerId) || (await this.tryActivateProvider(providerId));
       return await authProvider.login(scopes);
     } catch (_) {
       throw new Error(`No authentication provider '${providerId}' is currently registered.`);
@@ -384,7 +433,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
       try {
         usages = JSON.parse(storedUsages);
       } catch (err) {
-        this.logger.warn(`parse account usages error: ` + err);
+        this.logger.warn('parse account usages error: ' + err);
       }
     }
 

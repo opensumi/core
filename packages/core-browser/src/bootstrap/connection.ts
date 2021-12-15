@@ -4,10 +4,18 @@ import {
   WSChannelHandler,
   createSocketConnection,
   RPCMessageConnection,
- } from '@opensumi/ide-connection';
+} from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import { Injector, Provider } from '@opensumi/di';
-import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@opensumi/ide-core-common';
+import {
+  getDebugLogger,
+  IReporterService,
+  BasicModule,
+  BrowserConnectionCloseEvent,
+  BrowserConnectionOpenEvent,
+  BrowserConnectionErrorEvent,
+  IEventBus,
+} from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
@@ -59,7 +67,11 @@ export async function createNetClientConnection(injector: Injector, modules: Mod
   bindConnectionService(injector, modules, createSocketConnection(connection));
 }
 
-export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], connection: RPCMessageConnection) {
+export async function bindConnectionService(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  connection: RPCMessageConnection,
+) {
   const clientCenter = new RPCServiceCenter();
   clientCenter.setConnection(connection);
 
@@ -67,9 +79,7 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     clientCenter.removeConnection(connection);
   });
 
-  const {
-    getRPCService,
-  } = initRPCService(clientCenter);
+  const { getRPCService } = initRPCService(clientCenter);
 
   const backServiceArr: BackService[] = [];
   // 存放依赖前端后端服务，后端服务实例化后再去实例化这些 token

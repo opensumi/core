@@ -131,7 +131,7 @@ export interface ContentSearchResult {
   renderStart?: number;
 
   /**
-    * 过长的行内容，被裁剪后的内容
+   * 过长的行内容，被裁剪后的内容
    */
   renderLineText?: string;
 }
@@ -180,8 +180,8 @@ export function anchorGlob(glob: string, isApplyPre?: boolean): string {
   return glob;
 }
 
-export function getRoot(rootUris ?: string[], uri ?: string): string {
-  let result: string = '';
+export function getRoot(rootUris?: string[], uri?: string): string {
+  let result = '';
   if (!rootUris || !uri) {
     return result;
   }
@@ -219,14 +219,11 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
     return result;
   }
 
-  if (lineText.length > maxLineLength)  {
+  if (lineText.length > maxLineLength) {
     // 行内容太多的时候，裁剪行
     const preLength = 20;
     const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
-    result.renderLineText = lineText.slice(
-      start,
-      start + 500,
-    );
+    result.renderLineText = lineText.slice(start, start + 500);
     delete result.lineText;
     result.renderStart = matchStart - start;
     result.matchLength = matchLength > maxMatchLength ? maxMatchLength : matchLength;
@@ -235,10 +232,7 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
     // 将可见区域前移
     const preLength = 40;
     const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
-    result.renderLineText = lineText.slice(
-      start,
-      lineText.length,
-    );
+    result.renderLineText = lineText.slice(start, lineText.length);
     delete result.lineText;
     result.renderStart = matchStart - start;
     return result;
@@ -259,9 +253,9 @@ export const openSearchCmd: Command = {
  * 用于排除 通过贪婪匹配后的，相对路径的glob 匹配到的所有路径的结果
  */
 export class FilterFileWithGlobRelativePath {
-  private matcherList: {relative: ParsedPattern, absolute: ParsedPattern}[] = [];
+  private matcherList: { relative: ParsedPattern; absolute: ParsedPattern }[] = [];
 
-  constructor(roots: string[],  globs: string[]) {
+  constructor(roots: string[], globs: string[]) {
     if (roots.length < 1 || globs.length < 1) {
       return;
     }

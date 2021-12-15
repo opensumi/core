@@ -1,11 +1,9 @@
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 import { ColorTheme, ColorThemeKind } from '../../../common/vscode/ext-types';
 import { IExtHostTheming, IMainThreadTheming, MainThreadAPIIdentifier } from '../../../common/vscode';
 
 export class ExtHostTheming implements IExtHostTheming {
-
   private _proxy: IMainThreadTheming;
   private _actual: ColorTheme;
   private _onDidChangeActiveColorTheme: Emitter<ColorTheme>;
@@ -21,7 +19,8 @@ export class ExtHostTheming implements IExtHostTheming {
   }
 
   $onColorThemeChange(type: string): void {
-    const kind = type === 'light' ? ColorThemeKind.Light : type === 'dark' ? ColorThemeKind.Dark : ColorThemeKind.HighContrast;
+    const kind =
+      type === 'light' ? ColorThemeKind.Light : type === 'dark' ? ColorThemeKind.Dark : ColorThemeKind.HighContrast;
     this._actual = new ColorTheme(kind);
     this._onDidChangeActiveColorTheme.fire(this._actual);
   }

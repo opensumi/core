@@ -13,25 +13,21 @@ describe('VariableResolverService should be work', () => {
   const currentName = 'Resolver Test Case';
 
   beforeEach(() => {
-    injector = createBrowserInjector([
-      VariableModule,
-    ]);
+    injector = createBrowserInjector([VariableModule]);
 
-    injector.addProviders(
-      {
-        token: QuickOpenService,
-        useClass: MockQuickOpenService,
-      },
-    );
+    injector.addProviders({
+      token: QuickOpenService,
+      useClass: MockQuickOpenService,
+    });
     variableResolverService = injector.get(IVariableResolverService);
 
     variableRegistry = injector.get(VariableRegistry);
 
     const variables: Variable[] = [
       {
-          name: 'root',
-          description: 'current workspace uri',
-          resolve: () => Promise.resolve(workspaceRoot),
+        name: 'root',
+        description: 'current workspace uri',
+        resolve: () => Promise.resolve(workspaceRoot),
       },
       {
         name: 'name',
@@ -68,17 +64,17 @@ describe('VariableResolverService should be work', () => {
     });
 
     it('should resolve known variables in a object', async (done) => {
-      const variableObject = {root: '${root}'};
+      const variableObject = { root: '${root}' };
       const resolved = await variableResolverService.resolve(variableObject);
       expect(resolved.root).toBe(`${workspaceRoot}`);
       done();
     });
 
     it('should resolve known variables in a string array', async () => {
-        const resolved = await variableResolverService.resolveArray(['name: ${name}', 'root: ${root}']);
-        expect(resolved.length).toBe(2);
-        expect(resolved.indexOf(`name: ${currentName}`) >= 0).toBeTruthy();
-        expect(resolved.indexOf(`root: ${workspaceRoot}`) >= 0).toBeTruthy();
+      const resolved = await variableResolverService.resolveArray(['name: ${name}', 'root: ${root}']);
+      expect(resolved.length).toBe(2);
+      expect(resolved.indexOf(`name: ${currentName}`) >= 0).toBeTruthy();
+      expect(resolved.indexOf(`root: ${workspaceRoot}`) >= 0).toBeTruthy();
     });
 
     it('should resolve undefined variables', async () => {
@@ -87,9 +83,8 @@ describe('VariableResolverService should be work', () => {
     });
 
     it('should skip unknown variables', async () => {
-        const resolved = await variableResolverService.resolve('name: ${name}; root: ${root}; unkown: ${unkown}');
-        expect(resolved).toBe(`name: ${currentName}; root: ${workspaceRoot}; unkown: \${unkown}`);
+      const resolved = await variableResolverService.resolve('name: ${name}; root: ${root}; unkown: ${unkown}');
+      expect(resolved).toBe(`name: ${currentName}; root: ${workspaceRoot}; unkown: \${unkown}`);
     });
-
   });
 });

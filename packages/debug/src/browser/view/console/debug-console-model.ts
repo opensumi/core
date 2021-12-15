@@ -5,12 +5,11 @@ import { ExpressionContainer } from '../../tree/debug-tree-node.define';
 
 @Injectable({ multiple: true })
 export class DebugConsoleTreeModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugConsoleTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
-  private _tempScrollOffset: number = 0;
+  private _tempScrollOffset = 0;
 
   constructor(@Optional() root: ExpressionContainer) {
     super();

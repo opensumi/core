@@ -1,9 +1,36 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { WithEventBus, IDisposable, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@opensumi/ide-core-browser';
-import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
+import {
+  WithEventBus,
+  IDisposable,
+  View,
+  ViewContainerOptions,
+  ContributionProvider,
+  SlotLocation,
+  IContextKeyService,
+  ExtensionActivateEvent,
+  AppConfig,
+  ComponentRegistry,
+  ILogger,
+  CommandRegistry,
+  CommandService,
+  OnEvent,
+  slotRendererRegistry,
+} from '@opensumi/ide-core-browser';
+import {
+  MainLayoutContribution,
+  IMainLayoutService,
+  ViewComponentOptions,
+  SUPPORT_ACCORDION_LOCATION,
+} from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  IMenuRegistry,
+  AbstractContextMenuService,
+  MenuId,
+  AbstractMenuService,
+  IContextMenu,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
@@ -48,16 +75,18 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   private accordionServices: Map<string, AccordionService> = new Map();
 
-  private pendingViewsMap: Map<string, {view: View, props?: any}[]> = new Map();
+  private pendingViewsMap: Map<string, { view: View; props?: any }[]> = new Map();
 
   private viewToContainerMap: Map<string, string> = new Map();
 
   private disposableMap: Map<string, IDisposable> = new Map();
 
-  private state: {[location: string]: {
-    currentId?: string;
-    size?: number;
-  }} = {};
+  private state: {
+    [location: string]: {
+      currentId?: string;
+      size?: number;
+    };
+  } = {};
 
   private customViews = new Map<string, View>();
 
@@ -75,7 +104,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   didMount() {
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
-      views.forEach(({view, props}) => {
+      views.forEach(({ view, props }) => {
         this.collectViewComponent(view, containerId, props);
       });
     }
@@ -112,13 +141,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @OnEvent(ThemeChangedEvent)
   onThemeChange(e: ThemeChangedEvent) {
     const theme = e.payload.theme;
-    localStorage.setItem('theme', JSON.stringify({
-      menuBarBackground: theme.getColor('kt.menubar.background')?.toString(),
-      sideBarBackground: theme.getColor('sideBar.background')?.toString(),
-      editorBackground: theme.getColor('editor.background')?.toString(),
-      panelBackground: theme.getColor('panel.background')?.toString(),
-      statusBarBackground: theme.getColor('statusBar.background')?.toString(),
-    }));
+    localStorage.setItem(
+      'theme',
+      JSON.stringify({
+        menuBarBackground: theme.getColor('kt.menubar.background')?.toString(),
+        sideBarBackground: theme.getColor('sideBar.background')?.toString(),
+        editorBackground: theme.getColor('editor.background')?.toString(),
+        panelBackground: theme.getColor('panel.background')?.toString(),
+        statusBarBackground: theme.getColor('statusBar.background')?.toString(),
+      }),
+    );
   }
 
   restoreState() {
@@ -137,7 +169,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       },
     });
     for (const service of this.tabbarServices.values()) {
-      const {currentId, size} = this.state[service.location] || {};
+      const { currentId, size } = this.state[service.location] || {};
       service.prevSize = size;
       let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
       const defaultPanels = this.appConfig.defaultPanels;
@@ -148,7 +180,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
             defaultContainer = restorePanel;
           } else {
             const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
-            if (componentInfo && this.appConfig.layoutConfig[service.location]?.modules && ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)) {
+            if (
+              componentInfo &&
+              this.appConfig.layoutConfig[service.location]?.modules &&
+              ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)
+            ) {
               defaultContainer = componentInfo.options!.containerId;
             } else {
               this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
@@ -161,7 +197,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       if (currentId === undefined) {
         service.currentContainerId = defaultContainer;
       } else {
-        service.currentContainerId = currentId ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : '';
+        service.currentContainerId = currentId
+          ? service.containersMap.has(currentId)
+            ? currentId
+            : defaultContainer
+          : '';
       }
     }
   }
@@ -188,11 +228,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (show === true) {
-      tabbarService.currentContainerId = tabbarService.currentContainerId || tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+      tabbarService.currentContainerId =
+        tabbarService.currentContainerId ||
+        tabbarService.previousContainerId ||
+        tabbarService.containersMap.keys().next().value;
     } else if (show === false) {
       tabbarService.currentContainerId = '';
     } else {
-      tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+      tabbarService.currentContainerId = tabbarService.currentContainerId
+        ? ''
+        : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
     if (tabbarService.currentContainerId && size) {
       tabbarService.resizeHandle?.setSize(size);
@@ -202,7 +247,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   getTabbarService(location: string) {
     const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location]);
     if (!this.tabbarServices.get(location)) {
-      service.onCurrentChange(({currentId}) => {
+      service.onCurrentChange(({ currentId }) => {
         this.storeState(service, currentId);
         // onView 也支持监听 containerId
         this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
@@ -266,7 +311,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return activityHandler;
   }
 
-  private holdTabbarComponent = new Map<string, {views: View[], options: ViewContainerOptions, side: string}>();
+  private holdTabbarComponent = new Map<string, { views: View[]; options: ViewContainerOptions; side: string }>();
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
@@ -294,7 +339,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return options.containerId;
     }
     const tabbarService = this.getTabbarService(side);
-    tabbarService.registerContainer(options.containerId, {views, options});
+    tabbarService.registerContainer(options.containerId, { views, options });
     views.forEach((view) => {
       this.viewToContainerMap.set(view.id, options.containerId);
     });
@@ -317,15 +362,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
 
     if (options?.fromExtension) {
-      this.disposableMap.set(view.id, this.commandRegistry.registerCommand({
-        id: `${view.id}.focus`,
-      }, {
-        execute: async () => {
-          await this.ensureViewReady(view.id);
-          // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
-          return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
-        },
-      }));
+      this.disposableMap.set(
+        view.id,
+        this.commandRegistry.registerCommand(
+          {
+            id: `${view.id}.focus`,
+          },
+          {
+            execute: async () => {
+              await this.ensureViewReady(view.id);
+              // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
+              return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
+            },
+          },
+        ),
+      );
     }
 
     return containerId;
@@ -355,7 +406,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const holdInfo = this.holdTabbarComponent.get(containerId);
     if (holdInfo) {
       const tabbarService = this.getTabbarService(holdInfo.side);
-      tabbarService.registerContainer(containerId, {views: holdInfo.views, options: holdInfo.options});
+      tabbarService.registerContainer(containerId, { views: holdInfo.views, options: holdInfo.options });
       this.tabbarUpdateSet.delete(containerId);
       this.holdTabbarComponent.delete(containerId);
     }
@@ -437,5 +488,4 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
     return tabbarService.isExpanded;
   }
-
 }

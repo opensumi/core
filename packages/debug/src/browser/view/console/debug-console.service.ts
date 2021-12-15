@@ -7,10 +7,26 @@ import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/mo
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Schemas, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelService,
+  IEditorDocumentModelContentProvider,
+  ICodeEditor,
+  getSimpleEditorOptions,
+} from '@opensumi/ide-editor/lib/browser';
 import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-editor';
-import { IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames, localize, StorageProvider } from '@opensumi/ide-core-browser';
-import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager, CONTEXT_IN_DEBUG_MODE_KEY, DebugState } from '../../../common';
+import {
+  IContextKeyService,
+  MonacoOverrideServiceRegistry,
+  ServiceNames,
+  localize,
+  StorageProvider,
+} from '@opensumi/ide-core-browser';
+import {
+  DEBUG_CONSOLE_CONTAINER_ID,
+  IDebugSessionManager,
+  CONTEXT_IN_DEBUG_MODE_KEY,
+  DebugState,
+} from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { transparent, editorForeground, IThemeService } from '@opensumi/ide-theme';
@@ -18,9 +34,7 @@ import { transparent, editorForeground, IThemeService } from '@opensumi/ide-them
 const DECORATION_KEY = 'consoleinputdecoration';
 const HISTORY_STORAGE_KEY = 'debug.console.history';
 
-const firstUpperCase = (str: string) => {
-  return str.replace(/^\S/, (s) => s.toUpperCase());
-};
+const firstUpperCase = (str: string) => str.replace(/^\S/, (s) => s.toUpperCase());
 
 const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
   ...getSimpleEditorOptions(),
@@ -76,7 +90,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
   protected _consoleModel: ITextModel;
   protected get _isReadonly(): boolean {
     const session = this.manager.currentSession;
-    if (session && session.state !== DebugState.Inactive ) {
+    if (session && session.state !== DebugState.Inactive) {
       return false;
     }
 
@@ -142,9 +156,13 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     this.history = new HistoryNavigator(storage.get(HISTORY_STORAGE_KEY, []), 50);
 
     this._consoleInputElement = e;
-    this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, { ...consoleInputMonacoOptions });
+    this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, {
+      ...consoleInputMonacoOptions,
+    });
 
-    this.debugContextKey = this.injector.get(DebugContextKey, [(this.inputEditor.monacoEditor as any)._contextKeyService]);
+    this.debugContextKey = this.injector.get(DebugContextKey, [
+      (this.inputEditor.monacoEditor as any)._contextKeyService,
+    ]);
 
     this.registerDecorationType();
     await this.createConsoleInput();
@@ -302,7 +320,9 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
   }
 
   private registerDecorationType(): void {
-    const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE) as MonacoCodeService;
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService(
+      ServiceNames.CODE_EDITOR_SERVICE,
+    ) as MonacoCodeService;
     codeEditorService.registerDecorationType('console-input-decoration', DECORATION_KEY, {});
   }
 
@@ -322,34 +342,35 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       return;
     }
 
-    this._updateDisposable = monaco.languages.registerCompletionItemProvider(model.getModel()?.getLanguageIdentifier().language!, {
-      triggerCharacters: ['.'],
-      provideCompletionItems: async (model, position, ctx) => {
-        //  仅在支持自动补全查询的调试器中启用补全逻辑
-        if (!this.manager.currentSession?.capabilities.supportsCompletionsRequest) {
-          return;
-        }
-        if (model.uri.toString() !== this.consoleInputUri.toString()) {
-          return null;
-        }
+    this._updateDisposable = monaco.languages.registerCompletionItemProvider(
+      model.getModel()?.getLanguageIdentifier().language!,
+      {
+        triggerCharacters: ['.'],
+        provideCompletionItems: async (model, position, ctx) => {
+          //  仅在支持自动补全查询的调试器中启用补全逻辑
+          if (!this.manager.currentSession?.capabilities.supportsCompletionsRequest) {
+            return;
+          }
+          if (model.uri.toString() !== this.consoleInputUri.toString()) {
+            return null;
+          }
 
-        const session = this.manager.currentSession;
-        const { triggerCharacter } = ctx;
+          const session = this.manager.currentSession;
+          const { triggerCharacter } = ctx;
 
-        /**
-         * 代码字符串处理
-         */
-        let value = model.getWordAtPosition(position);
-        if (value && session) {
-          const { word, startColumn, endColumn } = value;
-          const res = await session.sendRequest('completions', {
-            text: word,
-            column: endColumn,
-            frameId: session.currentFrame && session.currentFrame.raw.id,
-          });
-          return {
-            suggestions: res.body.targets.map((item) => {
-              return {
+          /**
+           * 代码字符串处理
+           */
+          let value = model.getWordAtPosition(position);
+          if (value && session) {
+            const { word, startColumn, endColumn } = value;
+            const res = await session.sendRequest('completions', {
+              text: word,
+              column: endColumn,
+              frameId: session.currentFrame && session.currentFrame.raw.id,
+            });
+            return {
+              suggestions: res.body.targets.map((item) => ({
                 label: item.label,
                 insertText: item.text || item.label,
                 sortText: item.sortText,
@@ -360,29 +381,27 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
                   startColumn,
                   endColumn,
                 },
-              };
-            }),
-          } as monaco.languages.CompletionList;
-        }
+              })),
+            } as monaco.languages.CompletionList;
+          }
 
-        /**
-         * 特殊字符处理
-         */
-        value = model.getWordAtPosition({
-          lineNumber: position.lineNumber,
-          column: position.column - 1,
-        });
-        if (value && session && triggerCharacter) {
-          const { word, endColumn } = value;
-
-          const res = await session.sendRequest('completions', {
-            text: word + triggerCharacter,
-            column: endColumn + 1,
-            frameId: session.currentFrame && session.currentFrame.raw.id,
+          /**
+           * 特殊字符处理
+           */
+          value = model.getWordAtPosition({
+            lineNumber: position.lineNumber,
+            column: position.column - 1,
           });
-          return {
-            suggestions: res.body.targets.map((item) => {
-              return {
+          if (value && session && triggerCharacter) {
+            const { word, endColumn } = value;
+
+            const res = await session.sendRequest('completions', {
+              text: word + triggerCharacter,
+              column: endColumn + 1,
+              frameId: session.currentFrame && session.currentFrame.raw.id,
+            });
+            return {
+              suggestions: res.body.targets.map((item) => ({
                 label: item.label,
                 insertText: item.text || item.label,
                 sortText: item.sortText,
@@ -393,14 +412,14 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
                   startColumn: endColumn + 1,
                   endColumn: endColumn + 1,
                 },
-              };
-            }),
-          } as monaco.languages.CompletionList;
-        }
+              })),
+            } as monaco.languages.CompletionList;
+          }
 
-        return null;
+          return null;
+        },
       },
-    });
+    );
   }
 
   disable() {

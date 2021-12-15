@@ -21,13 +21,16 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
   };
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ICredentialsService,
-      useClass: CredentialsService,
-    }, {
-      token: KeytarServicePath,
-      useValue: mockNativeCredentialService,
-    });
+    injector.addProviders(
+      {
+        token: ICredentialsService,
+        useClass: CredentialsService,
+      },
+      {
+        token: KeytarServicePath,
+        useValue: mockNativeCredentialService,
+      },
+    );
     credentialsService = injector.get<ICredentialsService>(ICredentialsService);
   });
 

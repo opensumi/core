@@ -24,9 +24,15 @@ export class OutlineDecorationService {
     // 根据 node.raw.range 判断相交情况
     // 这里的相交判断实际上可以做一下数据裁剪
     const diagnosisInfos = this._diagnosisInfo.filter((marker: IMarker) => {
-      if (marker.startLineNumber <= node.raw.range.startLineNumber && marker.endLineNumber >= node.raw.range.startLineNumber) {
+      if (
+        marker.startLineNumber <= node.raw.range.startLineNumber &&
+        marker.endLineNumber >= node.raw.range.startLineNumber
+      ) {
         return true;
-      } else if (node.raw.range.startLineNumber <=  marker.startLineNumber && node.raw.range.endLineNumber >= marker.startLineNumber) {
+      } else if (
+        node.raw.range.startLineNumber <= marker.startLineNumber &&
+        node.raw.range.endLineNumber >= marker.startLineNumber
+      ) {
         return true;
       }
       return false;
@@ -40,7 +46,12 @@ export class OutlineDecorationService {
       }
     }
     return {
-      color: (topMarker?.severity === MarkerSeverity.Error || topMarker?.severity === MarkerSeverity.Warning) ? this.themeService.getColor({ id: topMarker.severity === MarkerSeverity.Error ? listErrorForeground : listWarningForeground }) : undefined,
+      color:
+        topMarker?.severity === MarkerSeverity.Error || topMarker?.severity === MarkerSeverity.Warning
+          ? this.themeService.getColor({
+              id: topMarker.severity === MarkerSeverity.Error ? listErrorForeground : listWarningForeground,
+            })
+          : undefined,
       tooltip: topMarker?.message,
       badge: markers.length > 0 ? (markers.length > 9 ? '9+' : markers.length + '') : '',
     };

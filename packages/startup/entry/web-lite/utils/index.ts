@@ -5,8 +5,9 @@ export function base64ToUnicode(str: string) {
   return decodeURIComponent(
     atob(str)
       .split('')
-      .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''),
-    );
+      .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .join(''),
+  );
 }
 
 /**
@@ -17,10 +18,8 @@ export function base64ToUnicode(str: string) {
  */
 export function getMinimalDiffPath(source: URI, targets: URI[]): string {
   const sourceDirPartsReverse = source.path.dir.toString().split(Path.separator).reverse();
-  const targetDirPartsReverses = targets.map((target) => {
-    return target.path.dir.toString().split(Path.separator).reverse();
-  });
-  for (let i = 0; i < sourceDirPartsReverse.length; i ++ ) {
+  const targetDirPartsReverses = targets.map((target) => target.path.dir.toString().split(Path.separator).reverse());
+  for (let i = 0; i < sourceDirPartsReverse.length; i++) {
     let foundSame = false;
     for (const targetDirPartsReverse of targetDirPartsReverses) {
       if (targetDirPartsReverse[i] === sourceDirPartsReverse[i]) {
@@ -29,7 +28,10 @@ export function getMinimalDiffPath(source: URI, targets: URI[]): string {
       }
     }
     if (!foundSame) {
-      return sourceDirPartsReverse.slice(0, i + 1).reverse().join(Path.separator);
+      return sourceDirPartsReverse
+        .slice(0, i + 1)
+        .reverse()
+        .join(Path.separator);
     }
   }
   return sourceDirPartsReverse.reverse().join(Path.separator);

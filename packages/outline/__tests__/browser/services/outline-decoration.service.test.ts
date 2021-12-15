@@ -10,22 +10,22 @@ describe('OutlineDecorationService', () => {
   const mockInjector = createBrowserInjector([]);
 
   const mockMarkerManager = {
-    getMarkers: jest.fn(() => {
-      return [{
+    getMarkers: jest.fn(() => [
+      {
         startLineNumber: 0,
         startColumn: 0,
         endLineNumber: 1,
         endColumn: 10,
         severity: MarkerSeverity.Error,
-      }];
-    }),
+      },
+    ]),
   };
 
   const mocThemeService = {
     getColor: jest.fn(),
   };
 
-  const root = new OutlineRoot({resolveChildren: () => ([])} as any, null);
+  const root = new OutlineRoot({ resolveChildren: () => [] } as any, null);
 
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;
@@ -54,14 +54,22 @@ describe('OutlineDecorationService', () => {
   });
 
   it('getDecoration method should be work', () => {
-    const decorationNode = new OutlineCompositeTreeNode({} as any, root as any, { name: 'test', kind: 0, range: {
-      startLineNumber: 0,
-      startColumn: 0,
-      endLineNumber: 1,
-      endColumn: 10,
-    }} as any, '');
+    const decorationNode = new OutlineCompositeTreeNode(
+      {} as any,
+      root as any,
+      {
+        name: 'test',
+        kind: 0,
+        range: {
+          startLineNumber: 0,
+          startColumn: 0,
+          endLineNumber: 1,
+          endColumn: 10,
+        },
+      } as any,
+      '',
+    );
     outlineDecorationService.getDecoration(decorationNode);
     expect(mocThemeService.getColor).toBeCalledTimes(1);
   });
-
 });

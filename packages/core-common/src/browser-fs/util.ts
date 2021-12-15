@@ -3,9 +3,7 @@ interface CustomPromisify<TCustom extends Function> extends Function {
 }
 
 export function promisify<TCustom extends Function>(fn: CustomPromisify<TCustom>): TCustom;
-export function promisify<TResult>(
-  fn: (callback: (err: any, result: TResult) => void) => void,
-): () => Promise<TResult>;
+export function promisify<TResult>(fn: (callback: (err: any, result: TResult) => void) => void): () => Promise<TResult>;
 export function promisify(fn: (callback: (err?: any) => void) => void): () => Promise<void>;
 export function promisify<T1, TResult>(
   fn: (arg1: T1, callback: (err: any, result: TResult) => void) => void,

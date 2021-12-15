@@ -1,14 +1,29 @@
 // tslint:disable:no-console
 import net from 'net';
-import { RPCService, RPCServiceCenter, createSocketConnection, getRPCService, IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection';
-import { IExtHostProxyRPCService, IExtHostProxy, IExtHostProxyOptions, EXT_HOST_PROXY_PROTOCOL, EXT_HOST_PROXY_IDENTIFIER, IExtServerProxyRPCService, EXT_SERVER_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common/ext.host.proxy';
+import {
+  RPCService,
+  RPCServiceCenter,
+  createSocketConnection,
+  getRPCService,
+  IRPCProtocol,
+  RPCProtocol,
+} from '@opensumi/ide-connection';
+import {
+  IExtHostProxyRPCService,
+  IExtHostProxy,
+  IExtHostProxyOptions,
+  EXT_HOST_PROXY_PROTOCOL,
+  EXT_HOST_PROXY_IDENTIFIER,
+  IExtServerProxyRPCService,
+  EXT_SERVER_IDENTIFIER,
+  EXT_HOST_PROXY_SERVER_PROT,
+} from '../common/ext.host.proxy';
 import { Emitter, Disposable, IDisposable } from '@opensumi/ide-core-node';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 import { IExtensionHostManager } from '../common';
 import type { ForkOptions } from 'child_process';
 
 class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCService {
-
   private extensionHostManager: IExtensionHostManager;
 
   constructor(private extServerProxy: IExtServerProxyRPCService) {
@@ -68,11 +83,9 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
   async $dispose(): Promise<void> {
     await this.extensionHostManager.dispose();
   }
-
 }
 
 export class ExtHostProxy extends Disposable implements IExtHostProxy {
-
   private socket: net.Socket;
 
   private readonly clientCenter: RPCServiceCenter;
@@ -93,14 +106,14 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   constructor(options?: IExtHostProxyOptions) {
     super();
-    this.options = {
+    (this.options = {
       retryTime: 1000,
       socketConnectOpts: {
         port: EXT_HOST_PROXY_SERVER_PROT,
       },
       ...options,
-    },
-      this.clientCenter = new RPCServiceCenter();
+    }),
+      (this.clientCenter = new RPCServiceCenter());
   }
 
   init() {
@@ -148,7 +161,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       console.warn('reconnecting ext host server');
       this.createSocket();
     }, this.options.retryTime!);
-  }
+  };
 
   private connectOnEvent = () => {
     console.info('connect success');
@@ -157,7 +170,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.setConnection();
     this.setRPCMethods();
     this.connectedEmitter.fire();
-  }
+  };
 
   private bindEvent(): IDisposable {
     // connect
@@ -197,6 +210,5 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
         this.socket.destroy();
       },
     };
-  }
-
+  };
 }

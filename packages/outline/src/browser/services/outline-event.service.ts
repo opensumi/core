@@ -12,7 +12,6 @@ export interface OpenedEditorEvent {
 
 @Injectable()
 export class OutlineEventService extends WithEventBus {
-
   private _onDidChange: Emitter<URI | null> = new Emitter();
   private _onDidSelectionChange: Emitter<URI | null> = new Emitter();
   private _onDidActiveChange: Emitter<URI | null> = new Emitter();

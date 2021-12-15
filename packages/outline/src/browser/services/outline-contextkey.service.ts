@@ -4,7 +4,6 @@ import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@opensumi/id
 
 @Injectable()
 export class OutlineContextKeyService {
-
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 

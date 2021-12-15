@@ -1,8 +1,20 @@
 import ReactDom from 'react-dom';
-import { ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService } from '../../../src/common';
+import {
+  ExtensionService,
+  IExtCommandManagement,
+  AbstractExtensionManagementService,
+  IRequireInterceptorService,
+} from '../../../src/common';
 import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry } from '@opensumi/ide-core-browser';
+import {
+  CommandRegistryImpl,
+  CommandRegistry,
+  IPreferenceSettingsService,
+  PreferenceScope,
+  KeybindingRegistryImpl,
+  KeybindingRegistry,
+} from '@opensumi/ide-core-browser';
 import { IThemeService, getColorRegistry } from '@opensumi/ide-theme/lib/common';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -55,7 +67,6 @@ describe('Extension service', () => {
       // @ts-ignore
       await extensionService.doActivate();
     });
-
   });
 
   describe('get extension', () => {
@@ -70,7 +81,9 @@ describe('Extension service', () => {
     });
 
     it('should return specified extension props', async () => {
-      const extensionMetadata = await extensionManagementService.getExtensionProps(MOCK_EXTENSIONS[0].path, { readme: './README.md' });
+      const extensionMetadata = await extensionManagementService.getExtensionProps(MOCK_EXTENSIONS[0].path, {
+        readme: './README.md',
+      });
       expect(extensionMetadata?.extraMetadata).toEqual({ readme: './README.md' });
     });
 
@@ -130,7 +143,7 @@ describe('Extension service', () => {
       expect((contextMenu[0] as IMenuItem).command!).toBe('HelloKaitian');
       const actionMenu = newMenuRegistry.getMenuItems('editor/title');
       expect(actionMenu.length).toBe(1);
-      expect((actionMenu).findIndex((item) => (item as IMenuItem).command === 'HelloKaitian')).toBeGreaterThan(-1);
+      expect(actionMenu.findIndex((item) => (item as IMenuItem).command === 'HelloKaitian')).toBeGreaterThan(-1);
       done();
     });
 
@@ -186,7 +199,7 @@ describe('Extension service', () => {
   });
 
   describe('extension host commands', () => {
-    it(`should define a command in 'node' host.`, async (done) => {
+    it("should define a command in 'node' host.", async (done) => {
       const commandId = 'mock_command';
       const disposable = extCommandManagement.registerExtensionCommandEnv(commandId, 'node');
       const env = extCommandManagement.getExtensionCommandEnv(commandId);
@@ -198,7 +211,7 @@ describe('Extension service', () => {
   });
 
   describe('load browser require interceptor contribution', () => {
-    it(`should get ReactDOM interceptor`, async () => {
+    it('should get ReactDOM interceptor', async () => {
       // @ts-ignore
       await extensionService.doActivate();
       const requireInterceptorService: IRequireInterceptorService = injector.get(IRequireInterceptorService);

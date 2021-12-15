@@ -1,4 +1,8 @@
-import { AbstractMessageReader, AbstractMessageWriter, createMessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/api';
+import {
+  AbstractMessageReader,
+  AbstractMessageWriter,
+  createMessageConnection,
+} from '@opensumi/vscode-jsonrpc/lib/common/api';
 import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
 import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
 import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
@@ -6,7 +10,7 @@ import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
 export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';
   protected callback: DataCallback | undefined;
-  protected events: { message?: any, error?: any }[] = [];
+  protected events: { message?: any; error?: any }[] = [];
 
   constructor(protected readonly socket) {
     super();
@@ -70,8 +74,7 @@ export class WebSocketMessageWriter extends AbstractMessageWriter implements Mes
     }
   }
 
-  public end(): void {
-  }
+  public end(): void {}
 }
 
 /**
@@ -80,8 +83,5 @@ export class WebSocketMessageWriter extends AbstractMessageWriter implements Mes
  * @returns
  */
 export function createWebSocketConnection(socket: any) {
-  return createMessageConnection(
-    new WebSocketMessageReader(socket),
-    new WebSocketMessageWriter(socket),
-  );
+  return createMessageConnection(new WebSocketMessageReader(socket), new WebSocketMessageWriter(socket));
 }

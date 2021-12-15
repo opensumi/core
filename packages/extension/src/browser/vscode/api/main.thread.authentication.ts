@@ -3,12 +3,16 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, QuickPickService, localize, formatLocalize, ILogger } from '@opensumi/ide-core-browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { IAuthenticationService, IAuthenticationProvider, AuthenticationSessionsChangeEvent, AuthenticationSession } from '@opensumi/ide-core-common';
+import {
+  IAuthenticationService,
+  IAuthenticationProvider,
+  AuthenticationSessionsChangeEvent,
+  AuthenticationSession,
+} from '@opensumi/ide-core-common';
 import { IActivationEventService } from '../../types';
 
 @Injectable({ multiple: true })
 export class MainThreadAuthenticationProvider extends Disposable implements IAuthenticationProvider {
-
   @Autowired(IAuthenticationService)
   protected readonly authenticationService: IAuthenticationService;
 
@@ -53,9 +57,7 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
       const usage = usages.find((usage) => extension.id === usage.extensionId);
       return {
         label: extension.name,
-        description: usage
-          ? localize('authentication.accountLastUsedDate')
-          : localize('authentication.notUsed'),
+        description: usage ? localize('authentication.accountLastUsedDate') : localize('authentication.notUsed'),
         value: extension,
       };
     });
@@ -66,7 +68,7 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
     });
 
     if (trustedExtension) {
-      await this.authenticationService.setAllowedExtensions(this.id, accountName, [ trustedExtension ]);
+      await this.authenticationService.setAllowedExtensions(this.id, accountName, [trustedExtension]);
     }
   }
 
@@ -74,8 +76,12 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
     const accountUsages = await this.authenticationService.getAccountUsages(this.id, accountName);
     const sessionsForAccount = this._accounts.get(accountName);
     const message = accountUsages.length
-        ? formatLocalize('authentication.signOutMessage', accountName, accountUsages.map((usage) => usage.extensionName).join('\n'))
-        : formatLocalize('authentication.signOutMessageSimple', accountName);
+      ? formatLocalize(
+          'authentication.signOutMessage',
+          accountName,
+          accountUsages.map((usage) => usage.extensionName).join('\n'),
+        )
+      : formatLocalize('authentication.signOutMessageSimple', accountName);
     const result = await this.dialogService.info(message, [localize('ButtonCancel'), localize('ButtonOK')]);
 
     if (result === localize('ButtonOK')) {
@@ -144,7 +150,6 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
     await this._proxy.$logout(this.id, sessionId);
     this.messageService.info(localize('authentication.signedOut'));
   }
-
 }
 
 @Injectable({ multiple: true })
@@ -173,30 +178,43 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     super();
     this._proxy = protocol.getProxy(ExtHostAPIIdentifier.ExtHostAuthentication);
 
-    this.addDispose(this.authenticationService.onDidChangeSessions((e) => {
-      this._proxy.$onDidChangeAuthenticationSessions(e.providerId, e.label, e.event);
-    }));
+    this.addDispose(
+      this.authenticationService.onDidChangeSessions((e) => {
+        this._proxy.$onDidChangeAuthenticationSessions(e.providerId, e.label, e.event);
+      }),
+    );
 
-    this.addDispose(this.authenticationService.onDidRegisterAuthenticationProvider((info) => {
-      this._proxy.$onDidChangeAuthenticationProviders([info], []);
-    }));
+    this.addDispose(
+      this.authenticationService.onDidRegisterAuthenticationProvider((info) => {
+        this._proxy.$onDidChangeAuthenticationProviders([info], []);
+      }),
+    );
 
-    this.addDispose(this.authenticationService.onDidUnregisterAuthenticationProvider((info) => {
-      this._proxy.$onDidChangeAuthenticationProviders([], [info]);
-    }));
+    this.addDispose(
+      this.authenticationService.onDidUnregisterAuthenticationProvider((info) => {
+        this._proxy.$onDidChangeAuthenticationProviders([], [info]);
+      }),
+    );
   }
   $getProviderIds(): Promise<string[]> {
     return Promise.resolve(this.authenticationService.getProviderIds());
   }
 
   async $registerAuthenticationProvider(id: string, label: string, supportsMultipleAccounts: boolean): Promise<void> {
-    const provider = this.injector.get(MainThreadAuthenticationProvider, [this._proxy, id, label, supportsMultipleAccounts]);
+    const provider = this.injector.get(MainThreadAuthenticationProvider, [
+      this._proxy,
+      id,
+      label,
+      supportsMultipleAccounts,
+    ]);
     await provider.initialize();
     this.authenticationService.registerAuthenticationProvider(id, provider);
 
-    this.addDispose(Disposable.create(() => {
-      this.$unregisterAuthenticationProvider(id);
-    }));
+    this.addDispose(
+      Disposable.create(() => {
+        this.$unregisterAuthenticationProvider(id);
+      }),
+    );
   }
 
   $unregisterAuthenticationProvider(id: string): void {
@@ -223,19 +241,38 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return this.authenticationService.logout(providerId, sessionId);
   }
 
-  async $requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string): Promise<void> {
+  async $requestNewSession(
+    providerId: string,
+    scopes: string[],
+    extensionId: string,
+    extensionName: string,
+  ): Promise<void> {
     return this.authenticationService.requestNewSession(providerId, scopes, extensionId, extensionName);
   }
 
-  async $getSession(providerId: string, scopes: string[], extensionId: string, extensionName: string, options: { createIfNone: boolean, clearSessionPreference: boolean }): Promise<AuthenticationSession | undefined> {
+  async $getSession(
+    providerId: string,
+    scopes: string[],
+    extensionId: string,
+    extensionName: string,
+    options: { createIfNone: boolean; clearSessionPreference: boolean },
+  ): Promise<AuthenticationSession | undefined> {
     const orderedScopes = scopes.sort().join(' ');
-    const sessions = (await this.$getSessions(providerId)).filter((session) => session.scopes.slice().sort().join(' ') === orderedScopes);
+    const sessions = (await this.$getSessions(providerId)).filter(
+      (session) => session.scopes.slice().sort().join(' ') === orderedScopes,
+    );
     const label = this.authenticationService.getLabel(providerId);
 
     if (sessions.length) {
       if (!this.authenticationService.supportsMultipleAccounts(providerId)) {
         const session = sessions[0];
-        const allowed = await this.$getSessionsPrompt(providerId, session.account.label, label, extensionId, extensionName);
+        const allowed = await this.$getSessionsPrompt(
+          providerId,
+          session.account.label,
+          label,
+          extensionId,
+          extensionName,
+        );
         if (allowed) {
           return session;
         } else {
@@ -244,7 +281,15 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
       }
 
       // On renderer side, confirm consent, ask user to choose between accounts if multiple sessions are valid
-      const selected = await this.$selectSession(providerId, label, extensionId, extensionName, sessions, scopes, !!options.clearSessionPreference);
+      const selected = await this.$selectSession(
+        providerId,
+        label,
+        extensionId,
+        extensionName,
+        sessions,
+        scopes,
+        !!options.clearSessionPreference,
+      );
       return sessions.find((session) => session.id === selected.id);
     } else {
       if (options.createIfNone) {
@@ -254,7 +299,13 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
         }
 
         const session = await this.authenticationService.login(providerId, scopes);
-        await this.$setTrustedExtensionAndAccountPreference(providerId, session.account.label, extensionId, extensionName, session.id);
+        await this.$setTrustedExtensionAndAccountPreference(
+          providerId,
+          session.account.label,
+          extensionId,
+          extensionName,
+          session.id,
+        );
         return session;
       } else {
         await this.$requestNewSession(providerId, scopes, extensionId, extensionName);
@@ -262,7 +313,15 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     }
   }
 
-  async $selectSession(providerId: string, providerName: string, extensionId: string, extensionName: string, potentialSessions: AuthenticationSession[], scopes: string[], clearSessionPreference: boolean): Promise<AuthenticationSession> {
+  async $selectSession(
+    providerId: string,
+    providerName: string,
+    extensionId: string,
+    extensionName: string,
+    potentialSessions: AuthenticationSession[],
+    scopes: string[],
+    clearSessionPreference: boolean,
+  ): Promise<AuthenticationSession> {
     if (!potentialSessions.length) {
       throw new Error('No potential sessions found');
     }
@@ -270,23 +329,30 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     if (clearSessionPreference) {
       await this.authenticationService.removeExtensionSessionId(extensionName, providerId);
     } else {
-      const existingSessionPreference = await this.authenticationService.getExtensionSessionId(extensionName, providerId);
+      const existingSessionPreference = await this.authenticationService.getExtensionSessionId(
+        extensionName,
+        providerId,
+      );
       if (existingSessionPreference) {
         const matchingSession = potentialSessions.find((session) => session.id === existingSessionPreference);
         if (matchingSession) {
-          const allowed = await this.$getSessionsPrompt(providerId, matchingSession.account.label, providerName, extensionId, extensionName);
+          const allowed = await this.$getSessionsPrompt(
+            providerId,
+            matchingSession.account.label,
+            providerName,
+            extensionId,
+            extensionName,
+          );
           if (allowed) {
             return matchingSession;
           }
         }
       }
     }
-    const items = potentialSessions.map((session) => {
-      return {
-        label: session.account.label,
-        value: session,
-      };
-    });
+    const items = potentialSessions.map((session) => ({
+      label: session.account.label,
+      value: session,
+    }));
     items.push({
       label: localize('authentication.useOtherAccount'),
       // 如果登录其他账户则放置一个 undefined 的值用来判断
@@ -298,7 +364,7 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
       ignoreFocusOut: true,
     });
 
-    const session = selectedSession ?? await this.authenticationService.login(providerId, scopes);
+    const session = selectedSession ?? (await this.authenticationService.login(providerId, scopes));
     const accountName = session.account.label;
 
     const allowList = await this.authenticationService.getAllowedExtensions(providerId, accountName);
@@ -312,7 +378,13 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return session;
   }
 
-  async $getSessionsPrompt(providerId: string, accountName: string, providerName: string, extensionId: string, extensionName: string): Promise<boolean> {
+  async $getSessionsPrompt(
+    providerId: string,
+    accountName: string,
+    providerName: string,
+    extensionId: string,
+    extensionName: string,
+  ): Promise<boolean> {
     const allowList = await this.authenticationService.getAllowedExtensions(providerId, accountName);
     const extensionData = allowList.find((extension) => extension.id === extensionId);
     if (extensionData) {
@@ -336,7 +408,6 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
   }
 
   async $loginPrompt(providerName: string, extensionName: string): Promise<boolean> {
-
     const choice = await this.dialogService.info(
       formatLocalize('authentication.confirmLogin', extensionName, providerName),
       [localize('ButtonCancel'), localize('ButtonAllow')],
@@ -345,7 +416,13 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return choice === localize('ButtonAllow');
   }
 
-  async $setTrustedExtensionAndAccountPreference(providerId: string, accountName: string, extensionId: string, extensionName: string, sessionId: string): Promise<void> {
+  async $setTrustedExtensionAndAccountPreference(
+    providerId: string,
+    accountName: string,
+    extensionId: string,
+    extensionName: string,
+    sessionId: string,
+  ): Promise<void> {
     const allowList = await this.authenticationService.getAllowedExtensions(providerId, accountName);
     if (!allowList.find((allowed) => allowed.id === extensionId)) {
       allowList.push({ id: extensionId, name: extensionName });

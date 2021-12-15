@@ -1,12 +1,44 @@
 import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  Disposable,
+  Emitter,
+  formatLocalize,
+  IEventBus,
+  ILogger,
+  IRange,
+  IReporterService,
+  isThenable,
+  isUndefinedOrNull,
+  localize,
+  PreferenceService,
+  REPORT_NAME,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { IMessageService } from '@opensumi/ide-overlay';
-import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
+import {
+  IDocCache,
+  IDocPersistentCacheProvider,
+  isDocContentCache,
+  parseRangeFrom,
+  SaveReason,
+  IEditorDocumentModelContentChange,
+} from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
-import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME, EditorDocumentModelWillSaveEvent } from './types';
+import {
+  EditorDocumentModelContentChangedEvent,
+  EditorDocumentModelOptionChangedEvent,
+  EditorDocumentModelRemovalEvent,
+  EditorDocumentModelSavedEvent,
+  IEditorDocumentModel,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+  ORIGINAL_DOC_SCHEME,
+  EditorDocumentModelWillSaveEvent,
+} from './types';
 
 import debounce = require('lodash.debounce');
 import { EditorPreferences } from '../preference/schema';
@@ -32,7 +64,6 @@ export interface IDirtyChange {
 
 @Injectable({ multiple: true })
 export class EditorDocumentModel extends Disposable implements IEditorDocumentModel {
-
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
 
@@ -70,7 +101,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private monacoModel: ITextModel;
 
-  public _encoding: string = 'utf8';
+  public _encoding = 'utf8';
 
   public readonly readonly: boolean = false;
 
@@ -82,9 +113,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _originalEncoding: string = this._encoding;
 
-  private _persistVersionId: number = 0;
+  private _persistVersionId = 0;
 
-  private _baseContent: string = '';
+  private _baseContent = '';
 
   private _baseContentMd5: string | null;
 
@@ -227,10 +258,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this._encoding = encoding;
     await this.reload();
     if (shouldFireChange) {
-      this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
-        uri: this.uri,
-        encoding: this._encoding,
-      }));
+      this.eventBus.fire(
+        new EditorDocumentModelOptionChangedEvent({
+          uri: this.uri,
+          encoding: this._encoding,
+        }),
+      );
       this._onDidChangeEncoding.fire();
     }
   }
@@ -240,12 +273,14 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   set eol(eol) {
-    this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : EndOfLineSequence.CRLF as any);
+    this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : (EndOfLineSequence.CRLF as any));
     if (!this._isInitOption) {
-      this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
-        uri: this.uri,
-        eol,
-      }));
+      this.eventBus.fire(
+        new EditorDocumentModelOptionChangedEvent({
+          uri: this.uri,
+          eol,
+        }),
+      );
     }
   }
 
@@ -268,10 +303,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   set languageId(languageId) {
     monaco.editor.setModelLanguage(this.monacoModel, languageId);
-    this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
-      uri: this.uri,
-      languageId,
-    }));
+    this.eventBus.fire(
+      new EditorDocumentModelOptionChangedEvent({
+        uri: this.uri,
+        languageId,
+      }),
+    );
   }
 
   get languageId() {
@@ -286,14 +323,16 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
-  async save(force: boolean = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
+  async save(force = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
     await this.formatOnSave(reason);
     // 发送willSave并等待完成
-    await this.eventBus.fireAndAwait(new EditorDocumentModelWillSaveEvent({
-      uri: this.uri,
-      reason,
-      language: this.languageId,
-    }));
+    await this.eventBus.fireAndAwait(
+      new EditorDocumentModelWillSaveEvent({
+        uri: this.uri,
+        reason,
+        language: this.languageId,
+      }),
+    );
     if (!this.editorPreferences['editor.askIfDiff']) {
       force = true;
     }
@@ -319,11 +358,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
       return false;
     } else if (res.state === 'diff') {
-      this.messageService.error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')]).then((res) => {
-        if (res) {
-          this.compareAndSave();
-        }
-      });
+      this.messageService
+        .error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')])
+        .then((res) => {
+          if (res) {
+            this.compareAndSave();
+          }
+        });
       this.logger.error('文件无法保存，版本和磁盘不一致');
       return false;
     }
@@ -338,7 +379,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }),
     });
     const fileName = this.uri.path.base;
-    const res = await this.compareService.compare(originalUri, this.uri, formatLocalize('editor.compareAndSave.title', fileName, fileName));
+    const res = await this.compareService.compare(
+      originalUri,
+      this.uri,
+      formatLocalize('editor.compareAndSave.title', fileName, fileName),
+    );
     if (res === CompareResult.revert) {
       this.revert();
     } else if (res === CompareResult.accept) {
@@ -398,11 +443,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
   }
 
-  updateContent(content: string, eol?: EOL, setPersist: boolean = false) {
-    this.monacoModel.pushEditOperations([], [{
-      range: this.monacoModel.getFullModelRange(),
-      text: content,
-    }], () => []);
+  updateContent(content: string, eol?: EOL, setPersist = false) {
+    this.monacoModel.pushEditOperations(
+      [],
+      [
+        {
+          range: this.monacoModel.getFullModelRange(),
+          text: content,
+        },
+      ],
+      () => [],
+    );
     if (eol) {
       this.eol = eol;
     }
@@ -433,13 +484,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this._tryAutoSaveAfterDelay = debounce(() => {
         this.save(undefined, SaveReason.AfterDelay);
       }, this.editorPreferences['editor.autoSaveDelay'] || 1000);
-      this.addDispose(this.editorPreferences.onPreferenceChanged((change) => {
-        if (change.preferenceName === 'editor.autoSaveDelay') {
-          this._tryAutoSaveAfterDelay = debounce(() => {
-            this.save(undefined, SaveReason.AfterDelay);
-          }, this.editorPreferences['editor.autoSaveDelay'] || 1000);
-        }
-      }));
+      this.addDispose(
+        this.editorPreferences.onPreferenceChanged((change) => {
+          if (change.preferenceName === 'editor.autoSaveDelay') {
+            this._tryAutoSaveAfterDelay = debounce(() => {
+              this.save(undefined, SaveReason.AfterDelay);
+            }, this.editorPreferences['editor.autoSaveDelay'] || 1000);
+          }
+        }),
+      );
     }
     return this._tryAutoSaveAfterDelay;
   }
@@ -456,15 +509,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.tryAutoSaveAfterDelay();
     }
     // 发出内容变化的事件
-    this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
-      uri: this.uri,
-      dirty: this.dirty,
-      changes,
-      eol: this.eol,
-      isRedoing,
-      isUndoing,
-      versionId: this.monacoModel.getVersionId(),
-    }));
+    this.eventBus.fire(
+      new EditorDocumentModelContentChangedEvent({
+        uri: this.uri,
+        dirty: this.dirty,
+        changes,
+        eol: this.eol,
+        isRedoing,
+        isUndoing,
+        versionId: this.monacoModel.getVersionId(),
+      }),
+    );
 
     const self = this;
     this.cacheProvider.persistCache(this.uri, {
@@ -480,8 +535,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       },
       get changeMatrix() {
         // 计算从起始版本到现在所有的 change 内容，然后让缓存对象进行持久化
-        return self.dirtyChanges
-          .map(({ changes }) => changes);
+        return self.dirtyChanges.map(({ changes }) => changes);
       },
       encoding: this.encoding,
     });

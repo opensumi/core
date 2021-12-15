@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -31,13 +31,9 @@ export interface SearchFilter<D> {
 }
 
 export class MarkerCollection<T> {
-
   protected readonly owner2Markers = new Map<string, Readonly<Marker<T>>[]>();
 
-  constructor(
-    public readonly uri: URI,
-    public readonly kind: string,
-  ) { }
+  constructor(public readonly uri: URI, public readonly kind: string) {}
 
   get empty(): boolean {
     return !this.owner2Markers.size;
@@ -54,7 +50,10 @@ export class MarkerCollection<T> {
   setMarkers(owner: string, markerData: T[]): Marker<T>[] {
     const before = this.owner2Markers.get(owner);
     if (markerData.length > 0) {
-      this.owner2Markers.set(owner, markerData.map((data) => this.createMarker(owner, data)));
+      this.owner2Markers.set(
+        owner,
+        markerData.map((data) => this.createMarker(owner, data)),
+      );
     } else {
       this.owner2Markers.delete(owner);
     }
@@ -95,7 +94,6 @@ export class MarkerCollection<T> {
       return toFilter;
     }
   }
-
 }
 
 export interface Uri2MarkerEntry {
@@ -110,7 +108,6 @@ export interface Owner2MarkerEntry {
 
 @Injectable()
 export abstract class MarkerManager<D extends object> {
-
   public abstract getKind(): string;
 
   protected readonly uri2MarkerCollection = new Map<string, MarkerCollection<D>>();
@@ -200,5 +197,4 @@ export abstract class MarkerManager<D extends object> {
       this.fireOnDidChangeMarkers(uri);
     }
   }
-
 }

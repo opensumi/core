@@ -20,10 +20,20 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
 import { CallHierarchyService } from '@opensumi/ide-editor/lib/browser/monaco-contrib';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import {
+  IEditorDocumentModelService,
+  IEditorDocumentModelContentRegistry,
+  EmptyDocCacheImpl,
+} from '@opensumi/ide-editor/src/browser';
+import {
+  EditorDocumentModelServiceImpl,
+  EditorDocumentModelContentRegistryImpl,
+} from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
+import {
+  EvaluatableExpressionServiceImpl,
+  IEvaluatableExpressionService,
+} from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { TestEditorDocumentProvider } from '@opensumi/ide-editor/__tests__/browser/test-providers';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
@@ -100,11 +110,11 @@ describe('ExtHostLanguageFeatures', () => {
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);
     await monacoService.loadMonaco();
-    model = createModel([
-      'This is the first line',
-      'This is the second line',
-      'This is the third line',
-    ].join('\n'), undefined, monaco.Uri.parse('far://testing/file.a'));
+    model = createModel(
+      ['This is the first line', 'This is the second line', 'This is the third line'].join('\n'),
+      undefined,
+      monaco.Uri.parse('far://testing/file.a'),
+    );
     extHostDocuments.$fireModelOpenedEvent({
       uri: model.uri.toString(),
       dirty: false,
@@ -124,7 +134,10 @@ describe('ExtHostLanguageFeatures', () => {
     extHost = new ExtHostLanguages(rpcProtocolExt, extHostDocuments, commands, mockService({}));
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostLanguages, extHost);
 
-    mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [rpcProtocolMain]));
+    mainThread = rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadLanguages,
+      injector.get(MainThreadLanguages, [rpcProtocolMain]),
+    );
 
     monaco.languages.register({
       id: 'a',
@@ -140,16 +153,26 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('CodeLens, evil provider', async (done) => {
-    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
-      provideCodeLenses(): any {
-        throw new Error('evil');
-      }
-    }));
-    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
-      provideCodeLenses() {
-        return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
-      }
-    }));
+    disposables.push(
+      extHost.registerCodeLensProvider(
+        defaultSelector,
+        new (class implements vscode.CodeLensProvider {
+          provideCodeLenses(): any {
+            throw new Error('evil');
+          }
+        })(),
+      ),
+    );
+    disposables.push(
+      extHost.registerCodeLensProvider(
+        defaultSelector,
+        new (class implements vscode.CodeLensProvider {
+          provideCodeLenses() {
+            return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
@@ -160,16 +183,19 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('CodeLens, do not resolve a resolved lens', async (done) => {
-    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
-      provideCodeLenses(): any {
-        return [new types.CodeLens(
-          new types.Range(0, 0, 0, 0),
-          { command: 'id', title: 'Title' })];
-      }
-      resolveCodeLens(): any {
-        console.warn('do not resolve');
-      }
-    }));
+    disposables.push(
+      extHost.registerCodeLensProvider(
+        defaultSelector,
+        new (class implements vscode.CodeLensProvider {
+          provideCodeLenses(): any {
+            return [new types.CodeLens(new types.Range(0, 0, 0, 0), { command: 'id', title: 'Title' })];
+          }
+          resolveCodeLens(): any {
+            console.warn('do not resolve');
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
       const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
@@ -181,11 +207,16 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('CodeLens, missing command', async (done) => {
-    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
-      provideCodeLenses() {
-        return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
-      }
-    }));
+    disposables.push(
+      extHost.registerCodeLensProvider(
+        defaultSelector,
+        new (class implements vscode.CodeLensProvider {
+          provideCodeLenses() {
+            return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
       const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
@@ -196,15 +227,24 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Definition, data conversion', async (done) => {
-    disposables.push(extHost.registerDefinitionProvider(defaultSelector, new class implements vscode.DefinitionProvider {
-      provideDefinition(): any {
-        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
-      }
-    }));
+    disposables.push(
+      extHost.registerDefinitionProvider(
+        defaultSelector,
+        new (class implements vscode.DefinitionProvider {
+          provideDefinition(): any {
+            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.DefinitionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      const value = (await provider.provideDefinition(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        CancellationToken.None,
+      ))!;
       // @ts-ignore
       expect(value.length).toEqual(1);
       expect(value[0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -213,15 +253,24 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('Implementation, data conversion', async (done) => {
-    disposables.push(extHost.registerImplementationProvider(defaultSelector, new class implements vscode.ImplementationProvider {
-      provideImplementation(): any {
-        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
-      }
-    }));
+    disposables.push(
+      extHost.registerImplementationProvider(
+        defaultSelector,
+        new (class implements vscode.ImplementationProvider {
+          provideImplementation(): any {
+            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.ImplementationProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideImplementation(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
+      const value = await provider.provideImplementation(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        CancellationToken.None,
+      );
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -229,15 +278,24 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Type Definition, data conversion', async (done) => {
-    disposables.push(extHost.registerTypeDefinitionProvider(defaultSelector, new class implements vscode.TypeDefinitionProvider {
-      provideTypeDefinition(): any {
-        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
-      }
-    }));
+    disposables.push(
+      extHost.registerTypeDefinitionProvider(
+        defaultSelector,
+        new (class implements vscode.TypeDefinitionProvider {
+          provideTypeDefinition(): any {
+            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.TypeDefinitionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideTypeDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
+      const value = await provider.provideTypeDefinition(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        CancellationToken.None,
+      );
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -245,11 +303,16 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('HoverProvider, word range at pos', async (done) => {
-    disposables.push(extHost.registerHoverProvider(defaultSelector, new class implements vscode.HoverProvider {
-      provideHover(): any {
-        return new types.Hover('Hello');
-      }
-    }));
+    disposables.push(
+      extHost.registerHoverProvider(
+        defaultSelector,
+        new (class implements vscode.HoverProvider {
+          provideHover(): any {
+            return new types.Hover('Hello');
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
@@ -259,11 +322,16 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('HoverProvider, given range', async (done) => {
-    disposables.push(extHost.registerHoverProvider(defaultSelector, new class implements vscode.HoverProvider {
-      provideHover(): any {
-        return new types.Hover('Hello', new types.Range(3, 0, 8, 7));
-      }
-    }));
+    disposables.push(
+      extHost.registerHoverProvider(
+        defaultSelector,
+        new (class implements vscode.HoverProvider {
+          provideHover(): any {
+            return new types.Hover('Hello', new types.Range(3, 0, 8, 7));
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
@@ -274,15 +342,24 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('Occurrences, data conversion', async (done) => {
-    disposables.push(extHost.registerDocumentHighlightProvider(defaultSelector, new class implements vscode.DocumentHighlightProvider {
-      provideDocumentHighlights(): any {
-        return [new types.DocumentHighlight(new types.Range(0, 0, 0, 4))];
-      }
-    }));
+    disposables.push(
+      extHost.registerDocumentHighlightProvider(
+        defaultSelector,
+        new (class implements vscode.DocumentHighlightProvider {
+          provideDocumentHighlights(): any {
+            return [new types.DocumentHighlight(new types.Range(0, 0, 0, 4))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.DocumentHighlightProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideDocumentHighlights(model, { lineNumber: 1, column: 2 } as any, CancellationToken.None);
+      const value = await provider.provideDocumentHighlights(
+        model,
+        { lineNumber: 1, column: 2 } as any,
+        CancellationToken.None,
+      );
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
@@ -294,15 +371,25 @@ describe('ExtHostLanguageFeatures', () => {
   // --- references
 
   test('References, data conversion', async (done) => {
-    disposables.push(extHost.registerReferenceProvider(defaultSelector, new class implements vscode.ReferenceProvider {
-      provideReferences(): any {
-        return [new types.Location(model.uri, new types.Position(0, 0))];
-      }
-    }));
+    disposables.push(
+      extHost.registerReferenceProvider(
+        defaultSelector,
+        new (class implements vscode.ReferenceProvider {
+          provideReferences(): any {
+            return [new types.Location(model.uri, new types.Position(0, 0))];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.ReferenceProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideReferences(model, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
+      const value = await provider.provideReferences(
+        model,
+        { lineNumber: 1, column: 2 } as any,
+        {} as any,
+        CancellationToken.None,
+      );
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
       expect(value![0].uri.toString()).toEqual(model.uri.toString());
@@ -315,24 +402,31 @@ describe('ExtHostLanguageFeatures', () => {
     name: 'codeactiontest',
     displayName: 'CodeAction Test',
     id: 'codeactiontest.test',
-    activate: () => { },
-    deactivate: () => { },
-    toJSON: () => { },
+    activate: () => {},
+    deactivate: () => {},
+    toJSON: () => {},
   } as unknown as IExtensionDescription;
   test('Quick Fix, command data conversion', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, {
-      provideCodeActions(): vscode.Command[] {
-        return [
-          { command: 'test1', title: 'Testing1' },
-          { command: 'test2', title: 'Testing2' },
-        ];
-      },
-    }));
+    disposables.push(
+      extHost.registerCodeActionsProvider(extension, defaultSelector, {
+        provideCodeActions(): vscode.Command[] {
+          return [
+            { command: 'test1', title: 'Testing1' },
+            { command: 'test2', title: 'Testing2' },
+          ];
+        },
+      }),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(
+        model,
+        model.getFullModelRange(),
+        {} as any,
+        CancellationToken.None,
+      ))!;
       expect(value.actions.length).toEqual(2);
       const [first, second] = value.actions;
       expect(first.title).toEqual('Testing1');
@@ -343,22 +437,29 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Quick Fix, code action data conversion', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, {
-      provideCodeActions(): vscode.CodeAction[] {
-        return [
-          {
-            title: 'Testing1',
-            command: { title: 'Testing1Command', command: 'test1' },
-            kind: types.CodeActionKind.Empty.append('test.scope'),
-          },
-        ];
-      },
-    }));
+    disposables.push(
+      extHost.registerCodeActionsProvider(extension, defaultSelector, {
+        provideCodeActions(): vscode.CodeAction[] {
+          return [
+            {
+              title: 'Testing1',
+              command: { title: 'Testing1Command', command: 'test1' },
+              kind: types.CodeActionKind.Empty.append('test.scope'),
+            },
+          ];
+        },
+      }),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(
+        model,
+        model.getFullModelRange(),
+        {} as any,
+        CancellationToken.None,
+      ))!;
       expect(value.actions.length).toEqual(1);
       const first = value.actions[0] as monaco.languages.CodeAction;
       expect(first.title).toEqual('Testing1');
@@ -368,21 +469,28 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  test('Cannot read property \'id\' of undefined, #29469', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, new class implements vscode.CodeActionProvider {
-      provideCodeActions(): any {
-        return [
-          undefined,
-          null,
-          { command: 'test', title: 'Testing' },
-        ];
-      }
-    }));
+  test("Cannot read property 'id' of undefined, #29469", async (done) => {
+    disposables.push(
+      extHost.registerCodeActionsProvider(
+        extension,
+        defaultSelector,
+        new (class implements vscode.CodeActionProvider {
+          provideCodeActions(): any {
+            return [undefined, null, { command: 'test', title: 'Testing' }];
+          }
+        })(),
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(
+        model,
+        model.getFullModelRange(),
+        {} as any,
+        CancellationToken.None,
+      ))!;
       expect(value.actions.length).toEqual(1);
       done();
     }, 0);
@@ -391,18 +499,28 @@ describe('ExtHostLanguageFeatures', () => {
   // --- rename
 
   test('Rename', async (done) => {
-    disposables.push(extHost.registerRenameProvider(defaultSelector, new class implements vscode.RenameProvider {
-      provideRenameEdits(): any {
-        const edit = new types.WorkspaceEdit();
-        edit.replace(model.uri, new types.Range(0, 0, 0, 0), 'testing');
-        return edit;
-      }
-    }));
+    disposables.push(
+      extHost.registerRenameProvider(
+        defaultSelector,
+        new (class implements vscode.RenameProvider {
+          provideRenameEdits(): any {
+            const edit = new types.WorkspaceEdit();
+            edit.replace(model.uri, new types.Range(0, 0, 0, 0), 'testing');
+            return edit;
+          }
+        })(),
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.RenameProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideRenameEdits(model, { lineNumber: 1, column: 1 } as any, 'newName', CancellationToken.None))!;
+      const value = (await provider.provideRenameEdits(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        'newName',
+        CancellationToken.None,
+      ))!;
       expect((value as monaco.languages.WorkspaceEdit).edits.length).toEqual(1);
       done();
     }, 0);
@@ -411,20 +529,31 @@ describe('ExtHostLanguageFeatures', () => {
   // --- parameter hints
 
   test('Parameter Hints, evil provider', async (done) => {
-    disposables.push(extHost.registerSignatureHelpProvider(defaultSelector, new class implements vscode.SignatureHelpProvider {
-      provideSignatureHelp(): vscode.SignatureHelp {
-        return {
-          signatures: [],
-          activeParameter: 0,
-          activeSignature: 0,
-        };
-      }
-    }, []));
+    disposables.push(
+      extHost.registerSignatureHelpProvider(
+        defaultSelector,
+        new (class implements vscode.SignatureHelpProvider {
+          provideSignatureHelp(): vscode.SignatureHelp {
+            return {
+              signatures: [],
+              activeParameter: 0,
+              activeSignature: 0,
+            };
+          }
+        })(),
+        [],
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.SignatureHelpProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideSignatureHelp(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None, { triggerKind: modes.SignatureHelpTriggerKind.Invoke, isRetrigger: false });
+      const value = await provider.provideSignatureHelp(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        CancellationToken.None,
+        { triggerKind: modes.SignatureHelpTriggerKind.Invoke, isRetrigger: false },
+      );
       expect(value).toBeTruthy();
       done();
     }, 0);
@@ -433,35 +562,57 @@ describe('ExtHostLanguageFeatures', () => {
   // --- suggestions
 
   test('Suggest, CompletionList', async (done) => {
-    disposables.push(extHost.registerCompletionItemProvider(defaultSelector, new class implements vscode.CompletionItemProvider {
-      provideCompletionItems(): any {
-        return new types.CompletionList([new types.CompletionItem('hello') as any], true);
-      }
-    }, []));
+    disposables.push(
+      extHost.registerCompletionItemProvider(
+        defaultSelector,
+        new (class implements vscode.CompletionItemProvider {
+          provideCompletionItems(): any {
+            return new types.CompletionList([new types.CompletionItem('hello') as any], true);
+          }
+        })(),
+        [],
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.CompletionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCompletionItems(model, { lineNumber: 1, column: 1 } as any, { triggerKind: 0 }, CancellationToken.None))!;
+      const value = (await provider.provideCompletionItems(
+        model,
+        { lineNumber: 1, column: 1 } as any,
+        { triggerKind: 0 },
+        CancellationToken.None,
+      ))!;
       expect(value.incomplete).toEqual(true);
       done();
     }, 0);
   });
 
   test('Format Range, data conversion', async (done) => {
-    disposables.push(extHost.registerDocumentRangeFormattingEditProvider({
-      id: 'test',
-      displayName: 'Test Formatting Provider',
-    } as unknown as IExtensionDescription, defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
-      provideDocumentRangeFormattingEdits(): any {
-        return [new types.TextEdit(new types.Range(0, 0, 0, 0), 'testing')];
-      }
-    }));
+    disposables.push(
+      extHost.registerDocumentRangeFormattingEditProvider(
+        {
+          id: 'test',
+          displayName: 'Test Formatting Provider',
+        } as unknown as IExtensionDescription,
+        defaultSelector,
+        new (class implements vscode.DocumentRangeFormattingEditProvider {
+          provideDocumentRangeFormattingEdits(): any {
+            return [new types.TextEdit(new types.Range(0, 0, 0, 0), 'testing')];
+          }
+        })(),
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.DocumentRangeFormattingEditProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideDocumentRangeFormattingEdits(model, { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } as any, { insertSpaces: true, tabSize: 4 }, CancellationToken.None))!;
+      const value = (await provider.provideDocumentRangeFormattingEdits(
+        model,
+        { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } as any,
+        { insertSpaces: true, tabSize: 4 },
+        CancellationToken.None,
+      ))!;
       expect(value.length).toEqual(1);
       const [first] = value;
       expect(first.text).toEqual('testing');
@@ -471,16 +622,28 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('Format on Type, data conversion', async (done) => {
-    disposables.push(extHost.registerOnTypeFormattingEditProvider(defaultSelector, new class implements vscode.OnTypeFormattingEditProvider {
-      provideOnTypeFormattingEdits(): any {
-        return [new types.TextEdit(new types.Range(0, 0, 0, 0), arguments[2])];
-      }
-    }, [';']));
+    disposables.push(
+      extHost.registerOnTypeFormattingEditProvider(
+        defaultSelector,
+        new (class implements vscode.OnTypeFormattingEditProvider {
+          provideOnTypeFormattingEdits(): any {
+            return [new types.TextEdit(new types.Range(0, 0, 0, 0), arguments[2])];
+          }
+        })(),
+        [';'],
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.OnTypeFormattingEditProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideOnTypeFormattingEdits(model, { lineNumber: 1, column: 2 } as any, ';', { insertSpaces: true, tabSize: 2 }, CancellationToken.None))!;
+      const value = (await provider.provideOnTypeFormattingEdits(
+        model,
+        { lineNumber: 1, column: 2 } as any,
+        ';',
+        { insertSpaces: true, tabSize: 2 },
+        CancellationToken.None,
+      ))!;
       expect(value.length).toEqual(1);
       const [first] = value;
       expect(first.text).toEqual(';');
@@ -489,13 +652,18 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Links, data conversion', async (done) => {
-    disposables.push(extHost.registerDocumentLinkProvider(defaultSelector, new class implements vscode.DocumentLinkProvider {
-      provideDocumentLinks() {
-        const link = new types.DocumentLink(new types.Range(0, 0, 1, 1), Uri.parse('foo:bar#3'));
-        link.tooltip = 'tooltip';
-        return [link];
-      }
-    }));
+    disposables.push(
+      extHost.registerDocumentLinkProvider(
+        defaultSelector,
+        new (class implements vscode.DocumentLinkProvider {
+          provideDocumentLinks() {
+            const link = new types.DocumentLink(new types.Range(0, 0, 1, 1), Uri.parse('foo:bar#3'));
+            link.tooltip = 'tooltip';
+            return [link];
+          }
+        })(),
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.LinkProviderRegistry.ordered(model)[0];
@@ -511,14 +679,22 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('Document colors, data conversion', async (done) => {
-    disposables.push(extHost.registerColorProvider(defaultSelector, new class implements vscode.DocumentColorProvider {
-      provideDocumentColors(): vscode.ColorInformation[] {
-        return [new types.ColorInformation(new types.Range(0, 0, 0, 20), new types.Color(0.1, 0.2, 0.3, 0.4))];
-      }
-      provideColorPresentations(color: vscode.Color, context: { range: vscode.Range, document: vscode.TextDocument }): vscode.ColorPresentation[] {
-        return [];
-      }
-    }));
+    disposables.push(
+      extHost.registerColorProvider(
+        defaultSelector,
+        new (class implements vscode.DocumentColorProvider {
+          provideDocumentColors(): vscode.ColorInformation[] {
+            return [new types.ColorInformation(new types.Range(0, 0, 0, 20), new types.Color(0.1, 0.2, 0.3, 0.4))];
+          }
+          provideColorPresentations(
+            color: vscode.Color,
+            context: { range: vscode.Range; document: vscode.TextDocument },
+          ): vscode.ColorPresentation[] {
+            return [];
+          }
+        })(),
+      ),
+    );
 
     setTimeout(async () => {
       const provider = monacoModes.ColorProviderRegistry.ordered(model)[0];
@@ -533,17 +709,29 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   test('Selection Ranges, data conversion', async (done) => {
-    disposables.push(extHost.registerSelectionRangeProvider(defaultSelector, new class implements vscode.SelectionRangeProvider {
-      provideSelectionRanges() {
-        return [
-          new types.SelectionRange(new types.Range(0, 10, 0, 18), new types.SelectionRange(new types.Range(0, 2, 0, 20))),
-        ];
-      }
-    }));
+    disposables.push(
+      extHost.registerSelectionRangeProvider(
+        defaultSelector,
+        new (class implements vscode.SelectionRangeProvider {
+          provideSelectionRanges() {
+            return [
+              new types.SelectionRange(
+                new types.Range(0, 10, 0, 18),
+                new types.SelectionRange(new types.Range(0, 2, 0, 20)),
+              ),
+            ];
+          }
+        })(),
+      ),
+    );
     setTimeout(async () => {
       const provider = monacoModes.SelectionRangeRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const ranges = await provider.provideSelectionRanges(model, [{ lineNumber: 1, column: 17 }] as any, CancellationToken.None);
+      const ranges = await provider.provideSelectionRanges(
+        model,
+        [{ lineNumber: 1, column: 17 }] as any,
+        CancellationToken.None,
+      );
       expect(ranges?.length).toEqual(1);
       expect(ranges![0].length).toBeGreaterThan(1);
       done();
@@ -566,15 +754,38 @@ describe('ExtHostLanguageFeatures', () => {
     expect(testDoc.instance.languageId).toBe('a');
   });
 
-  //#region Semantic Tokens
+  // #region Semantic Tokens
   const tokenTypesLegend = [
-    'comment', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
-    'type', 'struct', 'class', 'interface', 'enum', 'typeParameter', 'function',
-    'member', 'macro', 'variable', 'parameter', 'property', 'label',
+    'comment',
+    'string',
+    'keyword',
+    'number',
+    'regexp',
+    'operator',
+    'namespace',
+    'type',
+    'struct',
+    'class',
+    'interface',
+    'enum',
+    'typeParameter',
+    'function',
+    'member',
+    'macro',
+    'variable',
+    'parameter',
+    'property',
+    'label',
   ];
   const tokenModifiersLegend = [
-    'declaration', 'documentation', 'readonly', 'static', 'abstract', 'deprecated',
-    'modification', 'async',
+    'declaration',
+    'documentation',
+    'readonly',
+    'static',
+    'abstract',
+    'deprecated',
+    'modification',
+    'async',
   ];
 
   const textDocument = `Available token types:
@@ -606,7 +817,13 @@ An error case:
       const allTokens = this._parseText(textDocument);
       const builder = new types.SemanticTokensBuilder();
       allTokens.forEach((token) => {
-        builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), this._encodeTokenModifiers(token.tokenModifiers));
+        builder.push(
+          token.line,
+          token.startCharacter,
+          token.length,
+          this._encodeTokenType(token.tokenType),
+          this._encodeTokenModifiers(token.tokenModifiers),
+        );
       });
       return builder.build();
     }
@@ -626,7 +843,7 @@ An error case:
         if (tokenModifiers.has(tokenModifier)) {
           result = result | (1 << tokenModifiers.get(tokenModifier));
         } else if (tokenModifier === 'notInLegend') {
-          result = result | (1 << tokenModifiers.size + 2);
+          result = result | (1 << (tokenModifiers.size + 2));
         }
       }
       return result;
@@ -670,7 +887,6 @@ An error case:
   const hostedProvider = new TestSemanticTokensProvider();
 
   it('registerDocumentSemanticTokensProvider should be work', async (done) => {
-
     const semanticLegend = new types.SemanticTokensLegend(tokenTypesLegend, tokenModifiersLegend);
     monaco.languages.register({
       id: 'semanticLanguage',
@@ -680,7 +896,9 @@ An error case:
 
     const mockMainThreadFunc = jest.spyOn(mainThread, '$registerDocumentSemanticTokensProvider');
 
-    disposables.push(extHost.registerDocumentSemanticTokensProvider({ language: 'semanticLanguage' }, hostedProvider, semanticLegend));
+    disposables.push(
+      extHost.registerDocumentSemanticTokensProvider({ language: 'semanticLanguage' }, hostedProvider, semanticLegend),
+    );
 
     setTimeout(() => {
       expect(mockMainThreadFunc).toBeCalled();
@@ -694,7 +912,7 @@ An error case:
 
   it('provideDocumentSemanticTokens should be work', async (done) => {
     const uri = monaco.Uri.parse('file:///path/to/simple1.semanticLanguage');
-    const textModel = createModel(``, 'semanticLanguage', uri);
+    const textModel = createModel('', 'semanticLanguage', uri);
 
     const provider = monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any)[0];
     expect(provider).toBeDefined();
@@ -712,30 +930,26 @@ An error case:
     expect((tokens as types.SemanticTokens)?.data instanceof Uint32Array).toBeTruthy();
     done();
   });
-  //#endregion Semantic Tokens
-  //#region Call Hierarchy
+  // #endregion Semantic Tokens
+  // #region Call Hierarchy
   describe('CallHierarchy', () => {
-
     beforeAll(() => {
       injector.addProviders({
         token: IEditorDocumentModelService,
         useValue: {
-          getModelReference: () => { },
-          createModelReference: (uri) => {
-            return Promise.resolve({
+          getModelReference: () => {},
+          createModelReference: (uri) =>
+            Promise.resolve({
               instance: {
                 uri: model.uri,
-                getMonacoModel: () => {
-                  return {
-                    uri: model.uri,
-                    isTooLargeForSyncing: () => false,
-                    getLanguageIdentifier: () => ({ language: 'plaintext' }),
-                  };
-                },
+                getMonacoModel: () => ({
+                  uri: model.uri,
+                  isTooLargeForSyncing: () => false,
+                  getLanguageIdentifier: () => ({ language: 'plaintext' }),
+                }),
               },
               dispose: jest.fn(),
-            });
-          },
+            }),
         },
         override: true,
       });
@@ -746,17 +960,33 @@ An error case:
     });
 
     test('registerCallHierarchyProvider should be work', async () => {
-
       class TestCallHierarchyProvider implements vscode.CallHierarchyProvider {
-        prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
+        prepareCallHierarchy(
+          document: vscode.TextDocument,
+          position: vscode.Position,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
           const range = new types.Range(0, 0, 0, 0);
-          return new types.CallHierarchyItem(types.SymbolKind.Object, 'test-name', 'test-detail', document.uri, range, range);
+          return new types.CallHierarchyItem(
+            types.SymbolKind.Object,
+            'test-name',
+            'test-detail',
+            document.uri,
+            range,
+            range,
+          );
         }
-        provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
+        provideCallHierarchyIncomingCalls(
+          item: vscode.CallHierarchyItem,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
           const range = new types.Range(0, 0, 0, 0);
           return [new types.CallHierarchyIncomingCall(item, [range])];
         }
-        provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
+        provideCallHierarchyOutgoingCalls(
+          item: vscode.CallHierarchyItem,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
           const range = new types.Range(0, 0, 0, 0);
           return [
             new types.CallHierarchyOutgoingCall(item, [range, range]),
@@ -773,7 +1003,10 @@ An error case:
       await 0;
 
       expect(mockMainThreadFunc).toBeCalled();
-      const prepareCallHierarchyItems = await callHierarchyService.prepareCallHierarchyProvider(model.uri, new Position(1, 1));
+      const prepareCallHierarchyItems = await callHierarchyService.prepareCallHierarchyProvider(
+        model.uri,
+        new Position(1, 1),
+      );
       expect(prepareCallHierarchyItems.length).toBe(1);
       expect(prepareCallHierarchyItems[0].kind).toBe(types.SymbolKind.Object);
       const provideIncomingCalls = await callHierarchyService.provideIncomingCalls(prepareCallHierarchyItems[0]);
@@ -788,7 +1021,7 @@ An error case:
       expect(provideOutgoingCalls![0].to.kind).toBe(types.SymbolKind.Object);
     });
   });
-  //#endregion Semantic Tokens
+  // #endregion Semantic Tokens
 
   const textModel = createModel('test.a = "test"', 'test');
   const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
@@ -799,7 +1032,7 @@ An error case:
     },
   };
 
-  //#region EvaluatableExpressionProvider
+  // #region EvaluatableExpressionProvider
   it('registerEvaluatableExpressionProvider should be work', async (done) => {
     monaco.languages.register({
       id: 'test',
@@ -808,9 +1041,9 @@ An error case:
     const extension = {
       name: 'test',
       id: 'evaluatableExpression.test',
-      activate: () => { },
-      deactivate: () => { },
-      toJSON: () => { },
+      activate: () => {},
+      deactivate: () => {},
+      toJSON: () => {},
     };
 
     const mockedMainthreadFunc = jest.spyOn(mainThread, '$registerEvaluatableExpressionProvider');
@@ -821,7 +1054,6 @@ An error case:
       expect(evaluatableExpressionService.hasEvaluatableExpressProvider(textModel)).toBeTruthy();
       done();
     }, 0);
-
   });
 
   it('provideEvaluatableExpression should be work', async (done) => {
@@ -846,16 +1078,18 @@ An error case:
     expect(expression?.expression).toBe('this is a expression for test');
     done();
   });
-  //#endregion EvaluatableExpressionProvider
+  // #endregion EvaluatableExpressionProvider
 
-  //#region registerLinkedEditingRangeProvider
+  // #region registerLinkedEditingRangeProvider
   it('registerLinkedEditingRangeProvider', async () => {
     class TestLinkedEditingRangeProvider implements vscode.LinkedEditingRangeProvider {
-      provideLinkedEditingRanges(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.LinkedEditingRanges> {
+      provideLinkedEditingRanges(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken,
+      ): vscode.ProviderResult<vscode.LinkedEditingRanges> {
         return {
-          ranges: [
-            new types.Range(0, 0, 0, 1),
-          ],
+          ranges: [new types.Range(0, 0, 0, 1)],
           wordPattern: /[a-eA-E]+/,
         };
       }
@@ -867,24 +1101,30 @@ An error case:
     await 0;
 
     expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ '$serialized': true, 'language': 'plaintext' }]);
+    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ $serialized: true, language: 'plaintext' }]);
   });
-  //#endregion registerLinkedEditingRangeProvider
-  //#region registerInlayHintsProvider
+  // #endregion registerLinkedEditingRangeProvider
+  // #region registerInlayHintsProvider
   it('registerInlayHintsProvider', async () => {
     class TestInlayHintsProvider implements vscode.InlayHintsProvider {
       provideInlayHints(): vscode.ProviderResult<vscode.InlayHint[]> {
-        return [{
-          text: 'sumi',
-          position: new types.Position(0, 0),
-        }];
+        return [
+          {
+            text: 'sumi',
+            position: new types.Position(0, 0),
+          },
+        ];
       }
     }
     const mockMainThreadFunc = jest.spyOn(mainThread, '$registerInlayHintsProvider');
     extHost.registerInlayHintsProvider(mockService({}), 'plaintext', new TestInlayHintsProvider());
     await 0;
     expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ '$serialized': true, 'language': 'plaintext' }], undefined);
+    expect(mockMainThreadFunc).toBeCalledWith(
+      expect.anything(),
+      [{ $serialized: true, language: 'plaintext' }],
+      undefined,
+    );
   });
-  //#endregion registerInlayHintsProvider
+  // #endregion registerInlayHintsProvider
 });

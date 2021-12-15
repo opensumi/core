@@ -6,7 +6,7 @@ export class FileTreeNode {
 
   private _children: Map<string, FileTreeNode> | undefined;
 
-  private _disposed: boolean = false;
+  private _disposed = false;
 
   private _onDisposed: () => void;
 
@@ -39,7 +39,7 @@ export class FileTreeNode {
     if (!this._children) {
       return [this];
     } else {
-      const result: FileTreeNode[]  = [this];
+      const result: FileTreeNode[] = [this];
       this.children.forEach((c) => {
         result.push(...c.getAllDescendants());
       });
@@ -62,12 +62,11 @@ export class FileTreeNode {
     }
     this._disposed = true;
   }
-
 }
 
 export class FileTreeSet<T = any> {
   private separator: string;
-  constructor(isWindows: boolean = false) {
+  constructor(isWindows = false) {
     this.separator = isWindows ? '\\' : '/';
   }
 
@@ -80,7 +79,7 @@ export class FileTreeSet<T = any> {
     for (const seg of segments) {
       if (p === undefined) {
         p = seg;
-      }  else {
+      } else {
         p += this.separator + seg;
       }
       let node: FileTreeNode;
@@ -124,5 +123,4 @@ export class FileTreeSet<T = any> {
       return target!.getAllDescendants().map((n) => n.key);
     }
   }
-
 }

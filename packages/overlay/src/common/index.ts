@@ -7,7 +7,13 @@ export interface IMessageService {
   info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
   warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
   error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable?: boolean, from?: string): Promise<T | undefined>;
+  open<T = string>(
+    message: string | React.ReactNode,
+    type: MessageType,
+    buttons?: string[],
+    closable?: boolean,
+    from?: string,
+  ): Promise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
 
@@ -41,7 +47,12 @@ export abstract class AbstractMessageService implements IMessageService {
   error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
     return this.open(message, MessageType.Error, buttons, closable);
   }
-  abstract open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[], closable?: boolean): Promise<T | undefined>;
+  abstract open<T = string>(
+    message: string | React.ReactNode,
+    type: MessageType,
+    buttons?: any[],
+    closable?: boolean,
+  ): Promise<T | undefined>;
   abstract hide<T = string>(value?: T): void;
 }
 
@@ -56,7 +67,7 @@ export interface IDialogOptions {
   title?: string;
   defaultUri?: URI;
   filters?: {
-    [name: string]: string,
+    [name: string]: string;
   };
 }
 
@@ -81,9 +92,8 @@ export namespace ISaveDialogOptions {
 
 export namespace IOpenDialogOptions {
   export function is(option) {
-    return 'canSelectFiles' in option
-      || 'canSelectFolders' in option
-      || 'canSelectMany' in option
-      || 'openLabel' in option;
+    return (
+      'canSelectFiles' in option || 'canSelectFolders' in option || 'canSelectMany' in option || 'openLabel' in option
+    );
   }
 }

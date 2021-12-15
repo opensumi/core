@@ -30,55 +30,43 @@ export class SCMProviderContribution implements ClientAppContribution, MenuContr
 
   registerMenus(menuRegistry: IMenuRegistry) {
     // inline
-    menuRegistry.registerMenuItem(
-      'scm/resourceState/context',
-      {
-        command: {
-          id: 'editor.action.quickCommand',
-          label: 'quick-open',
-        },
-        iconClass: getIcon('open'),
-        group: 'inline@1',
-        when: 'scmResourceState == diffable',
+    menuRegistry.registerMenuItem('scm/resourceState/context', {
+      command: {
+        id: 'editor.action.quickCommand',
+        label: 'quick-open',
       },
-    );
+      iconClass: getIcon('open'),
+      group: 'inline@1',
+      when: 'scmResourceState == diffable',
+    });
 
-    menuRegistry.registerMenuItem(
-      'scm/resourceState/context',
-      {
-        command: {
-          id: 'core.about',
-          label: '关于 Kaitian',
-        },
-        when: 'scmResourceState == whatever',
-        iconClass: getIcon('bell'),
-        group: 'inline@2',
+    menuRegistry.registerMenuItem('scm/resourceState/context', {
+      command: {
+        id: 'core.about',
+        label: '关于 Kaitian',
       },
-    );
+      when: 'scmResourceState == whatever',
+      iconClass: getIcon('bell'),
+      group: 'inline@2',
+    });
 
     // context menu
-    menuRegistry.registerMenuItem(
-      'scm/resourceState/context',
-      {
-        command: {
-          id: 'editor.action.quickCommand',
-          label: 'quick-open',
-        },
-        group: 'navigation',
-        when: 'scmResourceState == diffable',
+    menuRegistry.registerMenuItem('scm/resourceState/context', {
+      command: {
+        id: 'editor.action.quickCommand',
+        label: 'quick-open',
       },
-    );
+      group: 'navigation',
+      when: 'scmResourceState == diffable',
+    });
 
-    menuRegistry.registerMenuItem(
-      'scm/resourceState/context',
-      {
-        command: {
-          id: 'core.about',
-          label: '关于 Kaitian',
-        },
-        group: 'navigation',
-        when: 'scmResourceState == whatever',
+    menuRegistry.registerMenuItem('scm/resourceState/context', {
+      command: {
+        id: 'core.about',
+        label: '关于 Kaitian',
       },
-    );
+      group: 'navigation',
+      when: 'scmResourceState == whatever',
+    });
   }
 }

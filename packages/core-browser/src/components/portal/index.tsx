@@ -6,10 +6,7 @@ const Portal: React.FC<{
   id: string;
 }> = ({ id, children }) => {
   const target = usePortal(id);
-  return ReactDOM.createPortal(
-    children,
-    target,
-  );
+  return ReactDOM.createPortal(children, target);
 };
 
 export default Portal;

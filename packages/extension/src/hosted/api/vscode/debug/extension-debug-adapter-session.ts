@@ -12,8 +12,8 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
   constructor(
     protected readonly communicationProvider: DebugStreamConnection,
     protected readonly tracker: vscode.DebugAdapterTracker,
-    protected readonly debugSession: vscode.DebugSession) {
-
+    protected readonly debugSession: vscode.DebugSession,
+  ) {
     super(debugSession.id, communicationProvider);
 
     this.type = debugSession.type;

@@ -1,14 +1,53 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@opensumi/ide-core-browser';
-import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle, SwitchCommandReaction, ICommentsThread, CommentReactionPayload, CommentReactionClick } from '../common';
+import {
+  Domain,
+  ClientAppContribution,
+  Disposable,
+  localize,
+  ContributionProvider,
+  Event,
+  ToolbarRegistry,
+  CommandContribution,
+  CommandRegistry,
+  getIcon,
+  TabBarToolbarContribution,
+  IEventBus,
+} from '@opensumi/ide-core-browser';
+import {
+  ICommentsService,
+  CommentPanelId,
+  CommentsContribution,
+  ICommentsFeatureRegistry,
+  CollapseId,
+  CommentPanelCollapse,
+  CloseThreadId,
+  ICommentThreadTitle,
+  SwitchCommandReaction,
+  ICommentsThread,
+  CommentReactionPayload,
+  CommentReactionClick,
+} from '../common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMenuRegistry, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 
-@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution)
-export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution {
-
+@Domain(
+  ClientAppContribution,
+  BrowserEditorContribution,
+  CommandContribution,
+  TabBarToolbarContribution,
+  MenuContribution,
+)
+export class CommentsBrowserContribution
+  extends Disposable
+  implements
+    ClientAppContribution,
+    BrowserEditorContribution,
+    CommandContribution,
+    TabBarToolbarContribution,
+    MenuContribution
+{
   @Autowired(ICommentsService)
   private readonly commentsService: ICommentsService;
 
@@ -36,38 +75,47 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
   }
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: CollapseId,
-      label: '%comments.panel.action.collapse%',
-      iconClass: getIcon('collapse-all'),
-    }, {
-      execute: () => {
-        this.eventBus.fire(new CommentPanelCollapse());
+    registry.registerCommand(
+      {
+        id: CollapseId,
+        label: '%comments.panel.action.collapse%',
+        iconClass: getIcon('collapse-all'),
       },
-    });
+      {
+        execute: () => {
+          this.eventBus.fire(new CommentPanelCollapse());
+        },
+      },
+    );
 
-    registry.registerCommand({
-      id: CloseThreadId,
-      label: '%comments.thread.action.close%',
-      iconClass: getIcon('up'),
-    }, {
-      execute: (threadTitle: ICommentThreadTitle) => {
-        const { thread, widget } = threadTitle;
-        if (!thread.comments.length) {
-          thread.dispose();
-        } else {
-          if (widget.isShow) {
-            widget.toggle();
+    registry.registerCommand(
+      {
+        id: CloseThreadId,
+        label: '%comments.thread.action.close%',
+        iconClass: getIcon('up'),
+      },
+      {
+        execute: (threadTitle: ICommentThreadTitle) => {
+          const { thread, widget } = threadTitle;
+          if (!thread.comments.length) {
+            thread.dispose();
+          } else {
+            if (widget.isShow) {
+              widget.toggle();
+            }
           }
-        }
+        },
       },
-    });
+    );
 
-    registry.registerCommand({ id: SwitchCommandReaction }, {
-      execute: (payload: CommentReactionPayload) => {
-        this.eventBus.fire(new CommentReactionClick(payload));
+    registry.registerCommand(
+      { id: SwitchCommandReaction },
+      {
+        execute: (payload: CommentReactionPayload) => {
+          this.eventBus.fire(new CommentReactionClick(payload));
+        },
       },
-    });
+    );
   }
 
   registerMenus(registry: IMenuRegistry): void {
@@ -89,9 +137,11 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
 
   private registerCommentsFeature() {
     this.contributions.getContributions().forEach((contribution, index) => {
-      this.addDispose(this.commentsService.registerCommentRangeProvider(`contribution_${index}`, {
-        getCommentingRanges: (documentModel) => contribution.provideCommentingRanges(documentModel),
-      }));
+      this.addDispose(
+        this.commentsService.registerCommentRangeProvider(`contribution_${index}`, {
+          getCommentingRanges: (documentModel) => contribution.provideCommentingRanges(documentModel),
+        }),
+      );
       if (contribution.registerCommentsFeature) {
         contribution.registerCommentsFeature(this.commentsFeatureRegistry);
       }
@@ -111,17 +161,21 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       });
     }
 
-    this.addDispose(Event.debounce(this.commentsService.onThreadsChanged, () => {}, 100)(() => {
-      const handler = this.layoutService.getTabbarHandler(CommentPanelId);
-      handler?.setBadge(this.panelBadge);
-    }, this));
+    this.addDispose(
+      Event.debounce(
+        this.commentsService.onThreadsChanged,
+        () => {},
+        100,
+      )(() => {
+        const handler = this.layoutService.getTabbarHandler(CommentPanelId);
+        handler?.setBadge(this.panelBadge);
+      }, this),
+    );
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => {
-        return this.commentsService.handleOnCreateEditor(editor);
-      },
+      contribute: (editor: IEditor) => this.commentsService.handleOnCreateEditor(editor),
       provideEditorOptionsForUri: async (uri) => {
         const ranges = await this.commentsService.getContributionRanges(uri);
 
@@ -138,5 +192,4 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       },
     });
   }
-
 }

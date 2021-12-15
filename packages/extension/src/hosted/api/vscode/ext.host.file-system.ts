@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -17,21 +17,9 @@
 
 import type vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import {
-  FileChangeType,
-  FileStat,
-  FileSystemProviderCapabilities,
-  FileChange,
-} from '@opensumi/ide-file-service';
-import {
-  URI,
-  IDisposable,
-  Schemas,
-  toDisposable,
-} from '@opensumi/ide-core-common';
-import {
-  MainThreadAPIIdentifier,
-} from '../../../common/vscode';
+import { FileChangeType, FileStat, FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
+import { URI, IDisposable, Schemas, toDisposable } from '@opensumi/ide-core-common';
+import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 import * as files from '../../../common/vscode/file-system';
 import { UriComponents } from '../../../common/vscode/ext-types';
@@ -46,11 +34,7 @@ export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
 }
 
 class ConsumerFileSystem implements vscode.FileSystem {
-
-  constructor(
-    private _proxy: files.IMainThreadFileSystemShape,
-    private _fileSystemInfo: ExtHostFileSystemInfo,
-  ) { }
+  constructor(private _proxy: files.IMainThreadFileSystemShape, private _fileSystemInfo: ExtHostFileSystemInfo) {}
 
   stat(uri: vscode.Uri): Promise<vscode.FileStat> {
     return this._proxy.$stat(uri).catch(ConsumerFileSystem._handleError);
@@ -62,21 +46,28 @@ class ConsumerFileSystem implements vscode.FileSystem {
     return this._proxy.$mkdir(uri).catch(ConsumerFileSystem._handleError);
   }
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-    return this._proxy.$readFile(uri).then((content) => {
-      return Buffer.from(content);
-    }).catch(ConsumerFileSystem._handleError);
+    return this._proxy
+      .$readFile(uri)
+      .then((content) => Buffer.from(content))
+      .catch(ConsumerFileSystem._handleError);
   }
   writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
     return this._proxy.$writeFile(uri, content).catch(ConsumerFileSystem._handleError);
   }
-  delete(uri: vscode.Uri, options?: { recursive?: boolean; useTrash?: boolean; }): Promise<void> {
-    return this._proxy.$delete(uri, { ...{ recursive: false, useTrash: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  delete(uri: vscode.Uri, options?: { recursive?: boolean; useTrash?: boolean }): Promise<void> {
+    return this._proxy
+      .$delete(uri, { ...{ recursive: false, useTrash: false }, ...options })
+      .catch(ConsumerFileSystem._handleError);
   }
-  rename(oldUri: vscode.Uri, newUri: vscode.Uri, options?: { overwrite?: boolean; }): Promise<void> {
-    return this._proxy.$rename(oldUri, newUri, { ...{ overwrite: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  rename(oldUri: vscode.Uri, newUri: vscode.Uri, options?: { overwrite?: boolean }): Promise<void> {
+    return this._proxy
+      .$rename(oldUri, newUri, { ...{ overwrite: false }, ...options })
+      .catch(ConsumerFileSystem._handleError);
   }
   copy(source: vscode.Uri, destination: vscode.Uri, options?: { overwrite?: boolean }): Promise<void> {
-    return this._proxy.$copy(source, destination, { ...{ overwrite: false }, ...options }).catch(ConsumerFileSystem._handleError);
+    return this._proxy
+      .$copy(source, destination, { ...{ overwrite: false }, ...options })
+      .catch(ConsumerFileSystem._handleError);
   }
   isWritableFileSystem(scheme: string): boolean | undefined {
     const capabilities = this._fileSystemInfo.getCapabilities(scheme);
@@ -98,14 +89,21 @@ class ConsumerFileSystem implements vscode.FileSystem {
 
     // file system error
     switch (err.name) {
-      case files.FileSystemProviderErrorCode.FileExists: throw files.FileSystemError.FileExists(err.message);
-      case files.FileSystemProviderErrorCode.FileNotFound: throw files.FileSystemError.FileNotFound(err.message);
-      case files.FileSystemProviderErrorCode.FileNotADirectory: throw files.FileSystemError.FileNotADirectory(err.message);
-      case files.FileSystemProviderErrorCode.FileIsADirectory: throw files.FileSystemError.FileIsADirectory(err.message);
-      case files.FileSystemProviderErrorCode.NoPermissions: throw files.FileSystemError.NoPermissions(err.message);
-      case files.FileSystemProviderErrorCode.Unavailable: throw files.FileSystemError.Unavailable(err.message);
+      case files.FileSystemProviderErrorCode.FileExists:
+        throw files.FileSystemError.FileExists(err.message);
+      case files.FileSystemProviderErrorCode.FileNotFound:
+        throw files.FileSystemError.FileNotFound(err.message);
+      case files.FileSystemProviderErrorCode.FileNotADirectory:
+        throw files.FileSystemError.FileNotADirectory(err.message);
+      case files.FileSystemProviderErrorCode.FileIsADirectory:
+        throw files.FileSystemError.FileIsADirectory(err.message);
+      case files.FileSystemProviderErrorCode.NoPermissions:
+        throw files.FileSystemError.NoPermissions(err.message);
+      case files.FileSystemProviderErrorCode.Unavailable:
+        throw files.FileSystemError.Unavailable(err.message);
 
-      default: throw new files.FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
+      default:
+        throw new files.FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
     }
   }
 }
@@ -116,14 +114,11 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
   private readonly _usedSchemes = new Set<string>();
   private readonly _watches = new Map<number, IDisposable>();
 
-  private _handlePool: number = 0;
+  private _handlePool = 0;
 
   readonly fileSystem: vscode.FileSystem;
 
-  constructor(
-    private readonly rpcProtocol: IRPCProtocol,
-    private readonly _fileSystemInfo: ExtHostFileSystemInfo,
-  ) {
+  constructor(private readonly rpcProtocol: IRPCProtocol, private readonly _fileSystemInfo: ExtHostFileSystemInfo) {
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
     this.fileSystem = new ConsumerFileSystem(this._proxy, this._fileSystemInfo);
 
@@ -131,8 +126,11 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     Object.keys(Schemas).forEach((scheme) => this._usedSchemes.add(scheme));
   }
 
-  registerFileSystemProvider(scheme: string, provider: vscode.FileSystemProvider, options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {}) {
-
+  registerFileSystemProvider(
+    scheme: string,
+    provider: vscode.FileSystemProvider,
+    options: { isCaseSensitive?: boolean; isReadonly?: boolean } = {},
+  ) {
     if (this._usedSchemes.has(scheme)) {
       throw new Error(`a provider for the scheme '${scheme}' is already registered`);
     }
@@ -206,7 +204,12 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => data);
   }
 
-  $writeFile(handle: number, resource: UriComponents, content: Uint8Array, opts: files.FileWriteOptions): Promise<void> {
+  $writeFile(
+    handle: number,
+    resource: UriComponents,
+    content: Uint8Array,
+    opts: files.FileWriteOptions,
+  ): Promise<void> {
     return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), content, opts));
   }
 
@@ -214,7 +217,12 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     return Promise.resolve(this._getFsProvider(handle).delete(URI.revive(resource), opts));
   }
 
-  $rename(handle: number, oldUri: UriComponents, newUri: UriComponents, opts: files.FileOverwriteOptions): Promise<void> {
+  $rename(
+    handle: number,
+    oldUri: UriComponents,
+    newUri: UriComponents,
+    opts: files.FileOverwriteOptions,
+  ): Promise<void> {
     return Promise.resolve(this._getFsProvider(handle).rename(URI.revive(oldUri), URI.revive(newUri), opts));
   }
 
@@ -248,7 +256,7 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     if (!provider) {
       const err = new Error();
       err.name = 'ENOPRO';
-      err.message = `no provider`;
+      err.message = 'no provider';
       throw err;
     }
     return provider;

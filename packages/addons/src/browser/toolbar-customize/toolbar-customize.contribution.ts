@@ -1,11 +1,19 @@
-import { Domain, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, AppConfig, SlotLocation, localize } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandContribution,
+  CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
+  AppConfig,
+  SlotLocation,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
 import { ToolbarCustomizeComponent, ToolbarCustomizeViewService } from './toolbar-customize';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Domain(CommandContribution, ComponentContribution, MenuContribution)
 export class ToolbarCustomizeContribution implements CommandContribution, ComponentContribution, MenuContribution {
-
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -13,14 +21,17 @@ export class ToolbarCustomizeContribution implements CommandContribution, Compon
   viewService: ToolbarCustomizeViewService;
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: 'toolbar.showCustomizePanel',
-      label: 'Show Toolbar Customization',
-    }, {
-      execute: () => {
-        this.viewService.setVisible(true);
+    registry.registerCommand(
+      {
+        id: 'toolbar.showCustomizePanel',
+        label: 'Show Toolbar Customization',
       },
-    });
+      {
+        execute: () => {
+          this.viewService.setVisible(true);
+        },
+      },
+    );
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -44,5 +55,4 @@ export class ToolbarCustomizeContribution implements CommandContribution, Compon
       },
     });
   }
-
 }

@@ -2,7 +2,16 @@ import type vscode from 'vscode';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter } from '@opensumi/ide-core-common';
 import { capitalize } from 'lodash';
-import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork, ITerminalExitEvent } from '../common';
+import {
+  ITerminalApiService,
+  ITerminalGroupViewService,
+  ITerminalController,
+  ITerminalInfo,
+  ITerminalExternalClient,
+  ITerminalInternalService,
+  ITerminalNetwork,
+  ITerminalExitEvent,
+} from '../common';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {
@@ -43,13 +52,11 @@ export class TerminalApiService implements ITerminalApiService {
   }
 
   get terminals() {
-    return Array.from(this.controller.clients.values()).map((v) => {
-      return {
-        id: v.id,
-        name: v.name,
-        isActive: this.view.currentWidgetId === v.id,
-      };
-    });
+    return Array.from(this.controller.clients.values()).map((v) => ({
+      id: v.id,
+      name: v.name,
+      isActive: this.view.currentWidgetId === v.id,
+    }));
   }
 
   async createTerminal(options: vscode.TerminalOptions): Promise<ITerminalExternalClient> {
@@ -57,10 +64,16 @@ export class TerminalApiService implements ITerminalApiService {
     const client = this.controller.createClientWithWidget(options);
 
     const external = {
-      get id() { return client.id; },
-      get name() { return client.name; },
-      get processId() { return client.pid; },
-      show(preserveFocus: boolean = true) {
+      get id() {
+        return client.id;
+      },
+      get name() {
+        return client.name;
+      },
+      get processId() {
+        return client.pid;
+      },
+      show(preserveFocus = true) {
         const widget = client.widget;
         self.view.selectWidget(widget.id);
         self.controller.showTerminalPanel();
@@ -95,7 +108,7 @@ export class TerminalApiService implements ITerminalApiService {
     this.service.sendText(id, `${text}${addNewLine ? '\r' : ''}`);
   }
 
-  showTerm(clientId: string, preserveFocus: boolean = true) {
+  showTerm(clientId: string, preserveFocus = true) {
     const client = this._entries.get(clientId);
 
     if (!client) {

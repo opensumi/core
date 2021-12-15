@@ -4,7 +4,14 @@ import { Injector } from '@opensumi/di';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { AbstractMenubarService, MenubarServiceImpl, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry } from '../../../src/menu/next';
+import {
+  AbstractMenubarService,
+  MenubarServiceImpl,
+  AbstractMenuService,
+  MenuRegistryImpl,
+  MenuServiceImpl,
+  IMenuRegistry,
+} from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 
 jest.useFakeTimers();
@@ -20,21 +27,27 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   let warnSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    injector = createBrowserInjector([], new Injector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      }, {
-        token: IMenuRegistry,
-        useClass: MenuRegistryImpl,
-      }, {
-        token: CommandRegistry,
-        useClass: CoreCommandRegistryImpl,
-      }, {
-        token: AbstractMenuService,
-        useClass: MenuServiceImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
+        {
+          token: CommandRegistry,
+          useClass: CoreCommandRegistryImpl,
+        },
+        {
+          token: AbstractMenuService,
+          useClass: MenuServiceImpl,
+        },
+      ]),
+    );
 
     injector.addProviders({
       token: AbstractMenubarService,
@@ -44,7 +57,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     menuRegistry = injector.get(IMenuRegistry);
     menubarService = injector.get(AbstractMenubarService);
 
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { });
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     disposables.clear();
   });
@@ -66,9 +79,11 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }),
     );
 
-    disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
-      label: 'a1',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem(testMenubarId, {
+        label: 'a1',
+      }),
+    );
   });
 
   it('basic check for onDidMenuChange', async () => {
@@ -82,16 +97,20 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }),
     );
 
-    disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
-      label: 'a1',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem(testMenubarId, {
+        label: 'a1',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-      command: {
-        id: 'a',
-        label: 'hello',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenubarId, {
+        command: {
+          id: 'a',
+          label: 'hello',
+        },
+      }),
+    );
   });
 
   it('submenu', () => {
@@ -110,45 +129,59 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }),
     );
 
-    disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
-      label: 'test menubar',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem(testMenubarId, {
+        label: 'test menubar',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-      command: {
-        id: 'first_id',
-        label: 'first',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenubarId, {
+        command: {
+          id: 'first_id',
+          label: 'first',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-      submenu: 'test_submenu_id',
-      label: 'test submenu',
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenubarId, {
+        submenu: 'test_submenu_id',
+        label: 'test submenu',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('testSubmenuId', {
-      command: {
-        id: 'hello_id',
-        label: 'hello',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('testSubmenuId', {
+        command: {
+          id: 'hello_id',
+          label: 'hello',
+        },
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem('testSubmenuId', {
-      command: {
-        id: 'world_id',
-        label: 'world',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem('testSubmenuId', {
+        command: {
+          id: 'world_id',
+          label: 'world',
+        },
+      }),
+    );
   });
 
   it('removeMenubarItem', () => {
-    disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
-      label: 'test menubar',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem(testMenubarId, {
+        label: 'test menubar',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenubarItem('fakeMenuBarId', {
-      label: 'fake menubar',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('fakeMenuBarId', {
+        label: 'fake menubar',
+      }),
+    );
 
     menubarService.onDidMenubarChange(() => {
       jest.runAllTimers();
@@ -165,34 +198,37 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     const fakeListener = jest.fn();
     disposables.add(menubarService.onDidMenuChange(fakeListener));
 
-    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-      command: {
-        id: 'a',
-        label: 'hello',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenubarId, {
+        command: {
+          id: 'a',
+          label: 'hello',
+        },
+      }),
+    );
 
     expect(fakeListener).not.toBeCalled();
   });
 
   it('registerMenubarItem and then registerMenuItem again', () => {
-    disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
-      label: 'a1',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem(testMenubarId, {
+        label: 'a1',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-      command: {
-        id: 'a',
-        label: 'hello',
-      },
-    }));
+    disposables.add(
+      menuRegistry.registerMenuItem(testMenubarId, {
+        command: {
+          id: 'a',
+          label: 'hello',
+        },
+      }),
+    );
 
     disposables.add(
       menubarService.onDidMenuChange(() => {
-
-        expect(warnSpy.mock.calls[0][1]).toBe(
-          `this menuId ${testMenubarId} already existed`,
-        );
+        expect(warnSpy.mock.calls[0][1]).toBe(`this menuId ${testMenubarId} already existed`);
 
         const menubarItems = menubarService.getMenubarItems();
         const menuNodes = menubarService.getMenuNodes(testMenubarId);
@@ -218,18 +254,24 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }),
     );
 
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId1', {
-      label: 'a1',
-      order: 2,
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId1', {
+        label: 'a1',
+        order: 2,
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId2', {
-      label: 'a2',
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId2', {
+        label: 'a2',
+      }),
+    );
 
-    disposables.add(menuRegistry.registerMenubarItem('testMenubarId3', {
-      label: 'a3',
-      order: -1,
-    }));
+    disposables.add(
+      menuRegistry.registerMenubarItem('testMenubarId3', {
+        label: 'a3',
+        order: -1,
+      }),
+    );
   });
 });

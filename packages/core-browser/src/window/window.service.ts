@@ -7,7 +7,6 @@ import { IExternalUriService } from '../services';
 
 @Injectable()
 export class WindowService implements IWindowService {
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -40,7 +39,10 @@ export class WindowService implements IWindowService {
       if (options.newWindow) {
         electronMainLifecycle.openWorkspace(workspace.toString());
       } else {
-        electronMainLifecycle.openWorkspace(workspace.toString(), { windowId: electronEnv.currentWindowId, replace: true });
+        electronMainLifecycle.openWorkspace(workspace.toString(), {
+          windowId: electronEnv.currentWindowId,
+          replace: true,
+        });
       }
     } else {
       throw new Error('Method not implemented.');

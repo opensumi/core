@@ -13,8 +13,8 @@ export interface AllowedExtension {
 
 export interface AuthenticationSessionsChangeEvent {
   added: ReadonlyArray<AuthenticationSession>;
-	removed: ReadonlyArray<AuthenticationSession>;
-	changed: ReadonlyArray<AuthenticationSession>;
+  removed: ReadonlyArray<AuthenticationSession>;
+  changed: ReadonlyArray<AuthenticationSession>;
 }
 
 export interface AuthenticationSession {
@@ -23,7 +23,7 @@ export interface AuthenticationSession {
   account: {
     label: string;
     id: string;
-  }
+  };
   scopes: ReadonlyArray<string>;
 }
 
@@ -33,8 +33,8 @@ export interface AuthenticationProviderInformation {
 }
 
 export interface AllowedExtension {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 export interface IAuthenticationProvider {
@@ -47,38 +47,42 @@ export interface IAuthenticationProvider {
   hasSessions(): boolean;
   login(scopes: string[]): Promise<AuthenticationSession>;
   logout(sessionId: string): Promise<void>;
-  signOut(accountName: string): Promise<void>
+  signOut(accountName: string): Promise<void>;
   dispose(): void;
 }
 
 export const IAuthenticationService = Symbol('IAuthenticationService');
 export interface IAuthenticationService {
   readonly onDidRegisterAuthenticationProvider: Event<AuthenticationProviderInformation>;
-	readonly onDidUnregisterAuthenticationProvider: Event<AuthenticationProviderInformation>;
-	readonly onDidChangeSessions: Event<{ providerId: string, label: string, event: AuthenticationSessionsChangeEvent }>;
+  readonly onDidUnregisterAuthenticationProvider: Event<AuthenticationProviderInformation>;
+  readonly onDidChangeSessions: Event<{ providerId: string; label: string; event: AuthenticationSessionsChangeEvent }>;
   initialize(): Promise<void>;
-	isAuthenticationProviderRegistered(id: string): boolean;
-	getProviderIds(): string[];
-	registerAuthenticationProvider(id: string, provider: IAuthenticationProvider): void;
-	unregisterAuthenticationProvider(id: string): void;
-	requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string): Promise<void>;
-	sessionsUpdate(providerId: string, event: AuthenticationSessionsChangeEvent): void;
+  isAuthenticationProviderRegistered(id: string): boolean;
+  getProviderIds(): string[];
+  registerAuthenticationProvider(id: string, provider: IAuthenticationProvider): void;
+  unregisterAuthenticationProvider(id: string): void;
+  requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string): Promise<void>;
+  sessionsUpdate(providerId: string, event: AuthenticationSessionsChangeEvent): void;
 
-	getSessions(id: string, scopes?: string[], activateImmediate?: boolean): Promise<ReadonlyArray<AuthenticationSession>>;
-	getLabel(providerId: string): string;
-	supportsMultipleAccounts(providerId: string): boolean;
-	login(providerId: string, scopes: string[]): Promise<AuthenticationSession>;
-	logout(providerId: string, sessionId: string): Promise<void>;
+  getSessions(
+    id: string,
+    scopes?: string[],
+    activateImmediate?: boolean,
+  ): Promise<ReadonlyArray<AuthenticationSession>>;
+  getLabel(providerId: string): string;
+  supportsMultipleAccounts(providerId: string): boolean;
+  login(providerId: string, scopes: string[]): Promise<AuthenticationSession>;
+  logout(providerId: string, sessionId: string): Promise<void>;
 
-	manageTrustedExtensionsForAccount(providerId: string, accountName: string): Promise<void>;
-	signOutOfAccount(providerId: string, accountName: string): Promise<void>;
+  manageTrustedExtensionsForAccount(providerId: string, accountName: string): Promise<void>;
+  signOutOfAccount(providerId: string, accountName: string): Promise<void>;
 
   getExtensionSessionId(extensionName: string, providerId: string): Promise<string | undefined>;
   setExtensionSessionId(extensionName: string, providerId: string, sessionId: string): Promise<void>;
-  removeExtensionSessionId(extensionName: string, providerId: string): Promise<void>
+  removeExtensionSessionId(extensionName: string, providerId: string): Promise<void>;
 
   getAllowedExtensions(providerId: string, accountName: string): Promise<AllowedExtension[]>;
-  setAllowedExtensions(providerId: string, accountName: string, allowList:AllowedExtension[]): Promise<void>;
+  setAllowedExtensions(providerId: string, accountName: string, allowList: AllowedExtension[]): Promise<void>;
   removeAllowedExtensions(providerId: any, accountName: string): Promise<void>;
 
   getAccountUsages(providerId: string, accountName: string): Promise<IAccountUsage[]>;
@@ -87,16 +91,16 @@ export interface IAuthenticationService {
 }
 
 export interface IAccountUsage {
-	extensionId: string;
-	extensionName: string;
-	lastUsed: number;
+  extensionId: string;
+  extensionName: string;
+  lastUsed: number;
 }
 
 export interface SessionRequest {
-	disposables: IDisposable[];
-	requestingExtensionIds: string[];
+  disposables: IDisposable[];
+  requestingExtensionIds: string[];
 }
 
 export interface SessionRequestInfo {
-	[scopes: string]: SessionRequest;
+  [scopes: string]: SessionRequest;
 }

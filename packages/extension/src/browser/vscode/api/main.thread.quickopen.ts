@@ -1,17 +1,13 @@
-import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier,
-} from '../../../common/vscode';
+import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
-import {
-  QuickTitleBar,
-} from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
+import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
 import { IQuickInputService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Disposable } from '@opensumi/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickOpen {
-
   protected readonly proxy: IExtHostQuickOpen;
 
   @Autowired(QuickPickService)
@@ -35,7 +31,11 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     );
   }
 
-  $showQuickPick(_session: number, items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
+  $showQuickPick(
+    _session: number,
+    items: QuickPickItem<number>[],
+    options?: QuickPickOptions,
+  ): Promise<number | undefined> {
     return this.quickPickService.show(items, {
       ...options,
       onSelect: (_, index) => {
@@ -64,5 +64,4 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
   $hideQuickinput(): void {
     this.quickInputService.hide();
   }
-
 }

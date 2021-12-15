@@ -11,9 +11,7 @@ class MockRecentStorage {
 
   getScopeStorage() {
     return {
-      get: (key) => {
-        return this.cache.get(key) || MockRecentStorage.mostRecentlySearchWord;
-      },
+      get: (key) => this.cache.get(key) || MockRecentStorage.mostRecentlySearchWord,
       set: (key, value) => {
         this.cache.set(key, value);
       },
@@ -71,5 +69,4 @@ describe('测试 SearchHistory', () => {
     searchHistory.setBackRecentSearchWord();
     expect(searchServiceClient.searchValue).toEqual('d');
   });
-
 });

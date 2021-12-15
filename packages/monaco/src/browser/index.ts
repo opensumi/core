@@ -1,6 +1,16 @@
 import MonacoServiceImpl from './monaco.service';
 import { Provider, Injectable } from '@opensumi/di';
-import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, IJSONSchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  MonacoService,
+  MonacoContribution,
+  IContextKeyService,
+  ISchemaStore,
+  JsonSchemaContribution,
+  IJSONSchemaRegistry,
+  IMimeService,
+  MonacoOverrideServiceRegistry,
+} from '@opensumi/ide-core-browser';
 import { MonacoClientContribution } from './monaco.contribution';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 import { MonacoMimeService } from './monaco-mime';

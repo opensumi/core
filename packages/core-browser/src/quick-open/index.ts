@@ -110,7 +110,6 @@ export interface QuickOpenItemOptions {
 }
 
 export class QuickOpenItem {
-
   private labelHighlights?: Highlight[];
 
   private descriptionHighlights?: Highlight[];
@@ -120,9 +119,7 @@ export class QuickOpenItem {
   @observable
   public checked = false;
 
-  constructor(
-    protected options: QuickOpenItemOptions,
-  ) {
+  constructor(protected options: QuickOpenItemOptions) {
     this.checked = options.checked || false;
   }
 
@@ -215,7 +212,6 @@ export namespace QuickOpenOptions {
     enableSeparateSubstringMatching?: boolean;
   }
   export interface Resolved extends QuickOpenTabOptions {
-
     /**
      * 启用状态
      */
@@ -284,8 +280,8 @@ export namespace QuickOpenOptions {
      */
     readonly ignoreFocusOut: boolean;
     /**
-    * 如果为 true，则输入内容会隐藏
-    */
+     * 如果为 true，则输入内容会隐藏
+     */
     readonly password: boolean;
     /**
      * 是否为多选
@@ -307,10 +303,18 @@ export namespace QuickOpenOptions {
     enabled: true,
     prefix: '',
     placeholder: '',
-    onClose: () => { /* no-op*/ },
-    onSelect: () => { /* no-op*/ },
-    onChangeValue: () => { /* no-op*/ },
-    onConfirm: () => { /* no-op*/ },
+    onClose: () => {
+      /* no-op*/
+    },
+    onSelect: () => {
+      /* no-op*/
+    },
+    onChangeValue: () => {
+      /* no-op*/
+    },
+    onConfirm: () => {
+      /* no-op*/
+    },
     valueSelection: [-1, -1],
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,
@@ -404,7 +408,6 @@ export interface IQuickInputService {
 }
 
 export interface QuickInputOptions {
-
   /**
    * Show the progress indicator if true
    */
@@ -512,14 +515,11 @@ export enum QuickTitleButtonSide {
  * @deprecated
  */
 export class ThemeIcon {
-
   static readonly File: ThemeIcon = new ThemeIcon('file');
 
   static readonly Folder: ThemeIcon = new ThemeIcon('folder');
 
-  private constructor(public id: string) {
-  }
-
+  private constructor(public id: string) {}
 }
 
 export interface QuickTitleButton {

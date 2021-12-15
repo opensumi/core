@@ -2,8 +2,23 @@ import React from 'react';
 import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@opensumi/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@opensumi/ide-components';
-import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
+import {
+  INodeRendererProps,
+  ClasslistComposite,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  RecycleTree,
+  INodeRendererWrapProps,
+  TreeModel,
+  CompositeTreeNode,
+} from '@opensumi/ide-components';
+import {
+  ExpressionContainer,
+  ExpressionNode,
+  DebugVariableContainer,
+  DebugVariable,
+  DebugScope,
+} from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { Loading } from '@opensumi/ide-components';
 import styles from './debug-variables.module.less';
@@ -11,9 +26,7 @@ import cls from 'classnames';
 
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 
-export const DebugVariableView = observer(({
-  viewState,
-}: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugVariableView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
 
   const { width, height } = viewState;
@@ -42,7 +55,11 @@ export const DebugVariableView = observer(({
     });
   };
 
-  const handleTwistierClick = (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => {
+  const handleTwistierClick = (
+    ev: React.MouseEvent,
+    item: ExpressionNode | ExpressionContainer,
+    type: TreeNodeType,
+  ) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -53,7 +70,10 @@ export const DebugVariableView = observer(({
     handleTwistierClick(item, type);
   };
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: DebugScope | DebugVariable | DebugVariableContainer | undefined) => {
+  const handlerContextMenu = (
+    ev: React.MouseEvent,
+    node: DebugScope | DebugVariable | DebugVariableContainer | undefined,
+  ) => {
     const { handleContextMenu } = debugVariablesModelService;
     handleContextMenu(ev, node);
   };
@@ -76,51 +96,58 @@ export const DebugVariableView = observer(({
     enactiveNodeDecoration();
   };
 
-  const renderVariableNode = React.useCallback((props: INodeRendererWrapProps) => {
-    const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
-    return <DebugVariableRenderedNode
-      item={props.item}
-      itemType={props.itemType}
-      decorations={decorations}
-      onClick={handleTwistierClick}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handlerContextMenu}
-      defaultLeftPadding={8}
-      leftPadding={8}
-    />;
-  }, [model]);
+  const renderVariableNode = React.useCallback(
+    (props: INodeRendererWrapProps) => {
+      const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
+      return (
+        <DebugVariableRenderedNode
+          item={props.item}
+          itemType={props.itemType}
+          decorations={decorations}
+          onClick={handleTwistierClick}
+          onTwistierClick={handleTwistierClick}
+          onContextMenu={handlerContextMenu}
+          defaultLeftPadding={8}
+          leftPadding={8}
+        />
+      );
+    },
+    [model],
+  );
 
   const renderContent = () => {
     if (!model) {
       return <span></span>;
     } else {
-      return <RecycleTree
-        height={height}
-        width={width}
-        itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
-        onReady={handleTreeReady}
-        model={model!}
-        placeholder={() => {
-          return <span></span>;
-        }}
-        overflow={ 'auto' }
-      >
-        {renderVariableNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree
+          height={height}
+          width={width}
+          itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
+          onReady={handleTreeReady}
+          model={model!}
+          placeholder={() => <span></span>}
+          overflow={'auto'}
+        >
+          {renderVariableNode}
+        </RecycleTree>
+      );
     }
   };
 
-  return <div
-    className={styles.debug_variables_container}
-    tabIndex={-1}
-    ref={wrapperRef}
-    onContextMenu={handleOuterContextMenu}
-    onClick={handleOuterClick}
-    onBlur={handleOuterBlur}
-    data-name={DEBUG_VARIABLE_TREE_FIELD_NAME}
-  >
-    {renderContent()}
-  </div>;
+  return (
+    <div
+      className={styles.debug_variables_container}
+      tabIndex={-1}
+      ref={wrapperRef}
+      onContextMenu={handleOuterContextMenu}
+      onClick={handleOuterClick}
+      onBlur={handleOuterBlur}
+      data-name={DEBUG_VARIABLE_TREE_FIELD_NAME}
+    >
+      {renderContent()}
+    </div>
+  );
 });
 
 export interface IDebugVariableNodeProps {
@@ -130,7 +157,11 @@ export interface IDebugVariableNodeProps {
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
   onTwistierClick: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: DebugScope | DebugVariableContainer | DebugVariable | undefined, type: TreeNodeType) => void;
+  onContextMenu?: (
+    ev: React.MouseEvent,
+    item: DebugScope | DebugVariableContainer | DebugVariable | undefined,
+    type: TreeNodeType,
+  ) => void;
 }
 
 export type IDebugVariableNodeRenderedProps = IDebugVariableNodeProps & INodeRendererProps;
@@ -145,7 +176,6 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   onContextMenu,
   itemType,
 }: IDebugVariableNodeRenderedProps) => {
-
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
   };
@@ -159,7 +189,9 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     }
   };
 
-  const paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0) + (ExpressionContainer.is(item) ? 0 : 16)}px`;
+  const paddingLeft = `${
+    (defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0) + (ExpressionContainer.is(item) ? 0 : 16)
+  }px`;
 
   const editorNodeStyle = {
     height: DEBUG_VARIABLE_TREE_NODE_HEIGHT,
@@ -167,19 +199,26 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     paddingLeft,
   } as React.CSSProperties;
 
-  const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => {
-    return <div
-      className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_display_name, styles.debug_variables_variable, (node as DebugVariable).description ? styles.name : '')}
+  const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => (
+    <div
+      className={cls(
+        styles.debug_variables_node_segment,
+        styles.debug_variables_node_display_name,
+        styles.debug_variables_variable,
+        (node as DebugVariable).description ? styles.name : '',
+      )}
     >
       {node.name}
       {(node as DebugVariable).description ? ':' : ''}
-    </div>;
-  };
+    </div>
+  );
 
   const renderDescription = (node: ExpressionContainer | ExpressionNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'ƒ ') : '';
+    const description = (node as DebugVariableContainer).description
+      ? (node as DebugVariableContainer).description.replace('function', 'ƒ ')
+      : '';
     const addonClass = [styles.debug_variables_variable];
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);
@@ -190,42 +229,44 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     } else if (stringRegex.test(description)) {
       addonClass.push(styles.string);
     }
-    return <div className={cls(styles.debug_variables_node_segment_grow, styles.debug_variables_node_description, ...addonClass)}>
-      {description}
-    </div>;
+    return (
+      <div
+        className={cls(
+          styles.debug_variables_node_segment_grow,
+          styles.debug_variables_node_description,
+          ...addonClass,
+        )}
+      >
+        {description}
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_tail)}>
-      {renderBadge()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_tail)}>{renderBadge()}</div>
+  );
 
-  const renderBadge = () => {
-    return <div className={styles.debug_variables_node_status}>
-      {item.badge}
-    </div>;
-  };
+  const renderBadge = () => <div className={styles.debug_variables_node_status}>{item.badge}</div>;
 
   const renderToggle = (node: ExpressionContainer, clickHandler: any) => {
     const handleTwiceClick = (ev: React.MouseEvent) => {
       clickHandler(ev, node, itemType);
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
-      return <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
-        <Loading />
-      </div>;
+      return (
+        <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
+          <Loading />
+        </div>
+      );
     }
-    return <div
-      onClick={handleTwiceClick}
-      className={cls(
-        styles.debug_variables_node_segment,
-        styles.expansion_toggle,
-        getIcon('right'),
-        { [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded },
-      )}
-    />;
-
+    return (
+      <div
+        onClick={handleTwiceClick}
+        className={cls(styles.debug_variables_node_segment, styles.expansion_toggle, getIcon('right'), {
+          [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
+        })}
+      />
+    );
   };
 
   const renderTwice = (item) => {
@@ -240,18 +281,13 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={item.description || ''}
-      className={cls(
-        styles.debug_variables_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(styles.debug_variables_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >
       <div className={cls(styles.debug_variables_node_content)}>
         {renderTwice(item)}
-        <div
-          className={styles.debug_variables_node_overflow_wrap}
-        >
+        <div className={styles.debug_variables_node_overflow_wrap}>
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

@@ -18,9 +18,10 @@ describe('FileServiceClient should be work', () => {
     {
       token: FileServicePath,
       useClass: FileService,
-    }, {
-    token: IDiskFileProvider,
-    useClass: DiskFileSystemProvider,
+    },
+    {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
     },
   );
 
@@ -69,7 +70,7 @@ describe('FileServiceClient should be work', () => {
     expect(stat?.isDirectory).toBeFalsy();
     expect(stat?.isSymbolicLink).toBeFalsy();
     if (stat) {
-      const content = `console.log('hello world')`;
+      const content = "console.log('hello world')";
       await fileServiceClient.setContent(stat, content);
       const result = await fileServiceClient.readFile(stat.uri);
       expect(result.content.toString()).toBe(content);
@@ -139,9 +140,7 @@ describe('FileServiceClient should be work', () => {
   it('set fileExcludes', async () => {
     const targetDir = tempDir.resolve('watch-file-exclude-temp-dir');
     await fs.ensureDir(targetDir.codeUri.fsPath);
-    await fileServiceClient.setFilesExcludes([
-      '**/test/**',
-    ], [targetDir.toString()]);
+    await fileServiceClient.setFilesExcludes(['**/test/**'], [targetDir.toString()]);
     await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
     const stat = await fileServiceClient.getFileStat(targetDir.toString());
     expect(stat?.children?.length === 0).toBeTruthy();
@@ -150,9 +149,7 @@ describe('FileServiceClient should be work', () => {
   it('set watchExcludes', async (done) => {
     const targetDir = tempDir.resolve('watch-exclude-temp-dir');
     await fs.ensureDir(targetDir.codeUri.fsPath);
-    await fileServiceClient.setWatchFileExcludes([
-      '**/test/**',
-    ]);
+    await fileServiceClient.setWatchFileExcludes(['**/test/**']);
     const watcher = await fileServiceClient.watchFileChanges(targetDir);
     watcher.onFilesChanged(async (event) => {
       expect(!!event.find((e) => e.uri === targetDir.resolve('abc.js').toString())).toBeTruthy();

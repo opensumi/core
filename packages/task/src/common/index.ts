@@ -15,9 +15,11 @@ interface TaskFileter {
 
 interface WorkspaceTaskResult {
   set: TaskSet | undefined;
-  configurations: {
-    byIdentifier: Record<string, ConfiguringTask>;
-  } | undefined;
+  configurations:
+    | {
+        byIdentifier: Record<string, ConfiguringTask>;
+      }
+    | undefined;
   hasErrors: boolean;
 }
 
@@ -28,12 +30,7 @@ export interface WorkspaceFolder {
 }
 
 // tslint:disable-next-line: no-empty-interface
-export interface IWorkspaceFolder extends WorkspaceFolder {
-  /**
-   * Given workspace folder relative path, returns the resource with the absolute path.
-   */
-  // toResource: (relativePath: string) => URI;
-}
+export type IWorkspaceFolder = WorkspaceFolder;
 
 export interface WorkspaceFolderTaskResult extends WorkspaceTaskResult {
   workspaceFolder: IWorkspaceFolder;

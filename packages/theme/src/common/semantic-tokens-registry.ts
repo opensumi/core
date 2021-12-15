@@ -58,10 +58,7 @@ export class TokenStyle implements Readonly<TokenStyleData> {
 export namespace TokenStyle {
   export function toJSONObject(style: TokenStyle): any {
     return {
-      _foreground:
-        style.foreground === undefined
-          ? null
-          : Color.Format.CSS.formatHexA(style.foreground, true),
+      _foreground: style.foreground === undefined ? null : Color.Format.CSS.formatHexA(style.foreground, true),
       _bold: style.bold === undefined ? null : style.bold,
       _underline: style.underline === undefined ? null : style.underline,
       _italic: style.italic === undefined ? null : style.italic,
@@ -70,8 +67,7 @@ export namespace TokenStyle {
   export function fromJSONObject(obj: any): TokenStyle | undefined {
     if (obj) {
       const boolOrUndef = (b: any) => (typeof b === 'boolean' ? b : undefined);
-      const colorOrUndef = (s: any) =>
-        typeof s === 'string' ? Color.fromHex(s) : undefined;
+      const colorOrUndef = (s: any) => (typeof s === 'string' ? Color.fromHex(s) : undefined);
       return new TokenStyle(
         colorOrUndef(obj._foreground),
         boolOrUndef(obj._bold),
@@ -88,9 +84,7 @@ export namespace TokenStyle {
     return (
       s1 !== undefined &&
       s2 !== undefined &&
-      (s1.foreground instanceof Color
-        ? s1.foreground.equals(s2.foreground)
-        : s2.foreground === undefined) &&
+      (s1.foreground instanceof Color ? s1.foreground.equals(s2.foreground) : s2.foreground === undefined) &&
       s1.bold === s2.bold &&
       s1.underline === s2.underline &&
       s1.italic === s2.italic
@@ -105,12 +99,7 @@ export namespace TokenStyle {
     underline?: boolean;
     italic?: boolean;
   }): TokenStyle {
-    return new TokenStyle(
-      data.foreground,
-      data.bold,
-      data.underline,
-      data.italic,
-    );
+    return new TokenStyle(data.foreground, data.bold, data.underline, data.italic);
   }
   export function fromSettings(
     foreground: string | undefined,
@@ -156,10 +145,7 @@ export interface ITextMateThemingRule {
   settings: ITokenColorizationSetting;
 }
 
-export type TokenStyleDefinition =
-  | SemanticTokenRule
-  | ProbeScope[]
-  | TokenStyleValue;
+export type TokenStyleDefinition = SemanticTokenRule | ProbeScope[] | TokenStyleValue;
 export type TokenStyleDefinitions = {
   [P in keyof TokenStyleData]?: TokenStyleDefinition | undefined;
 };
@@ -192,19 +178,11 @@ export function nameMatcher(identifers: string[], scope: ProbeScope): number {
     return -1;
   }
   let lastScopeIndex = scope.length - 1;
-  let lastIdentifierIndex = findInIdents(
-    scope[lastScopeIndex--],
-    identifers.length,
-  );
+  let lastIdentifierIndex = findInIdents(scope[lastScopeIndex--], identifers.length);
   if (lastIdentifierIndex >= 0) {
-    const score =
-      (lastIdentifierIndex + 1) * 0x10000 +
-      identifers[lastIdentifierIndex].length;
+    const score = (lastIdentifierIndex + 1) * 0x10000 + identifers[lastIdentifierIndex].length;
     while (lastScopeIndex >= 0) {
-      lastIdentifierIndex = findInIdents(
-        scope[lastScopeIndex--],
-        lastIdentifierIndex,
-      );
+      lastIdentifierIndex = findInIdents(scope[lastScopeIndex--], lastIdentifierIndex);
       if (lastIdentifierIndex === -1) {
         return -1;
       }
@@ -356,11 +334,7 @@ function scopesAreMatching(thisScopeName: string, scopeName: string): boolean {
     return true;
   }
   const len = scopeName.length;
-  return (
-    thisScopeName.length > len &&
-    thisScopeName.substr(0, len) === scopeName &&
-    thisScopeName[len] === '.'
-  );
+  return thisScopeName.length > len && thisScopeName.substr(0, len) === scopeName && thisScopeName[len] === '.';
 }
 
 export interface TokenStyleDefaults {
@@ -385,10 +359,7 @@ export interface ISemanticTokenRegistry {
    * @param selector The rule selector
    * @param defaults The default values
    */
-  registerTokenStyleDefault(
-    selector: TokenSelector,
-    defaults: TokenStyleDefaults,
-  ): void;
+  registerTokenStyleDefault(selector: TokenSelector, defaults: TokenStyleDefaults): void;
 
   /**
    * Deregister a TokenStyle default to the registry.
@@ -406,23 +377,14 @@ export interface ISemanticTokenRegistry {
    * @param id The TokenType id as used in theme description files
    * @param description the description
    */
-  registerTokenType(
-    id: string,
-    description: string,
-    superType?: string,
-    deprecationMessage?: string,
-  ): void;
+  registerTokenType(id: string, description: string, superType?: string, deprecationMessage?: string): void;
 
   /**
    * Register a token modifier to the registry.
    * @param id The TokenModifier id as used in theme description files
    * @param description the description
    */
-  registerTokenModifier(
-    id: string,
-    description: string,
-    deprecationMessage?: string,
-  ): void;
+  registerTokenModifier(id: string, description: string, deprecationMessage?: string): void;
 }
 
 export function parseClassifierString(
@@ -457,10 +419,7 @@ export function parseClassifierString(
   return { type, modifiers, language };
 }
 
-export function getStylingSchemeEntry(
-  description?: string,
-  deprecationMessage?: string,
-): IJSONSchema {
+export function getStylingSchemeEntry(description?: string, deprecationMessage?: string): IJSONSchema {
   return {
     description,
     deprecationMessage,

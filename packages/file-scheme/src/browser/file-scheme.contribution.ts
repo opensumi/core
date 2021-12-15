@@ -2,14 +2,21 @@ import { ResourceService, IResource, IEditorOpenType } from '@opensumi/ide-edito
 import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
 import { getLanguageIdFromMonaco } from '@opensumi/ide-core-browser/lib/services';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorComponentRegistry,
+  BrowserEditorContribution,
+  IEditorDocumentModelContentRegistry,
+} from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { ImagePreview, VideoPreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME } from '../common';
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
-import { UntitledSchemeResourceProvider, UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
+import {
+  UntitledSchemeResourceProvider,
+  UntitledSchemeDocumentProvider,
+} from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { LargeFilePrevent } from './prevent.view';
 
 const VIDEO_PREVIEW_COMPONENT_ID = 'video-preview';
@@ -19,7 +26,6 @@ const LARGE_FILE_PREVENT_COMPONENT_ID = 'large-file-prevent';
 
 @Domain(BrowserEditorContribution)
 export class FileSystemEditorResourceContribution implements BrowserEditorContribution {
-
   @Autowired()
   private readonly fileSchemeDocumentProvider: FileSchemeDocumentProvider;
 
@@ -89,63 +95,68 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     });
 
     // 如果文件无法在当前IDE编辑器中找到打开方式
-    editorComponentRegistry.registerEditorComponentResolver((scheme: string) => {
-      return (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) ? 10 : -1;
-    }, (resource: IResource<any>, results: IEditorOpenType[]) => {
-      if (results.length === 0) {
-        results.push({
-          type: 'component',
-          componentId: EXTERNAL_OPEN_COMPONENT_ID,
-        });
-      }
-    });
-
-    // 图片文件
-    editorComponentRegistry.registerEditorComponentResolver((scheme: string) => {
-      return (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) ? 10 : -1;
-    }, async (resource: IResource<any>, results: IEditorOpenType[]) => {
-      const type = await this.getFileType(resource.uri.toString());
-
-      if (type === 'image') {
-        results.push({
-          type: 'component',
-          componentId: IMAGE_PREVIEW_COMPONENT_ID,
-        });
-      }
-
-      if (type === 'video') {
-        results.push({
-          type: 'component',
-          componentId: VIDEO_PREVIEW_COMPONENT_ID,
-        });
-      }
-
-      if (type === 'text') {
-        const { metadata, uri } = resource as { uri: URI, metadata: any };
-        const stat = await this.fileServiceClient.getFileStat(uri.toString());
-        const maxSize = this.preference.get<number>('editor.largeFile') || 20000;
-
-        if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
+    editorComponentRegistry.registerEditorComponentResolver(
+      (scheme: string) => (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
+      (resource: IResource<any>, results: IEditorOpenType[]) => {
+        if (results.length === 0) {
           results.push({
             type: 'component',
-            componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
-          });
-        } else {
-          results.push({
-            type: 'code',
-            title: localize('editorOpenType.code'),
+            componentId: EXTERNAL_OPEN_COMPONENT_ID,
           });
         }
-      }
-    });
+      },
+    );
 
-    editorComponentRegistry.registerEditorComponentResolver(Schemas.untitled, (resource: IResource<any>, results: IEditorOpenType[]) => {
-      if (results.length === 0) {
-        results.push({
-          type: 'code',
-        });
-      }
-    });
+    // 图片文件
+    editorComponentRegistry.registerEditorComponentResolver(
+      (scheme: string) => (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
+      async (resource: IResource<any>, results: IEditorOpenType[]) => {
+        const type = await this.getFileType(resource.uri.toString());
+
+        if (type === 'image') {
+          results.push({
+            type: 'component',
+            componentId: IMAGE_PREVIEW_COMPONENT_ID,
+          });
+        }
+
+        if (type === 'video') {
+          results.push({
+            type: 'component',
+            componentId: VIDEO_PREVIEW_COMPONENT_ID,
+          });
+        }
+
+        if (type === 'text') {
+          const { metadata, uri } = resource as { uri: URI; metadata: any };
+          const stat = await this.fileServiceClient.getFileStat(uri.toString());
+          const maxSize = this.preference.get<number>('editor.largeFile') || 20000;
+
+          if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
+            results.push({
+              type: 'component',
+              componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
+            });
+          } else {
+            results.push({
+              type: 'code',
+              title: localize('editorOpenType.code'),
+            });
+          }
+        }
+      },
+    );
+
+    editorComponentRegistry.registerEditorComponentResolver(
+      Schemas.untitled,
+      (resource: IResource<any>, results: IEditorOpenType[]) => {
+        if (results.length === 0) {
+          results.push({
+            type: 'code',
+          });
+        }
+      },
+    );
   }
 
   private async getFileType(uri: string): Promise<string | undefined> {

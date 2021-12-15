@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -23,50 +23,54 @@ import { Definition, DefinitionLink, Location, Position } from '../../../../comm
 import { isDefinitionLinkArray, isLocationArray } from '../../../../common/vscode/utils';
 
 export class TypeDefinitionAdapter {
+  constructor(
+    private readonly provider: vscode.TypeDefinitionProvider,
+    private readonly documents: ExtensionDocumentDataManager,
+  ) {}
 
-    constructor(
-        private readonly provider: vscode.TypeDefinitionProvider,
-        private readonly documents: ExtensionDocumentDataManager,
-    ) { }
-
-    provideTypeDefinition(resource: Uri, position: Position, token: vscode.CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
-        const documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error(`There is no document for ${resource}`));
-        }
-
-        const document = documentData.document;
-        const zeroBasedPosition = Converter.toPosition(position);
-
-        return Promise.resolve(this.provider.provideTypeDefinition(document, zeroBasedPosition, token)).then((definition) => {
-            if (!definition) {
-                return undefined;
-            }
-
-            if (definition instanceof types.Location) {
-                return Converter.fromLocation(definition);
-            }
-
-            if (isLocationArray(definition)) {
-                const locations: Location[] = [];
-
-                for (const location of definition) {
-                    locations.push(Converter.fromLocation(location));
-                }
-
-                return locations;
-            }
-
-            if (isDefinitionLinkArray(definition)) {
-                const definitionLinks: DefinitionLink[] = [];
-
-                for (const definitionLink of definition) {
-                    definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
-                }
-
-                return definitionLinks;
-            }
-        });
+  provideTypeDefinition(
+    resource: Uri,
+    position: Position,
+    token: vscode.CancellationToken,
+  ): Promise<Definition | DefinitionLink[] | undefined> {
+    const documentData = this.documents.getDocumentData(resource);
+    if (!documentData) {
+      return Promise.reject(new Error(`There is no document for ${resource}`));
     }
 
+    const document = documentData.document;
+    const zeroBasedPosition = Converter.toPosition(position);
+
+    return Promise.resolve(this.provider.provideTypeDefinition(document, zeroBasedPosition, token)).then(
+      (definition) => {
+        if (!definition) {
+          return undefined;
+        }
+
+        if (definition instanceof types.Location) {
+          return Converter.fromLocation(definition);
+        }
+
+        if (isLocationArray(definition)) {
+          const locations: Location[] = [];
+
+          for (const location of definition) {
+            locations.push(Converter.fromLocation(location));
+          }
+
+          return locations;
+        }
+
+        if (isDefinitionLinkArray(definition)) {
+          const definitionLinks: DefinitionLink[] = [];
+
+          for (const definitionLink of definition) {
+            definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
+          }
+
+          return definitionLinks;
+        }
+      },
+    );
+  }
 }

@@ -1,6 +1,13 @@
 import React from 'react';
 import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
-import { Select, SelectOptionsList, ISelectOptionsListProps, IDataOption, IDataOptionGroup, isDataOptionGroups } from '@opensumi/ide-components';
+import {
+  Select,
+  SelectOptionsList,
+  ISelectOptionsListProps,
+  IDataOption,
+  IDataOptionGroup,
+  isDataOptionGroups,
+} from '@opensumi/ide-components';
 import { Emitter } from '@opensumi/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../../style/icon/icon';
@@ -22,28 +29,28 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
   };
 
   const [value, setValue] = React.useState(props.defaultValue);
-  const [customOptions, setCustomOptions] = React.useState<IDataOption<T>[] | IDataOptionGroup<T>[] | undefined>(undefined);
+  const [customOptions, setCustomOptions] = React.useState<IDataOption<T>[] | IDataOptionGroup<T>[] | undefined>(
+    undefined,
+  );
   const [showDropdown, setShowDropDown] = React.useState<boolean>(false);
   const dropdownRef = React.useRef<HTMLDivElement | null>(null);
   const selectInMenuRef = React.useRef<HTMLDivElement | null>(null);
   const selectEmitter = React.useRef(new Emitter<T>());
 
   React.useEffect(() => {
-    const _onChangeState = new Emitter<{from: string, to: string}>();
+    const _onChangeState = new Emitter<{ from: string; to: string }>();
     let _value = value;
     const delegate = {
       setState: (to) => {
         const from = viewState;
         setViewState(to);
-        _onChangeState.fire({from, to});
+        _onChangeState.fire({ from, to });
       },
       setSelect: setValue,
       setOptions: (options) => {
         setCustomOptions(options);
       },
-      getValue: () => {
-        return _value;
-      },
+      getValue: () => _value,
       onChangeState: _onChangeState.event,
       onSelect: selectEmitter.current.event,
     };
@@ -135,34 +142,46 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
       size: 'small',
       renderCheck: true,
     };
-    const selectDropDown = <SelectOptionsList
-      {...selectDropDownProps}
-      ref={dropdownRef}
-    />;
-    return <div className={classnames({'kt-toolbar-action-btn': true,
-    'action-btn-in-dropdown': true,
-    'kt-toolbar-action-select': true})} ref={selectInMenuRef} onClick={() => {
-      setShowDropDown(true);
-    }}>
-      {props.name || findCurrentValueLabel(value)}
-      <div className={classnames('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
+    const selectDropDown = <SelectOptionsList {...selectDropDownProps} ref={dropdownRef} />;
+    return (
+      <div
+        className={classnames({
+          'kt-toolbar-action-btn': true,
+          'action-btn-in-dropdown': true,
+          'kt-toolbar-action-select': true,
+        })}
+        ref={selectInMenuRef}
+        onClick={() => {
+          setShowDropDown(true);
+        }}
+      >
+        {props.name || findCurrentValueLabel(value)}
+        <div className={classnames('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
 
-      {showDropdown ? selectDropDown : null}
-    </div>;
+        {showDropdown ? selectDropDown : null}
+      </div>
+    );
   }
 
-  return <Select<T> value={value} options={customOptions || props.options} size='small' optionRenderer={props.customOptionRenderer} onChange={(v) => {
-    if (props.onSelect) {
-      props.onSelect(v!);
-    }
-    selectEmitter.current.fire(v);
-    setValue(v);
-  }} optionStyle={optionStyle} style={selectStyle}/>;
+  return (
+    <Select<T>
+      value={value}
+      options={customOptions || props.options}
+      size='small'
+      optionRenderer={props.customOptionRenderer}
+      onChange={(v) => {
+        if (props.onSelect) {
+          props.onSelect(v!);
+        }
+        selectEmitter.current.fire(v);
+        setValue(v);
+      }}
+      optionStyle={optionStyle}
+      style={selectStyle}
+    />
+  );
 }
 
 export function createToolbarActionSelect<T = string>(props: IToolbarActionSelectProps<T>): IToolbarActionReactElement {
-
-  return ( actionProps ) => {
-    return <ToolbarActionSelect {...props} {...actionProps} />;
-  };
+  return (actionProps) => <ToolbarActionSelect {...props} {...actionProps} />;
 }

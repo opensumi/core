@@ -12,9 +12,7 @@ export class MockFsProvider implements IDiskFileProvider {
   watch(uri, options) {
     return 0;
   }
-  unwatch(watcherId: number) {
-
-  }
+  unwatch(watcherId: number) {}
   setWatchFileExcludes(excludes: string[]) {}
   getWatchFileExcludes(): string[] {
     return [];
@@ -31,26 +29,21 @@ export class MockFsProvider implements IDiskFileProvider {
   }
   // @ts-ignore
   readDirectory(uri) {
-    return [['sss', FileType.File], ['aaa', FileType.Directory]];
+    return [
+      ['sss', FileType.File],
+      ['aaa', FileType.Directory],
+    ];
   }
-  createDirectory(uri) {
-
-  }
+  createDirectory(uri) {}
   readFile(uri) {
     return BinaryBuffer.fromString('mock content').buffer;
   }
-  writeFile(uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }) {
+  writeFile(uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }) {
     this.mockContent.set(uri.toString(), content);
   }
-  delete(uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }) {
-
-  }
-  rename(oldUri, newUri, options: { overwrite: boolean; }) {
-
-  }
-  copy(s, d, opt) {
-
-  }
+  delete(uri, options: { recursive: boolean; moveToTrash?: boolean | undefined }) {}
+  rename(oldUri, newUri, options: { overwrite: boolean }) {}
+  copy(s, d, opt) {}
   async access() {
     return true;
   }

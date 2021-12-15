@@ -10,11 +10,9 @@ export interface IAsyncEventFireOpts {
   /**
    * 异步事件发送时，listener的最大执行时长（listener并发执行)
    */
-  timeout?: number
+  timeout?: number;
 }
-export interface IEventListener<T> {
-  (target: T): void;
-}
+export type IEventListener<T> = (target: T) => void;
 
 export const IEventBus = Symbol('IEventBus');
 export interface IEventBus {
@@ -65,6 +63,6 @@ export interface IEventBus {
   on<T>(constructor: ConstructorOf<T>, listener: IEventListener<T>): IDisposable;
   /**
    * 监听 EventBus 中的事件，只会触发一次
-  */
+   */
   once<T>(constructor: ConstructorOf<T>, listener: IEventListener<T>): IDisposable;
 }

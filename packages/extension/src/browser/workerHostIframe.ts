@@ -52,9 +52,7 @@ export function startInsideIframe(workerSrc: string) {
   iframe.setAttribute('class', 'web-worker-ext-host-iframe');
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
   iframe.style.display = 'none';
-  const escapeAttribute = (value: string): string => {
-    return value.replace(/"/g, '&quot;');
-  };
+  const escapeAttribute = (value: string): string => value.replace(/"/g, '&quot;');
   const extHostUuid = v4();
   const html = `<!DOCTYPE html>
 <html>

@@ -56,7 +56,7 @@ export interface IProcessExitEvent {
  * Data emitted when a process has been successfully started.
  */
 // tslint:disable-next-line: no-empty-interface
-export interface IProcessStartEvent { }
+export interface IProcessStartEvent {}
 
 /**
  * Data emitted when a process has failed to start.

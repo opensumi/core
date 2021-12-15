@@ -16,5 +16,11 @@ export const FilesExplorerFilteredContext = new RawContextKey<boolean>('filesExp
 
 // compressed nodes
 export const ExplorerCompressedFocusContext = new RawContextKey<boolean>('explorerViewletCompressedFocus', false);
-export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>('explorerViewletCompressedFirstFocus', false);
-export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>('explorerViewletCompressedLastFocus', false);
+export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>(
+  'explorerViewletCompressedFirstFocus',
+  false,
+);
+export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>(
+  'explorerViewletCompressedLastFocus',
+  false,
+);

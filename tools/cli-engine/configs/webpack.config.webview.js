@@ -8,7 +8,7 @@ module.exports = {
   entry: path.join(__dirname, '../src/webview/webview-host/web-preload.ts'),
   node: {
     net: 'empty',
-    'child_process': 'empty',
+    child_process: 'empty',
     path: 'empty',
     url: false,
     fs: 'empty',
@@ -38,20 +38,14 @@ module.exports = {
     ],
   },
   resolveLoader: {
-    modules: [
-      path.join(__dirname, '../node_modules'),
-      path.resolve('node_modules'),
-    ],
+    modules: [path.join(__dirname, '../node_modules'), path.resolve('node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
     moduleExtensions: ['-loader'],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(
-        __dirname,
-        '../src/webview/webview-host/webview.html',
-      ),
+      template: path.join(__dirname, '../src/webview/webview-host/webview.html'),
     }),
   ],
 };

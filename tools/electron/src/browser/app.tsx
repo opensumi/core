@@ -49,5 +49,4 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
 
   const netConnection = await (window as any).createRPCNetConnection();
   app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
-
 }

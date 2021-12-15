@@ -1,6 +1,17 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS, Emitter } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Disposable,
+  IContextKeyService,
+  StorageProvider,
+  ILogger,
+  IApplicationService,
+  isWindows,
+  isLinux,
+  OS,
+  Emitter,
+} from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@opensumi/ide-components';
@@ -18,7 +29,7 @@ import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 
-class TempDirectory { }
+class TempDirectory {}
 
 describe('FileTreeModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;
@@ -30,7 +41,7 @@ describe('FileTreeModelService should be work', () => {
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
       notifyDidChangeMetadata: jest.fn(),
     },
     watchEvents: {
@@ -57,34 +68,30 @@ describe('FileTreeModelService should be work', () => {
     return directory;
   };
   const mockDecorationsService = {
-    onDidChangeDecorations: jest.fn(() => Disposable.create(() => { })),
+    onDidChangeDecorations: jest.fn(() => Disposable.create(() => {})),
   };
   const mockThemeService = {
-    onThemeChange: jest.fn(() => Disposable.create(() => { })),
+    onThemeChange: jest.fn(() => Disposable.create(() => {})),
   };
   const mockExploreStorage = {
-    get: jest.fn(() => {
-      return {
-        specVersion: 1,
-        scrollPosition: 100,
-        expandedDirectories: {
-          atSurface: [],
-          buried: [],
-        },
-      };
-    }),
+    get: jest.fn(() => ({
+      specVersion: 1,
+      scrollPosition: 100,
+      expandedDirectories: {
+        atSurface: [],
+        buried: [],
+      },
+    })),
     set: jest.fn(),
   };
   const mockLabelService = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   };
   const mockFileTreeService = {
-    onNodeRefreshed: jest.fn(() => Disposable.create(() => { })),
-    onWorkspaceChange: jest.fn(() => Disposable.create(() => { })),
-    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => { })),
-    resolveChildren: jest.fn(() => {
-      return [mockRoot];
-    }),
+    onNodeRefreshed: jest.fn(() => Disposable.create(() => {})),
+    onWorkspaceChange: jest.fn(() => Disposable.create(() => {})),
+    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => {})),
+    resolveChildren: jest.fn(() => [mockRoot]),
     startWatchFileEvent: jest.fn(),
     refresh: jest.fn(),
     contextMenuContextKeyService: new MockContextKeyService().createScoped({} as any),
@@ -156,11 +163,9 @@ describe('FileTreeModelService should be work', () => {
       ...newDirectoryByName('child'),
       ensureLoaded: jest.fn(),
       watcher: {
-        on: () => Disposable.create(() => { }),
+        on: () => Disposable.create(() => {}),
       },
-      getTreeNodeAtIndex: () => {
-        return root;
-      },
+      getTreeNodeAtIndex: () => root,
     };
 
     fileTreeModelService = injector.get(FileTreeModelService);
@@ -191,7 +196,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.activeFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -203,7 +215,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.activeFileActivedDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -215,7 +234,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.selectFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -227,7 +253,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.activeFileDecoration(node);
     let decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -243,7 +276,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.activeFileDecoration(node);
     let decoration = fileTreeModelService.decorations.getDecorations(node);
     fileTreeModelService.removeFileDecoration();
@@ -254,7 +294,7 @@ describe('FileTreeModelService should be work', () => {
 
   it('handleTreeHandler method should be work', () => {
     const errorEmitter = new Emitter();
-    const treeHandle = { ensureVisible: () => { }, onError: errorEmitter.event } as any;
+    const treeHandle = { ensureVisible: () => {}, onError: errorEmitter.event } as any;
     fileTreeModelService.handleTreeHandler(treeHandle);
     expect(fileTreeModelService.fileTreeHandle).toEqual(treeHandle);
   });
@@ -264,7 +304,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.initDecorations(mockRoot);
     fileTreeModelService.activeFileDecoration(node);
     let decoration = fileTreeModelService.decorations.getDecorations(node);
@@ -281,7 +328,14 @@ describe('FileTreeModelService should be work', () => {
       on: jest.fn(),
     } as any;
     fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    const node = new File(
+      mockFileTreeService,
+      mockRoot,
+      mockRoot.uri.resolve('test.js'),
+      'test.js',
+      undefined,
+      'tooltip',
+    );
     fileTreeModelService.selectFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();

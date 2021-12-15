@@ -39,19 +39,17 @@ describe('DebugStackFrame Model', () => {
             },
           };
         }),
-        getSource: jest.fn(() => {
-          return {
-            open: openSource,
-          };
-        }),
+        getSource: jest.fn(() => ({
+          open: openSource,
+        })),
         capabilities: {
           supportsRestartFrame: true,
         },
       } as any;
       debugThread = new DebugThread(session);
-      debugThread.update({raw: rawThread});
+      debugThread.update({ raw: rawThread });
       debugStackFrame = new DebugStackFrame(debugThread, session);
-      debugStackFrame.update({raw});
+      debugStackFrame.update({ raw });
     });
 
     afterEach(() => {
@@ -59,11 +57,11 @@ describe('DebugStackFrame Model', () => {
       session.sendRequest.mockReset();
     });
 
-    it ('Should have enough values', () => {
+    it('Should have enough values', () => {
       expect(typeof debugStackFrame.source).toBe('object');
     });
 
-    it ('restart method should be work', async (done) => {
+    it('restart method should be work', async (done) => {
       await debugStackFrame.restart();
       expect(debugStackFrame.session.sendRequest).toBeCalledWith('restartFrame', {
         frameId: raw.id,
@@ -71,7 +69,7 @@ describe('DebugStackFrame Model', () => {
       done();
     });
 
-    it ('getScopes method should be work', async (done) => {
+    it('getScopes method should be work', async (done) => {
       await debugStackFrame.getScopes();
       expect(session.sendRequest).toBeCalledWith('scopes', {
         frameId: raw.id,
@@ -79,11 +77,10 @@ describe('DebugStackFrame Model', () => {
       done();
     });
 
-    it ('open method should be work', async (done) => {
+    it('open method should be work', async (done) => {
       await debugStackFrame.open({});
       expect(openSource).toBeCalledTimes(1);
       done();
     });
-
   });
 });

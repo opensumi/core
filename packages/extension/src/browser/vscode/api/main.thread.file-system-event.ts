@@ -1,7 +1,21 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, URI, CancellationTokenSource, raceCancellation, ProgressLocation, localize, ILogger, formatLocalize } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  URI,
+  CancellationTokenSource,
+  raceCancellation,
+  ProgressLocation,
+  localize,
+  ILogger,
+  formatLocalize,
+} from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
-import { IBulkEditServiceShape, FileOperation, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import {
+  IBulkEditServiceShape,
+  FileOperation,
+  IWorkspaceFileOperationParticipant,
+  IWorkspaceFileService,
+} from '@opensumi/ide-workspace-edit';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { PreferenceService } from '@opensumi/ide-core-browser';
@@ -38,9 +52,7 @@ export class MainThreadFileSystemEvent extends Disposable {
   private _showPreview: string;
   private _proxy: IExtHostFileSystemEvent;
 
-  constructor(
-    private readonly rpcProtocol: IRPCProtocol,
-  ) {
+  constructor(private readonly rpcProtocol: IRPCProtocol) {
     super();
     this._proxy = this.rpcProtocol.getProxy<IExtHostFileSystemEvent>(ExtHostAPIIdentifier.ExtHostFileSystemEvent);
 
@@ -59,32 +71,34 @@ export class MainThreadFileSystemEvent extends Disposable {
       changed: [],
       deleted: [],
     };
-    this.addDispose(this.fileService.onFilesChanged((changes) => {
-      let hasResult = false;
-      for (const change of changes) {
-        switch (change.type) {
-          case FileChangeType.ADDED:
-            events.created.push(new URI(change.uri).codeUri);
-            hasResult = true;
-            break;
-          case FileChangeType.UPDATED:
-            events.changed.push(new URI(change.uri).codeUri);
-            hasResult = true;
-            break;
-          case FileChangeType.DELETED:
-            events.deleted.push(new URI(change.uri).codeUri);
-            hasResult = true;
-            break;
+    this.addDispose(
+      this.fileService.onFilesChanged((changes) => {
+        let hasResult = false;
+        for (const change of changes) {
+          switch (change.type) {
+            case FileChangeType.ADDED:
+              events.created.push(new URI(change.uri).codeUri);
+              hasResult = true;
+              break;
+            case FileChangeType.UPDATED:
+              events.changed.push(new URI(change.uri).codeUri);
+              hasResult = true;
+              break;
+            case FileChangeType.DELETED:
+              events.deleted.push(new URI(change.uri).codeUri);
+              hasResult = true;
+              break;
+          }
         }
-      }
 
-      if (hasResult) {
-        this._proxy.$onFileEvent(events);
-        events.created = [];
-        events.changed = [];
-        events.deleted = [];
-      }
-    }));
+        if (hasResult) {
+          this._proxy.$onFileEvent(events);
+          events.created = [];
+          events.changed = [];
+          events.deleted = [];
+        }
+      }),
+    );
   }
 
   private _participateFileOperation() {
@@ -97,7 +111,9 @@ export class MainThreadFileSystemEvent extends Disposable {
 
     // AFTER file operation
     this.addDispose(
-      this.workspaceFileService.onDidRunWorkspaceFileOperation((e) => this._proxy.$onDidRunFileOperation(e.operation, e.files)),
+      this.workspaceFileService.onDidRunWorkspaceFileOperation((e) =>
+        this._proxy.$onDidRunFileOperation(e.operation, e.files),
+      ),
     );
   }
 
@@ -119,24 +135,28 @@ export class MainThreadFileSystemEvent extends Disposable {
     const cts = new CancellationTokenSource(token);
     const timer = setTimeout(() => cts.cancel(), timeout);
 
-    const data = await this.progressService.withProgress({
-      location: ProgressLocation.Notification,
-      title: this.getProgressLabel(operation),
-      cancellable: true,
-      delay: Math.min(timeout / 2, 3000),
-    }, () => {
-      // race ext-host event response against timeout/cancellation
-      const onWillEvent = this._proxy
-        .$onWillRunFileOperation(operation, files, timeout, token);
-      return raceCancellation(onWillEvent, cts.token);
-    }, () => {
-      // user-cancel
-      cts.cancel();
-
-    }).finally(() => {
-      cts.dispose();
-      clearTimeout(timer);
-    });
+    const data = await this.progressService
+      .withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: this.getProgressLabel(operation),
+          cancellable: true,
+          delay: Math.min(timeout / 2, 3000),
+        },
+        () => {
+          // race ext-host event response against timeout/cancellation
+          const onWillEvent = this._proxy.$onWillRunFileOperation(operation, files, timeout, token);
+          return raceCancellation(onWillEvent, cts.token);
+        },
+        () => {
+          // user-cancel
+          cts.cancel();
+        },
+      )
+      .finally(() => {
+        cts.dispose();
+        clearTimeout(timer);
+      });
 
     if (!data) {
       // cancelled or no reply
@@ -157,7 +177,7 @@ export class MainThreadFileSystemEvent extends Disposable {
           message = formatLocalize('refactoring-changes.ask.1.copy', data.extensionNames[0]);
         } else if (operation === FileOperation.MOVE) {
           message = formatLocalize('refactoring-changes.ask.1.move', data.extensionNames[0]);
-        } else /* if (operation === FileOperation.DELETE) */ {
+        } /* if (operation === FileOperation.DELETE) */ else {
           message = formatLocalize('refactoring-changes.ask.1.delete', data.extensionNames[0]);
         }
       } else {
@@ -167,31 +187,30 @@ export class MainThreadFileSystemEvent extends Disposable {
           message = formatLocalize('refactoring-changes.ask.N.copy', data.extensionNames.length);
         } else if (operation === FileOperation.MOVE) {
           message = formatLocalize('refactoring-changes.ask.N.move', data.extensionNames.length);
-        } else /* if (operation === FileOperation.DELETE) */ {
+        } /* if (operation === FileOperation.DELETE) */ else {
           message = formatLocalize('refactoring-changes.ask.N.delete', data.extensionNames.length);
         }
       }
 
       if (needsConfirmation) {
-        const choices = [localize('refactoring-changes.msg.showPreview'), localize('refactoring-changes.msg.skipChanges')];
+        const choices = [
+          localize('refactoring-changes.msg.showPreview'),
+          localize('refactoring-changes.msg.skipChanges'),
+        ];
         // edit#metadata.needsConfirmation#true --> show dialog
-        const answer = await this.dialogService.open(
-          message,
-          MessageType.Info,
-          choices,
-        );
+        const answer = await this.dialogService.open(message, MessageType.Info, choices);
         showPreview = 'show';
         if (answer === choices[1]) {
           // Skip changes
           return;
         }
       } else {
-        const choices = [localize('refactoring-changes.msg.showPreview'), localize('refactoring-changes.msg.skipChanges'), localize('component.modal.okText')];
-        const answer = await this.dialogService.open(
-          message,
-          MessageType.Info,
-          choices,
-        );
+        const choices = [
+          localize('refactoring-changes.msg.showPreview'),
+          localize('refactoring-changes.msg.skipChanges'),
+          localize('component.modal.okText'),
+        ];
+        const answer = await this.dialogService.open(message, MessageType.Info, choices);
         if (answer === choices[1]) {
           // Skip changes
           return;
@@ -204,23 +223,20 @@ export class MainThreadFileSystemEvent extends Disposable {
 
     const workspaceEditDto = data?.edit;
     if (workspaceEditDto) {
-      await this.bulkEditService.apply(
-        ResourceEdit.convert(workspaceEditDto),
-        { showPreview: showPreview === 'show' },
-      );
+      await this.bulkEditService.apply(ResourceEdit.convert(workspaceEditDto), { showPreview: showPreview === 'show' });
     }
   }
 
   private getProgressLabel(operation: FileOperation) {
     switch (operation) {
       case FileOperation.CREATE:
-        return localize('fileOperation.create', 'Running \'File Create\' participants...');
+        return localize('fileOperation.create', "Running 'File Create' participants...");
       case FileOperation.DELETE:
-        return localize('fileOperation.delete', 'Running \'File Delete\' participants...');
+        return localize('fileOperation.delete', "Running 'File Delete' participants...");
       case FileOperation.COPY:
-        return localize('fileOperation.copy', 'Running \'File Copy\' participants...');
+        return localize('fileOperation.copy', "Running 'File Copy' participants...");
       case FileOperation.MOVE:
-        return localize('fileOperation.move', 'Running \'File Move\' participants...');
+        return localize('fileOperation.move', "Running 'File Move' participants...");
     }
   }
 }

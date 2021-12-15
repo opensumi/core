@@ -2,8 +2,23 @@ import React from 'react';
 import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@opensumi/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@opensumi/ide-components';
-import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
+import {
+  INodeRendererProps,
+  ClasslistComposite,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  RecycleTree,
+  INodeRendererWrapProps,
+  TreeModel,
+  PromptHandle,
+} from '@opensumi/ide-components';
+import {
+  ExpressionContainer,
+  ExpressionNode,
+  DebugVariableContainer,
+  DebugVariable,
+  DebugWatchNode,
+} from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
 import { Loading } from '@opensumi/ide-components';
 import styles from './debug-watch.module.less';
@@ -11,9 +26,7 @@ import cls from 'classnames';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
-export const DebugWatchView = observer(({
-  viewState,
-}: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
 
   const { height } = viewState;
@@ -23,17 +36,17 @@ export const DebugWatchView = observer(({
 
   const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
 
-  React.useEffect(() => {
-    return initTreeModel();
-  }, []);
+  React.useEffect(() => initTreeModel(), []);
 
   const initTreeModel = () => {
     const treeModel = debugWatchModelService.treeModel;
     let shouldUpdate = true;
     const disposableCollection = new DisposableCollection();
-    disposableCollection.push(Disposable.create(() => {
-      shouldUpdate = false;
-    }));
+    disposableCollection.push(
+      Disposable.create(() => {
+        shouldUpdate = false;
+      }),
+    );
     if (treeModel) {
       treeModel.root.ensureLoaded().then(() => {
         if (shouldUpdate) {
@@ -41,14 +54,16 @@ export const DebugWatchView = observer(({
         }
       });
     }
-    disposableCollection.push(debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
-      if (model) {
-        await model.root.ensureLoaded();
-      }
-      if (shouldUpdate) {
-        setModel(model);
-      }
-    }));
+    disposableCollection.push(
+      debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
+        if (model) {
+          await model.root.ensureLoaded();
+        }
+        if (shouldUpdate) {
+          setModel(model);
+        }
+      }),
+    );
     return () => {
       debugWatchModelService.removeNodeDecoration();
       disposableCollection.dispose();
@@ -96,49 +111,56 @@ export const DebugWatchView = observer(({
     enactiveNodeDecoration();
   };
 
-  const renderWatchNode = React.useCallback((props: INodeRendererWrapProps) => {
-    const decorations = debugWatchModelService.decorations.getDecorations(props.item as any);
-    return <DebugWatchRenderedNode
-      item={props.item}
-      itemType={props.itemType}
-      decorations={decorations}
-      onClick={handleTwistierClick}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handlerContextMenu}
-      defaultLeftPadding={12}
-      leftPadding={8}
-    />;
-  }, [model]);
+  const renderWatchNode = React.useCallback(
+    (props: INodeRendererWrapProps) => {
+      const decorations = debugWatchModelService.decorations.getDecorations(props.item as any);
+      return (
+        <DebugWatchRenderedNode
+          item={props.item}
+          itemType={props.itemType}
+          decorations={decorations}
+          onClick={handleTwistierClick}
+          onTwistierClick={handleTwistierClick}
+          onContextMenu={handlerContextMenu}
+          defaultLeftPadding={12}
+          leftPadding={8}
+        />
+      );
+    },
+    [model],
+  );
 
   const renderContent = () => {
     if (!model) {
       return <span />;
     } else {
-      return <RecycleTree
-        height={height}
-        itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
-        onReady={handleTreeReady}
-        model={model!}
-        placeholder={() => {
-          return <span />;
-        }}
-      >
-        {renderWatchNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree
+          height={height}
+          itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
+          onReady={handleTreeReady}
+          model={model!}
+          placeholder={() => <span />}
+        >
+          {renderWatchNode}
+        </RecycleTree>
+      );
     }
   };
 
-  return <div
-    className={styles.debug_watch_container}
-    tabIndex={-1}
-    ref={wrapperRef}
-    onContextMenu={handleOuterContextMenu}
-    onClick={handleOuterClick}
-    onBlur={handleOuterBlur}
-    data-name={DEBUG_WATCH_TREE_FIELD_NAME}
-  >
-    {renderContent()}
-  </div>;
+  return (
+    <div
+      className={styles.debug_watch_container}
+      tabIndex={-1}
+      ref={wrapperRef}
+      onContextMenu={handleOuterContextMenu}
+      onClick={handleOuterClick}
+      onBlur={handleOuterBlur}
+      data-name={DEBUG_WATCH_TREE_FIELD_NAME}
+    >
+      {renderContent()}
+    </div>
+  );
 });
 
 export interface IDebugVariableNodeProps {
@@ -163,7 +185,6 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   onContextMenu,
   itemType,
 }: IDebugWatchNodeRenderedProps) => {
-
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
@@ -192,26 +213,35 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
 
   const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => {
     if (isPrompt && node instanceof PromptHandle) {
-      return <div
-          className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_inputbox)}
-        >
+      return (
+        <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_inputbox)}>
           <div className={cls('input-box', styles.debug_watch_node_prompt_box)}>
-            <node.ProxiedInput  wrapperStyle={{height: DEBUG_WATCH_TREE_NODE_HEIGHT, padding: '0 5px'}}/>
+            <node.ProxiedInput wrapperStyle={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT, padding: '0 5px' }} />
           </div>
-        </div>;
+        </div>
+      );
     }
-    return <div
-      className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_display_name, styles.debug_watch_variable, (node as DebugVariable).description ? styles.name : '')}
-    >
-      {node.name}
-      {(node as DebugVariable).description ? ':' : ''}
-    </div>;
+    return (
+      <div
+        className={cls(
+          styles.debug_watch_node_segment,
+          styles.debug_watch_node_display_name,
+          styles.debug_watch_variable,
+          (node as DebugVariable).description ? styles.name : '',
+        )}
+      >
+        {node.name}
+        {(node as DebugVariable).description ? ':' : ''}
+      </div>
+    );
   };
 
   const renderDescription = (node: ExpressionContainer | ExpressionNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'ƒ ') : '';
+    const description = (node as DebugVariableContainer).description
+      ? (node as DebugVariableContainer).description.replace('function', 'ƒ ')
+      : '';
     const addonClass = [styles.debug_watch_variable];
     if (isPrompt) {
       return null;
@@ -225,22 +255,18 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     } else if (stringRegex.test(description)) {
       addonClass.push(styles.string);
     }
-    return <div className={cls(styles.debug_watch_node_segment_grow, styles.debug_watch_node_description, ...addonClass)}>
-      {description}
-    </div>;
+    return (
+      <div className={cls(styles.debug_watch_node_segment_grow, styles.debug_watch_node_description, ...addonClass)}>
+        {description}
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_tail)}>
-      {renderBadge()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_tail)}>{renderBadge()}</div>
+  );
 
-  const renderBadge = () => {
-    return <div className={styles.debug_watch_node_status}>
-      {item.badge}
-    </div>;
-  };
+  const renderBadge = () => <div className={styles.debug_watch_node_status}>{item.badge}</div>;
 
   const getItemTooltip = () => {
     const tooltip = item.tooltip;
@@ -252,20 +278,20 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
       clickHandler(ev, node, itemType);
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
-      return <div className={cls(styles.debug_watch_node_segment, styles.expansion_toggle)}>
-        <Loading />
-      </div>;
+      return (
+        <div className={cls(styles.debug_watch_node_segment, styles.expansion_toggle)}>
+          <Loading />
+        </div>
+      );
     }
-    return <div
-      onClick={handleTwiceClick}
-      className={cls(
-        styles.debug_watch_node_segment,
-        styles.expansion_toggle,
-        getIcon('right'),
-        { [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded },
-      )}
-    />;
-
+    return (
+      <div
+        onClick={handleTwiceClick}
+        className={cls(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right'), {
+          [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
+        })}
+      />
+    );
   };
 
   const renderTwice = (item) => {
@@ -286,17 +312,14 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
-        styles.debug_watch_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(styles.debug_watch_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >
       <div className={cls(styles.debug_watch_node_content)}>
         {renderTwice(item)}
         <div
-          style={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT}}
+          style={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT }}
           className={isPrompt ? styles.debug_watch_node_prompt_wrap : styles.debug_watch_node_overflow_wrap}
         >
           {renderDisplayName(item)}

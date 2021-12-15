@@ -13,68 +13,68 @@ export interface IElectronIpcRenderer {
 
 export function createElectronMainApi(name: string): IElectronMainApi<any> {
   let id = 0;
-  return new Proxy({
-    on: (event: string, listener: (...args) => void): IDisposable => {
-      const wrappedListener = (e, eventName, ...args) => {
-        if (eventName === event) {
-          return listener(...args);
-        }
-      };
-      ElectronIpcRenderer.on('event:' + name, wrappedListener);
-      return {
-        dispose: () => {
-          ElectronIpcRenderer.removeListener('event:' + name, wrappedListener);
-        },
-      };
-    },
-  }, {
-    get: (target, method) => {
-      if (method === 'on') {
-        return target[method];
-      } else {
-        return async (...args: any) => {
-          return new Promise((resolve, reject) => {
-            const requestId = id ++;
-            ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
-            const listener = (event, id, error, result) => {
-              if (id === requestId) {
-                ElectronIpcRenderer.removeListener('response:' + name, listener);
-                if (error) {
-                  const e =  new Error(error.message);
-                  e.stack = error.stack;
-                  reject(e);
-                } else {
-                  resolve(result);
-                }
-              }
-            };
-            ElectronIpcRenderer.on('response:' + name, listener);
-          });
+  return new Proxy(
+    {
+      on: (event: string, listener: (...args) => void): IDisposable => {
+        const wrappedListener = (e, eventName, ...args) => {
+          if (eventName === event) {
+            return listener(...args);
+          }
         };
-      }
+        ElectronIpcRenderer.on('event:' + name, wrappedListener);
+        return {
+          dispose: () => {
+            ElectronIpcRenderer.removeListener('event:' + name, wrappedListener);
+          },
+        };
+      },
     },
-  });
+    {
+      get: (target, method) => {
+        if (method === 'on') {
+          return target[method];
+        } else {
+          return async (...args: any) =>
+            new Promise((resolve, reject) => {
+              const requestId = id++;
+              ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
+              const listener = (event, id, error, result) => {
+                if (id === requestId) {
+                  ElectronIpcRenderer.removeListener('response:' + name, listener);
+                  if (error) {
+                    const e = new Error(error.message);
+                    e.stack = error.stack;
+                    reject(e);
+                  } else {
+                    resolve(result);
+                  }
+                }
+              };
+              ElectronIpcRenderer.on('response:' + name, listener);
+            });
+        }
+      },
+    },
+  );
 }
 
 export const electronEnv: {
-  currentWindowId: number,
-  currentWebContentsId: number,
-  ipcRenderer: IElectronIpcRenderer,
-  webviewPreload: string,
-  plainWebviewPreload: string,
-  [key: string]: any,
+  currentWindowId: number;
+  currentWebContentsId: number;
+  ipcRenderer: IElectronIpcRenderer;
+  webviewPreload: string;
+  plainWebviewPreload: string;
+  [key: string]: any;
 } = (global as any) || {};
 
-if ( typeof ElectronIpcRenderer !== 'undefined') {
+if (typeof ElectronIpcRenderer !== 'undefined') {
   electronEnv.ipcRenderer = ElectronIpcRenderer;
 }
 
 export interface IElectronNativeDialogService {
-
   showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined>;
 
   showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined>;
-
 }
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');

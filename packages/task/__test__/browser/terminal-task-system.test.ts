@@ -5,12 +5,14 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 
 describe('TerminalTaskSystem Test Suite', () => {
   const injector: MockInjector = createBrowserInjector([]);
-  injector.addProviders(...[
-    {
-      token: ITaskSystem,
-      useClass: TerminalTaskSystem,
-    },
-  ]);
+  injector.addProviders(
+    ...[
+      {
+        token: ITaskSystem,
+        useClass: TerminalTaskSystem,
+      },
+    ],
+  );
 
   it('happy test', (done) => {
     done();

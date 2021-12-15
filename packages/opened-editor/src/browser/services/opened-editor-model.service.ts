@@ -1,6 +1,23 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@opensumi/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred, Event } from '@opensumi/ide-core-browser';
+import {
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  WatchEvent,
+  TreeNode,
+} from '@opensumi/ide-components';
+import {
+  URI,
+  DisposableCollection,
+  Emitter,
+  IContextKeyService,
+  EDITOR_COMMANDS,
+  CommandService,
+  ThrottledDelayer,
+  Deferred,
+  Event,
+} from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { OpenedEditorService } from './opened-editor-tree.service';
@@ -149,103 +166,121 @@ export class OpenedEditorModelService {
 
     this.initDecorations(root);
 
-    this.disposableCollection.push(this.openedEditorService.onDirtyNodesChange((nodes) => {
-      for (const node of nodes) {
-        if (!this.dirtyDecoration.hasTarget(node as EditorFile)) {
-          this.dirtyDecoration.addTarget(node as EditorFile);
-        }
-      }
-      this._currentDirtyNodes = this._currentDirtyNodes.concat(nodes);
-      this.setExplorerTabBarBadge();
-      this.treeModel.dispatchChange();
-    }));
-
-    this.disposableCollection.push(this.labelService.onDidChange(() => {
-      this._currentDirtyNodes = [];
-      // 当labelService注册的对应节点图标变化时，通知视图更新
-      this.refresh();
-    }));
-
-    this.disposableCollection.push(this.editorService.onActiveResourceChange(() => {
-      if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
-        return;
-      }
-      this._currentDirtyNodes = [];
-      this.refresh();
-    }));
-
-    this.disposableCollection.push(this.editorService.onDidEditorGroupsChanged(() => {
-      this._currentDirtyNodes = [];
-      this.refresh();
-    }));
-
-    this.disposableCollection.push(this.editorService.onDidCurrentEditorGroupChanged(() => {
-      this._currentDirtyNodes = [];
-      this.refresh();
-    }));
-
-    this.disposableCollection.push(this.openedEditorEventService.onDidDecorationChange((payload) => {
-      let shouldUpdate = false;
-      if (!payload) {
-        return;
-      }
-      for (let index = 0; index < this.treeModel.root.branchSize; index++) {
-        const node = this.treeModel.root.getTreeNodeAtIndex(index);
-        if (!!node && !EditorFileGroup.is(node as EditorFileGroup)) {
-          if ((node as EditorFile).uri.isEqual(payload.uri)) {
-            if (payload.decoration.dirty) {
-              this.dirtyDecoration.addTarget(node as EditorFile);
-            } else {
-              this.dirtyDecoration.removeTarget(node as EditorFile);
-            }
-            shouldUpdate = true;
+    this.disposableCollection.push(
+      this.openedEditorService.onDirtyNodesChange((nodes) => {
+        for (const node of nodes) {
+          if (!this.dirtyDecoration.hasTarget(node as EditorFile)) {
+            this.dirtyDecoration.addTarget(node as EditorFile);
           }
         }
-      }
-      if (shouldUpdate) {
+        this._currentDirtyNodes = this._currentDirtyNodes.concat(nodes);
         this.setExplorerTabBarBadge();
         this.treeModel.dispatchChange();
-      }
-    }));
+      }),
+    );
 
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (!!this.contextMenuFile) {
-        const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
-        if (node) {
-          this.activeFileDecoration(node as EditorFile, false);
-        }
-      } else if (!!this.focusedFile) {
-        const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-        if (node) {
-          this.activeFileDecoration(node as EditorFile, false);
-        }
-      } else if (this.selectedFiles.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        if (node) {
-          this.selectFileDecoration(node as EditorFile, false);
-        }
-      }
-    }));
+    this.disposableCollection.push(
+      this.labelService.onDidChange(() => {
+        this._currentDirtyNodes = [];
+        // 当labelService注册的对应节点图标变化时，通知视图更新
+        this.refresh();
+      }),
+    );
 
-    this.disposableCollection.push(this.openedEditorEventService.onDidChange(() => {
-      this.refresh();
-    }));
+    this.disposableCollection.push(
+      this.editorService.onActiveResourceChange(() => {
+        if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
+          return;
+        }
+        this._currentDirtyNodes = [];
+        this.refresh();
+      }),
+    );
 
-    this.disposableCollection.push(this.onDidRefreshed(() => {
-      this.dirtyDecoration.appliedTargets.clear();
-      // 更新dirty节点，节点可能已更新
-      for (const target of this._currentDirtyNodes) {
-        this.dirtyDecoration.addTarget(target as TreeNode);
-      }
-      const currentResource = this.editorService.currentResource;
-      const currentGroup = this.editorService.currentEditorGroup;
-      if (currentResource) {
-        this.location(currentResource, currentGroup);
-      }
-      this.setExplorerTabBarBadge();
-    }));
+    this.disposableCollection.push(
+      this.editorService.onDidEditorGroupsChanged(() => {
+        this._currentDirtyNodes = [];
+        this.refresh();
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.editorService.onDidCurrentEditorGroupChanged(() => {
+        this._currentDirtyNodes = [];
+        this.refresh();
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.openedEditorEventService.onDidDecorationChange((payload) => {
+        let shouldUpdate = false;
+        if (!payload) {
+          return;
+        }
+        for (let index = 0; index < this.treeModel.root.branchSize; index++) {
+          const node = this.treeModel.root.getTreeNodeAtIndex(index);
+          if (!!node && !EditorFileGroup.is(node as EditorFileGroup)) {
+            if ((node as EditorFile).uri.isEqual(payload.uri)) {
+              if (payload.decoration.dirty) {
+                this.dirtyDecoration.addTarget(node as EditorFile);
+              } else {
+                this.dirtyDecoration.removeTarget(node as EditorFile);
+              }
+              shouldUpdate = true;
+            }
+          }
+        }
+        if (shouldUpdate) {
+          this.setExplorerTabBarBadge();
+          this.treeModel.dispatchChange();
+        }
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.contextMenuFile) {
+          const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
+          if (node) {
+            this.activeFileDecoration(node as EditorFile, false);
+          }
+        } else if (this.focusedFile) {
+          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+          if (node) {
+            this.activeFileDecoration(node as EditorFile, false);
+          }
+        } else if (this.selectedFiles.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
+          if (node) {
+            this.selectFileDecoration(node as EditorFile, false);
+          }
+        }
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.openedEditorEventService.onDidChange(() => {
+        this.refresh();
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.onDidRefreshed(() => {
+        this.dirtyDecoration.appliedTargets.clear();
+        // 更新dirty节点，节点可能已更新
+        for (const target of this._currentDirtyNodes) {
+          this.dirtyDecoration.addTarget(target as TreeNode);
+        }
+        const currentResource = this.editorService.currentResource;
+        const currentGroup = this.editorService.currentEditorGroup;
+        if (currentResource) {
+          this.location(currentResource, currentGroup);
+        }
+        this.setExplorerTabBarBadge();
+      }),
+    );
   }
 
   initDecorations(root) {
@@ -257,7 +292,7 @@ export class OpenedEditorModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange: boolean = true) => {
+  activeFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange = true) => {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
       this._contextMenuFile = undefined;
@@ -281,10 +316,10 @@ export class OpenedEditorModelService {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange: boolean = true) => {
+  selectFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange = true) => {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
       this._contextMenuFile = undefined;
@@ -306,7 +341,7 @@ export class OpenedEditorModelService {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 右键菜单焦点态切换
   activeFileActivedDecoration = (target: EditorFileGroup | EditorFile) => {
@@ -320,7 +355,7 @@ export class OpenedEditorModelService {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuFile = target;
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveFileDecoration = () => {
@@ -332,7 +367,7 @@ export class OpenedEditorModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
     this.treeModel.dispatchChange();
-  }
+  };
 
   removeFileDecoration() {
     if (!this.decorations) {
@@ -367,7 +402,7 @@ export class OpenedEditorModelService {
       menuNodes,
       args: [file],
     });
-  }
+  };
 
   handleTreeHandler(handle: IEditorTreeHandle) {
     this._openedEditorTreeHandle = handle;
@@ -376,7 +411,7 @@ export class OpenedEditorModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveFileDecoration();
-  }
+  };
 
   handleItemClick = (item: EditorFileGroup | EditorFile, type: TreeNodeType) => {
     // 单选操作默认先更新选中状态
@@ -385,7 +420,7 @@ export class OpenedEditorModelService {
     if (type === TreeNodeType.TreeNode) {
       this.openFile(item as EditorFile);
     }
-  }
+  };
 
   /**
    * 刷新指定下的所有子节点
@@ -436,17 +471,19 @@ export class OpenedEditorModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
+  };
 
   public location = async (resource: IResource | URI, group?: IEditorGroup) => {
     this.locationDelayer.trigger(async () => {
@@ -455,7 +492,7 @@ export class OpenedEditorModelService {
       if (!node) {
         return;
       }
-      node = await this.editorTreeHandle.ensureVisible(node) as EditorFile;
+      node = (await this.editorTreeHandle.ensureVisible(node)) as EditorFile;
       if (node) {
         if (this.focusedFile === node) {
           this.activeFileDecoration(node as EditorFile);
@@ -464,7 +501,7 @@ export class OpenedEditorModelService {
         }
       }
     });
-  }
+  };
 
   public openFile = (node: EditorFile) => {
     // 手动打开文件时，屏蔽刷新及激活实际，防闪烁
@@ -474,25 +511,25 @@ export class OpenedEditorModelService {
       groupIndex = (node.parent as EditorFileGroup).group.index;
     }
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, preserveFocus: true });
-  }
+  };
 
   public closeFile = (node: EditorFile) => {
     this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, node.uri);
-  }
+  };
 
   public closeAllByGroup = (node: EditorFileGroup) => {
     const group = node.group as IEditorGroup;
     if (group) {
       group.closeAll();
     }
-  }
+  };
 
   public saveAllByGroup = (node: EditorFileGroup) => {
     const group = node.group as IEditorGroup;
     if (group) {
       group.saveAll();
     }
-  }
+  };
 
   private setExplorerTabBarBadge() {
     const targetSets = new Set();

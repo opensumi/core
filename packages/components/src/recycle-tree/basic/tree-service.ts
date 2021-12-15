@@ -29,7 +29,7 @@ export class BasicTreeService extends Tree {
     private _sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number,
   ) {
     super();
-    this._root = new BasicTreeRoot(this, undefined, { children: this._treeData, label: '', command: '', icon: ''});
+    this._root = new BasicTreeRoot(this, undefined, { children: this._treeData, label: '', command: '', icon: '' });
     this._model = new BasicTreeModel();
     this._model.init(this._root);
     this.initDecorations(this._root as BasicTreeRoot);
@@ -59,12 +59,16 @@ export class BasicTreeService extends Tree {
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
-    this.disposableCollection.push(root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
+    this.disposableCollection.push(
+      root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
     this.disposableCollection.push(this._decorations);
   }
 
@@ -81,7 +85,7 @@ export class BasicTreeService extends Tree {
       return this._sortComparator(a.raw, b.raw);
     }
     return super.sortComparator(a, b);
-  }
+  };
 
   private transformTreeNode(parent?: BasicCompositeTreeNode, nodes?: IBasicTreeData[]) {
     if (!nodes) {
@@ -138,7 +142,7 @@ export class BasicTreeService extends Tree {
 
       this.model?.dispatchChange();
     }
-  }
+  };
 
   activeContextMenuDecoration = (target: BasicCompositeTreeNode | BasicTreeNode) => {
     if (this._contextMenuNode) {
@@ -151,7 +155,7 @@ export class BasicTreeService extends Tree {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuNode = target;
     this.model?.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveFocusedDecoration = () => {
@@ -160,7 +164,7 @@ export class BasicTreeService extends Tree {
       this._focusedNode = undefined;
       this.model?.dispatchChange();
     }
-  }
+  };
 
   dispose() {
     this.disposableCollection.dispose();

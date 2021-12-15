@@ -6,7 +6,6 @@ import { IEditorGroup } from '../../browser';
 
 @Injectable()
 export class MockWorkbenchEditorService extends WorkbenchEditorService {
-
   private readonly _onActiveResourceChange = new Emitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 

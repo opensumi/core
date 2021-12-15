@@ -3,12 +3,11 @@ import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig } from 
 import { AbstractWebviewPanel } from './abstract-webview';
 import { Injectable, Autowired } from '@opensumi/di';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview {
-
   private iframe: HTMLIFrameElement;
 
-  private _needReload: boolean = false;
+  private _needReload = false;
 
   private _iframeDisposer: Disposable | null = new Disposable();
 
@@ -22,7 +21,10 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
 
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('allow', 'autoplay');
-    this.iframe.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin');
+    this.iframe.setAttribute(
+      'sandbox',
+      options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin',
+    );
     this.iframe.setAttribute('src', `${this.config.webviewEndpoint}/index.html?id=${this.id}`);
     this.iframe.style.border = 'none';
     this.iframe.style.width = '100%';
@@ -58,30 +60,37 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
 
   protected _sendToWebview(channel: string, data: any) {
     if (!this._isListening) {
-      return ;
+      return;
     }
-    this._ready.then(() => {
-      if (!this.iframe) {
-        return;
-      }
-      this.iframe.contentWindow!.postMessage({
-        channel,
-        data,
-      }, '*');
-    }).catch((err) => {
-      getDebugLogger().error(err);
-    });
+    this._ready
+      .then(() => {
+        if (!this.iframe) {
+          return;
+        }
+        this.iframe.contentWindow!.postMessage(
+          {
+            channel,
+            data,
+          },
+          '*',
+        );
+      })
+      .catch((err) => {
+        getDebugLogger().error(err);
+      });
   }
 
   protected _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable {
-    return this._iframeDisposer!.addDispose(new DomListener(window, 'message', (e) => {
-      if (e.data && e.data.target === this.id && e.data.channel === channel) {
-        if (!this._isListening) {
-          return ;
+    return this._iframeDisposer!.addDispose(
+      new DomListener(window, 'message', (e) => {
+        if (e.data && e.data.target === this.id && e.data.channel === channel) {
+          if (!this._isListening) {
+            return;
+          }
+          listener(e.data.data);
         }
-        listener(e.data.data);
-      }
-    }));
+      }),
+    );
   }
 
   appendTo(container: HTMLElement) {
@@ -123,5 +132,4 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
       this._iframeDisposer.dispose();
     }
   }
-
 }

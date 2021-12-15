@@ -82,13 +82,13 @@ export interface AppConfig {
    * 可基于 `layoutComponent` 配置的基础上
    * 定义面板大小，宽度/高度
    */
-  panelSizes?: {[slotLocation: string]: number};
+  panelSizes?: { [slotLocation: string]: number };
   /**
    * 定义各个区块的默认面板
    * 如：{ [SlotLocation.bottom]: '@opensumi/ide-terminal-next' }
    * 定义了底部区块默认使用 `@opensumi/ide-terminal-next` 模块进行初始化
    */
-  defaultPanels?: {[slotLocation: string]: string};
+  defaultPanels?: { [slotLocation: string]: string };
   /**
    * 用于挂载webview的iframe地址
    * 默认值：`http://${deviceIp}:${port}/webview`,
@@ -157,7 +157,7 @@ export interface AppConfig {
   remoteHostname?: string;
   /**
    * 开启插件进程的调试能力，默认为 false
-  */
+   */
   enableDebugExtensionHost?: boolean;
   /**
    * 加载插件前端资源时的 fetch credentials 选项
@@ -195,9 +195,7 @@ export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig
   const { extraContextProvider, ...restPropsValue } = props.value;
   const app = (
     <ConfigContext.Provider value={restPropsValue}>
-      <ConfigContext.Consumer>
-        { (value) => restPropsValue === value ? props.children : null }
-      </ConfigContext.Consumer>
+      <ConfigContext.Consumer>{(value) => (restPropsValue === value ? props.children : null)}</ConfigContext.Consumer>
     </ConfigContext.Provider>
   );
 

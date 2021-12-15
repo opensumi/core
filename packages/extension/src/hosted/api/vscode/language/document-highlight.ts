@@ -6,40 +6,45 @@ import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
 
 export class DocumentHighlightAdapter {
+  constructor(
+    private readonly provider: vscode.DocumentHighlightProvider,
+    private readonly documents: ExtensionDocumentDataManager,
+  ) {}
 
-    constructor(
-        private readonly provider: vscode.DocumentHighlightProvider,
-        private readonly documents: ExtensionDocumentDataManager) {
+  provideDocumentHighlights(
+    resource: URI,
+    position: Position,
+    token: vscode.CancellationToken,
+  ): Promise<DocumentHighlight[] | undefined> {
+    const documentData = this.documents.getDocumentData(resource);
+    if (!documentData) {
+      return Promise.reject(new Error(`There is no document for ${resource}`));
     }
 
-    provideDocumentHighlights(resource: URI, position: Position, token: vscode.CancellationToken): Promise<DocumentHighlight[] | undefined> {
-        const documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error(`There is no document for ${resource}`));
+    const document = documentData.document;
+    const zeroBasedPosition = Converter.toPosition(position);
+
+    return Promise.resolve(this.provider.provideDocumentHighlights(document, zeroBasedPosition, token)).then(
+      (documentHighlights) => {
+        if (!documentHighlights) {
+          return undefined;
         }
 
-        const document = documentData.document;
-        const zeroBasedPosition = Converter.toPosition(position);
+        if (this.isDocumentHighlightArray(documentHighlights)) {
+          const highlights: DocumentHighlight[] = [];
 
-        return Promise.resolve(this.provider.provideDocumentHighlights(document, zeroBasedPosition, token)).then((documentHighlights) => {
-            if (!documentHighlights) {
-                return undefined;
-            }
+          for (const highlight of documentHighlights) {
+            highlights.push(Converter.DocumentHighlight.from(highlight));
+          }
 
-            if (this.isDocumentHighlightArray(documentHighlights)) {
-                const highlights: DocumentHighlight[] = [];
+          return highlights;
+        }
+      },
+    );
+  }
 
-                for (const highlight of documentHighlights) {
-                    highlights.push(Converter.DocumentHighlight.from(highlight));
-                }
-
-                return highlights;
-            }
-        });
-    }
-
-    /* tslint:disable-next-line:no-any */
-    private isDocumentHighlightArray(array: any): array is types.DocumentHighlight[] {
-        return Array.isArray(array) && array.length > 0 && array[0].range;
-    }
+  /* tslint:disable-next-line:no-any */
+  private isDocumentHighlightArray(array: any): array is types.DocumentHighlight[] {
+    return Array.isArray(array) && array.length > 0 && array[0].range;
+  }
 }

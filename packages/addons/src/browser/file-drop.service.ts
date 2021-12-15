@@ -3,13 +3,18 @@ import { WithEventBus } from '@opensumi/ide-core-common/lib';
 import { Uri, formatLocalize } from '@opensumi/ide-core-browser/lib';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
-import { IFileDropFrontendService, IFileDropBackendService, FileDropServicePath, IWebkitDataTransfer, IWebkitDataTransferItemEntry } from '../common';
+import {
+  IFileDropFrontendService,
+  IFileDropBackendService,
+  FileDropServicePath,
+  IWebkitDataTransfer,
+  IWebkitDataTransferItemEntry,
+} from '../common';
 import { Path } from '@opensumi/ide-components/lib/utils/path';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 @Injectable()
 export class FileDropService extends WithEventBus implements IFileDropFrontendService {
-
   private pending: Set<string> = new Set();
 
   @Autowired(IFileServiceClient)
@@ -53,13 +58,15 @@ export class FileDropService extends WithEventBus implements IFileDropFrontendSe
 
     if (!this.uploadStatus) {
       this.uploadStatus = this.statusBarService.addElement(entryId, entry);
-    } else  {
+    } else {
       this.uploadStatus.update({ id: entryId, ...entry });
     }
   }
 
   onDidDropFile(e: FileTreeDropEvent) {
-    const { payload: { event, targetDir } } = e;
+    const {
+      payload: { event, targetDir },
+    } = e;
     if (!targetDir || !event.dataTransfer?.files || event.dataTransfer.files.length === 0) {
       return;
     }
@@ -82,7 +89,11 @@ export class FileDropService extends WithEventBus implements IFileDropFrontendSe
     }
   }
 
-  private async processFilesEntry(targetDir: string, entry: IWebkitDataTransferItemEntry, reporter: (uploadedByteLength: number) => void) {
+  private async processFilesEntry(
+    targetDir: string,
+    entry: IWebkitDataTransferItemEntry,
+    reporter: (uploadedByteLength: number) => void,
+  ) {
     if (entry.isFile) {
       this.processFileEntry(entry, targetDir, reporter);
     } else {
@@ -120,20 +131,33 @@ export class FileDropService extends WithEventBus implements IFileDropFrontendSe
     }
   }
 
-  private processFileEntry(fileEntry: IWebkitDataTransferItemEntry, targetDir: string, reporter: (uploadedByteLength: number) => void): void {
-    fileEntry.file((fileChunk) => {
-      const file = new File([fileChunk], fileEntry.fullPath!, { type: fileEntry.type! });
-      this.doUploadFile(file, targetDir, reporter);
-    }, () => {});
+  private processFileEntry(
+    fileEntry: IWebkitDataTransferItemEntry,
+    targetDir: string,
+    reporter: (uploadedByteLength: number) => void,
+  ): void {
+    fileEntry.file(
+      (fileChunk) => {
+        const file = new File([fileChunk], fileEntry.fullPath!, { type: fileEntry.type! });
+        this.doUploadFile(file, targetDir, reporter);
+      },
+      () => {},
+    );
   }
 
-  private processDirEntry(entry: IWebkitDataTransferItemEntry, targetDir: string, reporter: (uploadedByteLength: number) => void) {
+  private processDirEntry(
+    entry: IWebkitDataTransferItemEntry,
+    targetDir: string,
+    reporter: (uploadedByteLength: number) => void,
+  ) {
     const dirReader = entry.createReader();
-    dirReader.readEntries((entries) => {
-      entries.forEach(async (fileOrDirEntry) => {
-        this.processFilesEntry(targetDir, fileOrDirEntry, reporter);
-      });
-    }, () => {});
+    dirReader.readEntries(
+      (entries) => {
+        entries.forEach(async (fileOrDirEntry) => {
+          this.processFilesEntry(targetDir, fileOrDirEntry, reporter);
+        });
+      },
+      () => {},
+    );
   }
-
 }

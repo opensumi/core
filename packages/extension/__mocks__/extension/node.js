@@ -6,4 +6,4 @@ exports.activate = async function (context) {
   });
   console.log('extend node extension activated');
   return {};
-}
+};

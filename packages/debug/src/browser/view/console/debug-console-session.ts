@@ -9,9 +9,8 @@ import { LinkDetector } from '../../debug-link-detector';
 
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 
-@Injectable({ multiple: true})
+@Injectable({ multiple: true })
 export class DebugConsoleSession {
-
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -57,15 +56,23 @@ export class DebugConsoleSession {
     const body = event.body;
     const { category, variablesReference, source, line } = body;
     if (!this.treeModel) {
-      return ;
+      return;
     }
-    const severity = category === 'stderr' ? MessageType.Error : event.body.category === 'console' ? MessageType.Warning : MessageType.Info;
+    const severity =
+      category === 'stderr'
+        ? MessageType.Error
+        : event.body.category === 'console'
+        ? MessageType.Warning
+        : MessageType.Info;
     if (category === 'telemetry') {
       this.logger.debug(`telemetry/${event.body.output}`, event.body.data);
       return;
     }
     if (variablesReference) {
-      const node = new ExpressionContainer({ session, variablesReference, source, line }, this.treeModel?.root as ExpressionContainer);
+      const node = new ExpressionContainer(
+        { session, variablesReference, source, line },
+        this.treeModel?.root as ExpressionContainer,
+      );
       await node.hardReloadChildren(true);
       if (node.children) {
         for (const child of node.children) {
@@ -74,8 +81,10 @@ export class DebugConsoleSession {
       }
     } else if (typeof body.output === 'string') {
       for (const content of body.output.split('\n')) {
-        if (!!content) {
-          this.treeModel.root.insertItem(new AnsiConsoleNode(content, this.treeModel?.root, this.linkDetector, severity, source, line));
+        if (content) {
+          this.treeModel.root.insertItem(
+            new AnsiConsoleNode(content, this.treeModel?.root, this.linkDetector, severity, source, line),
+          );
         }
       }
     }
@@ -83,7 +92,9 @@ export class DebugConsoleSession {
   }
 
   async execute(value: string): Promise<void> {
-    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, MessageType.Info));
+    this.treeModel.root.insertItem(
+      new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, MessageType.Info),
+    );
     const expression = new DebugConsoleNode(this.session, value, this.treeModel?.root as ExpressionContainer);
     this.treeModel.root.insertItem(expression);
     this.fireDidChange();
@@ -102,12 +113,16 @@ export class DebugConsoleSession {
       this.uncompletedItemContent = value;
     }
 
-    this.treeModel.root.insertItem(new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, this.linkDetector, MessageType.Info));
+    this.treeModel.root.insertItem(
+      new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, this.linkDetector, MessageType.Info),
+    );
     this.fireDidChange();
   }
 
   appendLine(value: string): void {
-    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel?.root, this.linkDetector, MessageType.Info));
+    this.treeModel.root.insertItem(
+      new AnsiConsoleNode(value, this.treeModel?.root, this.linkDetector, MessageType.Info),
+    );
     this.fireDidChange();
   }
 }

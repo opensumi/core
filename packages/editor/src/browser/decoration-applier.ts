@@ -1,7 +1,14 @@
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@opensumi/di';
-import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent, DidApplyEditorDecorationFromProvider } from './types';
+import {
+  IEditorDecorationCollectionService,
+  IDynamicModelDecorationProperty,
+  IThemedCssStyle,
+  EditorDecorationChangeEvent,
+  EditorDecorationTypeRemovedEvent,
+  DidApplyEditorDecorationFromProvider,
+} from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, IEventBus } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
@@ -9,7 +16,6 @@ import clsx from 'classnames';
 
 @Injectable({ multiple: true })
 export class MonacoEditorDecorationApplier extends Disposable {
-
   @Autowired(IEditorDecorationCollectionService)
   decorationService: IEditorDecorationCollectionService;
 
@@ -19,7 +25,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
-  private decorations: Map<string, { decorations: string[], dispose: () => void }> = new Map();
+  private decorations: Map<string, { decorations: string[]; dispose: () => void }> = new Map();
 
   constructor(private editor: IMonacoCodeEditor) {
     super();
@@ -31,15 +37,19 @@ export class MonacoEditorDecorationApplier extends Disposable {
     this.editor.onDidDispose(() => {
       this.dispose();
     });
-    this.addDispose(this.eventBus.on(EditorDecorationChangeEvent, (e) => {
-      const currentUri = this.getEditorUri();
-      if (currentUri && e.payload.uri.isEqual(currentUri)) {
-        this.applyDecorationFromProvider(e.payload.key);
-      }
-    }));
-    this.addDispose(this.eventBus.on(EditorDecorationTypeRemovedEvent, (e) => {
-      this.deltaDecoration(e.payload, []);
-    }));
+    this.addDispose(
+      this.eventBus.on(EditorDecorationChangeEvent, (e) => {
+        const currentUri = this.getEditorUri();
+        if (currentUri && e.payload.uri.isEqual(currentUri)) {
+          this.applyDecorationFromProvider(e.payload.key);
+        }
+      }),
+    );
+    this.addDispose(
+      this.eventBus.on(EditorDecorationTypeRemovedEvent, (e) => {
+        this.deltaDecoration(e.payload, []);
+      }),
+    );
   }
 
   private getEditorUri(): URI | null {
@@ -63,10 +73,12 @@ export class MonacoEditorDecorationApplier extends Disposable {
       for (const key of Object.keys(decs)) {
         this.deltaDecoration(key, decs[key]);
       }
-      this.eventBus.fire(new DidApplyEditorDecorationFromProvider({
-        key,
-        uri,
-      }));
+      this.eventBus.fire(
+        new DidApplyEditorDecorationFromProvider({
+          key,
+          uri,
+        }),
+      );
     }
   }
 
@@ -129,7 +141,10 @@ export class MonacoEditorDecorationApplier extends Disposable {
     });
   }
 
-  resolveDecorationRenderer(key: string, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void } {
+  resolveDecorationRenderer(
+    key: string,
+    options?: IDecorationRenderOptions,
+  ): { options: monaco.editor.IModelDecorationOptions; dispose: () => void } {
     const type = this.decorationService.getTextEditorDecorationType(key);
     const result: monaco.editor.IModelDecorationOptions = {
       description: key,
@@ -150,10 +165,13 @@ export class MonacoEditorDecorationApplier extends Disposable {
       dispose: () => disposer.dispose(),
     };
   }
-
 }
 
-function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOptions, property: IDynamicModelDecorationProperty, currentTheme: undefined | 'dark' | 'light' | 'hc') {
+function assignModelDecorationOptions(
+  target: monaco.editor.IModelDecorationOptions,
+  property: IDynamicModelDecorationProperty,
+  currentTheme: undefined | 'dark' | 'light' | 'hc',
+) {
   if (property.overviewRulerLane) {
     if (!target.overviewRuler) {
       target.overviewRuler = {
@@ -185,7 +203,6 @@ function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOpti
   }
 
   target.inlineClassNameAffectsLetterSpacing = true;
-
 }
 
 function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOptions, style: IThemedCssStyle) {
@@ -211,7 +228,9 @@ function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOption
   }
 }
 
-function resolveHoverMessage(str: IMarkdownString | IMarkdownString[] | string | undefined): IMarkdownString | IMarkdownString[] | undefined {
+function resolveHoverMessage(
+  str: IMarkdownString | IMarkdownString[] | string | undefined,
+): IMarkdownString | IMarkdownString[] | undefined {
   if (!str) {
     return undefined;
   }

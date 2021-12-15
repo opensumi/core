@@ -28,7 +28,6 @@ export interface ISearchTreeProp {
     height: number;
   };
   viewState: ViewState;
-
 }
 
 const itemLineHeight = 22;
@@ -59,21 +58,23 @@ const ResultTotalContent = observer<{
   if (total.resultNum > 0) {
     return (
       <p className={styles.result_describe}>
-        {
-          localize('search.files.result.kt', '{0} result in {1} files')
-            .replace('{0}', String(total.resultNum))
-            .replace('{1}', String(total.fileNum))
-        }
+        {localize('search.files.result.kt', '{0} result in {1} files')
+          .replace('{0}', String(total.resultNum))
+          .replace('{1}', String(total.fileNum))}
         <span
-          title={localize(searchBrowserService.isExpandAllResult ? 'search.CollapseDeepestExpandedLevelAction.label' : 'search.ExpandDeepestExpandedLevelAction.label')}
+          title={localize(
+            searchBrowserService.isExpandAllResult
+              ? 'search.CollapseDeepestExpandedLevelAction.label'
+              : 'search.ExpandDeepestExpandedLevelAction.label',
+          )}
           onClick={searchTreeService.foldTree}
           className={cls(
             getIcon(searchBrowserService.isExpandAllResult ? 'collapse-all' : 'expand-all'),
             styles.result_fold,
             { [styles.result_fold_enabled]: total.fileNum > 0 },
             { [styles.result_fold_disabled]: searchBrowserService.isSearchDoing },
-          )
-        } />
+          )}
+        />
         <span
           title={localize('search.RefreshAction.label')}
           onClick={() => searchBrowserService.refresh()}
@@ -85,13 +86,7 @@ const ResultTotalContent = observer<{
   return null;
 });
 
-export const SearchTree = (
-  {
-    searchPanelLayout,
-    viewState,
-  }: ISearchTreeProp,
-  ref,
-) => {
+export const SearchTree = ({ searchPanelLayout, viewState }: ISearchTreeProp, ref) => {
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
     width: 0,
@@ -119,52 +114,61 @@ export const SearchTree = (
 
   return (
     <div className={styles.tree} onBlur={onBlur}>
-      <ResultTotalContent total={resultTotal} searchTreeService={searchTreeService} searchBrowserService={searchBrowserService} />
-      {nodes && nodes.length > 0 ?
+      <ResultTotalContent
+        total={resultTotal}
+        searchTreeService={searchTreeService}
+        searchBrowserService={searchBrowserService}
+      />
+      {nodes && nodes.length > 0 ? (
         <DeprecatedRecycleTree
           leftPadding={0}
-          onContextMenu={ onContextMenu }
-          replace={ replaceValue || '' }
-          onSelect = { (files) => { onSelect(files); } }
-          nodes = { getRenderTree(nodes) }
-          scrollContainerStyle = { scrollContainerStyle }
-          containerHeight = { scrollContainerStyle.height }
-          itemLineHeight = { itemLineHeight }
-          commandActuator= { (cmdId, id) => {
-            commandActuator(
-              cmdId,
-              id,
-            );
+          onContextMenu={onContextMenu}
+          replace={replaceValue || ''}
+          onSelect={(files) => {
+            onSelect(files);
+          }}
+          nodes={getRenderTree(nodes)}
+          scrollContainerStyle={scrollContainerStyle}
+          containerHeight={scrollContainerStyle.height}
+          itemLineHeight={itemLineHeight}
+          commandActuator={(cmdId, id) => {
+            commandActuator(cmdId, id);
             return {};
-          } }
-          actions= {[{
-            icon: getExternalIcon('replace'),
-            title: localize('search.replace.title'),
-            command: 'replaceResult',
-            location: TreeViewActionTypes.TreeNode_Right,
-            paramsKey: 'id',
-          }, {
-            icon: getIcon('eye-close'),
-            title: localize('search.result.hide'),
-            command: 'closeResult',
-            location: TreeViewActionTypes.TreeNode_Right,
-            paramsKey: 'id',
-          }, {
-            icon: getExternalIcon('replace-all'),
-            title: localize('search.replace.title'),
-            command: 'replaceResults',
-            location: TreeViewActionTypes.TreeContainer,
-            paramsKey: 'id',
-          },
-          {
-            icon: getIcon('eye-close'),
-            title: localize('search.result.hide'),
-            command: 'closeResults',
-            location: TreeViewActionTypes.TreeContainer,
-            paramsKey: 'id',
-          }]}
-        / > :    ''
-      }
+          }}
+          actions={[
+            {
+              icon: getExternalIcon('replace'),
+              title: localize('search.replace.title'),
+              command: 'replaceResult',
+              location: TreeViewActionTypes.TreeNode_Right,
+              paramsKey: 'id',
+            },
+            {
+              icon: getIcon('eye-close'),
+              title: localize('search.result.hide'),
+              command: 'closeResult',
+              location: TreeViewActionTypes.TreeNode_Right,
+              paramsKey: 'id',
+            },
+            {
+              icon: getExternalIcon('replace-all'),
+              title: localize('search.replace.title'),
+              command: 'replaceResults',
+              location: TreeViewActionTypes.TreeContainer,
+              paramsKey: 'id',
+            },
+            {
+              icon: getIcon('eye-close'),
+              title: localize('search.result.hide'),
+              command: 'closeResults',
+              location: TreeViewActionTypes.TreeContainer,
+              paramsKey: 'id',
+            },
+          ]}
+        />
+      ) : (
+        ''
+      )}
     </div>
   );
 };

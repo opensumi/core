@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -16,7 +16,15 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/browser/task-problem-matcher-registry.ts
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IProblemPatternRegistry, ApplyToKind, FileLocationKind, Severity, ProblemPatternContribution, ProblemPattern, WatchingPattern } from './problem-pattern';
+import {
+  IProblemPatternRegistry,
+  ApplyToKind,
+  FileLocationKind,
+  Severity,
+  ProblemPatternContribution,
+  ProblemPattern,
+  WatchingPattern,
+} from './problem-pattern';
 import { DisposableCollection, Disposable, IDisposable } from './disposable';
 import { Emitter } from './event';
 import { URI } from './uri';
@@ -45,7 +53,6 @@ export interface ProblemMatcherContribution {
   background?: WatchingMatcherContribution;
 }
 
-
 export interface WatchingMatcher {
   // If set to true the background monitor is in active mode when the task starts.
   // This is equals of issuing a line that matches the beginPattern
@@ -55,38 +62,39 @@ export interface WatchingMatcher {
 }
 
 export namespace WatchingMatcher {
-  export function fromWatchingMatcherContribution(value: WatchingMatcherContribution | undefined): WatchingMatcher | undefined {
+  export function fromWatchingMatcherContribution(
+    value: WatchingMatcherContribution | undefined,
+  ): WatchingMatcher | undefined {
     if (!value) {
       return undefined;
     }
     return {
       activeOnStart: !!value.activeOnStart,
       beginsPattern: typeof value.beginsPattern === 'string' ? { regexp: value.beginsPattern } : value.beginsPattern,
-      endsPattern: typeof value.endsPattern === 'string' ? { regexp: value.endsPattern } : value.endsPattern
+      endsPattern: typeof value.endsPattern === 'string' ? { regexp: value.endsPattern } : value.endsPattern,
     };
   }
 }
 
-
 export interface ProblemMatcher {
   owner: string;
-	source?: string;
-	applyTo?: ApplyToKind | string;
-	fileLocation: FileLocationKind | string[];
-	filePrefix?: string;
-	pattern: ProblemPattern | ProblemPattern[];
-	severity?: Severity | string;
-	watching?: WatchingMatcher;
-	uriProvider?: (path: string) => URI;
+  source?: string;
+  applyTo?: ApplyToKind | string;
+  fileLocation: FileLocationKind | string[];
+  filePrefix?: string;
+  pattern: ProblemPattern | ProblemPattern[];
+  severity?: Severity | string;
+  watching?: WatchingMatcher;
+  uriProvider?: (path: string) => URI;
 }
 
 export type ProblemMatcherType = string | ProblemMatcher | Array<string | ProblemMatcher>;
 
 export interface NamedProblemMatcher extends ProblemMatcher {
   /**
-  * This name can be used to refer to the
-  * problem matcher from within a task.
-  */
+   * This name can be used to refer to the
+   * problem matcher from within a task.
+   */
   name: string;
 
   /**
@@ -95,7 +103,6 @@ export interface NamedProblemMatcher extends ProblemMatcher {
   label?: string;
   deprecated?: boolean;
 }
-
 
 export const IProblemMatcherRegistry = Symbol('IProblemMatcherRegistry');
 
@@ -107,7 +114,6 @@ export interface IProblemMatcherRegistry {
 
 @Injectable()
 export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
-
   @Autowired(IProblemPatternRegistry)
   problemPattern: IProblemPatternRegistry;
 
@@ -134,7 +140,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       return this.matchers.get(name.slice(1));
     }
     return this.matchers.get(name);
-  }
+  };
 
   /**
    * Returns all registered problem matchers in the registry.
@@ -148,7 +154,6 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
     return all;
   }
 
-
   /**
    * Add a problem matcher to the registry.
    *
@@ -159,10 +164,12 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       console.error('Only named Problem Matchers can be registered.');
       return Disposable.NULL;
     }
-    const toDispose = new DisposableCollection(Disposable.create(() => {
-      /* mark as not disposed */
-      this.onDidChangeProblemMatcherEmitter.fire(undefined);
-    }));
+    const toDispose = new DisposableCollection(
+      Disposable.create(() => {
+        /* mark as not disposed */
+        this.onDidChangeProblemMatcherEmitter.fire(undefined);
+      }),
+    );
     this.doRegister(matcher, toDispose).then(() => this.onDidChangeProblemMatcherEmitter.fire(undefined));
     return toDispose;
   }
@@ -175,17 +182,16 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
     toDispose.push(this.add(problemMatcher as NamedProblemMatcher));
   }
 
-
   private add(matcher: NamedProblemMatcher): IDisposable {
     this.matchers.set(matcher.name, matcher);
     return Disposable.create(() => this.matchers.delete(matcher.name));
   }
 
   /**
- * Transforms the `ProblemMatcherContribution` to a `ProblemMatcher`
- *
- * @return the problem matcher
- */
+   * Transforms the `ProblemMatcherContribution` to a `ProblemMatcher`
+   *
+   * @return the problem matcher
+   */
   async getProblemMatcherFromContribution(matcher: ProblemMatcherContribution): Promise<ProblemMatcher> {
     let baseMatcher: NamedProblemMatcher | undefined;
     if (matcher.base) {
@@ -195,7 +201,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
     let fileLocation: FileLocationKind | undefined;
     let filePrefix: string | undefined;
     if (matcher.fileLocation === undefined) {
-      fileLocation = baseMatcher ? baseMatcher.fileLocation as FileLocationKind : FileLocationKind.Relative;
+      fileLocation = baseMatcher ? (baseMatcher.fileLocation as FileLocationKind) : FileLocationKind.Relative;
       filePrefix = baseMatcher ? baseMatcher.filePrefix : '${workspaceFolder}';
     } else {
       const locationAndPrefix = this.getFileLocationKindAndPrefix(matcher);
@@ -210,16 +216,16 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
         const registeredPattern = this.problemPattern.get(matcher.pattern);
         if (Array.isArray(registeredPattern)) {
           patterns.push(...registeredPattern);
-        } else if (!!registeredPattern) {
+        } else if (registeredPattern) {
           patterns.push(registeredPattern);
         }
       } else if (Array.isArray(matcher.pattern)) {
-        patterns.push(...matcher.pattern.map(p => ProblemPattern.fromProblemPatternContribution(p)));
+        patterns.push(...matcher.pattern.map((p) => ProblemPattern.fromProblemPatternContribution(p)));
       } else {
         patterns.push(ProblemPattern.fromProblemPatternContribution(matcher.pattern));
       }
     } else if (baseMatcher) {
-      patterns.push(...baseMatcher.pattern as ProblemPattern[]);
+      patterns.push(...(baseMatcher.pattern as ProblemPattern[]));
     }
 
     let deprecated: boolean | undefined = matcher.deprecated;
@@ -229,7 +235,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
 
     let applyTo: ApplyToKind | undefined;
     if (matcher.applyTo === undefined) {
-      applyTo = baseMatcher ? baseMatcher.applyTo as ApplyToKind : ApplyToKind.allDocuments as ApplyToKind;
+      applyTo = baseMatcher ? (baseMatcher.applyTo as ApplyToKind) : (ApplyToKind.allDocuments as ApplyToKind);
     } else {
       applyTo = ApplyToKind.fromString(matcher.applyTo) || ApplyToKind.allDocuments;
     }
@@ -238,7 +244,9 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
     if (matcher.severity === undefined && baseMatcher && baseMatcher.severity !== undefined) {
       severity = baseMatcher.severity as Severity;
     }
-    let watching: WatchingMatcher | undefined = WatchingMatcher.fromWatchingMatcherContribution(matcher.background || matcher.watching);
+    let watching: WatchingMatcher | undefined = WatchingMatcher.fromWatchingMatcherContribution(
+      matcher.background || matcher.watching,
+    );
     if (watching === undefined && baseMatcher) {
       watching = baseMatcher.watching;
     }
@@ -253,12 +261,15 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       filePrefix,
       pattern: patterns,
       severity,
-      watching
+      watching,
     };
     return problemMatcher;
   }
 
-  private getFileLocationKindAndPrefix(matcher: ProblemMatcherContribution): { fileLocation: FileLocationKind, filePrefix: string } {
+  private getFileLocationKindAndPrefix(matcher: ProblemMatcherContribution): {
+    fileLocation: FileLocationKind;
+    filePrefix: string;
+  } {
     let fileLocation = FileLocationKind.Relative;
     let filePrefix = '${workspaceFolder}';
     if (matcher.fileLocation !== undefined) {
@@ -267,7 +278,11 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
           const locationKind = FileLocationKind.fromString(matcher.fileLocation[0]);
           if (matcher.fileLocation.length === 1 && locationKind === FileLocationKind.Absolute) {
             fileLocation = locationKind;
-          } else if (matcher.fileLocation.length === 2 && locationKind === FileLocationKind.Relative && matcher.fileLocation[1]) {
+          } else if (
+            matcher.fileLocation.length === 2 &&
+            locationKind === FileLocationKind.Relative &&
+            matcher.fileLocation[1]
+          ) {
             fileLocation = locationKind;
             filePrefix = matcher.fileLocation[1];
           }
@@ -285,7 +300,6 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
     return { fileLocation, filePrefix };
   }
 
-
   // copied from https://github.com/Microsoft/vscode/blob/1.33.1/src/vs/workbench/contrib/tasks/common/problemMatcher.ts
   private fillDefaults(): void {
     this.add({
@@ -294,7 +308,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       owner: 'msCompile',
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
-      pattern: (this.problemPattern.get('msCompile'))!,
+      pattern: this.problemPattern.get('msCompile')!,
     });
 
     this.add({
@@ -305,7 +319,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       source: 'less',
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
-      pattern: (this.problemPattern.get('lessCompile'))!,
+      pattern: this.problemPattern.get('lessCompile')!,
       severity: Severity.Error,
     });
 
@@ -317,7 +331,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       applyTo: ApplyToKind.closedDocuments,
       fileLocation: FileLocationKind.Relative,
       filePrefix: '${workspaceFolder}',
-      pattern: (this.problemPattern.get('gulp-tsc'))!,
+      pattern: this.problemPattern.get('gulp-tsc')!,
     });
 
     this.add({
@@ -327,7 +341,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       source: 'jshint',
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
-      pattern: (this.problemPattern.get('jshint'))!,
+      pattern: this.problemPattern.get('jshint')!,
     });
 
     this.add({
@@ -337,7 +351,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       source: 'jshint',
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
-      pattern: (this.problemPattern.get('jshint-stylish'))!,
+      pattern: this.problemPattern.get('jshint-stylish')!,
     });
 
     this.add({
@@ -348,7 +362,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
       filePrefix: '${workspaceFolder}',
-      pattern: (this.problemPattern.get('eslint-compact'))!,
+      pattern: this.problemPattern.get('eslint-compact')!,
     });
 
     this.add({
@@ -358,7 +372,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       source: 'eslint',
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Absolute,
-      pattern: (this.problemPattern.get('eslint-stylish'))!,
+      pattern: this.problemPattern.get('eslint-stylish')!,
     });
 
     this.add({
@@ -369,7 +383,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       applyTo: ApplyToKind.allDocuments,
       fileLocation: FileLocationKind.Relative,
       filePrefix: '${workspaceFolder}',
-      pattern: (this.problemPattern.get('go'))!,
+      pattern: this.problemPattern.get('go')!,
     });
   }
 }

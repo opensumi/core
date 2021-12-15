@@ -9,14 +9,16 @@ const debugLog = getDebugLogger('LogUtils');
  * @param date 不传则返回当天日志文件夹名
  */
 export function getLogFolderName(date?: Date) {
-  return toLocalISOString(date || new Date()).replace(/-/g, '').match(/^\d{8}/)![0];
+  return toLocalISOString(date || new Date())
+    .replace(/-/g, '')
+    .match(/^\d{8}/)![0];
 }
 
 /**
-* 日志目录路径为 `${logRootPath}/${folderName}`
-* folderName 为当前当天日期比如: `20190807`
-* @param logRootPath
-*/
+ * 日志目录路径为 `${logRootPath}/${folderName}`
+ * folderName 为当前当天日期比如: `20190807`
+ * @param logRootPath
+ */
 export function getLogFolder(logRootPath: string): string {
   const folderName = getLogFolderName();
   return path.join(logRootPath, folderName);
@@ -36,7 +38,7 @@ export async function cleanOldLogs(logsRoot: string) {
     for (const name of toDelete) {
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) { }
+  } catch (e) {}
 }
 
 /**
@@ -51,7 +53,7 @@ export async function cleanAllLogs(logsRoot: string) {
       }
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) { }
+  } catch (e) {}
 }
 
 /**
@@ -63,13 +65,11 @@ export async function cleanAllLogs(logsRoot: string) {
 export function cleanExpiredLogs(day: number, logsRoot: string) {
   try {
     const children = fs.readdirSync(logsRoot);
-    const toDelete = children.filter((name) => {
-      return /^\d{8}$/.test(name) && Number(name) < day;
-    });
+    const toDelete = children.filter((name) => /^\d{8}$/.test(name) && Number(name) < day);
     for (const name of toDelete) {
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) { }
+  } catch (e) {}
 }
 
 /**
@@ -90,7 +90,7 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
     throw err;
   });
 
-  archive.on('entry', (entry) => { });
+  archive.on('entry', (entry) => {});
 
   archive.on('warning', (warning) => {
     debugLog.debug('archive warning', warning);

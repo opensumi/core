@@ -5,12 +5,11 @@ import { IWorkspaceService } from '../../common';
 
 @Injectable()
 export class MockWorkspaceService implements IWorkspaceService {
-
   private _roots: FileStat[] = [];
 
   private _workspace: FileStat | undefined;
 
-  isMultiRootWorkspaceOpened: boolean = false;
+  isMultiRootWorkspaceOpened = false;
 
   whenReady: Promise<void>;
 
@@ -103,9 +102,14 @@ export class MockWorkspaceService implements IWorkspaceService {
     throw new Error('Method not implemented.');
   }
   async removeRoots(uri: URI[]) {
-    return ;
+    return;
   }
-  async spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
+  async spliceRoots(
+    start: number,
+    deleteCount?: number | undefined,
+    workspaceName?: { [key: string]: string },
+    ...rootsToAdd: URI[]
+  ): Promise<URI[]> {
     this._roots = rootsToAdd.map((root) => ({ isDirectory: true, uri: root.toString(), lastModification: 0 }));
     this.deferredRoots = new Deferred();
     this.deferredRoots.resolve(this._roots);
@@ -121,5 +125,4 @@ export class MockWorkspaceService implements IWorkspaceService {
     return '';
   }
   isMultiRootWorkspaceEnabled: boolean;
-
 }

@@ -6,7 +6,13 @@ import styles from './comments.module.less';
 import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
-import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry, ICommentsThread } from '../common';
+import {
+  ICommentReply,
+  ICommentsZoneWidget,
+  ICommentThreadTitle,
+  ICommentsFeatureRegistry,
+  ICommentsThread,
+} from '../common';
 import clx from 'classnames';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
@@ -20,19 +26,16 @@ export interface ICommentProps {
 }
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
-  const {
-    comments,
-    threadHeaderTitle,
-    contextKeyService,
-  } = thread;
+  const { comments, threadHeaderTitle, contextKeyService } = thread;
   const injector = useInjectable(INJECTOR_TOKEN);
-  const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [ thread ]);
+  const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [thread]);
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
   const [replyText, setReplyText] = React.useState('');
-  const commentIsEmptyContext = React.useMemo(() => {
-    return contextKeyService.createKey<boolean>('commentIsEmpty', !replyText);
-  }, []);
+  const commentIsEmptyContext = React.useMemo(
+    () => contextKeyService.createKey<boolean>('commentIsEmpty', !replyText),
+    [],
+  );
   const commentThreadTitle = commentsZoneService.commentThreadTitle;
   const commentThreadContext = commentsZoneService.commentThreadContext;
 
@@ -42,20 +45,26 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     commentIsEmptyContext.set(!value);
   }, []);
 
-  const placeholder = React.useMemo(() => {
-    return commentsFeatureRegistry.getProviderFeature(thread.providerId)?.placeholder || `${localize('comments.reply.placeholder')}...`;
-  }, []);
+  const placeholder = React.useMemo(
+    () =>
+      commentsFeatureRegistry.getProviderFeature(thread.providerId)?.placeholder ||
+      `${localize('comments.reply.placeholder')}...`,
+    [],
+  );
 
-  const handleDragFiles = React.useCallback(async (files: FileList) => {
-    if (fileUploadHandler) {
-      const appendText = await fileUploadHandler(replyText, files);
-      setReplyText((text) => {
-        const value = text + appendText;
-        commentIsEmptyContext.set(!value);
-        return value;
-      });
-    }
-  }, [ replyText ]);
+  const handleDragFiles = React.useCallback(
+    async (files: FileList) => {
+      if (fileUploadHandler) {
+        const appendText = await fileUploadHandler(replyText, files);
+        setReplyText((text) => {
+          const value = text + appendText;
+          commentIsEmptyContext.set(!value);
+          return value;
+        });
+      }
+    },
+    [replyText],
+  );
 
   React.useEffect(() => {
     const disposer = widget.onFirstDisplay(() => {
@@ -74,44 +83,48 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
         <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}
-          context={[{
-            thread,
-            widget,
-            menuId: MenuId.CommentsCommentThreadTitle,
-          }]}
+          context={[
+            {
+              thread,
+              widget,
+              menuId: MenuId.CommentsCommentThreadTitle,
+            },
+          ]}
           separator='inline'
-          type='icon'/>
+          type='icon'
+        />
       </div>
       <div className={styles.comment_body}>
-      { comments.length > 0 ?
-        <CommentItem widget={widget} commentThreadContext={commentThreadContext} thread={thread} /> : (
-        <div>
-          <CommentsTextArea
-            focusDelay={100}
-            initialHeight={'auto'}
-            value={replyText}
-            onChange={onChangeReply}
-            placeholder={placeholder}
-            dragFiles={handleDragFiles}
-          />
-          <div className={styles.comment_bottom_actions}>
-            <InlineActionBar<ICommentReply>
-              className={styles.comment_reply_actions}
-              separator='inline'
-              type='button'
-              context={[
-                {
-                  text: replyText,
-                  widget,
-                  thread,
-                  menuId: MenuId.CommentsCommentThreadContext,
-                },
-              ]}
-              menus={commentThreadContext}
+        {comments.length > 0 ? (
+          <CommentItem widget={widget} commentThreadContext={commentThreadContext} thread={thread} />
+        ) : (
+          <div>
+            <CommentsTextArea
+              focusDelay={100}
+              initialHeight={'auto'}
+              value={replyText}
+              onChange={onChangeReply}
+              placeholder={placeholder}
+              dragFiles={handleDragFiles}
             />
+            <div className={styles.comment_bottom_actions}>
+              <InlineActionBar<ICommentReply>
+                className={styles.comment_reply_actions}
+                separator='inline'
+                type='button'
+                context={[
+                  {
+                    text: replyText,
+                    widget,
+                    thread,
+                    menuId: MenuId.CommentsCommentThreadContext,
+                  },
+                ]}
+                menus={commentThreadContext}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
@@ -119,7 +132,6 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
 
 @Injectable({ multiple: true })
 export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZoneWidget {
-
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
@@ -146,10 +158,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
     ReactDOM.render(
       <ConfigProvider value={this.appConfig}>
-        { customRender ?
-          customRender(thread, this) :
-          <CommentsZone thread={thread} widget={this} />
-        }
+        {customRender ? customRender(thread, this) : <CommentsZone thread={thread} widget={this} />}
       </ConfigProvider>,
       this._wrapper,
     );
@@ -190,5 +199,4 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   protected applyStyle(): void {
     // noop
   }
-
 }

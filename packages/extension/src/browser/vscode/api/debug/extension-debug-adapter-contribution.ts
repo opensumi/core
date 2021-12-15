@@ -7,7 +7,8 @@ export class ExtensionDebugAdapterContribution {
   constructor(
     protected readonly description: DebuggerDescription,
     protected readonly extDebug: IExtHostDebug,
-    protected readonly activationEventService: IActivationEventService ) { }
+    protected readonly activationEventService: IActivationEventService,
+  ) {}
 
   get type(): string {
     return this.description.type;
@@ -33,11 +34,17 @@ export class ExtensionDebugAdapterContribution {
     return await this.extDebug.$provideDebugConfigurations(this.type, workspaceFolderUri);
   }
 
-  async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  async resolveDebugConfiguration(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     return await this.extDebug.$resolveDebugConfigurations(config, workspaceFolderUri);
   }
 
-  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  async resolveDebugConfigurationWithSubstitutedVariables(
+    config: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     return await this.extDebug.$resolveDebugConfigurationWithSubstitutedVariables(config, workspaceFolderUri);
   }
 

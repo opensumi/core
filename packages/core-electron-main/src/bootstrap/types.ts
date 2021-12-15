@@ -6,7 +6,6 @@ import { IURLHandler } from '@opensumi/ide-core-common/lib/electron';
 import { ElectronMainModule } from '../electron-main-module';
 
 export interface ElectronAppConfig {
-
   /**
    * BrowserPreload
    */
@@ -86,7 +85,6 @@ export const ElectronAppConfig = Symbol('ElectronAppConfig');
 export const ElectronMainContribution = Symbol('ElectronMainContribution');
 
 export interface ElectronMainContribution {
-
   registerMainApi?(registry: ElectronMainApiRegistry): void;
 
   registerURLHandler?(registry: ElectronURLHandlerRegistry): void;
@@ -94,45 +92,33 @@ export interface ElectronMainContribution {
   onStart?(): void;
 
   beforeAppReady?(): void;
-
 }
 
 export abstract class ElectronMainApiRegistry {
-
   abstract registerMainApi(name: string, api: IElectronMainApiProvider<any>): IDisposable;
-
 }
 
 export abstract class ElectronURLHandlerRegistry {
-
   abstract registerURLHandler(handler: IURLHandler): IDisposable;
 
   abstract registerURLDefaultHandler(handler: IURLHandler): IDisposable;
-
 }
 
 export interface IElectronMainApiProvider<Events = any> {
-
   eventEmitter?: { fire: (event: Events, ...args: any[]) => void };
-
 }
 
 export class ElectronMainApiProvider<Events = any> implements IElectronMainApiProvider<Events> {
-
   eventEmitter: { fire: (event: Events, ...args: any[]) => void };
-
 }
 
 export const IElectronMainApp = Symbol('IElectronMainApp');
 
 export interface IElectronMainApp {
-
   getCodeWindows(): ICodeWindow[];
-
 }
 
 export interface ICodeWindow {
-
   getBrowserWindow(): Electron.BrowserWindow;
 
   metadata: any;
@@ -147,7 +133,7 @@ export interface ICodeWindow {
 export interface ICodeWindowOptions {
   extensionDir?: string;
   extensionCandidate?: ExtensionCandidate[];
-  query?: { [key: string]: string | string[]; };
+  query?: { [key: string]: string | string[] };
 }
 
 export interface IParsedArgs {

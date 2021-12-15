@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -19,48 +19,44 @@ import type vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
 
 export class WorkspaceSymbolAdapter {
+  constructor(private readonly provider: vscode.WorkspaceSymbolProvider) {}
 
-    constructor(
-        private readonly provider: vscode.WorkspaceSymbolProvider,
-    ) { }
+  provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): Promise<SymbolInformation[]> {
+    return Promise.resolve(this.provider.provideWorkspaceSymbols(query, token)).then((workspaceSymbols) => {
+      if (!workspaceSymbols) {
+        return [];
+      }
 
-    provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): Promise<SymbolInformation[]> {
-        return Promise.resolve(this.provider.provideWorkspaceSymbols(query, token)).then((workspaceSymbols) => {
-            if (!workspaceSymbols) {
-                return [];
-            }
-
-            const newSymbols: SymbolInformation[] = [];
-            for (const sym of workspaceSymbols) {
-                const convertedSymbol = Converter.fromSymbolInformation(sym);
-                if (convertedSymbol) {
-                    newSymbols.push(convertedSymbol);
-                }
-            }
-            return newSymbols;
-        });
-    }
-
-    resolveWorkspaceSymbol(symbol: SymbolInformation, token: vscode.CancellationToken): Promise<SymbolInformation> {
-        if (this.provider.resolveWorkspaceSymbol && typeof this.provider.resolveWorkspaceSymbol === 'function') {
-            const vscodeSymbol = Converter.toSymbolInformation(symbol);
-            if (!vscodeSymbol) {
-                return Promise.resolve(symbol);
-            } else {
-                return Promise.resolve(this.provider.resolveWorkspaceSymbol(vscodeSymbol, token)).then((workspaceSymbol) => {
-                    if (!workspaceSymbol) {
-                        return symbol;
-                    }
-
-                    const converted = Converter.fromSymbolInformation(workspaceSymbol);
-                    if (converted) {
-                        return converted;
-                    }
-                    return symbol;
-                });
-            }
+      const newSymbols: SymbolInformation[] = [];
+      for (const sym of workspaceSymbols) {
+        const convertedSymbol = Converter.fromSymbolInformation(sym);
+        if (convertedSymbol) {
+          newSymbols.push(convertedSymbol);
         }
-        return Promise.resolve(symbol);
-    }
+      }
+      return newSymbols;
+    });
+  }
 
+  resolveWorkspaceSymbol(symbol: SymbolInformation, token: vscode.CancellationToken): Promise<SymbolInformation> {
+    if (this.provider.resolveWorkspaceSymbol && typeof this.provider.resolveWorkspaceSymbol === 'function') {
+      const vscodeSymbol = Converter.toSymbolInformation(symbol);
+      if (!vscodeSymbol) {
+        return Promise.resolve(symbol);
+      } else {
+        return Promise.resolve(this.provider.resolveWorkspaceSymbol(vscodeSymbol, token)).then((workspaceSymbol) => {
+          if (!workspaceSymbol) {
+            return symbol;
+          }
+
+          const converted = Converter.fromSymbolInformation(workspaceSymbol);
+          if (converted) {
+            return converted;
+          }
+          return symbol;
+        });
+      }
+    }
+    return Promise.resolve(symbol);
+  }
 }

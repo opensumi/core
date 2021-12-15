@@ -5,12 +5,15 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DebugToolbarService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
 
 describe('Debug Configuration Service', () => {
-  const mockInjector = createBrowserInjector([], new MockInjector([
-    {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-  ]));
+  const mockInjector = createBrowserInjector(
+    [],
+    new MockInjector([
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+    ]),
+  );
   let debugToolbarService: DebugToolbarService;
 
   const mockDebugViewModel = {

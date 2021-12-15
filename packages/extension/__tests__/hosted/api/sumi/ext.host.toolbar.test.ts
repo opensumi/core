@@ -5,7 +5,10 @@ import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 
-import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
+import {
+  createToolbarAPIFactory,
+  ExtHostToolbarActionService,
+} from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
 import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
 import { mockExtensions } from '../../../../__mocks__/extensions';
 
@@ -22,12 +25,8 @@ const mockMainThreadToolbarProxy = {
 };
 
 const mockMainthreadCommon = {
-  $subscribeEvent(eventName: string) {
-
-  },
-  $unSubscribeEvent(eventName: string) {
-
-  },
+  $subscribeEvent(eventName: string) {},
+  $unSubscribeEvent(eventName: string) {},
 };
 
 const emitter = new Emitter();
@@ -54,9 +53,7 @@ const mockMainthreadCommand = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -75,10 +72,10 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
   emitter.event((e) => {
     /** tslint:disabled */
     let eventName;
-     // @ts-ignore
+    // @ts-ignore
     if (e.id === 'sumi-extension.toolbar.select.setState') {
       eventName = 'sumi-extension.toolbar.select.stateChange';
-     // @ts-ignore
+      // @ts-ignore
     } else if (e.id === 'sumi-extension.toolbar.btn.setState') {
       eventName = 'sumi-extension.toolbar.btn.stateChange';
     }
@@ -107,11 +104,11 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
       iconPath: '/path/to/toolbar.svg',
       description: 'test for toolbar button action',
       states: {
-        'default': {
-          'background': '#ff004f',
+        default: {
+          background: '#ff004f',
         },
-        'hover': {
-          'background': '#ffffff',
+        hover: {
+          background: '#ffffff',
         },
       },
     });
@@ -144,11 +141,11 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
         },
       ],
       states: {
-        'default': {
-          'backgroundColor': '#ff004f',
+        default: {
+          backgroundColor: '#ff004f',
         },
-        'selected': {
-          'backgroundColor': '#000000',
+        selected: {
+          backgroundColor: '#000000',
         },
       },
       defaultValue: 'test-label-1',
@@ -170,5 +167,4 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
 
     await hostAction.setState('selected');
   });
-
 });

@@ -6,27 +6,66 @@ import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/act
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { ContextKeyExpr, ContextKeyExprType } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpr,
+  ContextKeyExprType,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { FormattingConflicts } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
-  PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, IJSONSchemaRegistry, Disposable,
-  CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
-  Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
+  PreferenceService,
+  JsonSchemaContribution,
+  ISchemaStore,
+  PreferenceScope,
+  IJSONSchemaRegistry,
+  Disposable,
+  CommandRegistry,
+  IMimeService,
+  CorePreferences,
+  ClientAppContribution,
+  CommandContribution,
+  ContributionProvider,
+  Domain,
+  MonacoService,
+  MonacoContribution,
+  ServiceNames,
+  KeybindingContribution,
+  KeybindingRegistry,
+  IContextKeyService,
+  IOpenerService,
+  MonacoOverrideServiceRegistry,
+  FormattingSelectorType,
 } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  IMenuRegistry,
+  NextMenuContribution as MenuContribution,
+  MenuId,
+  IMenuItem,
+  ISubmenuItem,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@opensumi/ide-theme';
 import { URI, ILogger } from '@opensumi/ide-core-common';
 
-import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry } from './contrib/command';
+import {
+  ICommandServiceToken,
+  IMonacoActionRegistry,
+  IMonacoCommandService,
+  IMonacoCommandsRegistry,
+} from './contrib/command';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
-import { ISemanticTokenRegistry, parseClassifierString, TokenStyle } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import {
+  ISemanticTokenRegistry,
+  parseClassifierString,
+  TokenStyle,
+} from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
-export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
+export class MonacoClientContribution
+  implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
+{
   @Autowired()
   monacoService: MonacoService;
 
@@ -96,10 +135,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
       // onMonacoLoaded 待废弃, 暂时也会触发 onMonacoLoaded 事件，待集成方改造以后去除
       if (contribution.onMonacoLoaded) {
         // tslint:disable-next-line:no-console
-        console.warn(
-          !!contribution.onMonacoLoaded,
-          `MonacoContribution#onMonacoLoaded was deprecated.`,
-        );
+        console.warn(!!contribution.onMonacoLoaded, 'MonacoContribution#onMonacoLoaded was deprecated.');
         contribution.onMonacoLoaded(this.monacoService);
       }
 
@@ -118,7 +154,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
         // tslint:disable-next-line:no-console
         console.warn(
           !!contribution.onContextKeyServiceReady,
-          `MonacoContribution#onContextKeyServiceReady was deprecated.`,
+          'MonacoContribution#onContextKeyServiceReady was deprecated.',
         );
         contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
       }
@@ -154,17 +190,16 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   }
 
   private registerOverrideServices() {
-    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<CodeEditorServiceImpl>(ServiceNames.CODE_EDITOR_SERVICE);
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<CodeEditorServiceImpl>(
+      ServiceNames.CODE_EDITOR_SERVICE,
+    );
 
     // Monaco CommandService
     const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
-    this.overrideServicesRegistry.registerOverrideService(
-      ServiceNames.COMMAND_SERVICE,
-      this.monacoCommandService,
-    );
+    this.overrideServicesRegistry.registerOverrideService(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
 
     // Monaco OpenerService
     const monacoOpenerService = new OpenerService(codeEditorService!, this.monacoCommandService);
@@ -180,9 +215,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
     // 替换 StaticServices 上挂载的 codeEditorService 实例
     (StaticServices as unknown as any).codeEditorService = {
-      get: () => {
-        return codeEditorService;
-      },
+      get: () => codeEditorService,
     };
   }
 
@@ -196,7 +229,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
        * monaco 中 editor/context 是一个数字枚举值
        * opensumi 中是一个 字符串
        * 这里做了一层代理转换 (下方也有代理注册)
-      */
+       */
       menuRegistry.registerMenuItem(MenuId.EditorContext as unknown as string, menuItem);
     });
 
@@ -214,7 +247,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
        * monaco 中 editor/context 是一个数字枚举值
        * opensumi 中是一个 字符串
        * 这里做了一层代理注册
-      */
+       */
       if (menuId === monacoActions.MenuId.EditorContext) {
         disposer.addDispose(menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item)));
       } else {
@@ -253,23 +286,19 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
   private patchMonacoThemeService() {
     const standaloneThemeService = StaticServices.standaloneThemeService.get();
-    const originalGetTheme: typeof standaloneThemeService.getColorTheme = standaloneThemeService.getColorTheme.bind(standaloneThemeService);
+    const originalGetTheme: typeof standaloneThemeService.getColorTheme =
+      standaloneThemeService.getColorTheme.bind(standaloneThemeService);
     const patchedGetTokenStyleMetadataFlag = '__patched_getTokenStyleMetadata';
 
     standaloneThemeService.getColorTheme = () => {
       const theme = originalGetTheme();
       if (!(patchedGetTokenStyleMetadataFlag in theme)) {
-
-        Object.defineProperty(
-          theme,
-          patchedGetTokenStyleMetadataFlag,
-          {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            value: true,
-          },
-        );
+        Object.defineProperty(theme, patchedGetTokenStyleMetadataFlag, {
+          enumerable: false,
+          configurable: false,
+          writable: false,
+          value: true,
+        });
 
         // 这里 patch 一个 getTokenStyleMetadata 原因是 monaco 内部获取 SemanticTokens 时只走内部的 StandaloneThemeService
         // 注册在 themeService 的 SemanticTokens 没有被同步进去，所以在这里做一次处理，获取 TokenStyle 时基于外部的 themeService 来计算样式
@@ -277,11 +306,17 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
           typeWithLanguage: string,
           modifiers: string[],
           defaultLanguage: string,
-          useDefault  = true,
+          useDefault = true,
           definitions: any = {},
         ) => {
           const { type, language } = parseClassifierString(typeWithLanguage, defaultLanguage);
-          const style: TokenStyle | undefined = theme['themeData'].getTokenStyle(type, modifiers, language, useDefault, definitions);
+          const style: TokenStyle | undefined = theme['themeData'].getTokenStyle(
+            type,
+            modifiers,
+            language,
+            useDefault,
+            definitions,
+          );
           if (!style) {
             return undefined;
           }
@@ -344,9 +379,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
             // monaco-editor contextkey 的计算规则中 && 优先级高于 ||
             if (when.type === ContextKeyExprType.Or) {
               const exprs = when.expr;
-              when = ContextKeyExpr.or(
-                ...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)),
-              );
+              when = ContextKeyExpr.or(...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)));
             } else {
               when = ContextKeyExpr.and(when, editorFocus);
             }
@@ -355,7 +388,13 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
         // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
-        const keybinding = { command, args: item.commandArgs, keybinding: keybindingStr, when, priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0)};
+        const keybinding = {
+          command,
+          args: item.commandArgs,
+          keybinding: keybindingStr,
+          when,
+          priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
+        };
 
         keybindings.registerKeybinding(keybinding);
       }
@@ -371,7 +410,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
       return false;
     }
   }
-
 }
 
 function transformMonacoMenuItem(item: monacoActions.IMenuItem | monacoActions.ISubmenuItem): IMenuItem | ISubmenuItem {

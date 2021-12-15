@@ -17,12 +17,12 @@ export function quickFireEvent<T>(name: string, value: T) {
 
 export function partialMock<T>(prefix: string, mocked: Partial<T>): T {
   return new Proxy(mocked, {
-      get: (target, prop) => {
-        if (target[prop]) {
-          return target[prop];
-        } else {
-          return () => null;
-        }
-      },
-    }) as T;
+    get: (target, prop) => {
+      if (target[prop]) {
+        return target[prop];
+      } else {
+        return () => null;
+      }
+    },
+  }) as T;
 }

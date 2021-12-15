@@ -1,7 +1,20 @@
-import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Disposable,
+  DisposableCollection,
+  IFileServiceClient,
+  IContextKeyService,
+} from '@opensumi/ide-core-browser';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
-import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@opensumi/ide-debug/lib/browser';
+import {
+  DebugModule,
+  DebugStackFrame,
+  DebugThread,
+  DebugSession,
+  DebugSessionConnection,
+  BreakpointManager,
+} from '@opensumi/ide-debug/lib/browser';
 import { DebugSessionOptions, IDebugSessionManager } from '@opensumi/ide-debug';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
@@ -17,7 +30,6 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 describe('Debug Model', () => {
-
   let model: DebugModel;
   let injector: MockInjector;
   let mockDebugEditor: any;
@@ -40,19 +52,13 @@ describe('Debug Model', () => {
 
     mockDebugEditor = {
       ...createMockedMonaco().editor!,
-      getModel: () => {
-        return {
-          uri: testFile,
-        };
-      },
-      addContentWidget: () => {
-
-      },
+      getModel: () => ({
+        uri: testFile,
+      }),
+      addContentWidget: () => {},
       onKeyDown: () => Disposable.create(() => {}),
     };
-    injector = createBrowserInjector([
-      DebugModule,
-    ]);
+    injector = createBrowserInjector([DebugModule]);
     injector.addProviders({
       token: IFileServiceClient,
       useClass: MockFileServiceClient,
@@ -67,9 +73,7 @@ describe('Debug Model', () => {
     });
   };
 
-  beforeEach(() => {
-    return initializeInjector();
-  });
+  beforeEach(() => initializeInjector());
 
   afterEach(() => toTearDown.dispose());
 

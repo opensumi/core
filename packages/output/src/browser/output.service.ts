@@ -2,14 +2,18 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { WithEventBus } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelService,
+  EditorCollectionService,
+  ICodeEditor,
+  getSimpleEditorOptions,
+} from '@opensumi/ide-editor/lib/browser';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
 
 @Injectable()
 export class OutputService extends WithEventBus {
-
   @Autowired(AppConfig)
   private config: AppConfig;
 
@@ -35,19 +39,21 @@ export class OutputService extends WithEventBus {
 
   private monacoDispose: monaco.IDisposable;
 
-  private autoReveal: boolean = true;
+  private autoReveal = true;
 
-  private enableSmartScroll: boolean = true;
+  private enableSmartScroll = true;
 
   constructor() {
     super();
 
     this.enableSmartScroll = Boolean(this.preferenceService.get<boolean>('output.enableSmartScroll'));
-    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'output.enableSmartScroll' && e.newValue !== this.enableSmartScroll) {
-        this.enableSmartScroll = e.newValue;
-      }
-    }));
+    this.addDispose(
+      this.preferenceService.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'output.enableSmartScroll' && e.newValue !== this.enableSmartScroll) {
+          this.enableSmartScroll = e.newValue;
+        }
+      }),
+    );
   }
 
   @action
@@ -116,22 +122,24 @@ export class OutputService extends WithEventBus {
       },
     });
 
-    this.addDispose(this.outputEditor.monacoEditor.onMouseUp((e) => {
-      /**
-       * 这里的逻辑是
-       * 当开启智能滚动后，如果鼠标事件点击所在行小于当前总行数，则停止自动滚动
-       * 如果点击到最后一行，则启用自动滚动
-       */
-      if (this.enableSmartScroll) {
-        const { range } = e.target;
-        const maxLine = this.outputEditor?.currentDocumentModel?.getMonacoModel().getLineCount();
-        if (range?.startLineNumber! < maxLine!) {
-          this.autoReveal = false;
+    this.addDispose(
+      this.outputEditor.monacoEditor.onMouseUp((e) => {
+        /**
+         * 这里的逻辑是
+         * 当开启智能滚动后，如果鼠标事件点击所在行小于当前总行数，则停止自动滚动
+         * 如果点击到最后一行，则启用自动滚动
+         */
+        if (this.enableSmartScroll) {
+          const { range } = e.target;
+          const maxLine = this.outputEditor?.currentDocumentModel?.getMonacoModel().getLineCount();
+          if (range?.startLineNumber! < maxLine!) {
+            this.autoReveal = false;
+          }
+          if (range?.startLineNumber! >= maxLine!) {
+            this.autoReveal = true;
+          }
         }
-        if (range?.startLineNumber! >= maxLine!) {
-          this.autoReveal = true;
-        }
-      }
-    }));
+      }),
+    );
   }
 }

@@ -1,5 +1,10 @@
 import { DebugSessionManager } from '../debug-session-manager';
-import { DebugVariable, DebugScope, DebugVariableContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
+import {
+  DebugVariable,
+  DebugScope,
+  DebugVariableContainer,
+  DebugHoverVariableRoot,
+} from '../tree/debug-tree-node.define';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IDebugSessionManager } from '../../common';
 import { Event, Emitter } from '@opensumi/ide-core-browser';
@@ -8,7 +13,6 @@ export type ExpressionVariable = DebugHoverVariableRoot | DebugVariable | DebugV
 
 @Injectable()
 export class DebugHoverSource {
-
   @Autowired(IDebugSessionManager)
   protected readonly sessions: DebugSessionManager;
 
@@ -43,9 +47,14 @@ export class DebugHoverSource {
     if (currentSession.capabilities.supportsEvaluateForHovers) {
       const item = new DebugHoverVariableRoot(expression, currentSession);
       await item.evaluate('hover');
-      return item.available && item || undefined;
+      return (item.available && item) || undefined;
     }
-    return this.findVariable(expression.split('.').map((word) => word.trim()).filter((word) => !!word));
+    return this.findVariable(
+      expression
+        .split('.')
+        .map((word) => word.trim())
+        .filter((word) => !!word),
+    );
   }
 
   protected async findVariable(namesToFind: string[]): Promise<DebugVariable | DebugVariableContainer | undefined> {
@@ -67,7 +76,10 @@ export class DebugHoverSource {
     return variable;
   }
 
-  protected async doFindVariable(owner: DebugScope | DebugVariableContainer, namesToFind: string[]): Promise<DebugVariable | undefined> {
+  protected async doFindVariable(
+    owner: DebugScope | DebugVariableContainer,
+    namesToFind: string[],
+  ): Promise<DebugVariable | undefined> {
     await owner.ensureLoaded();
     const elements = owner.children;
     const variables: (DebugVariable | DebugVariableContainer)[] = [];
@@ -90,5 +102,4 @@ export class DebugHoverSource {
       return this.doFindVariable(variables[0] as DebugVariableContainer, namesToFind.slice(1));
     }
   }
-
 }

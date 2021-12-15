@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  * MIT License Copyright (c) 2020 Dani All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * https://github.com/Daninet/hash-wasm
@@ -9,9 +9,7 @@
 import { Mutex } from './mutex';
 import { WASMInterface, IWASMInterface } from './WASMInterface';
 
-export async function lockedCreate(
-  mutex: Mutex, binary: any, hashLength: number,
-): Promise<IWASMInterface> {
+export async function lockedCreate(mutex: Mutex, binary: any, hashLength: number): Promise<IWASMInterface> {
   const unlock = await mutex.lock();
   const wasm = await WASMInterface(binary, hashLength);
   unlock();

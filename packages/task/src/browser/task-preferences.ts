@@ -5,7 +5,7 @@ export const taskPreferencesSchema: PreferenceSchema = {
   type: 'object',
   scope: 'resource',
   properties: {
-    'tasks': {
+    tasks: {
       $ref: taskSchemaUri,
       defaultValue: { tasks: [] },
     },

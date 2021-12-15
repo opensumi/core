@@ -1,7 +1,15 @@
 import React from 'react';
 import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
-import { isElectronRenderer, electronEnv, URI, MessageType, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
+import {
+  isElectronRenderer,
+  electronEnv,
+  URI,
+  MessageType,
+  StorageProvider,
+  IStorage,
+  STORAGE_NAMESPACE,
+} from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { FileDialog } from './file-dialog.view';
 import { FileTreeDialogModel } from './file-dialog-model.service';
@@ -11,7 +19,6 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -68,7 +75,16 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
     };
     if (isElectronRenderer()) {
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
-      const properties: Array<'openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory'> = [];
+      const properties: Array<
+        | 'openFile'
+        | 'openDirectory'
+        | 'multiSelections'
+        | 'showHiddenFiles'
+        | 'createDirectory'
+        | 'promptToCreate'
+        | 'noResolveAliases'
+        | 'treatPackageAsDirectory'
+      > = [];
       if (options.canSelectFiles) {
         properties.push('openFile');
       }
@@ -109,7 +125,10 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={{ ...defaultOptions, ...options}} isOpenDialog={true}/>, MessageType.Empty);
+      const res = await this.dialogService.open<string[]>(
+        <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
+        MessageType.Empty,
+      );
       this.dialogService.reset();
       if (res && res.length > 0) {
         const files = res.map((r) => URI.file(r));
@@ -152,7 +171,10 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={options} isOpenDialog={false}/>, MessageType.Empty);
+      const res = await this.dialogService.open<string[]>(
+        <FileDialog model={model} options={options} isOpenDialog={false} />,
+        MessageType.Empty,
+      );
       this.dialogService.reset();
       if (res && res.length > 0) {
         const file = URI.file(res[0]);
@@ -164,5 +186,4 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
     }
   }
-
 }

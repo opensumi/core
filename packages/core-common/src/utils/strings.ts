@@ -6,8 +6,8 @@ import { isOSX, isWindows } from './os';
  */
 export const empty = '';
 
-const hasTextEncoder = (typeof TextEncoder !== 'undefined');
-const hasTextDecoder = (typeof TextDecoder !== 'undefined');
+const hasTextEncoder = typeof TextEncoder !== 'undefined';
+const hasTextDecoder = typeof TextDecoder !== 'undefined';
 
 /**
  * 浏览器全局可以直接使用 TextEncoder/TextDecoder
@@ -29,7 +29,7 @@ export function isFalsyOrWhitespace(str: string | undefined): boolean {
 /**
  * @returns the provided number with the given number of preceding zeros.
  */
-export function pad(n: number, l: number, char: string = '0'): string {
+export function pad(n: number, l: number, char = '0'): string {
   const str = '' + n;
   const r = [str];
 
@@ -54,12 +54,9 @@ export function format(value: string, ...args: any[]): string {
   }
   return value.replace(_formatRegexp, function (match, group) {
     const idx = parseInt(group, 10);
-    return isNaN(idx) || idx < 0 || idx >= args.length ?
-      match :
-      args[idx];
+    return isNaN(idx) || idx < 0 || idx >= args.length ? match : args[idx];
   });
 }
-
 
 /**
  * Handles mnemonics for buttons. Depending on OS:
@@ -73,7 +70,7 @@ export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boole
   }
 
   if (isWindows) {
-    return label.replace(/&&|&/g, m => m === '&' ? '&&' : '&');
+    return label.replace(/&&|&/g, (m) => (m === '&' ? '&&' : '&'));
   }
 
   return label.replace(/&&/g, '_');
@@ -86,10 +83,14 @@ export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boole
 export function escape(html: string): string {
   return html.replace(/[<>&]/g, function (match) {
     switch (match) {
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '&': return '&amp;';
-      default: return match;
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
+      default:
+        return match;
     }
   });
 }
@@ -106,7 +107,7 @@ export function escapeRegExpCharacters(value: string): string {
  * @param haystack string to trim
  * @param needle the thing to trim (default is a blank)
  */
-export function trim(haystack: string, needle: string = ' '): string {
+export function trim(haystack: string, needle = ' '): string {
   const trimmed = ltrim(haystack, needle);
   return rtrim(trimmed, needle);
 }
@@ -163,15 +164,15 @@ export function rtrim(haystack: string, needle: string): string {
     return haystack;
   }
 
-  const needleLen = needle.length,
-    haystackLen = haystack.length;
+  const needleLen = needle.length;
+  const haystackLen = haystack.length;
 
   if (needleLen === 0 || haystackLen === 0) {
     return haystack;
   }
 
-  let offset = haystackLen,
-    idx = -1;
+  let offset = haystackLen;
+  let idx = -1;
 
   while (true) {
     idx = haystack.lastIndexOf(needle, offset - 1);
@@ -288,10 +289,12 @@ export function regExpContainsBackreference(regexpValue: string): boolean {
 }
 
 export function regExpFlags(regexp: RegExp): string {
-  return (regexp.global ? 'g' : '')
-    + (regexp.ignoreCase ? 'i' : '')
-    + (regexp.multiline ? 'm' : '')
-    + ((regexp as any).unicode ? 'u' : '');
+  return (
+    (regexp.global ? 'g' : '') +
+    (regexp.ignoreCase ? 'i' : '') +
+    (regexp.multiline ? 'm' : '') +
+    ((regexp as any).unicode ? 'u' : '')
+  );
 }
 
 /**
@@ -312,7 +315,7 @@ export function firstNonWhitespaceIndex(str: string): number {
  * Returns the leading whitespace of the string.
  * If the string contains only whitespaces, returns entire string
  */
-export function getLeadingWhitespace(str: string, start: number = 0, end: number = str.length): string {
+export function getLeadingWhitespace(str: string, start = 0, end: number = str.length): string {
   for (let i = start; i < end; i++) {
     const chCode = str.charCodeAt(i);
     if (chCode !== CharCode.Space && chCode !== CharCode.Tab) {
@@ -370,11 +373,9 @@ export function compareIgnoreCase(a: string, b: string): number {
     if (diff === 0) {
       // equal -> ignoreCase
       continue;
-
     } else if (isLowerAsciiLetter(codeA) && isLowerAsciiLetter(codeB)) {
       //
       return diff;
-
     } else {
       return compare(a.toLowerCase(), b.toLowerCase());
     }
@@ -457,9 +458,8 @@ export function startsWithIgnoreCase(str: string, candidate: string): boolean {
  * @returns the length of the common prefix of the two strings.
  */
 export function commonPrefixLength(a: string, b: string): number {
-
-  let i: number,
-    len = Math.min(a.length, b.length);
+  let i: number;
+  const len = Math.min(a.length, b.length);
 
   for (i = 0; i < len; i++) {
     if (a.charCodeAt(i) !== b.charCodeAt(i)) {
@@ -474,9 +474,8 @@ export function commonPrefixLength(a: string, b: string): number {
  * @returns the length of the common suffix of the two strings.
  */
 export function commonSuffixLength(a: string, b: string): number {
-
-  let i: number,
-    len = Math.min(a.length, b.length);
+  let i: number;
+  const len = Math.min(a.length, b.length);
 
   const aLastIndex = a.length - 1;
   const bLastIndex = b.length - 1;
@@ -532,7 +531,7 @@ export function overlap(a: string, b: string): number {
 // Returns the code point starting at a specified index in a string
 // Code points U+0000 to U+D7FF and U+E000 to U+FFFF are represented on a single character
 // Code points U+10000 to U+10FFFF are represented on two consecutive characters
-//export function getUnicodePoint(str:string, index:number, len:number):number {
+// export function getUnicodePoint(str:string, index:number, len:number):number {
 //	const chrCode = str.charCodeAt(index);
 //	if (0xD800 <= chrCode && chrCode <= 0xDBFF && index + 1 < len) {
 //		const nextChrCode = str.charCodeAt(index + 1);
@@ -541,19 +540,20 @@ export function overlap(a: string, b: string): number {
 //		}
 //	}
 //	return chrCode;
-//}
+// }
 export function isHighSurrogate(charCode: number): boolean {
-  return (0xD800 <= charCode && charCode <= 0xDBFF);
+  return 0xd800 <= charCode && charCode <= 0xdbff;
 }
 
 export function isLowSurrogate(charCode: number): boolean {
-  return (0xDC00 <= charCode && charCode <= 0xDFFF);
+  return 0xdc00 <= charCode && charCode <= 0xdfff;
 }
 
 /**
  * Generated using https://github.com/alexandrudima/unicode-utils/blob/master/generate-rtl-test.js
  */
-const CONTAINS_RTL = /(?:[\u05BE\u05C0\u05C3\u05C6\u05D0-\u05F4\u0608\u060B\u060D\u061B-\u064A\u066D-\u066F\u0671-\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u0710\u0712-\u072F\u074D-\u07A5\u07B1-\u07EA\u07F4\u07F5\u07FA-\u0815\u081A\u0824\u0828\u0830-\u0858\u085E-\u08BD\u200F\uFB1D\uFB1F-\uFB28\uFB2A-\uFD3D\uFD50-\uFDFC\uFE70-\uFEFC]|\uD802[\uDC00-\uDD1B\uDD20-\uDE00\uDE10-\uDE33\uDE40-\uDEE4\uDEEB-\uDF35\uDF40-\uDFFF]|\uD803[\uDC00-\uDCFF]|\uD83A[\uDC00-\uDCCF\uDD00-\uDD43\uDD50-\uDFFF]|\uD83B[\uDC00-\uDEBB])/;
+const CONTAINS_RTL =
+  /(?:[\u05BE\u05C0\u05C3\u05C6\u05D0-\u05F4\u0608\u060B\u060D\u061B-\u064A\u066D-\u066F\u0671-\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u0710\u0712-\u072F\u074D-\u07A5\u07B1-\u07EA\u07F4\u07F5\u07FA-\u0815\u081A\u0824\u0828\u0830-\u0858\u085E-\u08BD\u200F\uFB1D\uFB1F-\uFB28\uFB2A-\uFD3D\uFD50-\uFDFC\uFE70-\uFEFC]|\uD802[\uDC00-\uDD1B\uDD20-\uDE00\uDE10-\uDE33\uDE40-\uDEE4\uDEEB-\uDF35\uDF40-\uDFFF]|\uD803[\uDC00-\uDCFF]|\uD83A[\uDC00-\uDCCF\uDD00-\uDD43\uDD50-\uDFFF]|\uD83B[\uDC00-\uDEBB])/;
 
 /**
  * Returns true if `str` contains any Unicode character that is classified as "R" or "AL".
@@ -565,7 +565,8 @@ export function containsRTL(str: string): boolean {
 /**
  * Generated using https://github.com/alexandrudima/unicode-utils/blob/master/generate-emoji-test.js
  */
-const CONTAINS_EMOJI = /(?:[\u231A\u231B\u23F0\u23F3\u2600-\u27BF\u2B50\u2B55]|\uD83C[\uDDE6-\uDDFF\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F\uDE80-\uDEF8]|\uD83E[\uDD00-\uDDE6])/;
+const CONTAINS_EMOJI =
+  /(?:[\u231A\u231B\u23F0\u23F3\u2600-\u27BF\u2B50\u2B55]|\uD83C[\uDDE6-\uDDFF\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F\uDE80-\uDEF8]|\uD83E[\uDD00-\uDDE6])/;
 
 export function containsEmoji(str: string): boolean {
   return CONTAINS_EMOJI.test(str);
@@ -629,9 +630,9 @@ export function isFullWidthCharacter(charCode: number): boolean {
   // [IGNORE] FFF0 — FFFF   Specials
   charCode = +charCode; // @perf
   return (
-    (charCode >= 0x2E80 && charCode <= 0xD7AF)
-    || (charCode >= 0xF900 && charCode <= 0xFAFF)
-    || (charCode >= 0xFF01 && charCode <= 0xFF5E)
+    (charCode >= 0x2e80 && charCode <= 0xd7af) ||
+    (charCode >= 0xf900 && charCode <= 0xfaff) ||
+    (charCode >= 0xff01 && charCode <= 0xff5e)
   );
 }
 
@@ -677,7 +678,9 @@ export function removeAnsiEscapeCodes(str: string): string {
 export const removeAccents: (str: string) => string = (function () {
   if (typeof (String.prototype as any).normalize !== 'function') {
     // ☹️ no ES6 features...
-    return function (str: string) { return str; };
+    return function (str: string) {
+      return str;
+    };
   } else {
     // transform into NFD form and remove accents
     // see: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript/37511463#37511463
@@ -687,7 +690,6 @@ export const removeAccents: (str: string) => string = (function () {
     };
   }
 })();
-
 
 // -- UTF-8 BOM
 
@@ -772,16 +774,14 @@ export function getNLines(str: string, n = 1): string {
     n--;
   } while (n > 0 && idx >= 0);
 
-  return idx >= 0 ?
-    str.substr(0, idx) :
-    str;
+  return idx >= 0 ? str.substr(0, idx) : str;
 }
 
 /**
  * See http://en.wikipedia.org/wiki/Surrogate_pair
  */
 export function computeCodePoint(highSurrogate: number, lowSurrogate: number): number {
-  return ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00) + 0x10000;
+  return ((highSurrogate - 0xd800) << 10) + (lowSurrogate - 0xdc00) + 0x10000;
 }
 
 /**
@@ -812,7 +812,7 @@ export function encodeUTF8(str: string): Uint8Array {
   let strOffset = 0;
   while (strOffset < strLen) {
     const codePoint = getNextCodePoint(str, strLen, strOffset);
-    strOffset += (codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1);
+    strOffset += codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1;
 
     if (codePoint < 0x0080) {
       neededSize += 1;
@@ -831,7 +831,7 @@ export function encodeUTF8(str: string): Uint8Array {
   let arrOffset = 0;
   while (strOffset < strLen) {
     const codePoint = getNextCodePoint(str, strLen, strOffset);
-    strOffset += (codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1);
+    strOffset += codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1;
 
     if (codePoint < 0x0080) {
       arr[arrOffset++] = codePoint;
@@ -868,43 +868,38 @@ export function decodeUTF8(buffer: Uint8Array): string {
     let codePoint: number;
     if (v0 >= 0b11110000 && offset + 3 < len) {
       // 4 bytes
-      codePoint = (
-        (((buffer[offset++] & 0b00000111) << 18) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 12) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 6) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 0) >>> 0)
-      );
+      codePoint =
+        (((buffer[offset++] & 0b00000111) << 18) >>> 0) |
+        (((buffer[offset++] & 0b00111111) << 12) >>> 0) |
+        (((buffer[offset++] & 0b00111111) << 6) >>> 0) |
+        (((buffer[offset++] & 0b00111111) << 0) >>> 0);
     } else if (v0 >= 0b11100000 && offset + 2 < len) {
       // 3 bytes
-      codePoint = (
-        (((buffer[offset++] & 0b00001111) << 12) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 6) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 0) >>> 0)
-      );
+      codePoint =
+        (((buffer[offset++] & 0b00001111) << 12) >>> 0) |
+        (((buffer[offset++] & 0b00111111) << 6) >>> 0) |
+        (((buffer[offset++] & 0b00111111) << 0) >>> 0);
     } else if (v0 >= 0b11000000 && offset + 1 < len) {
       // 2 bytes
-      codePoint = (
-        (((buffer[offset++] & 0b00011111) << 6) >>> 0)
-        | (((buffer[offset++] & 0b00111111) << 0) >>> 0)
-      );
+      codePoint = (((buffer[offset++] & 0b00011111) << 6) >>> 0) | (((buffer[offset++] & 0b00111111) << 0) >>> 0);
     } else {
       // 1 byte
       codePoint = buffer[offset++];
     }
 
-    if ((codePoint >= 0 && codePoint <= 0xD7FF) || (codePoint >= 0xE000 && codePoint <= 0xFFFF)) {
+    if ((codePoint >= 0 && codePoint <= 0xd7ff) || (codePoint >= 0xe000 && codePoint <= 0xffff)) {
       // Basic Multilingual Plane
       result.push(String.fromCharCode(codePoint));
-    } else if (codePoint >= 0x010000 && codePoint <= 0x10FFFF) {
+    } else if (codePoint >= 0x010000 && codePoint <= 0x10ffff) {
       // Supplementary Planes
       const uPrime = codePoint - 0x10000;
-      const w1 = 0xD800 + ((uPrime & 0b11111111110000000000) >>> 10);
-      const w2 = 0xDC00 + ((uPrime & 0b00000000001111111111) >>> 0);
+      const w1 = 0xd800 + ((uPrime & 0b11111111110000000000) >>> 10);
+      const w2 = 0xdc00 + ((uPrime & 0b00000000001111111111) >>> 0);
       result.push(String.fromCharCode(w1));
       result.push(String.fromCharCode(w2));
     } else {
       // illegal code point
-      result.push(String.fromCharCode(0xFFFD));
+      result.push(String.fromCharCode(0xfffd));
     }
   }
 

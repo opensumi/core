@@ -1,14 +1,30 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
-import { URI, DisposableCollection, Emitter, CommandService, Deferred, Event, MaybeNull, MarkerManager, IPosition, IRange, Disposable, ThrottledDelayer } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  DisposableCollection,
+  Emitter,
+  CommandService,
+  Deferred,
+  Event,
+  MaybeNull,
+  MarkerManager,
+  IPosition,
+  IRange,
+  Disposable,
+  ThrottledDelayer,
+} from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { OutlineEventService } from './outline-event.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { OutlineTreeService } from './outline-tree.service';
 import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outline-node.define';
 import { OutlineTreeModel } from './outline-model';
-import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import {
+  DocumentSymbolStore,
+  INormalizedDocumentSymbol,
+} from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IOutlineDecorationService } from '../../common';
 import pSeries from 'p-series';
 import styles from '../outline-node.module.less';
@@ -47,7 +63,7 @@ export class OutlineModelService {
   private documentSymbolStore: DocumentSymbolStore;
 
   private _activeTreeModel: OutlineTreeModel;
-  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel, decoration: DecorationsManager }> = new Map();
+  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new Map();
   private _whenInitTreeModelReady: Promise<void>;
   private _whenActiveChangeDeferred: Deferred<void> | null;
 
@@ -75,7 +91,7 @@ export class OutlineModelService {
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<OutlineTreeModel | undefined> = new Emitter();
 
-  private _ignoreFollowCursorUpdateEventTimer: number = 0;
+  private _ignoreFollowCursorUpdateEventTimer = 0;
   private initTreeModelDelayer: ThrottledDelayer<void>;
   private refreshDelayer: ThrottledDelayer<void>;
 
@@ -145,7 +161,7 @@ export class OutlineModelService {
       this._activeTreeModel = treeModelStore!.treeModel;
       this._decorations = treeModelStore!.decoration;
       this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
-    } else if (!!uri) {
+    } else if (uri) {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.outlineTreeService.resolveChildren())[0];
       if (!root) {
@@ -156,23 +172,25 @@ export class OutlineModelService {
       this._activeTreeModel = treeModel;
       // 初始化节点装饰器
       const decoration = this.initDecorations(root);
-      if (!!uri) {
+      if (uri) {
         this._allTreeModels.set(uri?.toString(), {
           treeModel,
           decoration,
         });
       }
-      this.disposableCollection.push(treeModel.onWillUpdate(() => {
-        if (!!this.focusedNode) {
-          // 更新树前更新下选中节点
-          const node = treeModel?.root.getTreeNodeById(this.focusedNode.id);
-          this.activeNodeDecoration(node as OutlineTreeNode, false);
-        } else if (this.selectedNodes.length !== 0) {
-          // 仅处理一下单选情况
-          const node = treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
-          this.selectNodeDecoration(node as OutlineTreeNode, false);
-        }
-      }));
+      this.disposableCollection.push(
+        treeModel.onWillUpdate(() => {
+          if (this.focusedNode) {
+            // 更新树前更新下选中节点
+            const node = treeModel?.root.getTreeNodeById(this.focusedNode.id);
+            this.activeNodeDecoration(node as OutlineTreeNode, false);
+          } else if (this.selectedNodes.length !== 0) {
+            // 仅处理一下单选情况
+            const node = treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
+            this.selectNodeDecoration(node as OutlineTreeNode, false);
+          }
+        }),
+      );
       this.onDidUpdateTreeModelEmitter.fire(treeModel);
     } else {
       this.onDidUpdateTreeModelEmitter.fire(undefined);
@@ -184,52 +202,67 @@ export class OutlineModelService {
 
     await this._whenInitTreeModelReady;
 
-    this.disposableCollection.push(this.markerManager.onMarkerChanged((resources) => {
-      if (this.outlineTreeService.currentUri && resources.find((resource) => resource === this.outlineTreeService.currentUri!.toString())) {
-        this.refresh();
-      }
-    }));
-
-    this.disposableCollection.push(this.outlineEventService.onDidActiveChange(async () => {
-      if (!this._whenActiveChangeDeferred) {
-        this._whenActiveChangeDeferred = new Deferred<void>();
-      }
-      if (!this.initTreeModelDelayer.isTriggered()) {
-        this.initTreeModelDelayer.cancel();
-      }
-      this.initTreeModelDelayer.trigger(async () => {
-        await this._whenInitTreeModelReady;
-        // 初始化时如果存在还未刷新的执行逻辑时，需要进行清理
-        if (!this.refreshDelayer.isTriggered()) {
-          this.refreshDelayer.cancel();
+    this.disposableCollection.push(
+      this.markerManager.onMarkerChanged((resources) => {
+        if (
+          this.outlineTreeService.currentUri &&
+          resources.find((resource) => resource === this.outlineTreeService.currentUri!.toString())
+        ) {
+          this.refresh();
         }
-        const uri = this.editorService.currentEditor?.currentUri;
-        this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(uri);
-        this._whenActiveChangeDeferred?.resolve();
-        this._whenActiveChangeDeferred = null;
-      });
-    }));
+      }),
+    );
 
-    this.disposableCollection.push(this.outlineEventService.onDidSelectionChange(() => {
-      // 选取更改时不需要刷新Tree，仅需要定位选择位置即可
-      if (this.outlineTreeService.followCursor) {
-        // 如果设置了跟随光标，此时查询一下当前焦点节点
-        this.locateSelection(false);
-      }
-    }));
+    this.disposableCollection.push(
+      this.outlineEventService.onDidActiveChange(async () => {
+        if (!this._whenActiveChangeDeferred) {
+          this._whenActiveChangeDeferred = new Deferred<void>();
+        }
+        if (!this.initTreeModelDelayer.isTriggered()) {
+          this.initTreeModelDelayer.cancel();
+        }
+        this.initTreeModelDelayer.trigger(async () => {
+          await this._whenInitTreeModelReady;
+          // 初始化时如果存在还未刷新的执行逻辑时，需要进行清理
+          if (!this.refreshDelayer.isTriggered()) {
+            this.refreshDelayer.cancel();
+          }
+          const uri = this.editorService.currentEditor?.currentUri;
+          this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(uri);
+          this._whenActiveChangeDeferred?.resolve();
+          this._whenActiveChangeDeferred = null;
+        });
+      }),
+    );
 
-    this.disposableCollection.push(this.outlineEventService.onDidChange((url: URI | null) => {
-      this.outlineTreeService.currentUri = this.editorService.currentEditor?.currentUri;
-      this.refresh();
-    }));
+    this.disposableCollection.push(
+      this.outlineEventService.onDidSelectionChange(() => {
+        // 选取更改时不需要刷新Tree，仅需要定位选择位置即可
+        if (this.outlineTreeService.followCursor) {
+          // 如果设置了跟随光标，此时查询一下当前焦点节点
+          this.locateSelection(false);
+        }
+      }),
+    );
 
-    this.disposableCollection.push(this.outlineTreeService.onDidChange(() => {
-      this.refresh();
-    }));
+    this.disposableCollection.push(
+      this.outlineEventService.onDidChange((url: URI | null) => {
+        this.outlineTreeService.currentUri = this.editorService.currentEditor?.currentUri;
+        this.refresh();
+      }),
+    );
 
-    this.disposableCollection.push(Disposable.create(() => {
-      this._allTreeModels.clear();
-    }));
+    this.disposableCollection.push(
+      this.outlineTreeService.onDidChange(() => {
+        this.refresh();
+      }),
+    );
+
+    this.disposableCollection.push(
+      Disposable.create(() => {
+        this._allTreeModels.clear();
+      }),
+    );
   }
 
   initDecorations(root) {
@@ -240,15 +273,18 @@ export class OutlineModelService {
     return this._decorations;
   }
 
-  private locateSelection(quiet: boolean = true) {
+  private locateSelection(quiet = true) {
     if (!this.outlineTreeService.currentUri) {
       return;
     }
     const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri!);
     if (symbols) {
-      const activeSymbols = this.findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition());
+      const activeSymbols = this.findCurrentDocumentSymbol(
+        symbols,
+        this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition(),
+      );
       const node = this.outlineTreeService.getTreeNodeBySymbol(activeSymbols[activeSymbols.length - 1]);
-      if (!!node) {
+      if (node) {
         if (this._ignoreFollowCursorUpdateEventTimer) {
           this._ignoreFollowCursorUpdateEventTimer--;
           return;
@@ -260,7 +296,10 @@ export class OutlineModelService {
     }
   }
 
-  private findCurrentDocumentSymbol(documentSymbols: INormalizedDocumentSymbol[], position: MaybeNull<IPosition>): INormalizedDocumentSymbol[] {
+  private findCurrentDocumentSymbol(
+    documentSymbols: INormalizedDocumentSymbol[],
+    position: MaybeNull<IPosition>,
+  ): INormalizedDocumentSymbol[] {
     const result: INormalizedDocumentSymbol[] = [];
     if (!position) {
       return result;
@@ -302,10 +341,10 @@ export class OutlineModelService {
       this.selectedDecoration.removeTarget(file);
     });
     this._selectedNodes = [];
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch: boolean = true) => {
+  activeNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch = true) => {
     if (this.preContextMenuFocusedNode) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
@@ -332,10 +371,10 @@ export class OutlineModelService {
       // 通知视图更新
       dispatch && this.treeModel?.dispatchChange();
     }
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch: boolean = true) => {
+  selectNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch = true) => {
     if (this.preContextMenuFocusedNode) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
     }
@@ -354,23 +393,26 @@ export class OutlineModelService {
       // 通知视图更新
       dispatch && this.treeModel?.dispatchChange();
     }
-  }
+  };
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, removePreFocusedDecoration: boolean = false) => {
+  activeNodeFocusedDecoration = (
+    target: OutlineCompositeTreeNode | OutlineTreeNode,
+    removePreFocusedDecoration = false,
+  ) => {
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
         // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
         if (this.preContextMenuFocusedNode) {
           this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
           this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-        } else if (!!this.focusedNode) {
+        } else if (this.focusedNode) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedNode);
         }
         this.preContextMenuFocusedNode = target;
-      } else if (!!this.focusedNode) {
+      } else if (this.focusedNode) {
         this.preContextMenuFocusedNode = null;
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
@@ -383,7 +425,7 @@ export class OutlineModelService {
     }
     // 通知视图更新
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 选中当前指定节点，添加装饰器属性
   activeNodeSelectedDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode) => {
@@ -399,7 +441,7 @@ export class OutlineModelService {
     this.selectedDecoration.addTarget(target);
     // 通知视图更新
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -408,7 +450,7 @@ export class OutlineModelService {
       this.treeModel?.dispatchChange();
     }
     this._focusedNode = undefined;
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -425,7 +467,7 @@ export class OutlineModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleItemClick = (item: OutlineCompositeTreeNode | OutlineTreeNode, type: TreeNodeType) => {
     // 单选操作默认先更新选中状态
@@ -434,7 +476,7 @@ export class OutlineModelService {
     this.revealRange(item.raw);
 
     this._ignoreFollowCursorUpdateEventTimer++;
-  }
+  };
 
   toggleDirectory = async (item: OutlineCompositeTreeNode) => {
     if (item.expanded) {
@@ -442,12 +484,14 @@ export class OutlineModelService {
     } else {
       this.outlineTreeHandle.expandNode(item);
     }
-  }
+  };
 
   protected revealRange(symbol: INormalizedDocumentSymbol) {
     const currentEditor = this.editorService.currentEditorGroup.codeEditor;
     currentEditor.monacoEditor.revealLineInCenter(symbol.range.startLineNumber);
-    currentEditor.monacoEditor.setPosition(new monaco.Position(symbol.range.startLineNumber, symbol.range.endLineNumber));
+    currentEditor.monacoEditor.setPosition(
+      new monaco.Position(symbol.range.startLineNumber, symbol.range.endLineNumber),
+    );
   }
 
   /**
@@ -474,7 +518,11 @@ export class OutlineModelService {
     return this.refreshDelayer.trigger(async () => {
       this.refreshDeferred = new Deferred<void>();
       this.outlineTreeService.currentUri = this.editorService?.currentEditor?.currentUri;
-      if (!!node.currentUri && !!this.outlineTreeService.currentUri && this.outlineTreeService.currentUri.isEqual(node.currentUri)) {
+      if (
+        !!node.currentUri &&
+        !!this.outlineTreeService.currentUri &&
+        this.outlineTreeService.currentUri.isEqual(node.currentUri)
+      ) {
         // 刷新前需要更新诊断信息数据
         this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri!);
         // 因为Outline模块的节点是自展开的，不需要遍历
@@ -504,17 +552,19 @@ export class OutlineModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
+    promise = pSeries(
+      roots.map((path) => async () => {
+        const watcher = this.treeModel.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+        return null;
+      }),
+    );
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
-  }
+  };
 
   public location = async (node: OutlineTreeNode) => {
     await this.refreshDeferred?.promise;
@@ -524,16 +574,15 @@ export class OutlineModelService {
     if (!this.outlineTreeHandle) {
       return;
     }
-    node = await this.outlineTreeHandle.ensureVisible(node, 'smart') as OutlineTreeNode;
-  }
+    node = (await this.outlineTreeHandle.ensureVisible(node, 'smart')) as OutlineTreeNode;
+  };
 
   public collapseAll = async () => {
     await this.refreshDeferred?.promise;
     await this.treeModel?.root.collapsedAll();
-  }
+  };
 
   dispose() {
     this.disposableCollection.dispose();
   }
-
 }

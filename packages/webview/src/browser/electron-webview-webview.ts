@@ -1,15 +1,21 @@
 import { IWebview, IWebviewContentOptions } from './types';
-import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  DomListener,
+  getDebugLogger,
+  IDisposable,
+  AppConfig,
+  electronEnv,
+} from '@opensumi/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
 import { Injectable, Autowired } from '@opensumi/di';
 import { WebviewScheme } from '../common';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements IWebview {
-
   private webview: Electron.WebviewTag;
 
-  private _needReload: boolean = false;
+  private _needReload = false;
 
   private _iframeDisposer: Disposable | null = new Disposable();
 
@@ -58,30 +64,34 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
 
   protected _sendToWebview(channel: string, data: any) {
     if (!this._isListening) {
-      return ;
+      return;
     }
-    this._ready.then(() => {
-      if (!this.webview) {
-        return;
-      }
-      this.webview.send(channel, data);
-    }).catch((err) => {
-      getDebugLogger().error(err);
-    });
+    this._ready
+      .then(() => {
+        if (!this.webview) {
+          return;
+        }
+        this.webview.send(channel, data);
+      })
+      .catch((err) => {
+        getDebugLogger().error(err);
+      });
   }
 
   protected _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable {
-    return this._iframeDisposer!.addDispose(new DomListener(this.webview, 'ipc-message', (e) => {
-      if (!this.webview) {
-        return;
-      }
-      if (e.channel === channel) {
-        if (!this._isListening) {
-          return ;
+    return this._iframeDisposer!.addDispose(
+      new DomListener(this.webview, 'ipc-message', (e) => {
+        if (!this.webview) {
+          return;
         }
-        listener(e.args[0]);
-      }
-    }));
+        if (e.channel === channel) {
+          if (!this._isListening) {
+            return;
+          }
+          listener(e.args[0]);
+        }
+      }),
+    );
   }
 
   appendTo(container: HTMLElement) {
@@ -123,7 +133,6 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
       this._iframeDisposer.dispose();
     }
   }
-
 }
 // tslint:disable-next-line: no-unused-variable
 const WebviewHTMLStr = `<!DOCTYPE html>

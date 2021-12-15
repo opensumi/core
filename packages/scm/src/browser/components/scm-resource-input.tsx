@@ -6,12 +6,7 @@ import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
-import {
-  ISCMRepository,
-  InputValidationType,
-  ISCMProvider,
-  scmContainerId,
-} from '../../common';
+import { ISCMRepository, InputValidationType, ISCMProvider, scmContainerId } from '../../common';
 import { ViewModelContext } from '../scm-model';
 
 import styles from './scm-resource-input.module.less';
@@ -67,8 +62,7 @@ export const SCMResourceInput: React.FC<{
       return;
     }
 
-    const { id: commandId, arguments: args = [] } =
-      repository.provider.acceptInputCommand;
+    const { id: commandId, arguments: args = [] } = repository.provider.acceptInputCommand;
     if (!commandId) {
       return;
     }
@@ -78,10 +72,7 @@ export const SCMResourceInput: React.FC<{
     });
   }, [repository]);
 
-  const { onKeyDown, onKeyUp } = useHotKey(
-    [isOSX ? 'command' : 'ctrl', 'enter'],
-    handleCommit,
-  );
+  const { onKeyDown, onKeyUp } = useHotKey([isOSX ? 'command' : 'ctrl', 'enter'], handleCommit);
 
   const inputMenu = React.useMemo(() => {
     const menus = viewModel.menus.getRepositoryMenus(repository.provider);
@@ -107,10 +98,7 @@ export const SCMResourceInput: React.FC<{
           context={[repository.provider, commitMsg]}
           type='button'
           // limit show one nav menu only
-          regroup={(nav, more) => [
-            [nav[0]].filter(Boolean),
-            [...nav.slice(1), ...more],
-          ]}
+          regroup={(nav, more) => [[nav[0]].filter(Boolean), [...nav.slice(1), ...more]]}
           menus={inputMenu}
         />
       )}

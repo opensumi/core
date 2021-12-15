@@ -1,7 +1,29 @@
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  IRef,
+  ReferenceManager,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
+  WithEventBus,
+  OnEvent,
+  StorageProvider,
+  IStorage,
+  STORAGE_SCHEMA,
+  ILogger,
+  PreferenceService,
+  ReadyEvent,
+  memoize,
+} from '@opensumi/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
+import {
+  IEditorDocumentModel,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+  EditorDocumentModelOptionExternalUpdatedEvent,
+  EditorDocumentModelCreationEvent,
+  IPreferredModelOptions,
+} from './types';
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@opensumi/ide-core-common/lib/map';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -13,7 +35,6 @@ export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
 
 @Injectable()
 export class EditorDocumentModelServiceImpl extends WithEventBus implements IEditorDocumentModelService {
-
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
 
@@ -60,23 +81,27 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       this._delete(key);
     });
     this._modelReferenceManager.onInstanceCreated((model) => {
-      this.eventBus.fire(new EditorDocumentModelCreationEvent({
-        uri: model.uri,
-        languageId: model.languageId,
-        eol: model.eol,
-        encoding: model.encoding,
-        content: model.getText(),
-        readonly: model.readonly,
-        versionId: model.getMonacoModel().getVersionId(),
-      }));
+      this.eventBus.fire(
+        new EditorDocumentModelCreationEvent({
+          uri: model.uri,
+          languageId: model.languageId,
+          eol: model.eol,
+          encoding: model.encoding,
+          content: model.getText(),
+          readonly: model.readonly,
+          versionId: model.getMonacoModel().getVersionId(),
+        }),
+      );
     });
-    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'editor.detectIndentation') {
-        this.editorDocModels.forEach((m) => {
-          m.updateOptions({});
-        });
-      }
-    }));
+    this.addDispose(
+      this.preferenceService.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'editor.detectIndentation') {
+          this.editorDocModels.forEach((m) => {
+            m.updateOptions({});
+          });
+        }
+      }),
+    );
   }
 
   private _delete(uri: string | URI): void {
@@ -210,13 +235,16 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   private createModel(uri: string, encoding?: string): Promise<EditorDocumentModel> {
     // 防止异步重复调用
     if (!this.creatingEditorModels.has(uri)) {
-      const promise = this.onceReady(() => this.doCreateModel(uri, encoding)).then((model) => {
-        this.creatingEditorModels.delete(uri);
-        return model;
-      }, (e) => {
-        this.creatingEditorModels.delete(uri);
-        throw e;
-      });
+      const promise = this.onceReady(() => this.doCreateModel(uri, encoding)).then(
+        (model) => {
+          this.creatingEditorModels.delete(uri);
+          return model;
+        },
+        (e) => {
+          this.creatingEditorModels.delete(uri);
+          throw e;
+        },
+      );
       this.creatingEditorModels.set(uri, promise);
     }
     return this.creatingEditorModels.get(uri)!;
@@ -240,20 +268,18 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
     const preferredLanguage = preferedOptions && preferedOptions.languageId;
 
-    const [
-      content,
-      readonly,
-      languageId,
-      eol,
-      alwaysDirty,
-      closeAutoSave,
-    ] = await Promise.all([
+    const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave] = await Promise.all([
       (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
-      (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
-      (async () => preferredLanguage ? preferredLanguage : (provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined))(),
+      (async () => (provider.isReadonly ? provider.isReadonly(uri) : undefined))(),
+      (async () =>
+        preferredLanguage
+          ? preferredLanguage
+          : provider.preferLanguageForUri
+          ? provider.preferLanguageForUri(uri)
+          : undefined)(),
       (async () => preferedOptions?.eol || (provider.provideEOL ? provider.provideEOL(uri) : undefined))(),
-      (async () => provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false)(),
-      (async () => provider.closeAutoSave ? provider.closeAutoSave(uri) : false)(),
+      (async () => (provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false))(),
+      (async () => (provider.closeAutoSave ? provider.closeAutoSave(uri) : false))(),
     ] as const);
 
     // 优先使用 preferred encoding，然后用 detected encoding
@@ -263,21 +289,33 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
     const savable = !!provider.saveDocumentModel;
 
-    const model = this.injector.get(EditorDocumentModel, [uri, content, {
-      readonly,
-      languageId,
-      savable,
-      eol,
-      encoding,
-      alwaysDirty,
-      closeAutoSave,
-    }]);
+    const model = this.injector.get(EditorDocumentModel, [
+      uri,
+      content,
+      {
+        readonly,
+        languageId,
+        savable,
+        eol,
+        encoding,
+        alwaysDirty,
+        closeAutoSave,
+      },
+    ]);
 
     this.editorDocModels.set(uri.toString(), model);
     return model;
   }
 
-  async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean, eol?: EOL): Promise<IEditorDocumentModelSaveResult> {
+  async saveEditorDocumentModel(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding?: string,
+    ignoreDiff?: boolean,
+    eol?: EOL,
+  ): Promise<IEditorDocumentModelSaveResult> {
     const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {

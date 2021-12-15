@@ -7,7 +7,10 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
-import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../src/browser/doc-model/types';
+import {
+  EditorDocumentModelOptionChangedEvent,
+  EditorDocumentModelContentChangedEvent,
+} from '../../../src/browser/doc-model/types';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -19,12 +22,10 @@ describe('EditorDocumentModel', () => {
 
   beforeEach(async (done) => {
     injector = createBrowserInjector([]);
-    injector.addProviders(
-      {
-        token: IDocPersistentCacheProvider,
-        useClass: EmptyDocCacheImpl,
-      },
-    );
+    injector.addProviders({
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+    });
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
     (global as any).monaco = createMockedMonaco() as any;
@@ -68,7 +69,7 @@ describe('EditorDocumentModel', () => {
        * 会导致 isWindow/isLinux/isMacintosh 全部为 false
        * 因为只会在单测的情况下出现判断错误，所以这里沿用 VS Code 的 platform 判断逻辑，保证表现一致
        */
-      expect(docModel.eol).toBe((isMacintosh || isLinux) ? EOL.LF : EOL.CRLF);
+      expect(docModel.eol).toBe(isMacintosh || isLinux ? EOL.LF : EOL.CRLF);
       // Monaco 20 开始，没有指定 languageId 会 fallback 到 plaintext
       expect(docModel.languageId).toBe('plaintext');
 
@@ -142,11 +143,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'getCache').mockReturnValue({
         path: uri.path.toString(),
         startMD5: hashCalculateService.calculate(content),
-        changeMatrix: [
-          [
-            ['a', 0, 0, 1, 0],
-          ],
-        ],
+        changeMatrix: [[['a', 0, 0, 1, 0]]],
       });
 
       const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
@@ -164,11 +161,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'getCache').mockResolvedValue({
         path: uri.path.toString(),
         startMD5: hashCalculateService.calculate(content),
-        changeMatrix: [
-          [
-            ['a', 0, 0, 1, 0],
-          ],
-        ],
+        changeMatrix: [[['a', 0, 0, 1, 0]]],
       });
 
       const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);

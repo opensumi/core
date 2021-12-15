@@ -1,8 +1,32 @@
-
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
-import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME, IFileSystemProviderRegistrationEvent, IFileSystemProviderCapabilitiesChangeEvent } from '../common';
+import {
+  FileStat,
+  FileDeleteOptions,
+  FileMoveOptions,
+  IBrowserFileSystemRegistry,
+  IFileSystemProvider,
+  FileSystemProvider,
+  FileSystemError,
+  FileAccess,
+  IDiskFileProvider,
+  containsExtraFileMethod,
+  FILE_SCHEME,
+  IFileSystemProviderRegistrationEvent,
+  IFileSystemProviderCapabilitiesChangeEvent,
+} from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities, Deferred } from '@opensumi/ide-core-common';
+import {
+  URI,
+  Emitter,
+  Event,
+  isElectronRenderer,
+  IEventBus,
+  FileUri,
+  DisposableCollection,
+  IDisposable,
+  FileSystemProviderCapabilities,
+  Deferred,
+} from '@opensumi/ide-core-common';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { Uri } from '@opensumi/ide-core-common';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
@@ -25,7 +49,6 @@ import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterat
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
-
   public readonly providers = new Map<string, IFileSystemProvider>();
   registerFileSystemProvider(provider: IFileSystemProvider) {
     const scheme = provider.scheme;
@@ -36,7 +59,6 @@ export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry
       },
     };
   }
-
 }
 
 @Injectable()
@@ -55,12 +77,13 @@ export class FileServiceClient implements IFileServiceClient {
   protected readonly _onDidChangeFileSystemProviderRegistrations = new Emitter<IFileSystemProviderRegistrationEvent>();
   readonly onDidChangeFileSystemProviderRegistrations = this._onDidChangeFileSystemProviderRegistrations.event;
 
-  private readonly _onDidChangeFileSystemProviderCapabilities = new Emitter<IFileSystemProviderCapabilitiesChangeEvent>();
+  private readonly _onDidChangeFileSystemProviderCapabilities =
+    new Emitter<IFileSystemProviderCapabilitiesChangeEvent>();
   readonly onDidChangeFileSystemProviderCapabilities = this._onDidChangeFileSystemProviderCapabilities.event;
 
   protected filesExcludesMatcherList: ParsedPattern[] = [];
 
-  protected watcherId: number = 0;
+  protected watcherId = 0;
   protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
@@ -138,7 +161,7 @@ export class FileServiceClient implements IFileServiceClient {
     return { content: buffer };
   }
 
-  async getFileStat(uri: string, withChildren: boolean = true) {
+  async getFileStat(uri: string, withChildren = true) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     try {
@@ -168,12 +191,20 @@ export class FileServiceClient implements IFileServiceClient {
     if (!(await this.isInSync(file, stat))) {
       throw this.createOutOfSyncError(file, stat);
     }
-    await provider.writeFile(_uri.codeUri, typeof content === 'string' ? BinaryBuffer.fromString(content).buffer : content, { create: false, overwrite: true, encoding: options?.encoding });
+    await provider.writeFile(
+      _uri.codeUri,
+      typeof content === 'string' ? BinaryBuffer.fromString(content).buffer : content,
+      { create: false, overwrite: true, encoding: options?.encoding },
+    );
     const newStat = await provider.stat(_uri.codeUri);
     return newStat;
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
+  async updateContent(
+    file: FileStat,
+    contentChanges: TextDocumentContentChangeEvent[],
+    options?: FileSetContentOptions,
+  ): Promise<FileStat> {
     const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -189,9 +220,13 @@ export class FileServiceClient implements IFileServiceClient {
     if (contentChanges.length === 0) {
       return stat;
     }
-    const content = await provider.readFile(_uri.codeUri) as Uint8Array;
+    const content = (await provider.readFile(_uri.codeUri)) as Uint8Array;
     const newContent = this.applyContentChanges(BinaryBuffer.wrap(content).toString(options?.encoding), contentChanges);
-    await provider.writeFile(_uri.codeUri, BinaryBuffer.fromString(newContent).buffer, { create: false, overwrite: true, encoding: options?.encoding });
+    await provider.writeFile(_uri.codeUri, BinaryBuffer.fromString(newContent).buffer, {
+      create: false,
+      overwrite: true,
+      encoding: options?.encoding,
+    });
     const newStat = await provider.stat(_uri.codeUri);
     if (!newStat) {
       throw FileSystemError.FileNotFound(_uri.codeUri.toString(), 'File not found.');
@@ -206,10 +241,10 @@ export class FileServiceClient implements IFileServiceClient {
     const content = BinaryBuffer.fromString(options?.content || '').buffer;
     let newStat: any = await provider.writeFile(_uri.codeUri, content, {
       create: true,
-      overwrite: options && options.overwrite || false,
+      overwrite: (options && options.overwrite) || false,
       encoding: options?.encoding,
     });
-    newStat = newStat || await provider.stat(_uri.codeUri);
+    newStat = newStat || (await provider.stat(_uri.codeUri));
     return newStat;
   }
 
@@ -231,7 +266,9 @@ export class FileServiceClient implements IFileServiceClient {
     const _targetUri = this.convertUri(targetUri);
 
     const provider = await this.getProvider(_sourceUri.scheme);
-    const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite) });
+    const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, {
+      overwrite: !!(options && options.overwrite),
+    });
 
     if (result) {
       return result;
@@ -251,12 +288,9 @@ export class FileServiceClient implements IFileServiceClient {
       throw this.getErrorProvideNotSupport(_sourceUri.scheme, 'copy');
     }
 
-    const result = await provider.copy(
-      _sourceUri.codeUri,
-      _targetUri.codeUri,
-      {
-        overwrite: !!overwrite,
-      });
+    const result = await provider.copy(_sourceUri.codeUri, _targetUri.codeUri, {
+      overwrite: !!overwrite,
+    });
 
     if (result) {
       return result;
@@ -274,12 +308,13 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   fireFilesChange(event: DidFilesChangedParams): void {
-    const changes: FileChange[] = event.changes.map((change) => {
-      return {
-        uri: change.uri,
-        type: change.type,
-      } as FileChange;
-    });
+    const changes: FileChange[] = event.changes.map(
+      (change) =>
+        ({
+          uri: change.uri,
+          type: change.type,
+        } as FileChange),
+    );
     this._onFilesChanged.fire(changes);
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
@@ -299,10 +334,7 @@ export class FileServiceClient implements IFileServiceClient {
       dispose: () => provider.unwatch && provider.unwatch(watcherId),
     });
     schemaWatchIdList.push(id);
-    this.watcherWithSchemaMap.set(
-      _uri.scheme,
-      schemaWatchIdList,
-    );
+    this.watcherWithSchemaMap.set(_uri.scheme, schemaWatchIdList);
     return new FileSystemWatcher({
       fileServiceClient: this,
       watchId: id,
@@ -366,7 +398,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   // capabilities
-  listCapabilities(): Iterable<{ scheme: string, capabilities: FileSystemProviderCapabilities; }> {
+  listCapabilities(): Iterable<{ scheme: string; capabilities: FileSystemProviderCapabilities }> {
     return Iterable.map(this.fsProviders, ([scheme, provider]) => ({ scheme, capabilities: provider.capabilities }));
   }
   // capabilities end
@@ -390,9 +422,13 @@ export class FileServiceClient implements IFileServiceClient {
     });
 
     if (provider.onDidChangeFile) {
-      disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({changes: e})));
+      disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({ changes: e })));
     }
-    this.toDisposable.push(provider.onDidChangeCapabilities(() => this._onDidChangeFileSystemProviderCapabilities.fire({ provider, scheme })));
+    this.toDisposable.push(
+      provider.onDidChangeCapabilities(() =>
+        this._onDidChangeFileSystemProviderCapabilities.fire({ provider, scheme }),
+      ),
+    );
     disposables.push({
       dispose: () => {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
@@ -473,12 +509,15 @@ export class FileServiceClient implements IFileServiceClient {
     });
   }
 
-  private async getProvider<T extends string>(scheme: T): Promise<T extends 'file' ? IDiskFileProvider : FileSystemProvider>;
+  private async getProvider<T extends string>(
+    scheme: T,
+  ): Promise<T extends 'file' ? IDiskFileProvider : FileSystemProvider>;
   private async getProvider(scheme: string): Promise<IDiskFileProvider | FileSystemProvider> {
-
     if (this._providerChanged.has(scheme)) {
       // 让相关插件启动完成 (3秒超时), 此处防止每次都发，仅在相关scheme被影响时才尝试激活插件
-      await this.eventBus.fireAndAwait(new ExtensionActivateEvent({ topic: 'onFileSystem', data: scheme }), {timeout: 3000});
+      await this.eventBus.fireAndAwait(new ExtensionActivateEvent({ topic: 'onFileSystem', data: scheme }), {
+        timeout: 3000,
+      });
       this._providerChanged.delete(scheme);
     }
 
@@ -505,12 +544,10 @@ export class FileServiceClient implements IFileServiceClient {
   private isExclude(uriString: string) {
     const uri = new URI(uriString);
 
-    return this.filesExcludesMatcherList.some((matcher) => {
-      return matcher(uri.path.toString());
-    });
+    return this.filesExcludesMatcherList.some((matcher) => matcher(uri.path.toString()));
   }
 
-  private filterStat(stat?: FileStat, withChildren: boolean = true) {
+  private filterStat(stat?: FileStat, withChildren = true) {
     if (!stat) {
       return;
     }
@@ -572,27 +609,18 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   protected async doGetEncoding(option?: { encoding?: string }): Promise<string> {
-    return option && typeof (option.encoding) !== 'undefined'
-      ? option.encoding
-      : this.options.encoding;
+    return option && typeof option.encoding !== 'undefined' ? option.encoding : this.options.encoding;
   }
 
   protected async doGetOverwrite(option?: { overwrite?: boolean }): Promise<boolean | undefined> {
-    return option && typeof (option.overwrite) !== 'undefined'
-      ? option.overwrite
-      : this.options.overwrite;
+    return option && typeof option.overwrite !== 'undefined' ? option.overwrite : this.options.overwrite;
   }
 
   protected async doGetRecursive(option?: { recursive?: boolean }): Promise<boolean> {
-    return option && typeof (option.recursive) !== 'undefined'
-      ? option.recursive
-      : this.options.recursive;
+    return option && typeof option.recursive !== 'undefined' ? option.recursive : this.options.recursive;
   }
 
   protected async doGetMoveToTrash(option?: { moveToTrash?: boolean }): Promise<boolean> {
-    return option && typeof (option.moveToTrash) !== 'undefined'
-      ? option.moveToTrash
-      : this.options.moveToTrash;
+    return option && typeof option.moveToTrash !== 'undefined' ? option.moveToTrash : this.options.moveToTrash;
   }
-
 }

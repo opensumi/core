@@ -2,7 +2,14 @@ import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@o
 import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
+import {
+  DebugBreakpoint,
+  DebugExceptionBreakpoint,
+  isDebugBreakpoint,
+  isDebugExceptionBreakpoint,
+  BreakpointManager,
+  DebugDecorator,
+} from '../../breakpoint';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@opensumi/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
@@ -15,7 +22,6 @@ import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
-
   @Autowired(DebugViewModel)
   protected readonly model: DebugViewModel;
 
@@ -87,7 +93,7 @@ export class DebugBreakpointsService extends WithEventBus {
     });
   }
 
-  public getBreakpointDecoration(breakpoint: DebugBreakpoint, isDebugMode: boolean = false, enabled: boolean = true) {
+  public getBreakpointDecoration(breakpoint: DebugBreakpoint, isDebugMode = false, enabled = true) {
     return new DebugDecorator().getDecoration(breakpoint, isDebugMode, enabled);
   }
 
@@ -158,7 +164,10 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @action
   private updateBreakpoints() {
-    this.nodes = this.extractNodes([...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints()]);
+    this.nodes = this.extractNodes([
+      ...this.breakpoints.getExceptionBreakpoints(),
+      ...this.breakpoints.getBreakpoints(),
+    ]);
   }
 
   removeAllBreakpoints() {
@@ -193,7 +202,9 @@ export class DebugBreakpointsService extends WithEventBus {
       acceptSuggestionOnEnter: 'on',
       renderIndentGuides: false,
     });
-    const docModel = await this.documentService.createModelReference(new URI('debug/breakpoint/expression/input').withScheme(Schemas.walkThroughSnippet));
+    const docModel = await this.documentService.createModelReference(
+      new URI('debug/breakpoint/expression/input').withScheme(Schemas.walkThroughSnippet),
+    );
 
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });

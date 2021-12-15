@@ -111,9 +111,7 @@ export interface ModalFuncProps {
   maskTransitionName?: string;
 }
 
-export type ModalFunc = (
-  props: ModalFuncProps,
-) => {
+export type ModalFunc = (props: ModalFuncProps) => {
   destroy: () => void;
   update: (newConfig: ModalFuncProps) => void;
 };
@@ -163,14 +161,14 @@ export default class Modal extends React.Component<ModalProps, {}> {
     if (onCancel) {
       onCancel(e);
     }
-  }
+  };
 
   handleOk = (e: React.MouseEvent<HTMLButtonElement>) => {
     const { onOk } = this.props;
     if (onOk) {
       onOk(e);
     }
-  }
+  };
 
   renderFooter = (locale: ModalLocale) => {
     const { okText, okType, cancelText, confirmLoading } = this.props;
@@ -179,17 +177,12 @@ export default class Modal extends React.Component<ModalProps, {}> {
         <Button onClick={this.handleCancel} {...this.props.cancelButtonProps}>
           {cancelText || locale.cancelText}
         </Button>
-        <Button
-          type={okType}
-          loading={confirmLoading}
-          onClick={this.handleOk}
-          {...this.props.okButtonProps}
-        >
+        <Button type={okType} loading={confirmLoading} onClick={this.handleOk} {...this.props.okButtonProps}>
           {okText || locale.okText}
         </Button>
       </div>
     );
-  }
+  };
 
   renderModal = () => {
     const {
@@ -225,7 +218,7 @@ export default class Modal extends React.Component<ModalProps, {}> {
         closeIcon={closeIconToRender}
       />
     );
-  }
+  };
 
   render() {
     return this.renderModal();

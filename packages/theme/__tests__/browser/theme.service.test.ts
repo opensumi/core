@@ -3,8 +3,16 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IThemeService } from '../../';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@opensumi/ide-core-browser/__mocks__/preference';
+import {
+  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+  ILoggerManagerClient,
+  URI,
+} from '@opensumi/ide-core-browser';
+import {
+  MockPreferenceSchemaProvider,
+  MockPreferenceSettingsService,
+} from '@opensumi/ide-core-browser/__mocks__/preference';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { Injectable } from '@opensumi/di';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
@@ -139,23 +147,33 @@ describe('color theme service test', () => {
   });
 
   it('should be able to register json theme', () => {
-    service.registerThemes([{
-      id: 'test-theme',
-      label: 'Dark Default Colors',
-      uiTheme: 'vs',
-      path: './test-relativa-path/theme.json',
-    }], new URI('file://base-ext-path'));
+    service.registerThemes(
+      [
+        {
+          id: 'test-theme',
+          label: 'Dark Default Colors',
+          uiTheme: 'vs',
+          path: './test-relativa-path/theme.json',
+        },
+      ],
+      new URI('file://base-ext-path'),
+    );
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(1);
   });
 
   it('should be able to register textmate theme', () => {
-    service.registerThemes([{
-      id: 'test-theme-plist',
-      label: 'Dracula',
-      uiTheme: 'vs',
-      path: './test-relativa-path/theme.plist',
-    }], new URI('file://base-ext-path'));
+    service.registerThemes(
+      [
+        {
+          id: 'test-theme-plist',
+          label: 'Dracula',
+          uiTheme: 'vs',
+          path: './test-relativa-path/theme.plist',
+        },
+      ],
+      new URI('file://base-ext-path'),
+    );
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(2);
   });
@@ -225,11 +243,7 @@ describe('color theme service test', () => {
     expect(currentTheme).toBeDefined();
     expect(currentTheme.themeData['semanticHighlighting']).toBeTruthy();
 
-    const tokenStyle = currentTheme.themeData['getTokenStyle'](
-      'comment',
-      [],
-      'java',
-    );
+    const tokenStyle = currentTheme.themeData['getTokenStyle']('comment', [], 'java');
     expect(tokenStyle).toBeDefined();
     expect(tokenStyle.foreground).toBeInstanceOf(Color);
     expect(Color.Format.CSS.formatHex(tokenStyle.foreground)).toBe('#ff004f');

@@ -101,7 +101,11 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
   }
 
   // tslint:disable-next-line:no-any
-  private withAdapter<A, R>(handle: number, constructor: ConstructorOf<A>, callback: (adapter: A) => Promise<R>): Promise<R> {
+  private withAdapter<A, R>(
+    handle: number,
+    constructor: ConstructorOf<A>,
+    callback: (adapter: A) => Promise<R>,
+  ): Promise<R> {
     const adapter = this.adaptersMap.get(handle);
     if (!(adapter instanceof constructor)) {
       return Promise.reject(new Error('no adapter found'));
@@ -148,7 +152,12 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.createDisposable(callId);
   }
 
-  $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
+  $provideHover(
+    handle: number,
+    resource: any,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
   }
 
@@ -187,8 +196,15 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.createDisposable(callId);
   }
 
-  $provideDefinition(handle: number, resource: Uri, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
-    return this.withAdapter(handle, DefinitionAdapter, (adapter) => adapter.provideDefinition(resource, position, token));
+  $provideDefinition(
+    handle: number,
+    resource: Uri,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, DefinitionAdapter, (adapter) =>
+      adapter.provideDefinition(resource, position, token),
+    );
   }
 
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void {
@@ -203,7 +219,10 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     this.disposables.set(handle, disposable);
   }
 
-  protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
+  protected createDefinitionProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.DefinitionProvider {
     return {
       provideDefinition: async (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
@@ -241,8 +260,16 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return this.createDisposable(callId);
   }
 
-  $provideReferences(handle: number, resource: Uri, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined> {
-    return this.withAdapter(handle, ReferenceAdapter, (adapter) => adapter.provideReferences(resource, position, context, token));
+  $provideReferences(
+    handle: number,
+    resource: Uri,
+    position: Position,
+    context: ReferenceContext,
+    token: CancellationToken,
+  ): Promise<Location[] | undefined> {
+    return this.withAdapter(handle, ReferenceAdapter, (adapter) =>
+      adapter.provideReferences(resource, position, context, token),
+    );
   }
 
   $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void {
@@ -257,7 +284,10 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     this.disposables.set(handle, disposable);
   }
 
-  protected createReferenceProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ReferenceProvider {
+  protected createReferenceProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.ReferenceProvider {
     return {
       provideReferences: (model, position, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {

@@ -44,7 +44,7 @@ describe('Debug Model', () => {
       onDidChangeModel: () => Disposable.create(() => {}),
       onDidChangeModelContent: () => Disposable.create(() => {}),
       onKeyDown: jest.fn(() => Disposable.create(() => {})),
-      getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
+      getPosition: jest.fn(() => ({ lineNumber: 2, column: 1 })),
       deltaDecorations: jest.fn(() => []),
       focus: jest.fn(),
       dispose: () => {},
@@ -55,15 +55,15 @@ describe('Debug Model', () => {
       delBreakpoint: jest.fn(() => Disposable.create(() => {})),
       addBreakpoint: jest.fn(() => Disposable.create(() => {})),
       updateBreakpoint: jest.fn(() => Disposable.create(() => {})),
-      getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri, {line: 2})),
-      getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri, {line: 2})]),
+      getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri, { line: 2 })),
+      getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri, { line: 2 })]),
     };
 
     mockBreakpointWidget = {
       dispose: () => {},
       show: jest.fn(),
       hide: jest.fn(),
-      position: {lineNumber: 1, column: 2},
+      position: { lineNumber: 1, column: 2 },
       values: {
         condition: '',
         hitCondition: '',
@@ -173,11 +173,11 @@ describe('Debug Model', () => {
 
   it('toggleBreakpoint should be work', () => {
     mockBreakpointManager.getBreakpoints.mockClear();
-    debugModel.toggleBreakpoint({lineNumber: 1, column: 2});
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 });
     expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);
     mockBreakpointManager.getBreakpoints.mockReturnValueOnce([] as any);
-    debugModel.toggleBreakpoint({lineNumber: 1, column: 2});
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 });
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
   });
 

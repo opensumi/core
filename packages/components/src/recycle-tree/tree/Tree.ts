@@ -9,7 +9,7 @@ export abstract class Tree implements ITree {
   protected readonly toDispose = new DisposableCollection();
 
   protected nodes: {
-    [id: string]: TreeNode | undefined,
+    [id: string]: TreeNode | undefined;
   } = {};
 
   get onNodeRefreshed() {
@@ -39,12 +39,8 @@ export abstract class Tree implements ITree {
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode): number {
     if (a.constructor === b.constructor) {
-      return a.name > b.name ? 1
-        : a.name < b.name ? -1
-          : 0;
+      return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
     }
-    return CompositeTreeNode.is(a) ? -1
-      : CompositeTreeNode.is(b)  ? 1
-        : 0;
+    return CompositeTreeNode.is(a) ? -1 : CompositeTreeNode.is(b) ? 1 : 0;
   }
 }

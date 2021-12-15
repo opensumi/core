@@ -6,7 +6,6 @@ import { Emitter, Event, Disposable, URI } from '@opensumi/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebviewWindow {
-
   @Autowired(IElectronMainUIService)
   electronMainUIService: IElectronMainUIService;
 
@@ -16,43 +15,48 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
 
   private _ready: Promise<void>;
 
-  private _closed: boolean = false;
+  private _closed = false;
 
   constructor(options?: IElectronPlainWebviewWindowOptions, env: { [key: string]: string } = {}) {
     super();
-    this._ready = this.electronMainUIService.createBrowserWindow({
-      ...options,
-      webPreferences: {
-        preload: new URI(electronEnv.plainWebviewPreload).codeUri.fsPath,
-        additionalArguments: [
-          '--additionalEnv=' + JSON.stringify(env),
-          '--parentWindowWebContentsId=' + electronEnv.currentWebContentsId,
-        ],
-        ...options?.webPreferences,
-      },
-    }).then(async (id) => {
-      this._windowId = id;
-      this._webContentsId = await this.electronMainUIService.getWebContentsId(this._windowId);
-    }).then(() => {
-      const listener = (event: any, {from, message}: { from: number, message: any }) => {
-        if (from === this._windowId) {
-          this._onMessage.fire(message);
-        }
-      };
-      electronEnv.ipcRenderer.on('cross-window-webview-message', listener);
-      this.addDispose({
-        dispose: () => {
-          electronEnv.ipcRenderer.removeListener('cross-window-webview-message', listener);
+    this._ready = this.electronMainUIService
+      .createBrowserWindow({
+        ...options,
+        webPreferences: {
+          preload: new URI(electronEnv.plainWebviewPreload).codeUri.fsPath,
+          additionalArguments: [
+            '--additionalEnv=' + JSON.stringify(env),
+            '--parentWindowWebContentsId=' + electronEnv.currentWebContentsId,
+          ],
+          ...options?.webPreferences,
         },
+      })
+      .then(async (id) => {
+        this._windowId = id;
+        this._webContentsId = await this.electronMainUIService.getWebContentsId(this._windowId);
+      })
+      .then(() => {
+        const listener = (event: any, { from, message }: { from: number; message: any }) => {
+          if (from === this._windowId) {
+            this._onMessage.fire(message);
+          }
+        };
+        electronEnv.ipcRenderer.on('cross-window-webview-message', listener);
+        this.addDispose({
+          dispose: () => {
+            electronEnv.ipcRenderer.removeListener('cross-window-webview-message', listener);
+          },
+        });
+        this.addDispose(
+          this.electronMainUIService.on('windowClosed', (windowId) => {
+            if (windowId === this._windowId) {
+              this._closed = true;
+              this._onClosed.fire();
+              this.dispose();
+            }
+          }),
+        );
       });
-      this.addDispose(this.electronMainUIService.on('windowClosed', (windowId) => {
-        if (windowId === this._windowId) {
-          this._closed = true;
-          this._onClosed.fire();
-          this.dispose();
-        }
-      }));
-    });
     this.addDispose(this._onMessage);
     this.addDispose(this._onClosed);
     this.addDispose({
@@ -92,7 +96,7 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
     return this.electronMainUIService.hideBrowserWindow(this._windowId);
   }
 
-  async setSize(size: { width: number; height: number; }) {
+  async setSize(size: { width: number; height: number }) {
     return this.electronMainUIService.setSize(this._windowId, size);
   }
 

@@ -1,7 +1,16 @@
 import { IFileServiceClient } from '../file-service-client';
 import { URI, Emitter, Event, FileUri, IDisposable } from '@opensumi/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
-import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider, TextDocumentContentChangeEvent } from '../files';
+import {
+  FileSetContentOptions,
+  FileStat,
+  FileMoveOptions,
+  FileCreateOptions,
+  FileCopyOptions,
+  FileDeleteOptions,
+  FileSystemProvider,
+  TextDocumentContentChangeEvent,
+} from '../files';
 import { IFileServiceWatcher } from '../watcher';
 import { Injectable } from '@opensumi/di';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
@@ -69,7 +78,11 @@ export class MockFileServiceClient implements IFileServiceClient {
     return file;
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
+  async updateContent(
+    file: FileStat,
+    contentChanges: TextDocumentContentChangeEvent[],
+    options?: FileSetContentOptions,
+  ): Promise<FileStat> {
     return file;
   }
 
@@ -126,12 +139,13 @@ export class MockFileServiceClient implements IFileServiceClient {
   }
 
   fireFilesChange(event: DidFilesChangedParams): void {
-    const changes: FileChange[] = event.changes.map((change) => {
-      return {
-        uri: change.uri,
-        type: change.type,
-      } as FileChange;
-    });
+    const changes: FileChange[] = event.changes.map(
+      (change) =>
+        ({
+          uri: change.uri,
+          type: change.type,
+        } as FileChange),
+    );
     this.onFileChangedEmitter.fire(changes);
   }
 
@@ -139,11 +153,9 @@ export class MockFileServiceClient implements IFileServiceClient {
   async watchFileChanges(uri: URI): Promise<IFileServiceWatcher> {
     return {
       watchId: 0,
-      onFilesChanged: () => {
-        return {
-          dispose: () => {},
-        };
-      },
+      onFilesChanged: () => ({
+        dispose: () => {},
+      }),
       dispose: () => {},
     };
   }
@@ -167,7 +179,7 @@ export class MockFileServiceClient implements IFileServiceClient {
   }
 
   async unwatchFileChanges(watchId: number): Promise<void> {
-    return ;
+    return;
   }
 
   async delete(uriString: string, options?: FileDeleteOptions) {
@@ -185,5 +197,4 @@ export class MockFileServiceClient implements IFileServiceClient {
       id: 'utf8',
     };
   }
-
 }

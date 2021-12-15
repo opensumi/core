@@ -2,7 +2,10 @@ import { Autowired } from '@opensumi/di';
 import { Domain, URI, AppConfig, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { StaticResourceContribution, StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
+import {
+  StaticResourceContribution,
+  StaticResourceService,
+} from '@opensumi/ide-static-resource/lib/browser/static.definition';
 
 import { KaitianExtFsProvider } from './fs-provider';
 
@@ -24,10 +27,9 @@ export class KtExtFsProviderContribution implements ClientAppContribution, Stati
     // 处理 kt-ext 的协议内容获取
     service.registerStaticResourceProvider({
       scheme: 'kt-ext',
-      resolveStaticResource: (uri: URI) => {
+      resolveStaticResource: (uri: URI) =>
         // kt-ext 协议统一走 scheme 头转换为 https
-        return uri.withScheme('https');
-      },
+        uri.withScheme('https'),
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });
   }

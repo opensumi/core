@@ -4,11 +4,7 @@ import { IBasicTreeData } from './types';
 
 export class BasicTreeRoot extends CompositeTreeNode {
   private _raw: IBasicTreeData;
-  constructor(
-    tree: ITree,
-    parent: BasicCompositeTreeNode | undefined,
-    data: IBasicTreeData,
-  ) {
+  constructor(tree: ITree, parent: BasicCompositeTreeNode | undefined, data: IBasicTreeData) {
     super(tree, parent);
     this._raw = data;
   }
@@ -31,12 +27,7 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
   private _whenReady: Promise<void>;
   private _raw: IBasicTreeData;
 
-  constructor(
-    tree: ITree,
-    parent: BasicCompositeTreeNode | undefined,
-    data: IBasicTreeData,
-    id?: number,
-  ) {
+  constructor(tree: ITree, parent: BasicCompositeTreeNode | undefined, data: IBasicTreeData, id?: number) {
     super(tree, parent, undefined, {}, { disableCache: true });
     if (data.expanded) {
       this._whenReady = this.setExpanded();
@@ -74,12 +65,7 @@ export class BasicTreeNode extends TreeNode {
   private _displayName: string;
   private _raw: IBasicTreeData;
 
-  constructor(
-    tree: ITree,
-    parent: BasicCompositeTreeNode | undefined,
-    data: IBasicTreeData,
-    id?: number,
-  ) {
+  constructor(tree: ITree, parent: BasicCompositeTreeNode | undefined, data: IBasicTreeData, id?: number) {
     super(tree, parent, undefined, {}, { disableCache: true });
     this._uid = id || this._uid;
     // 每个节点应该拥有自己独立的路径，不存在重复性

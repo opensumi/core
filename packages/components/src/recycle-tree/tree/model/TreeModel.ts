@@ -4,7 +4,6 @@ import { CompositeTreeNode, TreeNode } from '../TreeNode';
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 
 export class TreeModel {
-
   private _state: TreeStateManager;
   private _root: CompositeTreeNode;
 
@@ -43,7 +42,7 @@ export class TreeModel {
 
   dispatchChange = () => {
     this.onChangeEmitter.fire();
-  }
+  };
 
   /**
    * 根据给定的状态信息还原Tree组件
@@ -81,12 +80,11 @@ export class TreeModel {
    *
    * `TreeStateWatcher#toString` 用于将当前状态转换为JSON字符串
    */
-  public getTreeStateWatcher(atSurfaceExpandedDirsOnly: boolean = false): TreeStateWatcher {
+  public getTreeStateWatcher(atSurfaceExpandedDirsOnly = false): TreeStateWatcher {
     return new TreeStateWatcher(this.state, atSurfaceExpandedDirsOnly);
   }
 
   protected resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
     return Promise.resolve(Array.from(parent.children!) as TreeNode[]);
   }
-
 }

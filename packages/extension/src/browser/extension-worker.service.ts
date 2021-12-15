@@ -13,7 +13,10 @@ import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
 
 @Injectable()
-export class WorkerExtProcessService extends Disposable implements AbstractWorkerExtProcessService<IExtensionWorkerHost> {
+export class WorkerExtProcessService
+  extends Disposable
+  implements AbstractWorkerExtProcessService<IExtensionWorkerHost>
+{
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -62,7 +65,10 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
     if (extendConfig?.worker?.main) {
-      warning(false, '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead');
+      warning(
+        false,
+        '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead',
+      );
       await this.doActivateExtension(extension);
       return;
     }
@@ -110,11 +116,7 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
         return this.getWorkerExtensionProps(extension, extension.contributes.workerMain);
       } else if (extension.packageJSON.browser) {
         return this.getWorkerExtensionProps(extension, extension.packageJSON.browser);
-      } else if (
-        extension.extendConfig &&
-        extension.extendConfig.worker &&
-        extension.extendConfig.worker.main
-      ) {
+      } else if (extension.extendConfig && extension.extendConfig.worker && extension.extendConfig.worker.main) {
         return this.getWorkerExtensionProps(extension, extension.extendConfig.worker.main);
       } else {
         return extension.toJSON();
@@ -157,7 +159,6 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
         ready.promise.then((port) => {
           resolve(this.createProtocol(port, onMessageEmitter));
         });
-
       } else {
         try {
           const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
@@ -186,10 +187,13 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
 
   private createProtocol(port: MessagePort, emitter: Emitter<string>) {
     const onMessage = emitter.event;
-    const protocol = new RPCProtocol({
-      onMessage,
-      send: port.postMessage.bind(port),
-    }, this.logger);
+    const protocol = new RPCProtocol(
+      {
+        onMessage,
+        send: port.postMessage.bind(port),
+      },
+      this.logger,
+    );
 
     port.onmessage = (event) => {
       emitter.fire(event.data);
@@ -208,9 +212,11 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
 
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
     // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
-    let workerScriptPath = new URI(extension.extensionLocation.with({
-      path: posix.join(extension.extensionLocation.path, workerMain),
-    })).toString();
+    let workerScriptPath = new URI(
+      extension.extensionLocation.with({
+        path: posix.join(extension.extensionLocation.path, workerMain),
+      }),
+    ).toString();
 
     // 有部分 web extension 在申明 browser 入口字段的时候，不会带上文件后缀，导致 fetch 获取文件 404
     if (!workerScriptPath.endsWith('.js')) {

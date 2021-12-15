@@ -69,7 +69,17 @@ function getStyleSheet(filePath: string, version: string) {
   return link;
 }
 
-const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, extensionId: string, children: any, proxiedHead: HTMLHeadElement }) => {
+const ShadowRoot = ({
+  id,
+  extensionId,
+  children,
+  proxiedHead,
+}: {
+  id: string;
+  extensionId: string;
+  children: any;
+  proxiedHead: HTMLHeadElement;
+}) => {
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
   const viewExtensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
@@ -93,9 +103,11 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         iconStyle.id = 'icon-style';
         iconStyle.innerHTML = iconService.currentTheme?.styleSheetContent;
         newHead.appendChild(iconStyle);
-        disposables.push(iconService.onThemeChange((e) => {
+        disposables.push(
+          iconService.onThemeChange((e) => {
             iconStyle.innerHTML = e.styleSheetContent;
-        }));
+          }),
+        );
         shadowRootElement.appendChild(newHead);
         const portalRoot = viewExtensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
@@ -107,20 +119,29 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
       }
 
       themeService.getCurrentTheme().then((res) => setThemeType(res.type));
-      disposables.push(themeService.onThemeChange((e) => {
-        if (e.type && e.type !== themeType) {
-          setThemeType(e.type);
-        }
-      }));
+      disposables.push(
+        themeService.onThemeChange((e) => {
+          if (e.type && e.type !== themeType) {
+            setThemeType(e.type);
+          }
+        }),
+      );
       return disposables.dispose.bind(disposables);
     }
   }, []);
 
   return (
     <div id={id} style={{ width: '100%', height: '100%' }} ref={shadowRootRef}>
-      {shadowRoot && <ShadowContent root={shadowRoot}>
-        <div className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')} style={{ width: '100%', height: '100%' }}>{children}</div>
-      </ShadowContent>}
+      {shadowRoot && (
+        <ShadowContent root={shadowRoot}>
+          <div
+            className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')}
+            style={{ width: '100%', height: '100%' }}
+          >
+            {children}
+          </div>
+        </ShadowContent>
+      )}
     </div>
   );
 };
@@ -129,13 +150,16 @@ export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHe
   const Component = panel;
   const { getIcon } = React.useContext(IconContext);
   const labelService = useInjectable<LabelService>(LabelService);
-  const getResourceIcon = useCallback((uri: string, options: IIconResourceOptions) => {
-    return labelService.getIcon(URI.parse(uri), options);
-  }, []);
+  const getResourceIcon = useCallback(
+    (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
+    [],
+  );
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
-      <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead}><Component {...props} /></ShadowRoot>
+      <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead}>
+        <Component {...props} />
+      </ShadowRoot>
     </ComponentContextProvider>
   );
 }

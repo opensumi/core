@@ -1,6 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event, Disposable } from '@opensumi/ide-core-common';
-import { ITerminalErrorService, ITerminalNetwork, ITerminalInternalService, ITerminalController, ITerminalReconnectInfo, ITerminalError, TerminalNetworkStatus } from '../common';
+import {
+  ITerminalErrorService,
+  ITerminalNetwork,
+  ITerminalInternalService,
+  ITerminalController,
+  ITerminalReconnectInfo,
+  ITerminalError,
+  TerminalNetworkStatus,
+} from '../common';
 
 @Injectable()
 export class TerminalNetworkService extends Disposable implements ITerminalNetwork {
@@ -102,10 +110,12 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
 
   getReconnectInfo(sessionId: string): ITerminalReconnectInfo {
     const reconnectInfo = this._reconnectInfo.get(sessionId);
-    return reconnectInfo || {
-      times: 0,
-      nextRetry: 0,
-    };
+    return (
+      reconnectInfo || {
+        times: 0,
+        nextRetry: 0,
+      }
+    );
   }
 
   countRetry(sessionId: string) {

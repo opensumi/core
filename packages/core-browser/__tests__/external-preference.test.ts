@@ -1,12 +1,19 @@
-import { registerExternalPreferenceProvider, getPreferenceLanguageId, PreferenceScope, getExternalPreferenceProvider, getPreferenceThemeId, getPreferenceIconThemeId, getExternalPreference, registerLocalStorageProvider } from '../src/preferences';
+import {
+  registerExternalPreferenceProvider,
+  getPreferenceLanguageId,
+  PreferenceScope,
+  getExternalPreferenceProvider,
+  getPreferenceThemeId,
+  getPreferenceIconThemeId,
+  getExternalPreference,
+  registerLocalStorageProvider,
+} from '../src/preferences';
 import { IPreferences } from '../src';
 
 describe('external preference tests', () => {
-
   it('should be able to register preference provider and work properly', () => {
-
     const store: {
-      [key: string]: any,
+      [key: string]: any;
     } = {
       [PreferenceScope.Default]: undefined,
       [PreferenceScope.User]: undefined,
@@ -15,14 +22,12 @@ describe('external preference tests', () => {
     };
 
     registerExternalPreferenceProvider('test.preference', {
-      get: (scope: PreferenceScope) => {
-        return store[scope];
-      },
+      get: (scope: PreferenceScope) => store[scope],
       set: (value, scope: PreferenceScope) => {
         store[scope] = value;
       },
     });
-    const schema =  {default: 'defaultSchemaTest'};
+    const schema = { default: 'defaultSchemaTest' };
 
     expect(getExternalPreference('test.preference', schema).value).toBe('defaultSchemaTest');
 
@@ -45,7 +50,6 @@ describe('external preference tests', () => {
   });
 
   it('default external preferences should work', () => {
-
     (global as any).localStorage = undefined;
     // should not throw error when localStorage is not defined;
     const mockWorkspace = '/User/test';
@@ -62,9 +66,7 @@ describe('external preference tests', () => {
       setItem: (key: string, value) => {
         store.set(key, value);
       },
-      getItem: (key: string) => {
-        return store.get(key);
-      },
+      getItem: (key: string) => store.get(key),
     };
 
     getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
@@ -80,18 +82,20 @@ describe('external preference tests', () => {
     expect(getPreferenceLanguageId()).toBe('testLanguage');
 
     // getPreferenceLanguageId 可传参 defaultPreference
-    expect(getPreferenceLanguageId({
-      'general.language': 'en-US',
-    } as IPreferences)).toBe('en-US');
+    expect(
+      getPreferenceLanguageId({
+        'general.language': 'en-US',
+      } as IPreferences),
+    ).toBe('en-US');
 
     // 采用 getExternalPreference 中的值兜底
-    expect(getPreferenceLanguageId({
-      'general.theme': 'vscode-icon',
-    } as IPreferences)).toBe('testLanguage');
+    expect(
+      getPreferenceLanguageId({
+        'general.theme': 'vscode-icon',
+      } as IPreferences),
+    ).toBe('testLanguage');
 
     getExternalPreferenceProvider('general.icon')!.set('testIcon', PreferenceScope.Workspace);
     expect(getPreferenceIconThemeId()).toBe('testIcon');
-
   });
-
 });

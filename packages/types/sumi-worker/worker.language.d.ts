@@ -1,42 +1,42 @@
 declare module 'sumi-worker' {
   export namespace languages {
     /**
-      * Compute the match between a document [selector](#DocumentSelector) and a document. Values
-      * greater than zero mean the selector matches the document.
-      *
-      * A match is computed according to these rules:
-      * 1. When [`DocumentSelector`](#DocumentSelector) is an array, compute the match for each contained `DocumentFilter` or language identifier and take the maximum value.
-      * 2. A string will be desugared to become the `language`-part of a [`DocumentFilter`](#DocumentFilter), so `"fooLang"` is like `{ language: "fooLang" }`.
-      * 3. A [`DocumentFilter`](#DocumentFilter) will be matched against the document by comparing its parts with the document. The following rules apply:
-      *  1. When the `DocumentFilter` is empty (`{}`) the result is `0`
-      *  2. When `scheme`, `language`, or `pattern` are defined but one doesn’t match, the result is `0`
-      *  3. Matching against `*` gives a score of `5`, matching via equality or via a glob-pattern gives a score of `10`
-      *  4. The result is the maximum value of each match
-      *
-      * Samples:
-      * ```js
-      * // default document from disk (file-scheme)
-      * doc.uri; //'file:///my/file.js'
-      * doc.languageId; // 'javascript'
-      * match('javascript', doc); // 10;
-      * match({language: 'javascript'}, doc); // 10;
-      * match({language: 'javascript', scheme: 'file'}, doc); // 10;
-      * match('*', doc); // 5
-      * match('fooLang', doc); // 0
-      * match(['fooLang', '*'], doc); // 5
-      *
-      * // virtual document, e.g. from git-index
-      * doc.uri; // 'git:/my/file.js'
-      * doc.languageId; // 'javascript'
-      * match('javascript', doc); // 10;
-      * match({language: 'javascript', scheme: 'git'}, doc); // 10;
-      * match('*', doc); // 5
-      * ```
-      *
-      * @param selector A document selector.
-      * @param document A text document.
-      * @return A number `>0` when the selector matches and `0` when the selector does not match.
-      */
+     * Compute the match between a document [selector](#DocumentSelector) and a document. Values
+     * greater than zero mean the selector matches the document.
+     *
+     * A match is computed according to these rules:
+     * 1. When [`DocumentSelector`](#DocumentSelector) is an array, compute the match for each contained `DocumentFilter` or language identifier and take the maximum value.
+     * 2. A string will be desugared to become the `language`-part of a [`DocumentFilter`](#DocumentFilter), so `"fooLang"` is like `{ language: "fooLang" }`.
+     * 3. A [`DocumentFilter`](#DocumentFilter) will be matched against the document by comparing its parts with the document. The following rules apply:
+     *  1. When the `DocumentFilter` is empty (`{}`) the result is `0`
+     *  2. When `scheme`, `language`, or `pattern` are defined but one doesn’t match, the result is `0`
+     *  3. Matching against `*` gives a score of `5`, matching via equality or via a glob-pattern gives a score of `10`
+     *  4. The result is the maximum value of each match
+     *
+     * Samples:
+     * ```js
+     * // default document from disk (file-scheme)
+     * doc.uri; //'file:///my/file.js'
+     * doc.languageId; // 'javascript'
+     * match('javascript', doc); // 10;
+     * match({language: 'javascript'}, doc); // 10;
+     * match({language: 'javascript', scheme: 'file'}, doc); // 10;
+     * match('*', doc); // 5
+     * match('fooLang', doc); // 0
+     * match(['fooLang', '*'], doc); // 5
+     *
+     * // virtual document, e.g. from git-index
+     * doc.uri; // 'git:/my/file.js'
+     * doc.languageId; // 'javascript'
+     * match('javascript', doc); // 10;
+     * match({language: 'javascript', scheme: 'git'}, doc); // 10;
+     * match('*', doc); // 5
+     * ```
+     *
+     * @param selector A document selector.
+     * @param document A text document.
+     * @return A number `>0` when the selector matches and `0` when the selector does not match.
+     */
     export function match(selector: DocumentSelector, document: TextDocument): number;
 
     /**
@@ -53,7 +53,11 @@ declare module 'sumi-worker' {
      * @param triggerCharacters Trigger completion when the user types one of the characters, like `.` or `:`.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, ...triggerCharacters: string[]): Disposable;
+    export function registerCompletionItemProvider(
+      selector: DocumentSelector,
+      provider: CompletionItemProvider,
+      ...triggerCharacters: string[]
+    ): Disposable;
     /**
      * Register a code lens provider.
      *
@@ -90,7 +94,10 @@ declare module 'sumi-worker' {
      * @param provider A type definition provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
+    export function registerTypeDefinitionProvider(
+      selector: DocumentSelector,
+      provider: TypeDefinitionProvider,
+    ): Disposable;
     /**
      * Register a hover provider.
      *
@@ -126,7 +133,10 @@ declare module 'sumi-worker' {
      * @param provider A document highlight provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable;
+    export function registerDocumentHighlightProvider(
+      selector: DocumentSelector,
+      provider: DocumentHighlightProvider,
+    ): Disposable;
     /**
      * Register a reference provider.
      *
@@ -154,7 +164,10 @@ declare module 'sumi-worker' {
      * @param provider A document range formatting edit provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
+    export function registerDocumentRangeFormattingEditProvider(
+      selector: DocumentSelector,
+      provider: DocumentRangeFormattingEditProvider,
+    ): Disposable;
     /**
      * Register a formatting provider that works on type. The provider is active when the user enables the setting `editor.formatOnType`.
      *
@@ -168,7 +181,12 @@ declare module 'sumi-worker' {
      * @param moreTriggerCharacter More trigger characters.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable;
+    export function registerOnTypeFormattingEditProvider(
+      selector: DocumentSelector,
+      provider: OnTypeFormattingEditProvider,
+      firstTriggerCharacter: string,
+      ...moreTriggerCharacter: string[]
+    ): Disposable;
     /**
      * Register a document link provider.
      *
@@ -180,18 +198,21 @@ declare module 'sumi-worker' {
      * @param provider A document link provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable;
+    export function registerDocumentLinkProvider(
+      selector: DocumentSelector,
+      provider: DocumentLinkProvider,
+    ): Disposable;
     /**
-      * Register a color provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A color provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
+     * Register a color provider.
+     *
+     * Multiple providers can be registered for a language. In that case providers are asked in
+     * parallel and the results are merged. A failing provider (rejected promise or exception) will
+     * not cause a failure of the whole operation.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider A color provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
     export function registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
 
     /**
@@ -209,7 +230,10 @@ declare module 'sumi-worker' {
      * @param provider A folding range provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
+    export function registerFoldingRangeProvider(
+      selector: DocumentSelector,
+      provider: FoldingRangeProvider,
+    ): Disposable;
     /**
      * Set a [language configuration](#LanguageConfiguration) for a language.
      *
@@ -281,7 +305,11 @@ declare module 'sumi-worker' {
      * @param metadata Metadata about the kind of code actions the provider providers.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable;
+    export function registerCodeActionsProvider(
+      selector: DocumentSelector,
+      provider: CodeActionProvider,
+      metadata?: CodeActionProviderMetadata,
+    ): Disposable;
 
     /**
      * Register an implementation provider.
@@ -294,7 +322,10 @@ declare module 'sumi-worker' {
      * @param provider An implementation provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable;
+    export function registerImplementationProvider(
+      selector: DocumentSelector,
+      provider: ImplementationProvider,
+    ): Disposable;
 
     /**
      * Register a document symbol provider.
@@ -308,7 +339,11 @@ declare module 'sumi-worker' {
      * @param metaData metadata about the provider
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider, metaData?: DocumentSymbolProviderMetadata): Disposable;
+    export function registerDocumentSymbolProvider(
+      selector: DocumentSelector,
+      provider: DocumentSymbolProvider,
+      metaData?: DocumentSymbolProviderMetadata,
+    ): Disposable;
 
     /**
      * Register a workspace symbol provider.
@@ -346,7 +381,10 @@ declare module 'sumi-worker' {
      * @param provider A document formatting edit provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable;
+    export function registerDocumentFormattingEditProvider(
+      selector: DocumentSelector,
+      provider: DocumentFormattingEditProvider,
+    ): Disposable;
 
     /**
      * Register a signature help provider.
@@ -361,8 +399,16 @@ declare module 'sumi-worker' {
      * @param metadata Information about the provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]): Disposable;
-    export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadata: SignatureHelpProviderMetadata): Disposable;
+    export function registerSignatureHelpProvider(
+      selector: DocumentSelector,
+      provider: SignatureHelpProvider,
+      ...triggerCharacters: string[]
+    ): Disposable;
+    export function registerSignatureHelpProvider(
+      selector: DocumentSelector,
+      provider: SignatureHelpProvider,
+      metadata: SignatureHelpProviderMetadata,
+    ): Disposable;
 
     /**
      * Register a selection range provider.
@@ -375,7 +421,10 @@ declare module 'sumi-worker' {
      * @param provider A selection range provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
-    export function registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable;
+    export function registerSelectionRangeProvider(
+      selector: DocumentSelector,
+      provider: SelectionRangeProvider,
+    ): Disposable;
   }
 
   /**
@@ -385,7 +434,6 @@ declare module 'sumi-worker' {
    * A CodeAction must set either [`edit`](#CodeAction.edit) and/or a [`command`](#CodeAction.command). If both are supplied, the `edit` is applied first, then the command is executed.
    */
   export class CodeAction {
-
     /**
      * A short, human-readable, title for this code action.
      */
@@ -557,7 +605,6 @@ declare module 'sumi-worker' {
     contains(other: CodeActionKind): boolean;
   }
   export class CodeLens {
-
     /**
      * The range in which this code lens is valid. Should only span a single line.
      */
@@ -586,7 +633,6 @@ declare module 'sumi-worker' {
    * rendered in a tooltip-like widget.
    */
   export class Hover {
-
     /**
      * The contents of this hover.
      */
@@ -642,7 +688,12 @@ declare module 'sumi-worker' {
      * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideCodeActions(document: TextDocument, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<(Command | CodeAction)[]>;
+    provideCodeActions(
+      document: TextDocument,
+      range: Range | Selection,
+      context: CodeActionContext,
+      token: CancellationToken,
+    ): ProviderResult<(Command | CodeAction)[]>;
   }
 
   /**
@@ -674,7 +725,6 @@ declare module 'sumi-worker' {
    * as dedicated horizontal lines in between the source text.
    */
   export interface CodeLensProvider<T extends CodeLens = CodeLens> {
-
     /**
      * An optional event to signal that the code lenses from this provider have changed.
      */
@@ -708,7 +758,6 @@ declare module 'sumi-worker' {
    * the [hover](https://code.visualstudio.com/docs/editor/intellisense)-feature.
    */
   export interface HoverProvider {
-
     /**
      * Provide a hover for the given position and document. Multiple hovers at the same
      * position will be merged by the editor. A hover can have a range which defaults
@@ -727,7 +776,6 @@ declare module 'sumi-worker' {
    * A document highlight kind.
    */
   export enum DocumentHighlightKind {
-
     /**
      * A textual occurrence.
      */
@@ -750,7 +798,6 @@ declare module 'sumi-worker' {
    * the background color of its range.
    */
   export class DocumentHighlight {
-
     /**
      * The range this highlight applies to.
      */
@@ -774,7 +821,6 @@ declare module 'sumi-worker' {
    * the word-highlight-feature.
    */
   export interface DocumentHighlightProvider {
-
     /**
      * Provide a set of document highlights, like all occurrences of a variable or
      * all exit-points of a function.
@@ -785,7 +831,11 @@ declare module 'sumi-worker' {
      * @return An array of document highlights or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideDocumentHighlights(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<DocumentHighlight[]>;
+    provideDocumentHighlights(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<DocumentHighlight[]>;
   }
   /**
    * A completion item represents a text snippet that is proposed to complete text that is being typed.
@@ -804,7 +854,6 @@ declare module 'sumi-worker' {
    * @寻壑
    */
   export class CompletionItem {
-
     /**
      * The label of this completion item. By default
      * this is also the text that is inserted when selecting
@@ -926,7 +975,6 @@ declare module 'sumi-worker' {
    * @寻壑
    */
   export class CompletionList {
-
     /**
      * This list is not complete. Further typing should result in recomputing
      * this list.
@@ -952,7 +1000,6 @@ declare module 'sumi-worker' {
    * @木农
    */
   export class DocumentLink {
-
     /**
      * The range this link applies to.
      */
@@ -986,7 +1033,6 @@ declare module 'sumi-worker' {
    * links in the editor.
    */
   export interface DocumentLinkProvider {
-
     /**
      * Provide links for the given document. Note that the editor ships with a default provider that detects
      * `http(s)` and `file` links.
@@ -1015,7 +1061,6 @@ declare module 'sumi-worker' {
    * picking and modifying colors in the editor.
    */
   export interface DocumentColorProvider {
-
     /**
      * Provide colors for the given document.
      *
@@ -1035,7 +1080,11 @@ declare module 'sumi-worker' {
      * @return An array of color presentations or a thenable that resolves to such. The lack of a result
      * can be signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideColorPresentations(color: Color, context: { document: TextDocument, range: Range }, token: CancellationToken): ProviderResult<ColorPresentation[]>;
+    provideColorPresentations(
+      color: Color,
+      context: { document: TextDocument; range: Range },
+      token: CancellationToken,
+    ): ProviderResult<ColorPresentation[]>;
   }
 
   /**
@@ -1043,7 +1092,6 @@ declare module 'sumi-worker' {
    * Invalid ranges will be ignored.
    */
   export class FoldingRange {
-
     /**
      * The zero-based start line of the range to fold. The folded area starts after the line's last character.
      * To be valid, the end must be zero or larger and smaller than the number of lines in the document.
@@ -1100,8 +1148,7 @@ declare module 'sumi-worker' {
    * Folding context (for future use)
    */
   // tslint:disable-next-line:no-empty-interface
-  export interface FoldingContext {
-  }
+  export interface FoldingContext {}
 
   /**
    * The folding range provider interface defines the contract between extensions and
@@ -1115,7 +1162,11 @@ declare module 'sumi-worker' {
      * @param context Additional context information (for future use)
      * @param token A cancellation token.
      */
-    provideFoldingRanges(document: TextDocument, context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]>;
+    provideFoldingRanges(
+      document: TextDocument,
+      context: FoldingContext,
+      token: CancellationToken,
+    ): ProviderResult<FoldingRange[]>;
   }
   /**
    * Describes what to do with the indentation when pressing Enter.
@@ -1211,7 +1262,6 @@ declare module 'sumi-worker' {
    * inside a text file.
    */
   export class Location {
-
     /**
      * The resource identifier of this location.
      */
@@ -1267,7 +1317,6 @@ declare module 'sumi-worker' {
    * the `$(<name>)`-syntax is supported.
    */
   export class MarkdownString {
-
     /**
      * The markdown string.
      */
@@ -1321,15 +1370,14 @@ declare module 'sumi-worker' {
    */
   export type MarkedString = MarkdownString | string | { language: string; value: string };
   /**
-     * Represents a line and character position, such as
-     * the position of the cursor.
-     *
-     * Position objects are __immutable__. Use the [with](#Position.with) or
-     * [translate](#Position.translate) methods to derive new positions
-     * from an existing position.
-     */
+   * Represents a line and character position, such as
+   * the position of the cursor.
+   *
+   * Position objects are __immutable__. Use the [with](#Position.with) or
+   * [translate](#Position.translate) methods to derive new positions
+   * from an existing position.
+   */
   export class Position {
-
     /**
      * The zero-based line value.
      */
@@ -1418,7 +1466,7 @@ declare module 'sumi-worker' {
      * @return A position that reflects the given delta. Will return `this` position if the change
      * is not changing anything.
      */
-    translate(change: { lineDelta?: number; characterDelta?: number; }): Position;
+    translate(change: { lineDelta?: number; characterDelta?: number }): Position;
 
     /**
      * Create a new position derived from this position.
@@ -1436,7 +1484,7 @@ declare module 'sumi-worker' {
      * @return A position that reflects the given change. Will return `this` position if the change
      * is not changing anything.
      */
-    with(change: { line?: number; character?: number; }): Position;
+    with(change: { line?: number; character?: number }): Position;
   }
 
   /**
@@ -1448,7 +1496,6 @@ declare module 'sumi-worker' {
    * to derive new ranges from an existing range.
    */
   export class Range {
-
     /**
      * The start position. It is before or equal to [end](#Range.end).
      */
@@ -1542,7 +1589,7 @@ declare module 'sumi-worker' {
      * @return A range that reflects the given change. Will return `this` range if the change
      * is not changing anything.
      */
-    with(change: { start?: Position, end?: Position }): Range;
+    with(change: { start?: Position; end?: Position }): Range;
   }
   /**
    * A relative pattern is a helper to construct glob patterns that are matched
@@ -1550,7 +1597,6 @@ declare module 'sumi-worker' {
    * or a [workspace folder](#WorkspaceFolder).
    */
   export class RelativePattern {
-
     /**
      * A base file path to which this pattern will be matched against relatively.
      */
@@ -1573,7 +1619,7 @@ declare module 'sumi-worker' {
      * @param pattern A file glob pattern like `*.{ts,js}` that will be matched on file paths
      * relative to the base path.
      */
-    constructor(base: WorkspaceFolder | string, pattern: string)
+    constructor(base: WorkspaceFolder | string, pattern: string);
   }
 
   /**
@@ -1604,7 +1650,6 @@ declare module 'sumi-worker' {
    * @sample A language filter that applies to all package.json paths: `{ language: 'json', scheme: 'untitled', pattern: '**​/package.json' }`
    */
   export interface DocumentFilter {
-
     /**
      * A language id, like `typescript`.
      */
@@ -1688,7 +1733,6 @@ declare module 'sumi-worker' {
    * and peek definition features.
    */
   export interface DefinitionProvider {
-
     /**
      * Provide the definition of the symbol at the given position and document.
      *
@@ -1698,7 +1742,11 @@ declare module 'sumi-worker' {
      * @return A definition or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
+    provideDefinition(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<Definition | DefinitionLink[]>;
   }
 
   /**
@@ -1706,7 +1754,6 @@ declare module 'sumi-worker' {
    * the go to implementation feature.
    */
   export interface ImplementationProvider {
-
     /**
      * Provide the implementations of the symbol at the given position and document.
      *
@@ -1716,7 +1763,11 @@ declare module 'sumi-worker' {
      * @return A definition or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideImplementation(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
+    provideImplementation(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<Definition | DefinitionLink[]>;
   }
 
   /**
@@ -1724,7 +1775,6 @@ declare module 'sumi-worker' {
    * the go to type definition feature.
    */
   export interface TypeDefinitionProvider {
-
     /**
      * Provide the type definition of the symbol at the given position and document.
      *
@@ -1734,20 +1784,23 @@ declare module 'sumi-worker' {
      * @return A definition or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideTypeDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
+    provideTypeDefinition(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<Definition | DefinitionLink[]>;
   }
   /**
-     * A snippet string is a template which allows to insert text
-     * and to control the editor cursor when insertion happens.
-     *
-     * A snippet can define tab stops and placeholders with `$1`, `$2`
-     * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-     * the end of the snippet. Variables are defined with `$name` and
-     * `${name:default value}`. The full snippet syntax is documented
-     * [here](http://code.visualstudio.com/docs/editor/userdefinedsnippets#_creating-your-own-snippets).
-     */
+   * A snippet string is a template which allows to insert text
+   * and to control the editor cursor when insertion happens.
+   *
+   * A snippet can define tab stops and placeholders with `$1`, `$2`
+   * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+   * the end of the snippet. Variables are defined with `$name` and
+   * `${name:default value}`. The full snippet syntax is documented
+   * [here](http://code.visualstudio.com/docs/editor/userdefinedsnippets#_creating-your-own-snippets).
+   */
   export class SnippetString {
-
     /**
      * The snippet string.
      */
@@ -1813,7 +1866,6 @@ declare module 'sumi-worker' {
    * the [rename](https://code.visualstudio.com/docs/editor/editingevolved#_rename-symbol)-feature.
    */
   export interface RenameProvider {
-
     /**
      * Provide an edit that describes changes that have to be made to one
      * or many resources to rename a symbol to a different name.
@@ -1825,7 +1877,12 @@ declare module 'sumi-worker' {
      * @return A workspace edit or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideRenameEdits(document: TextDocument, position: Position, newName: string, token: CancellationToken): ProviderResult<WorkspaceEdit>;
+    provideRenameEdits(
+      document: TextDocument,
+      position: Position,
+      newName: string,
+      token: CancellationToken,
+    ): ProviderResult<WorkspaceEdit>;
 
     /**
      * Optional function for resolving and validating a position *before* running rename. The result can
@@ -1837,14 +1894,17 @@ declare module 'sumi-worker' {
      * @param token A cancellation token.
      * @return The range or range and placeholder text of the identifier that is to be renamed. The lack of a result can signaled by returning `undefined` or `null`.
      */
-    prepareRename?(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Range | { range: Range, placeholder: string }>;
+    prepareRename?(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<Range | { range: Range; placeholder: string }>;
   }
 
   /**
    * Value-object describing what options formatting should use.
    */
   export interface FormattingOptions {
-
     /**
      * Size of a tab in spaces.
      */
@@ -1866,7 +1926,6 @@ declare module 'sumi-worker' {
    * the formatting-feature.
    */
   export interface DocumentFormattingEditProvider {
-
     /**
      * Provide formatting edits for a whole document.
      *
@@ -1876,7 +1935,11 @@ declare module 'sumi-worker' {
      * @return A set of text edits or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
+    provideDocumentFormattingEdits(
+      document: TextDocument,
+      options: FormattingOptions,
+      token: CancellationToken,
+    ): ProviderResult<TextEdit[]>;
   }
 
   /**
@@ -1884,7 +1947,6 @@ declare module 'sumi-worker' {
    * the formatting-feature.
    */
   export interface DocumentRangeFormattingEditProvider {
-
     /**
      * Provide formatting edits for a range in a document.
      *
@@ -1899,7 +1961,12 @@ declare module 'sumi-worker' {
      * @return A set of text edits or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideDocumentRangeFormattingEdits(document: TextDocument, range: Range, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
+    provideDocumentRangeFormattingEdits(
+      document: TextDocument,
+      range: Range,
+      options: FormattingOptions,
+      token: CancellationToken,
+    ): ProviderResult<TextEdit[]>;
   }
 
   /**
@@ -1907,7 +1974,6 @@ declare module 'sumi-worker' {
    * the formatting-feature.
    */
   export interface OnTypeFormattingEditProvider {
-
     /**
      * Provide formatting edits after a character has been typed.
      *
@@ -1923,10 +1989,15 @@ declare module 'sumi-worker' {
      * @return A set of text edits or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideOnTypeFormattingEdits(document: TextDocument, position: Position, ch: string, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
+    provideOnTypeFormattingEdits(
+      document: TextDocument,
+      position: Position,
+      ch: string,
+      options: FormattingOptions,
+      token: CancellationToken,
+    ): ProviderResult<TextEdit[]>;
   }
   export interface CompletionItemProvider {
-
     /**
      * Provide completion items for the given position and document.
      *
@@ -1938,7 +2009,12 @@ declare module 'sumi-worker' {
      * @return An array of completions, a [completion list](#CompletionList), or a thenable that resolves to either.
      * The lack of a result can be signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList>;
+    provideCompletionItems(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+      context: CompletionContext,
+    ): ProviderResult<CompletionItem[] | CompletionList>;
 
     /**
      * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
@@ -1965,7 +2041,6 @@ declare module 'sumi-worker' {
    * @寻壑
    */
   export class DocumentSymbol {
-
     /**
      * The name of this symbol.
      */
@@ -2014,7 +2089,6 @@ declare module 'sumi-worker' {
    * the [go to symbol](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol)-feature.
    */
   export interface DocumentSymbolProvider {
-
     /**
      * Provide symbol information for the given document.
      *
@@ -2023,7 +2097,10 @@ declare module 'sumi-worker' {
      * @return An array of document highlights or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[] | DocumentSymbol[]>;
+    provideDocumentSymbols(
+      document: TextDocument,
+      token: CancellationToken,
+    ): ProviderResult<SymbolInformation[] | DocumentSymbol[]>;
   }
 
   /**
@@ -2071,7 +2148,6 @@ declare module 'sumi-worker' {
    * The event that is fired when diagnostics change.
    */
   export interface DiagnosticChangeEvent {
-
     /**
      * An array of resources for which diagnostics have changed.
      */
@@ -2087,7 +2163,6 @@ declare module 'sumi-worker' {
    * [createDiagnosticCollection](#languages.createDiagnosticCollection).
    */
   export interface DiagnosticCollection {
-
     /**
      * The name of this diagnostic collection, for instance `typescript`. Every diagnostic
      * from this collection will be associated with this name. Also, the task framework uses this
@@ -2136,7 +2211,10 @@ declare module 'sumi-worker' {
      * @param callback Function to execute for each entry.
      * @param thisArg The `this` context used when invoking the handler function.
      */
-    forEach(callback: (uri: Uri, diagnostics: ReadonlyArray<Diagnostic>, collection: DiagnosticCollection) => any, thisArg?: any): void;
+    forEach(
+      callback: (uri: Uri, diagnostics: ReadonlyArray<Diagnostic>, collection: DiagnosticCollection) => any,
+      thisArg?: any,
+    ): void;
 
     /**
      * Get the diagnostics for a given resource. *Note* that you cannot
@@ -2174,7 +2252,6 @@ declare module 'sumi-worker' {
    * the go to declaration feature.
    */
   export interface DeclarationProvider {
-
     /**
      * Provide the declaration of the symbol at the given position and document.
      *
@@ -2184,7 +2261,11 @@ declare module 'sumi-worker' {
      * @return A declaration or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined` or `null`.
      */
-    provideDeclaration(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Declaration>;
+    provideDeclaration(
+      document: TextDocument,
+      position: Position,
+      token: CancellationToken,
+    ): ProviderResult<Declaration>;
   }
 
   /**
@@ -2192,7 +2273,6 @@ declare module 'sumi-worker' {
    * requesting references.
    */
   export interface ReferenceContext {
-
     /**
      * Include the declaration of the current symbol.
      */
@@ -2204,7 +2284,6 @@ declare module 'sumi-worker' {
    * the [find references](https://code.visualstudio.com/docs/editor/editingevolved#_peek)-feature.
    */
   export interface ReferenceProvider {
-
     /**
      * Provide a set of project-wide references for the given position and document.
      *
@@ -2215,6 +2294,11 @@ declare module 'sumi-worker' {
      * @return An array of locations or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): ProviderResult<Location[]>;
+    provideReferences(
+      document: TextDocument,
+      position: Position,
+      context: ReferenceContext,
+      token: CancellationToken,
+    ): ProviderResult<Location[]>;
   }
 }

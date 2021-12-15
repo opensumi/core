@@ -6,17 +6,13 @@ import { IAccessibilityInformation } from '@opensumi/ide-core-common';
 import { ITreeItemLabel } from '../../../../common/vscode';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
-
   public static is(node: any): node is ExtensionTreeRoot {
     return !!node && 'children' in node && !node.parent;
   }
 
   private _displayName: string;
 
-  constructor(
-    treeViewDataProvider: TreeViewDataProvider,
-    public treeViewId: string = '',
-  ) {
+  constructor(treeViewDataProvider: TreeViewDataProvider, public treeViewId: string = '') {
     super(treeViewDataProvider as ITree, undefined);
   }
 
@@ -42,13 +38,12 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
 }
 
 export class ExtensionCompositeTreeNode extends CompositeTreeNode {
-
   private _displayName: string;
   private _hightlights?: [number, number][];
   private _strikethrough?: boolean;
   private _command?: ICommand;
   private _tooltip?: string;
-  private _resolved: boolean = false;
+  private _resolved = false;
 
   private _whenReady: Promise<void>;
 
@@ -58,7 +53,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     label: string | ITreeItemLabel,
     public description: string = '',
     public icon: string = '',
-    tooltip: string = '',
+    tooltip = '',
     command: ICommand | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
@@ -123,7 +118,10 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
   }
 
   async resolveTreeItem() {
-    const resolved = await (this._tree as TreeViewDataProvider).resolveTreeItem((this._tree as TreeViewDataProvider).treeViewId, this.treeItemId);
+    const resolved = await (this._tree as TreeViewDataProvider).resolveTreeItem(
+      (this._tree as TreeViewDataProvider).treeViewId,
+      this.treeItemId,
+    );
     if (resolved) {
       this._tooltip = resolved.tooltip;
       this._command = resolved.command;
@@ -141,7 +139,7 @@ export class ExtensionTreeNode extends TreeNode {
   private _hightlights?: [number, number][];
   private _strikethrough?: boolean;
 
-  private _resolved: boolean = false;
+  private _resolved = false;
 
   constructor(
     tree: TreeViewDataProvider,
@@ -204,12 +202,14 @@ export class ExtensionTreeNode extends TreeNode {
   }
 
   async resolveTreeItem() {
-    const resolved = await (this._tree as TreeViewDataProvider).resolveTreeItem((this._tree as TreeViewDataProvider).treeViewId, this.treeItemId);
+    const resolved = await (this._tree as TreeViewDataProvider).resolveTreeItem(
+      (this._tree as TreeViewDataProvider).treeViewId,
+      this.treeItemId,
+    );
     if (resolved) {
       this._tooltip = resolved.tooltip;
       this._command = resolved.command;
     }
     this._resolved = true;
   }
-
 }

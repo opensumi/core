@@ -1,5 +1,17 @@
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
-import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco, EncodingRegistry } from '@opensumi/ide-core-browser';
+import {
+  Emitter,
+  URI,
+  Event,
+  IApplicationService,
+  FileChangeType,
+  OS,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
+  PreferenceService,
+  getLanguageIdFromMonaco,
+  EncodingRegistry,
+} from '@opensumi/ide-core-browser';
 import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@opensumi/ide-core-common/lib/encoding';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -7,7 +19,6 @@ import { EditorPreferences } from '../preference/schema';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface ReadEncodingOptions {
-
   /**
    * The optional encoding parameter allows to specify the desired encoding when resolving
    * the contents of the file.
@@ -26,7 +37,6 @@ export interface ReadEncodingOptions {
  */
 @Injectable()
 export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentModelContentProvider {
-
   protected _onDidChangeContent: Emitter<URI> = new Emitter();
 
   public onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
@@ -72,7 +82,12 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   async provideEOL(uri: URI) {
     const backendOS = await this.applicationService.getBackendOS();
-    const eol = this.preferenceService.get<EOL | 'auto'>('files.eol', 'auto', uri.toString(), getLanguageIdFromMonaco(uri)!)!;
+    const eol = this.preferenceService.get<EOL | 'auto'>(
+      'files.eol',
+      'auto',
+      uri.toString(),
+      getLanguageIdFromMonaco(uri)!,
+    )!;
 
     if (eol !== 'auto') {
       return eol;
@@ -80,10 +95,17 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
   }
 
-  async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string, content: string }> {
+  async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string }> {
     const { content: buffer } = await this.fileServiceClient.readFile(uri.toString());
 
-    const guessEncoding = options.autoGuessEncoding || this.preferenceService.get<boolean>('files.autoGuessEncoding', undefined, uri.toString(), getLanguageIdFromMonaco(uri)!);
+    const guessEncoding =
+      options.autoGuessEncoding ||
+      this.preferenceService.get<boolean>(
+        'files.autoGuessEncoding',
+        undefined,
+        uri.toString(),
+        getLanguageIdFromMonaco(uri)!,
+      );
     const detected = await detectEncodingFromBuffer(buffer, guessEncoding);
     detected.encoding = await this.getReadEncoding(uri, options, detected.encoding);
 
@@ -113,7 +135,11 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     const readonlyFiles: string[] = this.editorPreferences['editor.readonlyFiles'];
     if (readonlyFiles && readonlyFiles.length) {
       for (const file of readonlyFiles) {
-        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file) || uri.toString().endsWith(file.replace('./', ''))) {
+        if (
+          uri.isEqual(URI.file(file)) ||
+          uri.matchGlobPattern(file) ||
+          uri.toString().endsWith(file.replace('./', ''))
+        ) {
           return true;
         }
       }
@@ -121,12 +147,19 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return this.fileServiceClient.isReadonly(uri.toString());
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding: string,
+    ignoreDiff = false,
+  ): Promise<IEditorDocumentModelSaveResult> {
     // 默认的文件系统都直接存 content
     try {
       const fileStat = await this.fileServiceClient.getFileStat(uri.toString());
       if (!fileStat) {
-        await this.fileServiceClient.createFile(uri.toString(), { content, overwrite: true, encoding});
+        await this.fileServiceClient.createFile(uri.toString(), { content, overwrite: true, encoding });
       } else {
         await this.fileServiceClient.setContent(fileStat, content, { encoding });
       }
@@ -149,7 +182,11 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return (await this.read(uri, { autoGuessEncoding: true })).encoding;
   }
 
-  protected getReadEncoding(resource: URI, options: ReadEncodingOptions | undefined, detectedEncoding: string | null): Promise<string> {
+  protected getReadEncoding(
+    resource: URI,
+    options: ReadEncodingOptions | undefined,
+    detectedEncoding: string | null,
+  ): Promise<string> {
     let preferredEncoding: string | undefined;
 
     // Encoding passed in as option

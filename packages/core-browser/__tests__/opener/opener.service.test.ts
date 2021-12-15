@@ -40,9 +40,11 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
     };
     openerService.registerOpener(opener1);
     openerService.registerOpener(opener2);
-    await openerService.open(URI.from({
-      scheme: 'bbb',
-    }));
+    await openerService.open(
+      URI.from({
+        scheme: 'bbb',
+      }),
+    );
     expect(opener1.open).toBeCalledTimes(0);
     expect(opener2.open).toBeCalledTimes(1);
   });
@@ -58,9 +60,11 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
     };
     openerService.registerOpener(opener1);
     openerService.registerOpener(opener2);
-    await openerService.open(URI.from({
-      scheme: 'aaa',
-    }));
+    await openerService.open(
+      URI.from({
+        scheme: 'aaa',
+      }),
+    );
     expect(opener1.open).toBeCalledTimes(1);
     expect(opener2.open).toBeCalledTimes(1);
   });
@@ -76,9 +80,11 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
     };
     openerService.registerOpener(opener1);
     openerService.registerOpener(opener2);
-    await openerService.open(URI.from({
-      scheme: 'aaa',
-    }));
+    await openerService.open(
+      URI.from({
+        scheme: 'aaa',
+      }),
+    );
     expect(opener1.open).toBeCalledTimes(1);
     // 如果前一个 opener 返回 true，则不会执行下面的 opener
     expect(opener2.open).toBeCalledTimes(0);
@@ -91,9 +97,11 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
       handleScheme: jest.fn(),
     };
     openerService.registerOpener(opener1);
-    await openerService.open(URI.from({
-      scheme: 'aaa',
-    }));
+    await openerService.open(
+      URI.from({
+        scheme: 'aaa',
+      }),
+    );
     expect(opener1.open).toBeCalledTimes(1);
     // 使用 handleURI 后不会执行 handleScheme
     expect(opener1.handleScheme).toBeCalledTimes(0);
@@ -119,9 +127,11 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
     openerService.registerOpener(opener2);
 
     disposeOpener1.dispose();
-    await openerService.open(URI.from({
-      scheme: 'aaa',
-    }));
+    await openerService.open(
+      URI.from({
+        scheme: 'aaa',
+      }),
+    );
     expect(opener1.open).toBeCalledTimes(0);
     // 前一个被 dispose 了，则会执行到 2
     expect(opener2.open).toBeCalledTimes(1);
