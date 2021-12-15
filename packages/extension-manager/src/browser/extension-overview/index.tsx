@@ -1,13 +1,14 @@
 import React from 'react';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
-import { localize } from '@opensumi/ide-core-common';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { Markdown } from '@opensumi/ide-markdown';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 import * as styles from './overview.module.less';
-import { InstallState, VSXExtension } from '../../common';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
 
 enum TabActiveKey {
   details = 'Details',
@@ -15,34 +16,23 @@ enum TabActiveKey {
   deps = 'Dependencies',
 }
 
-const tabMap = [
-  TabActiveKey.details,
-  TabActiveKey.changelog,
-  TabActiveKey.deps,
-];
+const tabMap = [TabActiveKey.details, TabActiveKey.changelog, TabActiveKey.deps];
 
 interface IExtensionMetadata {
   readme?: string;
   changelog?: string;
+  icon?: string;
+  downloadCount?: number;
   installed?: boolean;
 }
 
-export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtension & { state: string }> = ({ resource }) => {
-  const files = React.useMemo(() => resource.metadata?.files, [resource]);
+export const ExtensionOverview: ReactEditorComponent<
+  VSXExtensionRaw & VSXExtension & { state: string; extensionId: string }
+> = ({ resource }) => {
+  const vsxExtensionService = useInjectable<IVSXExtensionService>(VSXExtensionServiceToken);
   const [loading, setLoading] = React.useState(true);
   const [activateKey, setActivateKey] = React.useState(TabActiveKey.details);
   const [metadata, setMetadata] = React.useState<IExtensionMetadata>({});
-
-  const tabs: TabActiveKey[] = React.useMemo(() => {
-    const res: TabActiveKey[] = [];
-    if (resource.metadata?.files.readme) {
-      res.push(TabActiveKey.details);
-    }
-    if (resource.metadata?.files.changelog) {
-      res.push(TabActiveKey.changelog);
-    }
-    return res;
-  }, [resource]);
 
   const onDidTabChange = React.useCallback((index: number) => {
     const activeKey = tabMap[index];
@@ -51,25 +41,37 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
     }
   }, []);
 
+  const getExtensonMetadata = React.useCallback(
+    ({ readme, changelog }: { [prop: string]: string | undefined }) =>
+      [
+        readme && fetch(readme).then((res) => res.text()),
+        changelog && fetch(changelog).then((res) => res.text()),
+      ].filter(Boolean),
+    [],
+  );
+
   const initExtensionMetadata = React.useCallback(async () => {
-    const tasks = [
-      files?.readme && fetch(files.readme).then((res) => res.text()),
-      files?.changelog && fetch(files.changelog).then((res) => res.text()),
-    ];
-    const [readme, changelog] = await Promise.all(tasks);
-    setMetadata({ readme, changelog });
+    const extension = await vsxExtensionService.getRemoteRawExtension(resource.metadata!.extensionId);
+    if (extension) {
+      const tasks = getExtensonMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
+      const [readme, changelog] = await Promise.all(tasks);
+      setMetadata({ readme, changelog, downloadCount: extension.downloadCount });
+    }
     setLoading(false);
-  }, [files]);
+  }, [resource]);
 
   React.useEffect(() => {
     initExtensionMetadata();
-  }, [files]);
+  }, [resource]);
 
   return (
     <div className={styles.extension_overview_container}>
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
-        <img src={resource.metadata?.files.icon || 'https://open-vsx.org/default-icon.png'} alt={resource.metadata?.displayName} />
+        <img
+          src={resource.metadata?.iconUrl || 'https://open-vsx.org/default-icon.png'}
+          alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
+        />
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
             <h1>
@@ -78,7 +80,8 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                {resource.metadata?.displayName || resource.metadata?.name}
+                {replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId) ||
+                  resource.metadata?.name}
               </a>
             </h1>
             <span className={styles.extension_id}>
@@ -93,7 +96,7 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
             </span>
             <span>
               <Icon iconClass={getKaitianIcon('download')} />
-              {resource.metadata?.downloadCount}
+              {resource.metadata?.downloadCount || metadata.downloadCount}
             </span>
             {resource.metadata?.averageRating && <span>{resource.metadata?.averageRating}</span>}
             {resource.metadata?.repository && (
@@ -112,12 +115,16 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
             )}
             <span>v{resource.metadata?.version}</span>
           </div>
-          <div className={styles.description}>{resource.metadata?.description}</div>
-          {resource.metadata?.state === InstallState.NOT_INSTALLED && <div>
-            <Button size='small' onClick={() => { }}>
-              {localize('marketplace.extension.install')}
-            </Button>
-          </div>}
+          <div className={styles.description}>
+            {replaceLocalizePlaceholder(resource.metadata?.description, resource.metadata?.extensionId)}
+          </div>
+          {resource.metadata?.state === InstallState.NOT_INSTALLED && (
+            <div>
+              <Button size='small' onClick={() => {}}>
+                {localize('marketplace.extension.install')}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       <div className={styles.extension_overview_body}>
@@ -125,10 +132,10 @@ export const ExtensionOverview: ReactEditorComponent<VSXExtensionRaw & VSXExtens
           className={styles.tabs}
           value={activateKey}
           onChange={onDidTabChange}
-          tabs={tabs}
+          tabs={[TabActiveKey.details, TabActiveKey.changelog]}
         />
-        {activateKey === TabActiveKey.details && metadata.readme && (<Markdown content={metadata.readme} />)}
-        {activateKey === TabActiveKey.changelog && metadata.changelog && (<Markdown content={metadata.changelog} />)}
+        {activateKey === TabActiveKey.details && metadata.readme && <Markdown content={metadata.readme} />}
+        {activateKey === TabActiveKey.changelog && metadata.changelog && <Markdown content={metadata.changelog} />}
       </div>
     </div>
   );
