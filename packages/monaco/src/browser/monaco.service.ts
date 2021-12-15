@@ -24,7 +24,7 @@ import { monaco } from './monaco-api';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoService } from '../common';
 
-const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID = 'sumi-overflow-widgets-container';
+// const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID = 'sumi-overflow-widgets-container';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService {
@@ -55,11 +55,12 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   get monacoBaseOptions() {
     return {
+      // revert because https://github.com/opensumi/core/issues/124
       // Monaco 默认会将 overflowWidgets（如 hover） 放置在编辑器内部的 DOM 中
       // 但是 Monaco 在计算 overflowWidgets 的位置时是使用整个 body 的高度来计算定位的
       // 但我们会在顶部增加我们自己的业务组件，就会导致遮挡这些 overflowWidgets
       // 所以此处将 overflowWidget 放置在 body 下构造的一个专门的 container 中
-      overflowWidgetsDomNode: document.getElementById(SUMI_OVERFLOW_WIDGETS_CONTAINER_ID)!,
+      // overflowWidgetsDomNode: document.getElementById(SUMI_OVERFLOW_WIDGETS_CONTAINER_ID)!,
       glyphMargin: true,
       lightbulb: {
         enabled: true,
@@ -74,11 +75,12 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   constructor() {
     super();
 
-    const overflowWidgetsContainer = document.createElement('div');
+    // revert because https://github.com/opensumi/core/issues/124
+    // const overflowWidgetsContainer = document.createElement('div');
     // 让该容器的子元素都能被应用到 manaco-editor 中的样式
-    overflowWidgetsContainer.className = 'monaco-editor';
-    overflowWidgetsContainer.id = SUMI_OVERFLOW_WIDGETS_CONTAINER_ID;
-    document.body.appendChild(overflowWidgetsContainer);
+    // overflowWidgetsContainer.className = 'monaco-editor';
+    // overflowWidgetsContainer.id = SUMI_OVERFLOW_WIDGETS_CONTAINER_ID;
+    // document.body.appendChild(overflowWidgetsContainer);
   }
 
   public createCodeEditor(
