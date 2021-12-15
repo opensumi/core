@@ -3,14 +3,14 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@open
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource } from '@opensumi/ide-core-browser';
+import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource, LRUMap } from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
-import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 @Injectable({multiple: true})
@@ -190,6 +190,8 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
 export class TreeViewDataProvider extends Tree {
 
+  private cachedMenu: Map<string, MenuNode[]> = new Map();
+
   private onTreeDataChangedEmitter = new Emitter<any>();
   private onRevealChangedEmitter = new Emitter<any>();
 
@@ -339,17 +341,20 @@ export class TreeViewDataProvider extends Tree {
   }
 
   private getInlineMenuNodes(viewItemValue: string) {
+    if (this.cachedMenu.has(viewItemValue)) {
+      return this.cachedMenu.get(viewItemValue)!;
+    }
+
     const viewContextKey = this.contextKeyService.createScoped();
 
     viewContextKey.createKey('view', this.treeViewId);
     viewContextKey.createKey('viewItem', viewItemValue);
-
     // viewItem
     const menus = this.menuService.createMenu(MenuId.ViewItemContext, viewContextKey);
     const result = generateCtxMenu({ menus, separator: 'inline' });
     menus.dispose();
     viewContextKey.dispose();
-
+    this.cachedMenu.set(viewItemValue, result[0]);
     return result[0];
   }
 

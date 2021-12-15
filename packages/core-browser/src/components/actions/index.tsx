@@ -306,7 +306,7 @@ export const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
   className?: string;
-} & BaseActionListProps> = ({
+} & BaseActionListProps> = React.memo(({
   /**
    * ActionListType 默认为 icon 类型
    * 所有没有增加 type 的 menu 都是 icon 类型
@@ -391,7 +391,7 @@ export const TitleActionList: React.FC<{
       { !moreAtFirst && moreAction }
     </div>
   );
-};
+});
 
 TitleActionList.displayName = 'TitleActionList';
 
@@ -460,3 +460,5 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       {...restProps} />
   );
 }
+
+InlineMenuBar.displayName = 'InlineMenuBar';
