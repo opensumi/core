@@ -20,7 +20,6 @@ export const SCMResourceTree: React.FC<{
   width: number;
   height: number;
 }> = observer(({
-  width,
   height,
 }) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
@@ -29,8 +28,6 @@ export const SCMResourceTree: React.FC<{
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
-  const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
-  const { iconThemeDesc, decorationService, labelService, commandService } = scmTreeModelService;
 
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
@@ -141,6 +138,58 @@ export const SCMResourceTree: React.FC<{
     scmTreeModelService.handleContextMenu(event, item, type);
   }, []);
 
+  return <div
+    className={clx(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
+    tabIndex={-1}
+    ref={wrapperRef}
+    data-name={TREE_FIELD_NAME}
+  >
+    <TreeView
+      isReady={isReady}
+      model={model}
+      height={height}
+      onTreeReady={handleTreeReady}
+      onItemClick={handleItemClick}
+      onItemDoubleClick={handleItemDoubleClick}
+      onTwistierClick={handleTwistierClick}
+      onContextMenu={handleContextMenu}
+    />
+  </div>;
+});
+
+SCMResourceTree.displayName = 'SCMResourceTree';
+
+interface TreeViewProps {
+  isReady: boolean;
+  model: TreeModel | undefined;
+  height: number;
+  onTreeReady(handle: IRecycleTreeHandle): void;
+  onItemClick(event: React.MouseEvent, item: SCMResourceFile | SCMResourceGroup, type: TreeNodeType): void;
+  onItemDoubleClick(event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType): void;
+  onContextMenu(event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType): void;
+  onTwistierClick(event: React.MouseEvent, item: SCMResourceFolder): void;
+}
+
+function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps) {
+  return prevProps.isReady === nextProps.isReady
+  && prevProps.model === nextProps.model
+  && prevProps.height === nextProps.height;
+}
+
+const TreeView = React.memo(({
+  isReady,
+  model,
+  height,
+  onTreeReady,
+  onItemClick,
+  onItemDoubleClick,
+  onTwistierClick,
+  onContextMenu,
+}: TreeViewProps) => {
+  const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
+  const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
+  const { iconThemeDesc, decorationService, labelService, commandService } = scmTreeModelService;
+
   const renderSCMTreeNode = React.useCallback((props: ISCMTreeNodeProps) => (
     <SCMTreeNode
       item={props.item}
@@ -149,41 +198,27 @@ export const SCMResourceTree: React.FC<{
       labelService={labelService}
       commandService={commandService}
       decorations={scmTreeModelService.decorations.getDecorations(props.item)}
-      onClick={handleItemClick}
-      onDoubleClick={handleItemDoubleClick}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handleContextMenu}
+      onClick={onItemClick}
+      onDoubleClick={onItemDoubleClick}
+      onTwistierClick={onTwistierClick}
+      onContextMenu={onContextMenu}
       defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
       leftPadding={scmTreeService.isTreeMode ? 8 : 0}
       iconTheme={iconThemeDesc}
     />
   ), [model]);
 
-  return <div
-    className={clx(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
-    tabIndex={-1}
-    ref={wrapperRef}
-    data-name={TREE_FIELD_NAME}
-  >
-    {
-      isReady
-        ? (
-          !!model && <RecycleTree
-            height={height}
-            width={width}
-            itemHeight={SCM_TREE_NODE_HEIGHT}
-            onReady={handleTreeReady}
-            model={model}
-            getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
-            overScanCount={100}
-
-          >
-            {renderSCMTreeNode}
-          </RecycleTree>
-        )
-        : <span className={styles.scm_tree_empty_text}></span>
-    }
-  </div>;
-});
-
-SCMResourceTree.displayName = 'SCMResourceTree';
+  if (isReady && !!model) {
+    return (<RecycleTree
+      height={height}
+      itemHeight={SCM_TREE_NODE_HEIGHT}
+      onReady={onTreeReady}
+      model={model}
+      getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
+      overScanCount={100}
+    >
+      {renderSCMTreeNode}
+    </RecycleTree>);
+  }
+  return <span className={styles.scm_tree_empty_text} />;
+}, isTreeViewPropsEqual);

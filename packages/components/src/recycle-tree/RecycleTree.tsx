@@ -844,11 +844,15 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
+  private getItemSize(index: number) {
+    return this.dynamicSizeMap.get(index) || this.props.itemHeight;
+  }
+
   public render() {
     const {
       children,
       itemHeight,
-      width,
+      width = '100%',
       height,
       style,
       className,
@@ -884,7 +888,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
     return (
       supportDynamicHeights
-      ? <VariableSizeList ref={this.listRef as React.RefObject<VariableSizeList>} itemSize={(index: number) => (this.dynamicSizeMap.get(index) || itemHeight)} {...addonProps}>
+      ? <VariableSizeList ref={this.listRef as React.RefObject<VariableSizeList>} itemSize={this.getItemSize.bind(this)} {...addonProps}>
         {this.renderItem}
       </VariableSizeList>
       : <FixedSizeList ref={this.listRef as React.RefObject<FixedSizeList>} itemSize={itemHeight} {...addonProps}>
