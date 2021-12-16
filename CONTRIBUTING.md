@@ -30,7 +30,7 @@ You may need the following development tools:
         - Install the Python version corresponding to the current version [Microsoft Store Package](https://docs.python.org/3/using/windows.html#the-microsoft-store-package)
         - Install `Visual C++ Build Environment`: Visit and install [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=BuildTools) or [ Visual Studio Community Edition](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community). The minimal installation mode is to install only `Desktop Development with C++`
         - Open the command line and execute `npm config set msvs_version 2019`
-    - Note: Make sure that your local PATH contains only ASCII characters, otherwise it may cause [https://github.com/nodejs/node-gyp/issues/297](node-gyp usage problems (nodejs/node-gyp/ issues#297)), and currently does not currently support the construction and debugging of the project under the lower version of the Windows environment.
+    - Note: Make sure that your local PATH contains only ASCII characters, otherwise it may cause [node-gyp usage problems (nodejs/node-gyp/ issues#297)](https://github.com/nodejs/node-gyp/issues/297), and currently does not currently support the construction and debugging of the project under the lower version of the Windows environment.
 
 ## Troubleshooting
 
