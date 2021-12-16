@@ -42,7 +42,7 @@ $ npm install --canvas_binary_host_mirror=https://npm.taobao.org/mirrors/node-ca
         - 安装当前版本对应的 Python 版本 [Microsoft Store Package](https://docs.python.org/3/using/windows.html#the-microsoft-store-package)
         - 安装 `Visual C++ Build Environment`: 访问并安装 [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=BuildTools) 或者 [Visual Studio Community Edition](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community)。最小化的安装模式是只安装 `Desktop Development with C++`
         - 打开命令行执行 `npm config set msvs_version 2019`
-    - 注意：确保你本地的 PATH 中只包含 ASCII 字符，否则可能会导致 [https://github.com/nodejs/node-gyp/issues/297](node-gyp usage problems (nodejs/node-gyp/issues#297))，同时当前暂不支持更低版本 Windows 环境下对项目的构建及调试。
+    - 注意：确保你本地的 PATH 中只包含 ASCII 字符，否则可能会导致 [node-gyp usage problems (nodejs/node-gyp/issues#297)](https://github.com/nodejs/node-gyp/issues/297) 问题，同时当前暂不支持更低版本 Windows 环境下对项目的构建及调试。
 
 ## 常见问题
 
