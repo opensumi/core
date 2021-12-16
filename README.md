@@ -22,7 +22,7 @@ By default, the `tools/workspace` folder in the project would be opened, or you 
 $ MY_WORKSPACE={local_path} npm run start
 ```
 
-Usually, you may still encounter some system-level environment dependencies. You can visit [Development Environment Preparation](./CONTRIBUTING-zh_CN.md#Development Environment Preparation) to see how to install the corresponding environment dependencies.
+Usually, you may still encounter some system-level environment dependencies. You can visit [Development Environment Preparation](./CONTRIBUTING.md#development-environment-preparation) to see how to install the corresponding environment dependencies.
 
 ## Contributing
 
