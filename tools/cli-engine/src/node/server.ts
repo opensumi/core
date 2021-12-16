@@ -110,7 +110,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   await serverApp.start(server);
 
   app.use(
-    // eslint-disable-next-line @typescript-eslint/ban-types
     mount<{}>('/', async (ctx, next) => {
       console.log('REQUEST URL:', ctx.url);
       let staticPath;

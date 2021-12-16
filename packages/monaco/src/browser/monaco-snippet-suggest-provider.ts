@@ -303,7 +303,6 @@ export interface JsonSerializedSnippet {
   description: string;
 }
 export namespace JsonSerializedSnippet {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   export function is(obj: Object | undefined): obj is JsonSerializedSnippet {
     return typeof obj === 'object' && 'body' in obj && 'prefix' in obj;
   }

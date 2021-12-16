@@ -44,7 +44,6 @@ export function isStringArray(value: any): value is string[] {
  * @returns whether the provided parameter is of type `object` but **not**
  *	`null`, an `array`, a `regexp`, nor a `date`.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function isObject(obj: any): obj is Object {
   // The method can't do a type cast since there are type (like strings) which
   // are subclasses of any put not positvely matched by the function. Hence type
@@ -100,7 +99,6 @@ export function isUndefinedOrNull(obj: any): obj is undefined | null {
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function hasProperty<X extends {}, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {
   return prop in obj;
 }
@@ -125,7 +123,6 @@ export function isEmptyObject(obj: any): obj is any {
 /**
  * @returns whether the provided parameter is a JavaScript Function or not.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function isFunction<T extends Function>(obj: any): obj is T {
   return typeof obj === _typeof.function;
 }
@@ -137,7 +134,6 @@ export function areFunctions(...objects: any[]): boolean {
   return objects.length > 0 && objects.every(isFunction);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type TypeConstraint = string | Function;
 
 export function validateConstraints(args: any[], constraints: Array<TypeConstraint | undefined>): void {

@@ -656,7 +656,6 @@ function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.E
 function fileServiceInterceptor(fileService: IFileService, blackList: string[], blockPatterns: string[]) {
   for (const method of blackList) {
     if (typeof fileService[method] === 'function') {
-      // eslint-disable-next-line @typescript-eslint/ban-types
       const originFunc: Function = fileService[method];
       fileService[method] = (...args) => {
         // 第一个参数为uri/{uri}

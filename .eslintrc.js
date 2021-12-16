@@ -129,6 +129,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn',
     '@typescript-eslint/ban-ts-comment': 'warn',
     '@typescript-eslint/no-this-alias': 'warn',
+    '@typescript-eslint/ban-types': 'warn',
     'no-prototype-builtins': 'warn',
     'prefer-rest-params': 'warn',
     'no-control-regex': 'warn',

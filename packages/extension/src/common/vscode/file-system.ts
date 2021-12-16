@@ -193,7 +193,6 @@ export class FileSystemError extends Error {
   constructor(
     uriOrMessage?: string | URI,
     code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown,
-    // eslint-disable-next-line @typescript-eslint/ban-types
     terminator?: Function,
   ) {
     super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);

@@ -10,7 +10,6 @@ class SemanticTokensPreviousResult {
   constructor(public readonly resultId: string | undefined, public readonly tokens?: Uint32Array) {}
 }
 
-/* tslint:disable interface-over-type-literal */
 interface RelaxedSemanticTokens {
   readonly resultId?: string;
   readonly data: number[];

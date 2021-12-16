@@ -24,7 +24,6 @@ interface INodeProcess {
   platform: string;
   env: IProcessEnvironment;
   getuid(): number;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   nextTick: Function;
   versions?: {
     electron?: string;

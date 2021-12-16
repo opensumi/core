@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function once<T extends Function>(this: any, fn: T): T {
   const _this = this;
   let didCall = false;

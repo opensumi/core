@@ -422,7 +422,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       // use (undocumented) _debugProcess feature of node
       try {
         // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
-        // tslint:disable-next-line
         console.log(`do open inspect port, pid: ${extHostProcessId}`);
         (process as ProcessExt)._debugProcess!(extHostProcessId);
       } catch (err) {

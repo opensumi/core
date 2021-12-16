@@ -156,7 +156,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private reconnectOnEvent = () => {
     global.clearTimeout(this.reconnectingTimer);
     this.reconnectingTimer = global.setTimeout(() => {
-      // tslint
       console.warn('reconnecting ext host server');
       this.createSocket();
     }, this.options.retryTime!);

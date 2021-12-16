@@ -69,7 +69,7 @@ export class CharacterSet {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/ban-types
-    this._actual = new CharacterClassifier<EBoolean>(Boolean.False);
+    this._actual = new CharacterClassifier<EBoolean>(EBoolean.False);
   }
 
   public add(charCode: number): void {

@@ -708,7 +708,6 @@ export async function expectThrowsAsync(
 ): Promise<void>;
 export async function expectThrowsAsync(
   actual: Promise<any>,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   constructor: Error | Function,
   expected?: string | RegExp,
   message?: string,
