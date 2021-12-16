@@ -208,7 +208,6 @@ export class AccordionService extends WithEventBus {
     // 创建 scopedContextKeyService
     this.registerContextService(view.id);
 
-    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id, disposables),
