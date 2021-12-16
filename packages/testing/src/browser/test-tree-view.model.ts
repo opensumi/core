@@ -1,8 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-components/lib/utils';
-import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
-import { filter, map } from '@opensumi/ide-core-common/lib/iterator';
-import { isDefined } from '@opensumi/ide-core-common/lib/utils';
+import { Disposable, isDefined, filter, map } from '@opensumi/ide-core-browser';
 
 import { ITestService, TestServiceToken } from '../common';
 import {

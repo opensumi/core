@@ -35,7 +35,7 @@ export interface IRecycleTreeProps<T = TreeModel> {
   height: number;
   /**
    * 容器宽度
-   * height 计算出可视区域渲染数量
+   * 不传默认按照 100% 宽度渲染
    * @type {number}
    * @memberof RecycleTreeProps
    */

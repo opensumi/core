@@ -1,4 +1,4 @@
-import { Event } from '@opensumi/ide-core-common';
+import { Event } from '@opensumi/ide-core-browser';
 
 import { InternalTestItem, TestResultState } from './testCollection';
 

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { Event } from '@opensumi/ide-core-common';
+import { Event, map, useInjectable } from '@opensumi/ide-core-browser';
 import { IBasicInlineMenuPosition, IBasicTreeData } from '@opensumi/ide-components/lib/recycle-tree/basic/types';
 import { BasicRecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
-import { map } from '@opensumi/ide-core-common/lib/iterator';
 
 import { ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';

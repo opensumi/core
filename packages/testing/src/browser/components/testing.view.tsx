@@ -1,6 +1,6 @@
 import React from 'react';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
-import { localize } from '@opensumi/ide-core-common/lib/localize';
+import { localize } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { Input } from '@opensumi/ide-components/lib/input/Input';
 

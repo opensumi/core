@@ -7,8 +7,7 @@ import {
   Disposable,
   Emitter,
   IDisposable,
-  localize,
-} from '@opensumi/ide-core-common';
+} from '@opensumi/ide-core-browser';
 
 import { ITestController, ITestService, TestId } from '../common';
 import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
