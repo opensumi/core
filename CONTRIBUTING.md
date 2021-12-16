@@ -15,22 +15,22 @@ Before developing the code, you need to install some necessary development tools
 
 You may need the following development tools:
 
--[Git](https://git-scm.com)
--[Node.JS](https://nodejs.org/en/), **x64**, version number `>= 12.x`, `<= 14.x`
--[Python](https://www.python.org/downloads/) (pre-dependency of node-gyp library; view [node-gyp readme](https://github.com/nodejs/node-gyp# installation) Find a suitable version currently supported)
-  -**Note:** Windows users will install Python automatically by installing the npm module of `windows-build-tools`, which can be quickly installed in this way. (See below)
--A C/C++ compilation tool suitable for your system:
+- [Git](https://git-scm.com)
+- [Node.JS](https://nodejs.org/en/), **x64**, version number `>= 12.x`, `<= 14.x`
+- [Python](https://www.python.org/downloads/) (pre-dependency of node-gyp library; view [node-gyp readme](https://github.com/nodejs/node-gyp# installation) Find a suitable version currently supported)
+  - **Note:** Windows users will install Python automatically by installing the npm module of `windows-build-tools`, which can be quickly installed in this way. (See below)
+- A C/C++ compilation tool suitable for your system:
   -**macOS**
-    -Installing [Xcode](https://developer.apple.com/xcode/downloads/) and its command line tools will automatically install `gcc`, the installation process relies on the `make` tool chain
-      -Run `xcode-select --install` to install command line tools
+    - Installing [Xcode](https://developer.apple.com/xcode/downloads/) and its command line tools will automatically install `gcc`, the installation process relies on the `make` tool chain
+      - Run `xcode-select --install` to install command line tools
   -**Windows 10/11**
-    -Install Windows Build Tools:
-      -If you install it through the Node installer provided by [Node.JS](https://nodejs.org/en/download/) and make sure you install the native module tools, the environment will be able to be used normally.
-      -If you manage scripts through Node version, such as [nvm](https://github.com/coreybutler/nvm-windows) or [nvs](https://github.com/jasongin/nvs)
-        -Install the Python version corresponding to the current version [Microsoft Store Package](https://docs.python.org/3/using/windows.html#the-microsoft-store-package)
-        -Install `Visual C++ Build Environment`: Visit and install [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=BuildTools) or [ Visual Studio Community Edition](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community). The minimal installation mode is to install only `Desktop Development with C++`
-        -Open the command line and execute `npm config set msvs_version 2019`
-    -Note: Make sure that your local PATH contains only ASCII characters, otherwise it may cause [https://github.com/nodejs/node-gyp/issues/297](node-gyp usage problems (nodejs/node-gyp/ issues#297)), and currently does not currently support the construction and debugging of the project under the lower version of the Windows environment.
+    - Install Windows Build Tools:
+      - If you install it through the Node installer provided by [Node.JS](https://nodejs.org/en/download/) and make sure you install the native module tools, the environment will be able to be used normally.
+      - If you manage scripts through Node version, such as [nvm](https://github.com/coreybutler/nvm-windows) or [nvs](https://github.com/jasongin/nvs)
+        - Install the Python version corresponding to the current version [Microsoft Store Package](https://docs.python.org/3/using/windows.html#the-microsoft-store-package)
+        - Install `Visual C++ Build Environment`: Visit and install [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=BuildTools) or [ Visual Studio Community Edition](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community). The minimal installation mode is to install only `Desktop Development with C++`
+        - Open the command line and execute `npm config set msvs_version 2019`
+    - Note: Make sure that your local PATH contains only ASCII characters, otherwise it may cause [https://github.com/nodejs/node-gyp/issues/297](node-gyp usage problems (nodejs/node-gyp/ issues#297)), and currently does not currently support the construction and debugging of the project under the lower version of the Windows environment.
 
 ## Troubleshooting
 
