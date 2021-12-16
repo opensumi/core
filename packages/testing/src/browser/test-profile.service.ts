@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { Disposable } from '@opensumi/ide-core-browser';
 
 import { ITestController } from '../index';
 import { ITestProfileService, sorter } from '../common/test-profile';

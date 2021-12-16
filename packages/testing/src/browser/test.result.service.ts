@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { uuid } from '@opensumi/ide-core-common';
+import { uuid } from '@opensumi/ide-core-browser';
 import { ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import { ITestResult, ITestResultService, TestResultImpl } from '../common/test-result';
 import { ResolvedTestRunRequest, ExtensionRunTestsRequest, ITestRunProfile } from '../common/testCollection';

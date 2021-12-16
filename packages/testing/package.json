@@ -4,7 +4,6 @@
   "files": [
     "lib"
   ],
-  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
@@ -15,14 +14,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.12.0",
-    "@opensumi/ide-components": "2.12.0",
-    "@opensumi/ide-core-browser": "2.12.0",
-    "@opensumi/ide-core-node": "2.12.0",
-    "@opensumi/ide-editor": "2.12.0",
-    "@opensumi/ide-main-layout": "2.12.0"
   },
   "devDependencies": {
-    "@opensumi/ide-dev-tool": "^1.1.0"
+    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-components": "2.12.0",
+    "@opensumi/ide-dev-tool": "^1.1.0",
+    "@opensumi/ide-editor": "2.12.0",
+    "@opensumi/ide-main-layout": "2.12.0"
   }
 }

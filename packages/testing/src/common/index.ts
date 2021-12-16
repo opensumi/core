@@ -1,5 +1,4 @@
-import { Event, IDisposable } from '@opensumi/ide-core-common';
-import { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
+import { Event, IDisposable, CancellationToken } from '@opensumi/ide-core-browser';
 import { ITestResult } from './test-result';
 import { InternalTestItem, MainThreadTestCollection, ResolvedTestRunRequest, RunTestForControllerRequest, TestRunProfileBitset, TestsDiff } from './testCollection';
 
