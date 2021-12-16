@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-menu-bar",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "description": "@opensumi/ide-menu-bar",
   "files": [
     "lib"
@@ -17,12 +17,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.12.0",
-    "@opensumi/ide-core-node": "2.12.0",
-    "@opensumi/ide-components": "2.12.0"
+    "@opensumi/ide-core-common": "2.13.0",
+    "@opensumi/ide-core-node": "2.13.0",
+    "@opensumi/ide-components": "2.13.0"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.12.0",
+    "@opensumi/ide-core-browser": "2.13.0",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
