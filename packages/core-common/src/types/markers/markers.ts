@@ -50,6 +50,7 @@ export namespace MapMap {
   export function keys(map: MapMap<any>): string[] {
     const result: string[] = [];
     if (map) {
+      // eslint-disable-next-line guard-for-in
       for (const key in map) {
         result.push(key);
       }

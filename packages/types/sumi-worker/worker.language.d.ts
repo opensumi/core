@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 declare module 'sumi-worker' {
   export namespace languages {
     /**
@@ -1147,7 +1148,6 @@ declare module 'sumi-worker' {
   /**
    * Folding context (for future use)
    */
-  // tslint:disable-next-line:no-empty-interface
   export interface FoldingContext {}
 
   /**

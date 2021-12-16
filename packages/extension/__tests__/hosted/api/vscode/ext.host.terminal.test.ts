@@ -148,9 +148,7 @@ describe(__filename, () => {
     expect(terminal4).toBeInstanceOf(Terminal);
     expect(terminal4.name).toBe('terminal-4');
 
-    mainThread['$sendProcessReady'] = jest.fn(() => {
-      return;
-    });
+    mainThread['$sendProcessReady'] = jest.fn(() => {});
 
     await mainThread['proxy'].$startExtensionTerminal('fake-id-1', {
       columns: 80,

@@ -458,7 +458,7 @@ function initTable() {
 
 const _table = initTable();
 const _scores = initTable();
-const _arrows = <Arrow[][]>initTable();
+const _arrows = initTable() as Arrow[][];
 const _debug = false;
 
 function printTable(table: number[][], pattern: string, patternLen: number, word: string, wordLen: number): string {
@@ -563,7 +563,7 @@ export namespace FuzzyScore {
   /**
    * No matches and value `-100`
    */
-  export const Default: [-100, 0, 0] = <[-100, 0, 0]>Object.freeze([-100, 0, 0]);
+  export const Default = Object.freeze([-100, 0, 0]) as [-100, 0, 0];
 
   export function isDefault(score?: FuzzyScore): score is [-100, 0, 0] {
     return !score || (score[0] === -100 && score[1] === 0 && score[2] === 0);

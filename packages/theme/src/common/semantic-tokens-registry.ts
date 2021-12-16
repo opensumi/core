@@ -198,11 +198,11 @@ export interface MatcherWithPriority<T> {
 }
 
 function isIdentifier(token: string | null): token is string {
-  return !!token && !!token.match(/[\w\.:]+/);
+  return !!token && !!token.match(/[\w.:]+/);
 }
 
 function newTokenizer(input: string): { next: () => string | null } {
-  const regex = /([LR]:|[\w\.:][\w\.:\-]*|[\,\|\-\(\)])/g;
+  const regex = /([LR]:|[\w.:][\w.:-]*|[,|\-()])/g;
   let match = regex.exec(input);
   return {
     next: () => {

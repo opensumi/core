@@ -73,9 +73,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell;
       case WindowsShellType.cmd:
         return WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd;
-      case WindowsShellType['git-bash']:
+      case WindowsShellType['git-bash']: {
         const shell = findShellExecutable(WINDOWS_GIT_BASH_PATHS);
         return shell;
+      }
       default:
         // 未知的 shell，返回 undefined，后续会使用系统默认值处理
         return undefined;

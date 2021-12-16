@@ -31,26 +31,30 @@ const infoDarkEnd = encodeURIComponent('"/></svg>');
 
 function getSVGData(severity: MarkerSeverity, theme: ThemeType): string {
   switch (severity) {
-    case MarkerSeverity.Hint:
+    case MarkerSeverity.Hint: {
       const ignoreColor = theme === LIGHT ? Color.fromHex('#75BEFF') : Color.fromHex('#007ACC');
       return theme === LIGHT
         ? infoStart + encodeURIComponent(ignoreColor.toString()) + infoEnd
         : infoDarkStart + encodeURIComponent(ignoreColor.toString()) + infoDarkEnd;
-    case MarkerSeverity.Info:
+    }
+    case MarkerSeverity.Info: {
       const infoColor = theme === LIGHT ? Color.fromHex('#007ACC') : Color.fromHex('#75BEFF');
       return theme === LIGHT
         ? infoStart + encodeURIComponent(infoColor.toString()) + infoEnd
         : infoDarkStart + encodeURIComponent(infoColor.toString()) + infoDarkEnd;
-    case MarkerSeverity.Warning:
+    }
+    case MarkerSeverity.Warning: {
       const warningColor = theme === LIGHT ? Color.fromHex('#DDB100') : Color.fromHex('#fc0');
       return theme === LIGHT
         ? warningStart + encodeURIComponent(warningColor.toString()) + warningEnd
         : warningDarkStart + encodeURIComponent(warningColor.toString()) + warningDarkEnd;
-    case MarkerSeverity.Error:
+    }
+    case MarkerSeverity.Error: {
       const errorColor = theme === LIGHT ? Color.fromHex('#A1260D') : Color.fromHex('#F48771');
       return theme === LIGHT
         ? errorStart + encodeURIComponent(errorColor.toString()) + errorEnd
         : errorDarkStart + encodeURIComponent(errorColor.toString()) + errorDarkEnd;
+    }
   }
   return '';
 }

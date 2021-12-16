@@ -342,6 +342,7 @@ interface ExtendedFileFns {
  * @param obj object
  * @param prop string
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFileFns>(
   obj: X,
   prop: Y,

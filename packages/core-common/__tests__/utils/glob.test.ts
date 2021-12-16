@@ -865,7 +865,7 @@ describe('Glob', () => {
     matches: [string, string | boolean][],
     siblingsFns: ((name: string) => boolean)[] = [],
   ) {
-    const parsed = glob.parse(<glob.IExpression>pattern, { trimForExclusions: true });
+    const parsed = glob.parse(pattern as glob.IExpression, { trimForExclusions: true });
     expect(glob.getBasenameTerms(parsed)).toEqual(basenameTerms);
     matches.forEach(([text, result], i) => {
       expect(parsed(text, null!, siblingsFns[i])).toBe(result);
@@ -992,7 +992,7 @@ describe('Glob', () => {
     matches: [string, string | boolean][],
     siblingsFns: ((name: string) => boolean)[] = [],
   ) {
-    const parsed = glob.parse(<glob.IExpression>pattern, { trimForExclusions: true });
+    const parsed = glob.parse(pattern as glob.IExpression, { trimForExclusions: true });
     expect(glob.getPathTerms(parsed)).toEqual(pathTerms);
     matches.forEach(([text, result], i) => {
       expect(parsed(text, null!, siblingsFns[i])).toBe(result);

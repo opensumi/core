@@ -29,25 +29,25 @@ export function createCancelablePromise<T>(callback: (token: CancellationToken) 
     );
   });
 
-  return <CancelablePromise<T>>new (class {
+  return new (class {
     cancel() {
       source.cancel();
     }
-    then<
-      TResult1 = T,
-      TResult2 = never,
-    >(resolve?: ((value: T) => TResult1 | Promise<TResult1>) | undefined | null, reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
+    then<TResult1 = T, TResult2 = never>(
+      resolve?: ((value: T) => TResult1 | Promise<TResult1>) | undefined | null,
+      reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null,
+    ): Promise<TResult1 | TResult2> {
       return promise.then(resolve, reject);
     }
-    catch<
-      TResult = never,
-    >(reject?: ((reason: any) => TResult | Promise<TResult>) | undefined | null): Promise<T | TResult> {
+    catch<TResult = never>(
+      reject?: ((reason: any) => TResult | Promise<TResult>) | undefined | null,
+    ): Promise<T | TResult> {
       return this.then(undefined, reject);
     }
     finally(onfinally?: (() => void) | undefined | null): Promise<T> {
       return promise.finally(onfinally);
     }
-  })();
+  })() as CancelablePromise<T>;
 }
 
 export function hookCancellationToken<T>(token: CancellationToken, promise: Promise<T>): PromiseLike<T> {
@@ -312,7 +312,7 @@ export class ThrottledDelayer<T> {
 }
 
 export function isThenable<T>(obj: any): obj is Promise<T> {
-  return obj && typeof (<Promise<any>>obj).then === 'function';
+  return obj && typeof (obj as Promise<any>).then === 'function';
 }
 
 export function raceTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?: () => void): Promise<T | undefined> {

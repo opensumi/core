@@ -67,13 +67,14 @@ export function toCanonicalName(enc: string): string {
       return 'x-mac-roman';
     case 'utf8bom':
       return 'utf8';
-    default:
+    default: {
       const m = enc.match(/windows(\d+)/);
       if (m) {
         return 'windows-' + m[1];
       }
 
       return enc;
+    }
   }
 }
 
@@ -105,10 +106,10 @@ export function iconvEncode(content: string, encoding: string): Uint8Array | Buf
 
 function encodeLatin1(buffer: Uint8Array): string {
   let result = '';
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < buffer.length; i++) {
     result += String.fromCharCode(buffer[i]);
   }
-
   return result;
 }
 

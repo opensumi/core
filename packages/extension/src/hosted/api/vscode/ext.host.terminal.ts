@@ -229,7 +229,6 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
     for (const provider of this._linkProviders) {
       promises.push(
-        // eslint-disable-next-line no-async-promise-executor
         new Promise(async (r) => {
           cancellationSource.token.onCancellationRequested(() => r({ provider, links: [] }));
           const links = (await provider.provideTerminalLinks(context, cancellationSource.token)) || [];

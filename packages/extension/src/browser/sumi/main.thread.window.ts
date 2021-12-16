@@ -37,37 +37,33 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
     options?: IIDEWindowWebviewOptions,
     env?: IIDEWindowWebviewEnv,
   ): Promise<IWindowInfo> {
-    try {
-      let window: IPlainWebviewWindow;
-      if (this._plainWebviewWindowMap.has(webviewId)) {
-        window = this._plainWebviewWindowMap.get(webviewId)!;
-      } else {
-        window = this.webviewService.createWebviewWindow(options, env);
-        if (window) {
-          this.disposables.push(
-            window.onMessage((event) => {
-              this._proxy.$postMessage(webviewId, event);
-            }),
-          );
-          this.disposables.push(
-            window.onClosed((event) => {
-              this._proxy.$dispatchClosed(webviewId);
-              // 清理关闭的窗口模拟器
-              this.$destroy(webviewId);
-            }),
-          );
-          this.disposables.push(window);
-          this._plainWebviewWindowMap.set(webviewId, window);
-        }
+    let window: IPlainWebviewWindow;
+    if (this._plainWebviewWindowMap.has(webviewId)) {
+      window = this._plainWebviewWindowMap.get(webviewId)!;
+    } else {
+      window = this.webviewService.createWebviewWindow(options, env);
+      if (window) {
+        this.disposables.push(
+          window.onMessage((event) => {
+            this._proxy.$postMessage(webviewId, event);
+          }),
+        );
+        this.disposables.push(
+          window.onClosed((event) => {
+            this._proxy.$dispatchClosed(webviewId);
+            // 清理关闭的窗口模拟器
+            this.$destroy(webviewId);
+          }),
+        );
+        this.disposables.push(window);
+        this._plainWebviewWindowMap.set(webviewId, window);
       }
-      await window.ready;
-      return {
-        windowId: window.windowId,
-        webContentsId: window.webContentsId,
-      };
-    } catch (e) {
-      throw e;
     }
+    await window.ready;
+    return {
+      windowId: window.windowId,
+      webContentsId: window.webContentsId,
+    };
   }
 
   async $show(webviewId: string) {

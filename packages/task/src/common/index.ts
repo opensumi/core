@@ -5,7 +5,7 @@ import { UriComponents } from '@opensumi/ide-editor';
 import { ProblemCollector } from '../browser/problem-collector';
 import { TerminalOptions } from '@opensumi/ide-terminal-next/lib/common';
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TaskMap {}
 
 interface TaskFileter {
@@ -97,7 +97,7 @@ export const enum TerminateResponseCode {
   ProcessNotFound = 3,
 }
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ExecutorOptions {}
 
 export const ITaskExecutor = Symbol('ITaskExecutor');

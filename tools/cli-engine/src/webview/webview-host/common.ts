@@ -63,6 +63,7 @@ export interface IWebviewChannel {
 }
 
 function addslashes(str) {
+  // eslint-disable-next-line no-control-regex
   return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
 }
 

@@ -8,6 +8,7 @@ setPerformance(self.performance);
 // make sure Worker cors
 if (self.Worker) {
   const _Worker = self.Worker;
+  // eslint-disable-next-line no-global-assign
   Worker = function (stringUrl: string | URL, options?: WorkerOptions) {
     const js = `importScripts('${stringUrl}');`;
     options = options || {};

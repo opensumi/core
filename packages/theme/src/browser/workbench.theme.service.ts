@@ -554,7 +554,7 @@ class Theme implements ITheme {
   private addCustomTokenColors(customTokenColors: ITokenColorCustomizations) {
     // Put the general customizations such as comments, strings, etc. first so that
     // they can be overridden by specific customizations like "string.interpolated"
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const tokenGroup in tokenGroupToScopesMap) {
       const group = tokenGroup as keyof typeof tokenGroupToScopesMap; // TS doesn't type 'tokenGroup' properly
       const value = customTokenColors[group];
@@ -578,7 +578,7 @@ class Theme implements ITheme {
   }
 
   private overwriteCustomColors(colors: IColorCustomizations) {
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const id in colors) {
       const colorVal = colors[id];
       if (typeof colorVal === 'string') {
@@ -623,7 +623,7 @@ class Theme implements ITheme {
   private getColors(): IColorMap {
     if (!this.colorMap) {
       const colorMap = Object.create(null);
-      // tslint:disable-next-line
+      // eslint-disable-next-line guard-for-in
       for (const id in this.themeData.colorMap) {
         colorMap[id] = this.themeData.colorMap[id];
       }

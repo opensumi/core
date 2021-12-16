@@ -185,6 +185,7 @@ export class WebviewPanelManager {
         onLoad(newFrame.contentDocument, newFrame.contentWindow);
       }, 200);
 
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _this = this;
       newFrame.contentWindow.addEventListener('load', function (this: any, e) {
         if (_this.loadTimeout) {

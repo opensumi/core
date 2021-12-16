@@ -88,6 +88,7 @@ export function mockService<T = any>(target: Partial<T>): any {
       if (p === 'hasOwnProperty') {
         return t[p];
       }
+      // eslint-disable-next-line no-prototype-builtins
       if (!t.hasOwnProperty(p)) {
         t[p] = jest.fn();
       }

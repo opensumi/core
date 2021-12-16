@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import net from 'net';
 import {
   RPCService,

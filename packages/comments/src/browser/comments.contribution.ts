@@ -46,8 +46,7 @@ export class CommentsBrowserContribution
     BrowserEditorContribution,
     CommandContribution,
     TabBarToolbarContribution,
-    MenuContribution
-{
+    MenuContribution {
   @Autowired(ICommentsService)
   private readonly commentsService: ICommentsService;
 

@@ -121,14 +121,14 @@ export namespace VariableResolverService {
         variable = this.variableRegistry.getVariable(key);
 
         switch (key) {
-          case 'env':
+          case 'env': {
             const environment = variable && (await variable.resolve(this.options.context));
             if (!environment) {
               return;
             }
             const env = environment[isWindows ? value.toLowerCase() : value];
             return env;
-
+          }
           default:
             break;
         }

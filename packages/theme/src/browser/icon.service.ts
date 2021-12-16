@@ -177,7 +177,7 @@ export class IconService implements IIconService {
         }
       }
     } else {
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const themeType in icon) {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
         const targetPath = this.getPath(basePath, icon[themeType]);

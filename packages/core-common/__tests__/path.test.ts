@@ -152,6 +152,7 @@ describe('Paths (Node Implementation)', () => {
       }
       test[0].forEach((join: any) => {
         test[1].forEach((test: any) => {
+          // eslint-disable-next-line prefer-spread
           const actual = join.apply(null, test[0]);
           const expected = test[1];
           // For non-Windows specific tests with the Windows join(), we need to try
@@ -404,6 +405,7 @@ describe('Paths (Node Implementation)', () => {
       // @ts-ignore
       test[1].forEach((test) => {
         // @ts-ignore
+        // eslint-disable-next-line prefer-spread
         const actual = resolve.apply(null, test[0]);
         let actualAlt;
         const os = resolve === path.win32.resolve ? 'win32' : 'posix';

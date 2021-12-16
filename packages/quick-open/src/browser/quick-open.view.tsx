@@ -425,12 +425,13 @@ export const QuickOpenView = observer(() => {
     }
     const length = widget.items.length;
     switch (key.keyCode) {
-      case Key.ARROW_UP.keyCode:
+      case Key.ARROW_UP.keyCode: {
         event.preventDefault();
         event.stopPropagation();
         const selectIndex = widget.selectIndex - 1;
         widget.selectIndex = (length + (selectIndex % length)) % length;
         break;
+      }
       case Key.ARROW_DOWN.keyCode: {
         event.preventDefault();
         event.stopPropagation();

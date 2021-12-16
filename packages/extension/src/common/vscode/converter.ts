@@ -164,7 +164,6 @@ export namespace MarkdownString {
     value: string;
   }
 
-  // eslint-disable-next-line no-inner-declarations
   function isCodeblock(thing: any): thing is Codeblock {
     return (
       thing &&
@@ -214,7 +213,6 @@ export namespace MarkdownString {
     return res;
   }
 
-  // eslint-disable-next-line no-inner-declarations
   function _uriMassage(part: string, bucket: { [n: string]: UriComponents }): string {
     if (!part) {
       return part;
@@ -872,7 +870,6 @@ export namespace GlobPattern {
     return pattern; // preserve `undefined` and `null`
   }
 
-  // eslint-disable-next-line no-inner-declarations
   function isRelativePattern(obj: any): obj is vscode.RelativePattern {
     const rp = obj as vscode.RelativePattern;
     return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';

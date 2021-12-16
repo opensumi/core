@@ -103,7 +103,7 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
       doResolve(startPort, resolve);
     });
     server.on('error', (err) => {
-      if (err && ((<any>err).code === 'EADDRINUSE' || (<any>err).code === 'EACCES') && countTried < giveUpAfter) {
+      if (err && ((err as any).code === 'EADDRINUSE' || (err as any).code === 'EACCES') && countTried < giveUpAfter) {
         startPort++;
         countTried++;
         server.listen(startPort, '127.0.0.1');

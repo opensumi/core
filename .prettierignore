@@ -12,3 +12,7 @@ packages/*/dist/**
 
 packages/components/src/icon/iconfont
 packages/core-browser/src/style/octicons
+
+packages/extension/__mocks__/extension/browser-new.js
+packages/extension/__mocks__/extension/browser.js
+packages/extension/__mocks__/extension-error/browser.js

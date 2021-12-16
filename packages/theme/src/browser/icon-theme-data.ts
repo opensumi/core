@@ -158,6 +158,7 @@ function processIconThemeDocument(
 
       const folderNames = associations.folderNames;
       if (folderNames) {
+        // eslint-disable-next-line guard-for-in
         for (const folderName in folderNames) {
           addSelector(
             `${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`,
@@ -168,6 +169,7 @@ function processIconThemeDocument(
       }
       const folderNamesExpanded = associations.folderNamesExpanded;
       if (folderNamesExpanded) {
+        // eslint-disable-next-line guard-for-in
         for (const folderName in folderNamesExpanded) {
           addSelector(
             `${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`,
@@ -182,6 +184,7 @@ function processIconThemeDocument(
         if (!languageIds.jsonc && languageIds.json) {
           languageIds.jsonc = languageIds.json;
         }
+        // eslint-disable-next-line guard-for-in
         for (const languageId in languageIds) {
           addSelector(
             `${qualifier} .${escapeCSS(languageId)}-lang-file-icon.file-icon::before`,
@@ -192,6 +195,7 @@ function processIconThemeDocument(
       }
       const fileExtensions = associations.fileExtensions;
       if (fileExtensions) {
+        // eslint-disable-next-line guard-for-in
         for (const fileExtension in fileExtensions) {
           const selectors: string[] = [];
           const segments = fileExtension.toLowerCase().split('.');
@@ -207,6 +211,7 @@ function processIconThemeDocument(
       }
       const fileNames = associations.fileNames;
       if (fileNames) {
+        // eslint-disable-next-line guard-for-in
         for (let fileName in fileNames) {
           const selectors: string[] = [];
           fileName = fileName.toLowerCase();
@@ -249,6 +254,7 @@ function processIconThemeDocument(
     );
   }
 
+  // eslint-disable-next-line guard-for-in
   for (const defId in selectorByDefinitionId) {
     const selectors = selectorByDefinitionId[defId];
     const definition = iconThemeDocument.iconDefinitions[defId];

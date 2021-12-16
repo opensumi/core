@@ -108,10 +108,8 @@ export function compareByPrefix(one: string, other: string, lookFor: string): nu
   const elementBPrefixMatch = elementBName.startsWith(lookFor);
   if (elementAPrefixMatch !== elementBPrefixMatch) {
     return elementAPrefixMatch ? -1 : 1;
-  }
-
-  // Same prefix: Sort shorter matches to the top to have those on top that match more precisely
-  else if (elementAPrefixMatch && elementBPrefixMatch) {
+  } else if (elementAPrefixMatch && elementBPrefixMatch) {
+    // Same prefix: Sort shorter matches to the top to have those on top that match more precisely
     if (elementAName.length < elementBName.length) {
       return -1;
     }

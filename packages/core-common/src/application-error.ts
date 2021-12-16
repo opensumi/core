@@ -53,6 +53,7 @@ export namespace ApplicationError {
   }
   class Impl<C extends number, D> extends Error implements ApplicationError<C, D> {
     readonly data: D;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     constructor(readonly code: C, raw: ApplicationError.Literal<D>, constructorOpt?: Function) {
       super(raw.message);
       this.data = raw.data;

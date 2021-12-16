@@ -146,7 +146,7 @@ export class ThemeData implements IThemeData {
     this.name = name;
     this.base = base as BuiltinTheme;
     await this.loadColorTheme(themeLocation, this.themeSettings, this.colorMap);
-    // tslint:disable-next-line
+    // eslint-disable-next-line guard-for-in
     for (const key in this.colorMap) {
       this.colors[key] = Color.Format.CSS.formatHexA(this.colorMap[key]);
     }
@@ -284,7 +284,7 @@ export class ThemeData implements IThemeData {
       // semanticTokenColors
       const semanticTokenColors = theme.semanticTokenColors;
       if (semanticTokenColors && typeof semanticTokenColors === 'object') {
-        /* tslint:disable forin */
+        // eslint-disable-next-line guard-for-in
         for (const key in semanticTokenColors) {
           try {
             const rule = this.readSemanticTokenRule(key, semanticTokenColors[key]);
@@ -312,7 +312,7 @@ export class ThemeData implements IThemeData {
           );
         }
         // new JSON color themes format
-        // tslint:disable-next-line
+        // eslint-disable-next-line guard-for-in
         for (const colorId in colors) {
           const colorHex = colors[colorId];
           if (typeof colorHex === 'string') {
@@ -468,7 +468,7 @@ export class ThemeData implements IThemeData {
     };
 
     let hasUndefinedStyleProperty = false;
-    /* tslint:disable forin */
+    // eslint-disable-next-line guard-for-in
     for (const k in score) {
       const key = k as keyof TokenStyle;
       if (score[key] === -1) {

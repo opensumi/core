@@ -10,7 +10,7 @@ export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 
   onDidSendMessage: Event<vscode.DebugProtocolMessage>;
   handleMessage: (message: vscode.DebugProtocolMessage) => void;
-  dispose: () => {};
+  dispose: () => unknown;
 }
 
 export class DirectDebugAdapter extends AbstractDebugAdapter {

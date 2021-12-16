@@ -16,7 +16,7 @@ export const TestResourceProvider: IResourceProvider = {
     icon: 'iconTest ' + uri.toString(),
     supportsRevive: true,
   }),
-  shouldCloseResource: (r, []) => !doNotClose.includes(r.uri.toString()),
+  shouldCloseResource: (r, _) => !doNotClose.includes(r.uri.toString()),
 };
 
 const _onDidChangeTestContent = new Emitter<URI>();

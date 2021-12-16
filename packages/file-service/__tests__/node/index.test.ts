@@ -2,7 +2,7 @@ import { Injector } from '@opensumi/di';
 import { FileServiceModule, FileService } from '../../src/node';
 import { IFileService, FileChangeType } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
-import { isWindows } from '../../../core-common';
+import { isWindows } from '@opensumi/ide-core-common';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -701,20 +701,18 @@ describe('FileService', () => {
   });
 });
 
-// tslint:disable-next-line
 export async function expectThrowsAsync(
   actual: Promise<any>,
   expected?: string | RegExp,
   message?: string,
 ): Promise<void>;
-// tslint:disable-next-line
 export async function expectThrowsAsync(
   actual: Promise<any>,
+  // eslint-disable-next-line @typescript-eslint/ban-types
   constructor: Error | Function,
   expected?: string | RegExp,
   message?: string,
 ): Promise<void>;
-// tslint:disable-next-line
 export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): Promise<void> {
   let synchronous = () => {};
   try {

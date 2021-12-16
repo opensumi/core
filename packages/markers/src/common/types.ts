@@ -24,7 +24,7 @@ export interface IMarkerService {
 /**
  * marker 过滤条件
  */
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IFilterOptions {}
 
 /**

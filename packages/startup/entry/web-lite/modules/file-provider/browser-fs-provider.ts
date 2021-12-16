@@ -117,12 +117,8 @@ export class BrowserFsProvider implements IDiskFileProvider {
       }
       throw FileSystemError.FileExists(uri.path, 'Error occurred while creating the directory: path is a file.');
     }
-    try {
-      await promisify(fs.mkdir)(FileUri.fsPath(_uri));
-      return this.doGetStat(_uri, 0) as Promise<FileStat>;
-    } catch (err) {
-      throw err;
-    }
+    await promisify(fs.mkdir)(FileUri.fsPath(_uri));
+    return this.doGetStat(_uri, 0) as Promise<FileStat>;
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {

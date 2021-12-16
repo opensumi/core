@@ -80,7 +80,6 @@ export abstract class AbstractLineMatcher {
   }
 
   protected getEmptyProblemData(): ProblemData {
-    // eslint-disable-next-line no-null/no-null
     return Object.create(null) as ProblemData;
   }
 
@@ -181,7 +180,6 @@ export abstract class AbstractLineMatcher {
       return this.parseLocationInfo(data.location);
     }
     if (!data.line) {
-      // eslint-disable-next-line no-null/no-null
       return null;
     }
     const startLine = parseInt(data.line, 10);
@@ -193,7 +191,6 @@ export abstract class AbstractLineMatcher {
 
   private parseLocationInfo(value: string): Range | null {
     if (!value || !value.match(/(\d+|\d+,\d+|\d+,\d+,\d+,\d+)/)) {
-      // eslint-disable-next-line no-null/no-null
       return null;
     }
     const parts = value.split(',');
@@ -250,7 +247,6 @@ export abstract class AbstractLineMatcher {
   }
 
   private getSeverity(data: ProblemData): DiagnosticSeverity {
-    // eslint-disable-next-line no-null/no-null
     let result: Severity | null = null;
     if (data.severity) {
       const value = data.severity;
@@ -271,7 +267,6 @@ export abstract class AbstractLineMatcher {
         }
       }
     }
-    // eslint-disable-next-line no-null/no-null
     if (result === null || result === Severity.Ignore) {
       result = Severity.fromValue(this.matcher.severity as string) || Severity.Error;
     }

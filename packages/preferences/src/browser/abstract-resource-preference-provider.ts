@@ -222,7 +222,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       if (OVERRIDE_PROPERTY_PATTERN.test(preferenceName)) {
         const language = preferenceName.match(OVERRIDE_PROPERTY_PATTERN)![1];
         preferences.languageSpecific[language] = preferences.languageSpecific[language] || {};
-        // tslint:disable-next-line:forin
+        // eslint-disable-next-line guard-for-in
         for (const overriddenPreferenceName in preferenceValue) {
           const overriddenValue = preferenceValue[overriddenPreferenceName];
           preferences.languageSpecific[language][`${overriddenPreferenceName}`] = overriddenValue;

@@ -25,13 +25,13 @@ export interface PreferenceSchema {
   properties: PreferenceSchemaProperties;
 }
 export namespace PreferenceSchema {
-  export function is(obj: Object | undefined): obj is PreferenceSchema {
-    return !!obj && 'properties' in obj && PreferenceSchemaProperties.is((<any>obj)['properties']);
+  export function is(obj: any): obj is PreferenceSchema {
+    return !!obj && 'properties' in obj && PreferenceSchemaProperties.is(obj['properties']);
   }
   export function getDefaultScope(schema: PreferenceSchema): PreferenceScope {
     let defaultScope: PreferenceScope = PreferenceScope.Workspace;
     if (!PreferenceScope.is(schema.scope)) {
-      defaultScope = PreferenceScope.fromString(<string>schema.scope) || PreferenceScope.Workspace;
+      defaultScope = PreferenceScope.fromString(schema.scope as string) || PreferenceScope.Workspace;
     } else {
       defaultScope = schema.scope;
     }
@@ -43,7 +43,7 @@ export interface PreferenceSchemaProperties {
   [name: string]: PreferenceSchemaProperty;
 }
 export namespace PreferenceSchemaProperties {
-  export function is(obj: Object | undefined): obj is PreferenceSchemaProperties {
+  export function is(obj: any): obj is PreferenceSchemaProperties {
     return !!obj && typeof obj === 'object';
   }
 }
@@ -97,7 +97,7 @@ export namespace PreferenceDataProperty {
     } else if (typeof schemaProps.scope === 'string') {
       return Object.assign(schemaProps, { scope: PreferenceScope.fromString(schemaProps.scope) || defaultScope });
     }
-    return <PreferenceDataProperty>schemaProps;
+    return schemaProps as PreferenceDataProperty;
   }
 }
 

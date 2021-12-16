@@ -12,7 +12,7 @@ describe('Marshalling', () => {
   test('RegExp', () => {
     const value = /foo/gim;
     const raw = stringify(value);
-    const clone = <RegExp>parse(raw);
+    const clone = parse(raw) as RegExp;
 
     expect(value.source).toEqual(clone.source);
     expect(value.global).toEqual(clone.global);
@@ -23,7 +23,7 @@ describe('Marshalling', () => {
   test('URI', () => {
     const value = URI.from({ scheme: 'file', authority: 'server', path: '/shares/c#files', query: 'q', fragment: 'f' });
     const raw = stringify(value);
-    const clone = <URI>parse(raw);
+    const clone = parse(raw) as URI;
 
     expect(value.scheme).toEqual(clone.scheme);
     expect(value.authority).toEqual(clone.authority);

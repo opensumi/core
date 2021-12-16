@@ -127,7 +127,7 @@ export interface IServerAppOpts extends Partial<Config> {
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
   marketplace?: Partial<MarketplaceConfig>;
-  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>): void;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -140,7 +140,7 @@ export interface ServerAppContribution {
 }
 
 export interface IServerApp {
-  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>): void;
   start(server: http.Server | https.Server): Promise<void>;
 }
 
@@ -155,7 +155,7 @@ export class ServerApp implements IServerApp {
 
   private modulesInstances: NodeModule[];
 
-  use: (middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>) => void;
+  use: (middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>) => void;
 
   protected contributionsProvider: ContributionProvider<ServerAppContribution>;
 

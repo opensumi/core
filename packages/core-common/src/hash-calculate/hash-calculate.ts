@@ -39,11 +39,7 @@ export class HashCalculateServiceImpl implements IHashCalculateService {
     if (!this.initialized) {
       throw new Error('Please call #initialize first!');
     }
-    try {
-      const hash = this.cachedCalculator!.calculate(content);
-      return hash;
-    } catch (err) {
-      throw err;
-    }
+    const hash = this.cachedCalculator!.calculate(content);
+    return hash;
   }
 }

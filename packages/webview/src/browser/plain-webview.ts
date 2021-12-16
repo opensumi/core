@@ -131,7 +131,6 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 export class ElectronPlainWebview extends Disposable implements IPlainWebview {
   private _url: string | undefined;
 
-  // @ts-ignore
   private webview: Electron.WebviewTag | null;
 
   private wrapper: HTMLDivElement | null;

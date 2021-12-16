@@ -125,7 +125,7 @@ export function asArray<T>(x: T | T[]): T[] {
  * @param array
  */
 export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
-  return <T[]>array.filter((e) => !!e);
+  return array.filter((e) => !!e) as T[];
 }
 
 export function addElement<T>(array: Array<T>, element: T, unshift = false): IDisposable {

@@ -80,6 +80,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   const app = new Koa();
   const deferred = new Deferred<http.Server>();
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   app.use(cors());
   let opts: IServerAppOpts = {
@@ -109,6 +110,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   await serverApp.start(server);
 
   app.use(
+    // eslint-disable-next-line @typescript-eslint/ban-types
     mount<{}>('/', async (ctx, next) => {
       console.log('REQUEST URL:', ctx.url);
       let staticPath;

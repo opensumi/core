@@ -41,7 +41,7 @@ export class FileSearchService implements IFileSearchService {
         }
       }
     }
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const rootUri in roots) {
       const rootOptions = roots[rootUri];
       if (opts.includePatterns) {

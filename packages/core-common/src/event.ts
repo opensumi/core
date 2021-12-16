@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -356,7 +357,9 @@ export namespace Event {
   }
 
   export interface NodeEventEmitter {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     on(event: string | symbol, listener: Function): this;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     removeListener(event: string | symbol, listener: Function): this;
   }
 
@@ -789,7 +792,7 @@ export class AsyncEmitter<T extends WaitUntilEvent> extends Emitter<T> {
       const [listener, data] = this._asyncDeliveryQueue.shift()!;
       const thenables: Promise<any>[] = [];
 
-      const event = <T>{
+      const event = {
         ...data,
         waitUntil: (p: Promise<any>): void => {
           if (Object.isFrozen(thenables)) {
@@ -800,7 +803,7 @@ export class AsyncEmitter<T extends WaitUntilEvent> extends Emitter<T> {
           }
           thenables.push(p);
         },
-      };
+      } as T;
 
       try {
         if (typeof listener === 'function') {

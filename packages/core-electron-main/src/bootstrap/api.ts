@@ -75,7 +75,7 @@ export class ElectronMainApiProxy extends Disposable {
         if (!target[method] || typeof target[method] !== 'function') {
           throw new Error(`No Request Handler for ${name}.${method}`);
         }
-        const result = await target[method].apply(target, args);
+        const result = await target[method](...args);
         if (!event.sender.isDestroyed()) {
           event.sender.send('response:' + name, requestId, undefined, result);
         }

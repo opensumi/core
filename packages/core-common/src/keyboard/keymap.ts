@@ -78,6 +78,7 @@ function deserializeMapping(serializedMapping: ISerializedMapping) {
   const mapping = serializedMapping;
 
   const ret: { [key: string]: any } = {};
+  // eslint-disable-next-line guard-for-in
   for (const key in mapping) {
     const result: (string | number)[] = mapping[key];
     if (result.length) {
@@ -116,14 +117,14 @@ function deserializeMapping(serializedMapping: ISerializedMapping) {
 }
 
 export function getKeyboardLayoutId(layout: IKeyboardLayoutInfo): string {
-  if ((<IWindowsKeyboardLayoutInfo>layout).name) {
-    return (<IWindowsKeyboardLayoutInfo>layout).name;
+  if ((layout as IWindowsKeyboardLayoutInfo).name) {
+    return (layout as IWindowsKeyboardLayoutInfo).name;
   }
 
-  if ((<IMacKeyboardLayoutInfo>layout).id) {
-    return (<IMacKeyboardLayoutInfo>layout).id;
+  if ((layout as IMacKeyboardLayoutInfo).id) {
+    return (layout as IMacKeyboardLayoutInfo).id;
   }
-  return (<ILinuxKeyboardLayoutInfo>layout).layout;
+  return (layout as ILinuxKeyboardLayoutInfo).layout;
 }
 
 export class KeymapInfo {

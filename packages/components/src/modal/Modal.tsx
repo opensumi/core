@@ -116,6 +116,7 @@ export type ModalFunc = (props: ModalFuncProps) => {
   update: (newConfig: ModalFuncProps) => void;
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export default class Modal extends React.Component<ModalProps, {}> {
   static info: ModalFunc;
 

@@ -85,11 +85,16 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.processMap.delete(searchId);
   }
 
-  async search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
+  async search(
+    what: string,
+    rootUris: string[],
+    opts?: ContentSearchOptions,
+    cb?: (data: any) => any,
+  ): Promise<number> {
     const args = this.getSearchArgs(opts);
 
     if (opts && opts.matchWholeWord && !opts.useRegExp) {
-      what = what.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
+      what = what.replace(/[-\\{}*+?|^$.[\]()#]/g, '\\$&');
       if (!/\B/.test(what.charAt(0))) {
         what = '\\b' + what;
       }

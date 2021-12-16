@@ -13,7 +13,7 @@ export namespace PreferenceScope {
   export function getScopes(): PreferenceScope[] {
     return Object.keys(PreferenceScope)
       .filter((k) => typeof PreferenceScope[k as any] === 'string')
-      .map((v) => <PreferenceScope>Number(v));
+      .map((v) => Number(v));
   }
 
   export function getReversedScopes(): PreferenceScope[] {
@@ -25,7 +25,7 @@ export namespace PreferenceScope {
     const allNames = Object.keys(PreferenceScope).filter((k) => typeof PreferenceScope[k as any] === 'number');
     if (scope) {
       for (const name of allNames) {
-        if ((<any>PreferenceScope)[name] <= scope) {
+        if (PreferenceScope[name] <= scope) {
           names.push(name);
         }
       }

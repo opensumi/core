@@ -318,7 +318,7 @@ export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
   if (!array) {
     return array;
   }
-  return <T[]>array.filter((e) => !!e);
+  return array.filter((e) => !!e) as T[];
 }
 
 /**
@@ -329,6 +329,7 @@ export function coalesceInPlace<T>(array: Array<T | undefined | null>): void {
     return;
   }
   let to = 0;
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < array.length; i++) {
     if (array[i]) {
       array[to] = array[i];
@@ -460,11 +461,10 @@ export function commonPrefixLength<T>(
 }
 
 export function flatten<T>(arr: T[][]): T[] {
-  return (<T[]>[]).concat(...arr);
+  return ([] as T[]).concat(...arr);
 }
 
 export function range(to: number): number[];
-export function range(from: number, to: number): number[];
 export function range(arg: number, to?: number): number[] {
   let from = typeof to === 'number' ? arg : 0;
 

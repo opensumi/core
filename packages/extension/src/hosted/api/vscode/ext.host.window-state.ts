@@ -6,7 +6,6 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();
 
-  // tslint:disable-next-line: no-unused-variable
   constructor(private rpcProtocol: IRPCProtocol) {}
   private readonly _onDidChangeWindowState: Emitter<types.WindowState> = new Emitter();
 

@@ -153,7 +153,6 @@ export class ExtHostDocumentData extends MirrorTextModel {
       return this._lines[range.start.line].substring(range.start.character, range.end.character);
     }
 
-    // tslint:disable-next-line:one-variable-per-declaration
     const lineEnding = this._eol;
     const startLineIndex = range.start.line;
     const endLineIndex = range.end.line;

@@ -13,7 +13,7 @@ export interface IProcess {
   readonly inputStream: stream.Writable;
   readonly processManage: IProcessManage;
   pid: number | null;
-  onStart: Event<{}>;
+  onStart: Event<unknown>;
   onExit: Event<IProcessExitEvent>;
   onError: Event<ProcessErrorEvent>;
   killed: boolean;
@@ -55,7 +55,7 @@ export interface IProcessExitEvent {
 /**
  * Data emitted when a process has been successfully started.
  */
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IProcessStartEvent {}
 
 /**

@@ -137,8 +137,10 @@ describe('Decorators', () => {
     jest.useFakeTimers();
     try {
       class ThrottleTest {
+        // eslint-disable-next-line @typescript-eslint/ban-types
         private _handle: Function;
 
+        // eslint-disable-next-line @typescript-eslint/ban-types
         constructor(fn: Function) {
           this._handle = fn;
         }

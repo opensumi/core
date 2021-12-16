@@ -99,14 +99,13 @@ function removeEmbeddedSVGs(documentContent: string): string {
   // remove all inline svgs
   const allSVGs = newDocument.documentElement.querySelectorAll('svg');
   if (allSVGs) {
-    /* tslint:disable */
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < allSVGs.length; i++) {
       const svg = allSVGs[i];
       if (svg.parentNode) {
         svg.parentNode.removeChild(allSVGs[i]);
       }
     }
-    /* tslint:enable */
   }
 
   return newDocument.documentElement.outerHTML;

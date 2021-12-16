@@ -30,6 +30,7 @@ export function convertSettings(
       if (!settings) {
         rule.settings = {};
       } else {
+        // eslint-disable-next-line guard-for-in
         for (const key in settings) {
           const mappings = settingToColorIdMapping[key];
           if (mappings) {

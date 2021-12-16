@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 /**
  * @deprecated `kaitian-worker` was deprecated, Please use `sumi-worker` instead.
  */
@@ -1196,7 +1197,7 @@ declare module 'sumi-worker' {
      * @param resourceUri The {@link Uri} of the resource representing this item.
      * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
      */
-    // tslint:disable unified-signatures
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
     constructor(resourceUri: Uri, collapsibleState?: TreeItemCollapsibleState);
   }
   /**
@@ -1965,7 +1966,6 @@ declare module 'sumi-worker' {
     dispose(): void;
   }
 
-  // tslint:disable no-empty-interface class-name
   export interface env {}
 
   /**

@@ -176,7 +176,7 @@ export class NodePtyTerminalService implements ITerminalService {
     }
     if (type) {
       if (isWindows) {
-        shellPath = await this.service.$resolveWindowsShellPath(<WindowsShellType>type);
+        shellPath = await this.service.$resolveWindowsShellPath(type as WindowsShellType);
       } else {
         shellPath = `/bin/${type}`;
       }

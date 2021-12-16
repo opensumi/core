@@ -1411,7 +1411,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // #region Linked Editing Range
   $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector)!;
-    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, <modes.LinkedEditingRangeProvider>{
+    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, {
       provideLinkedEditingRanges: async (
         model: ITextModel,
         position: monaco.Position,
@@ -1437,7 +1437,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     eventHandle: number | undefined,
   ): void {
-    const provider = <modes.InlayHintsProvider>{
+    const provider = {
       provideInlayHints: async (
         model: ITextModel,
         range: monaco.Range,
@@ -1446,7 +1446,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
         return result?.hints;
       },
-    };
+    } as modes.InlayHintsProvider;
 
     if (typeof eventHandle === 'number') {
       const emitter = new Emitter<void>();

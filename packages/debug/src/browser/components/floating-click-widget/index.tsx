@@ -5,7 +5,7 @@ import { Button } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { DebugConfigurationService } from '../../view/configuration/debug-configuration.service';
 
-export const FloatingClickWidget = ({}: React.HtmlHTMLAttributes<HTMLDivElement>) => {
+export const FloatingClickWidget = (_: React.HtmlHTMLAttributes<HTMLDivElement>) => {
   const { addConfiguration } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
 
   return (

@@ -196,6 +196,7 @@ export namespace JSONUtils {
    */
   function deepObjectCopy(value: any): any {
     const result: any = {};
+    // eslint-disable-next-line guard-for-in
     for (const key in value) {
       result[key] = deepCopy(value[key]);
     }

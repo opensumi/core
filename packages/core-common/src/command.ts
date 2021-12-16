@@ -159,16 +159,6 @@ interface CoreCommandRegistry {
   registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
   /**
    * 解绑命令
-   * @param command 要解绑的命令
-   */
-  unregisterCommand(command: Command): void;
-  /**
-   * 解绑命令
-   * @param id 要解绑命令 id
-   */
-  unregisterCommand(id: string): void;
-  /**
-   * 解绑命令
    * @param commandOrId 要解绑命令或命令 id
    */
   unregisterCommand(commandOrId: Command | string): void;
@@ -344,7 +334,6 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * 解绑命令
    * @param id 命令 id
    */
-  unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void {
     const id = Command.is(commandOrId) ? commandOrId.id : commandOrId;
     const unregisterCommand = this.unregisterCommands.get(id);

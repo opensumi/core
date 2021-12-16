@@ -20,8 +20,7 @@ import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/s
 import { Storage } from '@opensumi/ide-storage/lib/browser/storage';
 
 const track = temp.track();
-let root: URI;
-root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+const root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 @Injectable()
 export class MockDatabaseStoragePathServer implements IStoragePathServer {
   async getLastWorkspaceStoragePath() {

@@ -313,6 +313,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
 polyfill(InternalMenu);
 
 // We should keep this as ref-able
+// eslint-disable-next-line @typescript-eslint/ban-types
 export class Menu extends React.Component<MenuProps, {}> {
   static Divider = Divider;
 

@@ -209,7 +209,6 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     const toDispose = new DisposableCollection();
 
     this.parseSnippets(snippets, (name, snippet) => {
-      // tslint:disable-next-line:prefer-const
       let { prefix, body, description } = snippet;
       if (Array.isArray(body)) {
         body = body.join('\n');
@@ -251,7 +250,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     accept: (name: string, snippet: JsonSerializedSnippet) => void,
   ): void {
     if (typeof snippets === 'object') {
-      // tslint:disable-next-line:forin
+      // eslint-disable-next-line guard-for-in
       for (const name in snippets) {
         const scopeOrTemplate = snippets[name];
         if (JsonSerializedSnippet.is(scopeOrTemplate)) {
@@ -304,7 +303,7 @@ export interface JsonSerializedSnippet {
   description: string;
 }
 export namespace JsonSerializedSnippet {
-  // tslint:disable-next-line:ban-types
+  // eslint-disable-next-line @typescript-eslint/ban-types
   export function is(obj: Object | undefined): obj is JsonSerializedSnippet {
     return typeof obj === 'object' && 'body' in obj && 'prefix' in obj;
   }

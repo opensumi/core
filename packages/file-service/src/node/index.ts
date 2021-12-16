@@ -15,7 +15,7 @@ import { getSafeFileservice } from './file-service';
 export * from './file-service';
 
 const fsInstanceMap: Map<Injector, FileSystemProvider> = new Map();
-// tslint:disable-next-line: ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function getFileservice(injector: Injector, providerToken: string | symbol | Function): FileSystemProvider {
   if (fsInstanceMap.get(injector)) {
     return fsInstanceMap.get(injector)!;

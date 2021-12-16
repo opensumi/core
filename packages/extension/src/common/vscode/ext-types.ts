@@ -1431,11 +1431,8 @@ export enum SymbolKind {
   Function = 11,
   Variable = 12,
   Constant = 13,
-  // eslint-disable-next-line id-blacklist
   String = 14,
-  // eslint-disable-next-line id-blacklist
   Number = 15,
-  // eslint-disable-next-line id-blacklist
   Boolean = 16,
   Array = 17,
   Object = 18,

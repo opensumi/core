@@ -46,7 +46,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           }
         }
         const component = this.webviewService.editorWebviewComponents.get(resource.uri.path.toString());
-        if (isWebview(component?.webview!)) {
+        if (component?.webview && isWebview(component.webview)) {
           // 只对类 vscode webview 进行 dispose,
           // loadUrl 的 plainWebview 必须手动 dispose
           this.webviewService.editorWebviewComponents.get(resource.uri.path.toString())!.clear();
@@ -61,7 +61,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
     commandRegistry.registerCommand(WEBVIEW_DEVTOOLS_COMMAND, {
       execute: () => {
         const elements = document.querySelectorAll<Electron.WebviewTag>('webview');
-        // tslint:disable-next-line: prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < elements.length; i += 1) {
           try {
             elements[i].openDevTools();

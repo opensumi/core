@@ -61,7 +61,7 @@ export class OutlineAdapter {
     });
     const res: DocumentSymbol[] = [];
     const parentStack: DocumentSymbol[] = [];
-    // tslint:disable
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < info.length; i++) {
       const element = {
         name: info[i].name,

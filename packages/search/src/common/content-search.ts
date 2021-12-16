@@ -170,7 +170,7 @@ export function anchorGlob(glob: string, isApplyPre?: boolean): string {
     // 普通目录
     return `${pre}${glob}**`;
   }
-  if (!/[\*\{\(\+\@\!\^\|\?]/.test(glob) && !/\.[A-Za-z0-9]+$/.test(glob)) {
+  if (!/[*{(+@!^|?]/.test(glob) && !/\.[A-Za-z0-9]+$/.test(glob)) {
     // 不包含 Glob 特殊字符的普通目录
     return `${pre}${glob}/**`;
   }

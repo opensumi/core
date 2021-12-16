@@ -98,7 +98,7 @@ export function transformErrorForSerialization(error: any): any;
 export function transformErrorForSerialization(error: any): any {
   if (error instanceof Error) {
     const { name, message } = error;
-    const stack: string = (<any>error).stacktrace || (<any>error).stack;
+    const stack: string = (error as any).stacktrace || (error as any).stack;
     return {
       $isError: true,
       name,

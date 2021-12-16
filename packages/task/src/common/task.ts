@@ -420,11 +420,11 @@ export const enum TaskScope {
 }
 
 export namespace TaskSourceKind {
-  export const Workspace: 'workspace' = 'workspace';
-  export const Extension: 'extension' = 'extension';
-  export const InMemory: 'inMemory' = 'inMemory';
-  export const WorkspaceFile: 'workspaceFile' = 'workspaceFile';
-  export const User: 'user' = 'user';
+  export const Workspace = 'workspace' as const;
+  export const Extension = 'extension' as const;
+  export const InMemory = 'inMemory' as const;
+  export const WorkspaceFile = 'workspaceFile' as const;
+  export const User = 'user' as const;
 }
 
 interface IWorkspace {

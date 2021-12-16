@@ -50,9 +50,9 @@ export class CharacterClassifier<T extends number> {
 
   public get(charCode: number): T {
     if (charCode >= 0 && charCode < 256) {
-      return <T>this._asciiMap[charCode];
+      return this._asciiMap[charCode] as T;
     } else {
-      return <T>(this._map.get(charCode) || this._defaultValue);
+      return (this._map.get(charCode) || this._defaultValue) as T;
     }
   }
 }
@@ -63,10 +63,13 @@ const enum EBoolean {
 }
 
 export class CharacterSet {
+  // "Boolean" is not that "Boolean" primitive type in TypeScript.
+  // eslint-disable-next-line @typescript-eslint/ban-types
   private readonly _actual: CharacterClassifier<EBoolean>;
 
   constructor() {
-    this._actual = new CharacterClassifier<EBoolean>(EBoolean.False);
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    this._actual = new CharacterClassifier<EBoolean>(Boolean.False);
   }
 
   public add(charCode: number): void {

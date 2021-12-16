@@ -275,6 +275,7 @@ export class URI {
     const queryString = this.query;
     const query = {};
     const pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i].split('=');
       query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');

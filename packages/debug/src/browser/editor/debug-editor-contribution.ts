@@ -360,7 +360,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
                       case 'text':
                         text = iv.text;
                         break;
-                      case 'variable':
+                      case 'variable': {
                         let va = iv.variableName;
                         if (!va) {
                           const lineContent = model.getLineContent(iv.range.startLineNumber);
@@ -371,7 +371,8 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
                           text = strings.format(varValueFormat, va, value);
                         }
                         break;
-                      case 'expression':
+                      }
+                      case 'expression': {
                         let expr = iv.expression;
                         if (!expr) {
                           const lineContent = model.getLineContent(iv.range.startLineNumber);
@@ -386,6 +387,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
                           }
                         }
                         break;
+                      }
                     }
 
                     if (text) {

@@ -53,9 +53,7 @@ describe('vscode extHost CustomEditor Test', () => {
     const viewType = 'test CustomTextEditor';
 
     const customTextEditorProvider: CustomTextEditorProvider = {
-      resolveCustomTextEditor: jest.fn((document, webviewPanel, token) => {
-        return;
-      }),
+      resolveCustomTextEditor: jest.fn((document, webviewPanel, token) => {}),
     };
 
     extHost.registerCustomEditorProvider(

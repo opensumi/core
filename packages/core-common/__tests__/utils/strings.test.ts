@@ -372,7 +372,7 @@ describe('Strings', () => {
       ['FöÖ', true],
       ['\\Foo', true],
     ].forEach(([str, result]) => {
-      expect(strings.containsUppercaseCharacter(<string>str)).toEqual(result);
+      expect(strings.containsUppercaseCharacter(str as string)).toEqual(result);
     });
   });
 
@@ -384,7 +384,7 @@ describe('Strings', () => {
 
       ['Foo', true],
     ].forEach(([str, result]) => {
-      expect(strings.containsUppercaseCharacter(<string>str, true)).toEqual(result);
+      expect(strings.containsUppercaseCharacter(str as string, true)).toEqual(result);
     });
   });
 

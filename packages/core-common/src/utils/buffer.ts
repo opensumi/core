@@ -101,8 +101,6 @@ export class BinaryBuffer {
     return new BinaryBuffer(this.buffer.subarray(start! /* bad lib.d.ts*/, end));
   }
 
-  set(array: BinaryBuffer, offset?: number): void;
-  set(array: Uint8Array, offset?: number): void;
   set(array: BinaryBuffer | Uint8Array, offset?: number): void {
     if (array instanceof BinaryBuffer) {
       this.buffer.set(array.buffer, offset);

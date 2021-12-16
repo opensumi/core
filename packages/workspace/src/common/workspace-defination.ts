@@ -134,7 +134,7 @@ export namespace WorkspaceData {
       for (const folder of data.folders) {
         const path = folder.path;
         // 判断是否为绝对路径
-        if (/^.+\:\//.test(path)) {
+        if (/^.+:\//.test(path)) {
           folders.push(path);
         } else {
           if (path === '.') {

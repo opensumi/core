@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 interface CustomPromisify<TCustom extends Function> extends Function {
   __promisify__: TCustom;
 }

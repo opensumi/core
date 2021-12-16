@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/color.ts
 
-/* tslint:disable:no-bitwise */
 import { CharCode } from '@opensumi/ide-core-common/lib/charCode';
 
 function roundFloat(num: number, decimalPoints: number): number {
