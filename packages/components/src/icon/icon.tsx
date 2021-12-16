@@ -124,7 +124,7 @@ const IconBase = function<T>(
 };
 
 // for ts type usage for iconfont-cn.tsx
-export const _InternalIcon = React.forwardRef<HTMLSpanElement, IconProps>(IconBase);
+export const _InternalIcon = React.memo(React.forwardRef<HTMLSpanElement, IconProps>(IconBase));
 
 export const Icon = React.memo(React.forwardRef<HTMLSpanElement, IconProps>(IconBase)) as <T = any> (
   props: IconProps<T>,

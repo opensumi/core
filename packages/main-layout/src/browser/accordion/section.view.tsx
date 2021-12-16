@@ -35,8 +35,12 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   titleMenu: IMenu | IContextMenu;
 }
 
+const attrs = {
+  tabIndex: 0,
+};
+
 export const AccordionSection = (
-  {
+{
     header,
     headerClass,
     onItemClick,
@@ -47,8 +51,6 @@ export const AccordionSection = (
     size,
     headerSize,
     viewId,
-    index,
-    alignment = 'vertical',
     initialProps,
     titleMenu,
     titleMenuContext,
@@ -61,14 +63,14 @@ export const AccordionSection = (
 
   const { getSize, setSize } = React.useContext(PanelContext);
 
-  const clickHandler = () => {
+  const clickHandler = React.useCallback(() => {
     const currentSize = getSize(false);
     onItemClick((targetSize) => setSize(targetSize, false), currentSize);
-  };
+  }, [getSize, setSize]);
 
-  const attrs = {
-    tabIndex: 0,
-  };
+  const bodyStyle = React.useMemo<React.CSSProperties>(() => ({
+    overflow : expanded ? 'auto' : 'hidden',
+  }), [expanded]);
 
   React.useEffect(() => {
     if (onResize) {
@@ -76,21 +78,18 @@ export const AccordionSection = (
     }
   }, [size]);
 
-  const headerFocusHandler = () => {
+  const headerFocusHandler = React.useCallback(() => {
     setHeaderFocused(true);
-  };
+  }, []);
 
-  const headerBlurHandler = () => {
+  const headerBlurHandler = React.useCallback(() => {
     setHeaderFocused(false);
-  };
+  }, []);
 
   const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(viewId)!;
 
-  const bodyStyle = {
-    overflow : expanded ? 'auto' : 'hidden',
-  } as React.CSSProperties;
   const Component: any = children;
   return  (
     <div className={ styles.kt_split_panel } data-view-id={viewId}>

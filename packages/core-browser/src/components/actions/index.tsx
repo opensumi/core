@@ -161,7 +161,7 @@ const InlineActionWidget: React.FC<{
   context?: any[];
   type?: ActionListType;
   afterClick?: () => void;
-} & React.HTMLAttributes<HTMLElement>> = ({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+} & React.HTMLAttributes<HTMLElement>> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const handleClick = React.useCallback((event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
     if (event) {
       event.preventDefault();
@@ -235,7 +235,7 @@ const InlineActionWidget: React.FC<{
       }
     </Button>
   );
-};
+});
 
 InlineActionWidget.displayName = 'InlineAction';
 
@@ -306,7 +306,7 @@ export const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
   className?: string;
-} & BaseActionListProps> = ({
+} & BaseActionListProps> = React.memo(({
   /**
    * ActionListType 默认为 icon 类型
    * 所有没有增加 type 的 menu 都是 icon 类型
@@ -391,7 +391,7 @@ export const TitleActionList: React.FC<{
       { !moreAtFirst && moreAction }
     </div>
   );
-};
+});
 
 TitleActionList.displayName = 'TitleActionList';
 
@@ -460,3 +460,5 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       {...restProps} />
   );
 }
+
+InlineMenuBar.displayName = 'InlineMenuBar';

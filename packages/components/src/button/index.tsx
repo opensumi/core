@@ -67,7 +67,7 @@ function noop() { }
  * <Button<'icon1' | 'icon2'> iconClass=`${customPrefix} icon1` type='icon' />
  * ```
  */
-export function Button<T>({
+export const Button = React.memo(<T extends string>({
   children,
   loading,
   className,
@@ -86,7 +86,7 @@ export function Button<T>({
   title,
   onVisibleChange,
   ...otherProps
-}: ButtonProps<T>): React.ReactElement<ButtonProps<T>> {
+}: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
   const classes = classNames('kt-button', className, {
     [`kt-${type}-button-loading`]: loading,
     [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
@@ -122,4 +122,4 @@ export function Button<T>({
       {children}
     </button>
   );
-}
+});

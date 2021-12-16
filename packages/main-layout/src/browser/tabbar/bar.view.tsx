@@ -188,6 +188,9 @@ export const LeftTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
+  const leftBarInlineMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
+
   return (<div className={styles.left_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
     <TabbarViewBase
       tabSize={48}
@@ -199,7 +202,7 @@ export const LeftTabbarRenderer: React.FC = () => {
       // FIXME
       margin={90}
       panelBorderSize={1}/>
-    <InlineMenuBar className={styles.vertical_icons} menus={layoutService.getExtraMenu()} />
+    <InlineMenuBar className={styles.vertical_icons} menus={leftBarInlineMenus} />
   </div>);
 };
 
