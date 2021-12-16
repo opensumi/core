@@ -156,9 +156,24 @@ export class AccordionService extends WithEventBus {
     this.minSize = minSize;
   }
 
+  private registerContextService(viewId: string) {
+    let scopedCtxKey = this.viewContextKeyRegistry.getContextKeyService(viewId);
+    if (!scopedCtxKey) {
+      scopedCtxKey = this.contextKeyService.createScoped();
+      scopedCtxKey.createKey('view', viewId);
+      this.viewContextKeyRegistry.registerContextKeyService(viewId, scopedCtxKey);
+    }
+    return scopedCtxKey;
+  }
+
   getSectionToolbarMenu(viewId: string): IMenu {
-    const scopedCtxKey = this.viewContextKeyRegistry.getContextKeyService(viewId);
+    // 确保在较早获取菜单时已经注册了 ScopedContextKeyService
+    const scopedCtxKey = this.registerContextService(viewId);
     const menu = this.menuService.createMenu(MenuId.ViewTitle, scopedCtxKey);
+    const existingView = this.views.find((view) => view.id === viewId);
+    if (existingView){
+      existingView.titleMenu = menu;
+    }
     return menu;
   }
 
@@ -189,6 +204,10 @@ export class AccordionService extends WithEventBus {
     this.beforeAppendViewEmitter.fire(view.id);
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
+
+    // 创建 scopedContextKeyService
+    this.registerContextService(view.id);
+
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
