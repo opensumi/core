@@ -815,5 +815,9 @@ export const localizationBundle = {
     'keyboard.autoDetect.label': 'Auto Detect',
     'keyboard.autoDetect.description': '(Current: \'{0} \')',
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
+
+    //#region Testing
+    'test.title': 'Testing',
+    //#endregion
   },
 };

@@ -1,7 +1,7 @@
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService, IExtensionDescription } from '../../../common/vscode'; // '../../common';
+import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService, IExtensionDescription, IExtHostTests } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService } from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
 import { ExtensionDocumentDataManagerImpl } from './doc';
@@ -39,6 +39,7 @@ import { ExtHostUrls } from './ext.host.urls';
 import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
+import { ExtHostTestsImpl } from './ext.host.tests';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -84,6 +85,7 @@ export function createApiFactory(
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
   const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs)) as ExtHostCustomEditorImpl;
   const extHostAuthentication = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostAuthentication, new ExtHostAuthentication(rpcProtocol)) as ExtHostAuthentication;
+  const extHostTests = rpcProtocol.set<IExtHostTests>(ExtHostAPIIdentifier.ExtHostTests, new ExtHostTestsImpl(rpcProtocol));
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
@@ -111,6 +113,11 @@ export function createApiFactory(
         },
         createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
           return extHostSCM.createSourceControl(extension, id, label, rootUri);
+        },
+      },
+      tests: {
+        createTestController(controllerId: string, label: string) {
+          return extHostTests.createTestController(controllerId, label);
         },
       },
       // 类型定义

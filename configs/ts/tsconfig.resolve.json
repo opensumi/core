@@ -338,6 +338,12 @@
       ],
       "@opensumi/ide-task/lib/*": [
         "../packages/task/src/*"
+      ],
+      "@opensumi/ide-testing": [
+        "../packages/testing/src/index.ts"
+      ],
+      "@opensumi/ide-testing/lib/*": [
+        "../packages/testing/src/*"
       ]
     }
   }

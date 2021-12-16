@@ -20,6 +20,7 @@ import {
   IMainThreadAuthentication,
   IMainThreadWebviewView,
   IMainThreadSecret,
+  IMainThreadTesting,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -57,6 +58,7 @@ import { MainThreadTheming } from './main.thread.theming';
 import { MainThreadCustomEditor } from './main.thread.custom-editor';
 import { MainThreadAuthentication } from './main.thread.authentication';
 import { MainThreadSecret } from './main.thread.secret';
+import { MainThreadTestsImpl } from './main.thread.tests';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -96,6 +98,7 @@ export async function createApiFactory(
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [rpcProtocol, MainThreadWebviewAPI]);
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [rpcProtocol]);
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [rpcProtocol]);
+  const MainthreadTestAPI = injector.get(MainThreadTestsImpl, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -130,6 +133,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
   rpcProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
   rpcProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
+  rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -164,6 +168,7 @@ export async function createApiFactory(
     MainthreadThemingAPI.dispose();
     MainThreadAuthenticationAPI.dispose();
     MainThreadSecretAPI.dispose();
+    MainthreadTestAPI.dispose();
   };
 }
 

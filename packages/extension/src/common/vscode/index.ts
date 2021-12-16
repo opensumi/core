@@ -34,6 +34,7 @@ import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-sy
 import { IMainThreadUrls, IExtHostUrls } from './urls';
 import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
 import { IExtHostSecret, IMainThreadSecret } from './secret';
+import { IExtHostTests } from './tests';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -81,6 +82,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadAuthentication: createExtHostContextProxyIdentifier<IMainThreadAuthentication>('MainThreadAuthentication'),
   MainThreadSecret: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
   MainThreadReporter: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
+  MainThreadTests: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadTests'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -120,6 +122,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostCustomEditor: createExtHostContextProxyIdentifier<IExtHostCustomEditor>('ExtHostCustomEditor'),
   ExtHostAuthentication: createExtHostContextProxyIdentifier<IExtHostAuthentication>('ExtHostAuthentication'),
   ExtHostSecret: createExtHostContextProxyIdentifier<IExtHostSecret>('ExtHostSecret'),
+  ExtHostTests: createExtHostContextProxyIdentifier<IExtHostTests>('ExtHostTests'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -166,3 +169,4 @@ export * from './urls';
 export * from './theming';
 export * from './authentication';
 export * from './secret';
+export * from './tests';

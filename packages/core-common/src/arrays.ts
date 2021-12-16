@@ -579,3 +579,17 @@ export function mapArrayOrNot<T, U>(items: T | T[], fn: (_: T) => U): U | U[] {
 export function asArray<T>(x: T | T[]): T[] {
 	return Array.isArray(x) ? x : [x];
 }
+
+/**
+ * Returns the first mapped value of the array which is not undefined.
+ */
+ export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undefined): R | undefined {
+	for (const value of array) {
+		const mapped = mapFn(value);
+		if (mapped !== undefined) {
+			return mapped;
+		}
+	}
+
+	return undefined;
+}
