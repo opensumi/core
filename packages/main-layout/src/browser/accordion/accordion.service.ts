@@ -159,8 +159,6 @@ export class AccordionService extends WithEventBus {
   getSectionToolbarMenu(viewId: string): IMenu {
     const scopedCtxKey = this.viewContextKeyRegistry.getContextKeyService(viewId);
     const menu = this.menuService.createMenu(MenuId.ViewTitle, scopedCtxKey);
-    const existingView = this.visibleViews.find((e) => e.id === viewId);
-    existingView!.titleMenu = menu;
     return menu;
   }
 
