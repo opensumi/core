@@ -35,7 +35,7 @@ const mockMainthreadCommand = {
   $executeCommand(id, ...args) {
     switch (id) {
       case 'sumi-extension.toolbar.btn.setState':
-      case 'sumi-extension.toolbar.select.setState':
+      case 'sumi-extension.toolbar.select.setState': {
         const [actionId, state] = args;
         emitter.fire({
           id,
@@ -43,6 +43,7 @@ const mockMainthreadCommand = {
           state,
         });
         break;
+      }
       default:
         return Promise.resolve(id);
     }
@@ -70,15 +71,17 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
   let toolbarAPI: ReturnType<typeof createToolbarAPIFactory>;
 
   emitter.event((e) => {
-    /** tslint:disabled */
     let eventName;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (e.id === 'sumi-extension.toolbar.select.setState') {
       eventName = 'sumi-extension.toolbar.select.stateChange';
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
     } else if (e.id === 'sumi-extension.toolbar.btn.setState') {
       eventName = 'sumi-extension.toolbar.btn.stateChange';
     }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     extHostCommon.$acceptEvent(eventName, [e.actionId, e.state]);
   });

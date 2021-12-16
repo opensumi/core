@@ -44,7 +44,6 @@ import {
 } from '../../../common/vscode/scm';
 import { ExtHostCommands } from './ext.host.command';
 
-// tslint:disable-next-line:no-empty-interface
 export type IMainContext = IRPCProtocol;
 
 type ProviderHandle = number;

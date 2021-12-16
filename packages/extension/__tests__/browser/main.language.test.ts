@@ -2,7 +2,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
-/* tslint:disable no-console */
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
 import { URI, Uri, Position } from '@opensumi/ide-core-common';
@@ -63,7 +62,6 @@ let extHost: ExtHostLanguages;
 let mainThread: MainThreadLanguages;
 let model: ITextModel;
 
-// tslint:disable new-parens
 describe('ExtHostLanguageFeatures', () => {
   const injector = createBrowserInjector([]);
   (global as any).amdLoader = { require: null };
@@ -245,6 +243,7 @@ describe('ExtHostLanguageFeatures', () => {
         { lineNumber: 1, column: 1 } as any,
         CancellationToken.None,
       ))!;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       expect(value.length).toEqual(1);
       expect(value[0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -271,6 +270,7 @@ describe('ExtHostLanguageFeatures', () => {
         { lineNumber: 1, column: 1 } as any,
         CancellationToken.None,
       );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -296,6 +296,7 @@ describe('ExtHostLanguageFeatures', () => {
         { lineNumber: 1, column: 1 } as any,
         CancellationToken.None,
       );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -360,6 +361,7 @@ describe('ExtHostLanguageFeatures', () => {
         { lineNumber: 1, column: 2 } as any,
         CancellationToken.None,
       );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
@@ -627,6 +629,7 @@ describe('ExtHostLanguageFeatures', () => {
         defaultSelector,
         new (class implements vscode.OnTypeFormattingEditProvider {
           provideOnTypeFormattingEdits(): any {
+            // eslint-disable-next-line prefer-rest-params
             return [new types.TextEdit(new types.Range(0, 0, 0, 0), arguments[2])];
           }
         })(),
@@ -837,7 +840,7 @@ An error case:
     }
     _encodeTokenModifiers(strTokenModifiers) {
       let result = 0;
-      // tslint:disable-next-line:prefer-for-of
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < strTokenModifiers.length; i++) {
         const tokenModifier = strTokenModifiers[i];
         if (tokenModifiers.has(tokenModifier)) {

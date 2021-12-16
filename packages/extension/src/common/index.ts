@@ -304,7 +304,6 @@ export interface IExtensionHostService extends IExtensionHost {
   reportUnexpectedError(error: Error): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export interface IExtensionWorkerHost extends IExtensionHost {
   staticServicePath: string;
 }

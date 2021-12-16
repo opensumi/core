@@ -190,10 +190,10 @@ export class FileSystemError extends Error {
 
   readonly code: string;
 
-  // tslint:disable-next-line:ban-types
   constructor(
     uriOrMessage?: string | URI,
     code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     terminator?: Function,
   ) {
     super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);

@@ -67,7 +67,6 @@ describe('EditorDocumentModelService', () => {
     const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
 
     const testCodeUri = new URI('test://testUri2');
-    // tslint:disable-next-line:no-unused-variable
     const testDoc2 = await editorDocModelService.createModelReference(testCodeUri);
     expect(createFn).toBeCalledTimes(1);
 

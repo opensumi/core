@@ -19,7 +19,6 @@ export class MainThreadCommon extends WithEventBus implements IMainThreadCommon 
 
   private subscribedEvent = new Set<string>();
 
-  // tslint:disable-next-line: no-unused-variable
   constructor(private rpcProtocol: IRPCProtocol, private injector: Injector) {
     super();
     this._proxy = this.rpcProtocol.getProxy(ExtHostSumiAPIIdentifier.ExtHostCommon);

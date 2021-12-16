@@ -1,4 +1,3 @@
-// tslint:disable
 import { URI } from '@opensumi/ide-core-common';
 import { FileChangeType, FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
 import {

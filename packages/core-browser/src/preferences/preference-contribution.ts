@@ -190,7 +190,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected getDefaultValue(property: PreferenceItem): any;
-  // tslint:disable-next-line:unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   protected getDefaultValue(property: PreferenceItem, preferenceName: string): any;
   protected getDefaultValue(property: PreferenceItem, preferenceName?: string): any {
     if (preferenceName && this.appConfig.defaultPreferences && preferenceName in this.appConfig.defaultPreferences) {
@@ -309,7 +309,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   public *getPreferenceNames(): IterableIterator<string> {
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const preferenceName in this.combinedSchema.properties) {
       yield preferenceName;
     }

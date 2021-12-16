@@ -207,7 +207,6 @@ export class ProgressService implements IProgressService {
     callback: (progress: IProgress<IProgressStep>) => P,
     onDidCancel?: (choice?: number) => void,
   ): P {
-    // tslint:disable-next-line: new-parens
     const progressStateModel = new (class extends Disposable {
       private readonly _onDidReport = this.registerDispose(new Emitter<IProgressStep>());
       readonly onDidReport = this._onDidReport.event;
@@ -400,12 +399,9 @@ export class ProgressService implements IProgressService {
         // with a delay we only wait for the finish of the promise
         if (typeof options.delay === 'number' && options.delay > 0) {
           await progressStateModel.promise;
-        }
-
-        // without a delay we show the notification for at least 800ms
-        // to reduce the chance of the notification flashing up and hiding
-        // tslint:disable-next-line: one-line
-        else {
+        } else {
+          // to reduce the chance of the notification flashing up and hiding
+          // without a delay we show the notification for at least 800ms
           await Promise.all([timeout(800), progressStateModel.promise]);
         }
       } finally {

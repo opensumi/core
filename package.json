@@ -62,12 +62,12 @@
     "lodash": "^4.17.11",
     "node-gyp": "^8.3.0",
     "ts-node": "8.0.2",
-    "tslint": "^5.12.0",
     "typescript": "^4.4.2",
     "webpack": "4.39.3"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write"
+    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
+    "*.{js,jsx,ts,tsx}": "eslint --fix --quiet"
   },
   "config": {
     "commitizen": {
@@ -144,7 +144,6 @@
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.0",
     "ts-jest": "^27.0.3",
-    "tslint-config-prettier": "^1.18.0",
     "urllib": "^2.37.4",
     "uuid": "^8.3.2",
     "write-pkg": "^4.0.0",

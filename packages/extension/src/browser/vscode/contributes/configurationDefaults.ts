@@ -29,7 +29,7 @@ export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoin
   }
 
   protected updateDefaultOverridesSchema(configurationDefaults: PreferenceSchemaProperties): void {
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const key in configurationDefaults) {
       const defaultValue = configurationDefaults[key];
       if (OVERRIDE_PROPERTY_PATTERN.test(key)) {

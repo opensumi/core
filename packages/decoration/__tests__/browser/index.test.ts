@@ -1,4 +1,3 @@
-// tslint:disable:new-parens
 import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

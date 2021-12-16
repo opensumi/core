@@ -47,7 +47,7 @@ class DecorationRequestsQueue {
       const requests = this._requests;
       const resolver = this._resolver;
       this._proxy.$provideDecorations(Object.values(requests), CancellationToken.None).then((data) => {
-        // tslint:disable-next-line:forin
+        // eslint-disable-next-line guard-for-in
         for (const id in resolver) {
           resolver[id](data[id]);
         }

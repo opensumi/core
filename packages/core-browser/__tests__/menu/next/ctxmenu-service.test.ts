@@ -16,7 +16,6 @@ import { IContextKeyService } from '../../../src/context-key';
 
 jest.useFakeTimers();
 
-// tslint:disable-next-line:new-parens
 const contextKeyService = new (class extends MockContextKeyService {
   match(bool) {
     return true;

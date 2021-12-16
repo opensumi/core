@@ -64,7 +64,6 @@ describe('Extension process test', () => {
               (await fn)(raw);
             }
           } else {
-            // tslint:disable-next-line
             console.log(`lost proxy ${message.proxyId} - ${message.method}`);
           }
         },

@@ -10,14 +10,12 @@ import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } fr
 /**
  * Returns `true` if the parameter has type "object" and not null, an array, a regexp, a date.
  */
-// tslint:disable-next-line:no-any
 export function isObject(obj: any): boolean {
   return (
     typeof obj === 'object' && obj !== null && !Array.isArray(obj) && !(obj instanceof RegExp) && !(obj instanceof Date)
   );
 }
 
-// tslint:disable-next-line:no-any
 export function mixin(destination: any, source: any, overwrite = true): any {
   if (!isObject(destination)) {
     return source;
@@ -49,17 +47,17 @@ export function illegalArgument(message?: string): Error {
   }
 }
 
-/* tslint:disable-next-line:no-any */
 export function isLocationArray(array: any): array is types.Location[] {
   return Array.isArray(array) && array.length > 0 && array[0] instanceof types.Location;
 }
 
-/* tslint:disable-next-line:no-any */
 export function isDefinitionLinkArray(array: any): array is vscode.DefinitionLink[] {
   return (
     Array.isArray(array) &&
     array.length > 0 &&
+    // eslint-disable-next-line no-prototype-builtins
     array[0].hasOwnProperty('targetUri') &&
+    // eslint-disable-next-line no-prototype-builtins
     array[0].hasOwnProperty('targetRange')
   );
 }

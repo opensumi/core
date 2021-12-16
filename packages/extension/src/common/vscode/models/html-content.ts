@@ -9,7 +9,7 @@ export interface IMarkdownString {
   uris?: { [href: string]: UriComponents };
 }
 
-const escapeCodiconsRegex = /(\\)?\$\([a-z0-9\-]+?(?:~[a-z0-9\-]*?)?\)/gi;
+const escapeCodiconsRegex = /(\\)?\$\([a-z0-9-]+?(?:~[a-z0-9-]*?)?\)/gi;
 export function escapeCodicons(text: string): string {
   return text.replace(escapeCodiconsRegex, (match, escaped) => (escaped ? match : `\\${match}`));
 }
@@ -71,7 +71,6 @@ export class MarkdownString implements IMarkdownString {
   }
 }
 
-// tslint:disable-next-line:no-any
 export function isMarkdownString(thing: any): thing is IMarkdownString {
   if (thing instanceof MarkdownString) {
     return true;

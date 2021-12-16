@@ -669,7 +669,7 @@ export const win32: IPath = {
 
     let joined;
     let firstPart: string | undefined;
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < paths.length; ++i) {
       const arg = paths[i];
       validateString(arg, 'path');
@@ -1417,6 +1417,7 @@ export const posix: IPath = {
     }
     let joined;
     for (let i = 0; i < paths.length; ++i) {
+      // eslint-disable-next-line prefer-rest-params
       const arg = arguments[i];
       validateString(arg, 'path');
       if (arg.length > 0) {

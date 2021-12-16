@@ -27,11 +27,9 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
         {
           token: INodeLogger,
           useValue: {
-            /* tslint:disable */
             log: console.log,
             error: console.error,
             warn: console.warn,
-            /* tslint:enable */
           },
         },
         ...options.providers,

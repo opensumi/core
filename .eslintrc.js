@@ -105,6 +105,7 @@ module.exports = {
     'no-cond-assign': 'off',
     'no-console': 'off',
     'no-debugger': 'error',
+    'no-constant-condition': ['error', { checkLoops: false }],
     // We strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
     // The checks it provides are already provided by TypeScript without the need for configuration
     // TypeScript just does this significantly better.

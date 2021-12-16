@@ -298,7 +298,6 @@ export class DebugLog implements IDebugLog {
  * 兼容旧logger 提供的类型，同 ILogServiceClient
  */
 export const ILogger = Symbol('ILogger');
-// tslint:disable-next-line:no-empty-interface
 export type ILogger = ILogServiceClient;
 
 /**

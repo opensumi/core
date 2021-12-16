@@ -37,7 +37,6 @@ export interface IMainThreadDocumentsShape extends IDisposable {
   $fireTextDocumentChangedEvent(path: string, content: string): Promise<void>;
 }
 
-// tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
   getDocument(resource: Uri | string): vscode.TextDocument | undefined;
   getDocumentData(resource: Uri | string): ExtHostDocumentData | undefined;

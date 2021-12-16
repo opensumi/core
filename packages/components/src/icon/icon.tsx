@@ -61,7 +61,6 @@ export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpa
  * ```
  */
 
-// tslint:disable-next-line:only-arrow-functions
 const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElement>) {
   const {
     size = 'small',

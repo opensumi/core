@@ -283,7 +283,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param binding
    */
   public unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
-  // tslint:disable-next-line:unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public unregisterKeybinding(key: string, scope?: KeybindingScope): void;
   public unregisterKeybinding(
     keyOrBinding: Keybinding | string,

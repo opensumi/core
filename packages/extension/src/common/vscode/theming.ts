@@ -4,5 +4,4 @@ export interface IExtHostTheming {
   $onColorThemeChange(themeType: string): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type IMainThreadTheming = IDisposable;

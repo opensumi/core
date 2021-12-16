@@ -26,7 +26,6 @@ export interface MenuActionFormat extends IMenuItem {
 }
 
 // 对插件侧 contributes 的 submenu interface
-// tslint:disable-next-line:no-empty-interface
 export type SubmenuActionFormat = ISubmenuItem;
 
 function isMenuActionFormat(item: MenuActionFormat | SubmenuActionFormat): item is MenuActionFormat {

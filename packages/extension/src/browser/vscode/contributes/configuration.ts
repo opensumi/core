@@ -67,7 +67,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   }
 
   protected validateConfigurationSchema(schema: PreferenceSchema): void {
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const p in schema.properties) {
       const property = schema.properties[p];
       if (property.type === 'string[]') {
@@ -82,7 +82,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
       const properties = property.properties;
       if (properties) {
-        // tslint:disable-next-line:forin
         for (const key in properties) {
           if (typeof properties[key] !== 'object') {
             delete properties[key];
@@ -97,7 +96,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
     const properties = property.properties;
     if (properties) {
-      // tslint:disable-next-line:forin
       for (const key in properties) {
         if (properties[key].default) {
           property.default[key] = properties[key].default;

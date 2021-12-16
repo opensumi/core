@@ -132,7 +132,6 @@ interface Codeblock {
   value: string;
 }
 
-// tslint:disable-next-line:no-any
 function isCodeblock(thing: any): thing is Codeblock {
   return (
     thing &&
@@ -165,6 +164,7 @@ export namespace MarkdownString {
     value: string;
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function isCodeblock(thing: any): thing is Codeblock {
     return (
       thing &&
@@ -214,6 +214,7 @@ export namespace MarkdownString {
     return res;
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function _uriMassage(part: string, bucket: { [n: string]: UriComponents }): string {
     if (!part) {
       return part;
@@ -315,7 +316,7 @@ export function fromGlobPattern(pattern: vscode.GlobPattern): string | model.Rel
   return pattern;
 }
 
-function isRelativePattern(obj: {}): obj is vscode.RelativePattern {
+function isRelativePattern(obj: any): obj is vscode.RelativePattern {
   const rp = obj as vscode.RelativePattern;
   return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
 }
@@ -871,6 +872,7 @@ export namespace GlobPattern {
     return pattern; // preserve `undefined` and `null`
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function isRelativePattern(obj: any): obj is vscode.RelativePattern {
     const rp = obj as vscode.RelativePattern;
     return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
@@ -889,7 +891,6 @@ export function pathOrURIToURI(value: string | types.Uri): types.Uri {
 }
 
 export namespace SymbolKind {
-  // tslint:disable-next-line:no-null-keyword
   const fromMapping: { [kind: number]: types.SymbolKind } = Object.create(null);
   fromMapping[types.SymbolKind.File] = types.SymbolKind.File;
   fromMapping[types.SymbolKind.Module] = types.SymbolKind.Module;

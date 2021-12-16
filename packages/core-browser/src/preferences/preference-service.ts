@@ -461,7 +461,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   public getBoolean(preferenceName: string): boolean | undefined;
   public getBoolean(preferenceName: string, defaultValue: boolean): boolean;
-  // tslint:disable-next-line:unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public getBoolean(preferenceName: string, defaultValue: boolean, resourceUri: string): boolean;
   public getBoolean(preferenceName: string, defaultValue?: boolean, resourceUri?: string): boolean | undefined {
     const value = resourceUri
@@ -472,7 +472,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   public getString(preferenceName: string): string | undefined;
   public getString(preferenceName: string, defaultValue: string): string;
-  // tslint:disable-next-line:unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public getString(preferenceName: string, defaultValue: string, resourceUri: string): string;
   public getString(preferenceName: string, defaultValue?: string, resourceUri?: string): string | undefined {
     const value = resourceUri
@@ -486,7 +486,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   public getNumber(preferenceName: string): number | undefined;
   public getNumber(preferenceName: string, defaultValue: number): number;
-  // tslint:disable-next-line:unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public getNumber(preferenceName: string, defaultValue: number, resourceUri: string): number;
   public getNumber(preferenceName: string, defaultValue?: number, resourceUri?: string): number | undefined {
     const value = resourceUri

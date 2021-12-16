@@ -100,8 +100,8 @@ export abstract class EditorComponentRegistry {
   abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
 
   // handlesScheme 返回权重， 小于 0 表示不处理
-  // tslint:disable-next-line: unified-signatures
   abstract registerEditorComponentResolver<T>(
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
     handlesScheme: (scheme: string) => number,
     resolver: IEditorComponentResolver<T>,
   ): IDisposable;

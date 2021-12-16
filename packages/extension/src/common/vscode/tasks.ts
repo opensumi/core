@@ -97,7 +97,6 @@ export interface ExecutionOptionsDTO {
   env?: { [key: string]: string };
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type ProcessExecutionOptionsDTO = ExecutionOptionsDTO;
 
 export interface ProcessExecutionDTO {

@@ -232,7 +232,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     // remove old marker
     if (map) {
       delete this._byType[type];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const resource in map) {
         const entry = MapMap.get(this._byResource, resource, type);
         if (entry) {
@@ -258,7 +258,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     const map = this._byResource[resource];
     if (map) {
       delete this._byResource[resource];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const type in map) {
         const entry = MapMap.get(this._byType, type, resource);
         if (entry) {
@@ -311,9 +311,9 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     } else if (!type && !resource) {
       // all
       const result: IMarker[] = [];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const key1 in this._byResource) {
-        // tslint:disable-next-line: forin
+        // eslint-disable-next-line guard-for-in
         for (const key2 in this._byResource[key1]) {
           for (const data of this._byResource[key1][key2]) {
             if (this.isTargetMarker(data, severities, opened)) {
@@ -339,7 +339,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
       }
 
       const result: IMarker[] = [];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const key in map) {
         for (const data of map[key]) {
           if (this.isTargetMarker(data, severities, opened)) {
@@ -355,7 +355,6 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
   }
 
   private isTargetMarker(marker: IMarker, severities?: number, visible?: boolean): boolean {
-    // tslint:disable-next-line: no-bitwise
     const isTargetSeverity = severities === undefined || (severities & marker.severity) === marker.severity;
     const isTargetVisible = visible ? this._openedResource.has(marker.resource) : true;
     return isTargetSeverity && isTargetVisible;

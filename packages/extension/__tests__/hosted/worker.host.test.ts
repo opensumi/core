@@ -45,7 +45,6 @@ describe('Extension Worker Thread Test Suites', () => {
           (await fn)(raw);
         }
       } else {
-        // tslint:disable-next-line
         console.log(`lost proxy ${message.proxyId} - ${message.method}`);
       }
     },

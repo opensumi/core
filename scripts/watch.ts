@@ -1,4 +1,3 @@
-/* tslint:disable */
 import * as glob from 'glob';
 import * as path from 'path';
 import { run } from './fn/shell';

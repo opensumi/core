@@ -169,7 +169,6 @@ export class DebugModel implements IDebugModel {
       return decorations;
     }
 
-    // tslint:disable-next-line:no-bitwise
     const columnUntilEOLRange = new monaco.Range(
       currentFrame.raw.line,
       currentFrame.raw.column,

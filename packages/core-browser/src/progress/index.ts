@@ -35,7 +35,7 @@ export interface IProgressIndicator {
    * Show progress customized with the provided flags.
    */
   show(infinite: true, delay?: number): IProgressRunner;
-  // tslint:disable-next-line: unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   show(total: number, delay?: number): IProgressRunner;
 
   /**

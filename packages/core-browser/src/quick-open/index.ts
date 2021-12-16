@@ -342,7 +342,6 @@ export interface QuickPickItem<T> {
   iconClass?: string;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export interface QuickPickOptions extends QuickOpenOptions {
   placeholder?: string;
   /**

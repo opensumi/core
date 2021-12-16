@@ -20,7 +20,6 @@ import {
 } from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 
-// tslint:disable-next-line:new-parens
 const contextKeyService = new (class extends MockContextKeyService {
   match(context: string) {
     if (typeof context === 'string') {

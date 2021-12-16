@@ -2,7 +2,6 @@ import { MockContextKeyService } from '../../monaco/__mocks__/monaco.context-key
 
 import { RawContextKey } from '../src/raw-context-key';
 
-// tslint:disable-next-line:new-parens
 const contextKeyService = new (class extends MockContextKeyService {
   match(bool) {
     if (bool) {

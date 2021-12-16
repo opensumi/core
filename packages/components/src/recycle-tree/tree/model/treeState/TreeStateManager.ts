@@ -125,7 +125,6 @@ export class TreeStateManager {
         while (p) {
           if (this.stashKeyframes.has(p.id)) {
             let flags = this.stashKeyframes.get(p.id) as StashKeyFrameFlag;
-            // tslint:disable-next-line:no-bitwise
             flags = flags | StashKeyFrameFlag.Disabled;
             this.stashKeyframes.set(p.id, flags as StashKeyFrameFlag);
           }
@@ -138,7 +137,6 @@ export class TreeStateManager {
         while (p) {
           if (this.stashKeyframes.has(p.id)) {
             let flags = this.stashKeyframes.get(p.id) as StashKeyFrameFlag;
-            // tslint:disable-next-line:no-bitwise
             flags &= ~StashKeyFrameFlag.Disabled;
             this.stashKeyframes.set(p.id, flags);
           }
@@ -197,17 +195,14 @@ export class TreeStateManager {
     const keyframes = Array.from(this.stashKeyframes);
     this.stashKeyframes = null;
     for (const [targetID, flags] of keyframes) {
-      // tslint:disable-next-line:no-bitwise
       const frameDisabled = (flags & StashKeyFrameFlag.Disabled) === StashKeyFrameFlag.Disabled;
       const target: CompositeTreeNode = TreeNode.getTreeNodeById(targetID) as CompositeTreeNode;
       // 判断当前操作对象是否有效，无效则做下一步操作
       if (!target || frameDisabled) {
         continue;
       }
-      // tslint:disable-next-line:no-bitwise
       if ((flags & StashKeyFrameFlag.Expanded) === StashKeyFrameFlag.Expanded) {
         target.setCollapsed();
-        // tslint:disable-next-line:no-bitwise
       } else if ((flags & StashKeyFrameFlag.Collapsed) === StashKeyFrameFlag.Collapsed) {
         await target.setExpanded();
       }

@@ -54,7 +54,7 @@ export function getEncodedLanguageId(languageId: string): number {
 }
 
 export function getLegalThemeName(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9\-]/g, '-');
+  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 }
 
 class OnigasmLib implements IOnigLib {
@@ -346,7 +346,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     this.grammarRegistry.setTheme(themeData);
     themeData.encodedTokensColors = this.grammarRegistry.getColorMap();
     // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
-    // tslint:disable-next-line:no-null-keyword
     themeData.encodedTokensColors[0] = null!;
   }
 
@@ -411,7 +410,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       return undefined;
     }
 
-    // tslint:disable-next-line:no-null-keyword
     const result = Object.create(null);
     const scopes = Object.keys(languages);
     const len = scopes.length;
@@ -431,7 +429,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     if (typeof tokenTypes === 'undefined' || tokenTypes === null) {
       return undefined;
     }
-    // tslint:disable-next-line:no-null-keyword
     const result = Object.create(null);
     const scopes = Object.keys(tokenTypes);
     const len = scopes.length;
@@ -715,7 +712,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     const lineTokens = grammar.tokenizeLine(line, ruleStack);
     const debugLogger = getDebugLogger('tokenize');
     debugLogger.log(`\nTokenizing line: ${line}`);
-    // tslint:disable-next-line: prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let j = 0; j < lineTokens.tokens.length; j++) {
       const token = lineTokens.tokens[j];
       debugLogger.log(

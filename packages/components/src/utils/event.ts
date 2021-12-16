@@ -19,8 +19,7 @@ export namespace Event {
     return (listener, thisArgs = null, disposables?) => {
       // we need this, in case the event fires during the listener call
       let didFire = false;
-      let result: IDisposable;
-      result = event(
+      const result = event(
         (e) => {
           if (didFire) {
             return;
@@ -436,11 +435,9 @@ class LeakageMonitor {
           topCount = count;
         }
       });
-      // tslint:disable-next-line:no-console
       console.warn(
         `[${this.name}] potential listener LEAK detected, having ${listenerCount} listeners already. MOST frequent listener (${topCount}):`,
       );
-      // tslint:disable-next-line:no-console
       console.warn(topStack!);
     }
 
@@ -528,8 +525,7 @@ export class Emitter<T> {
           removeMonitor = this._leakageMon.check(this._listeners.size);
         }
 
-        let result: IDisposable;
-        result = {
+        const result = {
           dispose: () => {
             if (removeMonitor) {
               removeMonitor();
@@ -545,7 +541,7 @@ export class Emitter<T> {
               }
             }
           },
-        };
+        } as IDisposable;
         if (Array.isArray(disposables)) {
           disposables.push(result);
         }
@@ -576,14 +572,10 @@ export class Emitter<T> {
 
       while (this._deliveryQueue.size > 0) {
         const [listener, event] = this._deliveryQueue.shift()!;
-        try {
-          if (typeof listener === 'function') {
-            listener.call(undefined, event);
-          } else {
-            listener[0].call(listener[1], event);
-          }
-        } catch (e) {
-          throw e;
+        if (typeof listener === 'function') {
+          listener.call(undefined, event);
+        } else {
+          listener[0].call(listener[1], event);
         }
       }
     }
@@ -615,28 +607,24 @@ export class Emitter<T> {
       });
       while (this._deliveryQueue.size > 0) {
         const [listener, event] = this._deliveryQueue.shift()!;
-        try {
-          const promise: Promise<IAsyncResult<R>> = (async () => {
-            try {
-              if (typeof listener === 'function') {
-                return {
-                  result: (await listener.call(undefined, event)) as any,
-                };
-              } else {
-                return {
-                  result: (await listener[0].call(listener[1], event)) as any,
-                };
-              }
-            } catch (e) {
+        const promise: Promise<IAsyncResult<R>> = (async () => {
+          try {
+            if (typeof listener === 'function') {
               return {
-                err: e,
+                result: (await listener.call(undefined, event)) as any,
+              };
+            } else {
+              return {
+                result: (await listener[0].call(listener[1], event)) as any,
               };
             }
-          })();
-          promises.push(Promise.race([timeoutPromise, promise]));
-        } catch (e) {
-          throw e;
-        }
+          } catch (e) {
+            return {
+              err: e,
+            };
+          }
+        })();
+        promises.push(Promise.race([timeoutPromise, promise]));
       }
       return Promise.all(promises);
     } else {
@@ -727,6 +715,7 @@ export namespace WaitUntilEvent {
     emitter.fire(asyncEvent);
     // Asynchronous calls to `waitUntil` should fail.
     Object.freeze(waitables);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     delete asyncEvent['waitUntil'];
     if (!waitables.length) {

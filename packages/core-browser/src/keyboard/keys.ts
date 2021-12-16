@@ -392,7 +392,6 @@ export namespace KeyCode {
       }
     }
 
-    // tslint:disable-next-line: deprecation
     const keyCode = event.keyCode;
     if (keyCode) {
       const key = Key.getKey(keyCode);
@@ -523,7 +522,6 @@ export namespace SpecialCases {
 }
 
 export namespace Key {
-  // tslint:disable-next-line:no-any
   export function isKey(arg: any): arg is Key {
     return typeof arg === 'object' && 'code' in arg && 'keyCode' in arg;
   }

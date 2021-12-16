@@ -370,7 +370,6 @@ export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;
-  // tslint:disable-next-line:no-any
   arguments?: any[];
 }
 
@@ -399,7 +398,7 @@ export interface DefinitionLink {
   selectionRange?: Range;
 }
 
-// tslint:disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FoldingContext {}
 
 export interface FoldingRange {

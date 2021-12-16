@@ -32,9 +32,7 @@ import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-edito
 import { DebugPreferences } from './debug-preferences';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-// tslint:disable-next-line:no-empty-interface
 export type WillProvideDebugConfiguration = WaitUntilEvent;
-// tslint:disable-next-line:no-empty-interface
 export type WillInitialConfiguration = WaitUntilEvent;
 
 export interface IDebugConfigurationData {
@@ -311,7 +309,6 @@ export class DebugConfigurationManager {
     }
     // 判断是否已有空行可用于插入建议，如果有，直接替换对应的光标位置
     if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
-      // tslint:disable-next-line:no-bitwise
       editor.setPosition({ lineNumber: position.lineNumber + 1, column: 1 << 30 });
       editor.trigger(null, 'editor.action.deleteLines', []);
     }

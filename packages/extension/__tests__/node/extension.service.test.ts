@@ -53,10 +53,8 @@ describe('Extension Serivce', () => {
       {
         token: INodeLogger,
         useValue: {
-          /* tslint:disable */
           log: console.log,
           error: console.error,
-          /* tslint:enable */
         },
       },
       {
@@ -133,7 +131,6 @@ describe('Extension Serivce', () => {
       await extensionService.createProcess(mockExtClientId);
 
       // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
-      // tslint:disable-next-line
       console.log('enable extension host process port');
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
       expect(res).toBeTruthy();

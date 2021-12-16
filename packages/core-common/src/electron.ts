@@ -6,7 +6,6 @@ export interface IElectronMainApi<Events> {
   on(event: Events, listener: (...args) => void): IDisposable;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type IElectronPlainWebviewWindowOptions = Electron.BrowserWindowConstructorOptions;
 
 export interface IElectronMainUIServiceShape {
@@ -99,7 +98,6 @@ export interface IElectronMainUIServiceShape {
   getWebContentsId(windowId: number): Promise<number>;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export interface IElectronMainUIService
   extends IElectronMainUIServiceShape,
     IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {}
@@ -143,5 +141,4 @@ export interface IElectronURLService {
   deregisterHandler(handler: IURLHandler): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export interface IElectronRendererURLService extends IElectronMainApi<string>, IElectronURLService {}

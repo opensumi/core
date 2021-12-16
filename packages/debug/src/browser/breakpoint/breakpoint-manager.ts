@@ -263,7 +263,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
       defaultExceptionFilter: [],
     });
     this._breakpointsEnabled = data!.breakpointsEnabled;
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const uri in data!.breakpoints) {
       this.setBreakpoints(
         new URI(uri),

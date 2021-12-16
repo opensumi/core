@@ -132,6 +132,7 @@ export class MessageIO {
     args = args.map((arg) => {
       if (arg instanceof Error) {
         // 处理 Error 类型的参数
+        // eslint-disable-next-line prefer-rest-params
         const array = Array.prototype.slice.call(arguments) as any[];
         array[0] = arg.stack;
         return array.join('\n');
@@ -198,7 +199,6 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
-  // tslint:disable-next-line:no-unused-variable
   private logger;
 
   constructor(connection: IMessagePassingProtocol, logger?: any) {

@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ILogServiceManager, SupportLogNamespace, ILogService, LogLevel } from '@opensumi/ide-core-common';
 
-// tslint:disable-next-line:no-empty-interface
 export type INodeLogger = ILogService;
 export const INodeLogger = Symbol('INodeLogger');
 

@@ -178,7 +178,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 }
 
-// tslint:disable-next-line:no-empty-interface
 export type IMonacoImplEditor = IEditor;
 
 export function insertSnippetWithMonacoEditor(
@@ -674,6 +673,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   private wrapEditors() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const diffEditor = this;
     this.originalEditor = this.injector.get(DiffEditorPart, [
       diffEditor.monacoDiffEditor.getOriginalEditor(),

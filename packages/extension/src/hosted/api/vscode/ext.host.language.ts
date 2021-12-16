@@ -371,7 +371,6 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return callId;
   }
 
-  // tslint:disable-next-line:no-any
   private withAdapter<A, R>(
     handle: number,
     constructor: ConstructorOf<A>,

@@ -63,7 +63,6 @@ import { isRemoteAttach } from './debugUtils';
 import { IDebugProgress } from '../common/debug-progress';
 import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 
-// tslint:disable-next-line:no-empty-interface
 export type WillStartDebugSession = WaitUntilEvent;
 
 export interface WillResolveDebugConfiguration extends WaitUntilEvent {

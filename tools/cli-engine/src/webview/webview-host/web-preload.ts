@@ -26,7 +26,7 @@ class WebIframeChannel implements IWebviewChannel {
       }
     });
 
-    this.ready = new Promise<void>(async (resolve) => {
+    this.ready = new Promise<void>((resolve) => {
       resolve();
     });
 
@@ -58,6 +58,4 @@ class WebIframeChannel implements IWebviewChannel {
   }
 }
 
-/* tslint:disable */
 new WebviewPanelManager(new WebIframeChannel());
-/* tslint:enable */

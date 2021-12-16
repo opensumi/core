@@ -1,4 +1,3 @@
-// tslint:disable:new-parens
 import {
   Event,
   Uri,

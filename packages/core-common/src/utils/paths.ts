@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/Microsoft/vscode/blob/bf7ac9201e7a7d01741d4e6e64b5dc9f3197d97b/src/vs/base/common/paths.ts
 
-// tslint:disable:no-bitwise variable-name
 'use strict';
 
 import { isWindows } from '../platform';
@@ -75,7 +74,6 @@ export function normalize(path: string, toOSPath?: boolean): string {
     return path;
   }
 
-  // tslint:disable-next-line:no-shadowed-variable
   const sep = wantsBackslash ? '\\' : '/';
   const root = getRoot(path, sep);
 
@@ -124,7 +122,6 @@ function streql(value: string, start: number, end: number, other: string): boole
  * `getRoot('files:///files/path') === files:///`,
  * or `getRoot('\\server\shares\path') === \\server\shares\`
  */
-// tslint:disable-next-line:no-shadowed-variable
 export function getRoot(path: string, sep = '/'): string {
   if (!path) {
     return '';
@@ -139,7 +136,6 @@ export function getRoot(path: string, sep = '/'): string {
       //               ^^^^^^^^^^^^^^^^^^^
       code = path.charCodeAt(2);
       if (code !== CharCode.Slash && code !== CharCode.Backslash) {
-        // tslint:disable-next-line:no-shadowed-variable
         let pos = 3;
         const start = pos;
         for (; pos < len; pos++) {
@@ -316,7 +312,7 @@ export function replaceAsarInPath(pathMayInAsar: string) {
 }
 
 // Reference: https://en.wikipedia.org/wiki/Filename
-const WINDOWS_INVALID_FILE_CHARS = /[\\/:\*\?"<>\|]/g;
+const WINDOWS_INVALID_FILE_CHARS = /[\\/:*?"<>|]/g;
 const UNIX_INVALID_FILE_CHARS = /[\\/]/g;
 const WINDOWS_FORBIDDEN_NAMES = /^(con|prn|aux|clock\$|nul|lpt[0-9]|com[0-9])$/i;
 export function isValidBasename(name: string | null | undefined, isWindowsOS: boolean = isWindows): boolean {

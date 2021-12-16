@@ -1,4 +1,3 @@
-// tslint:disable no-console
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';

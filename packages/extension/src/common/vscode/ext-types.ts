@@ -481,7 +481,6 @@ export class DiagnosticRelatedInformation {
 export class Disposable {
   private disposable: undefined | (() => void);
 
-  // tslint:disable-next-line:no-any
   static from(...disposables: { dispose(): any }[]): Disposable {
     return new Disposable(() => {
       if (disposables) {
@@ -537,7 +536,7 @@ export class Hover {
 
 @es5ClassCompat
 export class SnippetString {
-  static isSnippetString(thing: {}): thing is SnippetString {
+  static isSnippetString(thing: any): thing is SnippetString {
     if (thing instanceof SnippetString) {
       return true;
     }
@@ -669,7 +668,7 @@ export class TextEdit {
     this.newText = newText!;
   }
 
-  static isTextEdit(thing: {}): thing is TextEdit {
+  static isTextEdit(thing: any): thing is TextEdit {
     if (thing instanceof TextEdit) {
       return true;
     }
@@ -1275,7 +1274,6 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     return this.entries().length;
   }
 
-  // tslint:disable-next-line:no-any
   toJSON(): any {
     return this.entries();
   }
@@ -1408,7 +1406,6 @@ export class SymbolInformation {
     SymbolInformation.validate(this);
   }
 
-  // tslint:disable-next-line:no-any
   toJSON(): any {
     return {
       name: this.name,
@@ -1434,8 +1431,11 @@ export enum SymbolKind {
   Function = 11,
   Variable = 12,
   Constant = 13,
+  // eslint-disable-next-line id-blacklist
   String = 14,
+  // eslint-disable-next-line id-blacklist
   Number = 15,
+  // eslint-disable-next-line id-blacklist
   Boolean = 16,
   Array = 17,
   Object = 18,
@@ -1870,7 +1870,7 @@ export class TaskGroup implements vscode.TaskGroup {
 
 function computeTaskExecutionId(values: string[]): string {
   let id = '';
-  // tslint:disable-next-line: prefer-for-of
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < values.length; i++) {
     id += values[i].replace(/,/g, ',,') + ',';
   }
@@ -2223,7 +2223,6 @@ export class Task implements vscode.Task2 {
   private static ShellType = 'shell';
   private static EmptyType = '$empty';
 
-  // tslint:disable-next-line: variable-name
   private __id: string | undefined;
 
   private _definition: TaskDefinition;

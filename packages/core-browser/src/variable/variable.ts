@@ -49,7 +49,6 @@ export class VariableRegistryImpl implements IDisposable {
    */
   registerVariable(variable: Variable): IDisposable {
     if (this.variables.has(variable.name)) {
-      // tslint:disable-next-line:no-console
       console.warn(`A variables with name ${variable.name} is already registered.`);
       return Disposable.NULL;
     }

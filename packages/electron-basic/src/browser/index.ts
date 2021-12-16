@@ -344,7 +344,6 @@ export class ElectronBasicContribution
     this.eventBus.on(EditorGroupFileDropEvent, async (event) => {
       const payload = event.payload;
       // fileList 只能这样遍历
-      // tslint:disable-next-line: prefer-for-of
       for (let i = 0; i < payload.files.length; i++) {
         const file = payload.files[i];
         let group = event.payload.group;

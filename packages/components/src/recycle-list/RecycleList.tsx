@@ -264,7 +264,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     const setItemSize = () => {
       if (rowRoot.current) {
         let height = 0;
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < rowRoot.current.children.length; i++) {
           height += rowRoot.current.children[i].getBoundingClientRect().height;
         }
