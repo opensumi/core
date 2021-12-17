@@ -1,8 +1,14 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    types: [labeled]
+    branches:
+      - main
+    paths:
+      - 'packages/**'
 
 jobs:
   coverage:
