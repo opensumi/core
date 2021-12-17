@@ -10,8 +10,7 @@ import {
 
 export class TerminalProcessExtHostProxy
   extends Disposable
-  implements ITerminalChildProcess, ITerminalProcessExtHostProxy
-{
+  implements ITerminalChildProcess, ITerminalProcessExtHostProxy {
   private readonly _onProcessData = this.registerDispose(new Emitter<string>());
   public readonly onProcessData: Event<string> = this._onProcessData.event;
   private readonly _onProcessExit = this.registerDispose(new Emitter<number | undefined>());

@@ -18,8 +18,7 @@ import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './con
 
 @Domain(ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution)
 export class VSXExtensionContribution
-  implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution
-{
+  implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
 

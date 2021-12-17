@@ -94,8 +94,7 @@ export class ElectronBasicContribution
     CommandContribution,
     ComponentContribution,
     ClientAppContribution,
-    MenuContribution
-{
+    MenuContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 

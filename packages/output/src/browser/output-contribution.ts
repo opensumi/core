@@ -42,8 +42,7 @@ export class OutputContribution
     ComponentContribution,
     TabBarToolbarContribution,
     PreferenceContribution,
-    ClientAppContribution
-{
+    ClientAppContribution {
   @Autowired()
   private readonly outputService: OutputService;
 

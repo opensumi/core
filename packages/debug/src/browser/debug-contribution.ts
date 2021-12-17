@@ -252,8 +252,7 @@ export class DebugContribution
     JsonSchemaContribution,
     PreferenceContribution,
     MenuContribution,
-    BrowserEditorContribution
-{
+    BrowserEditorContribution {
   schema: PreferenceSchema = debugPreferencesSchema;
 
   @Autowired(IMainLayoutService)

@@ -37,7 +37,20 @@ import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
-import { CoverageDetails, DetailType, ICoveredCount, IFileCoverage, ISerializedTestResults, ITestErrorMessage, ITestItem, ITestItemContext, ITestTag, SerializedTestErrorMessage, SerializedTestResultItem, TestMessageType } from '@opensumi/ide-testing/lib/common/testCollection';
+import {
+  CoverageDetails,
+  DetailType,
+  ICoveredCount,
+  IFileCoverage,
+  ISerializedTestResults,
+  ITestErrorMessage,
+  ITestItem,
+  ITestItemContext,
+  ITestTag,
+  SerializedTestErrorMessage,
+  SerializedTestResultItem,
+  TestMessageType,
+} from '@opensumi/ide-testing/lib/common/testCollection';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 
@@ -1515,7 +1528,7 @@ export namespace CodeActionTriggerKind {
   }
 }
 
-//#region Test Adapter
+// #region Test Adapter
 
 export namespace TestMessage {
   export function from(message: vscode.TestMessage): SerializedTestErrorMessage {
@@ -1524,12 +1537,14 @@ export namespace TestMessage {
       type: TestMessageType.Error,
       expected: message.expectedOutput,
       actual: message.actualOutput,
-      location: message.location ? location.from(message.location) as any : undefined,
+      location: message.location ? (location.from(message.location) as any) : undefined,
     };
   }
 
   export function to(item: SerializedTestErrorMessage): vscode.TestMessage {
-    const message = new types.TestMessage(typeof item.message === 'string' ? item.message : MarkdownString.to(item.message));
+    const message = new types.TestMessage(
+      typeof item.message === 'string' ? item.message : MarkdownString.to(item.message),
+    );
     message.actualOutput = item.actual;
     message.expectedOutput = item.expected;
     message.location = item.location ? location.to(item.location) : undefined;
@@ -1542,8 +1557,7 @@ export namespace TestTag {
     Delimiter = '\0',
   }
 
-  export const namespace = (ctrlId: string, tagId: string) =>
-    ctrlId + Constants.Delimiter + tagId;
+  export const namespace = (ctrlId: string, tagId: string) => ctrlId + Constants.Delimiter + tagId;
 
   export const denamespace = (namespaced: string) => {
     const index = namespaced.indexOf(Constants.Delimiter);
@@ -1563,7 +1577,7 @@ export namespace TestItem {
       tags: item.tags.map((t) => TestTag.namespace(ctrlId, t.id)),
       range: Range.from(item.range) || null,
       description: item.description || null,
-      error: item.error ? (MarkdownString.fromStrict(item.error) || null) : null,
+      error: item.error ? MarkdownString.fromStrict(item.error) || null : null,
     };
   }
 
@@ -1617,8 +1631,11 @@ export namespace TestTag {
 }
 
 export namespace TestResults {
-  const convertTestResultItem = (item: SerializedTestResultItem, byInternalId: Map<string, SerializedTestResultItem>): vscode.TestResultSnapshot => {
-    const snapshot: vscode.TestResultSnapshot = ({
+  const convertTestResultItem = (
+    item: SerializedTestResultItem,
+    byInternalId: Map<string, SerializedTestResultItem>,
+  ): vscode.TestResultSnapshot => {
+    const snapshot: vscode.TestResultSnapshot = {
       ...TestItem.toPlain(item.item),
       parent: undefined,
       taskStates: item.tasks.map((t) => ({
@@ -1632,7 +1649,7 @@ export namespace TestResults {
         .map((c) => byInternalId.get(c))
         .filter(isDefined)
         .map((c) => convertTestResultItem(c, byInternalId)),
-    });
+    };
 
     for (const child of snapshot.children) {
       (child as any).parent = snapshot;
@@ -1646,7 +1663,11 @@ export namespace TestResults {
     const byInternalId = new Map<string, SerializedTestResultItem>();
     for (const item of serialized.items) {
       byInternalId.set(item.item.extId, item);
-      if (serialized.request.targets.some((t) => t.controllerId === item.controllerId && t.testIds.includes(item.item.extId))) {
+      if (
+        serialized.request.targets.some(
+          (t) => t.controllerId === item.controllerId && t.testIds.includes(item.item.extId),
+        )
+      ) {
         roots.push(item);
       }
     }
@@ -1674,7 +1695,10 @@ export namespace TestCoverage {
         location: fromLocation(coverage.location),
         type: DetailType.Statement,
         branches: coverage.branches.length
-          ? coverage.branches.map((b) => ({ count: b.executionCount, location: b.location && fromLocation(b.location) }))
+          ? coverage.branches.map((b) => ({
+              count: b.executionCount,
+              location: b.location && fromLocation(b.location),
+            }))
           : undefined,
       };
     } else {
@@ -1696,4 +1720,4 @@ export namespace TestCoverage {
     };
   }
 }
-//#endregion
+// #endregion

@@ -10,8 +10,7 @@ import { fromSCMUri } from '../../../utils/scm-uri';
 @Injectable()
 export class GitDocContentProvider
   extends AbstractSCMDocContentProvider
-  implements IEditorDocumentModelContentProvider
-{
+  implements IEditorDocumentModelContentProvider {
   scheme = 'git';
 
   @Autowired(ICodeService)

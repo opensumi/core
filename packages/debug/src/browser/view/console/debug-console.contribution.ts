@@ -42,8 +42,7 @@ export class DebugConsoleContribution
     TabBarToolbarContribution,
     CommandContribution,
     MenuContribution,
-    KeybindingContribution
-{
+    KeybindingContribution {
   @Autowired()
   private readonly debugConsoleModelService: DebugConsoleModelService;
 

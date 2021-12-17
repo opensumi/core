@@ -911,8 +911,8 @@ export const localizationBundle = {
     'editor.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
 
-    //#region Testing
+    // #region Testing
     'test.title': '测试管理器',
-    //#endregion
+    // #endregion
   },
 };

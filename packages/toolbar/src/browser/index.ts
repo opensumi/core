@@ -28,8 +28,7 @@ export class ToolbarModule extends BrowserModule {
 
 @Domain(ComponentContribution, ClientAppContribution, ToolBarActionContribution)
 export class ToolBarModuleContribution
-  implements ComponentContribution, ClientAppContribution, ToolBarActionContribution
-{
+  implements ComponentContribution, ClientAppContribution, ToolBarActionContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 

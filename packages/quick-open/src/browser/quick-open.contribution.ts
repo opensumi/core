@@ -37,8 +37,7 @@ export class CoreQuickOpenContribution implements ClientAppContribution {
 // 作为 command platte 等相关功能的贡献点
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
 export class QuickOpenFeatureContribution
-  implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution
-{
+  implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 

@@ -29,8 +29,7 @@ export class WatchPanelContribution
     MenuContribution,
     CommandContribution,
     TabBarToolbarContribution,
-    KeybindingContribution
-{
+    KeybindingContribution {
   @Autowired(DebugWatchModelService)
   private readonly debugWatchModelService: DebugWatchModelService;
 

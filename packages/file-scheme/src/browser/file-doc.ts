@@ -22,8 +22,7 @@ import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calcul
 @Injectable()
 export class FileSchemeDocumentProvider
   extends BaseFileSystemEditorDocumentProvider
-  implements IEditorDocumentModelContentProvider
-{
+  implements IEditorDocumentModelContentProvider {
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 

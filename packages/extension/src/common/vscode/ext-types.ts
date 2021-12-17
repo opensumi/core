@@ -3008,9 +3008,9 @@ export class InlayHint {
   }
 }
 
-//#endregion InlayHint
+// #endregion InlayHint
 
-//#region Test Adapter
+// #region Test Adapter
 export enum TestResultState {
   Queued = 1,
   Running = 2,
@@ -3048,11 +3048,11 @@ export class TestMessage implements vscode.TestMessage {
     return msg;
   }
 
-  constructor(public message: string | vscode.MarkdownString) { }
+  constructor(public message: string | vscode.MarkdownString) {}
 }
 
 @es5ClassCompat
 export class TestTag implements vscode.TestTag {
-  constructor(public readonly id: string) { }
+  constructor(public readonly id: string) {}
 }
-//#endregion
+// #endregion

@@ -92,8 +92,7 @@ export const RETRACT_BOTTOM_PANEL: Command = {
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution)
 export class MainLayoutModuleContribution
   extends WithEventBus
-  implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution
-{
+  implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution {
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
 

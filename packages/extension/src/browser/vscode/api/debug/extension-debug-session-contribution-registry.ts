@@ -18,8 +18,7 @@ export interface ExtensionDebugSessionContributionRegistrator {
 
 @Injectable()
 export class ExtensionDebugSessionContributionRegistry
-  implements DebugSessionContributionRegistry, ExtensionDebugSessionContributionRegistrator
-{
+  implements DebugSessionContributionRegistry, ExtensionDebugSessionContributionRegistrator {
   protected readonly contribs = new Map<string, DebugSessionContribution>();
 
   @Autowired(DebugSessionContribution)

@@ -166,32 +166,35 @@ export class SingleUseTestCollection extends Disposable {
         break;
 
       case ExtHostTestItemEventOp.SetProp:
-        const { key, value, previous } = evt;
-        const extId = internal.fullId.toString();
-        switch (key) {
-          case 'canResolveChildren':
-            this.updateExpandability(internal);
-            break;
-          case 'tags':
-            this.diffTagRefs(value, previous, extId);
-            break;
-          case 'range':
-            this.pushDiff([TestDiffOpType.Update, { extId, item: { range: Convert.Range.from(value) } }]);
-            break;
-          case 'error':
-            this.pushDiff([
-              TestDiffOpType.Update,
-              {
-                extId,
-                item: {
-                  error: Convert.MarkdownString.fromStrict(value) || null,
+        {
+          const { key, value, previous } = evt;
+          const extId = internal.fullId.toString();
+          switch (key) {
+            case 'canResolveChildren':
+              this.updateExpandability(internal);
+              break;
+            case 'tags':
+              this.diffTagRefs(value, previous, extId);
+              break;
+            case 'range':
+              this.pushDiff([TestDiffOpType.Update, { extId, item: { range: Convert.Range.from(value) } }]);
+              break;
+            case 'error':
+              this.pushDiff([
+                TestDiffOpType.Update,
+                {
+                  extId,
+                  item: {
+                    error: Convert.MarkdownString.fromStrict(value) || null,
+                  },
                 },
-              },
-            ]);
-            break;
-          default:
-            this.pushDiff([TestDiffOpType.Update, { extId, item: { [key]: value ?? null } }]);
-            break;
+              ]);
+              break;
+
+            default:
+              this.pushDiff([TestDiffOpType.Update, { extId, item: { [key]: value ?? null } }]);
+              break;
+          }
         }
         break;
       default:

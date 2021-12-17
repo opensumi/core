@@ -21,143 +21,152 @@ export interface ExtensionTabBarTreeViewProps {
   treeViewId: string;
 }
 
-export const ExtensionTabBarTreeView = observer(({ viewState, model, dataProvider, treeViewId }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
-  const [isReady, setIsReady] = React.useState<boolean>(false);
-  const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
+export const ExtensionTabBarTreeView = observer(
+  ({ viewState, model, dataProvider, treeViewId }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
+    const [isReady, setIsReady] = React.useState<boolean>(false);
+    const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
 
-  React.useEffect(() => {
-    const disposable = dataProvider.onDidChangeEmpty(() => {
-      setIsEmpty(dataProvider.isTreeEmpty);
-    });
-    return () => disposable.dispose();
-  }, []);
+    React.useEffect(() => {
+      const disposable = dataProvider.onDidChangeEmpty(() => {
+        setIsEmpty(dataProvider.isTreeEmpty);
+      });
+      return () => disposable.dispose();
+    }, []);
 
-  const { height } = viewState;
-  const { canSelectMany } = model.treeViewOptions || {};
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+    const { height } = viewState;
+    const { canSelectMany } = model.treeViewOptions || {};
+    const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
-  const handleTreeReady = (handle: IRecycleTreeHandle) => {
-    model.handleTreeHandler({
-      ...handle,
-      getModel: () => model.treeModel,
-      hasDirectFocus: () => wrapperRef.current === document.activeElement,
-    });
-  };
+    const handleTreeReady = (handle: IRecycleTreeHandle) => {
+      model.handleTreeHandler({
+        ...handle,
+        getModel: () => model.treeModel,
+        hasDirectFocus: () => wrapperRef.current === document.activeElement,
+      });
+    };
 
-  const handleTwistierClick = React.useCallback(
-    (ev: React.MouseEvent, item: ExtensionCompositeTreeNode) => {
-      // 阻止点击事件冒泡
-      ev.stopPropagation();
+    const handleTwistierClick = React.useCallback(
+      (ev: React.MouseEvent, item: ExtensionCompositeTreeNode) => {
+        // 阻止点击事件冒泡
+        ev.stopPropagation();
 
-      const { toggleDirectory } = model;
+        const { toggleDirectory } = model;
 
-      toggleDirectory(item);
-    },
-    [model],
-  );
+        toggleDirectory(item);
+      },
+      [model],
+    );
 
-  const hasShiftMask = (event): boolean => {
-    // Ctrl/Cmd 权重更高
-    if (hasCtrlCmdMask(event)) {
-      return false;
-    }
-    return event.shiftKey;
-  };
-
-  const hasCtrlCmdMask = (event): boolean => {
-    const { metaKey, ctrlKey } = event;
-    return (isOSX && metaKey) || ctrlKey;
-  };
-
-  const handleItemClicked = React.useCallback(
-    (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
-      // 阻止点击事件冒泡
-      ev.stopPropagation();
-
-      const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
-      if (!item) {
-        return;
+    const hasShiftMask = (event): boolean => {
+      // Ctrl/Cmd 权重更高
+      if (hasCtrlCmdMask(event)) {
+        return false;
       }
-      const shiftMask = hasShiftMask(event);
-      const ctrlCmdMask = hasCtrlCmdMask(event);
-      if (canSelectMany) {
-        if (shiftMask) {
-          handleItemRangeClick(item, type);
-        } else if (ctrlCmdMask) {
-          handleItemToggleClick(item, type);
+      return event.shiftKey;
+    };
+
+    const hasCtrlCmdMask = (event): boolean => {
+      const { metaKey, ctrlKey } = event;
+      return (isOSX && metaKey) || ctrlKey;
+    };
+
+    const handleItemClicked = React.useCallback(
+      (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
+        // 阻止点击事件冒泡
+        ev.stopPropagation();
+
+        const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
+        if (!item) {
+          return;
         }
-      } else {
-        handleItemClick(item, type);
-      }
-    },
-    [canSelectMany],
-  );
+        const shiftMask = hasShiftMask(event);
+        const ctrlCmdMask = hasCtrlCmdMask(event);
+        if (canSelectMany) {
+          if (shiftMask) {
+            handleItemRangeClick(item, type);
+          } else if (ctrlCmdMask) {
+            handleItemToggleClick(item, type);
+          }
+        } else {
+          handleItemClick(item, type);
+        }
+      },
+      [canSelectMany],
+    );
 
-  const handlerContextMenu = React.useCallback(
-    (ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+    const handlerContextMenu = React.useCallback(
+      (ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+        const { handleContextMenu } = model;
+        handleContextMenu(ev, node);
+      },
+      [model],
+    );
+
+    const handleOuterContextMenu = (ev: React.MouseEvent) => {
       const { handleContextMenu } = model;
-      handleContextMenu(ev, node);
-    },
-    [model],
-  );
-
-  const handleOuterContextMenu = (ev: React.MouseEvent) => {
-    const { handleContextMenu } = model;
-    // 空白区域右键菜单
-    handleContextMenu(ev);
-  };
-
-  const handleOuterClick = (ev: React.MouseEvent) => {
-    // 空白区域点击，取消焦点状态
-    const { enactiveNodeDecoration } = model;
-    enactiveNodeDecoration();
-  };
-
-  React.useEffect(() => {
-    let unmouted = false;
-    (async () => {
-      await model.whenReady;
-      if (model.treeModel) {
-        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-        // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-        await model.treeModel.root.ensureLoaded();
-      }
-      if (!unmouted) {
-        setIsReady(true);
-      }
-    })();
-    return () => {
-      unmouted = true;
-      model && model.removeNodeDecoration();
+      // 空白区域右键菜单
+      handleContextMenu(ev);
     };
-  }, [model]);
 
-  React.useEffect(() => {
-    const handleBlur = () => {
-      model.handleTreeBlur();
+    const handleOuterClick = (ev: React.MouseEvent) => {
+      // 空白区域点击，取消焦点状态
+      const { enactiveNodeDecoration } = model;
+      enactiveNodeDecoration();
     };
-    wrapperRef.current?.addEventListener('blur', handleBlur, true);
-    return () => {
-      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
-    };
-  }, [wrapperRef.current]);
 
-  return (
-    <div className={styles.kt_extension_view} tabIndex={-1} ref={wrapperRef} onContextMenu={handleOuterContextMenu} onClick={handleOuterClick} data-tree-view-id={treeViewId}>
-      <TreeView
-        isReady={isReady}
-        isEmpty={isEmpty}
-        height={height}
-        handleTreeReady={handleTreeReady}
-        handleItemClicked={handleItemClicked}
-        handleTwistierClick={handleTwistierClick}
-        handlerContextMenu={handlerContextMenu}
-        treeViewId={treeViewId}
-        model={model}
-      />
-    </div>
-  );
-});
+    React.useEffect(() => {
+      let unmouted = false;
+      (async () => {
+        await model.whenReady;
+        if (model.treeModel) {
+          // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+          // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+          await model.treeModel.root.ensureLoaded();
+        }
+        if (!unmouted) {
+          setIsReady(true);
+        }
+      })();
+      return () => {
+        unmouted = true;
+        model && model.removeNodeDecoration();
+      };
+    }, [model]);
+
+    React.useEffect(() => {
+      const handleBlur = () => {
+        model.handleTreeBlur();
+      };
+      wrapperRef.current?.addEventListener('blur', handleBlur, true);
+      return () => {
+        wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      };
+    }, [wrapperRef.current]);
+
+    return (
+      <div
+        className={styles.kt_extension_view}
+        tabIndex={-1}
+        ref={wrapperRef}
+        onContextMenu={handleOuterContextMenu}
+        onClick={handleOuterClick}
+        data-tree-view-id={treeViewId}
+      >
+        <TreeView
+          isReady={isReady}
+          isEmpty={isEmpty}
+          height={height}
+          handleTreeReady={handleTreeReady}
+          handleItemClicked={handleItemClicked}
+          handleTwistierClick={handleTwistierClick}
+          handlerContextMenu={handlerContextMenu}
+          treeViewId={treeViewId}
+          model={model}
+        />
+      </div>
+    );
+  },
+);
 
 interface TreeViewProps {
   isReady: boolean;
@@ -166,7 +175,11 @@ interface TreeViewProps {
   treeViewId: string;
   model: ExtensionTreeViewModel;
   handleTreeReady(handle: IRecycleTreeHandle): void;
-  handleItemClicked(ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
+  handleItemClicked(
+    ev: React.MouseEvent,
+    item: ExtensionTreeNode | ExtensionCompositeTreeNode,
+    type: TreeNodeType,
+  ): void;
   handleTwistierClick(ev: React.MouseEvent, item: ExtensionCompositeTreeNode): void;
   handlerContextMenu(ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
 }
@@ -181,10 +194,20 @@ function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps
   );
 }
 
-const TreeView = React.memo(({ isReady, isEmpty, model, treeViewId, height, handleTreeReady, handleItemClicked, handleTwistierClick, handlerContextMenu }: TreeViewProps) => {
-  const renderTreeNode = React.useCallback(
-    (props: INodeRendererProps) => {
-      return (
+const TreeView = React.memo(
+  ({
+    isReady,
+    isEmpty,
+    model,
+    treeViewId,
+    height,
+    handleTreeReady,
+    handleItemClicked,
+    handleTwistierClick,
+    handlerContextMenu,
+  }: TreeViewProps) => {
+    const renderTreeNode = React.useCallback(
+      (props: INodeRendererProps) => (
         <TreeViewNode
           item={props.item as any}
           itemType={props.itemType}
@@ -196,25 +219,31 @@ const TreeView = React.memo(({ isReady, isEmpty, model, treeViewId, height, hand
           leftPadding={8}
           treeViewId={treeViewId}
         />
-      );
-    },
-    [model.treeModel],
-  );
+      ),
+      [model.treeModel],
+    );
 
-  if (!isReady) {
-    return <ProgressBar loading />;
-  } else if (isEmpty) {
-    return <WelcomeView viewId={treeViewId} />;
-  } else {
-    if (model.treeModel) {
-      return (
-        <RecycleTree height={height} itemHeight={TREE_VIEW_NODE_HEIGHT} onReady={handleTreeReady} model={model.treeModel}>
-          {renderTreeNode}
-        </RecycleTree>
-      );
+    if (!isReady) {
+      return <ProgressBar loading />;
+    } else if (isEmpty) {
+      return <WelcomeView viewId={treeViewId} />;
+    } else {
+      if (model.treeModel) {
+        return (
+          <RecycleTree
+            height={height}
+            itemHeight={TREE_VIEW_NODE_HEIGHT}
+            onReady={handleTreeReady}
+            model={model.treeModel}
+          >
+            {renderTreeNode}
+          </RecycleTree>
+        );
+      }
     }
-  }
-  return null;
-}, isTreeViewPropsEqual);
+    return null;
+  },
+  isTreeViewPropsEqual,
+);
 
 TreeView.displayName = 'ExtensionsTreeView';

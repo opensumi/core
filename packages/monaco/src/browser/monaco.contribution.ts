@@ -64,8 +64,7 @@ import {
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution
-  implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
-{
+  implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
   @Autowired()
   monacoService: MonacoService;
 

@@ -17,8 +17,7 @@ import {
 @Injectable()
 export class ElectronMainUIService
   extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'>
-  implements IElectronMainUIServiceShape
-{
+  implements IElectronMainUIServiceShape {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
