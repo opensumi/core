@@ -1,9 +1,43 @@
-import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState, IMainThreadWebviewView, IWebviewExtensionDescription, IExtHostWebviewView, WebviewViewResolverRegistrationEvent, WebviewViewResolverRegistrationRemovalEvent, WebviewViewOptions } from '../../../common/vscode';
+import {
+  IMainThreadWebview,
+  WebviewPanelShowOptions,
+  IWebviewPanelOptions,
+  IWebviewOptions,
+  ExtHostAPIIdentifier,
+  IExtHostWebview,
+  IWebviewPanelViewState,
+  IMainThreadWebviewView,
+  IWebviewExtensionDescription,
+  IExtHostWebviewView,
+  WebviewViewResolverRegistrationEvent,
+  WebviewViewResolverRegistrationRemovalEvent,
+  WebviewViewOptions,
+} from '../../../common/vscode';
 import { Injectable, Autowired, Optional } from '@opensumi/di';
-import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@opensumi/ide-webview';
+import {
+  IWebviewService,
+  IEditorWebviewComponent,
+  IWebview,
+  IPlainWebview,
+  IPlainWebviewComponentHandle,
+} from '@opensumi/ide-webview';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
-import { Disposable, URI, MaybeNull, IEventBus, ILogger, Schemas, IExtensionInfo, CommandRegistry, StorageProvider, STORAGE_SCHEMA, IStorage, IDisposable, addMapElement } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  URI,
+  MaybeNull,
+  IEventBus,
+  ILogger,
+  Schemas,
+  IExtensionInfo,
+  CommandRegistry,
+  StorageProvider,
+  STORAGE_SCHEMA,
+  IStorage,
+  IDisposable,
+  addMapElement,
+} from '@opensumi/ide-core-browser';
 import { EditorGroupChangeEvent, IEditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { ISumiExtHostWebviews } from '../../../common/sumi/webview';
 import { IIconService, IconType } from '@opensumi/ide-theme';
@@ -18,9 +52,8 @@ import { CancellationToken, WithEventBus, OnEvent } from '@opensumi/ide-core-com
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
 import { WebviewViewShouldShowEvent } from '../../components/extension-webview-view';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
-
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
 
@@ -31,7 +64,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   private webviews: Map<string, IWebview> = new Map();
 
-  private plainWebviews: Map<string, IEditorWebviewComponent<IPlainWebview> |  IPlainWebviewComponentHandle > = new Map();
+  private plainWebviews: Map<string, IEditorWebviewComponent<IPlainWebview> | IPlainWebviewComponentHandle> = new Map();
 
   private webviewPanelStates: Map<string, IWebviewPanelViewState> = new Map();
 
@@ -76,11 +109,11 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     this.initEvents();
     this.extWebviewStorage = this.getStorage(new URI('extension-webview-panels').withScheme(STORAGE_SCHEMA.SCOPE));
     this.webviewService.registerWebviewReviver({
-      revive: (id) => {
-        return this.reviveWebview(id);
-      },
+      revive: (id) => this.reviveWebview(id),
       handles: async (id: string) => {
-        const persistedWebviewPanelMeta: IWebviewPanelData | undefined = (await this.extWebviewStorage).get<IWebviewPanelData>(id);
+        const persistedWebviewPanelMeta: IWebviewPanelData | undefined = (
+          await this.extWebviewStorage
+        ).get<IWebviewPanelData>(id);
         if (persistedWebviewPanelMeta) {
           return 10;
         } else {
@@ -112,36 +145,41 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   }
 
   initEvents() {
-    this.addDispose(this.editorService.onActiveResourceChange(() => {
-      this.onChange();
-    }));
+    this.addDispose(
+      this.editorService.onActiveResourceChange(() => {
+        this.onChange();
+      }),
+    );
 
-    this.addDispose(this.eventBus.on(EditorGroupChangeEvent, () => {
-      this.onChange();
-    }));
+    this.addDispose(
+      this.eventBus.on(EditorGroupChangeEvent, () => {
+        this.onChange();
+      }),
+    );
   }
 
   isActive(webviewPanel: WebviewPanel, resource: IResource, openType: MaybeNull<IEditorOpenType>) {
-    return webviewPanel.resourceState.uri.isEqual(resource?.uri) && webviewPanel.resourceState.openTypeId === openType?.componentId;
+    return (
+      webviewPanel.resourceState.uri.isEqual(resource?.uri) &&
+      webviewPanel.resourceState.openTypeId === openType?.componentId
+    );
   }
 
   onChange() {
     const currentResource = this.editorService.currentResource;
     const currentOpenType = this.editorService.currentEditorGroup.currentOpenType;
     const visibleResources: {
-      resource: MaybeNull<IResource>,
-      openType: MaybeNull<IEditorOpenType>
-      index: number,
-    }[] = this.editorService.editorGroups.map((g) => {
-      return {
-        resource: g.currentResource,
-        openType: g.currentOpenType,
-        index: g.index + 1,
-      };
-    });
+      resource: MaybeNull<IResource>;
+      openType: MaybeNull<IEditorOpenType>;
+      index: number;
+    }[] = this.editorService.editorGroups.map((g) => ({
+      resource: g.currentResource,
+      openType: g.currentOpenType,
+      index: g.index + 1,
+    }));
     this.webviewPanelStates.forEach((state, id) => {
       if (!this.hasWebviewPanel(id)) {
-        return ;
+        return;
       }
       let hasChange = false;
       const webviewPanel = this.getWebivewPanel(id);
@@ -185,44 +223,60 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
           this._persistWebviewPanelMeta(id);
         }
       }
-
     });
   }
 
-  $createWebviewPanel(id: string, viewType: string , title: string, showOptions: WebviewPanelShowOptions = {}, options: IWebviewPanelOptions & IWebviewOptions = {}, extension: IExtensionInfo): void {
+  $createWebviewPanel(
+    id: string,
+    viewType: string,
+    title: string,
+    showOptions: WebviewPanelShowOptions = {},
+    options: IWebviewPanelOptions & IWebviewOptions = {},
+    extension: IExtensionInfo,
+  ): void {
     this.doCreateWebviewPanel(id, viewType, title, showOptions, options, extension);
   }
 
-  public pipeBrowserHostedWebviewPanel(webview: IWebview, resourceState: {
-    uri: URI,
-    openTypeId: string,
-  },                                   viewType: string, options: IWebviewPanelOptions, extension: IExtensionInfo) {
+  public pipeBrowserHostedWebviewPanel(
+    webview: IWebview,
+    resourceState: {
+      uri: URI;
+      openTypeId: string;
+    },
+    viewType: string,
+    options: IWebviewPanelOptions,
+    extension: IExtensionInfo,
+  ) {
     const id = webview.id;
-    const webviewPanel = new WebviewPanel(
-      id,
-      viewType,
-      resourceState,
-      {},
-      {},
-      extension,
-      webview,
-    );
+    const webviewPanel = new WebviewPanel(id, viewType, resourceState, {}, {}, extension, webview);
     this.onCreateWebviewPanel(webviewPanel);
     this.proxy.$pipeBrowserHostedWebviewPanel(id, viewType);
   }
 
   public async reviveWebview(id: string) {
-    const persistedWebivewPanelMeta: IWebviewPanelData | undefined = (await this.extWebviewStorage).get<IWebviewPanelData>(id);
+    const persistedWebivewPanelMeta: IWebviewPanelData | undefined = (
+      await this.extWebviewStorage
+    ).get<IWebviewPanelData>(id);
     if (!persistedWebivewPanelMeta) {
       throw new Error('No revival info for webview ' + id);
     }
-    const { viewType, webviewOptions, extensionInfo, title} = persistedWebivewPanelMeta;
+    const { viewType, webviewOptions, extensionInfo, title } = persistedWebivewPanelMeta;
     await this.activation.fireEvent('onWebviewPanel', viewType);
-    const state =  await this.getPersistedWebviewState(viewType, id);
-    const editorWebview = this.webviewService.createEditorWebviewComponent({allowScripts: webviewOptions.enableScripts, longLive: webviewOptions.retainContextWhenHidden}, id);
+    const state = await this.getPersistedWebviewState(viewType, id);
+    const editorWebview = this.webviewService.createEditorWebviewComponent(
+      { allowScripts: webviewOptions.enableScripts, longLive: webviewOptions.retainContextWhenHidden },
+      id,
+    );
     const viewColumn = editorWebview.group ? editorWebview.group.index + 1 : persistedWebivewPanelMeta.viewColumn;
-    await this.doCreateWebviewPanel(id, viewType, title, {viewColumn}, webviewOptions, extensionInfo, state);
-    await this.proxy.$deserializeWebviewPanel(id, viewType, title, await this.getPersistedWebviewState(viewType, id), viewColumn, webviewOptions);
+    await this.doCreateWebviewPanel(id, viewType, title, { viewColumn }, webviewOptions, extensionInfo, state);
+    await this.proxy.$deserializeWebviewPanel(
+      id,
+      viewType,
+      title,
+      await this.getPersistedWebviewState(viewType, id),
+      viewColumn,
+      webviewOptions,
+    );
   }
 
   private onCreateWebviewPanel(webviewPanel: WebviewPanel) {
@@ -234,37 +288,54 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     }
 
     webviewPanel.addDispose(this.connectWebview(webviewPanel.id, webviewPanel.webview));
-    webviewPanel.addDispose(webview.onRemove(() => {
-      webview.dispose();
-      this.proxy.$onDidDisposeWebviewPanel(id);
-    }));
+    webviewPanel.addDispose(
+      webview.onRemove(() => {
+        webview.dispose();
+        this.proxy.$onDidDisposeWebviewPanel(id);
+      }),
+    );
     this.webviewPanelStates.set(webviewPanel.id, {
       active: false,
       visible: false,
       position: -1,
     });
 
-    this.addDispose({dispose: () => {
-      if (this.webivewPanels.has(id)) {
-        this.getWebivewPanel(id).dispose();
-      }
-    }});
+    this.addDispose({
+      dispose: () => {
+        if (this.webivewPanels.has(id)) {
+          this.getWebivewPanel(id).dispose();
+        }
+      },
+    });
     webview.onDidClickLink((e) => {
       if (this.isSupportedLink(e, webviewPanel.options, webviewPanel.extensionInfo)) {
         this.openerService.open(e);
       }
     });
 
-    this.addDispose(webview.onDidUpdateState((state) => {
-      if (this._hasSerializer.has(webviewPanel.viewType)) {
-        this.persistWebviewState(webviewPanel.viewType, id, state);
-      }
-    }));
+    this.addDispose(
+      webview.onDidUpdateState((state) => {
+        if (this._hasSerializer.has(webviewPanel.viewType)) {
+          this.persistWebviewState(webviewPanel.viewType, id, state);
+        }
+      }),
+    );
     this._persistWebviewPanelMeta(id);
   }
 
-  private async doCreateWebviewPanel(id: string, viewType: string , title: string, showOptions: WebviewPanelShowOptions = {}, options: IWebviewPanelOptions & IWebviewOptions = {}, extension: IExtensionInfo, initialState?: any) {
-    const editorWebview = this.webviewService.createEditorWebviewComponent({allowScripts: options.enableScripts, longLive: options.retainContextWhenHidden}, id);
+  private async doCreateWebviewPanel(
+    id: string,
+    viewType: string,
+    title: string,
+    showOptions: WebviewPanelShowOptions = {},
+    options: IWebviewPanelOptions & IWebviewOptions = {},
+    extension: IExtensionInfo,
+    initialState?: any,
+  ) {
+    const editorWebview = this.webviewService.createEditorWebviewComponent(
+      { allowScripts: options.enableScripts, longLive: options.retainContextWhenHidden },
+      id,
+    );
     const webviewPanel = new WebviewPanel(
       id,
       viewType,
@@ -287,10 +358,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (initialState) {
       webviewPanel.webview.state = initialState;
     }
-
   }
 
-  private getWebivewPanel(id): WebviewPanel  {
+  private getWebivewPanel(id): WebviewPanel {
     if (!this.webivewPanels.has(id)) {
       throw new Error('拥有ID ' + id + ' 的 webview 不存在在browser进程中！');
     }
@@ -324,7 +394,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     this._persistWebviewPanelMeta(id);
   }
 
-  $setIconPath(id: string, value: { light: string; dark: string; hc: string; } | undefined): void {
+  $setIconPath(id: string, value: { light: string; dark: string; hc: string } | undefined): void {
     const webviewPanel = this.getWebivewPanel(id);
     if (!webviewPanel.editorWebview) {
       return;
@@ -332,16 +402,19 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!value) {
       webviewPanel.editorWebview.icon = '';
     } else {
-      webviewPanel.editorWebview.icon = this.iconService.fromIcon('', value, IconType.Background)! + ' background-tab-icon';
+      webviewPanel.editorWebview.icon =
+        this.iconService.fromIcon('', value, IconType.Background)! + ' background-tab-icon';
     }
   }
 
   public connectWebview(id: string, webview: IWebview): IDisposable {
     this.webviews.set(id, webview);
     const disposable = new Disposable();
-    disposable.addDispose(webview.onMessage((message) => {
-      this.proxy.$onMessage(id, message);
-    }));
+    disposable.addDispose(
+      webview.onMessage((message) => {
+        this.proxy.$onMessage(id, message);
+      }),
+    );
 
     disposable.addDispose(addMapElement(this.webviews, id, webview));
     webview.onDispose(() => {
@@ -359,7 +432,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   }
 
   $setOptions(id: string, options: IWebviewOptions): void {
-    this.getWebivew(id)?.updateOptions({allowScripts: options.enableScripts});
+    this.getWebivew(id)?.updateOptions({ allowScripts: options.enableScripts });
   }
 
   async $postMessage(id: string, value: any): Promise<boolean> {
@@ -398,27 +471,29 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   async persistWebviewState(viewType: string, id: string, state: any) {
     if (!this.statePersister.has(viewType)) {
-      this.statePersister.set(viewType, this.getStorage(new URI('extension-webview/' + viewType).withScheme(STORAGE_SCHEMA.SCOPE))
-        .then((storage) => {
-          const func = throttle((state: any) => {
-            return storage.set(id, state);
-          }, 500);
+      this.statePersister.set(
+        viewType,
+        this.getStorage(new URI('extension-webview/' + viewType).withScheme(STORAGE_SCHEMA.SCOPE)).then((storage) => {
+          const func = throttle((state: any) => storage.set(id, state), 500);
           return async (state: any) => {
             await func(state);
           };
-      }));
+        }),
+      );
     }
     (await this.statePersister.get(viewType)!)(state);
   }
 
-  async getPersistedWebviewState(viewType, id): Promise<any>  {
+  async getPersistedWebviewState(viewType, id): Promise<any> {
     const storage = await this.getStorage(new URI('extension-webview/' + viewType).withScheme(STORAGE_SCHEMA.SCOPE));
     return storage.get(id);
   }
 
   $connectPlainWebview(id: string) {
     if (!this.plainWebviews.has(id)) {
-      const handle = this.webviewService.getEditorPlainWebviewComponent(id) || this.webviewService.getOrCreatePlainWebviewComponent(id);
+      const handle =
+        this.webviewService.getEditorPlainWebviewComponent(id) ||
+        this.webviewService.getOrCreatePlainWebviewComponent(id);
       if (handle) {
         this.plainWebviews.set(id, handle);
         handle.webview.onMessage((message) => {
@@ -471,33 +546,33 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!(handle as IEditorWebviewComponent<IPlainWebview>).open) {
       throw new Error('not able to open plain webview id:' + id);
     }
-    await (handle as IEditorWebviewComponent<IPlainWebview>).open({groupIndex});
+    await (handle as IEditorWebviewComponent<IPlainWebview>).open({ groupIndex });
   }
 
   async $getWebviewResourceRoots(): Promise<string[]> {
     return Array.from(this.staticResourceService.resourceRoots);
   }
-
 }
 
 class WebviewPanel extends Disposable {
-
   public title: string;
 
   public viewColumn: number;
 
-  constructor(public readonly id: string,
-              public readonly viewType: string,
-              public readonly resourceState: {
-                uri: URI,
-                openTypeId: string,
-              },
-              public readonly showOptions: WebviewPanelShowOptions,
-              public readonly options: IWebviewOptions,
-              public readonly extensionInfo: IExtensionInfo,
-              public readonly webview: IWebview,
-              public readonly editorWebview?: IEditorWebviewComponent<IWebview> ) {
-      super();
+  constructor(
+    public readonly id: string,
+    public readonly viewType: string,
+    public readonly resourceState: {
+      uri: URI;
+      openTypeId: string;
+    },
+    public readonly showOptions: WebviewPanelShowOptions,
+    public readonly options: IWebviewOptions,
+    public readonly extensionInfo: IExtensionInfo,
+    public readonly webview: IWebview,
+    public readonly editorWebview?: IEditorWebviewComponent<IWebview>,
+  ) {
+    super();
   }
 
   toJSON(): IWebviewPanelData {
@@ -510,35 +585,35 @@ class WebviewPanel extends Disposable {
       title: this.title,
     };
   }
-
 }
 
 class WebviewView extends Disposable {
-
   public title: string;
 
   public viewColumn: number;
 
-  constructor(public readonly id: string,
-              public readonly viewType: string,
-              public readonly extension: IWebviewExtensionDescription,
-              public readonly webview: IWebview,
-              ) {
-      super();
+  constructor(
+    public readonly id: string,
+    public readonly viewType: string,
+    public readonly extension: IWebviewExtensionDescription,
+    public readonly webview: IWebview,
+  ) {
+    super();
   }
-
 }
 
 type ViewType = string;
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadWebviewView extends WithEventBus implements IMainThreadWebviewView {
-
   private _webviewViews = new Map<string, WebviewView>();
 
-  private _resolvers = new Map<ViewType, {
-    extension: IWebviewExtensionDescription,
-    options: WebviewViewOptions,
-  }>();
+  private _resolvers = new Map<
+    ViewType,
+    {
+      extension: IWebviewExtensionDescription;
+      options: WebviewViewOptions;
+    }
+  >();
 
   proxy: IExtHostWebviewView;
 
@@ -553,22 +628,30 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     this.proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebviewView);
   }
 
-  $registerWebviewViewProvider(extension: IWebviewExtensionDescription, viewType: string, options: WebviewViewOptions= {}): void {
+  $registerWebviewViewProvider(
+    extension: IWebviewExtensionDescription,
+    viewType: string,
+    options: WebviewViewOptions = {},
+  ): void {
     this._resolvers.set(viewType, {
       extension,
       options,
     });
-    this.eventBus.fire(new WebviewViewResolverRegistrationEvent({
-      viewType,
-      options,
-    }));
+    this.eventBus.fire(
+      new WebviewViewResolverRegistrationEvent({
+        viewType,
+        options,
+      }),
+    );
   }
 
   $unregisterWebviewViewProvider(viewType: string): void {
     this._resolvers.delete(viewType);
-    this.eventBus.fire(new WebviewViewResolverRegistrationRemovalEvent({
-      viewType,
-    }));
+    this.eventBus.fire(
+      new WebviewViewResolverRegistrationRemovalEvent({
+        viewType,
+      }),
+    );
   }
 
   $setWebviewViewTitle(handle: string, value: string | undefined): void {
@@ -588,56 +671,68 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
   onWebviewViewShouldShow(e: WebviewViewShouldShowEvent) {
     const viewType = e.payload.viewType;
     if (this._resolvers.has(viewType)) {
-      e.payload.disposer.addDispose(this.resolveWebviewView(e.payload.container, viewType, e.payload.title, e.payload.cancellationToken));
+      e.payload.disposer.addDispose(
+        this.resolveWebviewView(e.payload.container, viewType, e.payload.title, e.payload.cancellationToken),
+      );
     } else {
       // 等待注册完成
-      this.addDispose(this.eventBus.on(WebviewViewResolverRegistrationEvent, (re) => {
-        if (re.payload.viewType === viewType && this._resolvers.has(viewType)) {
-          e.payload.disposer.addDispose(this.resolveWebviewView(e.payload.container, viewType, e.payload.title, e.payload.cancellationToken));
-        }
-      }));
+      this.addDispose(
+        this.eventBus.on(WebviewViewResolverRegistrationEvent, (re) => {
+          if (re.payload.viewType === viewType && this._resolvers.has(viewType)) {
+            e.payload.disposer.addDispose(
+              this.resolveWebviewView(e.payload.container, viewType, e.payload.title, e.payload.cancellationToken),
+            );
+          }
+        }),
+      );
     }
   }
 
-  public resolveWebviewView(container: HTMLElement, viewType: string, title: string, cancellationToken: CancellationToken): IDisposable {
+  public resolveWebviewView(
+    container: HTMLElement,
+    viewType: string,
+    title: string,
+    cancellationToken: CancellationToken,
+  ): IDisposable {
     const disposer = new Disposable();
     const webview = this.webviewService.createWebview()!;
     const options = this._resolvers.get(viewType)?.options;
     const extension = this._resolvers.get(viewType)!.extension;
     const id = webview.id;
-    const webviewView = new WebviewView(
-      id,
-      viewType,
-      extension,
-      webview,
-    );
+    const webviewView = new WebviewView(id, viewType, extension, webview);
     webviewView.addDispose(this.mainThreadWebview.connectWebview(id, webview));
     webviewView.addDispose(addMapElement(this._webviewViews, id, webviewView));
     webviewView.addDispose(webview);
 
-    disposer.addDispose(this.eventBus.on(ViewCollapseChangedEvent, (e) => {
-      if (e.payload.viewId === viewType) {
-        const isVisible = this.mainLayout.isViewVisible(viewType);
-        this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
-        if (!options?.retainContextWhenHidden) {
-          if (isVisible) {
-            webview.appendTo(container);
-          } else {
-            webview.remove();
+    disposer.addDispose(
+      this.eventBus.on(ViewCollapseChangedEvent, (e) => {
+        if (e.payload.viewId === viewType) {
+          const isVisible = this.mainLayout.isViewVisible(viewType);
+          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+          if (!options?.retainContextWhenHidden) {
+            if (isVisible) {
+              webview.appendTo(container);
+            } else {
+              webview.remove();
+            }
           }
         }
-      }
-    }));
+      }),
+    );
     const tabbarHandler = this.mainLayout.getTabbarHandler(viewType);
     if (tabbarHandler) {
-      disposer.addDispose(tabbarHandler?.onActivate(() => {
-        const isVisible = this.mainLayout.isViewVisible(viewType);
-        this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
-      }));
-      disposer.addDispose(tabbarHandler?.onInActivate(() => {
-        const isVisible = this.mainLayout.isViewVisible(viewType);
-        this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
-      }));
+      disposer.addDispose(
+        tabbarHandler?.onActivate(() => {
+          const isVisible = this.mainLayout.isViewVisible(viewType);
+          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+        }),
+      );
+      disposer.addDispose(
+        tabbarHandler?.onInActivate(() => {
+          const isVisible = this.mainLayout.isViewVisible(viewType);
+          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+        }),
+      );
     }
     this.proxy.$resolveWebviewView(id, viewType, title, webview.state, cancellationToken);
     const isVisible = this.mainLayout.isViewVisible(viewType);
@@ -647,9 +742,7 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     }
     disposer.addDispose(webviewView);
     return {
-      dispose: () => {
-        return webviewView.dispose();
-      },
+      dispose: () => webviewView.dispose(),
     };
   }
 
@@ -659,7 +752,6 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
       this.mainLayout.revealView(webviewView.viewType);
     }
   }
-
 }
 
 interface IWebviewPanelData {

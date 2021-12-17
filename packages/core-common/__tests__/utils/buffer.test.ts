@@ -1,8 +1,8 @@
-import { BinaryBuffer } from "../../src/utils/buffer"
+import { BinaryBuffer } from '../../src/utils/buffer';
 
-const utf8BOM = [0xEF, 0xBB, 0xBF]
+const utf8BOM = [0xef, 0xbb, 0xbf];
 
-const helloUtf8 = new Uint8Array([ 228, 189, 160, 229, 165, 189 ]);
+const helloUtf8 = new Uint8Array([228, 189, 160, 229, 165, 189]);
 const helloGbk = new Uint8Array([196, 227, 186, 195]);
 const helloWithBOM = new Uint8Array(utf8BOM.concat(Array.from(helloUtf8)));
 
@@ -15,31 +15,31 @@ const _Buffer = Buffer;
 
 describe('test BinaryBuffer', () => {
   test('normal: fromString', () => {
-    const result = BinaryBuffer.fromString("你好");
-    expect(result.toString()).toBe("你好");
+    const result = BinaryBuffer.fromString('你好');
+    expect(result.toString()).toBe('你好');
   });
 
   test('normal: wrap utf8', () => {
     const result = BinaryBuffer.wrap(helloUtf8);
-    expect(result.toString()).toBe("你好");
+    expect(result.toString()).toBe('你好');
   });
 
   test('normal: wrap utf8bom', () => {
     const result = BinaryBuffer.wrap(helloWithBOM);
-    expect(result.toString("utf8bom")).toBe("你好");
+    expect(result.toString('utf8bom')).toBe('你好');
   });
 
   test('normal: wrap gbk', () => {
     const result = BinaryBuffer.wrap(helloGbk);
-    expect(result.toString("gbk")).toBe("你好");
+    expect(result.toString('gbk')).toBe('你好');
   });
 
   test('disable Buffer: fromString', () => {
     (_globalThis as any).Buffer = undefined;
     jest.resetModules();
     const { BinaryBuffer } = require('../../src/utils/buffer');
-    const result = BinaryBuffer.fromString("你好");
-    expect(result.toString("utf8bom")).toBe("你好");
+    const result = BinaryBuffer.fromString('你好');
+    expect(result.toString('utf8bom')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
   });
 
@@ -48,7 +48,7 @@ describe('test BinaryBuffer', () => {
     jest.resetModules();
     const { BinaryBuffer } = require('../../src/utils/buffer');
     const result = BinaryBuffer.wrap(helloUtf8);
-    expect(result.toString()).toBe("你好");
+    expect(result.toString()).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
   });
 
@@ -57,7 +57,7 @@ describe('test BinaryBuffer', () => {
     jest.resetModules();
     const { BinaryBuffer } = require('../../src/utils/buffer');
     const result = BinaryBuffer.wrap(helloWithBOM);
-    expect(result.toString("utf8bom")).toBe("你好");
+    expect(result.toString('utf8bom')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
   });
 
@@ -70,7 +70,7 @@ describe('test BinaryBuffer', () => {
     jest.resetModules();
     const { BinaryBuffer } = require('../../src/utils/buffer');
     const result = BinaryBuffer.wrap(helloGbk);
-    expect(result.toString("gbk")).toBe("你好");
+    expect(result.toString('gbk')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
   });
 });

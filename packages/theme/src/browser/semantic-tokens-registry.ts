@@ -1,8 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import {
-  IJSONSchema,
-  IJSONSchemaMap,
-} from '@opensumi/ide-core-common/lib/json-schema';
+import { IJSONSchema, IJSONSchemaMap } from '@opensumi/ide-core-common/lib/json-schema';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import {
   fontStylePattern,
@@ -43,17 +40,11 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
     definitions: {
       style: {
         type: 'object',
-        description: localize(
-          'schema.token.settings',
-          'Colors and styles for the token.',
-        ),
+        description: localize('schema.token.settings', 'Colors and styles for the token.'),
         properties: {
           foreground: {
             type: 'string',
-            description: localize(
-              'schema.token.foreground',
-              'Foreground color for the token.',
-            ),
+            description: localize('schema.token.foreground', 'Foreground color for the token.'),
             format: 'color-hex',
             default: '#ff0000',
           },
@@ -77,10 +68,7 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
             ),
             defaultSnippets: [
               {
-                label: localize(
-                  'schema.token.fontStyle.none',
-                  'None (clear inherited style)',
-                ),
+                label: localize('schema.token.fontStyle.none', 'None (clear inherited style)'),
                 bodyText: '""',
               },
               { body: 'italic' },
@@ -113,9 +101,7 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
             ),
           },
         },
-        defaultSnippets: [
-          { body: { foreground: '${1:#FF0000}', fontStyle: '${2:bold}' } },
-        ],
+        defaultSnippets: [{ body: { foreground: '${1:#FF0000}', fontStyle: '${2:bold}' } }],
       },
     },
   };
@@ -161,29 +147,20 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
     };
   }
 
-  registerTokenStyleDefault(
-    selector: TokenSelector,
-    defaults: TokenStyleDefaults,
-  ): void {
+  registerTokenStyleDefault(selector: TokenSelector, defaults: TokenStyleDefaults): void {
     this.tokenStylingDefaultRules.push({ selector, defaults });
   }
 
   deregisterTokenStyleDefault(selector: TokenSelector): void {
     const selectorString = selector.id;
-    this.tokenStylingDefaultRules = this.tokenStylingDefaultRules.filter(
-      (r) => r.selector.id !== selectorString,
-    );
+    this.tokenStylingDefaultRules = this.tokenStylingDefaultRules.filter((r) => r.selector.id !== selectorString);
   }
 
   getTokenStylingDefaultRules() {
     return this.tokenStylingDefaultRules;
   }
 
-  registerTokenModifier(
-    id: string,
-    description: string,
-    deprecationMessage?: string,
-  ): void {
+  registerTokenModifier(id: string, description: string, deprecationMessage?: string): void {
     if (!id.match(typeAndModifierIdPattern)) {
       throw new Error('Invalid token modifier id.');
     }
@@ -198,18 +175,10 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
     };
     this.tokenModifierById[id] = tokenStyleContribution;
 
-    this.tokenStylingSchema.properties[`*.${id}`] = getStylingSchemeEntry(
-      description,
-      deprecationMessage,
-    );
+    this.tokenStylingSchema.properties[`*.${id}`] = getStylingSchemeEntry(description, deprecationMessage);
   }
 
-  registerTokenType(
-    id: string,
-    description: string,
-    superType?: string,
-    deprecationMessage?: string,
-  ): void {
+  registerTokenType(id: string, description: string, superType?: string, deprecationMessage?: string): void {
     if (!id.match(typeAndModifierIdPattern)) {
       throw new Error('Invalid token type id.');
     }
@@ -227,10 +196,7 @@ export class SemanticTokenRegistryImpl implements ISemanticTokenRegistry {
     };
     this.tokenTypeById[id] = tokenStyleContribution;
 
-    const stylingSchemeEntry = getStylingSchemeEntry(
-      description,
-      deprecationMessage,
-    );
+    const stylingSchemeEntry = getStylingSchemeEntry(description, deprecationMessage);
     this.tokenStylingSchema.properties[id] = stylingSchemeEntry;
     this.typeHierarchy = Object.create(null);
   }

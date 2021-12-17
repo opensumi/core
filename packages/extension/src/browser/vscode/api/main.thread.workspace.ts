@@ -1,5 +1,11 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  IMainThreadWorkspace,
+  IExtHostStorage,
+  IExtHostWorkspace,
+  reviveWorkspaceEditDto,
+} from '../../../common/vscode';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { FileStat } from '@opensumi/ide-file-service';
@@ -10,9 +16,8 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {
-
   private readonly proxy: IExtHostWorkspace;
   private roots: FileStat[];
 
@@ -44,16 +49,24 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
 
     this.processWorkspaceFoldersChanged(this.workspaceService.tryGetRoots());
 
-    this.addDispose(this.workspaceChangeEvent = this.workspaceService.onWorkspaceChanged((roots) => {
-      this.processWorkspaceFoldersChanged(roots);
-    }));
+    this.addDispose(
+      (this.workspaceChangeEvent = this.workspaceService.onWorkspaceChanged((roots) => {
+        this.processWorkspaceFoldersChanged(roots);
+      })),
+    );
 
     this.storageProxy = rpcProtocol.getProxy<IExtHostStorage>(ExtHostAPIIdentifier.ExtHostStorage);
   }
 
-  async $startFileSearch(includePattern: string, options: { cwd?: string; absolute: boolean }, excludePatternOrDisregardExcludes: string | false | undefined, maxResult: number | undefined, token: CancellationToken): Promise<string[]> {
+  async $startFileSearch(
+    includePattern: string,
+    options: { cwd?: string; absolute: boolean },
+    excludePatternOrDisregardExcludes: string | false | undefined,
+    maxResult: number | undefined,
+    token: CancellationToken,
+  ): Promise<string[]> {
     const fileSearchOptions: IFileSearchService.Options = {
-      rootUris: options.cwd ? [options.cwd] : (this.workspaceService.tryGetRoots().map((root) => root.uri)),
+      rootUris: options.cwd ? [options.cwd] : this.workspaceService.tryGetRoots().map((root) => root.uri),
       excludePatterns: excludePatternOrDisregardExcludes ? [excludePatternOrDisregardExcludes] : undefined,
       limit: maxResult,
       includePatterns: [includePattern],
@@ -65,7 +78,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
 
   private isAnyRootChanged(roots: FileStat[]): boolean {
     if (!this.roots || this.roots.length !== roots.length) {
-        return true;
+      return true;
     }
 
     return this.roots.some((root, index) => root.uri !== roots[index].uri);
@@ -73,7 +86,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
 
   async processWorkspaceFoldersChanged(roots: FileStat[]): Promise<void> {
     if (this.isAnyRootChanged(roots) === false) {
-        return;
+      return;
     }
     this.roots = roots;
     this.proxy.$onWorkspaceFoldersChanged({ roots });
@@ -87,8 +100,18 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     this.workspaceChangeEvent.dispose();
   }
 
-  async $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: {[key: string]: string}, ...rootsToAdd: string[]): Promise<void> {
-    await this.workspaceService.spliceRoots(start, deleteCount, workspaceToName, ...rootsToAdd.map((root) => new URI(root)));
+  async $updateWorkspaceFolders(
+    start: number,
+    deleteCount?: number,
+    workspaceToName?: { [key: string]: string },
+    ...rootsToAdd: string[]
+  ): Promise<void> {
+    await this.workspaceService.spliceRoots(
+      start,
+      deleteCount,
+      workspaceToName,
+      ...rootsToAdd.map((root) => new URI(root)),
+    );
   }
 
   async $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean> {
@@ -116,5 +139,4 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   onRenameFile(e: WorkspaceEditDidRenameFileEvent) {
     this.proxy.$didRenameFile(e.payload.oldUri.codeUri, e.payload.newUri.codeUri);
   }
-
 }

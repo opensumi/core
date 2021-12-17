@@ -4,7 +4,8 @@ import { IJSONSchema, Event, Emitter } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class DebugService implements IDebugService {
-  private onDidDebugContributionPointChangeEmitter: Emitter<IDebugServiceContributionPoint> = new Emitter<IDebugServiceContributionPoint>();
+  private onDidDebugContributionPointChangeEmitter: Emitter<IDebugServiceContributionPoint> =
+    new Emitter<IDebugServiceContributionPoint>();
 
   private debugContributionPointsMap: Map<string, IJSONSchema[]> = new Map();
 

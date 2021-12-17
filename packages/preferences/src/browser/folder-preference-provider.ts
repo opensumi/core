@@ -20,7 +20,6 @@ export interface FolderPreferenceProviderOptions {
  */
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
-
   // 与`launch.json`等其他配置文件不同，options会有所差异
   @Autowired(FolderPreferenceProviderOptions)
   protected readonly options: FolderPreferenceProviderOptions;
@@ -52,5 +51,4 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
   getDomain(): string[] {
     return [this.folderUri.toString()];
   }
-
 }

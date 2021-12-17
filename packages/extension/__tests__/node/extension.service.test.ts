@@ -22,40 +22,41 @@ describe('Extension Serivce', () => {
 
   beforeAll(async (done) => {
     injector = createNodeInjector([]);
-    injector.addProviders({
-      token: AppConfig,
-      useValue: {
-        marketplace: {
-          extensionDir,
-          ignoreId: [],
+    injector.addProviders(
+      {
+        token: AppConfig,
+        useValue: {
+          marketplace: {
+            extensionDir,
+            ignoreId: [],
+          },
         },
       },
-    }, {
-      token: IReporterService,
-      useValue: {
-        point() {
-          //
-        },
-        performance() {
-          //
-        },
-        time() {
-          return {
-            timeEnd: () => {
-              //
-            },
-          };
+      {
+        token: IReporterService,
+        useValue: {
+          point() {
+            //
+          },
+          performance() {
+            //
+          },
+          time() {
+            return {
+              timeEnd: () => {
+                //
+              },
+            };
+          },
         },
       },
-    }, {
-      token: INodeLogger,
-      useValue: {
-        /* tslint:disable */
-        log: console.log,
-        error: console.error,
-        /* tslint:enable */
+      {
+        token: INodeLogger,
+        useValue: {
+          log: console.log,
+          error: console.error,
+        },
       },
-    },
       {
         token: IActivationEventService,
         useClass: ActivationEventServiceImpl,
@@ -108,13 +109,14 @@ describe('Extension Serivce', () => {
     });
 
     it('should return a extension and contains extraMetadata', async () => {
-      const extension = await extensionService.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', { readme: './README.md' });
+      const extension = await extensionService.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', {
+        readme: './README.md',
+      });
       expect(extension?.extraMetadata.readme.trim()).toBe(testExtReadme);
     });
   });
 
   describe('extension host process', () => {
-
     it('should create extension host process', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
@@ -129,7 +131,6 @@ describe('Extension Serivce', () => {
       await extensionService.createProcess(mockExtClientId);
 
       // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
-      // tslint:disable-next-line
       console.log('enable extension host process port');
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
       expect(res).toBeTruthy();

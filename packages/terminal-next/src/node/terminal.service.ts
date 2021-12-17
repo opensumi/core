@@ -8,7 +8,6 @@ import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
  */
 @Injectable()
 export class TerminalServiceImpl implements ITerminalNodeService {
-
   static TerminalPtyCloseThreshold = 10 * 1000;
 
   private terminalMap: Map<string, IPty> = new Map();
@@ -30,7 +29,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public ensureClientTerminal(clientId: string, terminalIdArr: string[]) {
     if (this.clientTerminalThresholdMap.has(clientId)) {
-      clearTimeout(this.clientTerminalThresholdMap.get(clientId) as NodeJS.Timeout );
+      clearTimeout(this.clientTerminalThresholdMap.get(clientId) as NodeJS.Timeout);
       this.logger.debug(`重连 clientId ${clientId} 窗口的 pty 进程`);
     }
 
@@ -38,11 +37,14 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   public closeClient(clientId: string) {
-    const closeTimer = global.setTimeout(() => {
-      this.disposeClient(clientId);
-      this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
-      this.clientTerminalThresholdMap.delete(clientId );
-    }, isDevelopment() ? 0 : (this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold));
+    const closeTimer = global.setTimeout(
+      () => {
+        this.disposeClient(clientId);
+        this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
+        this.clientTerminalThresholdMap.delete(clientId);
+      },
+      isDevelopment() ? 0 : this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold,
+    );
 
     this.clientTerminalThresholdMap.set(clientId, closeTimer);
   }
@@ -63,7 +65,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     const clientId = id.split('|')[0];
     const terminal = await this.ptyService.create(rows, cols, options);
 
-    this.terminalMap.set(id , terminal);
+    this.terminalMap.set(id, terminal);
 
     terminal.on('data', (data) => {
       if (this.serviceClientMap.has(clientId)) {

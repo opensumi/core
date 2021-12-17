@@ -3,7 +3,10 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { QuickOpenService, VariableRegistry, Variable, URI } from '@opensumi/ide-core-browser';
 import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
-import { VariableQuickOpenService, VariableQuickOpenItem } from '@opensumi/ide-variable/lib/browser/variable-quick-open.service';
+import {
+  VariableQuickOpenService,
+  VariableQuickOpenItem,
+} from '@opensumi/ide-variable/lib/browser/variable-quick-open.service';
 
 describe('VariableQuickOpenService should be work', () => {
   let variableQuickOpenService: VariableQuickOpenService;
@@ -13,25 +16,21 @@ describe('VariableQuickOpenService should be work', () => {
   const currentName = 'Resolver Test Case';
 
   beforeEach(() => {
-    injector = createBrowserInjector([
-      VariableModule,
-    ]);
+    injector = createBrowserInjector([VariableModule]);
 
-    injector.addProviders(
-      {
-        token: QuickOpenService,
-        useClass: MockQuickOpenService,
-      },
-    );
+    injector.addProviders({
+      token: QuickOpenService,
+      useClass: MockQuickOpenService,
+    });
     variableQuickOpenService = injector.get(VariableQuickOpenService);
 
     variableRegistry = injector.get(VariableRegistry);
 
     const variables: Variable[] = [
       {
-          name: 'root',
-          description: 'current workspace uri',
-          resolve: () => Promise.resolve(workspaceRoot),
+        name: 'root',
+        description: 'current workspace uri',
+        resolve: () => Promise.resolve(workspaceRoot),
       },
       {
         name: 'name',
@@ -40,7 +39,6 @@ describe('VariableQuickOpenService should be work', () => {
       },
     ];
     variables.forEach((v) => variableRegistry.registerVariable(v));
-
   });
 
   describe('01 #Init', () => {
@@ -54,9 +52,7 @@ describe('VariableQuickOpenService should be work', () => {
     it('open api should be work', async (done) => {
       try {
         variableQuickOpenService.open();
-      } catch (e) {
-
-      }
+      } catch (e) {}
       // hack test, cause the mock quickOpen Service will not call it.
       const mockAcceptor = jest.fn();
       variableQuickOpenService.onType('', mockAcceptor);
@@ -65,9 +61,7 @@ describe('VariableQuickOpenService should be work', () => {
     });
 
     it('VariableQuickOpenItem should be right', () => {
-      const items = variableRegistry.getVariables().map(
-        (v) => new VariableQuickOpenItem(v.name, v.description),
-      );
+      const items = variableRegistry.getVariables().map((v) => new VariableQuickOpenItem(v.name, v.description));
       expect(items.length).toBe(2);
       expect(items[0].getLabel()).toBe('${root}');
       expect(items[0].getDetail()).toBe('current workspace uri');

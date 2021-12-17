@@ -13,25 +13,20 @@ export interface IHashCalculateService {
   calculate(content: IDataType): string;
 }
 
-type Awaited<T> = T extends PromiseLike<infer U> ? U : T
+type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 
 type Calculator = Awaited<ReturnType<typeof lockedCreate>>;
 
 function md5WasmCalculatorFactory() {
   const mutex = new Mutex();
-  return lockedCreate(
-    mutex,
-    wasmJson,
-    16,
-  );
+  return lockedCreate(mutex, wasmJson, 16);
 }
 
 @Injectable()
 export class HashCalculateServiceImpl implements IHashCalculateService {
-
   private cachedCalculator?: Calculator;
 
-  private initialized: boolean = false;
+  private initialized = false;
 
   async initialize(): Promise<void> {
     if (!this.cachedCalculator) {
@@ -44,12 +39,7 @@ export class HashCalculateServiceImpl implements IHashCalculateService {
     if (!this.initialized) {
       throw new Error('Please call #initialize first!');
     }
-    try {
-      const hash = this.cachedCalculator!.calculate(content);
-      return hash;
-    } catch (err) {
-      throw err;
-    }
+    const hash = this.cachedCalculator!.calculate(content);
+    return hash;
   }
-
 }

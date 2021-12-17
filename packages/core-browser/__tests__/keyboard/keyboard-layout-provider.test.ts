@@ -1,6 +1,12 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, BrowserKeyboardLayoutImpl, Key } from '@opensumi/ide-core-browser';
+import {
+  ILogger,
+  GlobalBrowserStorageService,
+  KeyboardNativeLayoutService,
+  BrowserKeyboardLayoutImpl,
+  Key,
+} from '@opensumi/ide-core-browser';
 import { MockLogger } from '../../__mocks__/logger';
 
 describe('BrowserKeyboardLayoutService should be work', () => {
@@ -12,22 +18,23 @@ describe('BrowserKeyboardLayoutService should be work', () => {
     setData: (key, value) => {
       storage[key] = value;
     },
-    getData: (key) => {
-      return storage[key];
-    },
+    getData: (key) => storage[key],
   };
 
   beforeAll(async (done) => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: GlobalBrowserStorageService,
-        useValue: mockGlobalBrowserStorageService,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: GlobalBrowserStorageService,
+          useValue: mockGlobalBrowserStorageService,
+        },
+        {
+          token: ILogger,
+          useClass: MockLogger,
+        },
+      ]),
+    );
 
     keyboardNativeLayoutService = injector.get(KeyboardNativeLayoutService);
 
@@ -52,7 +59,6 @@ describe('BrowserKeyboardLayoutService should be work', () => {
   });
 
   describe('#use keyboard by user choose', () => {
-
     it('choose first layout as current keyboard layout', async (done) => {
       const firstLayout = keyboardNativeLayoutService.allLayoutData[0];
       const disposable = keyboardNativeLayoutService.onDidChangeNativeLayout((info) => {

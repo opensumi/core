@@ -13,7 +13,6 @@ function compareMarkers(a: IMarker, b: IMarker): number {
  * marker view model for display
  */
 export class MarkerViewModel extends Disposable {
-
   // view data
   @observable
   public markers: Map<string, IRenderableMarkerModel> = new Map<string, IRenderableMarkerModel>();
@@ -33,7 +32,12 @@ export class MarkerViewModel extends Disposable {
     if (resources) {
       resources.forEach((resource) => {
         // tslint:disable-next-line: no-bitwise
-        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }));
+        this.updateMarker(
+          resource,
+          this._service
+            .getManager()
+            .getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }),
+        );
       });
     }
   }
@@ -84,5 +88,4 @@ export class MarkerViewModel extends Disposable {
   public hasFilter() {
     return this.filter !== undefined;
   }
-
 }

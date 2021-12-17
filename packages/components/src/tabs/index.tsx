@@ -21,26 +21,30 @@ export const Tabs = (props: ITabsProps) => {
   }, []);
 
   return (
-    <div {...restProps} style={style} className={clx('kt-tabs', className, { ['kt-tabs-mini']: mini } )}>
-      {
-        tabs.map((tabContent, i) => {
-          const selectedClassName = i === value ? 'kt-tab-selected' : '';
-          if (typeof tabContent === 'string') {
-            return <div
+    <div {...restProps} style={style} className={clx('kt-tabs', className, { ['kt-tabs-mini']: mini })}>
+      {tabs.map((tabContent, i) => {
+        const selectedClassName = i === value ? 'kt-tab-selected' : '';
+        if (typeof tabContent === 'string') {
+          return (
+            <div
               key={i}
               className={clx('kt-tab', selectedClassName, { ['kt-mini-tab']: mini })}
-              onClick={onClick.bind(null, i)}>
+              onClick={onClick.bind(null, i)}
+            >
               {tabContent}
-            </div>;
-          }
-          return <div
+            </div>
+          );
+        }
+        return (
+          <div
             key={i}
             className={clx('kt-custom-tab', selectedClassName, { ['kt-mini-tab']: mini })}
-            onClick={onClick.bind(null, i)}>
+            onClick={onClick.bind(null, i)}
+          >
             {tabContent}
-          </div>;
-        })
-      }
+          </div>
+        );
+      })}
     </div>
   );
 };

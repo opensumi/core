@@ -16,13 +16,13 @@ describe('electron webview test', () => {
     }
   };
 
-  it.skip('electron webview test',  async (done) => {
+  it.skip('electron webview test', async (done) => {
     (manager as any).init();
-    const styles = {'test': 'red'};
-    await ipcRenderer.emit('styles', {}, {styles});
+    const styles = { test: 'red' };
+    await ipcRenderer.emit('styles', {}, { styles });
     expect((manager as any).styles).toBe(styles);
     await ipcRenderer.emit('focus', {}, {});
-    await ipcRenderer.emit('content', {}, {options: {allowScripts: true}, content: 'htmldata'} );
+    await ipcRenderer.emit('content', {}, { options: { allowScripts: true }, content: 'htmldata' });
     done();
   });
 });
@@ -30,7 +30,7 @@ describe('electron webview test', () => {
 describe('web iframe webview test', () => {
   const manager = new WebviewPanelManager(new WebIframeChannel());
 
-  it.skip('iframe webview test',  () => {
+  it.skip('iframe webview test', () => {
     (manager as any).init();
   });
 });

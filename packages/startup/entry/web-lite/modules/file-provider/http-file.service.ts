@@ -16,15 +16,12 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
 
   async readFile(uri: Uri, encoding?: string): Promise<string> {
     const _uri = new URI(uri);
-    const content = await fetch(
-      this.getResolveService(_uri),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'GET',
+    const content = await fetch(this.getResolveService(_uri), {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      method: 'GET',
+    })
       .then((res) => res.json())
       .then((ret) => {
         if (ret.encoding === 'base64') {
@@ -39,7 +36,9 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
     const _uri = new URI(uri);
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
     const children = await fetch(
-      `/code-service/projects/${this.metaService.projectId}/repository/tree?ref_name=${this.metaService.ref}&type=direct${relativePath ? `&path=${relativePath}` : ''}`,
+      `/code-service/projects/${this.metaService.projectId}/repository/tree?ref_name=${
+        this.metaService.ref
+      }&type=direct${relativePath ? `&path=${relativePath}` : ''}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +48,7 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
     return children;
   }
 
-  async updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+  async updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri }): Promise<void> {
     const _uri = new URI(uri);
     const params: any = {
       branch_name: this.metaService.ref,
@@ -60,31 +59,28 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
     let requestUri = this.getResolveService(_uri, 3);
     if (params.newUri) {
       requestUri = this.getResolveService(_uri, 4);
-      params.old_path = this.getRelativePath(_uri, false),
-      params.new_path = this.getRelativePath(new URI(params.newUri), false);
+      (params.old_path = this.getRelativePath(_uri, false)),
+        (params.new_path = this.getRelativePath(new URI(params.newUri), false));
       delete params.newUri;
     } else {
       params.file_path = this.getRelativePath(_uri, false);
     }
-    await fetch(
-      requestUri,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'PUT',
-        body: JSON.stringify(params),
+    await fetch(requestUri, {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
-    .then((res) => res.json())
-    .then((ret) => {
-      if (ret.status === false) {
-        throw new Error(ret.message);
-      }
-    });
+      method: 'PUT',
+      body: JSON.stringify(params),
+    })
+      .then((res) => res.json())
+      .then((ret) => {
+        if (ret.status === false) {
+          throw new Error(ret.message);
+        }
+      });
   }
 
-  async createFile(uri: Uri, content: string, options: { encoding?: string; }) {
+  async createFile(uri: Uri, content: string, options: { encoding?: string }) {
     const _uri = new URI(uri);
     const params: any = {
       branch_name: this.metaService.ref,
@@ -93,28 +89,26 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
       content,
       ...options,
     };
-    await fetch(
-      this.getResolveService(_uri),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        body: JSON.stringify(params),
+    await fetch(this.getResolveService(_uri), {
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
-    .then((res) => res.json())
-    .then((ret) => {
-      if (ret.status === false) {
-        throw new Error(ret.message);
-      }
-    });
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+      .then((res) => res.json())
+      .then((ret) => {
+        if (ret.status === false) {
+          throw new Error(ret.message);
+        }
+      });
   }
 
-  async deleteFile(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }) {
+  async deleteFile(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean }) {
     const _uri = new URI(uri);
     await fetch(
-      this.getResolveService(_uri) + `&commit_message=${encodeURIComponent('auto delete file with DEF WebIDE')}&branch_name=${this.metaService.ref}`,
+      this.getResolveService(_uri) +
+        `&commit_message=${encodeURIComponent('auto delete file with DEF WebIDE')}&branch_name=${this.metaService.ref}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -122,12 +116,12 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
         method: 'DELETE',
       },
     )
-    .then((res) => res.json())
-    .then((ret) => {
-      if (ret.status === false) {
-        throw new Error(ret.message);
-      }
-    });
+      .then((res) => res.json())
+      .then((ret) => {
+        if (ret.status === false) {
+          throw new Error(ret.message);
+        }
+      });
   }
 
   protected getRelativePath(uri: URI, encoding = true) {
@@ -139,5 +133,5 @@ export class AoneCodeHttpFileService extends AbstractHttpFileService {
   protected getResolveService: (uri: URI, version?: number) => string = (uri: URI, version = 3) => {
     const filename = this.getRelativePath(uri);
     return `/code-service/v${version}/projects/${this.metaService.projectId}/repository/files?file_path=${filename}&ref=${this.metaService.ref}`;
-  }
+  };
 }

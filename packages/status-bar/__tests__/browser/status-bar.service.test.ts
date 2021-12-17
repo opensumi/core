@@ -22,24 +22,27 @@ describe('template test', () => {
   let statusBarService: IStatusBarService;
 
   beforeEach(async () => {
-    injector = createBrowserInjector([
-      StatusBarModule,
-    ]);
-    injector.overrideProviders({
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: LayoutState,
-      useValue: mockService({
-        getState: () => ({}),
-      }),
-    });
+    injector = createBrowserInjector([StatusBarModule]);
+    injector.overrideProviders(
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: LayoutState,
+        useValue: mockService({
+          getState: () => ({}),
+        }),
+      },
+    );
     statusBarService = injector.get<IStatusBarService>(IStatusBarService);
     statusBarService.addElement(EN_CODING_ENTRY_ID, enCodingEntry);
   });
@@ -70,14 +73,16 @@ describe('template test', () => {
   });
 
   it('执行 onclick 方法', () => {
-
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
     const $execute = jest.fn();
-    commandRegistry.registerCommand({
-      id: SELECT_ENCODING,
-    }, {
-      execute: $execute,
-    });
+    commandRegistry.registerCommand(
+      {
+        id: SELECT_ENCODING,
+      },
+      {
+        execute: $execute,
+      },
+    );
 
     enCodingEntry.onClick!({});
 
@@ -92,7 +97,6 @@ describe('template test', () => {
   });
 
   it('权重对比', () => {
-
     statusBarService.addElement('git', {
       text: 'UTF-8',
       alignment: StatusBarAlignment.LEFT,
@@ -126,7 +130,12 @@ describe('template test', () => {
     });
     expect(statusBarService.rightEntries[0].name).toBe('Source Control');
     expect($registerMenu).toBeCalledTimes(1);
-    expect($registerMenu).toBeCalledWith('statusbar/context', {'command': {'id': 'statusbar.toggleElement', 'label': 'Source Control'}, 'extraTailArgs': ['status.scm'], 'order': 9007199254740991, 'toggledWhen': 'status.scm:toggle'});
+    expect($registerMenu).toBeCalledWith('statusbar/context', {
+      command: { id: 'statusbar.toggleElement', label: 'Source Control' },
+      extraTailArgs: ['status.scm'],
+      order: 9007199254740991,
+      toggledWhen: 'status.scm:toggle',
+    });
   });
 
   it('设置两个 id 一样的状态栏元素时应该只注册一次菜单', () => {
@@ -226,5 +235,4 @@ describe('template test', () => {
     // 隐藏后 leftEntries 应该长度为 1
     expect(statusBarService.rightEntries.length).toBe(1);
   });
-
 });

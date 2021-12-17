@@ -4,11 +4,11 @@ import crypto from 'crypto';
 
 @Injectable()
 export class CryptrService implements INativeCryptrService {
-  private static SECRET_KEY: string = 'CryptrService';
-  private static IV_LENGTH: number = 16;
-  private static SALT_LENGTH: number = 64;
-  private static TAG_LENGTH: number = 16;
-  private static ALGORITHM: string = 'aes-256-gcm';
+  private static SECRET_KEY = 'CryptrService';
+  private static IV_LENGTH = 16;
+  private static SALT_LENGTH = 64;
+  private static TAG_LENGTH = 16;
+  private static ALGORITHM = 'aes-256-gcm';
   private static TAG_POSITION: number = CryptrService.SALT_LENGTH + CryptrService.IV_LENGTH;
   private static ENCRYPTED_POSITION: number = CryptrService.TAG_POSITION + CryptrService.TAG_LENGTH;
 

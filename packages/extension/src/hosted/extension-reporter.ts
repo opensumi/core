@@ -1,7 +1,13 @@
-import { IReporter, PerformanceData, PointData, Emitter, ReporterProcessMessage, REPORT_TYPE } from '@opensumi/ide-core-common';
+import {
+  IReporter,
+  PerformanceData,
+  PointData,
+  Emitter,
+  ReporterProcessMessage,
+  REPORT_TYPE,
+} from '@opensumi/ide-core-common';
 
 export class ExtensionReporter implements IReporter {
-
   constructor(private emitter: Emitter<ReporterProcessMessage>) {}
 
   performance(name: string, data: PerformanceData): void {

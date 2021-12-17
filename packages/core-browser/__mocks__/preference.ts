@@ -4,9 +4,7 @@ import { PreferenceProvider } from '../src/preferences';
 
 @Injectable()
 export class MockPreferenceSchemaProvider {
-  setSchema() {
-
-  }
+  setSchema() {}
 }
 
 @Injectable()
@@ -29,10 +27,9 @@ export class MockPreferenceSettingsService {
   getPreference(preferenceName: string, scope: PreferenceScope) {
     // noop
   }
-  setEnumLabels(preferenceName: string, labels: { [key: string]: string; }): void {
+  setEnumLabels(preferenceName: string, labels: { [key: string]: string }): void {
     // noop
   }
-
 }
 
 @Injectable()
@@ -59,7 +56,9 @@ export class MockPreferenceProvider extends PreferenceProvider {
   async doSetPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
     const oldValue = this.preferences[key];
     this.preferences[key] = value;
-    return this.emitPreferencesChangedEvent([{ preferenceName: key, oldValue, newValue: value, scope: this.scope, domain: [] }]);
+    return this.emitPreferencesChangedEvent([
+      { preferenceName: key, oldValue, newValue: value, scope: this.scope, domain: [] },
+    ]);
   }
 
   async setPreference(preferenceName: string, newValue: any, resourceUri?: string): Promise<boolean> {
@@ -72,23 +71,17 @@ export const injectMockPreferences = (injector: Injector) => {
     {
       token: PreferenceProvider,
       tag: PreferenceScope.User,
-      useFactory: (injector) => {
-        return injector.get(MockPreferenceProvider, [PreferenceScope.User]);
-      },
+      useFactory: (injector) => injector.get(MockPreferenceProvider, [PreferenceScope.User]),
     },
     {
       token: PreferenceProvider,
       tag: PreferenceScope.Workspace,
-      useFactory: (injector) => {
-        return injector.get(MockPreferenceProvider, [PreferenceScope.Workspace]);
-      },
+      useFactory: (injector) => injector.get(MockPreferenceProvider, [PreferenceScope.Workspace]),
     },
     {
       token: PreferenceProvider,
       tag: PreferenceScope.Folder,
-      useFactory: (injector) => {
-        return injector.get(MockPreferenceProvider, [PreferenceScope.Folder]);
-      },
+      useFactory: (injector) => injector.get(MockPreferenceProvider, [PreferenceScope.Folder]),
     },
   );
 };

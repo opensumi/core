@@ -65,11 +65,13 @@ export async function createApiFactory(
   injector: Injector,
   extensionService: VSCodeExtensionService,
 ) {
-
   const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [rpcProtocol]);
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [rpcProtocol]);
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [rpcProtocol]);
-  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [rpcProtocol, MainThreadExtensionDocumentDataAPI]);
+  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [
+    rpcProtocol,
+    MainThreadExtensionDocumentDataAPI,
+  ]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [rpcProtocol]);
   const MainThreadMessageAPI = injector.get(MainThreadMessage, [rpcProtocol]);
   const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [rpcProtocol]);
@@ -103,7 +105,10 @@ export async function createApiFactory(
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
-  rpcProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);
+  rpcProtocol.set<MainThreadExtensionDocumentData>(
+    MainThreadAPIIdentifier.MainThreadDocuments,
+    MainThreadExtensionDocumentDataAPI,
+  );
   rpcProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
   rpcProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
   rpcProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, MainThreadMessageAPI);
@@ -131,7 +136,10 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainthreadThemingAPI);
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
   rpcProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
-  rpcProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
+  rpcProtocol.set<IMainThreadAuthentication>(
+    MainThreadAPIIdentifier.MainThreadAuthentication,
+    MainThreadAuthenticationAPI,
+  );
   rpcProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
   rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
 
@@ -172,17 +180,16 @@ export async function createApiFactory(
   };
 }
 
-export async function initWorkerThreadAPIProxy(
-  workerProtocol: IRPCProtocol,
-  injector: Injector,
-  extensionService,
-) {
+export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, injector: Injector, extensionService) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
   const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [workerProtocol]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);
   const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [workerProtocol]);
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [workerProtocol]);
-  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [workerProtocol, MainThreadExtensionDocumentDataAPI]);
+  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [
+    workerProtocol,
+    MainThreadExtensionDocumentDataAPI,
+  ]);
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
   const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [workerProtocol]);
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [workerProtocol]);
@@ -202,13 +209,19 @@ export async function initWorkerThreadAPIProxy(
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
-  workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);
+  workerProtocol.set<MainThreadExtensionDocumentData>(
+    MainThreadAPIIdentifier.MainThreadDocuments,
+    MainThreadExtensionDocumentDataAPI,
+  );
   workerProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
   workerProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, MainThreadQuickOpenAPI);
   workerProtocol.set<IMainThreadWorkspace>(MainThreadAPIIdentifier.MainThreadWorkspace, MainThreadWorkspaceAPI);
   workerProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, MainThreadFileSystemAPI);
   workerProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, MainThreadPreferenceAPI);
-  workerProtocol.set<IMainThreadOutput>(MainThreadAPIIdentifier.MainThreadOutput, MainThreadOutputAPI) as MainThreadOutput;
+  workerProtocol.set<IMainThreadOutput>(
+    MainThreadAPIIdentifier.MainThreadOutput,
+    MainThreadOutputAPI,
+  ) as MainThreadOutput;
   workerProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
   workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, MainThreadMessageAPI);
   workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, MainThreadExtensionLogAPI);
@@ -218,8 +231,14 @@ export async function initWorkerThreadAPIProxy(
   workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
   workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
   workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainThreadThemingAPI);
-  workerProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
-  workerProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
+  workerProtocol.set<IMainThreadCustomEditor>(
+    MainThreadAPIIdentifier.MainThreadCustomEditor,
+    MainThreadCustomEditorAPI,
+  );
+  workerProtocol.set<IMainThreadAuthentication>(
+    MainThreadAPIIdentifier.MainThreadAuthentication,
+    MainThreadAuthenticationAPI,
+  );
   workerProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
 
   // 作用和 node extension service 等同，用来设置 webview resourceRoots

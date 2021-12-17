@@ -18,9 +18,7 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
     let startLine = y - 1;
     let endLine = startLine;
 
-    const lines: IBufferLine[] = [
-      this._xterm.buffer.active.getLine(startLine)!,
-    ];
+    const lines: IBufferLine[] = [this._xterm.buffer.active.getLine(startLine)!];
 
     while (startLine >= 0 && this._xterm.buffer.active.getLine(startLine)?.isWrapped) {
       lines.unshift(this._xterm.buffer.active.getLine(startLine - 1)!);
@@ -39,17 +37,20 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
       const range = convertLinkRangeToBuffer(lines, this._xterm.cols, link.range, startLine);
 
       // Check if the link if within the mouse position
-      return new TerminalLink(this._xterm, range, link.url?.toString() || '', this._xterm.buffer.active.viewportY, this._activateCallback, true);
+      return new TerminalLink(
+        this._xterm,
+        range,
+        link.url?.toString() || '',
+        this._xterm.buffer.active.viewportY,
+        this._activateCallback,
+        true,
+      );
     });
   }
 }
 
 class TerminalLinkAdapter implements ILinkComputerTarget {
-  constructor(
-    private _xterm: Terminal,
-    private _lineStart: number,
-    private _lineEnd: number,
-  ) { }
+  constructor(private _xterm: Terminal, private _lineStart: number, private _lineEnd: number) {}
 
   getLineCount(): number {
     return 1;

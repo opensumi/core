@@ -44,7 +44,8 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
-    .expansion_toggle, .treenode_description {
+    .expansion_toggle,
+    .treenode_description {
       color: var(--kt-tree-inactiveSelectionForeground) !important;
     }
   }
@@ -52,13 +53,14 @@
   &.mod_focused {
     color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
-    .expansion_toggle, .treenode_description {
+    .expansion_toggle,
+    .treenode_description {
       color: var(--kt-tree-activeSelectionForeground) !important;
     }
   }
 
   &.mod_invalid {
-    color: var(--kt-tree-invalidItemForeground)
+    color: var(--kt-tree-invalidItemForeground);
   }
 }
 
@@ -68,7 +70,8 @@
   align-items: center;
   width: 100%;
 
-  .search_match, match {
+  .search_match,
+  match {
     background-color: var(--editor-findMatchHighlightBackground);
 
     &.replace {
@@ -100,12 +103,11 @@
       color: var(--foreground);
       font-size: 12px;
     }
-
   }
 }
 
 .treenode_status {
-  opacity: .75;
+  opacity: 0.75;
   min-width: 20px;
   text-align: center;
   font-size: 12px;
@@ -246,7 +248,6 @@
   }
 }
 
-
 .treenode_container_focused {
   &:before {
     position: absolute;
@@ -255,7 +256,7 @@
     width: 100%;
     height: 100%;
     z-index: 5;
-    content: "";
+    content: '';
     pointer-events: none;
     outline: 1px solid;
     outline-width: 1px;
@@ -276,7 +277,7 @@
   text-align: left;
   width: 100%;
   box-sizing: border-box;
-  padding: .4em;
+  padding: 0.4em;
   font-size: 12px;
   line-height: 17px;
   min-height: 34px;

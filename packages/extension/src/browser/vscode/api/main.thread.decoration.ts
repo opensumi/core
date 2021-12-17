@@ -6,21 +6,20 @@ import { IDecorationsService, IDecorationData } from '@opensumi/ide-decoration';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {
-  IExtHostDecorationsShape, IMainThreadDecorationsShape,
-  DecorationRequest, DecorationData,
+  IExtHostDecorationsShape,
+  IMainThreadDecorationsShape,
+  DecorationRequest,
+  DecorationData,
 } from '../../../common/vscode/decoration';
 
 class DecorationRequestsQueue {
-
   private _idPool = 0;
   private _requests: { [id: number]: DecorationRequest } = Object.create(null);
   private _resolver: { [id: number]: (data: DecorationData) => any } = Object.create(null);
 
   private _timer: any;
 
-  constructor(
-    private readonly _proxy: IExtHostDecorationsShape,
-  ) {
+  constructor(private readonly _proxy: IExtHostDecorationsShape) {
     //
   }
 
@@ -48,7 +47,7 @@ class DecorationRequestsQueue {
       const requests = this._requests;
       const resolver = this._resolver;
       this._proxy.$provideDecorations(Object.values(requests), CancellationToken.None).then((data) => {
-        // tslint:disable-next-line:forin
+        // eslint-disable-next-line guard-for-in
         for (const id in resolver) {
           resolver[id](data[id]);
         }
@@ -86,21 +85,20 @@ export class MainThreadDecorations implements IMainThreadDecorationsShape {
     const registration = this.decorationsService.registerDecorationsProvider({
       label,
       onDidChange: emitter.event,
-      provideDecorations: (uri, token) => {
-        return this._requestQueue.enqueue(handle, uri, token).then((data) => {
+      provideDecorations: (uri, token) =>
+        this._requestQueue.enqueue(handle, uri, token).then((data) => {
           if (!data) {
             return undefined;
           }
           const [propagate, tooltip, badge, themeColor] = data;
           return {
-            weight: 10, /* 向下兼容 */
+            weight: 10 /* 向下兼容 */,
             bubble: propagate || false,
             color: themeColor?.id,
             tooltip,
             letter: badge,
           } as IDecorationData;
-        });
-      },
+        }),
     });
     this._provider.set(handle, [emitter, registration]);
   }

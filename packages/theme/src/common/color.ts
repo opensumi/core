@@ -1,10 +1,9 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/color.ts
 
-/* tslint:disable:no-bitwise */
 import { CharCode } from '@opensumi/ide-core-common/lib/charCode';
 
 function roundFloat(num: number, decimalPoints: number): number {
@@ -35,7 +34,7 @@ export class RGBA {
    */
   readonly a: number;
 
-  constructor(r: number, g: number, b: number, a: number = 1) {
+  constructor(r: number, g: number, b: number, a = 1) {
     this.r = Math.min(255, Math.max(0, r)) | 0;
     this.g = Math.min(255, Math.max(0, g)) | 0;
     this.b = Math.min(255, Math.max(0, b)) | 0;
@@ -48,7 +47,6 @@ export class RGBA {
 }
 
 export class HSLA {
-
   _hslaBrand: void;
 
   /**
@@ -102,12 +100,18 @@ export class HSLA {
     const chroma = max - min;
 
     if (chroma > 0) {
-      s = Math.min((l <= 0.5 ? chroma / (2 * l) : chroma / (2 - (2 * l))), 1);
+      s = Math.min(l <= 0.5 ? chroma / (2 * l) : chroma / (2 - 2 * l), 1);
 
       switch (max) {
-        case r: h = (g - b) / chroma + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / chroma + 2; break;
-        case b: h = (r - g) / chroma + 4; break;
+        case r:
+          h = (g - b) / chroma + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / chroma + 2;
+          break;
+        case b:
+          h = (r - g) / chroma + 4;
+          break;
       }
 
       h *= 60;
@@ -163,7 +167,6 @@ export class HSLA {
 }
 
 export class HSVA {
-
   _hsvaBrand: void;
 
   /**
@@ -205,7 +208,7 @@ export class HSVA {
     const cmax = Math.max(r, g, b);
     const cmin = Math.min(r, g, b);
     const delta = cmax - cmin;
-    const s = cmax === 0 ? 0 : (delta / cmax);
+    const s = cmax === 0 ? 0 : delta / cmax;
     let m: number;
 
     if (delta === 0) {
@@ -213,9 +216,9 @@ export class HSVA {
     } else if (cmax === r) {
       m = ((((g - b) / delta) % 6) + 6) % 6;
     } else if (cmax === g) {
-      m = ((b - r) / delta) + 2;
+      m = (b - r) / delta + 2;
     } else {
-      m = ((r - g) / delta) + 4;
+      m = (r - g) / delta + 4;
     }
 
     return new HSVA(Math.round(m * 60), s, cmax, rgba.a);
@@ -225,7 +228,7 @@ export class HSVA {
   static toRGBA(hsva: HSVA): RGBA {
     const { h, s, v, a } = hsva;
     const c = v * s;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = v - c;
     let [r, g, b] = [0, 0, 0];
 
@@ -258,7 +261,6 @@ export class HSVA {
 }
 
 export class Color {
-
   static fromHex(hex: string): Color {
     return Color.Format.CSS.parseHex(hex) || Color.red;
   }
@@ -298,7 +300,12 @@ export class Color {
   }
 
   equals(other: Color): boolean {
-    return !!other && RGBA.equals(this.rgba, other.rgba) && HSLA.equals(this.hsla, other.hsla) && HSVA.equals(this.hsva, other.hsva);
+    return (
+      !!other &&
+      RGBA.equals(this.rgba, other.rgba) &&
+      HSLA.equals(this.hsla, other.hsla) &&
+      HSVA.equals(this.hsva, other.hsva)
+    );
   }
 
   /**
@@ -316,7 +323,7 @@ export class Color {
 
   private static _relativeLuminanceForComponent(color: number): number {
     const c = color / 255;
-    return (c <= 0.03928) ? c / 12.92 : Math.pow(((c + 0.055) / 1.055), 2.4);
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   }
 
   /**
@@ -396,27 +403,27 @@ export class Color {
       return Color.transparent;
     }
 
-    const r = this.rgba.r * thisA / a + rgba.r * colorA * (1 - thisA) / a;
-    const g = this.rgba.g * thisA / a + rgba.g * colorA * (1 - thisA) / a;
-    const b = this.rgba.b * thisA / a + rgba.b * colorA * (1 - thisA) / a;
+    const r = (this.rgba.r * thisA) / a + (rgba.r * colorA * (1 - thisA)) / a;
+    const g = (this.rgba.g * thisA) / a + (rgba.g * colorA * (1 - thisA)) / a;
+    const b = (this.rgba.b * thisA) / a + (rgba.b * colorA * (1 - thisA)) / a;
 
     return new Color(new RGBA(r, g, b, a));
   }
 
   flatten(...backgrounds: Color[]): Color {
-    const background = backgrounds.reduceRight((accumulator, color) => {
-      return Color._flatten(color, accumulator);
-    });
+    const background = backgrounds.reduceRight((accumulator, color) => Color._flatten(color, accumulator));
     return Color._flatten(this, background);
   }
 
   private static _flatten(foreground: Color, background: Color) {
     const backgroundAlpha = 1 - foreground.rgba.a;
-    return new Color(new RGBA(
-      backgroundAlpha * background.rgba.r + foreground.rgba.a * foreground.rgba.r,
-      backgroundAlpha * background.rgba.g + foreground.rgba.a * foreground.rgba.g,
-      backgroundAlpha * background.rgba.b + foreground.rgba.a * foreground.rgba.b,
-    ));
+    return new Color(
+      new RGBA(
+        backgroundAlpha * background.rgba.r + foreground.rgba.a * foreground.rgba.r,
+        backgroundAlpha * background.rgba.g + foreground.rgba.a * foreground.rgba.g,
+        backgroundAlpha * background.rgba.b + foreground.rgba.a * foreground.rgba.b,
+      ),
+    );
   }
 
   toString(): string {
@@ -430,7 +437,7 @@ export class Color {
     factor = factor ? factor : 0.5;
     const lum1 = of.getRelativeLuminance();
     const lum2 = relative.getRelativeLuminance();
-    factor = factor * (lum2 - lum1) / lum2;
+    factor = (factor * (lum2 - lum1)) / lum2;
     return of.lighten(factor);
   }
 
@@ -441,7 +448,7 @@ export class Color {
     factor = factor ? factor : 0.5;
     const lum1 = of.getRelativeLuminance();
     const lum2 = relative.getRelativeLuminance();
-    factor = factor * (lum1 - lum2) / lum1;
+    factor = (factor * (lum1 - lum2)) / lum1;
     return of.darken(factor);
   }
 
@@ -458,7 +465,6 @@ export class Color {
 export namespace Color {
   export namespace Format {
     export namespace CSS {
-
       export function formatRGB(color: Color): string {
         if (color.rgba.a === 1) {
           return `rgb(${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b})`;
@@ -468,7 +474,7 @@ export namespace Color {
       }
 
       export function formatRGBA(color: Color): string {
-        return `rgba(${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b}, ${+(color.rgba.a).toFixed(2)})`;
+        return `rgba(${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b}, ${+color.rgba.a.toFixed(2)})`;
       }
 
       export function formatHSL(color: Color): string {
@@ -480,7 +486,9 @@ export namespace Color {
       }
 
       export function formatHSLA(color: Color): string {
-        return `hsla(${color.hsla.h}, ${(color.hsla.s * 100).toFixed(2)}%, ${(color.hsla.l * 100).toFixed(2)}%, ${color.hsla.a.toFixed(2)})`;
+        return `hsla(${color.hsla.h}, ${(color.hsla.s * 100).toFixed(2)}%, ${(color.hsla.l * 100).toFixed(
+          2,
+        )}%, ${color.hsla.a.toFixed(2)})`;
       }
 
       function _toTwoDigitHex(n: number): string {
@@ -504,7 +512,9 @@ export namespace Color {
           return Color.Format.CSS.formatHex(color);
         }
 
-        return `#${_toTwoDigitHex(color.rgba.r)}${_toTwoDigitHex(color.rgba.g)}${_toTwoDigitHex(color.rgba.b)}${_toTwoDigitHex(Math.round(color.rgba.a * 255))}`;
+        return `#${_toTwoDigitHex(color.rgba.r)}${_toTwoDigitHex(color.rgba.g)}${_toTwoDigitHex(
+          color.rgba.b,
+        )}${_toTwoDigitHex(Math.round(color.rgba.a * 255))}`;
       }
 
       /**
@@ -585,28 +595,50 @@ export namespace Color {
 
       function _parseHexDigit(charCode: CharCode): number {
         switch (charCode) {
-          case CharCode.Digit0: return 0;
-          case CharCode.Digit1: return 1;
-          case CharCode.Digit2: return 2;
-          case CharCode.Digit3: return 3;
-          case CharCode.Digit4: return 4;
-          case CharCode.Digit5: return 5;
-          case CharCode.Digit6: return 6;
-          case CharCode.Digit7: return 7;
-          case CharCode.Digit8: return 8;
-          case CharCode.Digit9: return 9;
-          case CharCode.a: return 10;
-          case CharCode.A: return 10;
-          case CharCode.b: return 11;
-          case CharCode.B: return 11;
-          case CharCode.c: return 12;
-          case CharCode.C: return 12;
-          case CharCode.d: return 13;
-          case CharCode.D: return 13;
-          case CharCode.e: return 14;
-          case CharCode.E: return 14;
-          case CharCode.f: return 15;
-          case CharCode.F: return 15;
+          case CharCode.Digit0:
+            return 0;
+          case CharCode.Digit1:
+            return 1;
+          case CharCode.Digit2:
+            return 2;
+          case CharCode.Digit3:
+            return 3;
+          case CharCode.Digit4:
+            return 4;
+          case CharCode.Digit5:
+            return 5;
+          case CharCode.Digit6:
+            return 6;
+          case CharCode.Digit7:
+            return 7;
+          case CharCode.Digit8:
+            return 8;
+          case CharCode.Digit9:
+            return 9;
+          case CharCode.a:
+            return 10;
+          case CharCode.A:
+            return 10;
+          case CharCode.b:
+            return 11;
+          case CharCode.B:
+            return 11;
+          case CharCode.c:
+            return 12;
+          case CharCode.C:
+            return 12;
+          case CharCode.d:
+            return 13;
+          case CharCode.D:
+            return 13;
+          case CharCode.e:
+            return 14;
+          case CharCode.E:
+            return 14;
+          case CharCode.f:
+            return 15;
+          case CharCode.F:
+            return 15;
         }
         return 0;
       }

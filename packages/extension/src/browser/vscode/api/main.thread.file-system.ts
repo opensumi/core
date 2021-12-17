@@ -3,16 +3,30 @@ import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
-import { IFileServiceClient, FileType, FileOperationError, FileOperationResult, FileSystemProvider, IBrowserFileSystemRegistry } from '@opensumi/ide-file-service/lib/common';
+import {
+  IFileServiceClient,
+  FileType,
+  FileOperationError,
+  FileOperationResult,
+  FileSystemProvider,
+  IBrowserFileSystemRegistry,
+} from '@opensumi/ide-file-service/lib/common';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
-import { IExtHostFileSystemShape, FileDeleteOptions, IMainThreadFileSystemShape, FileStat, FileSystemProviderErrorCode, FileOverwriteOptions, IExtHostFileSystemInfoShape } from '../../../common/vscode/file-system';
+import {
+  IExtHostFileSystemShape,
+  FileDeleteOptions,
+  IMainThreadFileSystemShape,
+  FileStat,
+  FileSystemProviderErrorCode,
+  FileOverwriteOptions,
+  IExtHostFileSystemInfoShape,
+} from '../../../common/vscode/file-system';
 import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {
-
   private readonly disposable = new Disposable();
   private readonly _proxy: IExtHostFileSystemShape;
   private readonly _fileProvider = new Map<number, RemoteFileSystemProvider>();
@@ -23,18 +37,26 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   @Autowired(IBrowserFileSystemRegistry)
   private schemeRegistry: IBrowserFileSystemRegistry;
 
-  constructor(
-    private readonly rpcProtocol: IRPCProtocol,
-  ) {
+  constructor(private readonly rpcProtocol: IRPCProtocol) {
     this._proxy = this.rpcProtocol.getProxy<IExtHostFileSystemShape>(ExtHostAPIIdentifier.ExtHostFileSystem);
 
-    const infoProxy = this.rpcProtocol.getProxy<IExtHostFileSystemInfoShape>(ExtHostAPIIdentifier.ExtHostFileSystemInfo);
+    const infoProxy = this.rpcProtocol.getProxy<IExtHostFileSystemInfoShape>(
+      ExtHostAPIIdentifier.ExtHostFileSystemInfo,
+    );
 
     for (const entry of this._fileService.listCapabilities()) {
       infoProxy.$acceptProviderInfos(entry.scheme, entry.capabilities);
     }
-    this.disposable.addDispose(this._fileService.onDidChangeFileSystemProviderRegistrations((e) => infoProxy.$acceptProviderInfos(e.scheme, e.provider?.capabilities ?? null)));
-    this.disposable.addDispose(this._fileService.onDidChangeFileSystemProviderCapabilities((e) => infoProxy.$acceptProviderInfos(e.scheme, e.provider.capabilities)));
+    this.disposable.addDispose(
+      this._fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+        infoProxy.$acceptProviderInfos(e.scheme, e.provider?.capabilities ?? null),
+      ),
+    );
+    this.disposable.addDispose(
+      this._fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+        infoProxy.$acceptProviderInfos(e.scheme, e.provider.capabilities),
+      ),
+    );
   }
 
   dispose(): void {
@@ -44,9 +66,12 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   }
 
   $registerFileSystemProvider(handle: number, scheme: string, capabilities: FileSystemProviderCapabilities): void {
-    this.disposable.addDispose(this.schemeRegistry.registerFileSystemProvider({scheme}));
+    this.disposable.addDispose(this.schemeRegistry.registerFileSystemProvider({ scheme }));
 
-    this._fileProvider.set(handle, new RemoteFileSystemProvider(this._fileService, scheme, capabilities, handle, this._proxy));
+    this._fileProvider.set(
+      handle,
+      new RemoteFileSystemProvider(this._fileService, scheme, capabilities, handle, this._proxy),
+    );
   }
 
   $unregisterProvider(handle: number): void {
@@ -65,30 +90,38 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   // --- consumer fs, vscode.workspace.fs
 
   $stat(uri: UriComponents): Promise<FileStat> {
-    return this._fileService.getFileStat(URI.revive(uri).toString()).then((stat) => {
-      return toFileStat(stat!);
-    }).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .getFileStat(URI.revive(uri).toString())
+      .then((stat) => toFileStat(stat!))
+      .catch(MainThreadFileSystem._handleError);
   }
 
   $readdir(uri: UriComponents): Promise<[string, FileType][]> {
-    return this._fileService.getFileStat(URI.revive(uri).toString()).then((stat) => {
-      if (!stat) {
-        throw new Error('file stat undefined');
-      }
-      if (!stat.isDirectory) {
-        const err = new Error(stat.uri);
-        err.name = FileSystemProviderErrorCode.FileNotADirectory;
-        throw err;
-      }
-      return !stat.children ? [] : stat.children.map((child) => [new URI(child.uri).displayName, MainThreadFileSystem._asFileType(child)] as [string, FileType]);
-    }).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .getFileStat(URI.revive(uri).toString())
+      .then((stat) => {
+        if (!stat) {
+          throw new Error('file stat undefined');
+        }
+        if (!stat.isDirectory) {
+          const err = new Error(stat.uri);
+          err.name = FileSystemProviderErrorCode.FileNotADirectory;
+          throw err;
+        }
+        return !stat.children
+          ? []
+          : stat.children.map(
+              (child) =>
+                [new URI(child.uri).displayName, MainThreadFileSystem._asFileType(child)] as [string, FileType],
+            );
+      })
+      .catch(MainThreadFileSystem._handleError);
   }
 
   private static _asFileType(stat: IFileStat): FileType {
     let res = 0;
     if (stat.type && stat.type === FileType.File) {
       res += FileType.File;
-
     } else if (stat.isDirectory) {
       res += FileType.Directory;
     }
@@ -99,7 +132,10 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   }
 
   $readFile(uri: UriComponents): Promise<Uint8Array> {
-    return this._fileService.readFile(URI.revive(uri).toString()).then((file) => file.content.buffer).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .readFile(URI.revive(uri).toString())
+      .then((file) => file.content.buffer)
+      .catch(MainThreadFileSystem._handleError);
   }
 
   async $writeFile(uri: UriComponents, content: Uint8Array): Promise<void> {
@@ -109,37 +145,46 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
       // 文件不存在
       await ensureDir(new URI(_uri).path.dir.toString(), {
         mkdir: (path: string) => this.$mkdir(URI.file(path).codeUri),
-        access: (path: string) => {
-          return this._fileService
-            .getFileStat(URI.file(path).codeUri.toString(), false)
-            .then((stat) => !!stat);
-        },
+        access: (path: string) =>
+          this._fileService.getFileStat(URI.file(path).codeUri.toString(), false).then((stat) => !!stat),
       });
-      return this._fileService.createFile(_uri.toString(), { content: BinaryBuffer.wrap(content).toString() })
-        .then(() => undefined).catch(MainThreadFileSystem._handleError);
+      return this._fileService
+        .createFile(_uri.toString(), { content: BinaryBuffer.wrap(content).toString() })
+        .then(() => undefined)
+        .catch(MainThreadFileSystem._handleError);
     } else {
-      return this._fileService.setContent(stat!, content)
-        .then(() => undefined).catch(MainThreadFileSystem._handleError);
+      return this._fileService
+        .setContent(stat!, content)
+        .then(() => undefined)
+        .catch(MainThreadFileSystem._handleError);
     }
   }
 
   $rename(source: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void> {
-    return this._fileService.move(URI.revive(source).toString(), URI.revive(target).toString(), opts)
-      .then(() => undefined).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .move(URI.revive(source).toString(), URI.revive(target).toString(), opts)
+      .then(() => undefined)
+      .catch(MainThreadFileSystem._handleError);
   }
 
   $copy(source: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void> {
-    return this._fileService.copy(URI.revive(source).toString(), URI.revive(target).toString(), opts)
-      .then(() => undefined).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .copy(URI.revive(source).toString(), URI.revive(target).toString(), opts)
+      .then(() => undefined)
+      .catch(MainThreadFileSystem._handleError);
   }
 
   $mkdir(uri: UriComponents): Promise<void> {
-    return this._fileService.createFolder(URI.revive(uri).toString())
-      .then(() => undefined).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .createFolder(URI.revive(uri).toString())
+      .then(() => undefined)
+      .catch(MainThreadFileSystem._handleError);
   }
 
   $delete(uri: UriComponents, opts: FileDeleteOptions): Promise<void> {
-    return this._fileService.delete(URI.revive(uri).toString(), { moveToTrash: opts.useTrash }).catch(MainThreadFileSystem._handleError);
+    return this._fileService
+      .delete(URI.revive(uri).toString(), { moveToTrash: opts.useTrash })
+      .catch(MainThreadFileSystem._handleError);
   }
 
   private static _handleError(err: any): never {
@@ -165,7 +210,6 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
 }
 
 class RemoteFileSystemProvider implements FileSystemProvider {
-
   private readonly _onDidChange = new Emitter<FileChange[]>();
   private readonly _registration: IDisposable;
 
@@ -223,7 +267,7 @@ class RemoteFileSystemProvider implements FileSystemProvider {
     return buffer;
   }
 
-  writeFile(resource: Uri, content: Uint8Array, opts: { create: boolean, overwrite: boolean }): Promise<void> {
+  writeFile(resource: Uri, content: Uint8Array, opts: { create: boolean; overwrite: boolean }): Promise<void> {
     return this._proxy.$writeFile(this._handle, resource, content, opts);
   }
 
@@ -262,8 +306,11 @@ class RemoteFileSystemProvider implements FileSystemProvider {
     }
     const nameTypeTuples = await this.readDirectory(resource);
     // 在我们的设计中stat支持递归获取多层children，默认获取第一层
-    const children: IFileStat[] = await Promise.all(nameTypeTuples.map((item) => new URI(resource).resolve(item[0])).map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)));
+    const children: IFileStat[] = await Promise.all(
+      nameTypeTuples
+        .map((item) => new URI(resource).resolve(item[0]))
+        .map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)),
+    );
     return children;
   }
-
 }

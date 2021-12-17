@@ -1,8 +1,13 @@
 import { Event, IRange } from '@opensumi/ide-core-common';
 import {
-  CommentThread, CommentReaction, CommentingRanges,
-  Comment, CommentThreadChangedEvent,  CommentInput,
-  CommentMode, CommentThreadCollapsibleState,
+  CommentThread,
+  CommentReaction,
+  CommentingRanges,
+  Comment,
+  CommentThreadChangedEvent,
+  CommentInput,
+  CommentMode,
+  CommentThreadCollapsibleState,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { ICommand } from './command';
@@ -23,9 +28,15 @@ interface CommentOptions {
  * @internal
  */
 export {
-  CommentThread, CommentReaction, CommentingRanges,
-  Comment, CommentThreadChangedEvent, CommentInput,
-  CommentMode, CommentThreadCollapsibleState, CommentOptions,
+  CommentThread,
+  CommentReaction,
+  CommentingRanges,
+  Comment,
+  CommentThreadChangedEvent,
+  CommentInput,
+  CommentMode,
+  CommentThreadCollapsibleState,
+  CommentOptions,
 };
 
 /**
@@ -63,10 +74,10 @@ export interface CommentWidget {
  * @internal
  */
 export type CommentThreadChanges = Partial<{
-  range: IRange,
-  label: string,
-  contextValue: string,
-  comments: Comment[],
+  range: IRange;
+  label: string;
+  contextValue: string;
+  comments: Comment[];
   collapseState: CommentThreadCollapsibleState;
   canReply: boolean;
 }>;

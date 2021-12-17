@@ -1,5 +1,13 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ResourceService, IResourceProvider, ResourceDecorationNeedChangeEvent, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
+import {
+  ResourceService,
+  IResourceProvider,
+  ResourceDecorationNeedChangeEvent,
+  ResourceDecorationChangeEvent,
+  ResourceNeedUpdateEvent,
+  ResourceDidUpdateEvent,
+  WorkbenchEditorService,
+} from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
 import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
@@ -10,41 +18,39 @@ import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/i
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 
 describe('resource service tests', () => {
-
   const injector = createBrowserInjector([]);
 
-  injector.addProviders({
-    token: ResourceService,
-    useClass : ResourceServiceImpl,
-  }, {
-    token: ILoggerManagerClient,
-    useValue: {
-      getLogger: () => {
-        return {
-          log() { },
-          debug() { },
-          error() { },
-          verbose() { },
+  injector.addProviders(
+    {
+      token: ResourceService,
+      useClass: ResourceServiceImpl,
+    },
+    {
+      token: ILoggerManagerClient,
+      useValue: {
+        getLogger: () => ({
+          log() {},
+          debug() {},
+          error() {},
+          verbose() {},
           warn() {},
-        };
+        }),
       },
     },
-  });
+  );
 
   let data = 0;
 
   const TestResourceProvider1: IResourceProvider = {
     scheme: 'test',
-    provideResource: (uri: URI) => {
-      return {
-        uri,
-        name: uri.path.toString(),
-        icon: 'iconTest ' + uri.toString(),
-        metadata: {
-          data,
-        },
-      };
-    },
+    provideResource: (uri: URI) => ({
+      uri,
+      name: uri.path.toString(),
+      icon: 'iconTest ' + uri.toString(),
+      metadata: {
+        data,
+      },
+    }),
     provideResourceSubname: (resource, groups) => {
       if (groups.filter((r) => r.uri.isEqual(resource.uri)).length > 1) {
         return 'more than one';
@@ -63,17 +69,14 @@ describe('resource service tests', () => {
 
   const TestResourceProvider2: IResourceProvider = {
     scheme: 'test2',
-    provideResource: (uri: URI) => {
-      return {
-        uri,
-        name: uri.path.toString(),
-        icon: 'iconTest2 ' + uri.toString(),
-      };
-    },
+    provideResource: (uri: URI) => ({
+      uri,
+      name: uri.path.toString(),
+      icon: 'iconTest2 ' + uri.toString(),
+    }),
   };
 
   it('should be able to resolve resource provided by provider', async (done) => {
-
     const service: ResourceService = injector.get(ResourceService);
     const disposer = service.registerResourceProvider(TestResourceProvider1);
     const disposer2 = service.registerResourceProvider(TestResourceProvider2);
@@ -108,16 +111,13 @@ describe('resource service tests', () => {
     expect(await service.getResource(new URI('test://testResource2'))).toBeNull();
 
     done();
-
   });
 
   it('should return null when resource is not provided', async (done) => {
-
     const service: ResourceService = injector.get(ResourceService);
     expect(await service.getResource(new URI('what://not-provided'))).toBeNull();
 
     done();
-
   });
 
   it('should update resource decoration after events', () => {
@@ -134,33 +134,40 @@ describe('resource service tests', () => {
 
     const disposer2 = eventBus.on(ResourceDecorationChangeEvent, changedListener);
 
-    eventBus.fire(new ResourceDecorationNeedChangeEvent({
-      uri: resUri,
-      decoration: {
-        dirty: true,
-      },
-    }));
+    eventBus.fire(
+      new ResourceDecorationNeedChangeEvent({
+        uri: resUri,
+        decoration: {
+          dirty: true,
+        },
+      }),
+    );
 
     expect(service.getResourceDecoration(resUri).dirty).toBeTruthy();
-    expect(changedListener).toBeCalledWith(expect.objectContaining({payload: {uri: resUri, decoration: {dirty: true}}}));
+    expect(changedListener).toBeCalledWith(
+      expect.objectContaining({ payload: { uri: resUri, decoration: { dirty: true } } }),
+    );
 
     changedListener.mockClear();
-    eventBus.fire(new ResourceDecorationNeedChangeEvent({
-      uri: resUri,
-      decoration: {
-        dirty: false,
-      },
-    }));
+    eventBus.fire(
+      new ResourceDecorationNeedChangeEvent({
+        uri: resUri,
+        decoration: {
+          dirty: false,
+        },
+      }),
+    );
 
     expect(service.getResourceDecoration(resUri).dirty).toBeFalsy();
-    expect(changedListener).toBeCalledWith(expect.objectContaining({payload: {uri: resUri, decoration: {dirty: false}}}));
+    expect(changedListener).toBeCalledWith(
+      expect.objectContaining({ payload: { uri: resUri, decoration: { dirty: false } } }),
+    );
 
     disposer.dispose();
     disposer2.dispose();
   });
 
   it('should be able to prevent resource close', async (done) => {
-
     const service: ResourceService = injector.get(ResourceService);
     const disposer = service.registerResourceProvider(TestResourceProvider1);
     const disposer2 = service.registerResourceProvider(TestResourceProvider2);
@@ -183,7 +190,6 @@ describe('resource service tests', () => {
   });
 
   it('should fire need didUpdateEvent', async (done) => {
-
     const service: ResourceService = injector.get(ResourceService);
     const disposer = service.registerResourceProvider(TestResourceProvider1);
 
@@ -194,7 +200,7 @@ describe('resource service tests', () => {
 
     const eventBus: IEventBus = injector.get(IEventBus);
 
-    data ++;
+    data++;
     eventBus.fire(new ResourceNeedUpdateEvent(resUri));
 
     eventBus.on(ResourceDidUpdateEvent, async (e) => {
@@ -205,7 +211,6 @@ describe('resource service tests', () => {
     });
 
     disposer.dispose();
-
   });
 
   it('untitled resource test', async (done) => {
@@ -214,9 +219,7 @@ describe('resource service tests', () => {
     injector.mockService(AppConfig, {
       workspaceDir: '/TEST_WORKSPACE',
     });
-    const mockSave = jest.fn(() => {
-      return new URI('file:///test/test-untitled.saved.js');
-    });
+    const mockSave = jest.fn(() => new URI('file:///test/test-untitled.saved.js'));
     injector.mockCommand('file.save', mockSave);
 
     const provider = injector.get(UntitledSchemeDocumentProvider);
@@ -244,33 +247,36 @@ describe('resource service tests', () => {
     expect(mockSave).toBeCalled();
 
     done();
-
   });
 
   it('diff resource tests', async (done) => {
     injector.mockService(LabelService, {
-      getIcon: jest.fn((uri) => {
-        return uri.toString();
-      }),
+      getIcon: jest.fn((uri) => uri.toString()),
     });
 
     const provider = injector.get(DiffResourceProvider);
 
     expect(provider.scheme).toBe('diff');
-    const diffUri = new URI('diff://?name=a.ts(on disk)<>a.ts&original=file://path/to/a.ts&modified=fileOnDisk://path/to/a.ts');
+    const diffUri = new URI(
+      'diff://?name=a.ts(on disk)<>a.ts&original=file://path/to/a.ts&modified=fileOnDisk://path/to/a.ts',
+    );
     const res = await provider.provideResource(diffUri);
     expect(res.name).toBe('a.ts(on disk)<>a.ts');
     expect(res.icon).toBe('file://path/to/a.ts');
     expect(res.metadata!.original.toString()).toBe('file://path/to/a.ts');
     expect(res.metadata!.modified.toString()).toBe('fileOnDisk://path/to/a.ts');
 
-    injector.mock(ResourceService, 'shouldCloseResource', jest.fn(() => {
-      return true;
-    }));
+    injector.mock(
+      ResourceService,
+      'shouldCloseResource',
+      jest.fn(() => true),
+    );
 
-    injector.mock(ResourceService, 'getResource', jest.fn(() => {
-      return {};
-    }));
+    injector.mock(
+      ResourceService,
+      'getResource',
+      jest.fn(() => ({})),
+    );
 
     const resourceService: ResourceService = injector.get(ResourceService);
 
@@ -288,12 +294,14 @@ describe('resource service tests', () => {
     };
     eventBus.on(ResourceDecorationChangeEvent, listener);
 
-    eventBus.fire(new ResourceDecorationChangeEvent({
-      uri: new URI('fileOnDisk://path/to/a.ts'),
-      decoration: {
-        dirty: true,
-      },
-    }));
+    eventBus.fire(
+      new ResourceDecorationChangeEvent({
+        uri: new URI('fileOnDisk://path/to/a.ts'),
+        decoration: {
+          dirty: true,
+        },
+      }),
+    );
 
     expect(diffDirtyChanged).toBeTruthy();
 
@@ -313,9 +321,12 @@ describe('resource service tests', () => {
 
     injector.mockCommand(EDITOR_COMMANDS.CLOSE_ALL.id, jest.fn());
     let openingResource: URI | null = null;
-    injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, jest.fn((uri) => {
-      openingResource = uri;
-    }));
+    injector.mockCommand(
+      EDITOR_COMMANDS.OPEN_RESOURCE.id,
+      jest.fn((uri) => {
+        openingResource = uri;
+      }),
+    );
 
     injector.addProviders({
       token: ICompareService,

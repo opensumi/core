@@ -2,7 +2,13 @@ import React from 'react';
 import { TreeNode, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX, Event } from '@opensumi/ide-core-common';
-import { FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '../../tree';
+import {
+  FileDecorationsProvider,
+  ThemeProvider,
+  IFileDecoration,
+  ExpandableTreeNode,
+  TreeViewAction,
+} from '../../tree';
 import cls from 'classnames';
 import styles from './tree.module.less';
 import { ValidateMessage } from '@opensumi/ide-components';
@@ -147,51 +153,47 @@ export const defaultTreeProps: TreeProps = {
   defaultLeftPadding: 8,
 };
 
-export const TreeContainer = (
-  {
-    nodes = defaultTreeProps.nodes,
-    leftPadding = defaultTreeProps.leftPadding,
-    defaultLeftPadding = defaultTreeProps.defaultLeftPadding,
-    multiSelectable,
-    onSelect,
-    onTwistieClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnter,
-    onDragOver,
-    onDragLeave,
-    onDragEnd,
-    onDrag,
-    onDrop,
-    onChange,
-    onBlur,
-    onFocus,
-    onReveal,
-    draggable,
-    foldable = true,
-    editable,
-    replace,
-    actions,
-    alwaysShowActions,
-    commandActuator,
-    themeProvider,
-    fileDecorationProvider,
-    notifyFileDecorationsChange,
-    notifyThemeChange,
-    itemLineHeight = 22,
-    style,
-    outline,
-    validate,
-    isComplex,
-  }: TreeProps,
-) => {
+export const TreeContainer = ({
+  nodes = defaultTreeProps.nodes,
+  leftPadding = defaultTreeProps.leftPadding,
+  defaultLeftPadding = defaultTreeProps.defaultLeftPadding,
+  multiSelectable,
+  onSelect,
+  onTwistieClick,
+  onContextMenu,
+  onDragStart,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDragEnd,
+  onDrag,
+  onDrop,
+  onChange,
+  onBlur,
+  onFocus,
+  onReveal,
+  draggable,
+  foldable = true,
+  editable,
+  replace,
+  actions,
+  alwaysShowActions,
+  commandActuator,
+  themeProvider,
+  fileDecorationProvider,
+  notifyFileDecorationsChange,
+  notifyThemeChange,
+  itemLineHeight = 22,
+  style,
+  outline,
+  validate,
+  isComplex,
+}: TreeProps) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [, refreshState] = React.useState<any>();
 
-  const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
-    return !!node.isTemporary;
-  });
+  const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => !!node.isTemporary);
 
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -286,13 +288,13 @@ export const TreeContainer = (
     return result;
   };
 
-  const selectNode = (node: TreeNode) => {
-    return [node];
-  };
+  const selectNode = (node: TreeNode) => [node];
 
   const selectHandler = (node, event) => {
     let selectedNodes: any;
-    if (!node || isEdited) { return; }
+    if (!node || isEdited) {
+      return;
+    }
     // 支持多选状态, 同时在非编辑状态时
     if (multiSelectable && !isEdited) {
       const shiftMask = hasShiftMask(event);
@@ -366,7 +368,7 @@ export const TreeContainer = (
       const uri = node.uri.toString();
       return uri ? uri : undefined;
     }
-    if (typeof node.name === 'string' ) {
+    if (typeof node.name === 'string') {
       return node.name;
     }
   };
@@ -397,9 +399,7 @@ export const TreeContainer = (
       const disposeble = notifyFileDecorationsChange(() => {
         refreshState({});
       });
-      return () => {
-        return disposeble.dispose();
-      };
+      return () => disposeble.dispose();
     }
   }, [notifyFileDecorationsChange]);
 
@@ -408,30 +408,35 @@ export const TreeContainer = (
       const disposeble = notifyThemeChange(() => {
         refreshState({});
       });
-      return () => {
-        return disposeble.dispose();
-      };
+      return () => disposeble.dispose();
     }
   }, [notifyThemeChange]);
 
-  return <div
-    className={cls(styles.treenode_container, outerFocused && styles.treenode_container_focused, outerDragOver && styles.treenode_all_focused)}
-    style={style}
-    onBlur={outerBlurHandler}
-    onFocus={outerFocusHandler}
-    onContextMenu={outerContextMenuHandler}
-    onDrop={outerDropHandler}
-    onDragStart={outerDragStartHandler}
-    onDragOver={outerDragOverHandler}
-    onDragLeave={outerDragLeaveHandler}
-    draggable={draggable}
-    onClick={outerClickHandler}
-    tabIndex={outline ? 0 : -1}
-  >
-    {
-      nodes!.map(<T extends TreeNode>(node: T, index: number) => {
+  return (
+    <div
+      className={cls(
+        styles.treenode_container,
+        outerFocused && styles.treenode_container_focused,
+        outerDragOver && styles.treenode_all_focused,
+      )}
+      style={style}
+      onBlur={outerBlurHandler}
+      onFocus={outerFocusHandler}
+      onContextMenu={outerContextMenuHandler}
+      onDrop={outerDropHandler}
+      onDragStart={outerDragStartHandler}
+      onDragOver={outerDragOverHandler}
+      onDragLeave={outerDragLeaveHandler}
+      draggable={draggable}
+      onClick={outerClickHandler}
+      tabIndex={outline ? 0 : -1}
+    >
+      {nodes!.map(<T extends TreeNode>(node: T, index: number) => {
         if (fileDecorationProvider && themeProvider) {
-          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || typeof node.name === 'string' && node.name || node.id, ExpandableTreeNode.is(node));
+          const deco: IFileDecoration = fileDecorationProvider.getDecoration(
+            node.uri || (typeof node.name === 'string' && node.name) || node.id,
+            ExpandableTreeNode.is(node),
+          );
           if (deco) {
             node = {
               ...node,
@@ -441,34 +446,36 @@ export const TreeContainer = (
             };
           }
         }
-        return <TreeContainerNode
-          node={node}
-          leftPadding={leftPadding}
-          defaultLeftPadding={defaultLeftPadding}
-          key={`${node.id}-${index}`}
-          onSelect={selectHandler}
-          onTwistieClick={twistieClickHandler}
-          onContextMenu={innerContextMenuHandler}
-          onDragStart={onDragStart}
-          onDragEnter={onDragEnter}
-          onDragEnd={onDragEnd}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrag={onDrag}
-          onDrop={onDrop}
-          onChange={onChange}
-          draggable={draggable}
-          foldable={foldable}
-          isEdited={isEdited}
-          isComplex={isComplex}
-          actions={node.actions || actions}
-          replace={node.replace || replace}
-          alwaysShowActions={alwaysShowActions}
-          commandActuator={commandActuator}
-          itemLineHeight={itemLineHeight}
-          validate={validate}
-        />;
-      })
-    }
-  </div>;
+        return (
+          <TreeContainerNode
+            node={node}
+            leftPadding={leftPadding}
+            defaultLeftPadding={defaultLeftPadding}
+            key={`${node.id}-${index}`}
+            onSelect={selectHandler}
+            onTwistieClick={twistieClickHandler}
+            onContextMenu={innerContextMenuHandler}
+            onDragStart={onDragStart}
+            onDragEnter={onDragEnter}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrag={onDrag}
+            onDrop={onDrop}
+            onChange={onChange}
+            draggable={draggable}
+            foldable={foldable}
+            isEdited={isEdited}
+            isComplex={isComplex}
+            actions={node.actions || actions}
+            replace={node.replace || replace}
+            alwaysShowActions={alwaysShowActions}
+            commandActuator={commandActuator}
+            itemLineHeight={itemLineHeight}
+            validate={validate}
+          />
+        );
+      })}
+    </div>
+  );
 };

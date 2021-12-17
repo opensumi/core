@@ -7,6 +7,4 @@ export const ansiRegex = ({ onlyFirst = false } = {}) => {
   return new RegExp(pattern, onlyFirst ? undefined : 'g');
 };
 
-export const stripAnsi = (str) => {
-  return typeof str === 'string' ? str.replace(ansiRegex(), '') : str;
-};
+export const stripAnsi = (str) => (typeof str === 'string' ? str.replace(ansiRegex(), '') : str);

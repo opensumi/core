@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -19,14 +19,32 @@ const pathSeparatorClause = '\\/';
 // Also disallow \\ to prevent a catastropic backtracking case #24798
 const excludedPathCharactersClause = '[^\\0\\s!$`&*()\\[\\]\'":;\\\\]';
 /** A regex that matches paths in the form /foo, ~/foo, ./foo, ../foo, foo/bar */
-export const unixLocalLinkClause = '((' + pathPrefix + '|(' + excludedPathCharactersClause + ')+)?(' + pathSeparatorClause + '(' + excludedPathCharactersClause + ')+)+)';
+export const unixLocalLinkClause =
+  '((' +
+  pathPrefix +
+  '|(' +
+  excludedPathCharactersClause +
+  ')+)?(' +
+  pathSeparatorClause +
+  '(' +
+  excludedPathCharactersClause +
+  ')+)+)';
 
 export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\)?[a-zA-Z]:';
 const winPathPrefix = '(' + winDrivePrefix + '|\\.\\.?|\\~)';
 const winPathSeparatorClause = '(\\\\|\\/)';
 const winExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!$`&*()\\[\\]\'":;]';
 /** A regex that matches paths in the form \\?\c:\foo c:\foo, ~\foo, .\foo, ..\foo, foo\bar */
-export const winLocalLinkClause = '((' + winPathPrefix + '|(' + winExcludedPathCharactersClause + ')+)?(' + winPathSeparatorClause + '(' + winExcludedPathCharactersClause + ')+)+)';
+export const winLocalLinkClause =
+  '((' +
+  winPathPrefix +
+  '|(' +
+  winExcludedPathCharactersClause +
+  ')+)?(' +
+  winPathSeparatorClause +
+  '(' +
+  winExcludedPathCharactersClause +
+  ')+)+)';
 
 /** As xterm reads from DOM, space in that case is nonbreaking char ASCII code - 160,
 replacing space with nonBreakningSpace or space ASCII code - 32. */
@@ -36,8 +54,10 @@ export const lineAndColumnClause = [
   '((\\S*) on line ((\\d+)(, column (\\d+))?))', // (file path) on line 8, column 13
   '((\\S*):line ((\\d+)(, column (\\d+))?))', // (file path):line 8, column 13
   '(([^\\s\\(\\)]*)(\\s?[\\(\\[](\\d+)(,\\s?(\\d+))?)[\\)\\]])', // (file path)(45), (file path) (45), (file path)(45,18), (file path) (45,18), (file path)(45, 18), (file path) (45, 18), also with []
-  '(([^:\\s\\(\\)<>\'\"\\[\\]]*)(:(\\d+))?(:(\\d+))?)', // (file path):336, (file path):336:9
-].join('|').replace(/ /g, `[${'\u00A0'} ]`);
+  '(([^:\\s\\(\\)<>\'"\\[\\]]*)(:(\\d+))?(:(\\d+))?)', // (file path):336, (file path):336:9
+]
+  .join('|')
+  .replace(/ /g, `[${'\u00A0'} ]`);
 
 // Changing any regex may effect this value, hence changes this as well if required.
 export const winLineAndColumnMatchIndex = 12;
@@ -53,8 +73,13 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     private readonly _xterm: Terminal,
     private readonly _client: TerminalClient,
     private readonly _activateFileCallback: (event: MouseEvent | undefined, link: string) => void,
-    private readonly _wrapLinkHandler: (handler: (event: MouseEvent | undefined, link: string) => void) => XtermLinkMatcherHandler,
-    private readonly _validationCallback: (link: string, callback: (result: { uri: URI, isDirectory: boolean } | undefined) => void) => void,
+    private readonly _wrapLinkHandler: (
+      handler: (event: MouseEvent | undefined, link: string) => void,
+    ) => XtermLinkMatcherHandler,
+    private readonly _validationCallback: (
+      link: string,
+      callback: (result: { uri: URI; isDirectory: boolean } | undefined) => void,
+    ) => void,
   ) {
     super();
   }
@@ -64,9 +89,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     let startLine = y - 1;
     let endLine = startLine;
 
-    const lines: IBufferLine[] = [
-      this._xterm.buffer.active.getLine(startLine)!,
-    ];
+    const lines: IBufferLine[] = [this._xterm.buffer.active.getLine(startLine)!];
 
     while (startLine >= 0 && this._xterm.buffer.active.getLine(startLine)?.isWrapped) {
       lines.unshift(this._xterm.buffer.active.getLine(startLine - 1)!);
@@ -121,12 +144,17 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
       }
 
       // Convert the link text's string index into a wrapped buffer range
-      const bufferRange = convertLinkRangeToBuffer(lines, this._xterm.cols, {
-        startColumn: stringIndex + 1,
-        startLineNumber: 1,
-        endColumn: stringIndex + link.length + 1,
-        endLineNumber: 1,
-      }, startLine);
+      const bufferRange = convertLinkRangeToBuffer(
+        lines,
+        this._xterm.cols,
+        {
+          startColumn: stringIndex + 1,
+          startLineNumber: 1,
+          endColumn: stringIndex + link.length + 1,
+          endLineNumber: 1,
+        },
+        startLine,
+      );
 
       const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
         this._validationCallback(link, (result) => {
@@ -134,7 +162,16 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
             const activateCallback = this._wrapLinkHandler((event: MouseEvent | undefined, text: string) => {
               this._activateFileCallback(event, text);
             });
-            r(new TerminalLink(this._xterm, bufferRange, link, this._xterm.buffer.active.viewportY, activateCallback, true));
+            r(
+              new TerminalLink(
+                this._xterm,
+                bufferRange,
+                link,
+                this._xterm.buffer.active.viewportY,
+                activateCallback,
+                true,
+              ),
+            );
           } else {
             r(undefined);
           }

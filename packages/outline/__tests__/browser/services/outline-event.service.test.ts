@@ -8,12 +8,15 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 describe('OutlineEventService', () => {
   let outlineEventService: OutlineEventService;
   let eventBus;
-  const mockInjector = createBrowserInjector([], new MockInjector([
-    {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-  ]));
+  const mockInjector = createBrowserInjector(
+    [],
+    new MockInjector([
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+    ]),
+  );
 
   beforeAll(() => {
     outlineEventService = mockInjector.get(OutlineEventService);
@@ -50,5 +53,4 @@ describe('OutlineEventService', () => {
     });
     eventBus.fireAndAwait(new DocumentSymbolChangedEvent({} as any));
   });
-
 });

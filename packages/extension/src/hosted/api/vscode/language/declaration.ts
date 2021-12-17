@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -23,49 +23,52 @@ import { Position, Definition, DefinitionLink, Location } from '../../../../comm
 import { isDefinitionLinkArray, isLocationArray } from './util';
 
 export class DeclarationAdapter {
+  constructor(
+    private readonly provider: vscode.DeclarationProvider,
+    private readonly documents: ExtensionDocumentDataManager,
+  ) {}
 
-    constructor(
-        private readonly provider: vscode.DeclarationProvider,
-        private readonly documents: ExtensionDocumentDataManager) {
+  provideDeclaration(
+    resource: URI,
+    position: Position,
+    token: vscode.CancellationToken,
+  ): Promise<Definition | DefinitionLink[] | undefined> {
+    const documentData = this.documents.getDocumentData(resource);
+    if (!documentData) {
+      return Promise.reject(new Error(`There is no document for ${resource}`));
     }
 
-    provideDeclaration(resource: URI, position: Position, token: vscode.CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
-        const documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error(`There is no document for ${resource}`));
+    const document = documentData.document;
+    const zeroBasedPosition = Converter.toPosition(position);
+
+    return Promise.resolve(this.provider.provideDeclaration(document, zeroBasedPosition, token)).then((definition) => {
+      if (!definition) {
+        return undefined;
+      }
+
+      if (definition instanceof types.Location) {
+        return Converter.fromLocation(definition);
+      }
+
+      if (isLocationArray(definition)) {
+        const locations: Location[] = [];
+
+        for (const location of definition) {
+          locations.push(Converter.fromLocation(location));
         }
 
-        const document = documentData.document;
-        const zeroBasedPosition = Converter.toPosition(position);
+        return locations;
+      }
 
-        return Promise.resolve(this.provider.provideDeclaration(document, zeroBasedPosition, token)).then((definition) => {
-            if (!definition) {
-                return undefined;
-            }
+      if (isDefinitionLinkArray(definition)) {
+        const definitionLinks: DefinitionLink[] = [];
 
-            if (definition instanceof types.Location) {
-                return Converter.fromLocation(definition);
-            }
+        for (const definitionLink of definition) {
+          definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
+        }
 
-            if (isLocationArray(definition)) {
-                const locations: Location[] = [];
-
-                for (const location of definition) {
-                    locations.push(Converter.fromLocation(location));
-                }
-
-                return locations;
-            }
-
-            if (isDefinitionLinkArray(definition)) {
-                const definitionLinks: DefinitionLink[] = [];
-
-                for (const definitionLink of definition) {
-                    definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
-                }
-
-                return definitionLinks;
-            }
-        });
-    }
+        return definitionLinks;
+      }
+    });
+  }
 }

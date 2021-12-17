@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -8,7 +8,9 @@ import { UriComponents } from '@opensumi/ide-editor';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { IWorkspaceFolder } from './index';
 
-interface JSONType { [key: string]: any; }
+interface JSONType {
+  [key: string]: any;
+}
 
 export interface WorkspaceFolder {
   uri: UriComponents;
@@ -85,10 +87,12 @@ export interface ShellQuotingOptions {
   /**
    * The character used to do character escaping.
    */
-  escape?: string | {
-    escapeChar: string;
-    charsToEscape: string;
-  };
+  escape?:
+    | string
+    | {
+        escapeChar: string;
+        charsToEscape: string;
+      };
 
   /**
    * The character used for string quoting.
@@ -119,7 +123,6 @@ export interface ShellConfiguration {
 }
 
 export interface CommandOptions {
-
   /**
    * The shell to use if the task is a shell command.
    */
@@ -135,7 +138,7 @@ export interface CommandOptions {
    * The environment of the executed program or shell. If omitted
    * the parent process' environment is used.
    */
-  env?: { [key: string]: string; };
+  env?: { [key: string]: string };
 }
 
 export namespace CommandOptions {
@@ -210,7 +213,6 @@ export namespace RevealProblemKind {
 }
 
 export enum PanelKind {
-
   /**
    * Shares a panel with other tasks. This is the default.
    */
@@ -292,7 +294,13 @@ export interface PresentationOptions {
 
 export namespace PresentationOptions {
   export const defaults: PresentationOptions = {
-    echo: true, reveal: RevealKind.Always, revealProblems: RevealProblemKind.Never, focus: false, panel: PanelKind.Shared, showReuseMessage: true, clear: false,
+    echo: true,
+    reveal: RevealKind.Always,
+    revealProblems: RevealProblemKind.Never,
+    focus: false,
+    panel: PanelKind.Shared,
+    showReuseMessage: true,
+    clear: false,
   };
 }
 
@@ -336,7 +344,6 @@ export namespace CommandString {
 }
 
 export interface CommandConfiguration {
-
   /**
    * The task type
    */
@@ -375,7 +382,6 @@ export interface CommandConfiguration {
 }
 
 export namespace TaskGroup {
-
   export const Clean: TaskGroup = { _id: 'clean', isDefault: false };
 
   export const Build: TaskGroup = { _id: 'build', isDefault: false };
@@ -414,15 +420,14 @@ export const enum TaskScope {
 }
 
 export namespace TaskSourceKind {
-  export const Workspace: 'workspace' = 'workspace';
-  export const Extension: 'extension' = 'extension';
-  export const InMemory: 'inMemory' = 'inMemory';
-  export const WorkspaceFile: 'workspaceFile' = 'workspaceFile';
-  export const User: 'user' = 'user';
+  export const Workspace = 'workspace' as const;
+  export const Extension = 'extension' as const;
+  export const InMemory = 'inMemory' as const;
+  export const WorkspaceFile = 'workspaceFile' as const;
+  export const User = 'user' as const;
 }
 
 interface IWorkspace {
-
   /**
    * the unique identifier of the workspace.
    */
@@ -486,7 +491,12 @@ export interface WorkspaceFileTaskSource extends BaseTaskSource {
   readonly customizes?: KeyedTaskIdentifier;
 }
 
-export type TaskSource = WorkspaceTaskSource | ExtensionTaskSource | InMemoryTaskSource | UserTaskSource | WorkspaceFileTaskSource;
+export type TaskSource =
+  | WorkspaceTaskSource
+  | ExtensionTaskSource
+  | InMemoryTaskSource
+  | UserTaskSource
+  | WorkspaceFileTaskSource;
 export type FileBasedTaskSource = WorkspaceTaskSource | UserTaskSource | WorkspaceFileTaskSource;
 export interface TaskIdentifier {
   type: string;
@@ -513,7 +523,6 @@ export const enum DependsOrder {
 }
 
 export interface ConfigurationProperties {
-
   /**
    * The task's name
    */
@@ -590,7 +599,6 @@ export namespace RunOptions {
 }
 
 export abstract class CommonTask {
-
   /**
    * The task's internal id
    */
@@ -599,7 +607,7 @@ export abstract class CommonTask {
   /**
    * The cached label.
    */
-  _label: string = '';
+  _label = '';
 
   type?: string;
 
@@ -611,8 +619,14 @@ export abstract class CommonTask {
 
   private _taskLoadMessages: string[] | undefined;
 
-  protected constructor(id: string, label: string | undefined, type: string | undefined, runOptions: RunOptions,
-                        configurationProperties: ConfigurationProperties, source: BaseTaskSource) {
+  protected constructor(
+    id: string,
+    label: string | undefined,
+    type: string | undefined,
+    runOptions: RunOptions,
+    configurationProperties: ConfigurationProperties,
+    source: BaseTaskSource,
+  ) {
     this._id = id;
     if (label) {
       this._label = label;
@@ -638,7 +652,7 @@ export abstract class CommonTask {
   }
 
   public clone(): Task {
-    return this.fromObject(Object.assign({},  this as any));
+    return this.fromObject(Object.assign({}, this as any));
   }
 
   protected abstract fromObject(object: any): Task;
@@ -655,7 +669,7 @@ export abstract class CommonTask {
     return 'unknown';
   }
 
-  public matches(key: string | KeyedTaskIdentifier | undefined, compareId: boolean = false): boolean {
+  public matches(key: string | KeyedTaskIdentifier | undefined, compareId = false): boolean {
     if (key === undefined) {
       return false;
     }
@@ -678,7 +692,7 @@ export abstract class CommonTask {
   public getTaskExecution(): TaskExecution {
     const result: TaskExecution = {
       id: this._id,
-      task:  this as any,
+      task: this as any,
     };
     return result;
   }
@@ -698,7 +712,6 @@ export abstract class CommonTask {
 }
 
 export class CustomTask extends CommonTask {
-
   type!: '$customized'; // CUSTOMIZED_TASK_TYPE
 
   /**
@@ -713,8 +726,16 @@ export class CustomTask extends CommonTask {
    */
   command: CommandConfiguration = {};
 
-  public constructor(id: string, source: FileBasedTaskSource, label: string, type: string, command: CommandConfiguration | undefined,
-                     hasDefinedMatchers: boolean, runOptions: RunOptions, configurationProperties: ConfigurationProperties) {
+  public constructor(
+    id: string,
+    source: FileBasedTaskSource,
+    label: string,
+    type: string,
+    command: CommandConfiguration | undefined,
+    hasDefinedMatchers: boolean,
+    runOptions: RunOptions,
+    configurationProperties: ConfigurationProperties,
+  ) {
     super(id, label, undefined, runOptions, configurationProperties, source);
     this._source = source;
     this.hasDefinedMatchers = hasDefinedMatchers;
@@ -730,7 +751,7 @@ export class CustomTask extends CommonTask {
     return undefined;
   }
 
-  public getDefinition(useSource: boolean = false): KeyedTaskIdentifier {
+  public getDefinition(useSource = false): KeyedTaskIdentifier {
     if (useSource && this._source.customizes !== undefined) {
       return this._source.customizes;
     } else {
@@ -798,7 +819,9 @@ export class CustomTask extends CommonTask {
   }
 
   public getWorkspaceFileName(): string | undefined {
-    return (this._source.config.workspace && this._source.config.workspace.configuration) ? basename(this._source.config.workspace.configuration.toString()) : undefined;
+    return this._source.config.workspace && this._source.config.workspace.configuration
+      ? basename(this._source.config.workspace.configuration.toString())
+      : undefined;
   }
 
   public getTelemetryKind(): string {
@@ -810,12 +833,20 @@ export class CustomTask extends CommonTask {
   }
 
   protected fromObject(object: CustomTask): CustomTask {
-    return new CustomTask(object._id, object._source, object._label, object.type, object.command, object.hasDefinedMatchers, object.runOptions, object.configurationProperties);
+    return new CustomTask(
+      object._id,
+      object._source,
+      object._label,
+      object.type,
+      object.command,
+      object.hasDefinedMatchers,
+      object.runOptions,
+      object.configurationProperties,
+    );
   }
 }
 
 export class ConfiguringTask extends CommonTask {
-
   /**
    * Indicated the source of the task (e.g. tasks.json or extension)
    */
@@ -823,8 +854,15 @@ export class ConfiguringTask extends CommonTask {
 
   configures: KeyedTaskIdentifier;
 
-  public constructor(id: string, source: FileBasedTaskSource, label: string | undefined, type: string | undefined,
-                     configures: KeyedTaskIdentifier, runOptions: RunOptions, configurationProperties: ConfigurationProperties) {
+  public constructor(
+    id: string,
+    source: FileBasedTaskSource,
+    label: string | undefined,
+    type: string | undefined,
+    configures: KeyedTaskIdentifier,
+    runOptions: RunOptions,
+    configurationProperties: ConfigurationProperties,
+  ) {
     super(id, label, type, runOptions, configurationProperties, source);
     this._source = source;
     this.configures = configures;
@@ -843,12 +881,13 @@ export class ConfiguringTask extends CommonTask {
   }
 
   public getWorkspaceFileName(): string | undefined {
-    return (this._source.config.workspace && this._source.config.workspace.configuration) ? basename(this._source.config.workspace.configuration.toString()) : undefined;
+    return this._source.config.workspace && this._source.config.workspace.configuration
+      ? basename(this._source.config.workspace.configuration.toString())
+      : undefined;
   }
 }
 
 export class ContributedTask extends CommonTask {
-
   /**
    * Indicated the source of the task (e.g. tasks.json or extension)
    * Set in the super constructor
@@ -864,9 +903,17 @@ export class ContributedTask extends CommonTask {
    */
   command: CommandConfiguration;
 
-  public constructor(id: string, source: ExtensionTaskSource, label: string, type: string | undefined, defines: KeyedTaskIdentifier,
-                     command: CommandConfiguration, hasDefinedMatchers: boolean, runOptions: RunOptions,
-                     configurationProperties: ConfigurationProperties) {
+  public constructor(
+    id: string,
+    source: ExtensionTaskSource,
+    label: string,
+    type: string | undefined,
+    defines: KeyedTaskIdentifier,
+    command: CommandConfiguration,
+    hasDefinedMatchers: boolean,
+    runOptions: RunOptions,
+    configurationProperties: ConfigurationProperties,
+  ) {
     super(id, label, type, runOptions, configurationProperties, source);
     this.defines = defines;
     this.hasDefinedMatchers = hasDefinedMatchers;
@@ -912,7 +959,17 @@ export class ContributedTask extends CommonTask {
   }
 
   protected fromObject(object: ContributedTask): ContributedTask {
-    return new ContributedTask(object._id, object._source, object._label, object.type, object.defines, object.command, object.hasDefinedMatchers, object.runOptions, object.configurationProperties);
+    return new ContributedTask(
+      object._id,
+      object._source,
+      object._label,
+      object.type,
+      object.defines,
+      object.command,
+      object.hasDefinedMatchers,
+      object.runOptions,
+      object.configurationProperties,
+    );
   }
 }
 
@@ -924,8 +981,14 @@ export class InMemoryTask extends CommonTask {
 
   type!: 'inMemory';
 
-  public constructor(id: string, source: InMemoryTaskSource, label: string, type: string,
-                     runOptions: RunOptions, configurationProperties: ConfigurationProperties) {
+  public constructor(
+    id: string,
+    source: InMemoryTaskSource,
+    label: string,
+    type: string,
+    runOptions: RunOptions,
+    configurationProperties: ConfigurationProperties,
+  ) {
     super(id, label, type, runOptions, configurationProperties, source);
     this._source = source;
   }
@@ -939,7 +1002,14 @@ export class InMemoryTask extends CommonTask {
   }
 
   protected fromObject(object: InMemoryTask): InMemoryTask {
-    return new InMemoryTask(object._id, object._source, object._label, object.type, object.runOptions, object.configurationProperties);
+    return new InMemoryTask(
+      object._id,
+      object._source,
+      object._label,
+      object.type,
+      object.runOptions,
+      object.configurationProperties,
+    );
   }
 }
 
@@ -973,7 +1043,6 @@ export interface TaskDefinition {
 }
 
 export class TaskSorter {
-
   private _order: Map<string, number> = new Map();
 
   constructor(workspaceFolders: IWorkspaceFolder[]) {
@@ -1042,12 +1111,29 @@ export const enum TaskRunSource {
 }
 
 export namespace TaskEvent {
-  export function create(kind: TaskEventKind.ProcessStarted | TaskEventKind.ProcessEnded, task: Task, processIdOrExitCode?: number): TaskEvent;
+  export function create(
+    kind: TaskEventKind.ProcessStarted | TaskEventKind.ProcessEnded,
+    task: Task,
+    processIdOrExitCode?: number,
+  ): TaskEvent;
   // tslint:disable-next-line: unified-signatures
   export function create(kind: TaskEventKind.Start, task: Task, terminalId?: string): TaskEvent;
-  export function create(kind: TaskEventKind.DependsOnStarted | TaskEventKind.Start | TaskEventKind.Active | TaskEventKind.Inactive | TaskEventKind.Terminated | TaskEventKind.End, task: Task): TaskEvent;
+  export function create(
+    kind:
+      | TaskEventKind.DependsOnStarted
+      | TaskEventKind.Start
+      | TaskEventKind.Active
+      | TaskEventKind.Inactive
+      | TaskEventKind.Terminated
+      | TaskEventKind.End,
+    task: Task,
+  ): TaskEvent;
   export function create(kind: TaskEventKind.Changed): TaskEvent;
-  export function create(kind: TaskEventKind, task?: Task, processIdOrExitCodeOrTerminalId?: number | string): TaskEvent {
+  export function create(
+    kind: TaskEventKind,
+    task?: Task,
+    processIdOrExitCodeOrTerminalId?: number | string,
+  ): TaskEvent {
     if (task) {
       const result: TaskEvent = {
         kind,

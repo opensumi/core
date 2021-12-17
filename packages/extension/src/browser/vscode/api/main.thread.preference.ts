@@ -1,12 +1,26 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  IMainThreadPreference,
+  PreferenceData,
+  PreferenceChangeExt,
+} from '../../../common/vscode';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { ConfigurationTarget } from '../../../common/vscode';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
+import {
+  PreferenceService,
+  PreferenceProviderProvider,
+  PreferenceScope,
+  DisposableCollection,
+  PreferenceSchemaProvider,
+} from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { FileStat } from '@opensumi/ide-file-service';
 
-export function getPreferences(preferenceProviderProvider: PreferenceProviderProvider, rootFolders: FileStat[]): PreferenceData {
+export function getPreferences(
+  preferenceProviderProvider: PreferenceProviderProvider,
+  rootFolders: FileStat[],
+): PreferenceData {
   const folders = rootFolders.map((root) => root.uri.toString());
   return PreferenceScope.getScopes().reduce((result: { [key: number]: any }, scope: PreferenceScope) => {
     result[scope] = {};
@@ -31,7 +45,6 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
 
 @Injectable({ multiple: true })
 export class MainThreadPreference implements IMainThreadPreference {
-
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
@@ -49,22 +62,26 @@ export class MainThreadPreference implements IMainThreadPreference {
   private readonly proxy: any;
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
-    this.toDispose.push(this.preferenceService.onPreferencesChanged((changes) => {
-      const roots = this.workspaceService.tryGetRoots();
-      const data = getPreferences(this.preferenceProviderProvider, roots);
-      const eventData: PreferenceChangeExt[] = [];
-      for (const preferenceName of Object.keys(changes)) {
-        const { newValue } = changes[preferenceName];
-        eventData.push({ preferenceName, newValue });
-      }
-      this.proxy.$acceptConfigurationChanged(data, eventData);
-    }));
+    this.toDispose.push(
+      this.preferenceService.onPreferencesChanged((changes) => {
+        const roots = this.workspaceService.tryGetRoots();
+        const data = getPreferences(this.preferenceProviderProvider, roots);
+        const eventData: PreferenceChangeExt[] = [];
+        for (const preferenceName of Object.keys(changes)) {
+          const { newValue } = changes[preferenceName];
+          eventData.push({ preferenceName, newValue });
+        }
+        this.proxy.$acceptConfigurationChanged(data, eventData);
+      }),
+    );
 
     this.initializeConfiguration();
 
-    this.toDispose.push(this.preferenceSchemaProvider.onDidPreferenceSchemaChanged(() => {
-      this.initializeConfiguration();
-    }));
+    this.toDispose.push(
+      this.preferenceSchemaProvider.onDidPreferenceSchemaChanged(() => {
+        this.initializeConfiguration();
+      }),
+    );
   }
 
   dispose() {
@@ -87,11 +104,7 @@ export class MainThreadPreference implements IMainThreadPreference {
     await this.preferenceService.set(key, value, scope, resource);
   }
 
-  async $removeConfigurationOption(
-    target: boolean | ConfigurationTarget | undefined,
-    key: string,
-    resource?: string,
-  ) {
+  async $removeConfigurationOption(target: boolean | ConfigurationTarget | undefined, key: string, resource?: string) {
     const scope = this.parseConfigurationTarget(target);
     await this.preferenceService.set(key, undefined, scope, resource);
   }
@@ -115,5 +128,4 @@ export class MainThreadPreference implements IMainThreadPreference {
         return undefined;
     }
   }
-
 }

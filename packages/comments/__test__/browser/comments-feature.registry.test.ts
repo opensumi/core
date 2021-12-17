@@ -16,13 +16,19 @@ describe('comment service test', () => {
   let commentsFeatureRegistry: ICommentsFeatureRegistry;
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;
-    injector = createBrowserInjector([ CommentsModule ], new Injector([{
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    }, {
-      token: IIconService,
-      useClass: IconService,
-    }]));
+    injector = createBrowserInjector(
+      [CommentsModule],
+      new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IIconService,
+          useClass: IconService,
+        },
+      ]),
+    );
     commentsService = injector.get<ICommentsService>(ICommentsService);
     commentsFeatureRegistry = injector.get<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   });
@@ -63,21 +69,23 @@ describe('comment service test', () => {
 
   it('registerPanelTreeNodeHandler', () => {
     // 先绑定 node 节点处理函数
-    commentsFeatureRegistry.registerPanelTreeNodeHandler((nodes) => {
-      return nodes.map((node) => {
+    commentsFeatureRegistry.registerPanelTreeNodeHandler((nodes) =>
+      nodes.map((node) => {
         node.name = '111';
         return node;
-      });
-    });
+      }),
+    );
     const uri = URI.file('/test');
     commentsService.createThread(uri, positionToRange(1), {
-      comments: [{
-        mode: CommentMode.Editor,
-        author: {
-          name: '蛋总',
+      comments: [
+        {
+          mode: CommentMode.Editor,
+          author: {
+            name: '蛋总',
+          },
+          body: '评论内容1',
         },
-        body: '评论内容1',
-      }],
+      ],
     });
     const nodes = commentsService.commentsTreeNodes;
     // name 不会是 test，而是被 handler 处理过的 111

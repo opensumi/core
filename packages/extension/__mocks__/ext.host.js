@@ -1,4 +1,3 @@
-
 setTimeout(() => {
   console.log('send ready');
   process.send('ready');

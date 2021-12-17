@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -12,10 +12,9 @@ export interface IReference<T> extends IDisposable {
 }
 
 export abstract class ReferenceCollection<T> {
+  private references: { [key: string]: { readonly object: T; counter: number } } = Object.create(null);
 
-  private references: { [key: string]: { readonly object: T; counter: number; } } = Object.create(null);
-
-  constructor() { }
+  constructor() {}
 
   acquire(key: string): IReference<T> {
     let reference = this.references[key];
@@ -42,6 +41,8 @@ export abstract class ReferenceCollection<T> {
 }
 
 export class ImmortalReference<T> implements IReference<T> {
-  constructor(public object: T) { }
-  dispose(): void { /* noop */ }
+  constructor(public object: T) {}
+  dispose(): void {
+    /* noop */
+  }
 }

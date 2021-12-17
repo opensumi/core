@@ -1,10 +1,21 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, IToolbarRegistry, createToolbarActionBtn, ToolbarActionBtnClickEvent } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  IToolbarRegistry,
+  createToolbarActionBtn,
+  ToolbarActionBtnClickEvent,
+} from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 import React from 'react';
 
-import { IToolBarViewService, ToolBarPosition, IToolBarElementHandle, IToolBarAction, IToolBarComponent } from './types';
+import {
+  IToolBarViewService,
+  ToolBarPosition,
+  IToolBarElementHandle,
+  IToolBarAction,
+  IToolBarComponent,
+} from './types';
 
 const locationToString = {
   [ToolBarPosition.LEFT]: 'toolbar-left',
@@ -14,7 +25,6 @@ const locationToString = {
 
 @Injectable()
 export class ToolBarViewService implements IToolBarViewService {
-
   @Autowired(IToolbarRegistry)
   registry: IToolbarRegistry;
 
@@ -30,41 +40,47 @@ export class ToolBarViewService implements IToolBarViewService {
     const id = element.id || 'toolbar-anonymous-element-' + this.anonymousId++;
 
     if (element.type === 'action') {
-      handle.addDispose(this.registry.registerToolbarAction({
-        component: createToolbarActionBtn({
-          title: element.title,
-          iconClass: element.iconClass,
-          id,
-          delegate: ((d) => {
-            d?.onClick((e) => {
-              element.click(e);
-            });
+      handle.addDispose(
+        this.registry.registerToolbarAction({
+          component: createToolbarActionBtn({
+            title: element.title,
+            iconClass: element.iconClass,
+            id,
+            delegate: (d) => {
+              d?.onClick((e) => {
+                element.click(e);
+              });
+            },
           }),
+          id,
+          weight:
+            element.weight === undefined ? 10 - (element.order === undefined ? 10 : element.order) : element.weight,
+          preferredPosition: {
+            location,
+          },
+          description: element.description || element.title,
         }),
-        id,
-        weight: element.weight === undefined ? (10 - (element.order === undefined ? 10 : element.order)) : element.weight,
-        preferredPosition: {
-          location,
-        },
-        description: element.description || element.title,
-      }));
-      handle.addDispose(this.eventBus.on(ToolbarActionBtnClickEvent, (e) => {
-        if (e.payload.id === id) {
-          element.click(e.payload.event);
-        }
-      }));
+      );
+      handle.addDispose(
+        this.eventBus.on(ToolbarActionBtnClickEvent, (e) => {
+          if (e.payload.id === id) {
+            element.click(e.payload.event);
+          }
+        }),
+      );
     } else {
-      handle.addDispose(this.registry.registerToolbarAction({
-        description: element.description || id,
-        component: () => {
-          return <element.component {...element.initialProps} />;
-        },
-        id,
-        preferredPosition: {
-          location,
-        },
-        weight: element.weight === undefined ? (10 - (element.order === undefined ? 10 : element.order)) : element.weight,
-      }));
+      handle.addDispose(
+        this.registry.registerToolbarAction({
+          description: element.description || id,
+          component: () => <element.component {...element.initialProps} />,
+          id,
+          preferredPosition: {
+            location,
+          },
+          weight:
+            element.weight === undefined ? 10 - (element.order === undefined ? 10 : element.order) : element.weight,
+        }),
+      );
     }
 
     return handle;
@@ -87,9 +103,8 @@ export class ToolBarViewService implements IToolBarViewService {
 }
 
 export class ToolBarElementHandle extends Disposable implements IToolBarElementHandle {
-
   @observable
-  public visible: boolean = true;
+  public visible = true;
 
   constructor(public readonly element: IToolBarAction | IToolBarComponent) {
     super();

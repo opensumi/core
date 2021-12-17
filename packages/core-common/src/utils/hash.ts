@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ const enum SHA1Constant {
   UNICODE_REPLACEMENT = 0xfffd,
 }
 
-function leftRotate(value: number, bits: number, totalBits: number = 32): number {
+function leftRotate(value: number, bits: number, totalBits = 32): number {
   // delta + bits = totalBits
   const delta = totalBits - bits;
 
@@ -94,13 +94,13 @@ function leftRotate(value: number, bits: number, totalBits: number = 32): number
   return ((value << bits) | ((mask & value) >>> delta)) >>> 0;
 }
 
-function fill(dest: Uint8Array, index: number = 0, count: number = dest.byteLength, value: number = 0): void {
+function fill(dest: Uint8Array, index = 0, count: number = dest.byteLength, value = 0): void {
   for (let i = 0; i < count; i++) {
     dest[index + i] = value;
   }
 }
 
-function leftPad(value: string, length: number, char: string = '0'): string {
+function leftPad(value: string, length: number, char = '0'): string {
   while (value.length < length) {
     value = char + value;
   }
@@ -109,7 +109,7 @@ function leftPad(value: string, length: number, char: string = '0'): string {
 
 export function toHexString(buffer: ArrayBuffer): string;
 export function toHexString(value: number, bitsize?: number): string;
-export function toHexString(bufferOrValue: ArrayBuffer | number, bitsize: number = 32): string {
+export function toHexString(bufferOrValue: ArrayBuffer | number, bitsize = 32): string {
   if (bufferOrValue instanceof ArrayBuffer) {
     return Array.from(new Uint8Array(bufferOrValue))
       .map((b) => b.toString(16).padStart(2, '0'))
@@ -300,7 +300,8 @@ export class StringSHA1 {
     let d = this._h3;
     let e = this._h4;
 
-    let f: number, k: number;
+    let f: number;
+    let k: number;
     let temp: number;
 
     for (let j = 0; j < 80; j++) {

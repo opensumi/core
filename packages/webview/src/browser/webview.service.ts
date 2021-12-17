@@ -1,19 +1,50 @@
-import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow, IWebviewReviver } from './types';
-import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull, ILogger, addElement, Emitter, StorageProvider, IStorage, STORAGE_SCHEMA } from '@opensumi/ide-core-browser';
+import {
+  IWebviewService,
+  IPlainWebviewConstructionOptions,
+  IPlainWebview,
+  IWebview,
+  IWebviewContentOptions,
+  IWebviewThemeData,
+  IEditorWebviewComponent,
+  EDITOR_WEBVIEW_SCHEME,
+  IEditorWebviewMetaData,
+  IPlainWebviewComponentHandle,
+  IPlainWebviewWindow,
+  IWebviewReviver,
+} from './types';
+import {
+  isElectronRenderer,
+  getDebugLogger,
+  localize,
+  URI,
+  IEventBus,
+  Disposable,
+  MaybeNull,
+  ILogger,
+  addElement,
+  Emitter,
+  StorageProvider,
+  IStorage,
+  STORAGE_SCHEMA,
+} from '@opensumi/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@opensumi/ide-editor';
-import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences, EditorGroupChangeEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorComponentRegistry,
+  EditorComponentRenderMode,
+  EditorPreferences,
+  EditorGroupChangeEvent,
+} from '@opensumi/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 import { ElectronPlainWebviewWindow } from './webview-window';
 
 @Injectable()
 export class WebviewServiceImpl implements IWebviewService {
-
   private webviewIdCount = 0;
 
   private editorWebviewIdCount = 0;
@@ -46,10 +77,12 @@ export class WebviewServiceImpl implements IWebviewService {
 
   async tryReviveWebviewComponent(id: string) {
     if (this._revivers.length > 0) {
-      let targetReviver: {
-        weight: number,
-        reviver: IWebviewReviver;
-      }| undefined;
+      let targetReviver:
+        | {
+            weight: number;
+            reviver: IWebviewReviver;
+          }
+        | undefined;
       for (const reviver of this._revivers) {
         try {
           const weight = await reviver.handles(id);
@@ -80,7 +113,6 @@ export class WebviewServiceImpl implements IWebviewService {
   }
 
   createPlainWebview(options: IPlainWebviewConstructionOptions = {}): IPlainWebview {
-
     if (isElectronRenderer()) {
       if (options.preferredImpl && options.preferredImpl === 'iframe') {
         return new IframePlainWebview();
@@ -88,19 +120,20 @@ export class WebviewServiceImpl implements IWebviewService {
       return new ElectronPlainWebview();
     } else {
       if (options.preferredImpl && options.preferredImpl === 'webview') {
-        getDebugLogger().warn(localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'));
+        getDebugLogger().warn(
+          localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'),
+        );
       }
       return new IframePlainWebview();
     }
-
   }
 
   createWebview(options?: IWebviewContentOptions): IWebview {
     let webview: IWebview;
     if (isElectronRenderer()) {
-      webview = this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
+      webview = this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount++).toString(), options]);
     } else {
-      webview = this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
+      webview = this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount++).toString(), options]);
     }
     this.webviews.set(webview.id, webview);
     webview.onRemove(() => {
@@ -116,7 +149,7 @@ export class WebviewServiceImpl implements IWebviewService {
   private async storeWebviewResource(id: string) {
     return this.storage.then((storage) => {
       if (this.editorWebviewComponents.has(id)) {
-        const res = { ...this.editorWebviewComponents.get(id)!.resource};
+        const res = { ...this.editorWebviewComponents.get(id)!.resource };
         storage.set(id, JSON.stringify(res));
       } else {
         storage.delete(id);
@@ -142,7 +175,10 @@ export class WebviewServiceImpl implements IWebviewService {
     if (this.editorWebviewComponents.has(id)) {
       return this.editorWebviewComponents.get(id) as IEditorWebviewComponent<IWebview>;
     }
-    const component = this.injector.get(EditorWebviewComponent, [id, () => this.createWebview(options)]) as EditorWebviewComponent<IWebview>;
+    const component = this.injector.get(EditorWebviewComponent, [
+      id,
+      () => this.createWebview(options),
+    ]) as EditorWebviewComponent<IWebview>;
     this.editorWebviewComponents.set(id, component);
     component.addDispose({
       dispose: () => {
@@ -155,12 +191,18 @@ export class WebviewServiceImpl implements IWebviewService {
     return component;
   }
 
-  createEditorPlainWebviewComponent(options: IPlainWebviewConstructionOptions = {}, id: string): IEditorWebviewComponent<IPlainWebview> {
+  createEditorPlainWebviewComponent(
+    options: IPlainWebviewConstructionOptions = {},
+    id: string,
+  ): IEditorWebviewComponent<IPlainWebview> {
     id = id || (this.editorWebviewIdCount++).toString();
     if (this.editorWebviewComponents.has(id)) {
       return this.editorWebviewComponents.get(id) as IEditorWebviewComponent<IPlainWebview>;
     }
-    const component = this.injector.get(EditorWebviewComponent, [id, () => this.createPlainWebview(options)]) as EditorWebviewComponent<IPlainWebview>;
+    const component = this.injector.get(EditorWebviewComponent, [
+      id,
+      () => this.createPlainWebview(options),
+    ]) as EditorWebviewComponent<IPlainWebview>;
     this.editorWebviewComponents.set(id, component);
     component.addDispose({
       dispose: () => {
@@ -175,16 +217,19 @@ export class WebviewServiceImpl implements IWebviewService {
     const editorFontWeight = this.editorPreferences['editor.fontFamily'];
     const editorFontSize = this.editorPreferences['editor.fontSize'];
 
-    const exportedColors = getColorRegistry().getColors().reduce((colors, entry) => {
-      const color = theme.getColor(entry.id);
-      if (color) {
-        colors['vscode-' + entry.id.replace('.', '-')] = color.toString();
-      }
-      return colors;
-    }, {} as { [key: string]: string });
+    const exportedColors = getColorRegistry()
+      .getColors()
+      .reduce((colors, entry) => {
+        const color = theme.getColor(entry.id);
+        if (color) {
+          colors['vscode-' + entry.id.replace('.', '-')] = color.toString();
+        }
+        return colors;
+      }, {} as { [key: string]: string });
 
     const styles = {
-      'vscode-font-family': '-apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", ans-serif',
+      'vscode-font-family':
+        '-apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", ans-serif',
       'vscode-font-weight': 'normal',
       'vscode-font-size': '13px',
       'vscode-editor-font-family': editorFontFamily,
@@ -197,7 +242,10 @@ export class WebviewServiceImpl implements IWebviewService {
     return { styles, activeTheme };
   }
 
-  getOrCreatePlainWebviewComponent(id: string, options?: IPlainWebviewConstructionOptions | undefined): IPlainWebviewComponentHandle {
+  getOrCreatePlainWebviewComponent(
+    id: string,
+    options?: IPlainWebviewConstructionOptions | undefined,
+  ): IPlainWebviewComponentHandle {
     if (!this.plainWebviewsComponents.has(id)) {
       const webview = this.createPlainWebview(options);
       const component = this.injector.get(PlainWebviewComponent, [id, webview]);
@@ -219,9 +267,12 @@ export class WebviewServiceImpl implements IWebviewService {
     return this.plainWebviewsComponents.get(id);
   }
 
-  createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow {
+  createWebviewWindow(
+    options?: Electron.BrowserWindowConstructorOptions,
+    env?: { [key: string]: string },
+  ): IPlainWebviewWindow {
     if (isElectronRenderer()) {
-      return this.injector.get(ElectronPlainWebviewWindow, [options,  env]);
+      return this.injector.get(ElectronPlainWebviewWindow, [options, env]);
     }
     throw new Error('not supported!');
   }
@@ -245,9 +296,11 @@ namespace ApiThemeClassName {
   }
 }
 
-@Injectable({multiple: true})
-export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends Disposable implements IEditorWebviewComponent<T> {
-
+@Injectable({ multiple: true })
+export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
+  extends Disposable
+  implements IEditorWebviewComponent<T>
+{
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;
 
@@ -277,17 +330,17 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     this._onDidUpdateResource.fire(this.resource);
   }
 
-  open(options: { groupIndex?: number, relativeGroupIndex?: number}) {
-    return this.workbenchEditorService.open(this.webviewUri, {...options, preview: false});
+  open(options: { groupIndex?: number; relativeGroupIndex?: number }) {
+    return this.workbenchEditorService.open(this.webviewUri, { ...options, preview: false });
   }
 
   close() {
     this.workbenchEditorService.closeAll(this.webviewUri);
   }
 
-  private _title: string = 'Webview';
+  private _title = 'Webview';
 
-  private _icon: string = '';
+  private _icon = '';
 
   get icon() {
     return this._icon;
@@ -338,9 +391,9 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
 
   get editorGroup(): IEditorGroup | undefined {
     const uri = this.webviewUri;
-    return this.workbenchEditorService.editorGroups.find((g) => {
-      return g.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1;
-    });
+    return this.workbenchEditorService.editorGroups.find(
+      (g) => g.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1,
+    );
   }
 
   get group() {
@@ -351,44 +404,55 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     return EDITOR_WEBVIEW_SCHEME + '_' + this.id;
   }
 
-  constructor(public readonly id: string, public webviewFactory: () =>  T) {
+  constructor(public readonly id: string, public webviewFactory: () => T) {
     super();
     const componentId = EDITOR_WEBVIEW_SCHEME + '_' + this.id;
-    this.addDispose(this.editorComponentRegistry.registerEditorComponent<IEditorWebviewMetaData>({
-      scheme: EDITOR_WEBVIEW_SCHEME,
-      uid: componentId,
-      component: EditorWebviewComponentView,
-      renderMode: EditorComponentRenderMode.ONE_PER_WORKBENCH,
-    }));
-    this.addDispose(this.editorComponentRegistry.registerEditorComponentResolver<IEditorWebviewMetaData>(EDITOR_WEBVIEW_SCHEME, (resource, results) => {
-      if (resource.uri.path.toString() === this.id) {
-        results.push({
-          type: 'component',
-          componentId,
-        });
-      }
-    }));
+    this.addDispose(
+      this.editorComponentRegistry.registerEditorComponent<IEditorWebviewMetaData>({
+        scheme: EDITOR_WEBVIEW_SCHEME,
+        uid: componentId,
+        component: EditorWebviewComponentView,
+        renderMode: EditorComponentRenderMode.ONE_PER_WORKBENCH,
+      }),
+    );
+    this.addDispose(
+      this.editorComponentRegistry.registerEditorComponentResolver<IEditorWebviewMetaData>(
+        EDITOR_WEBVIEW_SCHEME,
+        (resource, results) => {
+          if (resource.uri.path.toString() === this.id) {
+            results.push({
+              type: 'component',
+              componentId,
+            });
+          }
+        },
+      ),
+    );
     this.addDispose({
       dispose: () => {
         this.workbenchEditorService.closeAll(this.webviewUri, true);
       },
     });
-    this.addDispose(this.eventBus.on(EditorGroupChangeEvent, (e) => {
-      if (e.payload.newResource?.uri.isEqual(this.webviewUri)) {
-        this._onDidChangeGroupIndex.fire(e.payload.group.index);
-      }
-    }));
+    this.addDispose(
+      this.eventBus.on(EditorGroupChangeEvent, (e) => {
+        if (e.payload.newResource?.uri.isEqual(this.webviewUri)) {
+          this._onDidChangeGroupIndex.fire(e.payload.group.index);
+        }
+      }),
+    );
   }
 
   createWebview(): T {
     this._webview = this.webviewFactory();
     this.addDispose(this._webview!);
     if (typeof (this._webview as IWebview).onDidFocus === 'function') {
-      this.addDispose((this._webview as IWebview).onDidFocus(() => {
-        if (this.editorGroup) {
-          (this.editorGroup as any).gainFocus();
-        }
-      }));
+      this.addDispose(
+        (this._webview as IWebview).onDidFocus(() => {
+          if (this.editorGroup) {
+            (this.editorGroup as any).gainFocus();
+          }
+        }),
+      );
     }
     return this._webview;
   }
@@ -398,15 +462,12 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     this.editorComponentRegistry.clearPerWorkbenchComponentCache(componentId);
     this.webview.remove();
   }
-
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class PlainWebviewComponent extends Disposable implements IPlainWebviewComponentHandle {
-
   constructor(public readonly id: string, public readonly webview) {
     super();
     this.addDispose(this.webview);
   }
-
 }

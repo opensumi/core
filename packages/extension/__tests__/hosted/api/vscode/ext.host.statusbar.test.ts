@@ -35,25 +35,33 @@ describe('vscode MainThreadStatusBar Test', () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    }, {
-      token: WSChannelHandler,
-      useValue: mockService({
-        clientId: uuid(),
-      }),
-    }, {
-      token: IStatusBarService,
-      useClass: StatusBarService,
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    });
+    injector.addProviders(
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManagerClient,
+      },
+      {
+        token: WSChannelHandler,
+        useValue: mockService({
+          clientId: uuid(),
+        }),
+      },
+      {
+        token: IStatusBarService,
+        useClass: StatusBarService,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+    );
     extHost = new ExtHostStatusBar(rpcProtocolExt);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStatusBar, extHost);
 
-    mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStatusBar, injector.get(MainThreadStatusBar, [rpcProtocolMain]));
+    mainThread = rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadStatusBar,
+      injector.get(MainThreadStatusBar, [rpcProtocolMain]),
+    );
   });
 
   afterEach(() => {
@@ -135,7 +143,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][9]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
+      expect($setMessage.mock.calls[0][9]).toStrictEqual({ label: '蛋总', role: 'danzong' });
       done();
     }, 100);
   });
@@ -155,5 +163,4 @@ describe('vscode MainThreadStatusBar Test', () => {
       done();
     }, 100);
   });
-
 });

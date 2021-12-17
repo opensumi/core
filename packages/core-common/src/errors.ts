@@ -1,16 +1,12 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/errors.ts
 
-export interface ErrorListenerCallback {
-  (error: any): void;
-}
+export type ErrorListenerCallback = (error: any) => void;
 
-export interface ErrorListenerUnbind {
-  (): void;
-}
+export type ErrorListenerUnbind = () => void;
 
 // Avoid circular dependency on EventEmitter by implementing a subset of the interface.
 export class ErrorHandler {
@@ -18,7 +14,6 @@ export class ErrorHandler {
   private listeners: ErrorListenerCallback[];
 
   constructor() {
-
     this.listeners = [];
 
     this.unexpectedErrorHandler = function (e: any) {
@@ -102,13 +97,13 @@ export function transformErrorForSerialization(error: Error): SerializedError;
 export function transformErrorForSerialization(error: any): any;
 export function transformErrorForSerialization(error: any): any {
   if (error instanceof Error) {
-    let { name, message } = error;
-    const stack: string = (<any>error).stacktrace || (<any>error).stack;
+    const { name, message } = error;
+    const stack: string = (error as any).stacktrace || (error as any).stack;
     return {
       $isError: true,
       name,
       message,
-      stack
+      stack,
     };
   }
 

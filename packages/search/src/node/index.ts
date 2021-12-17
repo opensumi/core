@@ -5,13 +5,17 @@ import { IContentSearchServer, ContentSearchServerPath } from '../common';
 
 @Injectable()
 export class SearchModule extends NodeModule {
-  providers = [{
-    token: IContentSearchServer,
-    useClass: ContentSearchService,
-  }];
+  providers = [
+    {
+      token: IContentSearchServer,
+      useClass: ContentSearchService,
+    },
+  ];
 
-  backServices = [{
-    servicePath: ContentSearchServerPath,
-    token: IContentSearchServer,
-  }];
+  backServices = [
+    {
+      servicePath: ContentSearchServerPath,
+      token: IContentSearchServer,
+    },
+  ];
 }

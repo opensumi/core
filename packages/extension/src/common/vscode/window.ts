@@ -8,15 +8,31 @@ import { UriComponents, QuickInputButton } from './ext-types';
 import { IExtensionDescription } from './extension';
 
 export interface IMainThreadMessage {
-  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from?: string): Promise<number | undefined>;
+  $showMessage(
+    type: MessageType,
+    message: string,
+    options: vscode.MessageOptions,
+    actions: string[],
+    from?: string,
+  ): Promise<number | undefined>;
 }
 
 export interface IExtHostMessage {
-  showMessage(type: MessageType, message: string, optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem, from?: string, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined>;
+  showMessage(
+    type: MessageType,
+    message: string,
+    optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem,
+    from?: string,
+    ...rest: (string | vscode.MessageItem)[]
+  ): Promise<string | vscode.MessageItem | undefined>;
 }
 
 export interface IMainThreadQuickOpen {
-  $showQuickPick(session: number, items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined>;
+  $showQuickPick(
+    session: number,
+    items: QuickPickItem<number>[],
+    options?: QuickPickOptions,
+  ): Promise<number | undefined>;
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
   $hideQuickinput(): void;
@@ -27,11 +43,30 @@ type VSCodeQuickPickItem = string | vscode.QuickPickItem;
 export interface IExtHostQuickOpen {
   $onDidTriggerButton(handler: number): void;
   $onItemSelected(handler: number): void;
-  showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined>;
-  showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions & { canSelectMany: true; }, token?: CancellationToken): Promise<vscode.QuickPickItem[] | undefined>;
-  showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
-  showQuickPick(itemsOrItemsPromise: VSCodeQuickPickItem[] | Promise<VSCodeQuickPickItem[]>, options?: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<VSCodeQuickPickItem | VSCodeQuickPickItem[] | undefined>;
-  showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token?: CancellationToken): Promise<vscode.WorkspaceFolder | undefined>;
+  showQuickPick(
+    promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>,
+    options?: vscode.QuickPickOptions,
+    token?: CancellationToken,
+  ): Promise<vscode.QuickPickItem | undefined>;
+  showQuickPick(
+    promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>,
+    options?: vscode.QuickPickOptions & { canSelectMany: true },
+    token?: CancellationToken,
+  ): Promise<vscode.QuickPickItem[] | undefined>;
+  showQuickPick(
+    promiseOrItems: string[] | Promise<string[]>,
+    options?: QuickPickOptions,
+    token?: CancellationToken,
+  ): Promise<string | undefined>;
+  showQuickPick(
+    itemsOrItemsPromise: VSCodeQuickPickItem[] | Promise<VSCodeQuickPickItem[]>,
+    options?: vscode.QuickPickOptions,
+    token?: vscode.CancellationToken,
+  ): Promise<VSCodeQuickPickItem | VSCodeQuickPickItem[] | undefined>;
+  showWorkspaceFolderPick(
+    options: vscode.WorkspaceFolderPickOptions,
+    token?: CancellationToken,
+  ): Promise<vscode.WorkspaceFolder | undefined>;
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T>;
   createInputBox(): vscode.InputBox;
   hideQuickPick(): void;
@@ -99,12 +134,7 @@ export interface IMainThreadStatusBar {
 
   $dispose(entryId?: string): void;
 
-  $createStatusBarItem(
-    entryId: string,
-    id: string,
-    alignment: number,
-    priority: number,
-  ): void;
+  $createStatusBarItem(entryId: string, id: string, alignment: number, priority: number): void;
 
   $setMessage(
     entryId: string,
@@ -120,15 +150,17 @@ export interface IMainThreadStatusBar {
     command: string | undefined,
     commandArgs: any[] | undefined,
   ): Promise<void>;
-
 }
 
 export interface IExtHostStatusBar {
-
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable;
 
-  createStatusBarItem(extension: IExtensionDescription, id?: string, alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem;
-
+  createStatusBarItem(
+    extension: IExtensionDescription,
+    id?: string,
+    alignment?: types.StatusBarAlignment,
+    priority?: number,
+  ): vscode.StatusBarItem;
 }
 
 export interface IMainThreadOutput {
@@ -137,22 +169,18 @@ export interface IMainThreadOutput {
   $dispose(channelName: string): PromiseLike<void>;
   $reveal(channelName: string, preserveFocus: boolean): PromiseLike<void>;
   $close(channelName: string): PromiseLike<void>;
-
 }
 
 export interface IExtHostOutput {
-
   createOutputChannel(name: string): types.OutputChannel;
 }
 
 export interface IExtHostWindowState {
-
   $setWindowState(focused: boolean);
 
   readonly state: types.WindowState;
 
   onDidChangeWindowState: Event<types.WindowState>;
-
 }
 
 export interface IExtHostWindow {
@@ -169,7 +197,7 @@ export interface IExtDialogOptions {
   defaultUri?: UriComponents;
   // TODO: 待实现 filters 能力
   filters?: {
-    [name: string]: string[],
+    [name: string]: string[];
   };
 }
 

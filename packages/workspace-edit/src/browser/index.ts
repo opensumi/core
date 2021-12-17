@@ -1,7 +1,22 @@
 import { Provider, Injectable, Autowired } from '@opensumi/di';
-import type { IBulkEditOptions, ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type {
+  IBulkEditOptions,
+  ResourceEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
-import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  Domain,
+  MonacoContribution,
+  ServiceNames,
+  ILogger,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+  localize,
+  CommandContribution,
+  getIcon,
+  MonacoOverrideServiceRegistry,
+} from '@opensumi/ide-core-browser';
 import { CommandRegistry } from '@opensumi/ide-core-common';
 
 import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '../common';
@@ -38,7 +53,6 @@ export class WorkspaceEditModule extends BrowserModule {
 
 @Domain(MonacoContribution, TabBarToolbarContribution, CommandContribution)
 export class WorkspaceEditContribution implements MonacoContribution, TabBarToolbarContribution, CommandContribution {
-
   @Autowired(IBulkEditServiceShape)
   protected readonly bulkEditService: IBulkEditServiceShape;
 
@@ -85,23 +99,28 @@ export class WorkspaceEditContribution implements MonacoContribution, TabBarTool
   }
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: ClearEditsId,
-      iconClass: getIcon('clear'),
-    }, {
-      execute: () => {
-        this.refactorPreviewService.clearAllEdits();
+    registry.registerCommand(
+      {
+        id: ClearEditsId,
+        iconClass: getIcon('clear'),
       },
-    });
+      {
+        execute: () => {
+          this.refactorPreviewService.clearAllEdits();
+        },
+      },
+    );
 
-    registry.registerCommand({
-      id: ApplyEditsId,
-      iconClass: getIcon('check'),
-    }, {
-      execute: () => {
-        this.refactorPreviewService.applyEdits();
+    registry.registerCommand(
+      {
+        id: ApplyEditsId,
+        iconClass: getIcon('check'),
       },
-    });
+      {
+        execute: () => {
+          this.refactorPreviewService.applyEdits();
+        },
+      },
+    );
   }
-
 }

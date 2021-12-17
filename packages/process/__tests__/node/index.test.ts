@@ -24,7 +24,7 @@ describe('Process test', () => {
   it('test start event', async () => {
     await new Promise<IProcessStartEvent>(async (resolve, reject) => {
       const args = ['-e', 'process.exit(3)'];
-      const rawProcess = processFactory.create({ command: process.execPath, 'args': args });
+      const rawProcess = processFactory.create({ command: process.execPath, args });
       rawProcess.onStart(() => resolve(true));
       rawProcess.onError(reject);
       rawProcess.onExit(reject);
@@ -33,7 +33,7 @@ describe('Process test', () => {
 
   it('test exit', async () => {
     const args = ['--version'];
-    const rawProcess = processFactory.create({ command: process.execPath, 'args': args });
+    const rawProcess = processFactory.create({ command: process.execPath, args });
     const p = new Promise<number>((resolve, reject) => {
       rawProcess.onError((error) => {
         reject();
@@ -56,7 +56,7 @@ describe('Process test', () => {
     const output = await new Promise<string>(async (resolve, reject) => {
       const args = ['-e', 'console.log("text to stdout")'];
       const outStream = new stream.PassThrough();
-      const rawProcess = processFactory.create({ command: process.execPath, 'args': args });
+      const rawProcess = processFactory.create({ command: process.execPath, args });
       rawProcess.onError(reject);
 
       rawProcess.outputStream.pipe(outStream);
@@ -77,7 +77,7 @@ describe('Process test', () => {
     const output = await new Promise<string>(async (resolve, reject) => {
       const args = ['-e', 'console.error("text to stderr")'];
       const outStream = new stream.PassThrough();
-      const rawProcess = processFactory.create({ command: process.execPath, 'args': args });
+      const rawProcess = processFactory.create({ command: process.execPath, args });
       rawProcess.onError(reject);
 
       rawProcess.errorStream.pipe(outStream);
@@ -134,7 +134,6 @@ describe('Process test', () => {
 
     return expect((await p).indexOf('Error') === 0).toBe(true);
   });
-
 });
 
 describe('ProcessManage test', () => {

@@ -8,7 +8,10 @@ import { ICodeService } from '../../../services/code-service/base';
 import { fromSCMUri } from '../../../utils/scm-uri';
 
 @Injectable()
-export class GitDocContentProvider extends AbstractSCMDocContentProvider implements IEditorDocumentModelContentProvider {
+export class GitDocContentProvider
+  extends AbstractSCMDocContentProvider
+  implements IEditorDocumentModelContentProvider
+{
   scheme = 'git';
 
   @Autowired(ICodeService)

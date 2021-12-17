@@ -11,24 +11,25 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '../types';
 
 @Injectable()
 export class DiffResourceProvider extends WithEventBus implements IResourceProvider {
-
   @Autowired()
   labelService: LabelService;
 
   @Autowired(ResourceService)
   resourceService: ResourceService;
 
-  scheme: string = 'diff';
+  scheme = 'diff';
 
   private modifiedToResource = new Map<string, URI>();
 
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
     if (e.payload.uri && this.modifiedToResource.has(e.payload.uri.toString())) {
-      this.eventBus.fire(new ResourceDecorationChangeEvent({
-        uri: this.modifiedToResource.get(e.payload.uri.toString())!,
-        decoration: e.payload.decoration,
-      }));
+      this.eventBus.fire(
+        new ResourceDecorationChangeEvent({
+          uri: this.modifiedToResource.get(e.payload.uri.toString())!,
+          decoration: e.payload.decoration,
+        }),
+      );
     }
   }
 
@@ -58,12 +59,10 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
     }
     return true;
   }
-
 }
 
 @Domain(BrowserEditorContribution)
 export class DefaultDiffEditorContribution implements BrowserEditorContribution {
-
   @Autowired()
   diffResourceProvider: DiffResourceProvider;
 
@@ -78,5 +77,4 @@ export class DefaultDiffEditorContribution implements BrowserEditorContribution 
       });
     });
   }
-
 }

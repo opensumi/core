@@ -4,7 +4,17 @@ import { observer } from 'mobx-react-lite';
 import styles from './debug-console.module.less';
 import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode, TreeNodeEvent } from '@opensumi/ide-components';
+import {
+  RecycleTree,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  INodeRendererWrapProps,
+  ClasslistComposite,
+  INodeRendererProps,
+  CompositeTreeNode,
+  TreeNode,
+  TreeNodeEvent,
+} from '@opensumi/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 import { Loading } from '@opensumi/ide-components';
@@ -36,28 +46,38 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
-    disposer.addDispose(consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
-      if (model) {
-        await model.treeModel!.root.ensureLoaded();
-        disposer.addDispose(model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
-          consoleModel.treeHandle.layoutItem();
-        }));
-      }
-      setModel(model);
-    }));
+    disposer.addDispose(
+      consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
+        if (model) {
+          await model.treeModel!.root.ensureLoaded();
+          disposer.addDispose(
+            model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
+              consoleModel.treeHandle.layoutItem();
+            }),
+          );
+        }
+        setModel(model);
+      }),
+    );
 
-    disposer.addDispose(debugConsoleFilterService.onDidValueChange((value: string) => {
-      setFilterValue(value);
-    }));
+    disposer.addDispose(
+      debugConsoleFilterService.onDidValueChange((value: string) => {
+        setFilterValue(value);
+      }),
+    );
 
-    disposer.addDispose(debugConsoleService.onInputHeightChange((height: number) => {
-      setConsoleHeight(height);
-    }));
+    disposer.addDispose(
+      debugConsoleService.onInputHeightChange((height: number) => {
+        setConsoleHeight(height);
+      }),
+    );
 
-    disposer.addDispose(preferenceService.onSpecificPreferenceChange('debug.console.wordWrap', (change: PreferenceChange) => {
-      const { newValue } = change;
-      setIsWordWrap(newValue);
-    }));
+    disposer.addDispose(
+      preferenceService.onSpecificPreferenceChange('debug.console.wordWrap', (change: PreferenceChange) => {
+        const { newValue } = change;
+        setIsWordWrap(newValue);
+      }),
+    );
 
     setIsWordWrap(!!preferenceService.get('debug.console.wordWrap', isWordWrap));
 
@@ -86,9 +106,11 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
 
   React.useEffect(() => {
     if (model && isWordWrap) {
-      disposer.addDispose(model.treeModel.state.onChangeScrollOffset(() => {
-        consoleModel.treeHandle.layoutItem();
-      }));
+      disposer.addDispose(
+        model.treeModel.state.onChangeScrollOffset(() => {
+          consoleModel.treeHandle.layoutItem();
+        }),
+      );
     }
   }, [model, isWordWrap]);
 
@@ -139,76 +161,76 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     enactiveNodeDecoration();
   };
 
-  const filterMode = (): CoreConfiguration['debug.console.filter.mode'] => {
-    return 'filter';
-  };
+  const filterMode = (): CoreConfiguration['debug.console.filter.mode'] => 'filter';
 
-  const fuzzyOptions = () => {
-    return {
-      pre: '<match>',
-      post: '</match>',
-      extract: (node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer) => {
-        return node.description ? node.description : node.name;
-      },
-    };
-  };
+  const fuzzyOptions = () => ({
+    pre: '<match>',
+    post: '</match>',
+    extract: (node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer) =>
+      node.description ? node.description : node.name,
+  });
 
-  const renderOutputNode = React.useCallback((props: INodeRendererWrapProps) => {
-    const decorations = consoleModel.decorations.getDecorations(props.item as any);
-    return <DebugConsoleRenderedNode
-      item={props.item}
-      itemType={props.itemType}
-      decorations={decorations}
-      filterValue={filterValue}
-      filterMode={filterMode()}
-      onClick={handleTwistierClick}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handlerContextMenu}
-      defaultLeftPadding={14}
-      isWordWrap={isWordWrap}
-      leftPadding={8}
-    />;
-  }, [model, filterValue, isWordWrap]);
+  const renderOutputNode = React.useCallback(
+    (props: INodeRendererWrapProps) => {
+      const decorations = consoleModel.decorations.getDecorations(props.item as any);
+      return (
+        <DebugConsoleRenderedNode
+          item={props.item}
+          itemType={props.itemType}
+          decorations={decorations}
+          filterValue={filterValue}
+          filterMode={filterMode()}
+          onClick={handleTwistierClick}
+          onTwistierClick={handleTwistierClick}
+          onContextMenu={handlerContextMenu}
+          defaultLeftPadding={14}
+          isWordWrap={isWordWrap}
+          leftPadding={8}
+        />
+      );
+    },
+    [model, filterValue, isWordWrap],
+  );
 
   const renderOutputContent = () => {
     if (!model) {
       return null;
     }
-    return <RecycleTree
+    return (
+      <RecycleTree
         height={Math.max(height - consoleHeight, 26)}
         width={width}
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
         overScanCount={10}
         filter={filterMode() === 'filter' ? filterValue : ''}
-        filterProvider={{ fuzzyOptions, filterAlways: true}}
+        filterProvider={{ fuzzyOptions, filterAlways: true }}
         model={model!.treeModel}
-        overflow={ 'auto' }
+        overflow={'auto'}
         supportDynamicHeights={isWordWrap}
       >
         {renderOutputNode}
-    </RecycleTree>;
+      </RecycleTree>
+    );
   };
 
-  return <div
-    className={styles.debug_console}
-    onContextMenu={handleOuterContextMenu}
-    onClick={handleOuterClick}
-  >
-    <div
-      className={styles.debug_console_output}
-      tabIndex={-1}
-      onBlur={handleOuterBlur}
-      ref={wrapperRef}
-      data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
-    >
-      {renderOutputContent()}
+  return (
+    <div className={styles.debug_console} onContextMenu={handleOuterContextMenu} onClick={handleOuterClick}>
+      <div
+        className={styles.debug_console_output}
+        tabIndex={-1}
+        onBlur={handleOuterBlur}
+        ref={wrapperRef}
+        data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
+      >
+        {renderOutputContent()}
+      </div>
+      <div className={styles.variable_repl_bar} style={{ maxHeight: height - 26 + 'px' }}>
+        <div className={styles.variable_repl_bar_icon}></div>
+        <div className={styles.variable_repl_editor} ref={debugInputRef}></div>
+      </div>
     </div>
-    <div className={styles.variable_repl_bar} style={{ maxHeight: height - 26 + 'px' }}>
-      <div className={styles.variable_repl_bar_icon}></div>
-      <div className={styles.variable_repl_editor} ref={debugInputRef}></div>
-    </div>
-  </div>;
+  );
 });
 
 export interface IDebugConsoleNodeProps {
@@ -220,8 +242,16 @@ export interface IDebugConsoleNodeProps {
   decorations?: ClasslistComposite;
   isWordWrap?: boolean;
   onClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
-  onTwistierClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
+  onTwistierClick: (
+    ev: React.MouseEvent,
+    item: AnsiConsoleNode | DebugConsoleNode | TreeNode,
+    type: TreeNodeType,
+  ) => void;
+  onContextMenu?: (
+    ev: React.MouseEvent,
+    item: AnsiConsoleNode | DebugConsoleNode | TreeNode,
+    type: TreeNodeType,
+  ) => void;
 }
 
 export type IDebugConsoleNodeRenderedProps = IDebugConsoleNodeProps & INodeRendererProps;
@@ -239,13 +269,15 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   isWordWrap,
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
-
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
   const [computedStyle, setComputedStyle] = React.useState<string>();
 
   React.useEffect(() => {
-    const computed = window.getComputedStyle(AnsiConsoleNode.is(item) ? item.el : linkDetector.linkify((item as DebugConsoleNode).description), null);
+    const computed = window.getComputedStyle(
+      AnsiConsoleNode.is(item) ? item.el : linkDetector.linkify((item as DebugConsoleNode).description),
+      null,
+    );
     const fontStyle = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize}/${computed.lineHeight} ${computed.fontFamily}`;
     setComputedStyle(fontStyle);
   }, [item]);
@@ -267,12 +299,13 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     if (AnsiConsoleNode.is(item)) {
       return '';
     }
-    return (DebugConsoleNode.is(item) ? '' : (item as any).name) + (item.description && !DebugConsoleNode.is(item) ? ': ' : '');
+    return (
+      (DebugConsoleNode.is(item) ? '' : (item as any).name) +
+      (item.description && !DebugConsoleNode.is(item) ? ': ' : '')
+    );
   };
 
-  const getTextWidth = (char: string, font: string): number => {
-    return CharWidthReader.getInstance().getCharWidth(char, font);
-  };
+  const getTextWidth = (char: string, font: string): number => CharWidthReader.getInstance().getCharWidth(char, font);
 
   const renderSelectionFilter = React.useCallback(() => {
     if (!computedStyle) {
@@ -283,19 +316,22 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     const matchers = debugConsoleFilterService.findMatches(desc || '');
     const toNumFixed = (n: number) => Number(n.toFixed(4));
 
-    const calcWidth = (index: number, count: number) => {
-      return Array.from({length: count}, (_, i) => i).reduce((pre: number, cur: number) => pre + toNumFixed(getTextWidth(desc.charAt(index + cur), computedStyle)), 0);
-    };
+    const calcWidth = (index: number, count: number) =>
+      Array.from({ length: count }, (_, i) => i).reduce(
+        (pre: number, cur: number) => pre + toNumFixed(getTextWidth(desc.charAt(index + cur), computedStyle)),
+        0,
+      );
 
     // 在每次计算 left 的时候临时存储上一次的结果（这在每次计算大量日志内容的时候很有用）
-    const cacheLeftMap: Map<number, { startIndex: number, left: number }> = new Map();
+    const cacheLeftMap: Map<number, { startIndex: number; left: number }> = new Map();
 
     const calcLeft = (startIndex: number, preIndex: number) => {
       if (startIndex > 0) {
-        const excute = (len: number, start: number, initial: number) => {
-          return Array.from({length: len - start}, (_, i) => start + i)
-          .reduce((pre: number, cur: number) => toNumFixed(pre + getTextWidth(desc.charAt(cur), computedStyle)), initial);
-        };
+        const excute = (len: number, start: number, initial: number) =>
+          Array.from({ length: len - start }, (_, i) => start + i).reduce(
+            (pre: number, cur: number) => toNumFixed(pre + getTextWidth(desc.charAt(cur), computedStyle)),
+            initial,
+          );
 
         let left: number;
         if (preIndex !== 0 && cacheLeftMap.has(matchers[preIndex].startIndex)) {
@@ -310,14 +346,12 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       return 0;
     };
 
-    const matStyles: React.CSSProperties[] = matchers.map((m, i) => {
-      return {
-        height: 16,
-        top: 3,
-        width: calcWidth(m.startIndex, m.count),
-        left: calcLeft(m.startIndex, Math.max(0, i - 1)),
-      };
-    });
+    const matStyles: React.CSSProperties[] = matchers.map((m, i) => ({
+      height: 16,
+      top: 3,
+      width: calcWidth(m.startIndex, m.count),
+      left: calcLeft(m.startIndex, Math.max(0, i - 1)),
+    }));
 
     return matStyles.map((s) => <div key={s.left} className={styles.block} style={s}></div>);
   }, [filterValue, computedStyle]);
@@ -329,13 +363,18 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     if (node instanceof DebugConsoleNode && node.variablesReference === 0) {
       return null;
     }
-    return <div
-      className={cls(styles.debug_console_node_segment, !DebugConsoleNode.is(node) && styles.debug_console_node_display_name, styles.debug_console_variable, (item as DebugConsoleNode).description ? styles.name : styles.info)}
-    >
-      {
-        <TreeWithLinkWrapper html={ linkDetector.linkify(acquireVariableName())}></TreeWithLinkWrapper>
-      }
-    </div>;
+    return (
+      <div
+        className={cls(
+          styles.debug_console_node_segment,
+          !DebugConsoleNode.is(node) && styles.debug_console_node_display_name,
+          styles.debug_console_variable,
+          (item as DebugConsoleNode).description ? styles.name : styles.info,
+        )}
+      >
+        {<TreeWithLinkWrapper html={linkDetector.linkify(acquireVariableName())}></TreeWithLinkWrapper>}
+      </div>
+    );
   };
 
   const renderDescription = (node: DebugConsoleNode | AnsiConsoleNode) => {
@@ -344,11 +383,11 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     const description = (node as DebugConsoleNode).description || '';
     const addonClass = [styles.debug_console_variable];
     if (AnsiConsoleNode.is(node)) {
-      return <div
-       className={cls(styles.debug_console_node_segment, styles.debug_console_node_display_name)}
-      >
-       {(node as AnsiConsoleNode).template()}
-      </div>;
+      return (
+        <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_display_name)}>
+          {(node as AnsiConsoleNode).template()}
+        </div>
+      );
     }
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);
@@ -359,26 +398,28 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     } else if (stringRegex.test(description)) {
       addonClass.push(styles.string);
     }
-    return <div className={cls(styles.debug_console_node_segment_grow, styles.debug_console_node_description, ...addonClass)}>
-      <TreeWithLinkWrapper html={ linkDetector.linkify(description) }></TreeWithLinkWrapper>
-    </div>;
+    return (
+      <div
+        className={cls(styles.debug_console_node_segment_grow, styles.debug_console_node_description, ...addonClass)}
+      >
+        <TreeWithLinkWrapper html={linkDetector.linkify(description)}></TreeWithLinkWrapper>
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_tail)}>
-      {renderBadge()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_tail)}>{renderBadge()}</div>
+  );
 
   const renderBadge = () => {
     if (AnsiConsoleNode.is(item)) {
-      return <div className={styles.debug_console_node_status} title={item.source?.path}>
-        {item.source?.name ? `${item.source?.name}:${item.line}` : ''}
-      </div>;
+      return (
+        <div className={styles.debug_console_node_status} title={item.source?.path}>
+          {item.source?.name ? `${item.source?.name}:${item.line}` : ''}
+        </div>
+      );
     }
-    return <div className={styles.debug_console_node_status}>
-      {item.badge}
-    </div>;
+    return <div className={styles.debug_console_node_status}>{item.badge}</div>;
   };
 
   const getItemTooltip = () => {
@@ -391,24 +432,24 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       clickHandler(ev, node, itemType);
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
-      return <div className={cls(styles.debug_console_node_segment, styles.expansion_toggle)}>
-        <Loading />
-      </div>;
+      return (
+        <div className={cls(styles.debug_console_node_segment, styles.expansion_toggle)}>
+          <Loading />
+        </div>
+      );
     }
     if (node instanceof DebugConsoleNode && (node as DebugConsoleNode).variablesReference === 0) {
       return null;
     }
 
-    return <div
-      onClick={handleTwiceClick}
-      className={cls(
-        styles.debug_console_node_segment,
-        styles.expansion_toggle,
-        getIcon('right'),
-        { [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded },
-      )}
-    />;
-
+    return (
+      <div
+        onClick={handleTwiceClick}
+        className={cls(styles.debug_console_node_segment, styles.expansion_toggle, getIcon('right'), {
+          [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded,
+        })}
+      />
+    );
   };
 
   const renderTwice = (item) => {
@@ -423,10 +464,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
-        styles.debug_console_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(styles.debug_console_node, decorations ? decorations.classlist : null)}
       style={{
         paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
       }}
@@ -446,9 +484,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         </div>
         {renderStatusTail()}
       </div>
-      <div className={styles.debug_console_selection}>
-        { filterMode === 'matcher' && renderSelectionFilter()}
-      </div>
+      <div className={styles.debug_console_selection}>{filterMode === 'matcher' && renderSelectionFilter()}</div>
     </div>
   );
 };

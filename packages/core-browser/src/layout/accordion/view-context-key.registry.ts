@@ -30,5 +30,4 @@ export class ViewContextKeyRegistry {
       callback(this.getContextKeyService(viewId)!);
     }
   }
-
 }

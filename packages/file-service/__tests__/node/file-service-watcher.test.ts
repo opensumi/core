@@ -67,7 +67,9 @@ describe('nsfw-filesystem-watcher', () => {
     await sleep(sleepTime);
 
     fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
-    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual('baz');
+    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
+      'baz',
+    );
     await sleep(sleepTime);
     expect(expectedUris).toEqual([...actualUris]);
   });
@@ -98,12 +100,13 @@ describe('nsfw-filesystem-watcher', () => {
     await sleep(sleepTime);
 
     fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
-    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual('baz');
+    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
+      'baz',
+    );
     await sleep(sleepTime);
 
     expect(actualUris.size).toEqual(0);
   });
-
 });
 
 describe('测试重命名、移动、新建相关', () => {
@@ -146,13 +149,9 @@ describe('测试重命名、移动、新建相关', () => {
 
     watcherServer.setClient(watcherClient);
 
-    const expectedAddUris = [
-      root.resolve('for_rename_renamed').toString(),
-    ];
+    const expectedAddUris = [root.resolve('for_rename_renamed').toString()];
 
-    const expectedDeleteUris = [
-      root.resolve('for_rename').toString(),
-    ];
+    const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
     fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
     await sleep(sleepTime);
@@ -180,13 +179,9 @@ describe('测试重命名、移动、新建相关', () => {
 
     watcherServer.setClient(watcherClient);
 
-    const expectedAddUris = [
-      root.resolve('for_rename_folder').resolve('for_rename').toString(),
-    ];
+    const expectedAddUris = [root.resolve('for_rename_folder').resolve('for_rename').toString()];
 
-    const expectedDeleteUris = [
-      root.resolve('for_rename').toString(),
-    ];
+    const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
     await new Promise<void>((resolve) => {
       mv(
@@ -223,13 +218,9 @@ describe('测试重命名、移动、新建相关', () => {
 
     watcherServer.setClient(watcherClient);
 
-    const expectedAddUris = [
-      root.resolve('for_rename_1').toString(),
-    ];
+    const expectedAddUris = [root.resolve('for_rename_1').toString()];
 
-    const expectedDeleteUris = [
-      root.resolve('for_rename').toString(),
-    ];
+    const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
     await new Promise<void>((resolve) => {
       mv(
@@ -267,9 +258,7 @@ describe('测试重命名、移动、新建相关', () => {
 
     watcherServer.setClient(watcherClient);
 
-    const expectedAddUris = [
-      root.resolve('中文.md').toString(),
-    ];
+    const expectedAddUris = [root.resolve('中文.md').toString()];
 
     const expectedDeleteUris = [];
 
@@ -284,7 +273,6 @@ describe('测试重命名、移动、新建相关', () => {
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
-
 });
 
 // tslint:disable-next-line:no-any

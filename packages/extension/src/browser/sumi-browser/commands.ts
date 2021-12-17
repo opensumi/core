@@ -8,7 +8,6 @@ import { ExtHostAPIIdentifier } from '../../common/vscode';
 
 @Injectable()
 export class KaitianBrowserCommand {
-
   @Autowired(ICommandServiceToken)
   private readonly monacoCommandService: IMonacoCommandService;
 

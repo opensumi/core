@@ -1,22 +1,22 @@
-// tslint:disable
 import { URI } from '@opensumi/ide-core-common';
+import { FileChangeType, FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
 import {
-  FileChangeType,
-  FileType,
-  FileStat,
-} from '@opensumi/ide-file-service/lib/common';
-import { convertToVSCFileStat, ExtHostFileSystem } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
+  convertToVSCFileStat,
+  ExtHostFileSystem,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
 
 describe('convertToVSCFileStat', () => {
   it('Should return normal conversion to VSCode format results.', () => {
-    expect(convertToVSCFileStat({
-      uri: 'uri',
-      lastModification: 0,
-      createTime: 1,
-      size: 100,
-      isDirectory: false,
-      type: 1,
-    })).toEqual({
+    expect(
+      convertToVSCFileStat({
+        uri: 'uri',
+        lastModification: 0,
+        createTime: 1,
+        size: 100,
+        isDirectory: false,
+        type: 1,
+      }),
+    ).toEqual({
       type: 1,
       ctime: 1,
       size: 100,
@@ -55,60 +55,65 @@ describe('VSCFileSystem', () => {
 describe('FileSystemWatcher', () => {
   const mockId = 100;
   const calledMap: Map<string, any[]> = new Map();
-  const mocExtHostFs = new Proxy({
-    onDidChangeCallback: (args: any) => {},
-    onDidChange(onDidChangeCallback) {
-      this.onDidChangeCallback = onDidChangeCallback;
-      return {
-        dispose() {},
-      };
+  const mocExtHostFs = new Proxy(
+    {
+      onDidChangeCallback: (args: any) => {},
+      onDidChange(onDidChangeCallback) {
+        this.onDidChangeCallback = onDidChangeCallback;
+        return {
+          dispose() {},
+        };
+      },
     },
-  }, {
-    get: (target, propKey, receiver) => {
+    {
+      get: (target, propKey, receiver) => {
+        if (propKey === 'onDidChangeCallback' || propKey === 'onDidChange') {
+          return target[propKey];
+        }
 
-      if (propKey === 'onDidChangeCallback' || propKey === 'onDidChange') {
-        return target[propKey];
-      }
+        if (propKey === 'subscribeWatcher' || propKey === 'unsubscribeWatcher') {
+          return (...args) => {
+            calledMap.set(String(propKey), args);
 
-      if (propKey === 'subscribeWatcher' || propKey === 'unsubscribeWatcher') {
+            return {
+              then(callback) {
+                callback && callback(mockId);
+              },
+            };
+          };
+        }
+
         return (...args) => {
           calledMap.set(String(propKey), args);
-
-          return {
-            then(callback) { callback && callback(mockId); },
-          };
         };
-      }
-
-      return (...args) => {
-        calledMap.set(String(propKey), args);
-      };
+      },
     },
-  });
+  );
 
   it.skip('Addition, deletion and modification events should be normal.', () => {
     const uri = URI.file('/root/test.txt');
   });
 
-  it.skip('Dispose should receive id.', () => {
-  });
-
+  it.skip('Dispose should receive id.', () => {});
 });
 
 describe('ExtHostFileSystem', () => {
   const calledMap: Map<string, any[]> = new Map();
-  const mockId: number = 100;
+  const mockId = 100;
   const uri = URI.file('/root/test/');
-  const mockOptions: any = { mockOptions: 'mockOptions'};
+  const mockOptions: any = { mockOptions: 'mockOptions' };
   const mockRpcProtocol = {
     getProxy() {
-      return new Proxy({}, {
-        get: (target, propKey, receiver) => {
-          return (...args) => {
-            calledMap.set(String(propKey), args);
-          };
+      return new Proxy(
+        {},
+        {
+          get:
+            (target, propKey, receiver) =>
+            (...args) => {
+              calledMap.set(String(propKey), args);
+            },
         },
-      });
+      );
     },
   };
   const mockFsProvider: any = {
@@ -123,18 +128,18 @@ describe('ExtHostFileSystem', () => {
     readDirectory() {
       return [['test.txt', FileType.File]];
     },
-    onDidChangeFile: () => {
-      return { dispose() {} };
-    },
+    onDidChangeFile: () => ({ dispose() {} }),
   };
-  const extHostFs = new ExtHostFileSystem(mockRpcProtocol as any, {
-    $acceptProviderInfos: jest.fn((scheme: string, capabilities: number | null) => {}),
-  } as any);
+  const extHostFs = new ExtHostFileSystem(
+    mockRpcProtocol as any,
+    {
+      $acceptProviderInfos: jest.fn((scheme: string, capabilities: number | null) => {}),
+    } as any,
+  );
 
   it.skip('WatchEmitter should send and receive messages normally.', () => {
     // const uri = URI.file('/root/test.txt');
     // let changeEvent;
-
     // expect(changeEvent).toEqual({
     //   id: mockId,
     //   event: {
@@ -147,7 +152,6 @@ describe('ExtHostFileSystem', () => {
   it.skip('Should normally call the proxy function and pass parameters.', () => {
     // extHostFs.subscribeWatcher(mockOptions);
     // extHostFs.unsubscribeWatcher(mockId);
-
     // expect(calledMap.get('$subscribeWatcher')![0]).toEqual(mockOptions);
     // expect(calledMap.get('$unsubscribeWatcher')![0]).toEqual(mockId);
   });
@@ -158,11 +162,8 @@ describe('ExtHostFileSystem', () => {
     // expect(await extHostFs.$haveProvider('testIt')).toEqual(true);
   });
 
-  it.skip ('getStat needs to convert VSCode format stat to kt format.', async () => {
-    extHostFs.registerFileSystemProvider(
-      'testStat',
-      mockFsProvider,
-    );
+  it.skip('getStat needs to convert VSCode format stat to kt format.', async () => {
+    extHostFs.registerFileSystemProvider('testStat', mockFsProvider);
     const expected: FileStat = {
       uri: uri.toString(),
       lastModification: 1,
@@ -170,15 +171,17 @@ describe('ExtHostFileSystem', () => {
       isDirectory: true,
       isSymbolicLink: false,
       size: 2,
-      children: [{
-        uri: URI.file('/root/test/test.txt').toString(),
-        lastModification: 1,
-        createTime: 0,
-        isDirectory: true,
-        isSymbolicLink: false,
-        size: 2,
-        children: [],
-      }],
+      children: [
+        {
+          uri: URI.file('/root/test/test.txt').toString(),
+          lastModification: 1,
+          createTime: 0,
+          isDirectory: true,
+          isSymbolicLink: false,
+          size: 2,
+          children: [],
+        },
+      ],
     };
     // expect(await extHostFs.$runProviderMethod('testStat', 'stat', [uri.codeUri])).toEqual(expected);
   });

@@ -9,9 +9,7 @@ import { OutlineModelService } from './services/outline-model.service';
 import { OUTLINE_TREE_NODE_HEIGHT, OutlineNode } from './outline-node';
 import { OutlineTreeModel } from './services/outline-model';
 
-export const OutlinePanel = ({
-  viewState,
-}: React.PropsWithChildren<{viewState: ViewState}>) => {
+export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [model, setModel] = React.useState<OutlineTreeModel | undefined>();
 
   const { width, height } = viewState;
@@ -29,7 +27,11 @@ export const OutlinePanel = ({
     });
   };
 
-  const handleItemClicked = (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType) => {
+  const handleItemClicked = (
+    ev: React.MouseEvent,
+    item: OutlineTreeNode | OutlineCompositeTreeNode,
+    type: TreeNodeType,
+  ) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -40,15 +42,19 @@ export const OutlinePanel = ({
     handleItemClick(item, type);
   };
 
-  const handleTwistierClicked = (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType) => {
-      // 阻止点击事件冒泡
-      ev.stopPropagation();
+  const handleTwistierClicked = (
+    ev: React.MouseEvent,
+    item: OutlineTreeNode | OutlineCompositeTreeNode,
+    type: TreeNodeType,
+  ) => {
+    // 阻止点击事件冒泡
+    ev.stopPropagation();
 
-      const { toggleDirectory } = outlineModelService;
-      if (!item) {
-        return;
-      }
-      toggleDirectory(item as OutlineCompositeTreeNode);
+    const { toggleDirectory } = outlineModelService;
+    if (!item) {
+      return;
+    }
+    toggleDirectory(item as OutlineCompositeTreeNode);
   };
 
   const handleOuterClick = (ev: React.MouseEvent) => {
@@ -78,43 +84,45 @@ export const OutlinePanel = ({
     };
   }, [wrapperRef.current]);
 
-  const renderTreeNode = React.useCallback((props: INodeRendererWrapProps) => <OutlineNode
-    item={props.item}
-    itemType={props.itemType}
-    decorationService={decorationService}
-    commandService={commandService}
-    decorations={outlineModelService.decorations.getDecorations(props.item as any)}
-    onClick={handleItemClicked}
-    onTwistierClick={handleTwistierClicked}
-    defaultLeftPadding={8}
-    leftPadding={8}
-  />, [model]);
+  const renderTreeNode = React.useCallback(
+    (props: INodeRendererWrapProps) => (
+      <OutlineNode
+        item={props.item}
+        itemType={props.itemType}
+        decorationService={decorationService}
+        commandService={commandService}
+        decorations={outlineModelService.decorations.getDecorations(props.item as any)}
+        onClick={handleItemClicked}
+        onTwistierClick={handleTwistierClicked}
+        defaultLeftPadding={8}
+        leftPadding={8}
+      />
+    ),
+    [model],
+  );
 
   const renderContent = () => {
     if (!model) {
       return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
     } else {
-      return <RecycleTree
-        height={height}
-        width={width}
-        itemHeight={OUTLINE_TREE_NODE_HEIGHT}
-        onReady={handleTreeReady}
-        model={model}
-        placeholder={() => {
-          return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
-        }}
-      >
-        {renderTreeNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree
+          height={height}
+          width={width}
+          itemHeight={OUTLINE_TREE_NODE_HEIGHT}
+          onReady={handleTreeReady}
+          model={model}
+          placeholder={() => <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>}
+        >
+          {renderTreeNode}
+        </RecycleTree>
+      );
     }
   };
 
-  return <div
-    className={styles.outline_container}
-    tabIndex={-1}
-    ref={wrapperRef}
-    onClick={handleOuterClick}
-  >
-    { renderContent() }
-  </div>;
+  return (
+    <div className={styles.outline_container} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>
+      {renderContent()}
+    </div>
+  );
 };

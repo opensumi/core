@@ -62,13 +62,14 @@ export interface StatusBarEntry {
 
 export interface StatusBarEntryAccessor extends IDisposable {
   /**
-	 * Allows to update an existing status bar entry.
-	 */
+   * Allows to update an existing status bar entry.
+   */
   update(properties: StatusBarEntry): void;
 }
 
 export enum StatusBarAlignment {
-  LEFT, RIGHT,
+  LEFT,
+  RIGHT,
 }
 
 export namespace StatusBarCommand {

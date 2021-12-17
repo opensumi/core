@@ -1,7 +1,16 @@
 import React from 'react';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
 import { useInjectable, localize, isOSX } from '@opensumi/ide-core-browser';
-import { Button, Input, Select, Option, RecycleTree, IRecycleTreeHandle, INodeRendererProps, TreeNodeType } from '@opensumi/ide-components';
+import {
+  Button,
+  Input,
+  Select,
+  Option,
+  RecycleTree,
+  IRecycleTreeHandle,
+  INodeRendererProps,
+  TreeNodeType,
+} from '@opensumi/ide-components';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeDialogNode } from './file-dialog-node';
@@ -17,13 +26,7 @@ export interface IFileDialogProps {
 
 export const FILE_TREE_DIALOG_HEIGHT = 22;
 
-export const FileDialog = (
-  {
-    options,
-    model,
-    isOpenDialog,
-  }: React.PropsWithChildren<IFileDialogProps>,
-) => {
+export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChildren<IFileDialogProps>) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
   const [fileName, setFileName] = React.useState<string>('');
@@ -103,7 +106,6 @@ export const FileDialog = (
     const { toggleDirectory } = model;
 
     toggleDirectory(item);
-
   };
 
   const hasShiftMask = (event): boolean => {
@@ -158,43 +160,51 @@ export const FileDialog = (
     setIsReady(true);
   };
 
-  const renderDialogTreeNode = React.useCallback((props: INodeRendererProps) => <FileTreeDialogNode
-    item={props.item}
-    itemType={props.itemType}
-    labelService={model.labelService}
-    decorations={model.decorations.getDecorations(props.item as any)}
-    onClick={handleItemClicked}
-    onTwistierClick={handleTwistierClick}
-    defaultLeftPadding={8}
-    leftPadding={8}
-  />, [model.treeModel]);
+  const renderDialogTreeNode = React.useCallback(
+    (props: INodeRendererProps) => (
+      <FileTreeDialogNode
+        item={props.item}
+        itemType={props.itemType}
+        labelService={model.labelService}
+        decorations={model.decorations.getDecorations(props.item as any)}
+        onClick={handleItemClicked}
+        onTwistierClick={handleTwistierClick}
+        defaultLeftPadding={8}
+        leftPadding={8}
+      />
+    ),
+    [model.treeModel],
+  );
 
   const renderDialogTree = () => {
     if (!isReady) {
       return <ProgressBar loading />;
     } else if (model.treeModel) {
-      return <RecycleTree
-        width={408}
-        height={300}
-        itemHeight={FILE_TREE_DIALOG_HEIGHT}
-        onReady={handleTreeReady}
-        model={model.treeModel}
-      >
-        {renderDialogTreeNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree
+          width={408}
+          height={300}
+          itemHeight={FILE_TREE_DIALOG_HEIGHT}
+          onReady={handleTreeReady}
+          model={model.treeModel}
+        >
+          {renderDialogTreeNode}
+        </RecycleTree>
+      );
     }
   };
 
   const renderDirectorySelection = () => {
     if (directoryList.length > 0) {
-      return <Select
-        onChange={onRootChangeHandler}
-        className={styles.select_control}
-        size={'small'}
-        value={selectPath}
-      >
-        {directoryList.map((item, idx) => <Option value={item} key={`${idx} - ${item}`}>{item}</Option>)}
-      </Select>;
+      return (
+        <Select onChange={onRootChangeHandler} className={styles.select_control} size={'small'} value={selectPath}>
+          {directoryList.map((item, idx) => (
+            <Option value={item} key={`${idx} - ${item}`}>
+              {item}
+            </Option>
+          ))}
+        </Select>
+      );
     }
   };
 
@@ -202,37 +212,52 @@ export const FileDialog = (
     return (
       <React.Fragment>
         <div className={styles.file_dialog_directory_title}>{options.title || localize('dialog.file.openLabel')}</div>
-        <div className={styles.file_dialog_directory}>
-          {renderDirectorySelection()}
-        </div>
+        <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content} ref={wrapperRef}>
           {renderDialogTree()}
         </div>
         <div className={styles.buttonWrap}>
-          <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-          <Button onClick={() => hide()} type='primary' className={styles.button}>{(options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')}</Button>
+          <Button onClick={() => close()} type='secondary' className={styles.button}>
+            {localize('dialog.file.close')}
+          </Button>
+          <Button onClick={() => hide()} type='primary' className={styles.button}>
+            {(options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')}
+          </Button>
         </div>
       </React.Fragment>
     );
   } else {
     return (
       <React.Fragment>
-        <div className={styles.file_dialog_directory_title}>{(options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}</div>
-        <div className={styles.file_dialog_directory}>
-          {renderDirectorySelection()}
+        <div className={styles.file_dialog_directory_title}>
+          {(options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}
         </div>
-        <div className={styles.file_dialog_content}>
-          {renderDialogTree()}
-        </div>
+        <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
+        <div className={styles.file_dialog_content}>{renderDialogTree()}</div>
         {(options as ISaveDialogOptions).showNameInput && (
           <div className={styles.file_dialog_file_container}>
             <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
-            <Input size='small' value={fileName} autoFocus={true} selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }} onChange={(event) => setFileName(event.target.value)}></Input>
+            <Input
+              size='small'
+              value={fileName}
+              autoFocus={true}
+              selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }}
+              onChange={(event) => setFileName(event.target.value)}
+            ></Input>
           </div>
         )}
         <div className={styles.buttonWrap}>
-          <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-          <Button onClick={() => hide()} type='primary' className={styles.button} disabled={(options as ISaveDialogOptions).showNameInput && fileName.length === 0 ? true : false}>{localize('dialog.file.ok')}</Button>
+          <Button onClick={() => close()} type='secondary' className={styles.button}>
+            {localize('dialog.file.close')}
+          </Button>
+          <Button
+            onClick={() => hide()}
+            type='primary'
+            className={styles.button}
+            disabled={(options as ISaveDialogOptions).showNameInput && fileName.length === 0 ? true : false}
+          >
+            {localize('dialog.file.ok')}
+          </Button>
         </div>
       </React.Fragment>
     );

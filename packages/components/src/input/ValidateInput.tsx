@@ -26,73 +26,68 @@ export interface ValidateInputProp extends IInputBaseProps {
   popup?: boolean;
 }
 
-export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputProp>((
-  {
-    className,
-    validate,
-    onChange,
-    onValueChange,
-    validateMessage: validateInfo,
-    popup = true,
-    ...restProps
+export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputProp>(
+  (
+    { className, validate, onChange, onValueChange, validateMessage: validateInfo, popup = true, ...restProps },
+    ref: React.MutableRefObject<HTMLInputElement>,
+  ) => {
+    const [validateMessage, setValidateMessage] = React.useState<ValidateMessage | undefined>();
+
+    React.useEffect(() => {
+      setValidateMessage(validateInfo);
+    }, [validateInfo]);
+
+    warning(
+      !validateMessage || validateMessage.type !== VALIDATE_TYPE.WRANING,
+      '`VALIDATE_TYPE.WRANING` was a wrong typo, please use `VALIDATE_TYPE.WARNING` instead',
+    );
+
+    const validateClx = classNames({
+      'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
+      'validate-warning':
+        validateMessage && [VALIDATE_TYPE.WRANING, VALIDATE_TYPE.WARNING].includes(validateMessage.type),
+      'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
+    });
+
+    const renderValidateMessage = () => {
+      if (validateMessage && validateMessage.message) {
+        return <div className={classNames('validate-message', validateClx, { popup })}>{validateMessage.message}</div>;
+      }
+    };
+
+    const handleChange = (event) => {
+      const input: HTMLInputElement = event.target;
+      let value;
+      if (input.type === 'number') {
+        value = event.target.valueAsNumber;
+      } else {
+        value = event.target.value;
+      }
+      if (typeof validate === 'function') {
+        const message = validate(value);
+        setValidateMessage(message);
+      }
+      if (typeof onChange === 'function') {
+        onChange(event);
+      }
+      if (typeof onValueChange === 'function') {
+        onValueChange(value);
+      }
+    };
+
+    return (
+      <div className={classNames('input-box', { popup })}>
+        <Input
+          type='text'
+          ref={ref}
+          className={classNames(className, validateMessage, validateClx)}
+          onChange={handleChange}
+          {...restProps}
+        />
+        {renderValidateMessage()}
+      </div>
+    );
   },
-  ref: React.MutableRefObject<HTMLInputElement>,
-) => {
-  const [validateMessage, setValidateMessage] = React.useState<ValidateMessage | undefined>();
-
-  React.useEffect(() => {
-    setValidateMessage(validateInfo);
-  }, [validateInfo]);
-
-  warning(
-    !validateMessage || validateMessage.type !== VALIDATE_TYPE.WRANING,
-    '`VALIDATE_TYPE.WRANING` was a wrong typo, please use `VALIDATE_TYPE.WARNING` instead',
-  );
-
-  const validateClx = classNames({
-    'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
-    'validate-warning': validateMessage && ([VALIDATE_TYPE.WRANING, VALIDATE_TYPE.WARNING]).includes(validateMessage.type),
-    'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
-  });
-
-  const renderValidateMessage = () => {
-    if (validateMessage && validateMessage.message) {
-      return <div className={classNames('validate-message', validateClx, { popup })}>
-        {validateMessage.message}
-      </div>;
-    }
-  };
-
-  const handleChange = (event) => {
-    const input: HTMLInputElement = event.target;
-    let value;
-    if (input.type === 'number') {
-      value = event.target.valueAsNumber;
-    } else {
-      value = event.target.value;
-    }
-    if (typeof validate === 'function') {
-      const message = validate(value);
-      setValidateMessage(message);
-    }
-    if (typeof onChange === 'function') {
-      onChange(event);
-    }
-    if (typeof onValueChange === 'function') {
-      onValueChange(value);
-    }
-  };
-
-  return <div className={classNames('input-box', { popup })}>
-    <Input
-      type='text'
-      ref={ref}
-      className={classNames(className, validateMessage, validateClx)}
-      onChange={handleChange}
-      {...restProps}
-    />
-    {renderValidateMessage()}
-  </div>;
-});
+);
 
 ValidateInput.displayName = 'KTValidateInput';

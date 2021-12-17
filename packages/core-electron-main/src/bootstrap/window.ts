@@ -22,7 +22,6 @@ const defaultWebPreferences = {
 
 @Injectable({ multiple: true })
 export class CodeWindow extends Disposable implements ICodeWindow {
-
   private _workspace: URI | undefined;
 
   @Autowired(ElectronAppConfig)
@@ -55,7 +54,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this._workspace = new URI(workspace);
     }
     this.metadata = metadata;
-    this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
+    this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + ++windowClientCount;
 
     this.browser = new BrowserWindow({
       show: false,
@@ -151,7 +150,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
 
       const browserUrlParsed = URI.parse(this.appConfig.browserUrl);
-      const queryString = qs.stringify({ ...qs.parse(browserUrlParsed.query), ...this.query, windowId: this.browser.id, webContentsId: this.browser.webContents.id });
+      const queryString = qs.stringify({
+        ...qs.parse(browserUrlParsed.query),
+        ...this.query,
+        windowId: this.browser.id,
+        webContentsId: this.browser.webContents.id,
+      });
       const browserUrl = browserUrlParsed.withQuery(queryString).toString(true);
       this.browser.loadURL(browserUrl);
 
@@ -167,7 +171,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async startNode() {
     await this.clear();
     this._nodeReady = new Deferred();
-    this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
+    this.node = new KTNodeProcess(
+      this.appConfig.nodeEntry,
+      this.appConfig.extensionEntry,
+      this.windowClientId,
+      this.appConfig.extensionDir,
+    );
     this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
     await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
     this._nodeReady.resolve();
@@ -220,17 +229,18 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 }
 
 export class KTNodeProcess {
-
   private _process: ChildProcess;
 
   private ready: Promise<void>;
 
-  constructor(private forkPath: string, private extensionEntry: string, private windowClientId: string, private extensionDir: string) {
-
-  }
+  constructor(
+    private forkPath: string,
+    private extensionEntry: string,
+    private windowClientId: string,
+    private extensionDir: string,
+  ) {}
 
   async start(rpcListenPath: string, workspace: string | undefined) {
-
     if (!this.ready) {
       this.ready = new Promise((resolve, reject) => {
         try {
@@ -277,7 +287,6 @@ export class KTNodeProcess {
       });
     }
     return this.ready;
-
   }
 
   get process() {

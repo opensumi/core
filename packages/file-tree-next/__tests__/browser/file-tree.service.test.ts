@@ -1,7 +1,19 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  CorePreferences,
+  Disposable,
+  URI,
+  EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  ILoggerManagerClient,
+  IApplicationService,
+  isWindows,
+  OS,
+  isLinux,
+} from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
@@ -222,10 +234,10 @@ describe('FileTree Service should be work alone', () => {
     const mockOpenResource = jest.fn();
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, mockOpenResource);
     fileTreeService.openAndFixedFile(testUri);
-    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, preview: false, focus: true });
+    expect(mockOpenResource).toBeCalledWith(testUri, { disableNavigate: true, preview: false, focus: true });
     // OpenToTheSide
     fileTreeService.openToTheSide(testUri);
-    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, split: 4 });
+    expect(mockOpenResource).toBeCalledWith(testUri, { disableNavigate: true, split: 4 });
     // compare
     const mockCompare = jest.fn();
     injector.mockCommand(EDITOR_COMMANDS.COMPARE.id, mockCompare);

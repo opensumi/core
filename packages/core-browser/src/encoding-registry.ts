@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2020 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -35,7 +35,6 @@ export interface EncodingOverride {
 
 @Injectable()
 export class EncodingRegistry {
-
   protected readonly encodingOverrides: EncodingOverride[] = [];
 
   @Autowired(PreferenceService)
@@ -60,7 +59,12 @@ export class EncodingRegistry {
     } else if (preferredEncoding) {
       fileEncoding = preferredEncoding; // preferred encoding comes second
     } else {
-      fileEncoding = this.preferenceService.get<string>('files.encoding', undefined, resource.toString(), getLanguageIdFromMonaco(resource)!)!;
+      fileEncoding = this.preferenceService.get<string>(
+        'files.encoding',
+        undefined,
+        resource.toString(),
+        getLanguageIdFromMonaco(resource)!,
+      )!;
     }
 
     if (!fileEncoding || !encodingExists(fileEncoding)) {

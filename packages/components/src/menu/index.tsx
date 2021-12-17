@@ -89,17 +89,13 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     } else {
       // [Legacy] Old code will return after `openKeys` changed.
       // Not sure the reason, we should keep this logic still.
-      if (
-        (nextProps.inlineCollapsed && !prevProps.inlineCollapsed)
-      ) {
+      if (nextProps.inlineCollapsed && !prevProps.inlineCollapsed) {
         newState.switchingModeFromInline = true;
         newState.inlineOpenKeys = prevState.openKeys;
         newState.openKeys = [];
       }
 
-      if (
-        (!nextProps.inlineCollapsed && prevProps.inlineCollapsed)
-      ) {
+      if (!nextProps.inlineCollapsed && prevProps.inlineCollapsed) {
         newState.openKeys = prevState.inlineOpenKeys;
         newState.inlineOpenKeys = [];
       }
@@ -163,9 +159,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     return inlineCollapsed;
   }
 
-  getOpenMotionProps(
-    menuMode: MenuMode,
-  ): { openTransitionName?: any; openAnimation?: any; motion?: object } {
+  getOpenMotionProps(menuMode: MenuMode): { openTransitionName?: any; openAnimation?: any; motion?: object } {
     const { openTransitionName, openAnimation, motion } = this.props;
 
     // Provides by user
@@ -212,7 +206,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     if (onMouseEnter) {
       onMouseEnter(e);
     }
-  }
+  };
 
   handleTransitionEnd = (e: TransitionEvent) => {
     // when inlineCollapsed menu width animation finished
@@ -224,9 +218,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     const { className } = e.target as HTMLElement | SVGElement;
     // SVGAnimatedString.animVal should be identical to SVGAnimatedString.baseVal, unless during an animation.
     const classNameValue =
-      Object.prototype.toString.call(className) === '[object SVGAnimatedString]'
-        ? className.animVal
-        : className;
+      Object.prototype.toString.call(className) === '[object SVGAnimatedString]' ? className.animVal : className;
 
     // Fix for <Menu style={{ width: '100%' }} />, the width transition won't trigger when menu is collapsed
     // https://github.com/ant-design/ant-design-pro/issues/2783
@@ -234,7 +226,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     if (widthCollapsed || iconScaled) {
       this.restoreModeVerticalFromInline();
     }
-  }
+  };
 
   handleClick = (e: ClickParam) => {
     this.handleOpenChange([]);
@@ -243,7 +235,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     if (onClick) {
       onClick(e);
     }
-  }
+  };
 
   handleOpenChange = (openKeys: string[]) => {
     this.setOpenKeys(openKeys);
@@ -252,7 +244,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     if (onOpenChange) {
       onOpenChange(openKeys);
     }
-  }
+  };
 
   restoreModeVerticalFromInline() {
     const { switchingModeFromInline } = this.state;
@@ -303,7 +295,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
         onMouseEnter={this.handleMouseEnter}
       />
     );
-  }
+  };
 
   render() {
     return (
@@ -331,8 +323,6 @@ export class Menu extends React.Component<MenuProps, {}> {
   static ItemGroup = ItemGroup;
 
   render() {
-    return (
-      <InternalMenu {...this.props} />
-    );
+    return <InternalMenu {...this.props} />;
   }
 }

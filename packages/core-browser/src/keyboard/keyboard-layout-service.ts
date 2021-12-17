@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -17,7 +17,12 @@
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { isWindows, Emitter, Event } from '@opensumi/ide-core-common';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeymapInfo, IWindowsKeyMapping } from '@opensumi/ide-core-common/lib/keyboard';
+import {
+  KeyboardNativeLayoutService,
+  KeyboardLayoutChangeNotifierService,
+  KeymapInfo,
+  IWindowsKeyMapping,
+} from '@opensumi/ide-core-common/lib/keyboard';
 import { KeyValidator } from './keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 
@@ -35,7 +40,6 @@ export interface KeyboardLayout {
 
 @Injectable()
 export class KeyboardLayoutService {
-
   @Autowired(KeyboardNativeLayoutService)
   protected readonly layoutProvider: KeyboardNativeLayoutService;
 
@@ -117,14 +121,14 @@ export class KeyboardLayoutService {
     if (!inCode.shift && keyNeedsShift) {
       return undefined;
     }
-    if (mappedCode.alt && (inCode.alt || inCode.ctrl || inCode.shift && !keyNeedsShift)) {
+    if (mappedCode.alt && (inCode.alt || inCode.ctrl || (inCode.shift && !keyNeedsShift))) {
       return undefined;
     }
     return new KeyCode({
       key: mappedCode.key,
       meta: inCode.meta,
       ctrl: inCode.ctrl || mappedCode.alt,
-      shift: inCode.shift && !keyNeedsShift || mappedCode.shift,
+      shift: (inCode.shift && !keyNeedsShift) || mappedCode.shift,
       alt: inCode.alt || mappedCode.alt,
     });
   }
@@ -139,7 +143,12 @@ export class KeyboardLayoutService {
         const mappedKey = Key.getKey(code);
         if (mappedKey && this.shouldIncludeKey(code)) {
           if (isWindows) {
-            this.addWindowsKeyMapping(key2KeyCode, mappedKey, (keyMapping as IWindowsKeyMapping).vkey, keyMapping.value);
+            this.addWindowsKeyMapping(
+              key2KeyCode,
+              mappedKey,
+              (keyMapping as IWindowsKeyMapping).vkey,
+              keyMapping.value,
+            );
           } else {
             if (keyMapping.value) {
               this.addKeyMapping(key2KeyCode, mappedKey, keyMapping.value, false, false);
@@ -215,7 +224,7 @@ export class KeyboardLayoutService {
 /**
  * 字符值与标准美国键盘布局上的相应键的映射关系。
  */
-const VALUE_TO_KEY: { [value: string]: { key: Key, shift?: boolean } } = {
+const VALUE_TO_KEY: { [value: string]: { key: Key; shift?: boolean } } = {
   '`': { key: Key.BACKQUOTE },
   '~': { key: Key.BACKQUOTE, shift: true },
   '1': { key: Key.DIGIT1 },
@@ -225,7 +234,7 @@ const VALUE_TO_KEY: { [value: string]: { key: Key, shift?: boolean } } = {
   '3': { key: Key.DIGIT3 },
   '#': { key: Key.DIGIT3, shift: true },
   '4': { key: Key.DIGIT4 },
-  '$': { key: Key.DIGIT4, shift: true },
+  $: { key: Key.DIGIT4, shift: true },
   '5': { key: Key.DIGIT5 },
   '%': { key: Key.DIGIT5, shift: true },
   '6': { key: Key.DIGIT6 },
@@ -239,62 +248,62 @@ const VALUE_TO_KEY: { [value: string]: { key: Key, shift?: boolean } } = {
   '0': { key: Key.DIGIT0 },
   ')': { key: Key.DIGIT0, shift: true },
   '-': { key: Key.MINUS },
-  '_': { key: Key.MINUS, shift: true },
+  _: { key: Key.MINUS, shift: true },
   '=': { key: Key.EQUAL },
   '+': { key: Key.EQUAL, shift: true },
 
-  'a': { key: Key.KEY_A },
-  'A': { key: Key.KEY_A, shift: true },
-  'b': { key: Key.KEY_B },
-  'B': { key: Key.KEY_B, shift: true },
-  'c': { key: Key.KEY_C },
-  'C': { key: Key.KEY_C, shift: true },
-  'd': { key: Key.KEY_D },
-  'D': { key: Key.KEY_D, shift: true },
-  'e': { key: Key.KEY_E },
-  'E': { key: Key.KEY_E, shift: true },
-  'f': { key: Key.KEY_F },
-  'F': { key: Key.KEY_F, shift: true },
-  'g': { key: Key.KEY_G },
-  'G': { key: Key.KEY_G, shift: true },
-  'h': { key: Key.KEY_H },
-  'H': { key: Key.KEY_H, shift: true },
-  'i': { key: Key.KEY_I },
-  'I': { key: Key.KEY_I, shift: true },
-  'j': { key: Key.KEY_J },
-  'J': { key: Key.KEY_J, shift: true },
-  'k': { key: Key.KEY_K },
-  'K': { key: Key.KEY_K, shift: true },
-  'l': { key: Key.KEY_L },
-  'L': { key: Key.KEY_L, shift: true },
-  'm': { key: Key.KEY_M },
-  'M': { key: Key.KEY_M, shift: true },
-  'n': { key: Key.KEY_N },
-  'N': { key: Key.KEY_N, shift: true },
-  'o': { key: Key.KEY_O },
-  'O': { key: Key.KEY_O, shift: true },
-  'p': { key: Key.KEY_P },
-  'P': { key: Key.KEY_P, shift: true },
-  'q': { key: Key.KEY_Q },
-  'Q': { key: Key.KEY_Q, shift: true },
-  'r': { key: Key.KEY_R },
-  'R': { key: Key.KEY_R, shift: true },
-  's': { key: Key.KEY_S },
-  'S': { key: Key.KEY_S, shift: true },
-  't': { key: Key.KEY_T },
-  'T': { key: Key.KEY_T, shift: true },
-  'u': { key: Key.KEY_U },
-  'U': { key: Key.KEY_U, shift: true },
-  'v': { key: Key.KEY_V },
-  'V': { key: Key.KEY_V, shift: true },
-  'w': { key: Key.KEY_W },
-  'W': { key: Key.KEY_W, shift: true },
-  'x': { key: Key.KEY_X },
-  'X': { key: Key.KEY_X, shift: true },
-  'y': { key: Key.KEY_Y },
-  'Y': { key: Key.KEY_Y, shift: true },
-  'z': { key: Key.KEY_Z },
-  'Z': { key: Key.KEY_Z, shift: true },
+  a: { key: Key.KEY_A },
+  A: { key: Key.KEY_A, shift: true },
+  b: { key: Key.KEY_B },
+  B: { key: Key.KEY_B, shift: true },
+  c: { key: Key.KEY_C },
+  C: { key: Key.KEY_C, shift: true },
+  d: { key: Key.KEY_D },
+  D: { key: Key.KEY_D, shift: true },
+  e: { key: Key.KEY_E },
+  E: { key: Key.KEY_E, shift: true },
+  f: { key: Key.KEY_F },
+  F: { key: Key.KEY_F, shift: true },
+  g: { key: Key.KEY_G },
+  G: { key: Key.KEY_G, shift: true },
+  h: { key: Key.KEY_H },
+  H: { key: Key.KEY_H, shift: true },
+  i: { key: Key.KEY_I },
+  I: { key: Key.KEY_I, shift: true },
+  j: { key: Key.KEY_J },
+  J: { key: Key.KEY_J, shift: true },
+  k: { key: Key.KEY_K },
+  K: { key: Key.KEY_K, shift: true },
+  l: { key: Key.KEY_L },
+  L: { key: Key.KEY_L, shift: true },
+  m: { key: Key.KEY_M },
+  M: { key: Key.KEY_M, shift: true },
+  n: { key: Key.KEY_N },
+  N: { key: Key.KEY_N, shift: true },
+  o: { key: Key.KEY_O },
+  O: { key: Key.KEY_O, shift: true },
+  p: { key: Key.KEY_P },
+  P: { key: Key.KEY_P, shift: true },
+  q: { key: Key.KEY_Q },
+  Q: { key: Key.KEY_Q, shift: true },
+  r: { key: Key.KEY_R },
+  R: { key: Key.KEY_R, shift: true },
+  s: { key: Key.KEY_S },
+  S: { key: Key.KEY_S, shift: true },
+  t: { key: Key.KEY_T },
+  T: { key: Key.KEY_T, shift: true },
+  u: { key: Key.KEY_U },
+  U: { key: Key.KEY_U, shift: true },
+  v: { key: Key.KEY_V },
+  V: { key: Key.KEY_V, shift: true },
+  w: { key: Key.KEY_W },
+  W: { key: Key.KEY_W, shift: true },
+  x: { key: Key.KEY_X },
+  X: { key: Key.KEY_X, shift: true },
+  y: { key: Key.KEY_Y },
+  Y: { key: Key.KEY_Y, shift: true },
+  z: { key: Key.KEY_Z },
+  Z: { key: Key.KEY_Z, shift: true },
 
   '[': { key: Key.BRACKET_LEFT },
   '{': { key: Key.BRACKET_LEFT, shift: true },

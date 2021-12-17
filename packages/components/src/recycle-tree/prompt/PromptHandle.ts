@@ -24,10 +24,10 @@ export abstract class PromptHandle {
   public readonly $addonAfter: HTMLDivElement;
   public readonly ProxiedInput: (props: ProxiedInputProp) => JSX.Element;
   private disposables: DisposableCollection = new DisposableCollection();
-  private isInPendingCommitState: boolean = false;
-  private _destroyed: boolean = false;
-  private _hasValidateElement: boolean = false;
-  private _hasAddonAfter: boolean = false;
+  private isInPendingCommitState = false;
+  private _destroyed = false;
+  private _hasValidateElement = false;
+  private _hasAddonAfter = false;
   private _validateClassName: string;
 
   // event
@@ -60,9 +60,9 @@ export abstract class PromptHandle {
     // 可能存在PromptHandle创建后没被使用的情况
   }
 
-  abstract get id(): number
+  abstract get id(): number;
 
-  abstract get depth(): number
+  abstract get depth(): number;
 
   get destroyed() {
     return this._destroyed;
@@ -174,11 +174,11 @@ export abstract class PromptHandle {
 
   private handleClick = (ev) => {
     ev.stopPropagation();
-  }
+  };
 
   private handleKeyup = (ev) => {
     this.onChangeEmitter.fire(this.$.value);
-  }
+  };
 
   private handleKeydown = async (ev) => {
     if (ev.key === 'Escape') {
@@ -205,11 +205,11 @@ export abstract class PromptHandle {
       this.$.disabled = false;
       this.destroy();
     }
-  }
+  };
 
   private handleFocus = () => {
     this.onFocusEmitter.fire(this.$.value);
-  }
+  };
 
   private handleBlur = async (ev) => {
     // 如果Input由于`react-virtualized`被从视图中卸载，在下一帧前Input的isConnected属性不会被更新
@@ -228,5 +228,5 @@ export abstract class PromptHandle {
     if (!this.isInPendingCommitState) {
       this.destroy();
     }
-  }
+  };
 }

@@ -1,5 +1,11 @@
 import { Emitter, IDisposable } from '@opensumi/ide-core-common';
-import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../../common/vscode';
+import {
+  IMainThreadStorage,
+  IExtHostStorage,
+  KeysToAnyValues,
+  KeysToKeysToAnyValue,
+  MainThreadAPIIdentifier,
+} from '../../../common/vscode';
 import { ExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Memento } from '../../../common/vscode/ext-types';
@@ -32,7 +38,7 @@ export class ExtHostStorage implements IExtHostStorage {
   }
 
   async $updateWorkspaceStorageData(data: KeysToKeysToAnyValue) {
-    this._onDidChangeStorage.fire({shared: false, data});
+    this._onDidChangeStorage.fire({ shared: false, data });
   }
 
   async $acceptStoragePath(paths: ExtensionStorageUri) {
@@ -41,16 +47,11 @@ export class ExtHostStorage implements IExtHostStorage {
 }
 
 export class ExtensionMemento implements Memento {
-
   private readonly _init: Promise<ExtensionMemento>;
-  private cache: { [n: string]: any; };
+  private cache: { [n: string]: any };
   private readonly storageListener: IDisposable;
 
-  constructor(
-      private readonly id: string,
-      private readonly global: boolean,
-      private readonly storage: ExtHostStorage,
-  ) {
+  constructor(private readonly id: string, private readonly global: boolean, private readonly storage: ExtHostStorage) {
     this._init = this.storage.getValue(this.global, this.id, Object.create(null)).then((value) => {
       this.cache = value;
       return this;

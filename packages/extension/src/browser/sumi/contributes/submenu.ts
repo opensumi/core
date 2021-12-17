@@ -75,7 +75,6 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   };
 
   contribute() {
-
     const collector = console;
 
     // menu registration
@@ -94,9 +93,8 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
       for (const item of menuActions) {
         const [group, order] = parseMenuGroup(item.group);
 
-        this.addDispose(this.menuRegistry.registerMenuItem(
-          menuId,
-          {
+        this.addDispose(
+          this.menuRegistry.registerMenuItem(menuId, {
             submenu: item.id,
             label: item.title && this.getLocalizeFromNlsJSON(item.title),
             iconClass: this.iconService.fromIcon(this.extension.path, item.icon, IconType.Background),
@@ -104,8 +102,8 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
             group,
             order,
             nativeRole: item.nativeRole,
-          } as ISubmenuItem,
-        ));
+          } as ISubmenuItem),
+        );
       }
     }
   }

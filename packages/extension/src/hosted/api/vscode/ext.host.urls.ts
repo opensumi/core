@@ -5,7 +5,6 @@ import { IExtHostUrls, IMainThreadUrls, MainThreadAPIIdentifier } from '../../..
 import { UriComponents } from '../../../common/vscode/ext-types';
 
 export class ExtHostUrls implements IExtHostUrls {
-
   private static HandlePool = 0;
   private readonly _proxy: IMainThreadUrls;
 
@@ -46,5 +45,4 @@ export class ExtHostUrls implements IExtHostUrls {
 
     return Promise.resolve(undefined);
   }
-
 }

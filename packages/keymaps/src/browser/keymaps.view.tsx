@@ -4,7 +4,15 @@ import cls from 'classnames';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import styles from './keymaps.module.less';
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@opensumi/ide-core-browser';
+import {
+  localize,
+  useInjectable,
+  KeybindingScope,
+  NO_KEYBINDING_NAME,
+  KeyCode,
+  Key,
+  formatLocalize,
+} from '@opensumi/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@opensumi/ide-core-browser';
@@ -28,17 +36,8 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
   const [search, setSearch] = React.useState<string>('');
 
-  const template = ({
-    data,
-    index,
-  }) => {
-    const {
-      id,
-      command,
-      when,
-      source,
-      keybinding,
-    }: KeybindingItem = data;
+  const template = ({ data, index }) => {
+    const { id, command, when, source, keybinding }: KeybindingItem = data;
     const [isEditing, setIsEditing] = React.useState<boolean>(false);
     const [value, setValue] = React.useState<string>(keybinding || '');
     const [isDirty, setIsDirty] = React.useState<boolean>(false);
@@ -87,7 +86,11 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       event.stopPropagation();
       event.preventDefault();
       const { key } = KeyCode.createKeyCode(event.nativeEvent);
-      const hasModifyKey = event.nativeEvent.shiftKey || event.nativeEvent.metaKey || event.nativeEvent.altKey || event.nativeEvent.ctrlKey;
+      const hasModifyKey =
+        event.nativeEvent.shiftKey ||
+        event.nativeEvent.metaKey ||
+        event.nativeEvent.altKey ||
+        event.nativeEvent.ctrlKey;
       if (key && Key.ENTER.keyCode === key.keyCode && !hasModifyKey) {
         if (value) {
           updateKeybinding(value);
@@ -107,14 +110,18 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         event.stopPropagation();
         event.preventDefault();
       };
-      return <div className={styles.keybinding_optional_actions} onMouseDown={preventMouseDown}>
-        <span className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)} onClick={clear} title={localize('keymaps.action.clear')}></span>
-      </div>;
+      return (
+        <div className={styles.keybinding_optional_actions} onMouseDown={preventMouseDown}>
+          <span
+            className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
+            onClick={clear}
+            title={localize('keymaps.action.clear')}
+          ></span>
+        </div>
+      );
     };
 
-    const renderPlaceholder = () => {
-      return <div className={styles.keybinding_key_input_placeholder}>⏎</div>;
-    };
+    const renderPlaceholder = () => <div className={styles.keybinding_key_input_placeholder}>⏎</div>;
 
     const renderReset = (source?: string) => {
       // 修改时固定设置页面
@@ -132,74 +139,98 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       };
       // 重置快捷键作用域
       if (source && getRaw(source) === getScope(KeybindingScope.USER)) {
-        return <span className={cls(getIcon('rollback'), styles.keybinding_inline_action)} onClick={reset} title={localize('keymaps.action.reset')}></span>;
+        return (
+          <span
+            className={cls(getIcon('rollback'), styles.keybinding_inline_action)}
+            onClick={reset}
+            title={localize('keymaps.action.reset')}
+          ></span>
+        );
       }
     };
 
     const renderDetectiveKeybindings = () => {
       if (!validateMessage && detectiveKeybindings.length > 0) {
-        return <div className={styles.keybinding_detective_messages}>
-          <div className={styles.keybinding_detective_messages_label}>{formatLocalize('keymaps.keybinding.duplicate', detectiveKeybindings.length)}</div>
-          <ul className={styles.keybinding_detective_messages_container}>
-            {
-              detectiveKeybindings.map((keybinding: KeybindingItem, index: number) => {
-                return <li className={styles.keybinding_detective_messages_item} key={`${keybinding.id}_${index}`} title={`${keybinding.command}-${keybinding.when}`}>
-                  <div className={styles.title}>{localize('keymaps.header.command.title')}: {keybinding.command}</div>
+        return (
+          <div className={styles.keybinding_detective_messages}>
+            <div className={styles.keybinding_detective_messages_label}>
+              {formatLocalize('keymaps.keybinding.duplicate', detectiveKeybindings.length)}
+            </div>
+            <ul className={styles.keybinding_detective_messages_container}>
+              {detectiveKeybindings.map((keybinding: KeybindingItem, index: number) => (
+                <li
+                  className={styles.keybinding_detective_messages_item}
+                  key={`${keybinding.id}_${index}`}
+                  title={`${keybinding.command}-${keybinding.when}`}
+                >
+                  <div className={styles.title}>
+                    {localize('keymaps.header.command.title')}: {keybinding.command}
+                  </div>
                   <div className={styles.description}>
-                    <div style={{marginRight: 4}}>
+                    <div style={{ marginRight: 4 }}>
                       {localize('keymaps.header.source.title')}: {getRaw(keybinding.source) || '-'}
                     </div>
                     <div>
                       {localize('keymaps.header.when.title')}: {keybinding.when || '—'}
                     </div>
                   </div>
-                </li>;
-              })
-            }
-          </ul>
-        </div>;
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
       }
     };
 
     const renderKeybinding = () => {
       if (isEditing) {
-        return <div className={styles.keybinding_key_input_container}>
-          { renderOptionalActions() }
-          <ValidateInput
-            placeholder={localize('keymaps.edit.placeholder')}
-            validateMessage={validateMessage}
-            className={styles.keybinding_key_input}
-            size='small'
-            autoFocus={true}
-            name={NO_KEYBINDING_NAME}
-            value={value}
-            onKeyDown={keydownHandler}
-            onBlur={blurHandler} />
-          { renderPlaceholder() }
-          { renderDetectiveKeybindings() }
-        </div>;
+        return (
+          <div className={styles.keybinding_key_input_container}>
+            {renderOptionalActions()}
+            <ValidateInput
+              placeholder={localize('keymaps.edit.placeholder')}
+              validateMessage={validateMessage}
+              className={styles.keybinding_key_input}
+              size='small'
+              autoFocus={true}
+              name={NO_KEYBINDING_NAME}
+              value={value}
+              onKeyDown={keydownHandler}
+              onBlur={blurHandler}
+            />
+            {renderPlaceholder()}
+            {renderDetectiveKeybindings()}
+          </div>
+        );
       } else {
         const keyBlocks = keybinding?.split(' ');
-        return <div className={styles.keybinding_key} title={getRaw(keybinding)} onDoubleClick={clickHandler}>
-          <div className={styles.keybinding_action} onClick={clickHandler}>
-            <span className={cls(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)} title={keybinding ? localize('keymaps.action.edit') : localize('keymaps.action.add')}></span>
-            {renderReset(source)}
-
+        return (
+          <div className={styles.keybinding_key} title={getRaw(keybinding)} onDoubleClick={clickHandler}>
+            <div className={styles.keybinding_action} onClick={clickHandler}>
+              <span
+                className={cls(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)}
+                title={keybinding ? localize('keymaps.action.edit') : localize('keymaps.action.add')}
+              ></span>
+              {renderReset(source)}
+            </div>
+            {keyBlocks && !!keyBlocks[0]
+              ? keyBlocks.map((block, index) => {
+                  const keys = block.split('+');
+                  return (
+                    <div className={styles.keybinding_key_block} key={`${block}_${index}`}>
+                      {keys.map((key, index) => (
+                        <div
+                          className={styles.keybinding_key_item}
+                          key={`${key}_${index}`}
+                          dangerouslySetInnerHTML={{ __html: key || '' }}
+                        ></div>
+                      ))}
+                    </div>
+                  );
+                })
+              : '—'}
           </div>
-          {
-            keyBlocks && !!keyBlocks[0] ? keyBlocks.map((block, index) => {
-              const keys = block.split('+');
-              return <div className={styles.keybinding_key_block} key={`${block}_${index}`}>
-                {
-                  keys.map((key, index) => {
-                    return <div className={styles.keybinding_key_item} key={`${key}_${index}`} dangerouslySetInnerHTML={{ __html: key || '' }}></div>;
-                  })
-                }
-              </div>;
-            }) : '—'
-          }
-        </div>;
-
+        );
       }
     };
 
@@ -216,22 +247,28 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
     }, [value]);
 
-    return <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
-      <div className={styles.keybinding_list_item_box}>
-        <div className={styles.limit_warp} title={getRaw(command)} dangerouslySetInnerHTML={{ __html: command }}></div>
+    return (
+      <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
+        <div className={styles.keybinding_list_item_box}>
+          <div
+            className={styles.limit_warp}
+            title={getRaw(command)}
+            dangerouslySetInnerHTML={{ __html: command }}
+          ></div>
+        </div>
+        <div className={cls(styles.keybinding_list_item_box)}>{renderKeybinding()}</div>
+        <div className={styles.keybinding_list_item_box}>
+          <div
+            className={styles.limit_warp}
+            title={getRaw(when || '—')}
+            dangerouslySetInnerHTML={{ __html: when || '—' }}
+          ></div>
+        </div>
+        <div className={styles.keybinding_list_item_box}>
+          <div title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></div>
+        </div>
       </div>
-      <div className={cls(styles.keybinding_list_item_box)}>
-        {
-          renderKeybinding()
-        }
-      </div>
-      <div className={styles.keybinding_list_item_box}>
-        <div className={styles.limit_warp} title={getRaw(when || '—')} dangerouslySetInnerHTML={{ __html: when || '—' }}></div>
-      </div>
-      <div className={styles.keybinding_list_item_box}>
-        <div title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></div>
-      </div>
-    </div>;
+    );
   };
 
   const header = () => {
@@ -253,31 +290,38 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         classname: styles.keybinding_header_item,
       },
     ];
-    return <div className={styles.keybinding_header}>
-      {
-        headers.map((h, index) => {
-          return <div className={h.classname} key={`${h.title}_${index}`}>{h.title}</div>;
-        })
-      }
-    </div>;
+    return (
+      <div className={styles.keybinding_header}>
+        {headers.map((h, index) => (
+          <div className={h.classname} key={`${h.title}_${index}`}>
+            {h.title}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const renderInputPlaceholder = () => {
     const activeKeyboard = () => {
       setActiveKeyboardSearch(!activeKeyboardSearch);
     };
-    return <div className={styles.search_inline_action}>
-      <span
-        className={cls(getIcon('keyboard'), styles.search_inline_action_icon, activeKeyboardSearch && styles.active)}
-        onClick={activeKeyboard}
-      ></span>
-    </div>;
+    return (
+      <div className={styles.search_inline_action}>
+        <span
+          className={cls(getIcon('keyboard'), styles.search_inline_action_icon, activeKeyboardSearch && styles.active)}
+          onClick={activeKeyboard}
+        ></span>
+      </div>
+    );
   };
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value);
-    searchKeybindings(value);
-  }, [search]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+      searchKeybindings(value);
+    },
+    [search],
+  );
 
   const onChangeHandler = (event) => {
     if (!activeKeyboardSearch) {
@@ -305,17 +349,23 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     clearCovert();
   };
 
-  const renderOptionalActions = () => {
-    return <div className={styles.keybinding_optional_actions}>
-      <span className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)} onClick={clearSearch} title={localize('keymaps.action.reset')}></span>
-    </div>;
-  };
+  const renderOptionalActions = () => (
+    <div className={styles.keybinding_optional_actions}>
+      <span
+        className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
+        onClick={clearSearch}
+        title={localize('keymaps.action.reset')}
+      ></span>
+    </div>
+  );
 
-  const renderSearchInput = () => {
-    return <div className={styles.search_container}>
+  const renderSearchInput = () => (
+    <div className={styles.search_container}>
       <Input
         className={styles.search_input}
-        placeholder={localize(activeKeyboardSearch ? 'keymaps.search.keyboard.placeholder' : 'keymaps.search.placeholder')}
+        placeholder={localize(
+          activeKeyboardSearch ? 'keymaps.search.keyboard.placeholder' : 'keymaps.search.placeholder',
+        )}
         type='text'
         value={search}
         name={NO_KEYBINDING_NAME}
@@ -323,16 +373,14 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         onKeyDown={onKeyDownHandler}
         addonBefore={renderInputPlaceholder()}
       />
-      { renderOptionalActions() }
-    </div>;
-  };
+      {renderOptionalActions()}
+    </div>
+  );
 
   return (
     <div className={styles.keybinding_container}>
-      <div className={styles.keybinding_header} >
-        { renderSearchInput() }
-      </div>
-      <div className={styles.keybinding_body} >
+      <div className={styles.keybinding_header}>{renderSearchInput()}</div>
+      <div className={styles.keybinding_body}>
         <RecycleList
           itemHeight={24}
           header={header}

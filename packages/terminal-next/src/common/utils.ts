@@ -5,14 +5,8 @@ function count() {
   return i++;
 }
 
-export const userActionViewUuid = () => {
-  return `UI_View_${uuid()}${count()}`;
-};
+export const userActionViewUuid = () => `UI_View_${uuid()}${count()}`;
 
-export const apiActionViewUuid = () => {
-  return `API_View_${uuid()}${count()}`;
-};
+export const apiActionViewUuid = () => `API_View_${uuid()}${count()}`;
 
-export const generate = () => {
-  return uuid();
-};
+export const generate = () => uuid();

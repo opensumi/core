@@ -53,21 +53,24 @@ export class MockInjector extends Injector {
   }
 
   public mockCommand(commandId, fn?) {
-    const registry = (this.get(CommandRegistry) as CommandRegistry);
+    const registry = this.get(CommandRegistry) as CommandRegistry;
     if (registry.getCommand(commandId)) {
       registry.unregisterCommand(commandId);
     }
-    registry.registerCommand({
-      id: commandId,
-    }, {
-      execute: (...args) => {
-        if (typeof fn === 'function') {
-          fn(...args);
-        } else if (typeof fn !== 'undefined') {
-          return fn;
-        }
+    registry.registerCommand(
+      {
+        id: commandId,
       },
-    });
+      {
+        execute: (...args) => {
+          if (typeof fn === 'function') {
+            fn(...args);
+          } else if (typeof fn !== 'undefined') {
+            return fn;
+          }
+        },
+      },
+    );
   }
 
   public mockService(token: Token, proxyObj: any = {}) {
@@ -85,6 +88,7 @@ export function mockService<T = any>(target: Partial<T>): any {
       if (p === 'hasOwnProperty') {
         return t[p];
       }
+      // eslint-disable-next-line no-prototype-builtins
       if (!t.hasOwnProperty(p)) {
         t[p] = jest.fn();
       }

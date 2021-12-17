@@ -16,19 +16,16 @@ export class DebugSchemaUpdater {
   private config: DebugConfigurationManager;
 
   async update(): Promise<void> {
-
     const debuggers = this.config.getDebuggers();
     const schema = { ...deepClone(launchSchema) };
-    const items = (schema!.properties!.configurations.items as IJSONSchema);
-    const configurations = debuggers.map((dbg) => {
-      return {
-        attributes: Object.keys(dbg.configurationAttributes || {}).map((request) => {
-          const attributes: IJSONSchema = dbg.configurationAttributes[request];
-          return attributes;
-        }),
-        configurationSnippets: dbg.configurationSnippets,
-      };
-    });
+    const items = schema!.properties!.configurations.items as IJSONSchema;
+    const configurations = debuggers.map((dbg) => ({
+      attributes: Object.keys(dbg.configurationAttributes || {}).map((request) => {
+        const attributes: IJSONSchema = dbg.configurationAttributes[request];
+        return attributes;
+      }),
+      configurationSnippets: dbg.configurationSnippets,
+    }));
     for (const { attributes, configurationSnippets } of configurations) {
       if (attributes && items.oneOf) {
         items.oneOf!.push(...attributes);
@@ -58,7 +55,7 @@ export const launchSchema: IJSONSchema = {
       description: 'List of configurations. Add new configurations or edit existing ones by using IntelliSense.',
       items: {
         defaultSnippets: [],
-        'type': 'object',
+        type: 'object',
         oneOf: [],
       },
     },

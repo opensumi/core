@@ -29,7 +29,6 @@ export class CredentialService implements INativeCredentialService {
         await keytar.setPassword(service, chunk ? `${account}-${chunk}` : account, JSON.stringify(content));
         chunk++;
       }
-
     } else {
       await keytar.setPassword(service, account, password);
     }
@@ -76,7 +75,7 @@ export class CredentialService implements INativeCredentialService {
     return null;
   }
 
-  async findCredentials(service: string): Promise<Array<{ account: string, password: string }>> {
+  async findCredentials(service: string): Promise<Array<{ account: string; password: string }>> {
     const keytar = await this.withKeytar();
     return keytar.findCredentials(service);
   }

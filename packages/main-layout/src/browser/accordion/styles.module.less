@@ -1,6 +1,6 @@
 :global {
   .resize-ease {
-    transition: height .1s ease-out;
+    transition: height 0.1s ease-out;
   }
 }
 
@@ -38,7 +38,7 @@
     outline-width: 1px;
     outline-style: solid;
     outline-offset: -1px;
-    opacity: 1!important;
+    opacity: 1 !important;
   }
 }
 
@@ -65,7 +65,7 @@
   white-space: normal;
   flex: none;
   position: relative;
-  transition: height .2s ease;
+  transition: height 0.2s ease;
 }
 
 .kt_panel_toolbar {
@@ -160,7 +160,7 @@ i.arrow_icon {
   padding: 0 20px 1em;
   box-sizing: border-box;
   align-items: center;
-  &>* {
+  & > * {
     margin-block-start: 1em;
     margin-block-end: 0;
     margin-inline-start: 0;
@@ -173,7 +173,7 @@ i.arrow_icon {
   :global(.button-container) {
     width: 100%;
     max-width: 300px;
-    transition: max-width .2s ease-out;
+    transition: max-width 0.2s ease-out;
     :global(.kt-button) {
       box-sizing: border-box;
       display: flex;

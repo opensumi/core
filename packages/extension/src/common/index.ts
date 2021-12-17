@@ -1,4 +1,15 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  IJSONSchema,
+  IDisposable,
+  Deferred,
+  Uri,
+  MaybePromise,
+  IExtensionLogger,
+  ExtensionConnectOption,
+  replaceNlsField,
+  ILogger,
+} from '@opensumi/ide-core-common';
 import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -55,13 +66,22 @@ export interface ICreateProcessOptions {
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   initialize(): Promise<void>;
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(
+    scan: string[],
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options?: ICreateProcessOptions): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   getExtServerListenOption(clientId: string);
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData,
+  ): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   disposeAllClientExtProcess(): Promise<void>;
@@ -72,9 +92,18 @@ export interface IExtensionNodeService {
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
 export interface IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(
+    scan: string[],
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options: ICreateProcessOptions): Promise<void>;
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData,
+  ): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   restartExtProcessByClient(): void;
@@ -131,7 +160,11 @@ export abstract class AbstractExtensionManagementService {
    */
   abstract postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
   abstract postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
-  abstract postChangedExtension(upgrade: boolean | ChangeExtensionOptions, extensionPath?: string, oldExtensionPath?: string): Promise<void>;
+  abstract postChangedExtension(
+    upgrade: boolean | ChangeExtensionOptions,
+    extensionPath?: string,
+    oldExtensionPath?: string,
+  ): Promise<void>;
 
   /**
    * 卸载插件
@@ -150,7 +183,10 @@ export abstract class AbstractExtensionManagementService {
   /**
    * 通过 extensionPath 获取插件实例序列化数据及从 node 层获取的 extraMetadata
    */
-  abstract getExtensionProps(extensionPath: string, extraMetaData?: IExtraMetaData): Promise<IExtensionProps | undefined>;
+  abstract getExtensionProps(
+    extensionPath: string,
+    extraMetaData?: IExtraMetaData,
+  ): Promise<IExtensionProps | undefined>;
 }
 
 export abstract class ExtensionService {
@@ -193,7 +229,9 @@ export abstract class ExtensionCapabilityRegistry {
 
 export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
 
-export interface JSONType { [key: string]: any; }
+export interface JSONType {
+  [key: string]: any;
+}
 
 export interface IExtension extends IExtensionProps {
   readonly contributes: IExtensionContributions & ISumiExtensionContributions;
@@ -231,7 +269,9 @@ export function Contributes(name) {
 }
 
 export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
-export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');
+export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier(
+  'mock_extension_extend_proxy_identifier',
+);
 
 export interface IExtensionHost {
   logger: IExtensionLogger;
@@ -264,7 +304,6 @@ export interface IExtensionHostService extends IExtensionHost {
   reportUnexpectedError(error: Error): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export interface IExtensionWorkerHost extends IExtensionHost {
   staticServicePath: string;
 }
@@ -315,7 +354,11 @@ export enum OutputType {
   STDERR,
 }
 
-export interface Output { type: OutputType; data: string; format: string[]; }
+export interface Output {
+  type: OutputType;
+  data: string;
+  format: string[];
+}
 
 export const IExtensionHostManager = Symbol('IExtensionHostManager');
 
@@ -342,7 +385,7 @@ export const KT_PROCESS_SOCK_OPTION_KEY = 'kt-process-sock-option';
 export const KT_PROCESS_PRELOAD_KEY = 'kt-process-preload';
 export const KT_APP_CONFIG_KEY = 'kt-app-config';
 
-//#region Semantic Tokens Contribution Point
+// #region Semantic Tokens Contribution Point
 
 export interface SemanticTokenScopes {
   scopes?: { [selector: string]: string[] };
@@ -366,7 +409,11 @@ export interface SemanticTokenModifier {
 
 export type SemanticTokenModifierSchema = Array<SemanticTokenModifier>;
 
-export function validateTypeOrModifier(contribution: SemanticTokenType | SemanticTokenModifier, extensionPoint: string, logger: ILogger): boolean {
+export function validateTypeOrModifier(
+  contribution: SemanticTokenType | SemanticTokenModifier,
+  extensionPoint: string,
+  logger: ILogger,
+): boolean {
   if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
     logger.error("'configuration.{0}.id' must be defined and can not be empty", extensionPoint);
     return false;
@@ -377,7 +424,10 @@ export function validateTypeOrModifier(contribution: SemanticTokenType | Semanti
   }
   const superType = (contribution as SemanticTokenType).superType;
   if (superType && !superType.match(typeAndModifierIdPattern)) {
-    logger.error("'configuration.{0}.superType' must follow the pattern letterOrDigit[-_letterOrDigit]*", extensionPoint);
+    logger.error(
+      "'configuration.{0}.superType' must follow the pattern letterOrDigit[-_letterOrDigit]*",
+      extensionPoint,
+    );
     return false;
   }
   if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
@@ -387,4 +437,4 @@ export function validateTypeOrModifier(contribution: SemanticTokenType | Semanti
   return true;
 }
 
-//#endregion Semantic Tokens Contribution Point
+// #endregion Semantic Tokens Contribution Point

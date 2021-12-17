@@ -157,8 +157,8 @@
     padding: 0 20px;
     white-space: nowrap;
     cursor: pointer;
-    transition: color 0.3s @ease-in-out, border-color 0.3s @ease-in-out,
-      background 0.3s @ease-in-out, padding 0.15s @ease-in-out;
+    transition: color 0.3s @ease-in-out, border-color 0.3s @ease-in-out, background 0.3s @ease-in-out,
+      padding 0.15s @ease-in-out;
     .@{iconfont-css-prefix} {
       min-width: 14px;
       margin-right: 10px;
@@ -233,8 +233,7 @@
           background-image: linear-gradient(to right, @menu-item-color, @menu-item-color);
           background-image: ~'none \9';
           border-radius: 2px;
-          transition: background 0.3s @ease-in-out, transform 0.3s @ease-in-out,
-            top 0.3s @ease-in-out;
+          transition: background 0.3s @ease-in-out, transform 0.3s @ease-in-out, top 0.3s @ease-in-out;
           content: '';
         }
         &::before {
@@ -262,9 +261,7 @@
     }
 
     &-open {
-      &.@{menu-prefix-cls}-submenu-inline
-        > .@{menu-prefix-cls}-submenu-title
-        .@{menu-prefix-cls}-submenu-arrow {
+      &.@{menu-prefix-cls}-submenu-inline > .@{menu-prefix-cls}-submenu-title .@{menu-prefix-cls}-submenu-arrow {
         transform: translateY(-2px);
         &::after {
           transform: rotate(-45deg) translateX(-2px);
@@ -404,9 +401,7 @@
   &-inline-collapsed {
     width: @menu-collapsed-width;
     > .@{menu-prefix-cls}-item,
-    > .@{menu-prefix-cls}-item-group
-      > .@{menu-prefix-cls}-item-group-list
-      > .@{menu-prefix-cls}-item,
+    > .@{menu-prefix-cls}-item-group > .@{menu-prefix-cls}-item-group-list > .@{menu-prefix-cls}-item,
     > .@{menu-prefix-cls}-item-group
       > .@{menu-prefix-cls}-item-group-list
       > .@{menu-prefix-cls}-submenu

@@ -7,9 +7,7 @@ import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser
 const useResource = (resource: IResource) => {
   const staticService = useInjectable<StaticResourceService>(StaticResourceService);
 
-  const src = React.useMemo(() => {
-    return staticService.resolveStaticResource(resource.uri).toString();
-  }, [ resource ]);
+  const src = React.useMemo(() => staticService.resolveStaticResource(resource.uri).toString(), [resource]);
 
   return {
     src,
@@ -49,23 +47,25 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
           const scale = originalHeight / originalWidth;
           function setSize() {
             container.style.width = originalWidth + delta + 'px';
-            container.style.height = originalHeight + (delta * scale) + 'px';
+            container.style.height = originalHeight + delta * scale + 'px';
           }
           setSize();
-          disposer.addDispose(new DomListener(container.parentElement!, 'wheel', (e) => {
-            // ctrlKey 为 true 代表 mac 上的 pinch gesture
-            if (e.ctrlKey) {
-              if (e.deltaY > 0) {
-                e.preventDefault();
-                delta -= e.deltaY * 10;
-                setSize();
-              } else if (e.deltaY < 0) {
-                e.preventDefault();
-                delta -= e.deltaY * 10;
-                setSize();
+          disposer.addDispose(
+            new DomListener(container.parentElement!, 'wheel', (e) => {
+              // ctrlKey 为 true 代表 mac 上的 pinch gesture
+              if (e.ctrlKey) {
+                if (e.deltaY > 0) {
+                  e.preventDefault();
+                  delta -= e.deltaY * 10;
+                  setSize();
+                } else if (e.deltaY < 0) {
+                  e.preventDefault();
+                  delta -= e.deltaY * 10;
+                  setSize();
+                }
               }
-            }
-          }));
+            }),
+          );
         }
       };
     }
@@ -74,9 +74,11 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
     };
   }, [props.resource]);
 
-  return (<div className={styles.kt_image_preview} >
-    <div ref={imgContainerRef as any}>
-      <img ref={(el) => el && (imgRef.current = el) }/>
+  return (
+    <div className={styles.kt_image_preview}>
+      <div ref={imgContainerRef as any}>
+        <img ref={(el) => el && (imgRef.current = el)} />
+      </div>
     </div>
-  </div>);
+  );
 };

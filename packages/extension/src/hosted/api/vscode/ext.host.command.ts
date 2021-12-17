@@ -2,10 +2,26 @@ import type vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler, IExtensionDescription } from '../../../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadCommands,
+  IExtHostCommands,
+  Handler,
+  ArgumentProcessor,
+  ICommandHandlerDescription,
+  CommandHandler,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { cloneAndChange } from '@opensumi/ide-core-common/lib/utils/objects';
 import { validateConstraint, isFunction } from '@opensumi/ide-core-common/lib/utils/types';
-import { getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@opensumi/ide-core-common';
+import {
+  getDebugLogger,
+  revive,
+  toDisposable,
+  DisposableStore,
+  isNonEmptyArray,
+  IExtensionInfo,
+} from '@opensumi/ide-core-common';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
@@ -14,13 +30,17 @@ import { Uri } from '@opensumi/ide-core-common';
 import { IBuiltInCommand } from '../../ext.process-base';
 import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';
 
-export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtensionDescription) {
+export function createCommandsApiFactory(
+  extHostCommands: IExtHostCommands,
+  extHostEditors: ExtensionHostEditorService,
+  extension: IExtensionDescription,
+) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
       try {
         return extHostCommands.registerCommand(true, id, command, thisArgs);
       } catch {
-        return new Disposable(() => { });
+        return new Disposable(() => {});
       }
     },
     executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
@@ -32,10 +52,14 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
 
       return extHostCommands.$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args);
     },
-    getCommands(filterInternal: boolean = false): Thenable<string[]> {
+    getCommands(filterInternal = false): Thenable<string[]> {
       return extHostCommands.getCommands(filterInternal);
     },
-    registerTextEditorCommand(id: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any): vscode.Disposable {
+    registerTextEditorCommand(
+      id: string,
+      callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void,
+      thisArg?: any,
+    ): vscode.Disposable {
       return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
         const activeTextEditor = extHostEditors.activeEditor ? extHostEditors.activeEditor.textEditor : undefined;
         if (!activeTextEditor) {
@@ -43,20 +67,28 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
           return undefined;
         }
 
-        return activeTextEditor.edit((edit: vscode.TextEditorEdit) => {
-          args.unshift(activeTextEditor, edit);
-          callback.apply(thisArg, args as [vscode.TextEditor, vscode.TextEditorEdit, ...any[]]);
-
-        }).then((result) => {
-          if (!result) {
-            getDebugLogger().warn('Edits from command ' + id + ' were not applied.');
-          }
-        }, (err) => {
-          getDebugLogger().warn('An error occurred while running command ' + id, err);
-        });
+        return activeTextEditor
+          .edit((edit: vscode.TextEditorEdit) => {
+            args.unshift(activeTextEditor, edit);
+            callback.apply(thisArg, args as [vscode.TextEditor, vscode.TextEditorEdit, ...any[]]);
+          })
+          .then(
+            (result) => {
+              if (!result) {
+                getDebugLogger().warn('Edits from command ' + id + ' were not applied.');
+              }
+            },
+            (err) => {
+              getDebugLogger().warn('An error occurred while running command ' + id, err);
+            },
+          );
       });
     },
-    registerDiffInformationCommand(id: string, callback: (diff: vscode.LineChange[], ...args: any[]) => any, thisArg?: any): vscode.Disposable {
+    registerDiffInformationCommand(
+      id: string,
+      callback: (diff: vscode.LineChange[], ...args: any[]) => any,
+      thisArg?: any,
+    ): vscode.Disposable {
       return extHostCommands.registerCommand(true, id, async (...args: any[]): Promise<any> => {
         const activeTextEditor = extHostEditors.activeEditor;
         if (!activeTextEditor) {
@@ -119,8 +151,7 @@ export class ExtHostCommands implements IExtHostCommands {
       // converted to their internal command and don't need
       // any indirection commands
       const candidate = this._apiCommands.get(id);
-      return candidate?.result === ApiCommandResult.Void
-        ? candidate : undefined;
+      return candidate?.result === ApiCommandResult.Void ? candidate : undefined;
     });
   }
 
@@ -140,22 +171,27 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   registerApiCommand(apiCommand: ApiCommand): Disposable {
-    const registration = this.registerCommand(false, apiCommand.id, async (...apiArgs) => {
+    const registration = this.registerCommand(
+      false,
+      apiCommand.id,
+      async (...apiArgs) => {
+        const internalArgs = apiCommand.args.map((arg, i) => {
+          if (!arg.validate(apiArgs[i])) {
+            throw new Error(`Invalid argument '${arg.name}' when running '${apiCommand.id}', received: ${apiArgs[i]}`);
+          }
+          return arg.convert(apiArgs[i]);
+        });
 
-      const internalArgs = apiCommand.args.map((arg, i) => {
-        if (!arg.validate(apiArgs[i])) {
-          throw new Error(`Invalid argument '${arg.name}' when running '${apiCommand.id}', received: ${apiArgs[i]}`);
-        }
-        return arg.convert(apiArgs[i]);
-      });
-
-      const internalResult = await this.executeCommand(apiCommand.internalId, ...internalArgs);
-      return apiCommand.result.convert(internalResult, apiArgs, this.converter);
-    }, undefined, {
-      description: apiCommand.description,
-      args: apiCommand.args,
-      returns: apiCommand.result.description,
-    });
+        const internalResult = await this.executeCommand(apiCommand.internalId, ...internalArgs);
+        return apiCommand.result.convert(internalResult, apiArgs, this.converter);
+      },
+      undefined,
+      {
+        description: apiCommand.description,
+        args: apiCommand.args,
+        returns: apiCommand.result.description,
+      },
+    );
 
     this._apiCommands.set(apiCommand.id, apiCommand);
 
@@ -165,16 +201,28 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  private register(id: string, commandHandler: CommandHandler | Handler, description?: ICommandHandlerDescription): Disposable {
+  private register(
+    id: string,
+    commandHandler: CommandHandler | Handler,
+    description?: ICommandHandlerDescription,
+  ): Disposable {
     if (isFunction(commandHandler)) {
       return this.registerCommand(false, id, {
-        handler: commandHandler, thisArg: this, description,
+        handler: commandHandler,
+        thisArg: this,
+        description,
       });
     }
     return this.registerCommand(false, id, { ...commandHandler, thisArg: this });
   }
 
-  registerCommand(global: boolean, id: string, handler: CommandHandler | Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
+  registerCommand(
+    global: boolean,
+    id: string,
+    handler: CommandHandler | Handler,
+    thisArg?: any,
+    description?: ICommandHandlerDescription,
+  ): Disposable {
     this.logger.log('ExtHostCommands#registerCommand', id);
 
     if (!id.trim().length) {
@@ -235,7 +283,11 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  async $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined> {
+  async $executeCommandWithExtensionInfo<T>(
+    id: string,
+    extensionInfo: IExtensionInfo,
+    ...args: any[]
+  ): Promise<T | undefined> {
     if (this.commands.has(id)) {
       const isPermitted = this.isPermittedCommand(id, extensionInfo, ...args);
       if (!isPermitted) {
@@ -246,7 +298,8 @@ export class ExtHostCommands implements IExtHostCommands {
       // automagically convert some argument types
       args = this.convertArguments(args);
 
-      return this.proxy.$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args)
+      return this.proxy
+        .$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args)
         .then((result) => revive(result, 0));
     }
   }
@@ -260,8 +313,7 @@ export class ExtHostCommands implements IExtHostCommands {
       // automagically convert some argument types
       args = this.convertArguments(args);
 
-      return this.proxy.$executeCommand<T>(id, ...args)
-        .then((result) => revive(result, 0));
+      return this.proxy.$executeCommand<T>(id, ...args).then((result) => revive(result, 0));
     }
   }
 
@@ -277,7 +329,11 @@ export class ExtHostCommands implements IExtHostCommands {
         try {
           validateConstraint(args[i], description.args[i].constraint);
         } catch (err) {
-          return Promise.reject(new Error(`Running the contributed command:'${id}' failed. Illegal argument '${description.args[i].name}' - ${description.args[i].description}`));
+          return Promise.reject(
+            new Error(
+              `Running the contributed command:'${id}' failed. Illegal argument '${description.args[i].name}' - ${description.args[i].description}`,
+            ),
+          );
         }
       }
     }
@@ -295,14 +351,19 @@ export class ExtHostCommands implements IExtHostCommands {
     if (Array.isArray(arg) && Array.isArray(arg[0]) && arg[0].length === 2) {
       const position = arg[0];
       if (Position.isPosition(position[0]) && Position.isPosition(position[1])) {
-        return [new Range(new Position(position[0].line, position[0].character), new Position(position[1].line, position[1].character))];
+        return [
+          new Range(
+            new Position(position[0].line, position[0].character),
+            new Position(position[1].line, position[1].character),
+          ),
+        ];
       }
     }
 
     return arg;
   }
 
-  async getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
+  async getCommands(filterUnderscoreCommands = false): Promise<string[]> {
     this.logger.log('ExtHostCommands#getCommands', filterUnderscoreCommands);
 
     const result = await this.proxy.$getCommands();
@@ -341,7 +402,6 @@ export class CommandsConverter {
   }
 
   toInternal(command: vscode.Command | undefined, disposables: DisposableStore): CommandDto | undefined {
-
     if (!command) {
       return undefined;
     }
@@ -357,16 +417,17 @@ export class CommandsConverter {
       // API command with return-value can be converted inplace
       result.id = apiCommand.internalId;
       result.arguments = apiCommand.args.map((arg, i) => arg.convert(command.arguments && command.arguments[i]));
-
     } else if (isNonEmptyArray(command.arguments)) {
       // we have a contributed command with arguments. that
       // means we don't want to send the arguments around
 
       const id = ++this._cachIdPool;
       this._cache.set(id, command);
-      disposables.add(toDisposable(() => {
-        this._cache.delete(id);
-      }));
+      disposables.add(
+        toDisposable(() => {
+          this._cache.delete(id);
+        }),
+      );
       result.$ident = id;
 
       result.id = this._delegatingCommandId;
@@ -377,11 +438,9 @@ export class CommandsConverter {
   }
 
   fromInternal(command: modes.VSCommand): vscode.Command | undefined {
-
     const id = ObjectIdentifier.of(command);
     if (typeof id === 'number') {
       return this._cache.get(id);
-
     } else {
       return {
         command: command.id,

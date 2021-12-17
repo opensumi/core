@@ -30,15 +30,18 @@ let mainThread: MainThreadEnv;
 
 describe('vscode extHostEnv Test', () => {
   const injector = createBrowserInjector([]);
-  injector.addProviders({
-    token: ILoggerManagerClient,
-    useClass: MockLoggerManagerClient,
-  }, {
-    token: WSChannelHandler,
-    useValue: mockService({
-      clientId: uuid(),
-    }),
-  });
+  injector.addProviders(
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManagerClient,
+    },
+    {
+      token: WSChannelHandler,
+      useValue: mockService({
+        clientId: uuid(),
+      }),
+    },
+  );
   const extensionService = mockService({});
   const extStorage = mockService({});
   const extHostTerminal = mockService({
@@ -48,7 +51,10 @@ describe('vscode extHostEnv Test', () => {
   extHost = new ExtHostEnv(rpcProtocolExt);
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, extHost);
 
-  mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocolMain, extStorage]));
+  mainThread = rpcProtocolMain.set(
+    MainThreadAPIIdentifier.MainThreadEnv,
+    injector.get(MainThreadEnv, [rpcProtocolMain, extStorage]),
+  );
 
   beforeEach(() => {
     env = createEnvApiFactory(rpcProtocolExt, extensionService, extHost, extHostTerminal);
@@ -70,11 +76,11 @@ describe('vscode extHostEnv Test', () => {
 
   it('env is readonly', () => {
     // 加上 any 防止 ts 静态检测
-    expect(() => (env as any).language = '234').toThrowError();
-    expect(() => (env as any).appRoot = '234').toThrowError();
-    expect(() => (env as any).appName = '234').toThrowError();
-    expect(() => (env as any).machineId = '234').toThrowError();
-    expect(() => (env as any).sessionId = '234').toThrowError();
+    expect(() => ((env as any).language = '234')).toThrowError();
+    expect(() => ((env as any).appRoot = '234')).toThrowError();
+    expect(() => ((env as any).appName = '234')).toThrowError();
+    expect(() => ((env as any).machineId = '234')).toThrowError();
+    expect(() => ((env as any).sessionId = '234')).toThrowError();
   });
 
   it('get uiKind', () => {
@@ -136,15 +142,14 @@ describe('vscode extHostEnv Test', () => {
   });
 
   describe('isNewAppInstall', () => {
-    const getExtHost = (date) => {
-      return mockService({
+    const getExtHost = (date) =>
+      mockService({
         getEnvValues() {
           return {
             firstSessionDate: date,
           };
         },
       });
-    };
 
     it('用户首次访问时间大于一天', async () => {
       const envApi = createEnvApiFactory(

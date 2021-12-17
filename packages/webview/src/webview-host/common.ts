@@ -63,7 +63,8 @@ export interface IWebviewChannel {
   onKeydown?: (event: KeyboardEvent) => void;
 }
 
-function addslashes( str ) {
+function addslashes(str) {
+  // eslint-disable-next-line no-control-regex
   return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
 }
 

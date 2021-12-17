@@ -1,5 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, Tree } from '@opensumi/ide-components';
+import {
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  PromptValidateMessage,
+  TreeNodeEvent,
+  Tree,
+} from '@opensumi/ide-components';
 import { FileTreeModel } from '../file-tree-model';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@opensumi/ide-core-browser';
@@ -23,7 +31,6 @@ export interface FileTreeValidateMessage extends PromptValidateMessage {
 
 @Injectable()
 export class FileTreeDialogModel implements IFileDialogModel {
-
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
   static DEFAULT_LOCATION_FLUSH_DELAY = 500;
 
@@ -129,31 +136,39 @@ export class FileTreeDialogModel implements IFileDialogModel {
 
     this.disposableCollection.push(this._decorations);
 
-    this.disposableCollection.push(this.labelService.onDidChange(() => {
-      // 当labelService注册的对应节点图标变化时，通知视图更新
-      this.treeModel.dispatchChange();
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (!!this.focusedFile) {
-        const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-        if (node) {
-          this.activeFileDecoration(node as File, false);
+    this.disposableCollection.push(
+      this.labelService.onDidChange(() => {
+        // 当labelService注册的对应节点图标变化时，通知视图更新
+        this.treeModel.dispatchChange();
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.focusedFile) {
+          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+          if (node) {
+            this.activeFileDecoration(node as File, false);
+          }
+        } else if (this.selectedFiles.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
+          if (node) {
+            this.selectFileDecoration(node as File, false);
+          }
         }
-      } else if (this.selectedFiles.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        if (node) {
-          this.selectFileDecoration(node as File, false);
-        }
-      }
-    }));
+      }),
+    );
   }
 
   async updateTreeModel(path: string) {
@@ -167,7 +182,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
   }
 
   initDecorations(root) {
-    if (!!this._decorations) {
+    if (this._decorations) {
       this._decorations.dispose();
     }
     this._decorations = new DecorationsManager(root as any);
@@ -184,10 +199,10 @@ export class FileTreeDialogModel implements IFileDialogModel {
     });
     this._selectedFiles = [];
     this.onDidSelectedFileChangeEmitter.fire([]);
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
+  activeFileDecoration = (target: File | Directory, dispatchChange = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -219,10 +234,10 @@ export class FileTreeDialogModel implements IFileDialogModel {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
+  selectFileDecoration = (target: File | Directory, dispatchChange = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -251,11 +266,11 @@ export class FileTreeDialogModel implements IFileDialogModel {
         this.treeModel.dispatchChange();
       }
     }
-  }
+  };
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
+  activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration = false) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -267,12 +282,12 @@ export class FileTreeDialogModel implements IFileDialogModel {
         if (this.preContextMenuFocusedFile) {
           this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
           this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-        } else if (!!this.focusedFile) {
+        } else if (this.focusedFile) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedFile);
         }
         this.preContextMenuFocusedFile = target;
-      } else if (!!this.focusedFile) {
+      } else if (this.focusedFile) {
         this.preContextMenuFocusedFile = null;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
@@ -288,7 +303,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 选中当前指定节点，添加装饰器属性
   activeFileSelectedDecoration = (target: File | Directory) => {
@@ -301,7 +316,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
     this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
@@ -318,7 +333,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
     this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveFileDecoration = () => {
@@ -328,7 +343,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
       this.treeModel.dispatchChange();
     }
     this._focusedFile = undefined;
-  }
+  };
 
   toggleDirectory = async (item: Directory) => {
     if (item.expanded) {
@@ -336,7 +351,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
     } else {
       this.fileTreeHandle.expandNode(item);
     }
-  }
+  };
 
   removeFileDecoration() {
     this.decorations.removeDecoration(this.selectedDecoration);
@@ -350,11 +365,11 @@ export class FileTreeDialogModel implements IFileDialogModel {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveFileDecoration();
-  }
+  };
 
   handleTreeFocus = () => {
     // 激活面板
-  }
+  };
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
     if (!this.focusedFile) {
@@ -368,7 +383,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
         this.activeFileDecorationByRange(preFocusedFileIndex, targetIndex);
       }
     }
-  }
+  };
 
   handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
@@ -385,7 +400,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
     } else {
       this.activeFileSelectedDecoration(item);
     }
-  }
+  };
 
   handleItemClick = (item: File | Directory, type: TreeNodeType) => {
     this.clickTimes++;
@@ -415,11 +430,9 @@ export class FileTreeDialogModel implements IFileDialogModel {
       }
       this.clickTimes = 0;
     }, 200);
-  }
+  };
 
-  getDirectoryList = () => {
-    return this.fileTreeDialogService.getDirectoryList();
-  }
+  getDirectoryList = () => this.fileTreeDialogService.getDirectoryList();
 
   dispose() {
     this.disposableCollection.dispose();

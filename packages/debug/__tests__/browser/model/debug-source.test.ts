@@ -15,14 +15,14 @@ describe('DebugSource Model', () => {
 
     let debugSource: DebugSource;
     const raw: DebugProtocol.Source = {
-       name: 'test',
-       path: sourceUri,
-       sourceReference: 0,
-       presentationHint: 'normal',
-       origin: '',
-       sources: [],
-       adapterData: null,
-       checksums: [],
+      name: 'test',
+      path: sourceUri,
+      sourceReference: 0,
+      presentationHint: 'normal',
+      origin: '',
+      sources: [],
+      adapterData: null,
+      checksums: [],
     };
 
     beforeEach(() => {
@@ -34,27 +34,23 @@ describe('DebugSource Model', () => {
         getLongName: jest.fn(() => 'labelLongName'),
       } as any;
       modelManager = {
-        resolve: jest.fn(() => {
-          return [model];
-        }),
+        resolve: jest.fn(() => [model]),
       } as any;
       fileSystem = {
         setContent: jest.fn(),
       } as any;
       sessions = {
-        sendRequest: jest.fn(() => {
-          return {
-            body: {
-              content: '',
-            },
-          };
-        }),
+        sendRequest: jest.fn(() => ({
+          body: {
+            content: '',
+          },
+        })),
       } as any;
       model = {
         focusStackFrame: jest.fn(),
       } as any;
       debugSource = new DebugSource(sessions, labelProvider, modelManager, workbenchEditorService, fileSystem);
-      debugSource.update({raw});
+      debugSource.update({ raw });
     });
 
     afterEach(() => {
@@ -66,25 +62,25 @@ describe('DebugSource Model', () => {
       labelProvider.getName.mockReset();
     });
 
-    it ('Should have enough values', () => {
+    it('Should have enough values', () => {
       expect(debugSource.uri).toEqual(new URI(sourceUri));
       expect(debugSource.inMemory).toBe(false);
       expect(debugSource.name).toBe('labelName');
       expect(debugSource.longName).toBe('labelLongName');
     });
 
-    it ('Memory file should be work', () => {
+    it('Memory file should be work', () => {
       const memoryFile = new URI('test.js').withScheme(DebugSource.SCHEME);
       const newRaw = {
         ...raw,
         path: memoryFile.toString(),
       };
-      debugSource.update({raw: newRaw});
+      debugSource.update({ raw: newRaw });
       expect(debugSource.uri.toString()).toBe(memoryFile.toString());
       expect(debugSource.inMemory).toBe(true);
     });
 
-    it ('Load source should be work', async (done) => {
+    it('Load source should be work', async (done) => {
       await debugSource.load();
       expect(sessions.sendRequest).toBeCalledWith('source', {
         sourceReference: raw.sourceReference,
@@ -93,22 +89,25 @@ describe('DebugSource Model', () => {
       done();
     });
 
-    it ('Open source should be work while file is memory file', async (done) => {
+    it('Open source should be work while file is memory file', async (done) => {
       const memoryFile = new URI('test.js').withScheme(DebugSource.SCHEME);
       const newRaw = {
         ...raw,
         path: memoryFile.toString(),
       };
-      debugSource.update({raw: newRaw});
+      debugSource.update({ raw: newRaw });
       await debugSource.open({});
-      expect(fileSystem.setContent).toBeCalledWith({
-        uri: memoryFile.toString(),
-        lastModification: 0,
-      }, '');
+      expect(fileSystem.setContent).toBeCalledWith(
+        {
+          uri: memoryFile.toString(),
+          lastModification: 0,
+        },
+        '',
+      );
       done();
     });
 
-    it ('Open source should be work while there has frame', async (done) => {
+    it('Open source should be work while there has frame', async (done) => {
       const frame = {
         raw: {
           line: 1,
@@ -124,11 +123,10 @@ describe('DebugSource Model', () => {
       done();
     });
 
-    it ('Open source should be work with no frame and no memory file', async (done) => {
+    it('Open source should be work with no frame and no memory file', async (done) => {
       await debugSource.open({});
       expect(workbenchEditorService.open).toBeCalledTimes(1);
       done();
     });
-
   });
 });

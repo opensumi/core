@@ -1,17 +1,9 @@
 import React from 'react';
-import {
-  Injector,
-  Injectable,
-  Autowired,
-  INJECTOR_TOKEN,
-} from '@opensumi/di';
+import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { observable, action } from 'mobx';
 
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import type {
-  WorkspaceFileEdit,
-  WorkspaceTextEdit,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { Deferred, localize, MessageType } from '@opensumi/ide-core-common';
@@ -23,9 +15,7 @@ export interface IRefactorPreviewService {
   edits: Array<WorkspaceTextEdit | WorkspaceFileEdit>;
   selectedFileOrTextEdits: Set<WorkspaceTextEdit | WorkspaceFileEdit>;
 
-  previewEdits(
-    edit: ResourceEdit[],
-  ): Promise<ResourceEdit[]>;
+  previewEdits(edit: ResourceEdit[]): Promise<ResourceEdit[]>;
 
   filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean): void;
 
@@ -38,14 +28,10 @@ export const IRefactorPreviewService = Symbol('IRefactorPreviewService');
 
 @Injectable()
 export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
-
   @observable.shallow
   public edits: Array<WorkspaceTextEdit | WorkspaceFileEdit> = [];
 
-  public selectedFileOrTextEdits = observable.set<WorkspaceTextEdit | WorkspaceFileEdit>(
-    [],
-    { deep: false },
-  );
+  public selectedFileOrTextEdits = observable.set<WorkspaceTextEdit | WorkspaceFileEdit>([], { deep: false });
 
   @Autowired(IMainLayoutService)
   protected readonly mainLayout: IMainLayoutService;
@@ -56,9 +42,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  private previewDeferred: Deferred<
-    Array<WorkspaceTextEdit | WorkspaceFileEdit>
-  > | null;
+  private previewDeferred: Deferred<Array<WorkspaceTextEdit | WorkspaceFileEdit>> | null;
 
   private clear() {
     this.togglePreviewView(false);
@@ -74,10 +58,12 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     }
 
     this.mainLayout.collectTabbarComponent(
-      [{
-        component: RefactorPreview,
-        id: PreviewViewId,
-      }],
+      [
+        {
+          component: RefactorPreview,
+          id: PreviewViewId,
+        },
+      ],
       {
         title: localize('refactor-preview.title', 'REFACTOR PREVIEW'),
         containerId: PreviewViewId,
@@ -89,7 +75,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
 
   private togglePreviewView(show: boolean) {
     const handler = this.mainLayout.getTabbarHandler(PreviewViewId);
-    if (!!show) {
+    if (show) {
       handler?.show();
       handler?.activate();
     } else {
@@ -98,10 +84,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     }
   }
 
-  async previewEdits(
-    edits: ResourceEdit[],
-  ): Promise<ResourceEdit[]> {
-
+  async previewEdits(edits: ResourceEdit[]): Promise<ResourceEdit[]> {
     this.registerRefactorPreviewView();
 
     if (this.previewDeferred) {
@@ -111,10 +94,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
           <p>{localize('refactor-preview.overlay.detail')}</p>
         </div>,
         MessageType.Warning,
-        [
-          localize('refactor-preview.overlay.cancel'),
-          localize('refactor-preview.overlay.continue'),
-        ],
+        [localize('refactor-preview.overlay.cancel'), localize('refactor-preview.overlay.continue')],
       );
 
       if (continued === localize('refactor-preview.overlay.cancel')) {
@@ -150,9 +130,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
       return;
     }
 
-    const candidate = this.edits.filter(
-      (edit: WorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit),
-    );
+    const candidate = this.edits.filter((edit: WorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit));
 
     this.previewDeferred.resolve(candidate);
     this.clear();

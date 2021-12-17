@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -22,54 +22,51 @@ import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
 
 export class ColorProviderAdapter {
+  constructor(private documents: ExtensionDocumentDataManager, private provider: vscode.DocumentColorProvider) {}
 
-    constructor(
-        private documents: ExtensionDocumentDataManager,
-        private provider: vscode.DocumentColorProvider,
-    ) { }
-
-    provideColors(resource: URI, token: vscode.CancellationToken): Promise<RawColorInfo[]> {
-        const document = this.documents.getDocumentData(resource);
-        if (!document) {
-            return Promise.reject(new Error(`There are no document for ${resource}`));
-        }
-
-        const doc = document.document;
-
-        return Promise.resolve(
-            this.provider.provideDocumentColors(doc, token),
-        ).then((colors) => {
-            if (!Array.isArray(colors)) {
-                return [];
-            }
-
-            const colorInfos: RawColorInfo[] = colors.map((colorInfo) => ({
-                color: Converter.fromColor(colorInfo.color),
-                range: Converter.fromRange(colorInfo.range)!,
-            }));
-
-            return colorInfos;
-        });
+  provideColors(resource: URI, token: vscode.CancellationToken): Promise<RawColorInfo[]> {
+    const document = this.documents.getDocumentData(resource);
+    if (!document) {
+      return Promise.reject(new Error(`There are no document for ${resource}`));
     }
 
-    provideColorPresentations(resource: URI, raw: RawColorInfo, token: vscode.CancellationToken): Promise<ColorPresentation[]> {
-        const document = this.documents.getDocumentData(resource);
-        if (!document) {
-            return Promise.reject(new Error(`There are no document for ${resource}`));
-        }
+    const doc = document.document;
 
-        const doc = document.document;
-        const range = Converter.toRange(raw.range) as types.Range;
-        const color = Converter.toColor(raw.color);
-        return Promise.resolve(
-            this.provider.provideColorPresentations(color, { document: doc, range }, token),
-        ).then((value) => {
-            if (!Array.isArray(value)) {
-                return [];
-            }
+    return Promise.resolve(this.provider.provideDocumentColors(doc, token)).then((colors) => {
+      if (!Array.isArray(colors)) {
+        return [];
+      }
 
-            return value.map(Converter.fromColorPresentation);
-        });
+      const colorInfos: RawColorInfo[] = colors.map((colorInfo) => ({
+        color: Converter.fromColor(colorInfo.color),
+        range: Converter.fromRange(colorInfo.range)!,
+      }));
+
+      return colorInfos;
+    });
+  }
+
+  provideColorPresentations(
+    resource: URI,
+    raw: RawColorInfo,
+    token: vscode.CancellationToken,
+  ): Promise<ColorPresentation[]> {
+    const document = this.documents.getDocumentData(resource);
+    if (!document) {
+      return Promise.reject(new Error(`There are no document for ${resource}`));
     }
 
+    const doc = document.document;
+    const range = Converter.toRange(raw.range) as types.Range;
+    const color = Converter.toColor(raw.color);
+    return Promise.resolve(this.provider.provideColorPresentations(color, { document: doc, range }, token)).then(
+      (value) => {
+        if (!Array.isArray(value)) {
+          return [];
+        }
+
+        return value.map(Converter.fromColorPresentation);
+      },
+    );
+  }
 }

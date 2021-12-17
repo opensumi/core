@@ -1,6 +1,15 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceNlsField } from '@opensumi/ide-core-common';
+import {
+  getDebugLogger,
+  registerLocalizationBundle,
+  getCurrentLanguageInfo,
+  Uri,
+  Deferred,
+  URI,
+  WithEventBus,
+  replaceNlsField,
+} from '@opensumi/ide-core-common';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
@@ -23,7 +32,7 @@ export class Extension extends WithEventBus implements IExtension {
   public readonly extensionLocation: Uri;
   public readonly uri?: Uri;
 
-  private _activated: boolean = false;
+  private _activated = false;
   private _activating?: Deferred<void>;
 
   private _enabled: boolean;
@@ -123,19 +132,25 @@ export class Extension extends WithEventBus implements IExtension {
       this.addDispose(this.extMetadataService);
       this.logger.log(`${this.name} extensionMetadataService.run`);
       if (this.packageNlsJSON) {
-        registerLocalizationBundle({
-          ...getCurrentLanguageInfo(),
-          contents: this.packageNlsJSON as any,
-        }, this.id);
+        registerLocalizationBundle(
+          {
+            ...getCurrentLanguageInfo(),
+            contents: this.packageNlsJSON as any,
+          },
+          this.id,
+        );
       }
 
       if (this.defaultPkgNlsJSON) {
-        registerLocalizationBundle({
-          languageId: 'default',
-          languageName: 'en-US',
-          localizedLanguageName: 'English',
-          contents: this.defaultPkgNlsJSON as any,
-        }, this.id);
+        registerLocalizationBundle(
+          {
+            languageId: 'default',
+            languageName: 'en-US',
+            localizedLanguageName: 'English',
+            contents: this.defaultPkgNlsJSON as any,
+          },
+          this.id,
+        );
       }
 
       await this.extMetadataService.run(this);
@@ -155,7 +170,7 @@ export class Extension extends WithEventBus implements IExtension {
         continue;
       }
       const nextExt = this.extensionInstanceManageService.getExtensionInstanceByExtId(nextDepId);
-      nextExt && await nextExt.activate(visited);
+      nextExt && (await nextExt.activate(visited));
     }
 
     if (this._activated) {
@@ -173,15 +188,18 @@ export class Extension extends WithEventBus implements IExtension {
     }
     this._activating = new Deferred();
 
-    this.extensionService.activeExtension(this).then(() => {
-      this._activated = true;
-      this.eventBus.fire(new ExtensionDidActivatedEvent(this.toJSON()));
-      this._activating?.resolve();
-    }).catch((e) => {
-      this.logger.error(e);
-      this._activated = false;
-      this._activating?.reject(e);
-    });
+    this.extensionService
+      .activeExtension(this)
+      .then(() => {
+        this._activated = true;
+        this.eventBus.fire(new ExtensionDidActivatedEvent(this.toJSON()));
+        this._activating?.resolve();
+      })
+      .catch((e) => {
+        this.logger.error(e);
+        this._activated = false;
+        this._activating?.reject(e);
+      });
 
     return this._activating.promise;
   }

@@ -1,10 +1,19 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations, ILogger } from '@opensumi/ide-core-browser';
-import { FolderPreferenceProvider, FolderPreferenceProviderFactory, FolderPreferenceProviderOptions } from './folder-preference-provider';
+import {
+  URI,
+  PreferenceProvider,
+  PreferenceResolveResult,
+  PreferenceConfigurations,
+  ILogger,
+} from '@opensumi/ide-core-browser';
+import {
+  FolderPreferenceProvider,
+  FolderPreferenceProviderFactory,
+  FolderPreferenceProviderOptions,
+} from './folder-preference-provider';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
-
   @Autowired(FolderPreferenceProviderFactory)
   protected readonly folderPreferenceProviderFactory: FolderPreferenceProviderFactory;
 
@@ -34,7 +43,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     for (const provider of this.providers.values()) {
       readyPromises.push(provider.ready.catch((e) => this.logger.error(e)));
     }
-    if (readyPromises.length > 0 ) {
+    if (readyPromises.length > 0) {
       Promise.all(readyPromises).then(() => this._ready.resolve());
     } else {
       this._ready.resolve();
@@ -162,7 +171,9 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
    */
   async doSetPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     const sectionName = preferenceName.split('.', 1)[0];
-    const configName = this.configurations.isSectionName(sectionName) ? sectionName : this.configurations.getConfigName();
+    const configName = this.configurations.isSectionName(sectionName)
+      ? sectionName
+      : this.configurations.getConfigName();
 
     const providers = this.getFolderProviders(resourceUri);
     let configPath: string | undefined;
@@ -216,11 +227,11 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
       return [];
     }
     const resourcePath = new URI(resourceUri).path;
-    let folder: Readonly<{ relativity: number, uri?: string }> = { relativity: Number.MAX_SAFE_INTEGER };
+    let folder: Readonly<{ relativity: number; uri?: string }> = { relativity: Number.MAX_SAFE_INTEGER };
     const providers = new Map<string, FolderPreferenceProvider[]>();
     for (const provider of this.providers.values()) {
       const uri = provider.folderUri.toString();
-      const folderProviders = (providers.get(uri) || []);
+      const folderProviders = providers.get(uri) || [];
       folderProviders.push(provider);
       providers.set(uri, folderProviders);
       const relativity = provider.folderUri.path.relativity(resourcePath);
@@ -228,16 +239,17 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
         folder = { relativity, uri };
       }
     }
-    return folder.uri && providers.get(folder.uri) || [];
+    return (folder.uri && providers.get(folder.uri)) || [];
   }
 
   protected createProvider(options: FolderPreferenceProviderOptions): FolderPreferenceProvider {
     const provider = this.folderPreferenceProviderFactory(options);
     this.toDispose.push(provider);
-    this.toDispose.push(provider.onDidPreferencesChanged((change) => {
-      this.emitPreferencesChangedEvent(change);
-    }));
+    this.toDispose.push(
+      provider.onDidPreferencesChanged((change) => {
+        this.emitPreferencesChangedEvent(change);
+      }),
+    );
     return provider;
   }
-
 }

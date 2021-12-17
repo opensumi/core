@@ -64,9 +64,7 @@ export interface CustomDocument {
  *
  * @see [`CustomDocumentProvider.onDidChangeCustomDocument`](#CustomDocumentProvider.onDidChangeCustomDocument).
  */
-export interface CustomDocumentEditEvent<
-  T extends CustomDocument = CustomDocument
-> {
+export interface CustomDocumentEditEvent<T extends CustomDocument = CustomDocument> {
   /**
    * The document that the edit is for.
    */
@@ -104,9 +102,7 @@ export interface CustomDocumentEditEvent<
  *
  * @see [`CustomDocumentProvider.onDidChangeCustomDocument`](#CustomDocumentProvider.onDidChangeCustomDocument).
  */
-export interface CustomDocumentContentChangeEvent<
-  T extends CustomDocument = CustomDocument
-> {
+export interface CustomDocumentContentChangeEvent<T extends CustomDocument = CustomDocument> {
   /**
    * The document that the change is for.
    */
@@ -172,9 +168,7 @@ export interface CustomDocumentOpenContext {
  *
  * @param T Type of the custom document returned by this provider.
  */
-export interface CustomReadonlyEditorProvider<
-  T extends CustomDocument = CustomDocument
-> {
+export interface CustomReadonlyEditorProvider<T extends CustomDocument = CustomDocument> {
   /**
    * Create a new document for a given resource.
    *
@@ -191,11 +185,7 @@ export interface CustomReadonlyEditorProvider<
    *
    * @return The custom document.
    */
-  openCustomDocument(
-    uri: Uri,
-    openContext: CustomDocumentOpenContext,
-    token: CancellationToken,
-  ): Thenable<T> | T;
+  openCustomDocument(uri: Uri, openContext: CustomDocumentOpenContext, token: CancellationToken): Thenable<T> | T;
 
   /**
    * Resolve a custom editor for a given resource.
@@ -214,11 +204,7 @@ export interface CustomReadonlyEditorProvider<
    *
    * @return Optional thenable indicating that the custom editor has been resolved.
    */
-  resolveCustomEditor(
-    document: T,
-    webviewPanel: WebviewPanel,
-    token: CancellationToken,
-  ): Thenable<void> | void;
+  resolveCustomEditor(document: T, webviewPanel: WebviewPanel, token: CancellationToken): Thenable<void> | void;
 }
 
 /**
@@ -254,9 +240,7 @@ export interface CustomEditorProvider<T extends CustomDocument = CustomDocument>
    *
    * An editor should only ever fire `CustomDocumentEditEvent` events, or only ever fire `CustomDocumentContentChangeEvent` events.
    */
-  readonly onDidChangeCustomDocument: Event<
-    CustomDocumentEditEvent<T> | CustomDocumentContentChangeEvent<T>
-  >;
+  readonly onDidChangeCustomDocument: Event<CustomDocumentEditEvent<T> | CustomDocumentContentChangeEvent<T>>;
 
   /**
    * Save a custom document.
@@ -273,10 +257,7 @@ export interface CustomEditorProvider<T extends CustomDocument = CustomDocument>
    *
    * @return Thenable signaling that saving has completed.
    */
-  saveCustomDocument(
-    document: T,
-    cancellation: CancellationToken,
-  ): Thenable<void>;
+  saveCustomDocument(document: T, cancellation: CancellationToken): Thenable<void>;
 
   /**
    * Revert a custom document to its last saved state.
@@ -293,10 +274,7 @@ export interface CustomEditorProvider<T extends CustomDocument = CustomDocument>
    *
    * @return Thenable signaling that the change has completed.
    */
-  revertCustomDocument(
-    document: T,
-    cancellation: CancellationToken,
-  ): Thenable<void>;
+  revertCustomDocument(document: T, cancellation: CancellationToken): Thenable<void>;
 
   /**
    * Back up a dirty custom document.
@@ -369,24 +347,11 @@ export class CustomEditorOptionChangeEvent extends BasicEvent<{
 }> {}
 
 export interface IExtHostCustomEditor {
-  $resolveCustomTextEditor(
-    viewType: string,
-    uri: UriComponents,
-    webviewPanelId: string,
-    token: CancellationToken,
-  );
+  $resolveCustomTextEditor(viewType: string, uri: UriComponents, webviewPanelId: string, token: CancellationToken);
 
-  $saveCustomDocument(
-    viewType: string,
-    uri: UriComponents,
-    token: CancellationToken,
-  );
+  $saveCustomDocument(viewType: string, uri: UriComponents, token: CancellationToken);
 
-  $revertCustomDocument(
-    viewType: string,
-    uri: UriComponents,
-    token: CancellationToken,
-  );
+  $revertCustomDocument(viewType: string, uri: UriComponents, token: CancellationToken);
 
   $undo(viewType: string, uri: UriComponents);
 

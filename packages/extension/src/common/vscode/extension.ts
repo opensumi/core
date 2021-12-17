@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@ export interface IConfigurationProperty {
 
 export interface IConfiguration {
   title: string;
-  properties: { [key: string]: IConfigurationProperty; };
+  properties: { [key: string]: IConfigurationProperty };
 }
 
 export interface IDebugger {
@@ -86,7 +86,7 @@ export interface IView {
 export interface IColor {
   id: string;
   description: string;
-  defaults: { light: string, dark: string, highContrast: string };
+  defaults: { light: string; dark: string; highContrast: string };
 }
 
 export interface IExtensionContributions {
@@ -131,11 +131,11 @@ export interface IExtensionManifest {
   readonly extensionPack?: string[];
   readonly extensionKind?: ExtensionKind;
   readonly contributes?: IExtensionContributions;
-  readonly repository?: { url: string; };
-  readonly bugs?: { url: string; };
+  readonly repository?: { url: string };
+  readonly bugs?: { url: string };
   readonly enableProposedApi?: boolean;
   readonly api?: string;
-  readonly scripts?: { [key: string]: string; };
+  readonly scripts?: { [key: string]: string };
 }
 
 /**
@@ -163,9 +163,12 @@ export class ExtensionIdentifier {
     this._lower = value.toLowerCase();
   }
 
-  public static equals(a: ExtensionIdentifier | string | null | undefined, b: ExtensionIdentifier | string | null | undefined) {
+  public static equals(
+    a: ExtensionIdentifier | string | null | undefined,
+    b: ExtensionIdentifier | string | null | undefined,
+  ) {
     if (typeof a === 'undefined' || a === null) {
-      return (typeof b === 'undefined' || b === null);
+      return typeof b === 'undefined' || b === null;
     }
     if (typeof b === 'undefined' || b === null) {
       return false;
@@ -173,13 +176,13 @@ export class ExtensionIdentifier {
     if (typeof a === 'string' || typeof b === 'string') {
       // At least one of the arguments is an extension id in string form,
       // so we have to use the string comparison which ignores case.
-      const aValue = (typeof a === 'string' ? a : a.value);
-      const bValue = (typeof b === 'string' ? b : b.value);
+      const aValue = typeof a === 'string' ? a : a.value;
+      const bValue = typeof b === 'string' ? b : b.value;
       return equalsIgnoreCase(aValue, bValue);
     }
 
     // Now we know both arguments are ExtensionIdentifier
-    return (a._lower === b._lower);
+    return a._lower === b._lower;
   }
 
   /**
@@ -206,10 +209,14 @@ export interface IExtensionDescription extends IExtensionManifest, IExtensionPro
 }
 
 export function isLanguagePackExtension(manifest: { [key: string]: any }): boolean {
-  return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
+  return manifest.contributes && manifest.contributes.localizations
+    ? manifest.contributes.localizations.length > 0
+    : false;
 }
 
 export function throwProposedApiError(extension: IExtensionDescription): never {
   // do we support `--enable-proposed-api`
-  throw new Error(`[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`);
+  throw new Error(
+    `[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`,
+  );
 }

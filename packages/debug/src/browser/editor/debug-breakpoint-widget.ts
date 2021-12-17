@@ -14,7 +14,6 @@ export enum TopStackType {
 
 @Injectable()
 export class DebugBreakpointWidget extends Disposable {
-
   @Autowired(DebugEditor)
   private readonly editor: DebugEditor;
 
@@ -51,25 +50,39 @@ export class DebugBreakpointWidget extends Disposable {
     return this.zone?.breakpointType;
   }
 
-  show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
+  show(
+    position: monaco.Position,
+    contexts?: DebugBreakpointWidgetContext,
+    defaultContext: DebugBreakpointZoneWidget.Context = 'condition',
+  ) {
     this.dispose();
     this._position = position;
-    this.addDispose(this.zone = this.injector.get(DebugBreakpointZoneWidget, [this.editor, { ...contexts }, defaultContext]));
-    this.addDispose(this.zone.onDidChangeBreakpoint(({ context, value }) => {
-      if (contexts) {
-        contexts[context] = value;
-      }
-    }));
-    this.addDispose(this.zone.onFocus(() => {
-      this.breakpointWidgetInputFocus.set(true);
-    }));
-    this.addDispose(this.zone.onBlur(() => {
-      this.breakpointWidgetInputFocus.set(false);
-    }));
-    this.addDispose(this.zone.onDispose(() => {
-      this._position = undefined;
-      this.breakpointWidgetInputFocus.set(false);
-    }));
+    this.addDispose(
+      (this.zone = this.injector.get(DebugBreakpointZoneWidget, [this.editor, { ...contexts }, defaultContext])),
+    );
+    this.addDispose(
+      this.zone.onDidChangeBreakpoint(({ context, value }) => {
+        if (contexts) {
+          contexts[context] = value;
+        }
+      }),
+    );
+    this.addDispose(
+      this.zone.onFocus(() => {
+        this.breakpointWidgetInputFocus.set(true);
+      }),
+    );
+    this.addDispose(
+      this.zone.onBlur(() => {
+        this.breakpointWidgetInputFocus.set(false);
+      }),
+    );
+    this.addDispose(
+      this.zone.onDispose(() => {
+        this._position = undefined;
+        this.breakpointWidgetInputFocus.set(false);
+      }),
+    );
     this.zone.show(positionToRange(position), DebugBreakpointWidget.LINE_HEIGHT_NUMBER);
   }
 

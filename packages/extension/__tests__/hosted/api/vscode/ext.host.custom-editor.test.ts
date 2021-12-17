@@ -1,9 +1,21 @@
 import { Emitter, CancellationTokenSource, Uri } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  ExtHostAPIIdentifier,
+  ExtensionDocumentDataManager,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostCustomEditorImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IMainThreadCustomEditor, CustomTextEditorProvider, CustomEditorType, CustomEditorProvider, CustomDocument, CustomDocumentEditEvent, CustomDocumentContentChangeEvent } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
+import {
+  IMainThreadCustomEditor,
+  CustomTextEditorProvider,
+  CustomEditorType,
+  CustomEditorProvider,
+  CustomDocument,
+  CustomDocumentEditEvent,
+  CustomDocumentContentChangeEvent,
+} from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
 import { URI } from '@opensumi/ide-core-common';
 import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 
@@ -26,7 +38,6 @@ let extHost: ExtHostCustomEditorImpl;
 let mainThread: IMainThreadCustomEditor;
 
 describe('vscode extHost CustomEditor Test', () => {
-
   let extHostWebviewMock: ExtHostWebviewService;
   let extHostDocumentsMock: ExtensionDocumentDataManager;
 
@@ -39,24 +50,29 @@ describe('vscode extHost CustomEditor Test', () => {
   });
 
   it('customTextEditor Test', async (done) => {
-
     const viewType = 'test CustomTextEditor';
 
     const customTextEditorProvider: CustomTextEditorProvider = {
-      resolveCustomTextEditor: jest.fn((document, webviewPanel, token) => {
-        return;
-      }),
+      resolveCustomTextEditor: jest.fn((document, webviewPanel, token) => {}),
     };
 
-    extHost.registerCustomEditorProvider(viewType,  customTextEditorProvider, {}, {
-      id: 'test-extension',
-      extensionId: 'test-extension',
-      isBuiltin: true,
-    });
+    extHost.registerCustomEditorProvider(
+      viewType,
+      customTextEditorProvider,
+      {},
+      {
+        id: 'test-extension',
+        extensionId: 'test-extension',
+        isBuiltin: true,
+      },
+    );
 
     await waitIPC();
 
-    expect(mainThread.$registerCustomEditor).toBeCalledWith(viewType, CustomEditorType.TextEditor, {},
+    expect(mainThread.$registerCustomEditor).toBeCalledWith(
+      viewType,
+      CustomEditorType.TextEditor,
+      {},
       expect.objectContaining({
         id: 'test-extension',
         extensionId: 'test-extension',
@@ -83,27 +99,31 @@ describe('vscode extHost CustomEditor Test', () => {
           id: webviewPanelId,
         } as any;
       } else {
-
       }
     };
-    extHost.$resolveCustomTextEditor(viewType, docUri, webviewPanelId, (new CancellationTokenSource()).token);
+    extHost.$resolveCustomTextEditor(viewType, docUri, webviewPanelId, new CancellationTokenSource().token);
 
     await waitIPC();
 
-    expect(customTextEditorProvider.resolveCustomTextEditor).toBeCalledWith(expect.objectContaining({
-      uri: docUri,
-    }), {
-      id: webviewPanelId,
-    }, expect.anything());
+    expect(customTextEditorProvider.resolveCustomTextEditor).toBeCalledWith(
+      expect.objectContaining({
+        uri: docUri,
+      }),
+      {
+        id: webviewPanelId,
+      },
+      expect.anything(),
+    );
 
     done();
   });
 
   it('customEditor Test', async (done) => {
-
     const viewType = 'test CustomEditor';
 
-    const _onDidChangeCustomDocument = new Emitter<CustomDocumentEditEvent<TestCustomEditorDocument> | CustomDocumentContentChangeEvent<TestCustomEditorDocument>>();
+    const _onDidChangeCustomDocument = new Emitter<
+      CustomDocumentEditEvent<TestCustomEditorDocument> | CustomDocumentContentChangeEvent<TestCustomEditorDocument>
+    >();
 
     const docs = new Map<string, TestCustomEditorDocument>();
 
@@ -120,20 +140,26 @@ describe('vscode extHost CustomEditor Test', () => {
       revertCustomDocument: async (doc: TestCustomEditorDocument) => {
         await doc.revert();
       },
-      resolveCustomEditor: jest.fn(() => {
-
-      }),
+      resolveCustomEditor: jest.fn(() => {}),
     };
 
-    extHost.registerCustomEditorProvider(viewType,  customEditorProvider, {}, {
-      id: 'test-extension',
-      extensionId: 'test-extension',
-      isBuiltin: true,
-    });
+    extHost.registerCustomEditorProvider(
+      viewType,
+      customEditorProvider,
+      {},
+      {
+        id: 'test-extension',
+        extensionId: 'test-extension',
+        isBuiltin: true,
+      },
+    );
 
     await waitIPC();
 
-    expect(mainThread.$registerCustomEditor).toBeCalledWith(viewType, CustomEditorType.FullEditor, {},
+    expect(mainThread.$registerCustomEditor).toBeCalledWith(
+      viewType,
+      CustomEditorType.FullEditor,
+      {},
       expect.objectContaining({
         id: 'test-extension',
         extensionId: 'test-extension',
@@ -160,23 +186,30 @@ describe('vscode extHost CustomEditor Test', () => {
           id: webviewPanelId,
         } as any;
       } else {
-
       }
     };
 
-    extHost.$resolveCustomTextEditor(viewType, docUri, webviewPanelId, (new CancellationTokenSource()).token);
+    extHost.$resolveCustomTextEditor(viewType, docUri, webviewPanelId, new CancellationTokenSource().token);
 
     await waitIPC();
 
-    expect(customEditorProvider.resolveCustomEditor).toBeCalledWith(expect.any(TestCustomEditorDocument), {
-      id: webviewPanelId,
-    }, expect.anything());
+    expect(customEditorProvider.resolveCustomEditor).toBeCalledWith(
+      expect.any(TestCustomEditorDocument),
+      {
+        id: webviewPanelId,
+      },
+      expect.anything(),
+    );
 
-    expect(customEditorProvider.resolveCustomEditor).toBeCalledWith(expect.objectContaining({
-      uri: docUri,
-    }), {
-      id: webviewPanelId,
-    }, expect.anything());
+    expect(customEditorProvider.resolveCustomEditor).toBeCalledWith(
+      expect.objectContaining({
+        uri: docUri,
+      }),
+      {
+        id: webviewPanelId,
+      },
+      expect.anything(),
+    );
 
     const doc = docs.get(docUri.toString());
 
@@ -184,21 +217,21 @@ describe('vscode extHost CustomEditor Test', () => {
 
     // 保存自定义文档
     expect(doc?.saved).toBeFalsy();
-    await extHost.$saveCustomDocument(viewType, docUri,  (new CancellationTokenSource()).token);
+    await extHost.$saveCustomDocument(viewType, docUri, new CancellationTokenSource().token);
     expect(doc?.saved).toBeTruthy();
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), false);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     // 回滚自定义文档
     expect(doc?.reverted).toBeFalsy();
-    await extHost.$revertCustomDocument(viewType, docUri,  (new CancellationTokenSource()).token);
+    await extHost.$revertCustomDocument(viewType, docUri, new CancellationTokenSource().token);
     expect(doc?.reverted).toBeTruthy();
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), false);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
-   // 产生一次变更
+    // 产生一次变更
 
     const edit: CustomDocumentEditEvent<TestCustomEditorDocument> = {
       document: doc!,
@@ -208,58 +241,53 @@ describe('vscode extHost CustomEditor Test', () => {
 
     _onDidChangeCustomDocument.fire(edit);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), true);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), true);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     await extHost.$undo(viewType, docUri);
     expect(edit.undo).toBeCalledTimes(1);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), false);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     await extHost.$redo(viewType, docUri);
     expect(edit.redo).toBeCalledTimes(1);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), true);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), true);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     // 此时保存
-    await extHost.$saveCustomDocument(viewType, docUri,  (new CancellationTokenSource()).token);
+    await extHost.$saveCustomDocument(viewType, docUri, new CancellationTokenSource().token);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), false);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     // 保存后回滚, 此时应该是 dirty
     await extHost.$undo(viewType, docUri);
     expect(edit.undo).toBeCalledTimes(2);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), true);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), true);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     // 再 redo 恢复 dirty=false
     await extHost.$redo(viewType, docUri);
     expect(edit.redo).toBeCalledTimes(2);
     await waitIPC();
-    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({path: docUri.path}), false);
+    expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
 
     done();
-
   });
-
 });
 
 class TestCustomEditorDocument implements CustomDocument {
-
   public saved = false;
 
   public reverted = false;
 
   public saveAs = jest.fn();
 
-  constructor(public readonly uri: Uri) {
-
-  }
+  constructor(public readonly uri: Uri) {}
 
   dispose(): void {
     throw new Error('Method not implemented.');
@@ -272,7 +300,6 @@ class TestCustomEditorDocument implements CustomDocument {
   revert() {
     this.reverted = true;
   }
-
 }
 
 function waitIPC() {

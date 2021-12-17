@@ -5,9 +5,7 @@ const builtinCommands: IBuiltInCommand[] = [
   {
     id: 'test:builtinCommand:test',
     handler: {
-      handler: (args) => {
-        return 'fake token';
-      },
+      handler: (args) => 'fake token',
     },
   },
 ];

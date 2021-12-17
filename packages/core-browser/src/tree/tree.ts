@@ -81,11 +81,11 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   readonly badgeLimit?: number;
   /**
    * 节点字体颜色
-  */
+   */
   readonly color?: string;
   /**
    * 节点背景颜色
-  */
+   */
   readonly background?: string;
   /**
    * 节点字体颜色样式
@@ -114,8 +114,8 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    * 高亮区域
    */
   readonly highLightRanges?: {
-    name?: TreeNodeHighlightRange[],
-    description?: TreeNodeHighlightRange[],
+    name?: TreeNodeHighlightRange[];
+    description?: TreeNodeHighlightRange[];
   };
 
   /**
@@ -266,10 +266,12 @@ export function isTreeViewActionComponent(action: TreeViewAction): action is Tre
 export type TreeViewAction = TreeViewActionConfig | TreeViewActionComponent;
 
 export interface TreeViewActionConfig {
-  icon: {
-    dark?: string;
-    light?: string;
-  } | string;
+  icon:
+    | {
+        dark?: string;
+        light?: string;
+      }
+    | string;
   title: string;
   command: string;
   location: TreeViewActionTypes;

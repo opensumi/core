@@ -9,7 +9,6 @@ import { electronEnv } from '../utils/electron';
 
 @Domain(OpenerContribution)
 export class DefaultOpenerContribution implements OpenerContribution {
-
   @Autowired()
   private readonly commandOpener: CommandOpener;
 
@@ -24,7 +23,6 @@ export class DefaultOpenerContribution implements OpenerContribution {
 
 @Domain(ClientAppContribution)
 export class OpenerContributionClient implements ClientAppContribution {
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 

@@ -14,7 +14,12 @@ export interface IFileSchemeDocClient {
    * @param encoding
    * @param force 强制保存，无视diff
    */
-  saveByChange(uri: string, change: IContentChange, encoding?: string, force?: boolean): Promise<IEditorDocumentModelSaveResult>;
+  saveByChange(
+    uri: string,
+    change: IContentChange,
+    encoding?: string,
+    force?: boolean,
+  ): Promise<IEditorDocumentModelSaveResult>;
   /**
    * 直接使用文件内容进行保存，适用于较小的文件
    * @param path
@@ -22,12 +27,16 @@ export interface IFileSchemeDocClient {
    * @param encoding
    * @param force 强制保存，无视diff
    */
-  saveByContent(uri: string, content: ISavingContent, encoding?: string, force?: boolean): Promise<IEditorDocumentModelSaveResult>;
+  saveByContent(
+    uri: string,
+    content: ISavingContent,
+    encoding?: string,
+    force?: boolean,
+  ): Promise<IEditorDocumentModelSaveResult>;
   getMd5(uri: string, encoding?: string): Promise<string | undefined>;
 }
 
 export interface IFileSchemeDocNodeService {
-
   /**
    * 使用changes进行保存，适用于内容较大的文件
    * @param path
@@ -35,7 +44,12 @@ export interface IFileSchemeDocNodeService {
    * @param encoding
    * @param force 强制保存，无视diff
    */
-  $saveByChange(uri: string, change: IContentChange, encoding?: string, force?: boolean): Promise<IEditorDocumentModelSaveResult>;
+  $saveByChange(
+    uri: string,
+    change: IContentChange,
+    encoding?: string,
+    force?: boolean,
+  ): Promise<IEditorDocumentModelSaveResult>;
 
   /**
    * 直接使用文件内容进行保存，适用于较小的文件
@@ -44,7 +58,12 @@ export interface IFileSchemeDocNodeService {
    * @param encoding
    * @param force 强制保存，无视diff
    */
-  $saveByContent(uri: string, content: ISavingContent, encoding?: string, force?: boolean): Promise<IEditorDocumentModelSaveResult>;
+  $saveByContent(
+    uri: string,
+    content: ISavingContent,
+    encoding?: string,
+    force?: boolean,
+  ): Promise<IEditorDocumentModelSaveResult>;
 
   $getMd5(uri: string, encoding?: string): Promise<string | undefined>;
 }
@@ -54,7 +73,6 @@ export const IFileSchemeDocNodeService = Symbol('FileSchemeDocNodeService');
 export const FileSchemeDocNodeServicePath = 'FileSchemeDocNodeService';
 
 export interface IContentChange {
-
   baseMd5: string;
 
   eol: '\n' | '\r\n';
@@ -65,15 +83,12 @@ export interface IContentChange {
 }
 
 export interface ISavingContent {
-
   baseMd5: string;
 
   content: string;
-
 }
 
 export interface ISingleChange {
-
   offset: number;
 
   length: number;
@@ -81,13 +96,10 @@ export interface ISingleChange {
   text: string;
 
   type: ChangeType;
-
 }
 
 export enum ChangeType {
-
   ADDED = 1,
 
   REMOVED = 2,
-
 }

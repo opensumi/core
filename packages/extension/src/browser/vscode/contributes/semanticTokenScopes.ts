@@ -6,7 +6,6 @@ import { VSCodeContributePoint, Contributes, SemanticTokenScopesSchema } from '.
 @Injectable()
 @Contributes('semanticTokenScopes')
 export class SemanticTokenScopesContributionPoint extends VSCodeContributePoint<SemanticTokenScopesSchema> {
-
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -28,7 +27,7 @@ export class SemanticTokenScopesContributionPoint extends VSCodeContributePoint<
         continue;
       }
 
-      /* tslint:disable forin*/
+      // eslint-disable-next-line guard-for-in
       for (const selector in contrib.scopes) {
         const scopes = contrib.scopes[selector];
         if (!Array.isArray(scopes) || scopes.some((l) => typeof l !== 'string')) {
@@ -37,17 +36,13 @@ export class SemanticTokenScopesContributionPoint extends VSCodeContributePoint<
         }
         try {
           const parsedSelector = this.semanticTokenRegistry.parseTokenSelector(selector, contrib.language);
-          this.semanticTokenRegistry.registerTokenStyleDefault(
-            parsedSelector,
-            {
-              scopesToProbe: scopes.map((s) => s.split(' ')),
-            },
-          );
+          this.semanticTokenRegistry.registerTokenStyleDefault(parsedSelector, {
+            scopesToProbe: scopes.map((s) => s.split(' ')),
+          });
         } catch (err) {
           this.logger.error(`configuration.semanticTokenScopes.scopes': Problems parsing selector ${selector}.`);
         }
       }
     }
   }
-
 }

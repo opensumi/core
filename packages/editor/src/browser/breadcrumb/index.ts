@@ -6,10 +6,9 @@ import { IEditor } from '../../common';
 
 @Injectable()
 export class BreadCrumbServiceImpl implements IBreadCrumbService {
-
   private providers: IBreadCrumbProvider[] = [];
 
-  private _onDidUpdateBreadCrumbResults = new Emitter<{uri: URI, editor: MaybeNull<IEditor>}>();
+  private _onDidUpdateBreadCrumbResults = new Emitter<{ uri: URI; editor: MaybeNull<IEditor> }>();
   public readonly onDidUpdateBreadCrumbResults = this._onDidUpdateBreadCrumbResults.event;
 
   // editor-id / uriString
@@ -44,7 +43,7 @@ export class BreadCrumbServiceImpl implements IBreadCrumbService {
         const newCrumb = provider.provideBreadCrumbForUri(uri, editor);
         if (!isBreadCrumbArrayEqual(lastCrumb, newCrumb)) {
           editorCrumbResults.set(uri.toString(), newCrumb);
-          this._onDidUpdateBreadCrumbResults.fire({editor, uri});
+          this._onDidUpdateBreadCrumbResults.fire({ editor, uri });
         }
         break;
       }
@@ -68,7 +67,6 @@ export class BreadCrumbServiceImpl implements IBreadCrumbService {
   disposeCrumb(uri: URI) {
     // this.crumbResults.delete(uri.toString());
   }
-
 }
 
 function isBreadCrumbArrayEqual(p1: IBreadCrumbPart[] | undefined, p2: IBreadCrumbPart[] | undefined): boolean {
@@ -80,7 +78,7 @@ function isBreadCrumbArrayEqual(p1: IBreadCrumbPart[] | undefined, p2: IBreadCru
     if (p1.length !== p2.length) {
       return false;
     }
-    for (let i = 0; i < p1.length ; i ++ ) {
+    for (let i = 0; i < p1.length; i++) {
       if (!isBreadCrumbEqual(p1[i], p2[i])) {
         return false;
       }

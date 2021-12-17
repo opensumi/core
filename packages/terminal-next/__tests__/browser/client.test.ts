@@ -5,9 +5,7 @@ import WebSocket from 'ws';
 import httpProxy from 'http-proxy';
 import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
-import {
-  defaultName,
-} from './mock.service';
+import { defaultName } from './mock.service';
 import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 import { delay } from './utils';
 import { injector } from './inject';
@@ -73,11 +71,13 @@ describe('Terminal Client', () => {
       },
     });
     client = factory(widget, {});
-    client.addDispose(Disposable.create(async () => {
-      if (root) {
-        await fs.remove(root.path.toString());
-      }
-    }));
+    client.addDispose(
+      Disposable.create(async () => {
+        if (root) {
+          await fs.remove(root.path.toString());
+        }
+      }),
+    );
     await client.attached.promise;
   });
 
@@ -103,8 +103,7 @@ describe('Terminal Client', () => {
   it('Terminal SelectAll', () => {
     client.selectAll();
     const position = client.term.getSelectionPosition();
-    expect(position && position.endColumn)
-      .toEqual(client.term.cols);
+    expect(position && position.endColumn).toEqual(client.term.cols);
   });
 
   it('Terminal getSelection', async () => {

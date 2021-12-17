@@ -2,7 +2,6 @@ import { PreferenceScope } from './preference-scope';
 import { IDisposable } from '@opensumi/ide-core-common';
 
 export interface IPreferenceSettingsService {
-
   setPreference(key: string, value: any, scope: PreferenceScope);
 
   getSettingGroups(scope: PreferenceScope, search?: string): ISettingGroup[];
@@ -13,9 +12,9 @@ export interface IPreferenceSettingsService {
 
   getSections(groupId: string, scope: PreferenceScope, search?: string): ISettingSection[];
 
-  getPreference(preferenceName: string, scope: PreferenceScope): {value: any, effectingScope: PreferenceScope};
+  getPreference(preferenceName: string, scope: PreferenceScope): { value: any; effectingScope: PreferenceScope };
 
-  setEnumLabels(preferenceName: string, labels: {[key: string]: string}): void;
+  setEnumLabels(preferenceName: string, labels: { [key: string]: string }): void;
 
   setCurrentGroup(groupId: string): void;
 }
@@ -23,14 +22,12 @@ export interface IPreferenceSettingsService {
 export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 
 export interface ISettingGroup {
-
   // 唯一
   id: string;
 
   title: string;
 
   iconClass: string;
-
 }
 
 export interface IPreferenceViewDesc {
@@ -43,12 +40,11 @@ export interface IPreferenceViewDesc {
 }
 
 export interface ISettingSection {
-
   title?: string;
 
   preferences: Array<string | IPreferenceViewDesc>;
 
-  component?: React.ComponentType<{scope: PreferenceScope}>;
+  component?: React.ComponentType<{ scope: PreferenceScope }>;
 
   hiddenInScope?: PreferenceScope[];
 }

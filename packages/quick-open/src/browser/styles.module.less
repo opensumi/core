@@ -1,10 +1,10 @@
 .container {
   position: absolute;
-	width: 600px;
+  width: 600px;
   z-index: 2000;
   font-size: 12px;
-	left: 50%;
-	margin-left: -300px;
+  left: 50%;
+  margin-left: -300px;
   :global(.scrollbar-decoration) {
     display: none;
   }
@@ -30,7 +30,9 @@
   color: var(--inputValidation-errorForeground);
   background-color: var(--inputValidation-errorBackground);
 
-  .item_selected, .item_selected:hover, .item:hover{
+  .item_selected,
+  .item_selected:hover,
+  .item:hover {
     background-color: var(--inputValidation-errorBackground);
   }
 }
@@ -74,7 +76,8 @@
   font-weight: bold;
 }
 
-.item_group_label, .item_action {
+.item_group_label,
+.item_action {
   color: var(--textLink-foreground);
   margin-left: 6px;
 }
@@ -93,11 +96,12 @@
 }
 
 .item_label_highlight,
-.item_label_description_highlight  {
+.item_label_description_highlight {
   color: var(--list-highlightForeground);
 }
 
-.item_label_description, .item_label_detail {
+.item_label_description,
+.item_label_detail {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

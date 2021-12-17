@@ -8,7 +8,11 @@ import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 import { themeColorFromId } from '@opensumi/ide-theme';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 
-import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
+import {
+  overviewRulerModifiedForeground,
+  overviewRulerDeletedForeground,
+  overviewRulerAddedForeground,
+} from '../scm-color';
 import { SCMPreferences } from '../scm-preference';
 import { DirtyDiffModel } from './dirty-diff-model';
 
@@ -43,7 +47,7 @@ export class DirtyDiffDecorator extends Disposable {
   static createDecoration(
     className: string,
     foregroundColor: string,
-    options: { gutter: boolean, overview: boolean, isWholeLine: boolean },
+    options: { gutter: boolean; overview: boolean; isWholeLine: boolean },
   ): textModel.ModelDecorationOptions {
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'dirty-diff',
@@ -73,10 +77,7 @@ export class DirtyDiffDecorator extends Disposable {
   @Autowired(SCMPreferences)
   private readonly scmPreferences: SCMPreferences;
 
-  constructor(
-    @Optional() editorModel: IEditorDocumentModel,
-    @Optional() private model: DirtyDiffModel,
-  ) {
+  constructor(@Optional() editorModel: IEditorDocumentModel, @Optional() private model: DirtyDiffModel) {
     super();
     this.editorModel = editorModel;
     const decorations = this.scmPreferences['scm.diffDecorations'];
@@ -84,9 +85,16 @@ export class DirtyDiffDecorator extends Disposable {
     const overview = decorations === 'all' || decorations === 'overview';
     const options = { gutter, overview, isWholeLine: true };
 
-    this.modifiedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-modified', overviewRulerModifiedForeground, options);
+    this.modifiedOptions = DirtyDiffDecorator.createDecoration(
+      'dirty-diff-modified',
+      overviewRulerModifiedForeground,
+      options,
+    );
     this.addedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-added', overviewRulerAddedForeground, options);
-    this.deletedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-deleted', overviewRulerDeletedForeground, { ...options, isWholeLine: false });
+    this.deletedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-deleted', overviewRulerDeletedForeground, {
+      ...options,
+      isWholeLine: false,
+    });
 
     this.addDispose(model.onDidChange(this.onDidChange, this));
   }
@@ -104,31 +112,39 @@ export class DirtyDiffDecorator extends Disposable {
         case ChangeType.Add:
           return {
             range: {
-              startLineNumber, startColumn: 1,
-              endLineNumber, endColumn: 1,
+              startLineNumber,
+              startColumn: 1,
+              endLineNumber,
+              endColumn: 1,
             },
             options: this.addedOptions,
           };
         case ChangeType.Delete:
           return {
             range: {
-              startLineNumber, startColumn: Number.MAX_VALUE,
-              endLineNumber: startLineNumber, endColumn: Number.MAX_VALUE,
+              startLineNumber,
+              startColumn: Number.MAX_VALUE,
+              endLineNumber: startLineNumber,
+              endColumn: Number.MAX_VALUE,
             },
             options: this.deletedOptions,
           };
         case ChangeType.Modify:
           return {
             range: {
-              startLineNumber, startColumn: 1,
-              endLineNumber, endColumn: 1,
+              startLineNumber,
+              startColumn: 1,
+              endLineNumber,
+              endColumn: 1,
             },
             options: this.modifiedOptions,
           };
       }
     });
 
-    this.decorations = this.editorModel.getMonacoModel().deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
+    this.decorations = this.editorModel
+      .getMonacoModel()
+      .deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
   }
 
   dispose(): void {

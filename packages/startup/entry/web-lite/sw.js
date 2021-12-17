@@ -6,14 +6,16 @@ const cacheAssetUrlPrefixList = [
 self.addEventListener('fetch', (event) => {
   if (cacheAssetUrlPrefixList.some((prefix) => event.request.url.startsWith(prefix))) {
     event.respondWith(
-      caches.open('kt-ext').then((cache) => {
-        return cache.match(event.request).then((res) => {
-          return res || fetch(event.request).then((response) => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        });
-      })
+      caches.open('kt-ext').then((cache) =>
+        cache.match(event.request).then(
+          (res) =>
+            res ||
+            fetch(event.request).then((response) => {
+              cache.put(event.request, response.clone());
+              return response;
+            }),
+        ),
+      ),
     );
   }
 });

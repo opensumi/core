@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2017 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -18,7 +18,6 @@ import { URI, Uri } from '../uri';
 import { isWindows } from './os';
 
 export namespace FileUri {
-
   const windowsDriveRegex = /^([^:/?#]+?):$/;
 
   /**
@@ -45,7 +44,6 @@ export namespace FileUri {
        * (by, for example, the readdir function in the fs-extra module).
        * A backslash must be appended to the drive, eg c:\, to ensure the correct path.
        */
-      // tslint:disable-next-line:no-any
       const fsPathFromVsCodeUri = (uri as any).codeUri.fsPath;
       if (isWindows) {
         const isWindowsDriveRoot = windowsDriveRegex.exec(fsPathFromVsCodeUri);
@@ -56,5 +54,4 @@ export namespace FileUri {
       return fsPathFromVsCodeUri;
     }
   }
-
 }

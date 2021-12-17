@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -6,9 +6,7 @@
 import { URI } from '../src/uri';
 
 describe('uri', () => {
-
   describe('#getParent', () => {
-
     it('of file:///foo/bar.txt', () => {
       expect(new URI('file:///foo/bar.txt').parent.toString()).toBe('file:///foo');
     });
@@ -28,11 +26,9 @@ describe('uri', () => {
     it('of file://', () => {
       expect(new URI('file://').parent.toString()).toBe('file:///');
     });
-
   });
 
   describe('#lastSegment', () => {
-
     it('of file:///foo/bar.txt', () => {
       expect(new URI('file:///foo/bar.txt').path.base).toBe('bar.txt');
     });
@@ -48,11 +44,9 @@ describe('uri', () => {
     it('of file://', () => {
       expect(new URI('file://').path.base).toBe('');
     });
-
   });
 
   describe('#appendPath', () => {
-
     it("'' to file:///foo", () => {
       const uri = new URI('file:///foo');
       expect(uri.resolve('').toString()).toBe(uri.toString());
@@ -78,11 +72,9 @@ describe('uri', () => {
     it('bar/baz to file:///', () => {
       expect(new URI('file:///').resolve('bar/baz').toString()).toBe('file:///bar/baz');
     });
-
   });
 
   describe('#path', () => {
-
     it('Should return with the FS path from the URI.', () => {
       expect(new URI('file:///foo/bar/baz.txt').path.toString()).toBe('/foo/bar/baz.txt');
     });
@@ -93,10 +85,13 @@ describe('uri', () => {
   });
 
   describe('#withFragment', () => {
-
     it('Should replace the fragment.', () => {
-      expect(new URI('file:///foo/bar/baz.txt#345345').withFragment('foo').toString()).toBe('file:///foo/bar/baz.txt#foo');
-      expect(new URI('file:///foo/bar/baz.txt?foo=2#345345').withFragment('foo').toString(true)).toBe('file:///foo/bar/baz.txt?foo=2#foo');
+      expect(new URI('file:///foo/bar/baz.txt#345345').withFragment('foo').toString()).toBe(
+        'file:///foo/bar/baz.txt#foo',
+      );
+      expect(new URI('file:///foo/bar/baz.txt?foo=2#345345').withFragment('foo').toString(true)).toBe(
+        'file:///foo/bar/baz.txt?foo=2#foo',
+      );
     });
 
     it('Should remove the fragment.', () => {
@@ -167,6 +162,4 @@ describe('uri', () => {
       expect(a.isEqualOrParent(b)).toBe(false);
     });
   });
-
 });
-

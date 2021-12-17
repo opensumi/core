@@ -1,8 +1,23 @@
 import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
-import { EXTENSION_EXTEND_SERVICE_PREFIX, IBrowserRequireInterceptorArgs, IExtension, IRequireInterceptorService, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER, RequireInterceptorContribution } from '../common';
-import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  EXTENSION_EXTEND_SERVICE_PREFIX,
+  IBrowserRequireInterceptorArgs,
+  IExtension,
+  IRequireInterceptorService,
+  MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
+  RequireInterceptorContribution,
+} from '../common';
+import {
+  ContributionProvider,
+  IExtensionProps,
+  ILogger,
+  replaceLocalizePlaceholder,
+  URI,
+  IReporterService,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
 import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
 import { Path, posix } from '@opensumi/ide-core-common/lib/path';
@@ -15,7 +30,11 @@ import { ExtensionNoExportsView } from './components';
 import { ISumiBrowserContributions } from './sumi-browser/types';
 import { Extension } from './extension';
 import { SumiBrowserContributionRunner } from './sumi-browser/contribution';
-import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractWorkerExtProcessService } from '../common/extension.service';
+import {
+  AbstractNodeExtProcessService,
+  AbstractViewExtProcessService,
+  AbstractWorkerExtProcessService,
+} from '../common/extension.service';
 import { ActivatedExtensionJSON } from '../common/activator';
 
 const LOAD_FAILED_CODE = 'load';
@@ -114,24 +133,23 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             extension = maybeExtension;
             const columnNumber = call.getColumnNumber();
             const lineNumber = call.getLineNumber();
-            stackTraceMessage = `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` + stackTraceMessage;
+            stackTraceMessage =
+              `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` +
+              stackTraceMessage;
           }
         }
       }
 
       if (extension) {
-        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
+        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${
+          error.message || ''
+        }${stackTraceMessage}`;
         console.log('get error', traceMessage);
-        this.reportRuntimeError(
-          error,
-          extension,
-          traceMessage,
-        );
+        this.reportRuntimeError(error, extension, traceMessage);
         return traceMessage;
       }
       return error.stack;
     };
-
   }
 
   private reportRuntimeError(err: Error, extension: IExtension, stackTraceMessage: string): void {
@@ -145,8 +163,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   /**
-  * @see [KtViewLocation](#KtViewLocation) view location
-  */
+   * @see [KtViewLocation](#KtViewLocation) view location
+   */
   private getRegisterViewKind(location: KtViewLocation) {
     return ViewExtProcessService.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
@@ -156,7 +174,10 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
     if (extendConfig?.browser?.main) {
-      warning(false, '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead');
+      warning(
+        false,
+        '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead',
+      );
       await this.activateExtensionByDeprecatedExtendConfig(extension as Extension);
       return;
     }
@@ -171,9 +192,11 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     const { contributes } = extension;
 
     // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
-    const browserModuleUri = new URI(extension.extensionLocation.with({
-      path: posix.join(extension.extensionLocation.path, contributes.browserMain!),
-    }));
+    const browserModuleUri = new URI(
+      extension.extensionLocation.with({
+        path: posix.join(extension.extensionLocation.path, contributes.browserMain!),
+      }),
+    );
     const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
 
     if (contributes.browserViews) {
@@ -189,7 +212,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             title: replaceLocalizePlaceholder(title, extension.id),
             id,
             component: this.getModuleExportsComponent(moduleExports, extension, id, proxiedHead),
-            titleComponent: titleComponentId && this.getModuleExportsComponent(moduleExports, extension, titleComponentId, proxiedHead),
+            titleComponent:
+              titleComponentId &&
+              this.getModuleExportsComponent(moduleExports, extension, titleComponentId, proxiedHead),
           })),
         };
         return config;
@@ -203,14 +228,23 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
         if (action.type === 'button' && action.popoverComponent) {
           const popoverComponent = moduleExports[action.popoverComponent];
           if (!popoverComponent) {
-            this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${action.popoverComponent}`);
+            this.logger.error(
+              `Can not find CustomPopover from extension ${extension.id}, id: ${action.popoverComponent}`,
+            );
             continue;
           }
           if (this.appConfig.useExperimentalShadowDom) {
-            const shadowComponent = (props) => getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead);
-            this.toolbarPopoverRegistry.registerComponent(`${extension.id}:${action.popoverComponent}`, shadowComponent);
+            const shadowComponent = (props) =>
+              getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead);
+            this.toolbarPopoverRegistry.registerComponent(
+              `${extension.id}:${action.popoverComponent}`,
+              shadowComponent,
+            );
           } else {
-            this.toolbarPopoverRegistry.registerComponent(`${extension.id}:${action.popoverComponent}`, popoverComponent);
+            this.toolbarPopoverRegistry.registerComponent(
+              `${extension.id}:${action.popoverComponent}`,
+              popoverComponent,
+            );
           }
         }
       }
@@ -218,36 +252,58 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   /*
-  * @deprecated 废弃的用法兼容
-  * 对于老的 kaitian.js 的兼容激活
-  */
+   * @deprecated 废弃的用法兼容
+   * 对于老的 kaitian.js 的兼容激活
+   */
   private async activateExtensionByDeprecatedExtendConfig(extension: Extension) {
     const { extendConfig } = extension;
     this.logger.verbose(`register view by Deprecated config ${extension.id}`);
-    const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
+    const browserScriptURI = await this.staticResourceService.resolveStaticResource(
+      URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()),
+    );
     try {
       // 备注: 这里 extension 就是 rawExtension 了
       const rawExtension = extension;
       if (this.appConfig.useExperimentalShadowDom) {
         this.registerPortalShadowRoot(extension.id);
-        const { moduleExports, proxiedHead } = await this.loadBrowserModuleUseInterceptor<ISumiBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
-        this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
+        const { moduleExports, proxiedHead } = await this.loadBrowserModuleUseInterceptor<ISumiBrowserContributions>(
+          browserScriptURI.toString(),
+          extension,
+          true /** use export default ... */,
+        );
+        this.registerBrowserComponent(
+          this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead),
+          rawExtension!,
+        );
       } else {
-        const { moduleExports } = await this.loadBrowserModule<ISumiBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
+        const { moduleExports } = await this.loadBrowserModule<ISumiBrowserContributions>(
+          browserScriptURI.toString(),
+          extension,
+          true /** use export default ... */,
+        );
         this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension), rawExtension!);
       }
     } catch (err) {
       if (err.errorCode === LOAD_FAILED_CODE) {
-        this.logger.error(`[Extension-Host] failed to load ${extension.name} - browser module, path: \n\n ${err.moduleId}`);
+        this.logger.error(
+          `[Extension-Host] failed to load ${extension.name} - browser module, path: \n\n ${err.moduleId}`,
+        );
       } else {
         this.logger.error(err);
       }
     }
   }
 
-  private async getExtensionModuleExports(url: string, extension: IExtension): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
+  private async getExtensionModuleExports(
+    url: string,
+    extension: IExtension,
+  ): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
     if (this.appConfig.useExperimentalShadowDom) {
-      return await this.loadBrowserModuleUseInterceptor<ISumiBrowserContributions>(url, extension, false /** use named exports ... */);
+      return await this.loadBrowserModuleUseInterceptor<ISumiBrowserContributions>(
+        url,
+        extension,
+        false /** use named exports ... */,
+      );
     }
     const { moduleExports } = await this.loadBrowserModule(url, extension, false);
     return { moduleExports };
@@ -259,9 +315,11 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     }
 
     const contribution: ISumiBrowserContributions = browserExported;
-    extension.addDispose(this.injector.get(SumiBrowserContributionRunner, [extension, contribution]).run({
-      getExtensionExtendService: this.getExtensionExtendService.bind(this),
-    }));
+    extension.addDispose(
+      this.injector.get(SumiBrowserContributionRunner, [extension, contribution]).run({
+        getExtensionExtendService: this.getExtensionExtendService.bind(this),
+      }),
+    );
   }
 
   private getExtensionExtendService(extension: IExtension, id: string) {
@@ -279,10 +337,10 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
     const extendProtocol = new Proxy<{
       getProxy: (identifier: ProxyIdentifier<any>) => {
-        node: any,
-        worker: any,
-      },
-      set: <T>(identifier: ProxyIdentifier<T>, service: T) => void,
+        node: any;
+        worker: any;
+      };
+      set: <T>(identifier: ProxyIdentifier<T>, service: T) => void;
     }>(Object.create(null), {
       get: (obj, prop) => {
         if (typeof prop === 'symbol') {
@@ -291,7 +349,6 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
         if (prop === 'getProxy') {
           return () => {
-
             let nodeProxy: ProxyConstructor | undefined;
             let workerProxy: ProxyConstructor | undefined;
 
@@ -307,10 +364,11 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
               node: nodeProxy,
               worker: workerProxy,
             };
-
           };
         } else if (prop === 'set') {
-          const componentProxyIdentifier = { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}` };
+          const componentProxyIdentifier = {
+            serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`,
+          };
 
           return (componentService) => {
             const service = {};
@@ -352,7 +410,12 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     });
   }
 
-  private getModuleExportsComponent(moduleExports: any, extension: IExtension, id: string, proxiedHead?: HTMLHeadElement) {
+  private getModuleExportsComponent(
+    moduleExports: any,
+    extension: IExtension,
+    id: string,
+    proxiedHead?: HTMLHeadElement,
+  ) {
     if (!moduleExports[id]) {
       return () => ExtensionNoExportsView(extension.id, id);
     }
@@ -409,7 +472,11 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     return { _module, _exports, _require };
   }
 
-  private async loadBrowserModule<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<any> {
+  private async loadBrowserModule<T>(
+    browserPath: string,
+    extension: IExtension,
+    defaultExports: boolean,
+  ): Promise<any> {
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
@@ -418,7 +485,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       'module',
       'exports',
       'require',
-      await pendingFetch.text()  + `\n//# sourceURL=${extension.id}`,
+      (await pendingFetch.text()) + `\n//# sourceURL=${extension.id}`,
     );
     initFn(_module, _exports, _require);
     return {
@@ -427,29 +494,37 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   // view config related starts
-  private normalizeDeprecatedViewsConfig(moduleExports: { [key: string]: any }, extension: IExtension, proxiedHead?: HTMLHeadElement) {
+  private normalizeDeprecatedViewsConfig(
+    moduleExports: { [key: string]: any },
+    extension: IExtension,
+    proxiedHead?: HTMLHeadElement,
+  ) {
     if (this.appConfig.useExperimentalShadowDom) {
-      return Object.keys(moduleExports).filter((key) => moduleExports[key] && Array.isArray(moduleExports[key].component)).reduce((pre, cur) => {
-        pre[cur] = {
-          view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
-            ...other,
-            id,
-            component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
-          })),
-        };
-        return pre;
-      }, {});
+      return Object.keys(moduleExports)
+        .filter((key) => moduleExports[key] && Array.isArray(moduleExports[key].component))
+        .reduce((pre, cur) => {
+          pre[cur] = {
+            view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
+              ...other,
+              id,
+              component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
+            })),
+          };
+          return pre;
+        }, {});
     } else {
       const views = moduleExports.default ? moduleExports.default : moduleExports;
-      return Object.keys(views).filter((key) => views[key] && Array.isArray(views[key].component)).reduce((config, location) => {
-        config[location] = {
-          view: views[location].component.map(({ panel, ...other }) => ({
-            ...other,
-            component: panel,
-          })),
-        };
-        return config;
-      }, {});
+      return Object.keys(views)
+        .filter((key) => views[key] && Array.isArray(views[key].component))
+        .reduce((config, location) => {
+          config[location] = {
+            view: views[location].component.map(({ panel, ...other }) => ({
+              ...other,
+              component: panel,
+            })),
+          };
+          return config;
+        }, {});
     }
   }
 
@@ -473,7 +548,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     browserPath: string,
     extension: IExtension,
     defaultExports: boolean,
-  ): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+  ): Promise<{ moduleExports: T; proxiedHead: HTMLHeadElement }> {
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
@@ -490,7 +565,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       'styles',
       'document',
       'window',
-      await pendingFetch.text() + `\n//# sourceURL=${extension.id}`,
+      (await pendingFetch.text()) + `\n//# sourceURL=${extension.id}`,
     );
 
     initFn(_module, _exports, _require, stylesCollection, proxiedDocument, proxiedWindow);

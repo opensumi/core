@@ -1,9 +1,8 @@
-import { defaultCss, IWebviewChannel, getVsCodeApiScript  } from './common';
+import { defaultCss, IWebviewChannel, getVsCodeApiScript } from './common';
 
 export class WebviewPanelManager {
-
-  private activeTheme: string = 'default';
-  private styles: {[key: string]: string};
+  private activeTheme = 'default';
+  private styles: { [key: string]: string };
   private isHandlingScroll = false;
   private updateId = 0;
   private firstLoad = true;
@@ -17,7 +16,6 @@ export class WebviewPanelManager {
   }
 
   private init() {
-
     const idMatch = document.location.search.match(/\bid=([\w-]+)/);
     this.ID = idMatch ? idMatch[1] : undefined;
     if (!document.body) {
@@ -46,9 +44,7 @@ export class WebviewPanelManager {
       }
     });
 
-    this.channel.onMessage('content', async (_event, data) => {
-      return this.setContent(data);
-    });
+    this.channel.onMessage('content', async (_event, data) => this.setContent(data));
 
     this.channel.onMessage('message', (_event, data) => {
       const pending = this.getPendingFrame();
@@ -68,150 +64,154 @@ export class WebviewPanelManager {
     });
 
     this.channel.postMessage('webview-ready', {});
-
   }
 
   private async setContent(data) {
     const currentUpdateId = ++this.updateId;
     await this.channel.ready;
     if (currentUpdateId !== this.updateId) {
-        return;
-      }
+      return;
+    }
 
     const options = data.options;
     const newDocument = this.toContentHtml(data);
 
     const frame = this.getActiveFrame();
     const wasFirstLoad = this.firstLoad;
-      // keep current scrollY around and use later
+    // keep current scrollY around and use later
     let setInitialScrollPosition;
     if (this.firstLoad) {
-        this.firstLoad = false;
-        setInitialScrollPosition = (body, window) => {
-          if (!isNaN(this.initialScrollProgress)) {
-            if (window.scrollY === 0) {
-              window.scroll(0, body.clientHeight * this.initialScrollProgress);
-            }
-          }
-        };
-      } else {
-        const scrollY = frame && frame.contentDocument && frame.contentDocument.body ? frame.contentWindow!.scrollY : 0;
-        setInitialScrollPosition = (body, window) => {
+      this.firstLoad = false;
+      setInitialScrollPosition = (body, window) => {
+        if (!isNaN(this.initialScrollProgress)) {
           if (window.scrollY === 0) {
-            window.scroll(0, scrollY);
+            window.scroll(0, body.clientHeight * this.initialScrollProgress);
           }
-        };
-      }
+        }
+      };
+    } else {
+      const scrollY = frame && frame.contentDocument && frame.contentDocument.body ? frame.contentWindow!.scrollY : 0;
+      setInitialScrollPosition = (body, window) => {
+        if (window.scrollY === 0) {
+          window.scroll(0, scrollY);
+        }
+      };
+    }
 
-      // Clean up old pending frames and set current one as new one
+    // Clean up old pending frames and set current one as new one
     const previousPendingFrame = this.getPendingFrame();
     if (previousPendingFrame) {
-        previousPendingFrame.setAttribute('id', '');
-        document.body.removeChild(previousPendingFrame);
-      }
+      previousPendingFrame.setAttribute('id', '');
+      document.body.removeChild(previousPendingFrame);
+    }
     if (!wasFirstLoad) {
-        this.pendingMessages = [];
-      }
+      this.pendingMessages = [];
+    }
 
     const newFrame = document.createElement('iframe');
     newFrame.setAttribute('id', 'pending-frame');
     newFrame.setAttribute('frameborder', '0');
     newFrame.setAttribute('allow', 'autoplay');
-    newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin');
+    newFrame.setAttribute(
+      'sandbox',
+      options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin',
+    );
     if (this.channel.fakeLoad) {
-        // 使用service-worker时候
-        newFrame.src = `./fake.html?id=${this.ID}`;
-      }
-    newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
+      // 使用service-worker时候
+      newFrame.src = `./fake.html?id=${this.ID}`;
+    }
+    newFrame.style.cssText =
+      'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
     document.body.appendChild(newFrame);
 
     if (!this.channel.fakeLoad) {
-        // write new content onto iframe
-        newFrame.contentDocument!.open();
-      }
+      // write new content onto iframe
+      newFrame.contentDocument!.open();
+    }
 
     newFrame.contentWindow!.addEventListener('keydown', this.handleInnerKeydown.bind(this));
 
     newFrame.contentWindow!.addEventListener('DOMContentLoaded', (e) => {
-        if (this.channel.fakeLoad) {
-          newFrame.contentDocument!.open();
-          newFrame.contentDocument!.write(newDocument);
-          newFrame.contentDocument!.close();
-          hookupOnLoadHandlers(newFrame);
+      if (this.channel.fakeLoad) {
+        newFrame.contentDocument!.open();
+        newFrame.contentDocument!.write(newDocument);
+        newFrame.contentDocument!.close();
+        hookupOnLoadHandlers(newFrame);
+      }
+      const contentDocument: HTMLDocument | undefined = e.target ? (e.target as HTMLDocument) : undefined;
+      if (contentDocument) {
+        this.applyStyles(contentDocument, contentDocument.body);
+      }
+    });
+
+    const onLoad = (contentDocument, contentWindow) => {
+      if (contentDocument && contentDocument.body) {
+        // Workaround for https://github.com/Microsoft/vscode/issues/12865
+        // check new scrollY and reset if neccessary
+        setInitialScrollPosition(contentDocument.body, contentWindow);
+      }
+
+      const newFrame = this.getPendingFrame();
+      if (newFrame && newFrame.contentDocument && newFrame.contentDocument === contentDocument) {
+        const oldActiveFrame = this.getActiveFrame();
+        if (oldActiveFrame) {
+          document.body.removeChild(oldActiveFrame);
         }
-        const contentDocument: HTMLDocument | undefined = e.target ? e.target as HTMLDocument : undefined;
-        if (contentDocument) {
-          this.applyStyles(contentDocument, contentDocument.body);
+        // Styles may have changed since we created the element. Make sure we re-style
+        this.applyStyles(newFrame.contentDocument, newFrame.contentDocument.body);
+        newFrame.setAttribute('id', 'active-frame');
+        newFrame.style.visibility = 'visible';
+        if (this.channel.focusIframeOnCreate) {
+          newFrame.contentWindow!.focus();
+        }
+
+        contentWindow.addEventListener('scroll', this.handleInnerScroll.bind(this));
+
+        this.pendingMessages.forEach((data) => {
+          contentWindow.postMessage(data, '*');
+        });
+        this.pendingMessages = [];
+      }
+    };
+
+    /**
+     * @param {HTMLIFrameElement} newFrame
+     */
+    const hookupOnLoadHandlers = (newFrame) => {
+      clearTimeout(this.loadTimeout);
+      this.loadTimeout = undefined;
+      this.loadTimeout = setTimeout(() => {
+        clearTimeout(this.loadTimeout);
+        this.loadTimeout = undefined;
+        onLoad(newFrame.contentDocument, newFrame.contentWindow);
+      }, 1000);
+
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const _this = this;
+      newFrame.contentWindow.addEventListener('load', function (this: any, e) {
+        if (_this.loadTimeout) {
+          clearTimeout(_this.loadTimeout);
+          _this.loadTimeout = undefined;
+          onLoad(e.target, this);
         }
       });
 
-    const onLoad = (contentDocument, contentWindow) => {
-        if (contentDocument && contentDocument.body) {
-          // Workaround for https://github.com/Microsoft/vscode/issues/12865
-          // check new scrollY and reset if neccessary
-          setInitialScrollPosition(contentDocument.body, contentWindow);
-        }
+      // Bubble out link clicks
+      newFrame.contentWindow.addEventListener('click', this.handleInnerClick.bind(this));
 
-        const newFrame = this.getPendingFrame();
-        if (newFrame && newFrame.contentDocument && newFrame.contentDocument === contentDocument) {
-          const oldActiveFrame = this.getActiveFrame();
-          if (oldActiveFrame) {
-            document.body.removeChild(oldActiveFrame);
-          }
-          // Styles may have changed since we created the element. Make sure we re-style
-          this.applyStyles(newFrame.contentDocument, newFrame.contentDocument.body);
-          newFrame.setAttribute('id', 'active-frame');
-          newFrame.style.visibility = 'visible';
-          if (this.channel.focusIframeOnCreate) {
-            newFrame.contentWindow!.focus();
-          }
-
-          contentWindow.addEventListener('scroll', this.handleInnerScroll.bind(this));
-
-          this.pendingMessages.forEach((data) => {
-            contentWindow.postMessage(data, '*');
-          });
-          this.pendingMessages = [];
-        }
-      };
-
-      /**
-       * @param {HTMLIFrameElement} newFrame
-       */
-    const hookupOnLoadHandlers = (newFrame) => {
-        clearTimeout(this.loadTimeout);
-        this.loadTimeout = undefined;
-        this.loadTimeout = setTimeout(() => {
-          clearTimeout(this.loadTimeout);
-          this.loadTimeout = undefined;
-          onLoad(newFrame.contentDocument, newFrame.contentWindow);
-        }, 1000);
-
-        const _this = this;
-        newFrame.contentWindow.addEventListener('load', function(this: any, e) {
-          if (_this.loadTimeout) {
-            clearTimeout(_this.loadTimeout);
-            _this.loadTimeout = undefined;
-            onLoad(e.target, this);
-          }
-        });
-
-        // Bubble out link clicks
-        newFrame.contentWindow.addEventListener('click', this.handleInnerClick.bind(this));
-
-        if (this.channel.onIframeLoaded) {
-          this.channel.onIframeLoaded(newFrame);
-        }
-      };
+      if (this.channel.onIframeLoaded) {
+        this.channel.onIframeLoaded(newFrame);
+      }
+    };
 
     if (!this.channel.fakeLoad) {
-        hookupOnLoadHandlers(newFrame);
-      }
+      hookupOnLoadHandlers(newFrame);
+    }
 
     if (!this.channel.fakeLoad) {
-        newFrame.contentDocument!.write(newDocument);
-        newFrame.contentDocument!.close();
-      }
+      newFrame.contentDocument!.write(newDocument);
+      newFrame.contentDocument!.close();
+    }
 
     this.channel.postMessage('did-set-content', undefined);
   }
@@ -273,7 +273,10 @@ export class WebviewPanelManager {
       if (node.tagName && node.tagName.toLowerCase() === 'a' && node.href) {
         if (node.getAttribute('href') === '#') {
           event.view.scrollTo(0, 0);
-        } else if (node.hash && (node.getAttribute('href') === node.hash || (baseElement && node.href.indexOf(baseElement.href) >= 0))) {
+        } else if (
+          node.hash &&
+          (node.getAttribute('href') === node.hash || (baseElement && node.href.indexOf(baseElement.href) >= 0))
+        ) {
           const scrollTarget = event.view.document.getElementById(node.hash.substr(1, node.hash.length - 1));
           if (scrollTarget) {
             scrollTarget.scrollIntoView();
@@ -356,5 +359,4 @@ export class WebviewPanelManager {
     // and DOCTYPE is needed in the iframe to ensure that the user agent stylesheet is correctly overridden
     return '<!DOCTYPE html>\n' + newDocument.documentElement.outerHTML;
   }
-
 }

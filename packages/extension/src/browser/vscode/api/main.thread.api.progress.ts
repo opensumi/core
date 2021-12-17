@@ -2,14 +2,20 @@ import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/pr
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@opensumi/ide-core-common';
+import {
+  IProgressOptions,
+  IProgressStep,
+  IProgress,
+  ProgressLocation,
+  IProgressNotificationOptions,
+} from '@opensumi/ide-core-common';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IExtension } from '../../../common';
 
 @Injectable({ multiple: true })
 export class MainThreadProgress implements IMainThreadProgress {
   private proxy: IExtHostProgress;
-  private progress = new Map<number, { resolve: (value?: any) => void, progress: IProgress<IProgressStep> }>();
+  private progress = new Map<number, { resolve: (value?: any) => void; progress: IProgress<IProgressStep> }>();
 
   @Autowired(IProgressService)
   private readonly progressService: IProgressService;
@@ -54,11 +60,9 @@ export class MainThreadProgress implements IMainThreadProgress {
   }
 
   private createTask(handle: number) {
-    return (progress: IProgress<IProgressStep>) => {
-      return new Promise<any>((resolve) => {
+    return (progress: IProgress<IProgressStep>) =>
+      new Promise<any>((resolve) => {
         this.progress.set(handle, { resolve, progress });
       });
-    };
   }
-
 }

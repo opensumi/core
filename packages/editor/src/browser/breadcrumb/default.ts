@@ -1,6 +1,19 @@
 import debounce = require('lodash.debounce');
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus, LRUMap } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  EDITOR_COMMANDS,
+  Event,
+  Emitter,
+  getSymbolIcon,
+  IPosition,
+  IRange,
+  MaybeNull,
+  OnEvent,
+  URI,
+  WithEventBus,
+  LRUMap,
+} from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';
@@ -13,7 +26,6 @@ import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSym
 
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {
-
   private _onDidUpdateBreadCrumb = new Emitter<URI>();
   public onDidUpdateBreadCrumb: Event<URI> = this._onDidUpdateBreadCrumb.event;
 
@@ -45,7 +57,9 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   }
 
   private getFileParts(uri: URI): IBreadCrumbPart[] {
-    const workspaceRoot: URI | undefined = this.workspaceService.workspace ? new URI(this.workspaceService.workspace.uri)  : undefined;
+    const workspaceRoot: URI | undefined = this.workspaceService.workspace
+      ? new URI(this.workspaceService.workspace.uri)
+      : undefined;
     let root: URI;
     let relativePaths: Path;
     if (workspaceRoot && workspaceRoot.isEqualOrParent(uri)) {
@@ -61,10 +75,13 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
 
     let p = root.path;
     const result: IBreadCrumbPart[] = [];
-    for (const r of relativePaths.toString().split(Path.separator).filter((p) => !!p)) {
+    for (const r of relativePaths
+      .toString()
+      .split(Path.separator)
+      .filter((p) => !!p)) {
       p = p.join(r);
       const u = root.withPath(p);
-      result.push(this.createFilePartBreadCrumbUri(u,  !u.isEqual(uri)));
+      result.push(this.createFilePartBreadCrumbUri(u, !u.isEqual(uri)));
     }
     return result;
   }
@@ -77,7 +94,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
 
     const res: IBreadCrumbPart = {
       name: uri.path.base,
-      icon: this.labelService.getIcon(uri, {isDirectory}),
+      icon: this.labelService.getIcon(uri, { isDirectory }),
       getSiblings: async () => {
         const parentDir = URI.from({
           scheme: uri.scheme,
@@ -87,10 +104,10 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
         let currentIndex = -1;
         if (stat && stat.children && stat.children.length > 0) {
           sortByNumeric(stat.children).forEach((file, i) => {
-              parts.push(this.createFilePartBreadCrumbUri(new URI(file.uri), file.isDirectory));
-              if (currentIndex === -1 && uri.toString() === file.uri) {
-                currentIndex = i;
-              }
+            parts.push(this.createFilePartBreadCrumbUri(new URI(file.uri), file.isDirectory));
+            if (currentIndex === -1 && uri.toString() === file.uri) {
+              currentIndex = i;
+            }
           });
         }
         return {
@@ -106,7 +123,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
         const parts: IBreadCrumbPart[] = [];
         if (stat && stat.children && stat.children.length > 0) {
           sortByNumeric(stat.children).forEach((file, i) => {
-              parts.push(this.createFilePartBreadCrumbUri(new URI(file.uri), file.isDirectory));
+            parts.push(this.createFilePartBreadCrumbUri(new URI(file.uri), file.isDirectory));
           });
         }
         return parts;
@@ -134,14 +151,12 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
         return [
           {
             name: '...',
-            getSiblings: () => {
-              return {
-                parts: symbols.sort((a, b) => {
-                  return sortByRangeStart(a.range, b.range);
-                }).map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
-                currentIndex: -1,
-              };
-            },
+            getSiblings: () => ({
+              parts: symbols
+                .sort((a, b) => sortByRangeStart(a.range, b.range))
+                .map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
+              currentIndex: -1,
+            }),
           },
         ];
       }
@@ -166,21 +181,18 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
       },
     };
     if (symbol.parent) {
-      res.getSiblings = () => {
-        return {
-          parts: symbol.parent!.children!.sort((a, b) => {
-            return sortByRangeStart(a.range, b.range);
-          }).map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
-          currentIndex: symbol.parent!.children!.indexOf(symbol),
-        };
-      };
+      res.getSiblings = () => ({
+        parts: symbol
+          .parent!.children!.sort((a, b) => sortByRangeStart(a.range, b.range))
+          .map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
+        currentIndex: symbol.parent!.children!.indexOf(symbol),
+      });
     }
     if (symbol.children && symbol.children.length > 0) {
-      res.getChildren = () => {
-        return symbol.children!.sort((a, b) => {
-          return sortByRangeStart(a.range, b.range);
-        }).map((symbol) => this.createFromDocumentSymbol(symbol, editor));
-      };
+      res.getChildren = () =>
+        symbol
+          .children!.sort((a, b) => sortByRangeStart(a.range, b.range))
+          .map((symbol) => this.createFromDocumentSymbol(symbol, editor));
     }
     return res;
   }
@@ -197,20 +209,30 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
 
   private notifyUpdate(uri: URI) {
     if (!this.debouncedFireUriEvent.has(uri.toString())) {
-      this.debouncedFireUriEvent.set(uri.toString(), debounce(() => {
-        this._onDidUpdateBreadCrumb.fire(uri);
-      }, 100, {maxWait: 1000}));
+      this.debouncedFireUriEvent.set(
+        uri.toString(),
+        debounce(
+          () => {
+            this._onDidUpdateBreadCrumb.fire(uri);
+          },
+          100,
+          { maxWait: 1000 },
+        ),
+      );
     }
     this.debouncedFireUriEvent.get(uri.toString())!();
   }
 }
 
-export function findCurrentDocumentSymbol(documentSymbols: INormalizedDocumentSymbol[], position: MaybeNull<IPosition>): INormalizedDocumentSymbol[] {
+export function findCurrentDocumentSymbol(
+  documentSymbols: INormalizedDocumentSymbol[],
+  position: MaybeNull<IPosition>,
+): INormalizedDocumentSymbol[] {
   const result: INormalizedDocumentSymbol[] = [];
   if (!position) {
     return result;
   }
-  let toFindIn: INormalizedDocumentSymbol[] | undefined  = documentSymbols;
+  let toFindIn: INormalizedDocumentSymbol[] | undefined = documentSymbols;
   while (toFindIn && toFindIn.length > 0) {
     let found = false;
     for (const documentSymbol of toFindIn) {

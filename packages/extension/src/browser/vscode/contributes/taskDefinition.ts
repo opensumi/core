@@ -9,7 +9,10 @@ export const taskDefinitionSchema: IJSONSchema = {
   properties: {
     type: {
       type: 'string',
-      description: localize('TaskDefinition.description', 'The actual task type. Please note that types starting with a \'$\' are reserved for internal usage.'),
+      description: localize(
+        'TaskDefinition.description',
+        "The actual task type. Please note that types starting with a '$' are reserved for internal usage.",
+      ),
     },
     required: {
       type: 'array',
@@ -38,7 +41,6 @@ export type ITaskDefinitionSchema = Array<TaskDefinition>;
 @Injectable()
 @Contributes('taskDefinitions')
 export class TaskDefinitionContributionPoint extends VSCodeContributePoint<ITaskDefinitionSchema> {
-
   @Autowired(ITaskDefinitionRegistry)
   taskDefinitionRegistry: ITaskDefinitionRegistry;
 
@@ -48,11 +50,13 @@ export class TaskDefinitionContributionPoint extends VSCodeContributePoint<ITask
   contribute() {
     for (const definition of this.json) {
       this.logger.verbose(`${this.extension.id} register taskDefinition ${JSON.stringify(definition)}`);
-      this.addDispose(this.taskDefinitionRegistry.register(definition.type, {
-        ...definition,
-        taskType: definition.type,
-        extensionId: this.extension.id,
-      }));
+      this.addDispose(
+        this.taskDefinitionRegistry.register(definition.type, {
+          ...definition,
+          taskType: definition.type,
+          extensionId: this.extension.id,
+        }),
+      );
     }
   }
 }

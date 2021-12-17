@@ -1,6 +1,12 @@
 // @ts-nocheck
 import { Injector, Injectable } from '@opensumi/di';
-import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  ILoggerManagerClient,
+  LogServiceForClientPath,
+  LogLevel,
+  getLanguageId,
+} from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
@@ -8,7 +14,12 @@ import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/e
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  IMainThreadEnv,
+  MainThreadAPIIdentifier,
+  ExtHostAPIIdentifier,
+  IMainThreadStorage,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
 import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -33,7 +44,7 @@ const rpcProtocolMain = new RPCProtocol(mockClientB);
 class MockLogServiceForClient {
   private level: LogLevel;
 
-  hasDisposeAll: boolean = false;
+  hasDisposeAll = false;
 
   async setGlobalLogLevel(level) {
     this.level = level;
@@ -58,32 +69,43 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     workspaceDir: '',
   };
   beforeAll((done) => {
-    injector.overrideProviders(...[{
-      token: ExtensionHostServiceImpl,
-      useValue: {},
-    }, {
-      token: LogServiceForClientPath,
-      useClass: MockLogServiceForClient,
-    }, {
-      token: ILoggerManagerClient,
-      useClass: LoggerManagerClient,
-    }, {
-      token: AppConfig,
-      useValue: appConfig,
-    }, {
-      token: IExtensionStorageService,
-      useValue: {
-        whenReady: Promise.resolve(true),
-        extensionStoragePath: {},
-        set() { },
-        get() { },
-        getAll() { },
-        reConnectInit() { },
-      },
-    }]);
+    injector.overrideProviders(
+      ...[
+        {
+          token: ExtensionHostServiceImpl,
+          useValue: {},
+        },
+        {
+          token: LogServiceForClientPath,
+          useClass: MockLogServiceForClient,
+        },
+        {
+          token: ILoggerManagerClient,
+          useClass: LoggerManagerClient,
+        },
+        {
+          token: AppConfig,
+          useValue: appConfig,
+        },
+        {
+          token: IExtensionStorageService,
+          useValue: {
+            whenReady: Promise.resolve(true),
+            extensionStoragePath: {},
+            set() {},
+            get() {},
+            getAll() {},
+            reConnectInit() {},
+          },
+        },
+      ],
+    );
 
     const extHostEnv = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocolExt));
-    const extHostTerminal = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocolExt));
+    const extHostTerminal = rpcProtocolExt.set(
+      ExtHostAPIIdentifier.ExtHostTerminal,
+      new ExtHostTerminal(rpcProtocolExt),
+    );
 
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
 
@@ -94,7 +116,12 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     rpcProtocolMain.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, MainThreadStorageAPI);
 
     setTimeout(() => {
-      extHostEnvAPI = createEnvApiFactory(rpcProtocolExt, injector.get(ExtensionHostServiceImpl), extHostEnv, extHostTerminal);
+      extHostEnvAPI = createEnvApiFactory(
+        rpcProtocolExt,
+        injector.get(ExtensionHostServiceImpl),
+        extHostEnv,
+        extHostTerminal,
+      );
       done();
     }, 0);
   });

@@ -4,17 +4,17 @@ export interface IToolbarActionBasicContribution {
   id: string;
   weight?: number;
   preferredPosition?: {
-    location?: string,
-    group?: string,
+    location?: string;
+    group?: string;
   };
   strictPosition?: {
-    location: string,
-    group: string,
+    location: string;
+    group: string;
   };
   description: string;
 }
 
-export interface IToolbarButtonContribution extends  IToolbarActionBasicContribution {
+export interface IToolbarButtonContribution extends IToolbarActionBasicContribution {
   type: 'button';
   command?: string;
   title: string;
@@ -22,10 +22,10 @@ export interface IToolbarButtonContribution extends  IToolbarActionBasicContribu
   iconMaskMode?: boolean;
   states?: {
     [key: string]: {
-      title?: string,
-      iconPath?: string,
-      iconMaskMode?: boolean ;
-    } & IToolbarActionBtnStyle,
+      title?: string;
+      iconPath?: string;
+      iconMaskMode?: boolean;
+    } & IToolbarActionBtnStyle;
   };
   defaultState?: string;
   // popover 元素的 component id
@@ -38,15 +38,15 @@ export interface IToolbarSelectContribution<T = any> extends IToolbarActionBasic
   type: 'select';
   command?: string;
   options: {
-    iconPath?: string,
+    iconPath?: string;
     iconMaskMode?: boolean;
-    label?: string,
-    value: T
+    label?: string;
+    value: T;
   }[];
   defaultValue: T;
   optionEqualityKey?: string;
   states?: {
-    [key: string]: IToolbarSelectStyle,
+    [key: string]: IToolbarSelectStyle;
   };
   defaultState?: string;
 }

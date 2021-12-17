@@ -106,7 +106,10 @@ export interface DebugAdapterContribution {
    * @param config The [debug configuration](#DebugConfiguration) to resolve.
    * @returns The resolved debug configuration.
    */
-  resolveDebugConfiguration?(config: DebugConfiguration, workspaceFolderUri?: string): MaybePromise<DebugConfiguration | undefined>;
+  resolveDebugConfiguration?(
+    config: DebugConfiguration,
+    workspaceFolderUri?: string,
+  ): MaybePromise<DebugConfiguration | undefined>;
 }
 
 export const DebugModelFactory = Symbol('DebugModelFactory');

@@ -7,7 +7,7 @@ import { AbstractMessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/li
 export class ExtensionMessageReader extends AbstractMessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';
   protected callback: DataCallback | undefined;
-  protected events: { message?: any, error?: any }[] = [];
+  protected events: { message?: any; error?: any }[] = [];
 
   constructor() {
     super();

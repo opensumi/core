@@ -1,11 +1,14 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
-import { ElectronMainApiProvider, ElectronMainApiRegistry, ElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/types';
+import {
+  ElectronMainApiProvider,
+  ElectronMainApiRegistry,
+  ElectronMainContribution,
+} from '@opensumi/ide-core-electron-main/lib/bootstrap/types';
 import { IHelloService } from 'common/types';
 
 @Injectable()
 export class HelloService extends ElectronMainApiProvider implements IHelloService {
-
   async hello() {
     console.log('-------------------------- hello service. ---------------------');
 
@@ -13,17 +16,14 @@ export class HelloService extends ElectronMainApiProvider implements IHelloServi
       content: 'from main process.',
     });
   }
-
 }
 
 @Domain(ElectronMainContribution)
 export class HelloContribution implements ElectronMainContribution {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
   registerMainApi(registry: ElectronMainApiRegistry) {
     registry.registerMainApi(IHelloService, this.injector.get(IHelloService));
   }
-
 }

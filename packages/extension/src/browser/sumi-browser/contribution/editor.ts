@@ -6,9 +6,8 @@ import { IIconService, IconType } from '@opensumi/ide-theme';
 import { ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class EditorBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
-
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
@@ -31,77 +30,84 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
     }
 
     return disposer;
-
   }
 
   registerEditorComponent(viewContribution: IEditorViewContribution, runParam: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     const { extendProtocol, extendService } = runParam.getExtensionExtendService(this.extension, viewContribution.id);
     const scheme = viewContribution.scheme || 'file';
-    disposer.addDispose(this.editorComponentRegistry.registerEditorComponent({
-      uid: viewContribution.id,
-      scheme,
-      component: viewContribution.component,
-      renderMode: viewContribution.renderMode,
-    }, {
-      kaitianExtendService: extendService,
-      kaitianExtendSet: extendProtocol,
-    }));
+    disposer.addDispose(
+      this.editorComponentRegistry.registerEditorComponent(
+        {
+          uid: viewContribution.id,
+          scheme,
+          component: viewContribution.component,
+          renderMode: viewContribution.renderMode,
+        },
+        {
+          kaitianExtendService: extendService,
+          kaitianExtendSet: extendProtocol,
+        },
+      ),
+    );
 
     if (scheme === 'file') {
-      disposer.addDispose(this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
-        let shouldShow = false;
-        // 旧fileExt处理
-        if ((viewContribution.fileExt && viewContribution.fileExt.indexOf(resource.uri.path.ext) > -1)) {
-          if (!viewContribution.shouldPreview) {
-            return;
+      disposer.addDispose(
+        this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
+          let shouldShow = false;
+          // 旧fileExt处理
+          if (viewContribution.fileExt && viewContribution.fileExt.indexOf(resource.uri.path.ext) > -1) {
+            if (!viewContribution.shouldPreview) {
+              return;
+            }
+            const shouldPreview = viewContribution.shouldPreview(resource.uri.path);
+            if (shouldPreview) {
+              shouldShow = true;
+            }
           }
-          const shouldPreview = viewContribution.shouldPreview(resource.uri.path);
-          if (shouldPreview) {
-            shouldShow = true;
+          // handles处理
+          if (viewContribution.handles) {
+            if (viewContribution.handles(resource.uri.codeUri)) {
+              shouldShow = true;
+            }
           }
-        }
-        // handles处理
-        if (viewContribution.handles ) {
-          if (viewContribution.handles(resource.uri.codeUri)) {
-            shouldShow = true;
+          if (shouldShow) {
+            results.push({
+              type: 'component',
+              componentId: viewContribution.id,
+              title: viewContribution.title || '预览',
+              weight: viewContribution.priority || 10,
+            });
           }
-        }
-        if (shouldShow) {
+        }),
+      );
+    } else {
+      disposer.addDispose(
+        this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
+          if (viewContribution.handles) {
+            if (!viewContribution.handles(resource.uri.codeUri)) {
+              return;
+            }
+          }
           results.push({
             type: 'component',
             componentId: viewContribution.id,
-            title: viewContribution.title || '预览',
+            title: viewContribution.title || viewContribution.id,
             weight: viewContribution.priority || 10,
           });
-        }
-      }));
-    } else {
-      disposer.addDispose(this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
-        if (viewContribution.handles ) {
-          if (!viewContribution.handles(resource.uri.codeUri)) {
-            return;
-          }
-        }
-        results.push({
-          type: 'component',
-          componentId: viewContribution.id,
-          title: viewContribution.title || viewContribution.id,
-          weight: viewContribution.priority || 10,
-        });
-      }));
+        }),
+      );
     }
     this.resourceService.registerResourceProvider({
       scheme,
-      provideResource: (uri: URI) => {
-        return {
-          uri,
-          name: viewContribution.tabTitle || viewContribution.id,
-          icon: viewContribution.tabIconPath ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)! : '',
-        };
-      },
+      provideResource: (uri: URI) => ({
+        uri,
+        name: viewContribution.tabTitle || viewContribution.id,
+        icon: viewContribution.tabIconPath
+          ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)!
+          : '',
+      }),
     });
     return disposer;
   }
-
 }

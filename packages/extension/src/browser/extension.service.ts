@@ -6,21 +6,40 @@ import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { localize, OnEvent, WithEventBus, ProgressLocation } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import {
-  AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
-  getPreferenceLanguageId, IClientApp, ILogger,
+  AppConfig,
+  CommandRegistry,
+  CorePreferences,
+  Deferred,
+  ExtensionActivateEvent,
+  getPreferenceLanguageId,
+  IClientApp,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 
 import { Extension } from './extension';
 import { ActivatedExtension } from '../common/activator';
 import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
-import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractWorkerExtProcessService } from '../common/extension.service';
 import {
-  ExtensionApiReadyEvent, ExtensionDidEnabledEvent, ExtensionBeforeActivateEvent,
-  ExtensionDidUninstalledEvent, IActivationEventService, AbstractExtInstanceManagementService,
+  AbstractNodeExtProcessService,
+  AbstractViewExtProcessService,
+  AbstractWorkerExtProcessService,
+} from '../common/extension.service';
+import {
+  ExtensionApiReadyEvent,
+  ExtensionDidEnabledEvent,
+  ExtensionBeforeActivateEvent,
+  ExtensionDidUninstalledEvent,
+  IActivationEventService,
+  AbstractExtInstanceManagementService,
 } from './types';
 import {
-  ExtensionHostType, ExtensionNodeServiceServerPath, ExtensionService, IExtensionNodeClientService,
-  IExtCommandManagement, IExtensionMetaData, LANGUAGE_BUNDLE_FIELD,
+  ExtensionHostType,
+  ExtensionNodeServiceServerPath,
+  ExtensionService,
+  IExtensionNodeClientService,
+  IExtCommandManagement,
+  IExtensionMetaData,
+  LANGUAGE_BUNDLE_FIELD,
 } from '../common';
 
 @Injectable()
@@ -92,7 +111,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private extensionMetaDataArr: IExtensionMetaData[];
 
   // 插件进程是否正在重启中
-  private isExtensionRestarting: boolean = false;
+  private isExtensionRestarting = false;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -184,7 +203,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     for (const extensionMetaData of this.extensionMetaDataArr) {
       const isBuiltin = this.extensionInstanceManageService.checkIsBuiltin(extensionMetaData);
       const isDevelopment = this.extensionInstanceManageService.checkIsDevelopment(extensionMetaData);
-      const extension = await this.extensionInstanceManageService.createExtensionInstance(extensionMetaData, isBuiltin, isDevelopment);
+      const extension = await this.extensionInstanceManageService.createExtensionInstance(
+        extensionMetaData,
+        isBuiltin,
+        isDevelopment,
+      );
       if (extension) {
         this.extensionInstanceManageService.addExtensionInstance(extension);
       }
@@ -229,18 +252,21 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     this.isExtensionRestarting = true;
 
-    await this.progressService.withProgress({
-      location: ProgressLocation.Notification,
-      title: localize('extension.exthostRestarting.content'),
-    }, async () => {
-      try {
-        await this.startExtProcess(false);
-      } catch (err) {
-        this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
-      }
+    await this.progressService.withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: localize('extension.exthostRestarting.content'),
+      },
+      async () => {
+        try {
+          await this.startExtProcess(false);
+        } catch (err) {
+          this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+        }
 
-      this.isExtensionRestarting = false;
-    });
+        this.isExtensionRestarting = false;
+      },
+    );
   }
 
   private async startExtProcess(init: boolean) {
@@ -258,10 +284,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     // set ready for node/worker
-    await Promise.all([
-      this.startNodeExtHost(init),
-      this.startWorkerExtHost(init),
-    ]);
+    await Promise.all([this.startNodeExtHost(init), this.startWorkerExtHost(init)]);
 
     if (!init) {
       // 重启场景下把 ActivationEvent 再发一次
@@ -270,11 +293,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
         this.activationEventService.activatedEventSet.clear();
 
-        await Promise.all(activatedEventArr.map((event) => {
-          const { topic, data } = JSON.parse(event);
-          this.logger.verbose('fireEvent', 'event.topic', topic, 'event.data', data);
-          return this.activationEventService.fireEvent(topic, data);
-        }));
+        await Promise.all(
+          activatedEventArr.map((event) => {
+            const { topic, data } = JSON.parse(event);
+            this.logger.verbose('fireEvent', 'event.topic', topic, 'event.data', data);
+            return this.activationEventService.fireEvent(topic, data);
+          }),
+        );
       }
     }
   }
@@ -283,7 +308,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     // 激活 node 插件进程
     if (!this.appConfig.noExtHost) {
       const protocol = await this.nodeExtensionService.activate();
-      this.extensionCommandManager.registerProxyCommandExecutor('node', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      this.extensionCommandManager.registerProxyCommandExecutor(
+        'node',
+        protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
+      );
       if (init) {
         this.ready.set('node', this.nodeExtensionService.ready);
       }
@@ -295,7 +323,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (this.appConfig.extWorkerHost) {
       try {
         const protocol = await this.workerExtensionService.activate();
-        this.extensionCommandManager.registerProxyCommandExecutor('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+        this.extensionCommandManager.registerProxyCommandExecutor(
+          'worker',
+          protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
+        );
         if (init) {
           this.ready.set('worker', this.workerExtensionService.ready);
         }
@@ -372,22 +403,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     if (includePatterns.length) {
-      promises.push((async () => {
-        try {
-          const result = await this.fileSearchService.find('', {
-            rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
-            includePatterns,
-            limit: 1,
-          });
-          return result.length > 0;
-        } catch (e) {
-          this.logger.error(e);
-          return false;
-        }
-      })());
+      promises.push(
+        (async () => {
+          try {
+            const result = await this.fileSearchService.find('', {
+              rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
+              includePatterns,
+              limit: 1,
+            });
+            return result.length > 0;
+          } catch (e) {
+            this.logger.error(e);
+            return false;
+          }
+        })(),
+      );
     }
 
-    if (promises.length && await Promise.all(promises).then((exists) => exists.some((v) => v))) {
+    if (promises.length && (await Promise.all(promises).then((exists) => exists.some((v) => v)))) {
       this.activationEventService.fireEvent('workspaceContains', [...paths, ...includePatterns][0]);
     }
   }
@@ -396,7 +429,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 将插件的目录位置和文件位置，通过后端读取并缓存
    * 返回所有插件的 meta data
    */
-  private async getExtensionsMetaData(extensionScanDir: string[], extensionCandidatePath: string[]): Promise<IExtensionMetaData[]> {
+  private async getExtensionsMetaData(
+    extensionScanDir: string[],
+    extensionCandidatePath: string[],
+  ): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
       const extensions = await this.extensionNodeClient.getAllExtensions(
         extensionScanDir,
@@ -430,8 +466,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
 
     // try fire workspaceContains activateEvent ，这里不要 await
-    Promise.all(extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)))
-      .catch((error) => this.logger.error(error));
+    Promise.all(
+      extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)),
+    ).catch((error) => this.logger.error(error));
 
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);

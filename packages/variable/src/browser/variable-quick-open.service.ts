@@ -4,7 +4,6 @@ import { VariableRegistry, localize } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class VariableQuickOpenService implements QuickOpenModel {
-
   protected items: QuickOpenItem[];
 
   @Autowired(VariableRegistry)
@@ -14,9 +13,7 @@ export class VariableQuickOpenService implements QuickOpenModel {
   protected readonly quickOpenService: QuickOpenService;
 
   open(): void {
-    this.items = this.variableRegistry.getVariables().map(
-      (v) => new VariableQuickOpenItem(v.name, v.description),
-    );
+    this.items = this.variableRegistry.getVariables().map((v) => new VariableQuickOpenItem(v.name, v.description));
 
     this.quickOpenService.open(this, {
       placeholder: localize('variable.registered.variables'),
@@ -32,11 +29,7 @@ export class VariableQuickOpenService implements QuickOpenModel {
 }
 
 export class VariableQuickOpenItem extends QuickOpenItem {
-
-  constructor(
-    protected readonly name: string,
-    protected readonly description?: string,
-  ) {
+  constructor(protected readonly name: string, protected readonly description?: string) {
     super({});
   }
 

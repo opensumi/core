@@ -7,15 +7,13 @@ function isDisposable(target: any): target is Disposable {
   return target && (target as any).dispose;
 }
 
-export function useInjectable<T = any>(Constructor: Token, args?: any): T  {
+export function useInjectable<T = any>(Constructor: Token, args?: any): T {
   const { injector } = React.useContext(ConfigContext);
 
-  const instance = React.useMemo(() => {
-    return injector.get(Constructor, args);
-  }, [injector, Constructor]);
+  const instance = React.useMemo(() => injector.get(Constructor, args), [injector, Constructor]);
 
-  React.useEffect(() => {
-    return () => {
+  React.useEffect(
+    () => () => {
       // 如果这是多例模式，DI 中不会留有这个实例对象
       // 由于实例可能存在在父 injector 中，需要做一下递归判断
       let curr: Injector | undefined = injector;
@@ -27,8 +25,9 @@ export function useInjectable<T = any>(Constructor: Token, args?: any): T  {
           instance.dispose();
         }
       }
-    };
-  }, [instance]);
+    },
+    [instance],
+  );
 
   return instance;
 }

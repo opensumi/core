@@ -31,9 +31,7 @@ describe('WorkspaceContribution should be work', () => {
     showSaveDialog: jest.fn(() => URI.file('/userhome/folder').toString()),
   };
   beforeEach(async (done) => {
-    injector = createBrowserInjector([
-      WorkspaceModule,
-    ]);
+    injector = createBrowserInjector([WorkspaceModule]);
     injector.overrideProviders({
       token: IContextKeyService,
       useClass: MockContextKeyService,
@@ -68,7 +66,7 @@ describe('WorkspaceContribution should be work', () => {
 
   it('CommandContribution should be work', async (done) => {
     const mockRegistry = {
-      registerCommand: jest.fn(async (command, {execute}) => {
+      registerCommand: jest.fn(async (command, { execute }) => {
         if (command.id === WORKSPACE_COMMANDS.ADD_WORKSPACE_FOLDER.id) {
           await execute();
           expect(mockWorkspaceService.addRoot).toBeCalledTimes(1);

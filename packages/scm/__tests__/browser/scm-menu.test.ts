@@ -26,16 +26,19 @@ describe('test for scm-menu.ts', () => {
   const disposables = new DisposableStore();
 
   beforeEach(() => {
-    injector = createBrowserInjector([SCMModule], new MockInjector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      },
-      {
-        token: IMenuRegistry,
-        useClass: MenuRegistryImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [SCMModule],
+      new MockInjector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
+      ]),
+    );
     menuRegistry = injector.get(IMenuRegistry);
   });
 
@@ -133,7 +136,8 @@ describe('test for scm-menu.ts', () => {
 
     const scmMenus = injector.get<ISCMMenus>(ISCMMenus);
 
-    const [inlineMenuNodes, contextMenuNodes] = scmMenus.getRepositoryMenus(mockProvider0)
+    const [inlineMenuNodes, contextMenuNodes] = scmMenus
+      .getRepositoryMenus(mockProvider0)
       .getResourceGroupMenu(mockSCMResourceGroup0)
       .getGroupedMenuNodes();
 
@@ -145,7 +149,8 @@ describe('test for scm-menu.ts', () => {
 
     const mockSCMResourceGroup1 = new MockSCMResourceGroup(mockProvider0, 1);
 
-    const tupleMenuNodes = scmMenus.getRepositoryMenus(mockProvider0)
+    const tupleMenuNodes = scmMenus
+      .getRepositoryMenus(mockProvider0)
       .getResourceGroupMenu(mockSCMResourceGroup1)
       .getGroupedMenuNodes();
 
@@ -194,7 +199,8 @@ describe('test for scm-menu.ts', () => {
 
     const scmMenus = injector.get<ISCMMenus>(ISCMMenus);
 
-    const [inlineMenuNodes, contextMenuNodes] = scmMenus.getRepositoryMenus(mockProvider0)
+    const [inlineMenuNodes, contextMenuNodes] = scmMenus
+      .getRepositoryMenus(mockProvider0)
       .getResourceMenu(mockSCMResource0)
       .getGroupedMenuNodes();
 
@@ -207,7 +213,8 @@ describe('test for scm-menu.ts', () => {
     const mockSCMResourceGroup1 = new MockSCMResourceGroup(mockProvider0, 1);
     const mockSCMResource2 = new MockSCMResource(mockSCMResourceGroup1, undefined, undefined, undefined);
 
-    const tupleMenuNodes2 = scmMenus.getRepositoryMenus(mockProvider0)
+    const tupleMenuNodes2 = scmMenus
+      .getRepositoryMenus(mockProvider0)
       .getResourceMenu(mockSCMResource2)
       .getGroupedMenuNodes();
 

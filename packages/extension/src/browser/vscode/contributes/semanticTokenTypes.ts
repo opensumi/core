@@ -6,7 +6,6 @@ import { VSCodeContributePoint, Contributes, SemanticTokenTypeSchema, validateTy
 @Injectable()
 @Contributes('semanticTokenTypes')
 export class SemanticTokenTypesContributionPoint extends VSCodeContributePoint<SemanticTokenTypeSchema> {
-
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -25,5 +24,4 @@ export class SemanticTokenTypesContributionPoint extends VSCodeContributePoint<S
       }
     }
   }
-
 }

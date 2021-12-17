@@ -17,10 +17,12 @@ export class SearchModule extends BrowserModule {
     SearchContribution,
   ];
 
-  backServices = [{
-    servicePath: ContentSearchServerPath,
-    clientToken: ContentSearchClientService,
-  }];
+  backServices = [
+    {
+      servicePath: ContentSearchServerPath,
+      clientToken: ContentSearchClientService,
+    },
+  ];
 
   preferences = bindSearchPreference;
 }

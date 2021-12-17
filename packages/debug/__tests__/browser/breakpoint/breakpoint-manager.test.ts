@@ -9,18 +9,16 @@ describe('Breakpoints Manager', () => {
   let breakpointManager: BreakpointManager;
 
   const testUri = URI.file('test.js');
-  const lineOneBreakpoint = DebugBreakpoint.create(testUri, {line: 1}, true);
-  const lineTwoBreakpoint = DebugBreakpoint.create(testUri, {line: 2}, true);
-  const lineThreeBreakpoint = DebugBreakpoint.create(testUri, {line: 3}, false);
-  const getFn = jest.fn(() => ({breakpointsEnabled: true}));
+  const lineOneBreakpoint = DebugBreakpoint.create(testUri, { line: 1 }, true);
+  const lineTwoBreakpoint = DebugBreakpoint.create(testUri, { line: 2 }, true);
+  const lineThreeBreakpoint = DebugBreakpoint.create(testUri, { line: 3 }, false);
+  const getFn = jest.fn(() => ({ breakpointsEnabled: true }));
   const setFn = jest.fn();
 
   beforeAll(() => {
     mockInjector.overrideProviders({
       token: StorageProvider,
-      useValue: () => {
-        return {get: getFn, set: setFn};
-      },
+      useValue: () => ({ get: getFn, set: setFn }),
     });
     mockInjector.overrideProviders({
       token: IWorkspaceStorageService,
@@ -153,47 +151,46 @@ describe('Breakpoints Manager', () => {
   });
 
   it('breakpointsEnabled should be work', () => {
-      expect(breakpointManager.breakpointsEnabled).toBeTruthy();
-      breakpointManager.breakpointsEnabled = false;
-      expect(breakpointManager.breakpointsEnabled).toBeFalsy();
-    });
+    expect(breakpointManager.breakpointsEnabled).toBeTruthy();
+    breakpointManager.breakpointsEnabled = false;
+    expect(breakpointManager.breakpointsEnabled).toBeFalsy();
+  });
 
   it('load should be work', async (done) => {
-      await breakpointManager.load();
-      expect(getFn).toBeCalledTimes(1);
-      done();
-    });
+    await breakpointManager.load();
+    expect(getFn).toBeCalledTimes(1);
+    done();
+  });
 
   it('save should be work', async (done) => {
-      await breakpointManager.save();
-      expect(setFn).toBeCalledTimes(1);
-      done();
-    });
+    await breakpointManager.save();
+    expect(setFn).toBeCalledTimes(1);
+    done();
+  });
 
   it('setExceptionBreakpoints should be work', async (done) => {
-      const filter = [{filter: 'testFilter', label: 'test'}];
-      const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
-        dispose.dispose();
-        done();
-      });
-      breakpointManager.setExceptionBreakpoints(filter);
-    });
-
-  it('getExceptionBreakpoints should be work', async (done) => {
-      const filter = [{filter: 'testFilter', label: 'test'}];
-      breakpointManager.setExceptionBreakpoints(filter);
-      const breakpoints = breakpointManager.getExceptionBreakpoints();
-      expect(breakpoints.length).toBe(1);
+    const filter = [{ filter: 'testFilter', label: 'test' }];
+    const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
+      dispose.dispose();
       done();
     });
+    breakpointManager.setExceptionBreakpoints(filter);
+  });
+
+  it('getExceptionBreakpoints should be work', async (done) => {
+    const filter = [{ filter: 'testFilter', label: 'test' }];
+    breakpointManager.setExceptionBreakpoints(filter);
+    const breakpoints = breakpointManager.getExceptionBreakpoints();
+    expect(breakpoints.length).toBe(1);
+    done();
+  });
 
   it('updateExceptionBreakpoints should be work', async (done) => {
-      const filter = [{filter: 'testFilter', label: 'test'}];
-      const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
-        dispose.dispose();
-        done();
-      });
-      breakpointManager.updateExceptionBreakpoints(filter[0].filter, true);
+    const filter = [{ filter: 'testFilter', label: 'test' }];
+    const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
+      dispose.dispose();
+      done();
     });
-
+    breakpointManager.updateExceptionBreakpoints(filter[0].filter, true);
+  });
 });

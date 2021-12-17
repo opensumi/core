@@ -1,5 +1,14 @@
 import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
-import { OS, URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap, IApplicationService } from '@opensumi/ide-core-browser';
+import {
+  OS,
+  URI,
+  MaybePromise,
+  WithEventBus,
+  localize,
+  MessageType,
+  LRUMap,
+  IApplicationService,
+} from '@opensumi/ide-core-browser';
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
@@ -18,7 +27,6 @@ enum AskSaveResult {
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
-
   @Autowired()
   protected labelService: LabelService;
 
@@ -100,22 +108,24 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       this.getFileStat(uri.toString()),
       this.labelService.getName(uri),
       this.labelService.getIcon(uri),
-    ] as const).then(([stat, name, icon]) => {
-      return {
-        name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
-        icon,
-        uri,
-        metadata: null,
-        deleted: !stat,
-        supportsRevive: true,
-      };
-    });
+    ] as const).then(([stat, name, icon]) => ({
+      name: stat ? name : name + localize('file.resource-deleted', '(已删除)'),
+      icon,
+      uri,
+      metadata: null,
+      deleted: !stat,
+      supportsRevive: true,
+    }));
   }
 
   provideResourceSubname(resource: IResource, groupResources: IResource[]): string | null {
     const shouldDiff: URI[] = [];
     for (const res of groupResources) {
-      if (this.fileServiceClient.handlesScheme(res.uri.scheme) && res.uri.displayName === resource.uri.displayName && res !== resource) {
+      if (
+        this.fileServiceClient.handlesScheme(res.uri.scheme) &&
+        res.uri.displayName === resource.uri.displayName &&
+        res !== resource
+      ) {
         // 存在file协议的相同名称的文件
         shouldDiff.push(res.uri);
       }
@@ -137,13 +147,12 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     for (const resources of openedResources) {
       for (const r of resources) {
         if (r.uri.scheme === DIFF_SCHEME && r.metadata && r.metadata.modified.toString() === resource.uri.toString()) {
-          count ++;
+          count++;
         }
         if (this.fileServiceClient.handlesScheme(r.uri.scheme) && r.uri.toString() === resource.uri.toString()) {
-          count ++;
+          count++;
         }
         if (count > 1) {
-
           return true;
         }
       }
@@ -161,7 +170,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
       [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
     };
-    const selection = await this.dialogService.open(localize('saveChangesMessage').replace('{0}', resource.name), MessageType.Info, Object.keys(buttons));
+    const selection = await this.dialogService.open(
+      localize('saveChangesMessage').replace('{0}', resource.name),
+      MessageType.Info,
+      Object.keys(buttons),
+    );
     const result = buttons[selection!];
     if (result === AskSaveResult.SAVE) {
       const res = await documentModelRef.instance.save();
@@ -187,10 +200,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
  */
 function getMinimalDiffPath(source: URI, targets: URI[]): string {
   const sourceDirPartsReverse = source.path.dir.toString().split(Path.separator).reverse();
-  const targetDirPartsReverses = targets.map((target) => {
-    return target.path.dir.toString().split(Path.separator).reverse();
-  });
-  for (let i = 0; i < sourceDirPartsReverse.length; i ++ ) {
+  const targetDirPartsReverses = targets.map((target) => target.path.dir.toString().split(Path.separator).reverse());
+  for (let i = 0; i < sourceDirPartsReverse.length; i++) {
     let foundSame = false;
     for (const targetDirPartsReverse of targetDirPartsReverses) {
       if (targetDirPartsReverse[i] === sourceDirPartsReverse[i]) {
@@ -199,7 +210,10 @@ function getMinimalDiffPath(source: URI, targets: URI[]): string {
       }
     }
     if (!foundSame) {
-      return sourceDirPartsReverse.slice(0, i + 1).reverse().join(Path.separator);
+      return sourceDirPartsReverse
+        .slice(0, i + 1)
+        .reverse()
+        .join(Path.separator);
     }
   }
   return sourceDirPartsReverse.reverse().join(Path.separator);

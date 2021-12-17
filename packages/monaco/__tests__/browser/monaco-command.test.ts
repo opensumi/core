@@ -1,4 +1,7 @@
-import { EditorAction, EditorExtensionsRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import {
+  EditorAction,
+  EditorExtensionsRegistry,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
@@ -8,7 +11,11 @@ import { ILoggerManagerClient, Emitter, CommandRegistry } from '@opensumi/ide-co
 import { CommandsRegistry, ICommandEvent } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
-import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import {
+  MonacoActionRegistry,
+  MonacoCommandRegistry,
+  MonacoCommandService,
+} from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 describe(' monaco command service test', () => {
   let injector: MockInjector;
@@ -21,49 +28,54 @@ describe(' monaco command service test', () => {
   beforeAll(async () => {
     injector = createBrowserInjector([]);
 
-    injector.addProviders({
-      token: MonacoService,
-      useClass: MonacoServiceImpl,
-    },
-    {
-      token: MonacoOverrideServiceRegistry,
-      useClass: MonacoOverrideServiceRegistryImpl,
-    },
-    {
-      token: EditorCollectionService,
-      useValue: {
-        currentEditor: {
-          monacoEditor,
+    injector.addProviders(
+      {
+        token: MonacoService,
+        useClass: MonacoServiceImpl,
+      },
+      {
+        token: MonacoOverrideServiceRegistry,
+        useClass: MonacoOverrideServiceRegistryImpl,
+      },
+      {
+        token: EditorCollectionService,
+        useValue: {
+          currentEditor: {
+            monacoEditor,
+          },
         },
       },
-    }, {
-      token: WorkbenchEditorService,
-      useValue: {},
-    }, {
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: () => {
-          return {
-            log() { },
-            debug() { },
-            error() { },
-            verbose() { },
+      {
+        token: WorkbenchEditorService,
+        useValue: {},
+      },
+      {
+        token: ILoggerManagerClient,
+        useValue: {
+          getLogger: () => ({
+            log() {},
+            debug() {},
+            error() {},
+            verbose() {},
             warn() {},
-          };
+          }),
         },
       },
-    });
+    );
     commandRegistry = injector.get(CommandRegistry);
     const service: MonacoService = injector.get(MonacoService);
     await service.loadMonaco();
     monacoCommandRegistry = injector.get(MonacoCommandRegistry);
     monacoCommandService = injector.get(MonacoCommandService);
     monacoActionRegistry = injector.get(MonacoActionRegistry);
-    EditorExtensionsRegistry['getEditorActions'] = () => [{
-      id: 'editor.action.cut',
-      label: '剪切',
-      alias: 'cut',
-    }] as unknown as EditorAction[];
+    EditorExtensionsRegistry['getEditorActions'] = () =>
+      [
+        {
+          id: 'editor.action.cut',
+          label: '剪切',
+          alias: 'cut',
+        },
+      ] as unknown as EditorAction[];
 
     const commands = new Map();
     commands.set('replacePreviousChar', {});
@@ -102,15 +114,17 @@ describe(' monaco command service test', () => {
   });
 
   describe('monaco command register', () => {
-
     it('should be able to register and execute command', async () => {
       const id = 'command.test';
       const execute = jest.fn();
-      monacoCommandRegistry.registerCommand({
-        id,
-      }, {
-        execute,
-      });
+      monacoCommandRegistry.registerCommand(
+        {
+          id,
+        },
+        {
+          execute,
+        },
+      );
 
       await monacoCommandService.executeCommand(id);
       expect(execute).toBeCalledTimes(1);
@@ -122,11 +136,14 @@ describe(' monaco command service test', () => {
       const id = 'command.handler.test';
       const execute = jest.fn();
       const handlerExecute = jest.fn();
-      monacoCommandRegistry.registerCommand({
-        id,
-      }, {
-        execute,
-      });
+      monacoCommandRegistry.registerCommand(
+        {
+          id,
+        },
+        {
+          execute,
+        },
+      );
       monacoCommandRegistry.registerHandler(id, {
         execute: handlerExecute,
       });
@@ -139,11 +156,14 @@ describe(' monaco command service test', () => {
     it('validate a command', async () => {
       const id = 'command.validate.test';
       const execute = jest.fn();
-      monacoCommandRegistry.registerCommand({
-        id,
-      }, {
-        execute,
-      });
+      monacoCommandRegistry.registerCommand(
+        {
+          id,
+        },
+        {
+          execute,
+        },
+      );
 
       expect(monacoCommandRegistry.validate(id)).toBe(id);
       expect(monacoCommandRegistry.validate('not-fonund-command')).toBe(undefined);
@@ -161,5 +181,4 @@ describe(' monaco command service test', () => {
       expect(commandRegistry.getCommand('setContext')).toBeUndefined();
     });
   });
-
 });

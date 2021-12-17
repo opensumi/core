@@ -4,7 +4,6 @@ import { VariableResolveOptions, IVariableResolverService } from '../common';
 
 @Injectable()
 export class VariableResolverService implements IVariableResolverService {
-
   protected static VAR_REGEXP = /\$\{(.*?)\}/g;
 
   @Autowired(VariableRegistry)
@@ -58,7 +57,7 @@ export class VariableResolverService implements IVariableResolverService {
    */
   protected async doResolveObject(obj: object, context: VariableResolverService.Context): Promise<object> {
     const result: {
-      [prop: string]: any,
+      [prop: string]: any;
     } = {};
     for (const name of Object.keys(obj)) {
       const value = (obj as any)[name];
@@ -106,13 +105,12 @@ export class VariableResolverService implements IVariableResolverService {
 
 export namespace VariableResolverService {
   export class Context {
-
     protected readonly resolved = new Map<string, string | undefined>();
 
     constructor(
       protected readonly variableRegistry: VariableRegistry,
       protected readonly options: VariableResolveOptions,
-    ) { }
+    ) {}
 
     private async evaluateSingleVariable(name: string): Promise<string | undefined> {
       let variable: Variable | undefined;
@@ -123,20 +121,20 @@ export namespace VariableResolverService {
         variable = this.variableRegistry.getVariable(key);
 
         switch (key) {
-
-          case 'env':
-            const environment = variable && await variable.resolve(this.options.context);
+          case 'env': {
+            const environment = variable && (await variable.resolve(this.options.context));
             if (!environment) {
               return;
             }
             const env = environment[isWindows ? value.toLowerCase() : value];
             return env;
-
-          default: break;
+          }
+          default:
+            break;
         }
       } else {
         const variable = this.variableRegistry.getVariable(name);
-        const value = variable && await variable.resolve(this.options.context);
+        const value = variable && (await variable.resolve(this.options.context));
         return value as string;
       }
     }
@@ -156,6 +154,5 @@ export namespace VariableResolverService {
         this.resolved.set(name, undefined);
       }
     }
-
   }
 }

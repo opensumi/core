@@ -74,7 +74,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   update() {
-    this.setState({error: null, errorInfo: null});
+    this.setState({ error: null, errorInfo: null });
   }
 
   render() {
@@ -95,32 +95,49 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
-export const allSlot: {slot: string, dom: HTMLElement}[] = [];
+export const allSlot: { slot: string; dom: HTMLElement }[] = [];
 
-export const SlotDecorator: React.FC<{ slot: string, color?: string }> = ({slot, ...props}) => {
+export const SlotDecorator: React.FC<{ slot: string; color?: string }> = ({ slot, ...props }) => {
   const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
-      allSlot.push({slot, dom: ref.current});
+      allSlot.push({ slot, dom: ref.current });
     }
   }, [ref]);
-  return <div ref={(ele) => ref.current = ele!} className='resize-wrapper' style={props.color ? {backgroundColor: props.color} : {}}>{props.children}</div>;
+  return (
+    <div
+      ref={(ele) => (ref.current = ele!)}
+      className='resize-wrapper'
+      style={props.color ? { backgroundColor: props.color } : {}}
+    >
+      {props.children}
+    </div>
+  );
 };
 
-export interface RendererProps { components: ComponentRegistryInfo[]; }
+export interface RendererProps {
+  components: ComponentRegistryInfo[];
+}
 export type Renderer = React.ComponentType<RendererProps>;
 
 export class SlotRendererRegistry {
   static DefaultRenderer({ components }: RendererProps) {
-    return components && <ErrorBoundary>
-      {
-        components.map((componentInfo, index: number) => {
-          // 默认的只渲染一个
-          const Component = componentInfo.views[0].component!;
-          return <Component {...(componentInfo.options && componentInfo.options.initialProps)} key={`${Component.name}-${index}`} />;
-        })
-      }
-    </ErrorBoundary>;
+    return (
+      components && (
+        <ErrorBoundary>
+          {components.map((componentInfo, index: number) => {
+            // 默认的只渲染一个
+            const Component = componentInfo.views[0].component!;
+            return (
+              <Component
+                {...(componentInfo.options && componentInfo.options.initialProps)}
+                key={`${Component.name}-${index}`}
+              />
+            );
+          })}
+        </ErrorBoundary>
+      )
+    );
   }
 
   protected tabbarLocation = new Set<string>();
@@ -144,7 +161,6 @@ export class SlotRendererRegistry {
   isTabbar(slot: string) {
     return this.tabbarLocation.has(slot);
   }
-
 }
 
 export const slotRendererRegistry = new SlotRendererRegistry();
@@ -185,11 +201,13 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   }, []);
 
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
-  return <ErrorBoundary>
-    <SlotDecorator slot={slot} color={props.color}>
-      <Renderer components={componentInfos} {...props} />
-    </SlotDecorator>
-  </ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <SlotDecorator slot={slot} color={props.color}>
+        <Renderer components={componentInfos} {...props} />
+      </SlotDecorator>
+    </ErrorBoundary>
+  );
 }
 
 export interface SlotRendererContribution {
@@ -202,18 +220,24 @@ export interface SlotRendererProps {
   initialProps?: object;
 }
 // @deprecated
-export function ComponentRenderer({ Component, initialProps }: SlotRendererProps ) {
+export function ComponentRenderer({ Component, initialProps }: SlotRendererProps) {
   if (Array.isArray(Component)) {
-    return Component && <ErrorBoundary>
-      {
-        Component.map((Component, index: number) => {
-          return <Component {...(initialProps || {})} key={`${Component.name}-${index}`}/>;
-        })
-      }
-    </ErrorBoundary>;
+    return (
+      Component && (
+        <ErrorBoundary>
+          {Component.map((Component, index: number) => (
+            <Component {...(initialProps || {})} key={`${Component.name}-${index}`} />
+          ))}
+        </ErrorBoundary>
+      )
+    );
   } else {
-    return Component && <ErrorBoundary>
-      <Component {...(initialProps || {})} />
-    </ErrorBoundary>;
+    return (
+      Component && (
+        <ErrorBoundary>
+          <Component {...(initialProps || {})} />
+        </ErrorBoundary>
+      )
+    );
   }
 }

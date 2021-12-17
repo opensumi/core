@@ -2,19 +2,18 @@ export enum PreferenceScope {
   Default,
   User,
   Workspace,
-  Folder
+  Folder,
 }
 
 export namespace PreferenceScope {
-
   export function is(scope: any): scope is PreferenceScope {
-    return typeof scope === 'number' && getScopes().findIndex(s => s === scope) >= 0;
+    return typeof scope === 'number' && getScopes().findIndex((s) => s === scope) >= 0;
   }
 
   export function getScopes(): PreferenceScope[] {
     return Object.keys(PreferenceScope)
-      .filter(k => typeof PreferenceScope[k as any] === 'string')
-      .map(v => <PreferenceScope>Number(v));
+      .filter((k) => typeof PreferenceScope[k as any] === 'string')
+      .map((v) => Number(v));
   }
 
   export function getReversedScopes(): PreferenceScope[] {
@@ -23,11 +22,10 @@ export namespace PreferenceScope {
 
   export function getScopeNames(scope?: PreferenceScope): string[] {
     const names: string[] = [];
-    const allNames = Object.keys(PreferenceScope)
-      .filter(k => typeof PreferenceScope[k as any] === 'number');
+    const allNames = Object.keys(PreferenceScope).filter((k) => typeof PreferenceScope[k as any] === 'number');
     if (scope) {
       for (const name of allNames) {
-        if ((<any>PreferenceScope)[name] <= scope) {
+        if (PreferenceScope[name] <= scope) {
           names.push(name);
         }
       }

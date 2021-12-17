@@ -38,17 +38,11 @@ export const CtxMenu = observer(() => {
       point={ctxMenuService.point || {}}
       popupClassName='point-popup'
       builtinPlacements={placements}
-      popup={(
-        <ClickOutside
-          mouseEvents={['click', 'contextmenu']}
-          onOutsideClick={onClickOutSide}>
-          <MenuActionList
-            data={ctxMenuService.menuNodes}
-            afterClick={handleClick}
-            context={ctxMenuService.context}
-          />
+      popup={
+        <ClickOutside mouseEvents={['click', 'contextmenu']} onOutsideClick={onClickOutSide}>
+          <MenuActionList data={ctxMenuService.menuNodes} afterClick={handleClick} context={ctxMenuService.context} />
         </ClickOutside>
-      )}
+      }
       alignPoint
     />
   );

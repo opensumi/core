@@ -7,18 +7,15 @@ describe('Explorer contribution should be work', () => {
   let injector: MockInjector;
 
   beforeEach(() => {
-    injector = createBrowserInjector([
-      ExplorerModule,
-    ]);
+    injector = createBrowserInjector([ExplorerModule]);
   });
 
   describe('01 #Init', () => {
     it('should contribution work', async () => {
       const register = jest.fn();
       const contribution = injector.get(ExplorerContribution);
-      contribution.registerComponent({register} as any);
+      contribution.registerComponent({ register } as any);
       expect(register).toBeCalledTimes(1);
     });
   });
-
 });

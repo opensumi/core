@@ -22,9 +22,7 @@ LocalizeContext.displayName = 'LocalizeContext';
 export function LocalizeContextProvider(props: React.PropsWithChildren<{ value: ILocalizeContext }>) {
   return (
     <LocalizeContext.Provider value={props.value}>
-      <LocalizeContext.Consumer>
-        {(value) => props.value === value ? props.children : null}
-      </LocalizeContext.Consumer>
+      <LocalizeContext.Consumer>{(value) => (props.value === value ? props.children : null)}</LocalizeContext.Consumer>
     </LocalizeContext.Provider>
   );
 }
@@ -34,9 +32,7 @@ type IComponentContextProps<T extends string> = IiconContext<T> & ILocalizeConte
 export function ComponentContextProvider(props: React.PropsWithChildren<{ value: IComponentContextProps<any> }>) {
   return (
     <IconContextProvider value={props.value}>
-      <LocalizeContextProvider value={{ localize: props.value.localize }}>
-        {props.children}
-      </LocalizeContextProvider>
+      <LocalizeContextProvider value={{ localize: props.value.localize }}>{props.children}</LocalizeContextProvider>
     </IconContextProvider>
   );
 }

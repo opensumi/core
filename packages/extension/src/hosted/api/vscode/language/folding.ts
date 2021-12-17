@@ -5,13 +5,13 @@ import { FoldingContext, FoldingRange } from '../../../../common/vscode/model.ap
 import * as Converter from '../../../../common/vscode/converter';
 
 export class FoldingProviderAdapter {
+  constructor(private documents: ExtensionDocumentDataManager, private provider: vscode.FoldingRangeProvider) {}
 
-  constructor(
-    private documents: ExtensionDocumentDataManager,
-    private provider: vscode.FoldingRangeProvider,
-  ) { }
-
-  async provideFoldingRanges(resource: URI, context: FoldingContext, token: vscode.CancellationToken): Promise<FoldingRange[] | undefined> {
+  async provideFoldingRanges(
+    resource: URI,
+    context: FoldingContext,
+    token: vscode.CancellationToken,
+  ): Promise<FoldingRange[] | undefined> {
     const documentData = this.documents.getDocumentData(resource);
     if (!documentData) {
       return Promise.reject(new Error(`There is no document for ${resource}`));

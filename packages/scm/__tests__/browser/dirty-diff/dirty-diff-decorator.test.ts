@@ -29,23 +29,23 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
     let monacoModel: ITextModel;
 
     beforeEach(() => {
-      injector = createBrowserInjector([], new MockInjector([
-        {
-          token: IDocPersistentCacheProvider,
-          useClass: EmptyDocCacheImpl,
-        },
-        {
-          token: SCMPreferences,
-          useClass: MockSCMPreferencesImpl,
-        },
-      ]));
+      injector = createBrowserInjector(
+        [],
+        new MockInjector([
+          {
+            token: IDocPersistentCacheProvider,
+            useClass: EmptyDocCacheImpl,
+          },
+          {
+            token: SCMPreferences,
+            useClass: MockSCMPreferencesImpl,
+          },
+        ]),
+      );
 
       fakeScmDiffDecorationsGetter.mockReturnValue('all');
 
-      editorModel = injector.get(EditorDocumentModel, [
-        URI.file(`/test/workspace/abcde${Math.random()}.ts`),
-        'test',
-      ]);
+      editorModel = injector.get(EditorDocumentModel, [URI.file(`/test/workspace/abcde${Math.random()}.ts`), 'test']);
       monacoModel = editorModel.getMonacoModel();
     });
 
@@ -63,18 +63,22 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
         modifiedEndLineNumber: 0,
       };
       dirtyDiffModel['_changes'] = [change0];
-      dirtyDiffModel['_onDidChange'].fire([{
-        start: 0,
-        deleteCount: 0,
-        toInsert: [change0],
-      }]);
+      dirtyDiffModel['_onDidChange'].fire([
+        {
+          start: 0,
+          deleteCount: 0,
+          toInsert: [change0],
+        },
+      ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber, startColumn: 1,
-        endLineNumber: change0.modifiedStartLineNumber, endColumn: 1,
+        startLineNumber: change0.modifiedStartLineNumber,
+        startColumn: 1,
+        endLineNumber: change0.modifiedStartLineNumber,
+        endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBe('dirty-diff-glyph dirty-diff-added');
       expect(decos[0].options.overviewRuler!.position).toBe(OverviewRulerLane.Left);
@@ -108,18 +112,22 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
         modifiedEndLineNumber: 0,
       };
       dirtyDiffModel['_changes'] = [change0];
-      dirtyDiffModel['_onDidChange'].fire([{
-        start: 0,
-        deleteCount: 0,
-        toInsert: [change0],
-      }]);
+      dirtyDiffModel['_onDidChange'].fire([
+        {
+          start: 0,
+          deleteCount: 0,
+          toInsert: [change0],
+        },
+      ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber, startColumn: Number.MAX_VALUE,
-        endLineNumber: change0.modifiedStartLineNumber, endColumn: Number.MAX_VALUE,
+        startLineNumber: change0.modifiedStartLineNumber,
+        startColumn: Number.MAX_VALUE,
+        endLineNumber: change0.modifiedStartLineNumber,
+        endColumn: Number.MAX_VALUE,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();
       expect(decos[0].options.overviewRuler!.position).toBe(OverviewRulerLane.Left);
@@ -153,18 +161,22 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
         modifiedEndLineNumber: 1,
       };
       dirtyDiffModel['_changes'] = [change0];
-      dirtyDiffModel['_onDidChange'].fire([{
-        start: 0,
-        deleteCount: 0,
-        toInsert: [change0],
-      }]);
+      dirtyDiffModel['_onDidChange'].fire([
+        {
+          start: 0,
+          deleteCount: 0,
+          toInsert: [change0],
+        },
+      ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber, startColumn: 1,
-        endLineNumber: change0.modifiedEndLineNumber, endColumn: 1,
+        startLineNumber: change0.modifiedStartLineNumber,
+        startColumn: 1,
+        endLineNumber: change0.modifiedEndLineNumber,
+        endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();
       expect(decos[0].options.overviewRuler).toBeNull();
@@ -197,11 +209,13 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       dirtyDiffModel['_changes'] = [change0];
 
       dirtyDiffDecorator['editorModel'] = null;
-      dirtyDiffModel['_onDidChange'].fire([{
-        start: 0,
-        deleteCount: 0,
-        toInsert: [change0],
-      }]);
+      dirtyDiffModel['_onDidChange'].fire([
+        {
+          start: 0,
+          deleteCount: 0,
+          toInsert: [change0],
+        },
+      ]);
 
       expect(spy).toHaveBeenCalledTimes(0);
 

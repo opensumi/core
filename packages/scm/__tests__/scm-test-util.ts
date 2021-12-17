@@ -24,20 +24,22 @@ export class MockSCMProvider implements ISCMProvider {
 
   public rootUri: Uri | undefined;
 
-  constructor(
-    id: number,
-    scheme = 'git',
-    rootUri = Uri.file('/test/workspace'),
-  ) {
+  constructor(id: number, scheme = 'git', rootUri = Uri.file('/test/workspace')) {
     this._label = 'scm_label_' + id;
     this._id = 'scm_id_' + id;
     this._contextValue = scheme;
     this.rootUri = rootUri;
   }
 
-  get label() { return this._label; }
-  get id() { return this._id; }
-  get contextValue() { return this._contextValue; }
+  get label() {
+    return this._label;
+  }
+  get id() {
+    return this._id;
+  }
+  get contextValue() {
+    return this._contextValue;
+  }
 
   public count: number;
   public statusBarCommands: VSCommand[] | undefined = [];
@@ -61,7 +63,9 @@ export class MockSCMProvider implements ISCMProvider {
     return null;
   }
 
-  toJSON() { return { $mid: 5 }; }
+  toJSON() {
+    return { $mid: 5 };
+  }
 
   registerGroup(group: ISCMResourceGroup) {
     this.groups.splice(this.groups.elements.length, 0, [group]);
@@ -76,19 +80,25 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
 
   readonly provider: ISCMProvider;
 
-  private _hideWhenEmpty: boolean = false;
+  private _hideWhenEmpty = false;
   public elements: ISCMResource[] = [];
 
   private _onDidSplice = new Emitter<ISplice<ISCMResource>>();
   readonly onDidSplice = this._onDidSplice.event;
 
-  get hideWhenEmpty(): boolean { return !!this._hideWhenEmpty; }
+  get hideWhenEmpty(): boolean {
+    return !!this._hideWhenEmpty;
+  }
 
   private _onDidChange = new Emitter<void>();
   readonly onDidChange: Event<void> = this._onDidChange.event;
 
-  get label() { return this._label; }
-  get id() { return this._id; }
+  get label() {
+    return this._label;
+  }
+  get id() {
+    return this._id;
+  }
 
   constructor(provider: ISCMProvider, id: number) {
     this.provider = provider;
@@ -106,7 +116,9 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
     this._onDidChange.fire();
   }
 
-  toJSON() { return { $mid: 4 }; }
+  toJSON() {
+    return { $mid: 4 };
+  }
 }
 
 export class MockSCMResource implements ISCMResource {
@@ -114,7 +126,9 @@ export class MockSCMResource implements ISCMResource {
   readonly sourceUri = Uri.file('/test/workspace/src/a.ts');
   readonly decorations = {};
 
-  get resourceGroup() { return this._resourceGroup; }
+  get resourceGroup() {
+    return this._resourceGroup;
+  }
 
   constructor(
     resourceGroup: ISCMResourceGroup,
@@ -129,5 +143,7 @@ export class MockSCMResource implements ISCMResource {
   }
 
   async open() {}
-  toJSON() { return { $mid: 3 }; }
+  toJSON() {
+    return { $mid: 3 };
+  }
 }

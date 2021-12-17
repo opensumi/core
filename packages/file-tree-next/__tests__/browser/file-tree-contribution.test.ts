@@ -11,7 +11,15 @@ import { IDecorationsService } from '@opensumi/ide-decoration';
 import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
-import { IApplicationService, IClipboardService, IContextKeyService, isLinux, isWindows, OS, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  IApplicationService,
+  IClipboardService,
+  IContextKeyService,
+  isLinux,
+  isWindows,
+  OS,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 
@@ -61,9 +69,7 @@ describe('FileTreeContribution', () => {
   };
 
   beforeEach(() => {
-    mockInjector = createBrowserInjector([
-      OutlineModule,
-    ]);
+    mockInjector = createBrowserInjector([OutlineModule]);
 
     mockInjector.overrideProviders(
       {
@@ -125,7 +131,6 @@ describe('FileTreeContribution', () => {
         },
       },
     );
-
   });
 
   afterAll(() => {
@@ -197,5 +202,4 @@ describe('FileTreeContribution', () => {
       expect(register).toBeCalledTimes(6);
     });
   });
-
 });

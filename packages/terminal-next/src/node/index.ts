@@ -2,7 +2,13 @@ import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 import { TerminalServiceImpl } from './terminal.service';
 import { TerminalServiceClientImpl } from './terminal.service.client';
-import { ITerminalNodeService, ITerminalProcessPath, ITerminalProcessService, ITerminalServiceClient, ITerminalServicePath } from '../common';
+import {
+  ITerminalNodeService,
+  ITerminalProcessPath,
+  ITerminalProcessService,
+  ITerminalServiceClient,
+  ITerminalServicePath,
+} from '../common';
 import { TerminalProcessServiceImpl } from './terminal-process.service';
 
 @Injectable()

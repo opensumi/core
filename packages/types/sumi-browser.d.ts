@@ -138,11 +138,9 @@ declare module 'sumi-browser' {
     matchGlobPattern(pattern: string | IRelativePattern): boolean;
     static getDistinctParents(uris: URI[]): URI[];
     getParsedQuery(): {
-        [key: string]: string;
+      [key: string]: string;
     };
-    static stringifyQuery(query: {
-        [key: string]: any;
-    }): string;
+    static stringifyQuery(query: { [key: string]: any }): string;
   }
 
   export interface ScrollAreaProps {
@@ -157,9 +155,7 @@ declare module 'sumi-browser' {
     top: number;
     left: number;
   }
-  export class Scroll extends React.Component<ScrollAreaProps, any> {
-
-  }
+  export class Scroll extends React.Component<ScrollAreaProps, any> {}
 
   export interface ResizeHandleProps {
     onFinished?: () => void;
@@ -176,7 +172,7 @@ declare module 'sumi-browser' {
   export const ResizeHandleHorizontal: React.ComponentType<ResizeHandleProps>;
   export const ResizeHandleVertical: React.ComponentType<ResizeHandleProps>;
 
-  export const PlainWebview: React.ComponentType<{ id: string, appendToChild?: boolean, renderRoot?: HTMLElement }>;
+  export const PlainWebview: React.ComponentType<{ id: string; appendToChild?: boolean; renderRoot?: HTMLElement }>;
 
   // scope 目前不是必要的，可以直接从 extension 拿到 id
   // 为了兼容已经在使用的插件，暂时先保留声明
@@ -191,7 +187,7 @@ declare module 'sumi-browser' {
    */
   export function formatLocalize(key: string, ...args: string[]): string;
 
-  export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE, anim?: ANIM_TYPE }): string;
+  export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE; anim?: ANIM_TYPE }): string;
 
   /**
    * 获得当前主题的颜色值
@@ -348,28 +344,27 @@ declare module 'sumi-browser' {
      */
     tabTitle?: string;
     /**
-    * 相对于插件路径的icon地址
-    * 如果需要更复杂的图标Resolve，需要在kaitian node进程中注册ResourceProvider
-    */
+     * 相对于插件路径的icon地址
+     * 如果需要更复杂的图标Resolve，需要在kaitian node进程中注册ResourceProvider
+     */
     tabIconPath?: string;
   }
   export namespace commands {
-
     /**
-    * Executes the command denoted by the given command identifier.
-    *
-    * * *Note 1:* When executing an editor command not all types are allowed to
-    * be passed as arguments. Allowed are the primitive types `string`, `boolean`,
-    * `number`, `undefined`, and `null`, as well as [`Position`](#Position), [`Range`](#Range), [`Uri`](#Uri) and [`Location`](#Location).
-    * * *Note 2:* There are no restrictions when executing commands that have been contributed
-    * by extensions.
-    * * *Note 3:* Can not execute some builtin commands.
-    *
-    * @param command Identifier of the command to execute.
-    * @param rest Parameters passed to the command function.
-    * @return A promise that resolves to the returned value of the given command. `undefined` when
-    * the command handler function doesn't return anything.
-    */
+     * Executes the command denoted by the given command identifier.
+     *
+     * * *Note 1:* When executing an editor command not all types are allowed to
+     * be passed as arguments. Allowed are the primitive types `string`, `boolean`,
+     * `number`, `undefined`, and `null`, as well as [`Position`](#Position), [`Range`](#Range), [`Uri`](#Uri) and [`Location`](#Location).
+     * * *Note 2:* There are no restrictions when executing commands that have been contributed
+     * by extensions.
+     * * *Note 3:* Can not execute some builtin commands.
+     *
+     * @param command Identifier of the command to execute.
+     * @param rest Parameters passed to the command function.
+     * @return A promise that resolves to the returned value of the given command. `undefined` when
+     * the command handler function doesn't return anything.
+     */
     export function executeCommand<T>(command: string, ...rest: any[]): Promise<T | undefined>;
   }
 
@@ -381,5 +376,4 @@ declare module 'sumi-browser' {
     export function time(name: string): IReporterTimer;
     export function point(name: string, msg?: string, extra?: any): void;
   }
-
 }

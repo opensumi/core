@@ -11,7 +11,6 @@ import { FileServiceClient } from './file-service-client';
 // 常规文件资源读取
 @Domain(ClientAppContribution)
 export class FileServiceContribution implements ClientAppContribution {
-
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: FileServiceClient;
 
@@ -30,10 +29,10 @@ export class FileServiceContribution implements ClientAppContribution {
   async initialize() {
     const fsProviderContributions = this.contributionProvider.getContributions();
     for (const contribution of fsProviderContributions) {
-      contribution.registerProvider && await contribution.registerProvider(this.fileSystem);
+      contribution.registerProvider && (await contribution.registerProvider(this.fileSystem));
     }
     for (const contribution of fsProviderContributions) {
-      contribution.onFileServiceReady && await contribution.onFileServiceReady();
+      contribution.onFileServiceReady && (await contribution.onFileServiceReady());
     }
   }
 }

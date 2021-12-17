@@ -54,12 +54,12 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, rows: number, cols: number, options: TerminalOptions ) {
+  async create(id: string, rows: number, cols: number, options: TerminalOptions) {
     const clientId = this.clientId;
 
     this.terminalService.setClient(clientId, this);
     this.logger.log('create pty id', id);
-    const pty = await this.terminalService.create(id, rows, cols, options) as IPty;
+    const pty = (await this.terminalService.create(id, rows, cols, options)) as IPty;
     this.terminalMap.set(id, pty);
     return {
       pid: pty.pid,
@@ -73,9 +73,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell;
       case WindowsShellType.cmd:
         return WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd;
-      case WindowsShellType['git-bash']:
+      case WindowsShellType['git-bash']: {
         const shell = findShellExecutable(WINDOWS_GIT_BASH_PATHS);
         return shell;
+      }
       default:
         // 未知的 shell，返回 undefined，后续会使用系统默认值处理
         return undefined;
@@ -117,5 +118,4 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     });
     */
   }
-
 }

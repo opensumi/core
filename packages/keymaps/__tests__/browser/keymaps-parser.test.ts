@@ -3,7 +3,8 @@ import { KeymapsParser } from '../../src/browser/keymaps-parser';
 describe('KeymapsParser should be work', () => {
   const parser = new KeymapsParser();
   it('well formatted raw text', () => {
-    expectParsing(`{
+    expectParsing(
+      `{
   "keybindings": [
     {
       "keybinding": "ctrl+p",
@@ -15,7 +16,8 @@ describe('KeymapsParser should be work', () => {
     }
   ],
   "errors": []
-}`, `[
+}`,
+      `[
     {
         "keybinding": "ctrl+p",
         "command": "command1"
@@ -24,43 +26,52 @@ describe('KeymapsParser should be work', () => {
         "keybinding": "ctrl+shift+p",
         "command": "command2"
     }
-]`);
+]`,
+    );
   });
 
   it('no array', () => {
-    expectParsing(`{
+    expectParsing(
+      `{
   "keybindings": [],
   "errors": [
     "should be array at "
   ]
-}`, `{
+}`,
+      `{
     "keybinding": "ctrl+p",
     "command": "command"
-}`);
+}`,
+    );
   });
 
   it('additional property', () => {
-    expectParsing(`{
+    expectParsing(
+      `{
   "keybindings": [],
   "errors": [
     "should NOT have additional properties at /0"
   ]
-}`, `[
+}`,
+      `[
     {
         "keybinding": "ctrl+p",
         "command": "command",
         "extra": 0
     }
-]`);
+]`,
+    );
   });
 
   it('wrong type', () => {
-    expectParsing(`{
+    expectParsing(
+      `{
   "keybindings": [],
   "errors": [
     "should be string at /0/keybinding"
   ]
-}`, `[
+}`,
+      `[
     {
         "keybinding": 0,
         "command": "command1"
@@ -69,22 +80,26 @@ describe('KeymapsParser should be work', () => {
         "keybinding": "ctrl+shift+p",
         "command": 0
     }
-]`);
+]`,
+    );
   });
 
   it('missing property', () => {
-    expectParsing(`{
+    expectParsing(
+      `{
   "keybindings": [],
   "errors": [
     "PropertyNameExpected at 44 offset of 1 length",
     "ValueExpected at 44 offset of 1 length",
     "should have required property 'command' at /0"
   ]
-}`, `[
+}`,
+      `[
     {
         "keybinding": "ctrl+p",
     }
-]`);
+]`,
+    );
   });
 
   /**
@@ -97,5 +112,4 @@ describe('KeymapsParser should be work', () => {
     const keybindings = parser.parse(content, errors);
     expect(expectation).toBe(JSON.stringify({ keybindings, errors }, undefined, 2));
   }
-
 });

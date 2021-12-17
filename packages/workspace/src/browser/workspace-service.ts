@@ -1,4 +1,3 @@
-
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,
@@ -33,7 +32,6 @@ import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {
-
   private _workspace: FileStat | undefined;
 
   private _roots: FileStat[] = [];
@@ -103,11 +101,13 @@ export class WorkspaceService implements IWorkspaceService {
     if (wpUriString) {
       const wpStat = await this.toFileStat(wpUriString);
       await this.setWorkspace(wpStat);
-      this.toDisposableCollection.push(this.fileServiceClient.onFilesChanged((event) => {
-        if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
-          this.updateWorkspace();
-        }
-      }));
+      this.toDisposableCollection.push(
+        this.fileServiceClient.onFilesChanged((event) => {
+          if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
+            this.updateWorkspace();
+          }
+        }),
+      );
     } else {
       // 处理空工作区情况
       this.deferredRoots.resolve([]);
@@ -117,7 +117,10 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected getTemporaryWorkspaceFileUri(home: URI): URI {
-    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`).withScheme('file');
+    return home
+      .resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
+      .resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`)
+      .withScheme('file');
   }
 
   protected listenPreference() {
@@ -125,24 +128,26 @@ export class WorkspaceService implements IWorkspaceService {
     const filesExcludeName = 'files.exclude';
     const multiRootPrefName = 'workspace.supportMultiRootWorkspace';
 
-    this.toDisposableCollection.push(this.preferenceService.onPreferenceChanged((e) => {
-      // 工作区切换到多工作区时，可能会触发一次所有工作区配置的 Changed
-      if (e.preferenceName === watchExcludeName) {
-        this.fileServiceClient.setWatchFileExcludes(this.getFlattenExcludes(watchExcludeName));
-      } else if (e.preferenceName === filesExcludeName) {
-        this.fileServiceClient.setFilesExcludes(
-          this.getFlattenExcludes(filesExcludeName),
-          this._roots.map((stat) => {
-            return stat.uri;
-          }),
-        ).then(() => {
-          // 通知目录树更新
-          this.onWorkspaceFileExcludeChangeEmitter.fire();
-        });
-      } else if (e.preferenceName === multiRootPrefName) {
-        this.updateWorkspace();
-      }
-    }));
+    this.toDisposableCollection.push(
+      this.preferenceService.onPreferenceChanged((e) => {
+        // 工作区切换到多工作区时，可能会触发一次所有工作区配置的 Changed
+        if (e.preferenceName === watchExcludeName) {
+          this.fileServiceClient.setWatchFileExcludes(this.getFlattenExcludes(watchExcludeName));
+        } else if (e.preferenceName === filesExcludeName) {
+          this.fileServiceClient
+            .setFilesExcludes(
+              this.getFlattenExcludes(filesExcludeName),
+              this._roots.map((stat) => stat.uri),
+            )
+            .then(() => {
+              // 通知目录树更新
+              this.onWorkspaceFileExcludeChangeEmitter.fire();
+            });
+        } else if (e.preferenceName === multiRootPrefName) {
+          this.updateWorkspace();
+        }
+      }),
+    );
   }
 
   protected async setFileServiceExcludes() {
@@ -153,9 +158,7 @@ export class WorkspaceService implements IWorkspaceService {
     await this.fileServiceClient.setWatchFileExcludes(this.getFlattenExcludes(watchExcludeName));
     await this.fileServiceClient.setFilesExcludes(
       this.getFlattenExcludes(filesExcludeName),
-      this._roots.map((stat) => {
-        return stat.uri;
-      }),
+      this._roots.map((stat) => stat.uri),
     );
     this.onWorkspaceFileExcludeChangeEmitter.fire();
   }
@@ -240,7 +243,7 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected async updateWorkspace(): Promise<void> {
     if (this._workspace) {
-      this.toFileStat(this._workspace.uri).then((stat) => this._workspace = stat);
+      this.toFileStat(this._workspace.uri).then((stat) => (this._workspace = stat));
       this.setMostRecentlyUsedWorkspace(this._workspace.uri);
     }
     await this.updateRoots();
@@ -304,7 +307,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected async getWorkspaceDataFromFile(): Promise<WorkspaceData | undefined> {
-    if (this._workspace && await this.fileServiceClient.access(this._workspace.uri)) {
+    if (this._workspace && (await this.fileServiceClient.access(this._workspace.uri))) {
       if (this._workspace.isDirectory) {
         return {
           folders: [{ path: this._workspace.uri }],
@@ -317,7 +320,9 @@ export class WorkspaceService implements IWorkspaceService {
         const stat = await this.fileServiceClient.getFileStat(this._workspace.uri);
         return WorkspaceData.transformToAbsolute(data, stat);
       }
-      this.logger.error(`Unable to retrieve workspace data from the file: '${this._workspace.uri}'. Please check if the file is corrupted.`);
+      this.logger.error(
+        `Unable to retrieve workspace data from the file: '${this._workspace.uri}'. Please check if the file is corrupted.`,
+      );
     }
   }
 
@@ -342,9 +347,11 @@ export class WorkspaceService implements IWorkspaceService {
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
-      if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${this.workspaceSuffixName}`))) {
-        title = formatLocalize('file.workspace.defaultWorkspaceTip', displayName.slice(0, displayName.lastIndexOf('.')));
+      if (!this._workspace.isDirectory && displayName.endsWith(`.${this.workspaceSuffixName}`)) {
+        title = formatLocalize(
+          'file.workspace.defaultWorkspaceTip',
+          displayName.slice(0, displayName.lastIndexOf('.')),
+        );
       } else {
         title = displayName;
       }
@@ -354,32 +361,32 @@ export class WorkspaceService implements IWorkspaceService {
 
   async getMostRecentlyUsedWorkspace(): Promise<string | undefined> {
     await this.getGlobalRecentStorage();
-    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    const recentWorkspaces: string[] = (await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES')) || [];
     return recentWorkspaces[0];
   }
 
   async setMostRecentlyUsedWorkspace(path: string) {
     await this.getGlobalRecentStorage();
-    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    const recentWorkspaces: string[] = (await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES')) || [];
     recentWorkspaces.unshift(path);
     await this.recentGlobalStorage.set('RECENT_WORKSPACES', Array.from(new Set(recentWorkspaces)));
   }
 
   async getMostRecentlyUsedWorkspaces(): Promise<string[]> {
     await this.getGlobalRecentStorage();
-    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    const recentWorkspaces: string[] = (await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES')) || [];
     return recentWorkspaces;
   }
 
   async getMostRecentlyUsedCommands(): Promise<string[]> {
     await this.getGlobalRecentStorage();
-    const recentCommands: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS') || [];
+    const recentCommands: string[] = (await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS')) || [];
     return recentCommands;
   }
 
   async setMostRecentlyUsedCommand(commandId: string) {
     await this.getGlobalRecentStorage();
-    const recentCommands: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS') || [];
+    const recentCommands: string[] = (await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS')) || [];
     const commandIndex = recentCommands.indexOf(commandId);
     // 重新排到队列顶部
     if (commandIndex > 0) {
@@ -390,7 +397,8 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   private async getGlobalRecentStorage() {
-    this.recentGlobalStorage = this.recentGlobalStorage || await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
+    this.recentGlobalStorage =
+      this.recentGlobalStorage || (await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA));
     await this.recentGlobalStorage.whenReady;
     return this.recentGlobalStorage;
   }
@@ -473,7 +481,8 @@ export class WorkspaceService implements IWorkspaceService {
     }
     if (this._workspace) {
       const workspaceData = await this.getWorkspaceDataFromFile();
-      this._workspace = await this.writeWorkspaceFile(this._workspace,
+      this._workspace = await this.writeWorkspaceFile(
+        this._workspace,
         WorkspaceData.buildWorkspaceData(
           this._roots.filter((root) => uris.findIndex((u) => u.toString() === root.uri) < 0),
           workspaceData!.settings,
@@ -482,7 +491,12 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async spliceRoots(start: number, deleteCount: number = 0, workspaceToName: { [key: string]: string } = {}, ...rootsToAdd: URI[]): Promise<URI[]> {
+  async spliceRoots(
+    start: number,
+    deleteCount = 0,
+    workspaceToName: { [key: string]: string } = {},
+    ...rootsToAdd: URI[]
+  ): Promise<URI[]> {
     if (!this._workspace) {
       throw new Error('There is not active workspace');
     }
@@ -517,7 +531,9 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   public getWorkspaceName(uri: URI) {
-    return this.workspaceToName[uri.toString()] || this.workspaceToName[uri.toString() + Path.separator] || uri.displayName;
+    return (
+      this.workspaceToName[uri.toString()] || this.workspaceToName[uri.toString() + Path.separator] || uri.displayName
+    );
   }
 
   protected async getUntitledWorkspace(): Promise<URI | undefined> {
@@ -525,7 +541,10 @@ export class WorkspaceService implements IWorkspaceService {
     return home && this.getTemporaryWorkspaceFileUri(new URI(home.uri));
   }
 
-  private async writeWorkspaceFile(workspaceFile: FileStat | undefined, workspaceData: WorkspaceData): Promise<FileStat | undefined> {
+  private async writeWorkspaceFile(
+    workspaceFile: FileStat | undefined,
+    workspaceData: WorkspaceData,
+  ): Promise<FileStat | undefined> {
     if (workspaceFile) {
       const data = JSON.stringify(WorkspaceData.transformToRelative(workspaceData, workspaceFile));
       const edits = jsoncparser.format(data, undefined, { tabSize: 2, insertSpaces: true, eol: '' });
@@ -640,7 +659,7 @@ export class WorkspaceService implements IWorkspaceService {
    */
   async save(uri: URI | FileStat): Promise<void> {
     const uriStr = uri instanceof URI ? uri.toString() : uri.uri;
-    if (!await this.fileServiceClient.access(uriStr)) {
+    if (!(await this.fileServiceClient.access(uriStr))) {
       await this.fileServiceClient.createFile(uriStr);
     }
     const workspaceData: WorkspaceData = { folders: [], settings: {} };
@@ -657,7 +676,10 @@ export class WorkspaceService implements IWorkspaceService {
     }
     let stat = await this.toFileStat(uriStr);
     Object.assign(workspaceData, await this.getWorkspaceDataFromFile());
-    stat = await this.writeWorkspaceFile(stat, WorkspaceData.buildWorkspaceData(this._roots, workspaceData ? workspaceData.settings : undefined));
+    stat = await this.writeWorkspaceFile(
+      stat,
+      WorkspaceData.buildWorkspaceData(this._roots, workspaceData ? workspaceData.settings : undefined),
+    );
     await this.setWorkspace(stat);
     this.onWorkspaceLocationChangedEmitter.fire(stat);
   }
@@ -684,10 +706,13 @@ export class WorkspaceService implements IWorkspaceService {
       return;
     }
     const watcher = this.fileServiceClient.watchFileChanges(new URI(root.uri));
-    this.rootWatchers.set(uriStr, Disposable.create(() => {
-      watcher.then((disposable) => disposable.dispose());
-      this.rootWatchers.delete(uriStr);
-    }));
+    this.rootWatchers.set(
+      uriStr,
+      Disposable.create(() => {
+        watcher.then((disposable) => disposable.dispose());
+        this.rootWatchers.delete(uriStr);
+      }),
+    );
   }
 
   /**

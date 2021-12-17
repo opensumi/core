@@ -8,7 +8,7 @@ import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi
 describe(`test ${__filename} on Electron env`, () => {
   let injector: MockInjector;
   let windowService: IWindowService;
-  const mockElectronMainUIService  = {
+  const mockElectronMainUIService = {
     openExternal: jest.fn(),
   };
 
@@ -23,19 +23,24 @@ describe(`test ${__filename} on Electron env`, () => {
   beforeEach(() => {
     (global as any).isElectronRenderer = true;
     injector = createBrowserInjector([]);
-    injector.overrideProviders({
-      token: IExternalUriService,
-      useValue: {},
-    }, {
-      token: IElectronMainUIService,
-      useValue: mockElectronMainUIService,
-    }, {
-      token: IElectronMainLifeCycleService,
-      useValue: mockElectronMainLifeCycleService,
-    }, {
-      token: IWindowService,
-      useClass: WindowService,
-    });
+    injector.overrideProviders(
+      {
+        token: IExternalUriService,
+        useValue: {},
+      },
+      {
+        token: IElectronMainUIService,
+        useValue: mockElectronMainUIService,
+      },
+      {
+        token: IElectronMainLifeCycleService,
+        useValue: mockElectronMainLifeCycleService,
+      },
+      {
+        token: IWindowService,
+        useClass: WindowService,
+      },
+    );
 
     windowService = injector.get(IWindowService);
   });
@@ -78,7 +83,6 @@ describe(`test ${__filename} on Electron env`, () => {
     windowService.minimize();
     expect(mockElectronMainLifeCycleService.minimizeWindow).toBeCalled();
   });
-
 });
 
 describe(`test ${__filename}`, () => {
@@ -90,13 +94,16 @@ describe(`test ${__filename}`, () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.overrideProviders({
-      token: IExternalUriService,
-      useValue: mockExternalUriService,
-    }, {
-      token: IWindowService,
-      useClass: WindowService,
-    });
+    injector.overrideProviders(
+      {
+        token: IExternalUriService,
+        useValue: mockExternalUriService,
+      },
+      {
+        token: IWindowService,
+        useClass: WindowService,
+      },
+    );
 
     windowService = injector.get(IWindowService);
   });
@@ -133,5 +140,4 @@ describe(`test ${__filename}`, () => {
   it('minimize method should be work', () => {
     expect(windowService.minimize).toThrowError();
   });
-
 });

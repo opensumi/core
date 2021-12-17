@@ -14,7 +14,6 @@ const WEBVIEW_DEVTOOLS_COMMAND = {
 
 @Domain(BrowserEditorContribution, CommandContribution)
 export class WebviewModuleContribution implements BrowserEditorContribution, CommandContribution {
-
   @Autowired(IWebviewService)
   webviewService: WebviewServiceImpl;
 
@@ -39,7 +38,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
         for (const resources of openedResources) {
           for (const r of resources) {
             if (r.uri.scheme === EDITOR_WEBVIEW_SCHEME && r.uri.toString() === resource.uri.toString()) {
-              count ++;
+              count++;
             }
             if (count > 1) {
               return true;
@@ -47,7 +46,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           }
         }
         const component = this.webviewService.editorWebviewComponents.get(resource.uri.path.toString());
-        if (isWebview(component?.webview!)) {
+        if (component?.webview && isWebview(component.webview)) {
           // 只对类 vscode webview 进行 dispose,
           // loadUrl 的 plainWebview 必须手动 dispose
           this.webviewService.editorWebviewComponents.get(resource.uri.path.toString())!.clear();
@@ -62,7 +61,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
     commandRegistry.registerCommand(WEBVIEW_DEVTOOLS_COMMAND, {
       execute: () => {
         const elements = document.querySelectorAll<Electron.WebviewTag>('webview');
-        // tslint:disable-next-line: prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < elements.length; i += 1) {
           try {
             elements[i].openDevTools();
@@ -71,9 +70,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           }
         }
       },
-      isEnabled: () => {
-        return isElectronRenderer();
-      },
+      isEnabled: () => isElectronRenderer(),
     });
   }
 }

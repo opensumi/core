@@ -1,10 +1,8 @@
-
 import { Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
 
 @Injectable()
 export abstract class IToolBarViewService {
-
   abstract registerToolBarElement(element: IToolBarAction | IToolBarComponent): IToolBarElementHandle | undefined;
 
   abstract getVisibleElements(position: ToolBarPosition): (IToolBarComponent | IToolBarAction)[];
@@ -14,11 +12,9 @@ export interface IToolBarElementHandle extends IDisposable {
   visible: boolean;
 
   setVisible(visible: boolean);
-
 }
 
 export interface IToolBarElement {
-
   id?: string;
 
   position: ToolBarPosition | string;
@@ -35,11 +31,9 @@ export interface IToolBarElement {
    * 排序因子，越大越靠前
    */
   weight?: number;
-
 }
 
 export interface IToolBarAction extends IToolBarElement {
-
   type: 'action';
 
   iconClass: string;
@@ -52,7 +46,6 @@ export interface IToolBarAction extends IToolBarElement {
 }
 
 export interface IToolBarComponent<InitialPropsType = any> extends IToolBarElement {
-
   type: 'component';
 
   component: React.ComponentType<InitialPropsType>;
@@ -80,7 +73,5 @@ export enum ToolBarPosition {
 export const ToolBarContribution = Symbol('BrowserEditorContribution');
 
 export interface ToolBarContribution {
-
   registerToolBarElement(registry: IToolBarViewService): void;
-
 }

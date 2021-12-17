@@ -1,5 +1,4 @@
-
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -8,7 +7,13 @@
 
 import { OS } from '@opensumi/ide-core-common';
 import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
-import { IMergedEnvironmentVariableCollection, IExtensionOwnedEnvironmentVariableMutator, IEnvironmentVariableCollection, IMergedEnvironmentVariableCollectionDiff, EnvironmentVariableMutatorType } from './environmentVariable';
+import {
+  IMergedEnvironmentVariableCollection,
+  IExtensionOwnedEnvironmentVariableMutator,
+  IEnvironmentVariableCollection,
+  IMergedEnvironmentVariableCollectionDiff,
+  EnvironmentVariableMutatorType,
+} from './environmentVariable';
 export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVariableCollection {
   readonly map: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
 
@@ -44,14 +49,19 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
     });
   }
 
-  async applyToProcessEnvironment(env: IProcessEnvironment, os: OS.Type, variableResolver?: (str: string) => Promise<string>): Promise<void> {
+  async applyToProcessEnvironment(
+    env: IProcessEnvironment,
+    os: OS.Type,
+    variableResolver?: (str: string) => Promise<string>,
+  ): Promise<void> {
     let lowerToActualVariableNames: { [lowerKey: string]: string | undefined } | undefined;
     if (os === OS.Type.Windows) {
       lowerToActualVariableNames = {};
-      Object.keys(env).forEach((e) => lowerToActualVariableNames![e.toLowerCase()] = e);
+      Object.keys(env).forEach((e) => (lowerToActualVariableNames![e.toLowerCase()] = e));
     }
     this.map.forEach((mutators, variable) => {
-      const actualVariable = os === OS.Type.Windows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
+      const actualVariable =
+        os === OS.Type.Windows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
       mutators.forEach(async (mutator) => {
         const value = variableResolver ? await variableResolver(mutator.value) : mutator.value;
         switch (mutator.type) {

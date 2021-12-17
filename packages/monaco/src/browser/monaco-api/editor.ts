@@ -50,7 +50,10 @@ import {
   IDiffEditorOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { ScrollbarVisibility } from '@opensumi/monaco-editor-core/esm/vs/base/common/scrollable';
-import { ConfigurationChangedEvent, EditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import {
+  ConfigurationChangedEvent,
+  EditorOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { BareFontInfo, FontInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
 import { FindMatch, TextModelResolvedOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { EditorType, ScrollType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';

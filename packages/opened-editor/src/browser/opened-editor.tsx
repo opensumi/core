@@ -9,9 +9,7 @@ import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
 import styles from './index.module.less';
 
-export const ExplorerOpenEditorPanel = ({
-  viewState,
-}: React.PropsWithChildren<{viewState: ViewState}>) => {
+export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const OPEN_EDITOR_NODE_HEIGHT = 22;
   const [isReady, setIsReady] = React.useState<boolean>(false);
 
@@ -60,7 +58,7 @@ export const ExplorerOpenEditorPanel = ({
 
   const ensureIsReady = async () => {
     await openedEditorModelService.whenReady;
-    if (!!openedEditorModelService.treeModel) {
+    if (openedEditorModelService.treeModel) {
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
       await openedEditorModelService.treeModel.root.ensureLoaded();
@@ -86,45 +84,54 @@ export const ExplorerOpenEditorPanel = ({
     };
   }, [wrapperRef.current]);
 
-  const renderTreeNode = React.useCallback((props: INodeRendererWrapProps) => <EditorTreeNode
-    item={props.item}
-    itemType={props.itemType}
-    decorationService={decorationService}
-    labelService={labelService}
-    commandService={commandService}
-    decorations={openedEditorModelService.decorations.getDecorations(props.item as any)}
-    onClick={handleItemClicked}
-    onContextMenu={handlerContextMenu}
-    defaultLeftPadding={22}
-    leftPadding={0}
-  />, [openedEditorModelService.treeModel]);
+  const renderTreeNode = React.useCallback(
+    (props: INodeRendererWrapProps) => (
+      <EditorTreeNode
+        item={props.item}
+        itemType={props.itemType}
+        decorationService={decorationService}
+        labelService={labelService}
+        commandService={commandService}
+        decorations={openedEditorModelService.decorations.getDecorations(props.item as any)}
+        onClick={handleItemClicked}
+        onContextMenu={handlerContextMenu}
+        defaultLeftPadding={22}
+        leftPadding={0}
+      />
+    ),
+    [openedEditorModelService.treeModel],
+  );
 
   const renderContent = () => {
     if (!isReady) {
       return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
     } else {
-      return <RecycleTree
-        height={height}
-        width={width}
-        itemHeight={OPEN_EDITOR_NODE_HEIGHT}
-        onReady={handleTreeReady}
-        model={openedEditorModelService.treeModel}
-        placeholder={() => {
-          return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
-        }}
-      >
-        {renderTreeNode}
-      </RecycleTree>;
+      return (
+        <RecycleTree
+          height={height}
+          width={width}
+          itemHeight={OPEN_EDITOR_NODE_HEIGHT}
+          onReady={handleTreeReady}
+          model={openedEditorModelService.treeModel}
+          placeholder={() => (
+            <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>
+          )}
+        >
+          {renderTreeNode}
+        </RecycleTree>
+      );
     }
   };
 
-  return <div
-    className={styles.opened_editor_container}
-    tabIndex={-1}
-    ref={wrapperRef}
-    onContextMenu={handleOuterContextMenu}
-    onClick={handleOuterClick}
-  >
-    { renderContent() }
-  </div>;
+  return (
+    <div
+      className={styles.opened_editor_container}
+      tabIndex={-1}
+      ref={wrapperRef}
+      onContextMenu={handleOuterContextMenu}
+      onClick={handleOuterClick}
+    >
+      {renderContent()}
+    </div>
+  );
 };

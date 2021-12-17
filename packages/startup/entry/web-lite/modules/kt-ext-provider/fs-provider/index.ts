@@ -12,7 +12,7 @@ export class KaitianExtFsProvider implements FileSystemProvider {
   capabilities: FileSystemProviderCapabilities;
   onDidChangeCapabilities = Event.None;
   onDidChangeFile: Event<FileChangeEvent>;
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): number {
     throw new Error('Method not implemented.');
   }
 
@@ -35,18 +35,24 @@ export class KaitianExtFsProvider implements FileSystemProvider {
       headers: {
         'Accept-Encoding': 'gzip, deflate',
       },
-    }).then((res) => res.text()).then((content) => BinaryBuffer.fromString(content).buffer);
+    })
+      .then((res) => res.text())
+      .then((content) => BinaryBuffer.fromString(content).buffer);
   }
 
-  writeFile(uri: Uri, content: Buffer, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
+  writeFile(
+    uri: Uri,
+    content: Buffer,
+    options: { create: boolean; overwrite: boolean },
+  ): void | Thenable<void | FileStat> {
     throw new Error('Method not implemented.');
   }
 
-  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): void | Thenable<void> {
+  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined }): void | Thenable<void> {
     throw new Error('Method not implemented.');
   }
 
-  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean; }): void | Thenable<void | FileStat> {
+  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat> {
     throw new Error('Method not implemented.');
   }
 }

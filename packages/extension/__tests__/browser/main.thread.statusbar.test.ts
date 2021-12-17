@@ -31,16 +31,22 @@ describe('MainThreadStatusBar API Test Suites', () => {
   let mainthreadStatusbar: MainThreadStatusBar;
   let statusbarService: IStatusBarService;
 
-  injector.addProviders(...[{
-    token: IStatusBarService,
-    useClass: StatusBarService,
-  },  {
-    token: ILoggerManagerClient,
-    useClass: MockLoggerManagerClient,
-  }, {
-    token: CommandRegistry,
-    useClass: CommandRegistryImpl,
-  }]);
+  injector.addProviders(
+    ...[
+      {
+        token: IStatusBarService,
+        useClass: StatusBarService,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManagerClient,
+      },
+      {
+        token: CommandRegistry,
+        useClass: CommandRegistryImpl,
+      },
+    ],
+  );
   beforeAll((done) => {
     mainthreadStatusbar = injector.get(MainThreadStatusBar, [rpcProtocolMain]);
     rpcProtocolMain.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, mainthreadStatusbar);
@@ -50,7 +56,12 @@ describe('MainThreadStatusBar API Test Suites', () => {
   });
 
   it('should can create statusbar item', async (done) => {
-    const statusbar = extHostStatusBar.createStatusBarItem(mockExtensionDescription, 'test', StatusBarAlignment.Left, 1);
+    const statusbar = extHostStatusBar.createStatusBarItem(
+      mockExtensionDescription,
+      'test',
+      StatusBarAlignment.Left,
+      1,
+    );
     statusbar.show();
     statusbar.text = 'test';
     expect(statusbar).toBeDefined();
@@ -59,7 +70,12 @@ describe('MainThreadStatusBar API Test Suites', () => {
   });
 
   it('should update statusbar', async (done) => {
-    const statusbar = extHostStatusBar.createStatusBarItem(mockExtensionDescription, 'test', StatusBarAlignment.Right, 1);
+    const statusbar = extHostStatusBar.createStatusBarItem(
+      mockExtensionDescription,
+      'test',
+      StatusBarAlignment.Right,
+      1,
+    );
     statusbar.show();
     statusbar.text = 'test1';
     statusbar.color = '#ff004f';
@@ -81,12 +97,20 @@ describe('MainThreadStatusBar API Test Suites', () => {
 
   it('can execute command via statusbar', async (done) => {
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
-    commandRegistry.registerCommand({ id: 'test:statusbar' }, {
-      execute: () => {
-        done();
+    commandRegistry.registerCommand(
+      { id: 'test:statusbar' },
+      {
+        execute: () => {
+          done();
+        },
       },
-    });
-    const statusbar = extHostStatusBar.createStatusBarItem(mockExtensionDescription, 'test', StatusBarAlignment.Left, 1);
+    );
+    const statusbar = extHostStatusBar.createStatusBarItem(
+      mockExtensionDescription,
+      'test',
+      StatusBarAlignment.Left,
+      1,
+    );
     statusbar.command = 'test:statusbar';
     statusbar.show();
     setTimeout(() => {

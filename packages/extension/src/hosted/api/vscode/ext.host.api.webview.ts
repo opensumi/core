@@ -1,26 +1,45 @@
-import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer, WebviewView, WebviewHandle, IMainThreadWebviewView, IExtHostWebviewView, IExtensionDescription, WebviewViewProvider } from '../../../common/vscode';
-import { Emitter, Event, IExtensionInfo, Disposable as IDEDisposable, CancellationToken } from '@opensumi/ide-core-common';
+import {
+  IMainThreadWebview,
+  IExtHostWebview,
+  MainThreadAPIIdentifier,
+  IWebviewPanelViewState,
+  IWebviewOptions,
+  Webview,
+  WebviewPanel,
+  IWebviewPanelOptions,
+  ViewColumn,
+  WebviewPanelOnDidChangeViewStateEvent,
+  WebviewPanelSerializer,
+  WebviewView,
+  WebviewHandle,
+  IMainThreadWebviewView,
+  IExtHostWebviewView,
+  IExtensionDescription,
+  WebviewViewProvider,
+} from '../../../common/vscode';
+import {
+  Emitter,
+  Event,
+  IExtensionInfo,
+  Disposable as IDEDisposable,
+  CancellationToken,
+} from '@opensumi/ide-core-common';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 
-type IconPath = Uri | { light: Uri, dark: Uri };
+type IconPath = Uri | { light: Uri; dark: Uri };
 
 export class ExtHostWebview implements Webview {
   private readonly _handle: string;
   private readonly _proxy: IMainThreadWebview;
   private _html: string;
   private _options: IWebviewOptions;
-  private _isDisposed: boolean = false;
+  private _isDisposed = false;
 
   public readonly _onMessageEmitter = new Emitter<any>();
   public readonly onDidReceiveMessage: Event<any> = this._onMessageEmitter.event;
 
-  constructor(
-    handle: string,
-    proxy: IMainThreadWebview,
-    options: IWebviewOptions,
-    private cspResourceRoots: string[],
-  ) {
+  constructor(handle: string, proxy: IMainThreadWebview, options: IWebviewOptions, private cspResourceRoots: string[]) {
     this._handle = handle;
     this._proxy = proxy;
     this._options = options;
@@ -93,7 +112,6 @@ export class ExtHostWebview implements Webview {
 }
 
 export class ExtHostWebviewPanel implements WebviewPanel {
-
   private readonly _handle: string;
   private readonly _proxy: IMainThreadWebview;
   private readonly _viewType: string;
@@ -102,16 +120,17 @@ export class ExtHostWebviewPanel implements WebviewPanel {
 
   private readonly _options: IWebviewPanelOptions;
   private readonly _webview: ExtHostWebview;
-  private _isDisposed: boolean = false;
+  private _isDisposed = false;
   private _viewColumn: ViewColumn;
-  private _visible: boolean = true;
-  private _active: boolean = true;
+  private _visible = true;
+  private _active = true;
 
   readonly _onDisposeEmitter = new Emitter<void>();
   public readonly onDidDispose: Event<void> = this._onDisposeEmitter.event;
 
   readonly _onDidChangeViewStateEmitter = new Emitter<WebviewPanelOnDidChangeViewStateEvent>();
-  public readonly onDidChangeViewState: Event<WebviewPanelOnDidChangeViewStateEvent> = this._onDidChangeViewStateEmitter.event;
+  public readonly onDidChangeViewState: Event<WebviewPanelOnDidChangeViewStateEvent> =
+    this._onDidChangeViewStateEmitter.event;
 
   constructor(
     handle: string,
@@ -179,11 +198,11 @@ export class ExtHostWebviewPanel implements WebviewPanel {
     this.assertNotDisposed();
     if (this._iconPath !== value) {
       this._iconPath = value;
-      let param: {light: string, dark: string, hc: string} = {light: '', dark: '', hc: ''};
+      let param: { light: string; dark: string; hc: string } = { light: '', dark: '', hc: '' };
       if (Uri.isUri(value)) {
-        param = { light: value.toString(), dark: value.toString(), hc: value.toString()};
+        param = { light: value.toString(), dark: value.toString(), hc: value.toString() };
       } else {
-        const v = value as { light: Uri, dark: Uri };
+        const v = value as { light: Uri; dark: Uri };
         param = { light: v.light.toString(), dark: v.dark.toString(), hc: '' };
       }
       this._proxy.$setIconPath(this._handle, param);
@@ -242,7 +261,6 @@ export class ExtHostWebviewPanel implements WebviewPanel {
       throw new Error('Webview is disposed');
     }
   }
-
 }
 
 export class ExtHostWebviewService implements IExtHostWebview {
@@ -268,9 +286,9 @@ export class ExtHostWebviewService implements IExtHostWebview {
   }
 
   private getNextHandle() {
-    let nextHandle = 'ext-host-webview-' + this.webviewHandlePool++ ;
+    let nextHandle = 'ext-host-webview-' + this.webviewHandlePool++;
     while (this._webviewPanels.has(nextHandle)) {
-      nextHandle = 'ext-host-webview-' + this.webviewHandlePool++ ;
+      nextHandle = 'ext-host-webview-' + this.webviewHandlePool++;
     }
     return nextHandle;
   }
@@ -279,8 +297,8 @@ export class ExtHostWebviewService implements IExtHostWebview {
     extensionLocation: Uri | undefined,
     viewType: string,
     title: string,
-    showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean },
-    options: (IWebviewPanelOptions & IWebviewOptions) = {},
+    showOptions: ViewColumn | { viewColumn: ViewColumn; preserveFocus?: boolean },
+    options: IWebviewPanelOptions & IWebviewOptions = {},
     extension: IExtensionInfo,
   ) {
     const viewColumn = typeof showOptions === 'object' ? showOptions.viewColumn : showOptions;
@@ -310,10 +328,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     return webview;
   }
 
-  public registerWebviewPanelSerializer(
-    viewType: string,
-    serializer: WebviewPanelSerializer,
-  ): Disposable {
+  public registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): Disposable {
     if (this._serializers.has(viewType)) {
       throw new Error(`Serializer for '${viewType}' already registered`);
     }
@@ -331,17 +346,11 @@ export class ExtHostWebviewService implements IExtHostWebview {
     return this._localWebviews.get(handle) || this.getWebviewPanel(handle)?.webview;
   }
 
-  public $onMessage(
-    handle: string,
-    message: any,
-  ): void {
+  public $onMessage(handle: string, message: any): void {
     this.getExtHostWebview(handle)?._onMessageEmitter.fire(message);
   }
 
-  public $onDidChangeWebviewPanelViewState(
-    handle: string,
-    newState: IWebviewPanelViewState,
-  ): void {
+  public $onDidChangeWebviewPanelViewState(handle: string, newState: IWebviewPanelViewState): void {
     const panel = this.getWebviewPanel(handle);
     if (panel) {
       const viewColumn = newState.position;
@@ -376,7 +385,15 @@ export class ExtHostWebviewService implements IExtHostWebview {
     }
 
     const webview = new ExtHostWebview(webviewHandle, this._proxy, options, this.resourceRoots);
-    const revivedPanel = new ExtHostWebviewPanel(webviewHandle, this._proxy, viewType, title, position, options, webview);
+    const revivedPanel = new ExtHostWebviewPanel(
+      webviewHandle,
+      this._proxy,
+      viewType,
+      title,
+      position,
+      options,
+      webview,
+    );
     this._webviewPanels.set(webviewHandle, revivedPanel);
 
     return serializer.deserializeWebviewPanel(revivedPanel, state);
@@ -385,11 +402,9 @@ export class ExtHostWebviewService implements IExtHostWebview {
   public getWebviewPanel(handle: string): ExtHostWebviewPanel | undefined {
     return this._webviewPanels.get(handle);
   }
-
 }
 
 class ExtHostWebviewView extends IDEDisposable implements WebviewView {
-
   readonly #handle: WebviewHandle;
   readonly #proxy: IMainThreadWebviewView;
 
@@ -469,11 +484,17 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
     }
   }
 
-  public get visible(): boolean { return this.#isVisible; }
+  public get visible(): boolean {
+    return this.#isVisible;
+  }
 
-  public get webview(): Webview { return this.#webview; }
+  public get webview(): Webview {
+    return this.#webview;
+  }
 
-  public get viewType(): string { return this.#viewType; }
+  public get viewType(): string {
+    return this.#viewType;
+  }
 
   /* internal */ _setVisible(visible: boolean) {
     if (visible === this.#isVisible || this.#isDisposed) {
@@ -494,24 +515,22 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
       throw new Error('Webview is disposed');
     }
   }
-
 }
 
 export class ExtHostWebviewViews implements IExtHostWebviewView {
-
   private readonly _proxy: IMainThreadWebviewView;
 
-  private readonly _viewProviders = new Map<string, {
-    readonly provider: WebviewViewProvider;
-    readonly extension: IExtensionDescription;
-  }>();
+  private readonly _viewProviders = new Map<
+    string,
+    {
+      readonly provider: WebviewViewProvider;
+      readonly extension: IExtensionDescription;
+    }
+  >();
 
   private readonly _webviewViews = new Map<WebviewHandle, ExtHostWebviewView>();
 
-  constructor(
-    rpcProtocol: IRPCProtocol,
-    private readonly _extHostWebview: ExtHostWebviewService,
-  ) {
+  constructor(rpcProtocol: IRPCProtocol, private readonly _extHostWebview: ExtHostWebviewService) {
     this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWebviewView);
   }
 
@@ -520,7 +539,7 @@ export class ExtHostWebviewViews implements IExtHostWebviewView {
     viewType: string,
     provider: WebviewViewProvider,
     webviewOptions?: {
-      retainContextWhenHidden?: boolean,
+      retainContextWhenHidden?: boolean;
     },
   ): Disposable {
     if (this._viewProviders.has(viewType)) {
@@ -558,10 +577,7 @@ export class ExtHostWebviewViews implements IExtHostWebviewView {
     await provider.resolveWebviewView(revivedView, { state }, cancellation);
   }
 
-  async $onDidChangeWebviewViewVisibility(
-    webviewHandle: string,
-    visible: boolean,
-  ) {
+  async $onDidChangeWebviewViewVisibility(webviewHandle: string, visible: boolean) {
     const webviewView = this.getWebviewView(webviewHandle);
     webviewView._setVisible(visible);
   }

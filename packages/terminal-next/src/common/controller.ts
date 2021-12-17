@@ -45,7 +45,11 @@ export interface ITerminalController extends Disposable {
   onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidChangeActiveTerminal: Event<string>;
 
-  requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined>;
+  requestStartExtensionTerminal(
+    proxy: ITerminalProcessExtHostProxy,
+    cols: number,
+    rows: number,
+  ): Promise<ITerminalLaunchError | undefined>;
   readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest>;
 
   registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable;

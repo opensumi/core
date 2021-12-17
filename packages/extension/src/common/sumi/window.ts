@@ -5,13 +5,17 @@ export interface IWindowInfo {
   webContentsId: number;
 }
 export interface IMainThreadIDEWindow {
-  $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IWindowInfo>;
+  $createWebviewWindow(
+    webviewId: string,
+    options?: IIDEWindowWebviewOptions,
+    env?: IIDEWindowWebviewEnv,
+  ): Promise<IWindowInfo>;
   $show(webviewId: string): Promise<void>;
   $hide(webviewId: string): Promise<void>;
   $postMessage(webviewId: string, message: any): Promise<void>;
   $loadURL(webviewId: string, url: string): Promise<void>;
   $destroy(webviewId: string): Promise<void>;
-  $setSize(webviewId: string, size: { width: number; height: number; }): Promise<void>;
+  $setSize(webviewId: string, size: { width: number; height: number }): Promise<void>;
   $setAlwaysOnTop(webviewId: string, flag: boolean): Promise<void>;
 }
 
@@ -42,9 +46,9 @@ export interface IIDEWindowWebviewEnv {
 
 export interface IExtPlainWebviewWindow extends IDisposable {
   /**
-     * 加载webview窗口内的资源地址
-     * @param url
-     */
+   * 加载webview窗口内的资源地址
+   * @param url
+   */
   loadUrl(url: string): Promise<void>;
   /**
    * 隐藏webview窗口

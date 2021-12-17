@@ -1,16 +1,20 @@
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { StaticResourceModule, StaticResourceService, StaticResourceContribution, StaticResourceClientAppContribution } from '@opensumi/ide-static-resource/lib/browser';
+import {
+  StaticResourceModule,
+  StaticResourceService,
+  StaticResourceContribution,
+  StaticResourceClientAppContribution,
+} from '@opensumi/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '../../src/browser';
 import { URI, createContributionProvider } from '@opensumi/ide-core-common';
 
 describe('packages/express-file-server/__tests__/browser/index.test.ts', () => {
-  const injector = createBrowserInjector([
-    ExpressFileServerModule,
-    StaticResourceModule,
-  ]);
+  const injector = createBrowserInjector([ExpressFileServerModule, StaticResourceModule]);
 
   const staticResourceService = injector.get<StaticResourceService>(StaticResourceService);
-  const staticResourceClientAppContribution = injector.get<StaticResourceClientAppContribution>(StaticResourceClientAppContribution);
+  const staticResourceClientAppContribution = injector.get<StaticResourceClientAppContribution>(
+    StaticResourceClientAppContribution,
+  );
 
   // 手动注册 staticResource 的 contribution provider
   createContributionProvider(injector, StaticResourceContribution);

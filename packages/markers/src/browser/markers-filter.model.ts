@@ -1,9 +1,15 @@
-
 import { IMarker, MarkerSeverity, URI } from '@opensumi/ide-core-common';
 import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@opensumi/ide-core-common/lib/filters';
 import { getEmptyExpression, IExpression, splitGlobAware } from '@opensumi/ide-core-common/lib/utils/glob';
 import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
-import { IFilterOptions, IRenderableMarker, IRenderableMarkerModel, MarkerItemBuilder, MarkerModelBuilder, ResourceGlobMatcher } from '../common';
+import {
+  IFilterOptions,
+  IRenderableMarker,
+  IRenderableMarkerModel,
+  MarkerItemBuilder,
+  MarkerModelBuilder,
+  ResourceGlobMatcher,
+} from '../common';
 import Messages from './messages';
 
 /**
@@ -22,7 +28,7 @@ export class FilterOptions implements IFilterOptions {
   readonly excludesMatcher: ResourceGlobMatcher;
   readonly includesMatcher: ResourceGlobMatcher;
 
-  constructor(readonly filter: string = '', filesExclude: { root: URI, expression: IExpression }[] | IExpression = []) {
+  constructor(readonly filter: string = '', filesExclude: { root: URI; expression: IExpression }[] | IExpression = []) {
     filter = filter.trim();
 
     const filesExcludeByRoot = Array.isArray(filesExclude) ? filesExclude : [];
@@ -30,7 +36,9 @@ export class FilterOptions implements IFilterOptions {
 
     const includeExpression: IExpression = getEmptyExpression();
     if (filter) {
-      const filters = splitGlobAware(filter, ',').map((s) => s.trim()).filter((s) => !!s.length);
+      const filters = splitGlobAware(filter, ',')
+        .map((s) => s.trim())
+        .filter((s) => !!s.length);
       for (const f of filters) {
         this.filterErrors = this.filterErrors || this.matches(f, Messages.markerPanelFilterErrors());
         this.filterWarnings = this.filterWarnings || this.matches(f, Messages.markerPanelFilterWarnings());
@@ -73,15 +81,20 @@ export class FilterOptions implements IFilterOptions {
  *  - 匹配 code
  */
 export class Filter {
-
-  constructor(public options: FilterOptions) { }
+  constructor(public options: FilterOptions) {}
 
   public filterModel(model: IRenderableMarkerModel): IRenderableMarkerModel {
     const includeMatch = this.options.includesMatcher.matches(new URI(model.resource));
     const filenameMatches = model.filename ? FilterOptions._filter(this.options.textFilter, model.filename) : undefined;
-    const parentMatch = includeMatch || filenameMatches && filenameMatches.length > 0;
+    const parentMatch = includeMatch || (filenameMatches && filenameMatches.length > 0);
     if (parentMatch) {
-      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), parentMatch, true, { filenameMatches });
+      return MarkerModelBuilder.buildFilterModel(
+        model,
+        this.filterMarkerItems(model.markers, false),
+        parentMatch,
+        true,
+        { filenameMatches },
+      );
     } else {
       const markers = this.filterMarkerItems(model.markers, true);
       return MarkerModelBuilder.buildFilterModel(model, markers, false, markers.length > 0);
@@ -89,24 +102,24 @@ export class Filter {
   }
 
   private filterMarkerItems(markers: IMarker[], filterCount: boolean): IRenderableMarker[] {
-    if (!markers || markers.length <= 0) { return []; }
-    const result: IRenderableMarker[] = markers.map((marker) => {
-      return this.filterMarkerItem(marker);
-    });
+    if (!markers || markers.length <= 0) {
+      return [];
+    }
+    const result: IRenderableMarker[] = markers.map((marker) => this.filterMarkerItem(marker));
     if (filterCount) {
-      return result.filter((model: IRenderableMarker) => {
-        return model.match === true;
-      });
+      return result.filter((model: IRenderableMarker) => model.match === true);
     } else {
       return result;
     }
   }
 
   private filterMarkerItem(marker: IMarker): IRenderableMarker {
-    if (this.options.filterErrors && MarkerSeverity.Error === marker.severity
-      || this.options.filterWarnings && MarkerSeverity.Warning === marker.severity
-      || this.options.filterInfos && MarkerSeverity.Info === marker.severity
-      || !this.options.textFilter) {
+    if (
+      (this.options.filterErrors && MarkerSeverity.Error === marker.severity) ||
+      (this.options.filterWarnings && MarkerSeverity.Warning === marker.severity) ||
+      (this.options.filterInfos && MarkerSeverity.Info === marker.severity) ||
+      !this.options.textFilter
+    ) {
       return MarkerItemBuilder.buildFilterItem(marker, true);
     }
 

@@ -20,7 +20,8 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
-    .expansion_toggle, .opened_editor_node_description  {
+    .expansion_toggle,
+    .opened_editor_node_description {
       color: var(--kt-tree-inactiveSelectionForeground) !important;
     }
   }
@@ -28,10 +29,11 @@
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
-    color: var(--kt-tree-activeSelectionForeground) !important;;
+    color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
-    .expansion_toggle, .opened_editor_node_description {
-      color: var(--kt-tree-activeSelectionForeground) !important;;
+    .expansion_toggle,
+    .opened_editor_node_description {
+      color: var(--kt-tree-activeSelectionForeground) !important;
     }
   }
 
@@ -76,7 +78,7 @@
 }
 
 .opened_editor_node_status {
-  opacity: .75;
+  opacity: 0.75;
   text-align: center;
   font-size: 12px;
   padding-right: 0;
@@ -101,7 +103,7 @@
 .opened_editor_node_display_name {
   margin-right: 6px;
   display: inline;
-  white-space:pre;
+  white-space: pre;
 }
 
 .opened_editor_node_description {
@@ -183,7 +185,8 @@
   margin-right: 10px;
 }
 
-.opened_editor_left_actions, .opened_editor_right_actions {
+.opened_editor_left_actions,
+.opened_editor_right_actions {
   display: flex;
   align-items: center;
   justify-content: center;

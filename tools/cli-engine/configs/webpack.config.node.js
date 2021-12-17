@@ -36,17 +36,9 @@ module.exports = {
     ],
   },
   externals: [
-    function(context, request, callback) {
-      if (
-        [
-          'node-pty',
-          'nsfw',
-          'spdlog',
-          'vscode-ripgrep',
-          'canvas',
-        ].indexOf(request) !== -1
-      ) {
-        return callback(null,  `commonjs ${request}`);
+    function (context, request, callback) {
+      if (['node-pty', 'nsfw', 'spdlog', 'vscode-ripgrep', 'canvas'].indexOf(request) !== -1) {
+        return callback(null, `commonjs ${request}`);
       }
       callback();
     },

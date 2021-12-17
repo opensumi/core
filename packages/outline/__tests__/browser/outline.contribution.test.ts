@@ -11,15 +11,12 @@ describe('Outline contribution should be work', () => {
   } as any;
 
   beforeEach(() => {
-    mockInjector = createBrowserInjector([
-      OutlineModule,
-    ]);
+    mockInjector = createBrowserInjector([OutlineModule]);
 
     mockInjector.overrideProviders({
       token: IMainLayoutService,
       useValue: mockMainLayoutService,
     });
-
   });
 
   describe('01 #contribution should be work', () => {
@@ -43,5 +40,4 @@ describe('Outline contribution should be work', () => {
       expect(register).toBeCalledTimes(5);
     });
   });
-
 });

@@ -18,15 +18,15 @@ const mockExtension: IExtensionMetaData = {
   isBuiltin: false,
   isDevelopment: false,
   packageJSON: {
-    'displayName': '%displayName%',
+    displayName: '%displayName%',
   },
   extendConfig: {},
   extraMetadata: {},
   packageNlsJSON: {
-    'displayName': '哈哈哈哈啊哈哈',
+    displayName: '哈哈哈哈啊哈哈',
   },
   defaultPkgNlsJSON: {
-    'displayName': 'ahhahahahahahah',
+    displayName: 'ahhahahahahahah',
   },
 };
 
@@ -56,22 +56,12 @@ describe(__filename, () => {
   });
 
   it('should get correct extensionLocation for file scheme', async () => {
-    const extension = injector.get(Extension, [
-      mockExtension,
-      true,
-      true,
-      false,
-    ]);
+    const extension = injector.get(Extension, [mockExtension, true, true, false]);
     expect(extension.extensionLocation).toEqual(Uri.parse(`http://localhost${mockExtension.path}`));
   });
 
   it('should get nls value: English (default)', async () => {
-    const extension = injector.get(Extension, [
-      mockExtension,
-      true,
-      true,
-      false,
-    ]);
+    const extension = injector.get(Extension, [mockExtension, true, true, false]);
 
     // contributeIfEnabled 中默认将 defaultPkgNlsJson 设置为名为 default 的语言
     // 但是以前的逻辑是默认认为语言为 zh-CN
@@ -89,12 +79,7 @@ describe(__filename, () => {
   });
 
   it('should get nls value: 中文(中国)', async () => {
-    const extension = injector.get(Extension, [
-      mockExtension,
-      true,
-      true,
-      false,
-    ]);
+    const extension = injector.get(Extension, [mockExtension, true, true, false]);
     setLanguageId('zh-CN');
     extension.enable();
     extension.contributeIfEnabled();

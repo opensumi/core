@@ -2,26 +2,22 @@ import { URI, Emitter, Event, IDisposable, DisposableCollection, PreferenceServi
 import { DebugConfiguration } from '../common';
 
 export class DebugConfigurationModel implements IDisposable {
-
   protected json: DebugConfigurationModel.JsonContent;
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
 
-  protected readonly toDispose = new DisposableCollection(
-    this.onDidChangeEmitter,
-  );
+  protected readonly toDispose = new DisposableCollection(this.onDidChangeEmitter);
 
-  constructor(
-    readonly workspaceFolderUri: string,
-    protected readonly preferences: PreferenceService,
-  ) {
+  constructor(readonly workspaceFolderUri: string, protected readonly preferences: PreferenceService) {
     this.reconcile();
-    this.toDispose.push(this.preferences.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'launch' && e.affects(workspaceFolderUri)) {
-        this.reconcile();
-      }
-    }));
+    this.toDispose.push(
+      this.preferences.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'launch' && e.affects(workspaceFolderUri)) {
+          this.reconcile();
+        }
+      }),
+    );
   }
 
   get uri(): URI | undefined {
@@ -60,7 +56,6 @@ export class DebugConfigurationModel implements IDisposable {
       configurations,
     };
   }
-
 }
 export namespace DebugConfigurationModel {
   export interface JsonContent {

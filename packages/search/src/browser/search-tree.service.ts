@@ -2,9 +2,25 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import React from 'react';
 import { action } from 'mobx';
 import { LabelService } from '@opensumi/ide-core-browser';
-import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@opensumi/ide-core-common';
+import {
+  URI,
+  Schemas,
+  Emitter,
+  formatLocalize,
+  dispose,
+  IDisposable,
+  DisposableStore,
+  IRange,
+  localize,
+  MessageType,
+  memoize,
+} from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelService,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelContentProvider,
+} from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@opensumi/ide-editor';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
@@ -14,23 +30,21 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
-import {
-  ContentSearchResult,
-  ISearchTreeItem,
-} from '../common';
+import { ContentSearchResult, ISearchTreeItem } from '../common';
 import { SearchPreferences } from './search-preferences';
 import styles from './search.module.less';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 const REPLACE_PREVIEW = 'replacePreview';
 
-const toReplaceResource = (fileResource: URI): URI => {
-  return fileResource.withScheme(Schemas.internal).withFragment(REPLACE_PREVIEW).withQuery(JSON.stringify({ scheme: fileResource.scheme }));
-};
+const toReplaceResource = (fileResource: URI): URI =>
+  fileResource
+    .withScheme(Schemas.internal)
+    .withFragment(REPLACE_PREVIEW)
+    .withQuery(JSON.stringify({ scheme: fileResource.scheme }));
 
 @Injectable()
 export class RangeHighlightDecorations implements IDisposable {
-
   private _decorationId: string | null = null;
   private _model: ITextModel | null = null;
   private readonly _modelDisposables = new DisposableStore();
@@ -45,7 +59,7 @@ export class RangeHighlightDecorations implements IDisposable {
     this._decorationId = null;
   }
 
-  highlightRange(resource: URI | ITextModel, range: IRange, ownerId: number = 0): void {
+  highlightRange(resource: URI | ITextModel, range: IRange, ownerId = 0): void {
     let model: ITextModel | null = null;
     if (URI.isUri(resource)) {
       const modelRef = this.documentModelManager.getModelReference(resource);
@@ -63,7 +77,10 @@ export class RangeHighlightDecorations implements IDisposable {
 
   private doHighlightRange(model: ITextModel, range: IRange) {
     this.removeHighlightRange();
-    this._decorationId = model.deltaDecorations([], [{ range, options: RangeHighlightDecorations._RANGE_HIGHLIGHT_DECORATION }])[0];
+    this._decorationId = model.deltaDecorations(
+      [],
+      [{ range, options: RangeHighlightDecorations._RANGE_HIGHLIGHT_DECORATION }],
+    )[0];
     this.setModel(model);
   }
 
@@ -71,16 +88,20 @@ export class RangeHighlightDecorations implements IDisposable {
     if (this._model !== model) {
       this.clearModelListeners();
       this._model = model;
-      this._modelDisposables.add(this._model.onDidChangeDecorations((e) => {
-        this.clearModelListeners();
-        this.removeHighlightRange();
-        this._model = null;
-      }));
-      this._modelDisposables.add(this._model.onWillDispose(() => {
-        this.clearModelListeners();
-        this.removeHighlightRange();
-        this._model = null;
-      }));
+      this._modelDisposables.add(
+        this._model.onDidChangeDecorations((e) => {
+          this.clearModelListeners();
+          this.removeHighlightRange();
+          this._model = null;
+        }),
+      );
+      this._modelDisposables.add(
+        this._model.onWillDispose(() => {
+          this.clearModelListeners();
+          this.removeHighlightRange();
+          this._model = null;
+        }),
+      );
     }
   }
 
@@ -105,7 +126,6 @@ export class RangeHighlightDecorations implements IDisposable {
 
 @Injectable()
 export class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
-
   contentMap: Map<string, string> = new Map();
 
   @Autowired(IEditorDocumentModelService)
@@ -133,10 +153,13 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
 
   async updateContent(uri: URI, encoding?: string): Promise<any> {
     const sourceFileUri = uri.withScheme(JSON.parse(uri.query).scheme).withoutQuery().withoutFragment();
-    const sourceDocModelRef = this.documentModelManager.getModelReference(sourceFileUri) || await this.documentModelManager.createModelReference(sourceFileUri);
+    const sourceDocModelRef =
+      this.documentModelManager.getModelReference(sourceFileUri) ||
+      (await this.documentModelManager.createModelReference(sourceFileUri));
     const sourceDocModel = sourceDocModelRef.instance;
     const value = sourceDocModel.getText();
-    const replaceViewDocModelRef = this.documentModelManager.getModelReference(uri) || await this.documentModelManager.createModelReference(uri);
+    const replaceViewDocModelRef =
+      this.documentModelManager.getModelReference(uri) || (await this.documentModelManager.createModelReference(uri));
     const replaceViewDocModel = replaceViewDocModelRef.instance;
 
     replaceViewDocModel.updateContent(value);
@@ -147,17 +170,13 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
       return '';
     }
 
-    searchResults = searchResults.map((result) => {
-      return Object.assign({}, result, {
+    searchResults = searchResults.map((result) =>
+      Object.assign({}, result, {
         fileUri: uri.toString(),
-      });
-    });
-
-    await replace(
-      this.workspaceEditService,
-      searchResults,
-      this.searchBrowserService.replaceValue,
+      }),
     );
+
+    await replace(this.workspaceEditService, searchResults, this.searchBrowserService.replaceValue);
 
     this.contentMap.set(uri.toString(), replaceViewDocModel.getText());
   }
@@ -175,11 +194,11 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
 
 @Injectable()
 export class SearchTreeService {
-  _setNodes: any = () => { };
+  _setNodes: any = () => {};
   _nodes: ISearchTreeItem[] = [];
-  isContextmenuOnFile: boolean = false;
+  isContextmenuOnFile = false;
 
-  private lastSelectTime: number = Number(new Date());
+  private lastSelectTime = Number(new Date());
 
   private lastFocusedNode: ISearchTreeItem | null = null;
 
@@ -230,9 +249,7 @@ export class SearchTreeService {
   private readonly labelService: LabelService;
 
   constructor() {
-    this.contentRegistry.registerEditorDocumentModelContentProvider(
-      this.replaceDocumentModelContentProvider,
-    );
+    this.contentRegistry.registerEditorDocumentModelContentProvider(this.replaceDocumentModelContentProvider);
   }
 
   set nodes(data: ISearchTreeItem[]) {
@@ -297,9 +314,7 @@ export class SearchTreeService {
   }
 
   @action.bound
-  async onSelect(
-    files: ISearchTreeItem[],
-  ) {
+  async onSelect(files: ISearchTreeItem[]) {
     const file: ISearchTreeItem = files[0];
 
     if (!file) {
@@ -365,23 +380,22 @@ export class SearchTreeService {
       this.replaceDocumentModelContentProvider.delete(replaceURI);
     } else {
       const uri = new URI(result.fileUri);
-      await this.workbenchEditorService.open(
-        new URI(result.fileUri),
-        {
-          preview: isPreview,
-          focus: !isPreview,
-          range: {
-            startLineNumber: result.line,
-            startColumn: result.matchStart,
-            endLineNumber: result.line,
-            endColumn: result.matchStart + result.matchLength,
-          },
+      await this.workbenchEditorService.open(new URI(result.fileUri), {
+        preview: isPreview,
+        focus: !isPreview,
+        range: {
+          startLineNumber: result.line,
+          startColumn: result.matchStart,
+          endLineNumber: result.line,
+          endColumn: result.matchStart + result.matchLength,
         },
+      });
+
+      this.rangeHighlightDecorations.highlightRange(
+        uri,
+        new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength),
       );
-
-      this.rangeHighlightDecorations.highlightRange(uri, new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength));
     }
-
   }
 
   @action.bound
@@ -397,7 +411,7 @@ export class SearchTreeService {
 
   @action.bound
   foldTree() {
-    const isExpandAll = this.searchBrowserService.isExpandAllResult = !this.searchBrowserService.isExpandAllResult;
+    const isExpandAll = (this.searchBrowserService.isExpandAllResult = !this.searchBrowserService.isExpandAllResult);
     const newNodes = this._nodes.map((node) => {
       node.expanded = isExpandAll;
       return node;
@@ -406,10 +420,7 @@ export class SearchTreeService {
   }
 
   @action.bound
-  commandActuator(
-    commandId: string,
-    id: string,
-  ) {
+  commandActuator(commandId: string, id: string) {
     const workspaceEditService = this.workspaceEditService;
     const { resultTotal, searchResults, replaceValue } = this.searchBrowserService;
     const items = this._nodes;
@@ -439,11 +450,7 @@ export class SearchTreeService {
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
         resultMap.set(select.parent!.uri!.toString(), [select!.searchResult!]);
-        replaceAll(
-          workspaceEditService,
-          resultMap,
-          replaceValue,
-        ).then(() => {
+        replaceAll(workspaceEditService, resultMap, replaceValue).then(() => {
           // 结果树更新由 search.service.watchDocModelContentChange 负责
         });
       },
@@ -463,9 +470,7 @@ export class SearchTreeService {
           return;
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
-        const contentSearchResult: ContentSearchResult[] = select!.children!.map((child) => {
-          return child.searchResult!;
-        });
+        const contentSearchResult: ContentSearchResult[] = select!.children!.map((child) => child.searchResult!);
         const buttons = {
           [localize('ButtonCancel')]: false,
           [localize('search.replace.buttonOK')]: true,
@@ -479,11 +484,7 @@ export class SearchTreeService {
           return buttons[selection!];
         }
         resultMap.set(select!.fileUri, contentSearchResult);
-        replaceAll(
-          workspaceEditService,
-          resultMap,
-          replaceValue,
-        ).then(() => {
+        replaceAll(workspaceEditService, resultMap, replaceValue).then(() => {
           // 结果树更新由 search.service.watchDocModelContentChange 负责
         });
       },
@@ -518,10 +519,12 @@ export class SearchTreeService {
         name: '',
         description,
         highLightRanges: {
-          description: [{
-            start,
-            end,
-          }],
+          description: [
+            {
+              start,
+              end,
+            },
+          ],
         },
         order: index,
         depth: 1,
@@ -530,7 +533,12 @@ export class SearchTreeService {
         uri,
         // 使用 accessor 在 replaceValue 更改时渲染自动获取最新 title
         get tooltip() {
-          return description && `${description.slice(0, start)}${searchBrowserService.replaceValue || description.slice(start, end)}${description.slice(end)}`.substr(0, 999);
+          return (
+            description &&
+            `${description.slice(0, start)}${
+              searchBrowserService.replaceValue || description.slice(start, end)
+            }${description.slice(end)}`.substr(0, 999)
+          );
         },
         descriptionClass: styles.search_result_code,
         labelClass: styles.search_result_label,
@@ -592,7 +600,7 @@ export class SearchTreeService {
         if (userhome) {
           this.userhomePath = new URI(userhome.uri);
         }
-      } catch (err) { }
+      } catch (err) {}
     }
     return this.userhomePath;
   }

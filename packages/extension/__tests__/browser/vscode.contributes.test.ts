@@ -4,7 +4,16 @@ import { Injector } from '@opensumi/di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { mockExtensionProps } from '../../__mocks__/extensions';
-import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@opensumi/ide-core-common';
+import {
+  CommandRegistry,
+  CommandService,
+  CommandServiceImpl,
+  EventBusImpl,
+  IEventBus,
+  ILogger,
+  ILoggerManagerClient,
+  Uri,
+} from '@opensumi/ide-core-common';
 import { ExtensionWillContributeEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
@@ -30,13 +39,13 @@ const extension = {
     contributes: {
       localizations: [
         {
-          'languageId': 'zh-cn',
-          'languageName': 'Chinese Simplified',
-          'localizedLanguageName': '中文（简体）',
-          'translations': [
+          languageId: 'zh-cn',
+          languageName: 'Chinese Simplified',
+          localizedLanguageName: '中文（简体）',
+          translations: [
             {
-              'id': 'vscode',
-              'path': './translations/main.i18n.json',
+              id: 'vscode',
+              path: './translations/main.i18n.json',
             },
           ],
         },
@@ -50,23 +59,18 @@ const extension = {
       ],
       themes: [
         {
-          'id': 'ide-dark',
-          'label': 'IDE Dark',
-          'uiTheme': 'vs-dark',
-          'path': './themes/dark/plus.json',
+          id: 'ide-dark',
+          label: 'IDE Dark',
+          uiTheme: 'vs-dark',
+          path: './themes/dark/plus.json',
         },
       ],
-      'languages': [
+      languages: [
         {
-          'id': 'javascript',
-          'extensions': [
-            '.js',
-          ],
-          'aliases': [
-            'js',
-            'JavaScript',
-          ],
-          'configuration': './language-configuration.json',
+          id: 'javascript',
+          extensions: ['.js'],
+          aliases: ['js', 'JavaScript'],
+          configuration: './language-configuration.json',
         },
       ],
     },
@@ -80,70 +84,72 @@ describe('VSCodeContributeRunner', () => {
 
   beforeAll((done) => {
     injector = setupExtensionServiceInjector();
-    injector.addProviders(...[
-      {
-        token: IEventBus,
-        useClass: EventBusImpl,
-      },
-      {
-        token: ISchemaStore,
-        useClass: SchemaStore,
-      },
-      {
-        token: IJSONSchemaRegistry,
-        useClass: SchemaRegistry,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
-      },
-      {
-        token: MonacoService,
-        useValue: {
-          monacoLoaded: Promise.resolve(),
+    injector.addProviders(
+      ...[
+        {
+          token: IEventBus,
+          useClass: EventBusImpl,
         },
-      },
-      {
-        token: IFileServiceClient,
-        useValue: {
-          resolveContent: (uri) => ({
-            content: '',
-          }),
+        {
+          token: ISchemaStore,
+          useClass: SchemaStore,
         },
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
-      },
-      {
-        token: ITextmateTokenizer,
-        useClass: TextmateService,
-      },
-      {
-        token: IIconService,
-        useClass: IconService,
-      },
-      {
-        token: IThemeService,
-        useClass: WorkbenchThemeService,
-      },
-      {
-        token: CommandService,
-        useClass: CommandServiceImpl,
-      },
-      {
-        token: PreferenceService,
-        useValue: new MockPreferenceService(),
-      },
-      {
-        token: IExtensionStoragePathServer,
-        useValue: {
-          getLastStoragePath() {
-            return os.tmpdir();
+        {
+          token: IJSONSchemaRegistry,
+          useClass: SchemaRegistry,
+        },
+        {
+          token: ILoggerManagerClient,
+          useClass: MockLoggerManageClient,
+        },
+        {
+          token: MonacoService,
+          useValue: {
+            monacoLoaded: Promise.resolve(),
           },
         },
-      },
-    ]);
+        {
+          token: IFileServiceClient,
+          useValue: {
+            resolveContent: (uri) => ({
+              content: '',
+            }),
+          },
+        },
+        {
+          token: ILogger,
+          useClass: MockLogger,
+        },
+        {
+          token: ITextmateTokenizer,
+          useClass: TextmateService,
+        },
+        {
+          token: IIconService,
+          useClass: IconService,
+        },
+        {
+          token: IThemeService,
+          useClass: WorkbenchThemeService,
+        },
+        {
+          token: CommandService,
+          useClass: CommandServiceImpl,
+        },
+        {
+          token: PreferenceService,
+          useValue: new MockPreferenceService(),
+        },
+        {
+          token: IExtensionStoragePathServer,
+          useValue: {
+            getLastStoragePath() {
+              return os.tmpdir();
+            },
+          },
+        },
+      ],
+    );
     injector.overrideProviders({
       token: ExtensionNodeServiceServerPath,
       useClass: MockExtNodeClientService,

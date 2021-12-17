@@ -24,48 +24,51 @@ describe('DebugProgressService', () => {
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      },
-      {
-        token: IDebugProgress,
-        useClass: DebugProgressService,
-      },
-      {
-        token: IDebugSessionManager,
-        useClass: DebugSessionManager,
-      },
-      {
-        token: WorkbenchEditorService,
-        useValue: {},
-      },
-      {
-        token: DebugModelFactory,
-        useValue: {},
-      },
-      {
-        token: IFileServiceClient,
-        useValue: MockFileServiceClient,
-      },
-      {
-        token: IWorkspaceService,
-        useValue: {},
-      },
-      {
-        token: IDebugServer,
-        useValue: {},
-      },
-      {
-        token: QuickPickService,
-        useValue: {},
-      },
-      {
-        token: DebugPreferences,
-        useValue: {},
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        {
+          token: IDebugProgress,
+          useClass: DebugProgressService,
+        },
+        {
+          token: IDebugSessionManager,
+          useClass: DebugSessionManager,
+        },
+        {
+          token: WorkbenchEditorService,
+          useValue: {},
+        },
+        {
+          token: DebugModelFactory,
+          useValue: {},
+        },
+        {
+          token: IFileServiceClient,
+          useValue: MockFileServiceClient,
+        },
+        {
+          token: IWorkspaceService,
+          useValue: {},
+        },
+        {
+          token: IDebugServer,
+          useValue: {},
+        },
+        {
+          token: QuickPickService,
+          useValue: {},
+        },
+        {
+          token: DebugPreferences,
+          useValue: {},
+        },
+      ]),
+    );
     debugProgressService = injector.get(IDebugProgress);
   });
 
@@ -83,7 +86,5 @@ describe('DebugProgressService', () => {
 
     expect(debugSessionManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
     expect(debugSessionManager.onDidCreateDebugSession).toBeCalledTimes(1);
-
   });
-
 });

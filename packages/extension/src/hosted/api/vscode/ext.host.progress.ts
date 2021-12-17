@@ -1,16 +1,28 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MainThreadAPIIdentifier, IExtHostProgress, IMainThreadProgress, IExtensionDescription } from '../../../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IExtHostProgress,
+  IMainThreadProgress,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { formatLocalize, CancellationToken, Progress, IProgressStep, throttle, CancellationTokenSource } from '@opensumi/ide-core-common';
+import {
+  formatLocalize,
+  CancellationToken,
+  Progress,
+  IProgressStep,
+  throttle,
+  CancellationTokenSource,
+} from '@opensumi/ide-core-common';
 import { ProgressLocation } from '../../../common/vscode/converter';
 import { ProgressOptions } from 'vscode';
 
 export class ExtHostProgress implements IExtHostProgress {
-  private _handles: number = 0;
+  private _handles = 0;
   private _proxy: IMainThreadProgress;
   private _mapHandleToCancellationSource: Map<number, CancellationTokenSource> = new Map();
 
@@ -18,16 +30,28 @@ export class ExtHostProgress implements IExtHostProgress {
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadProgress);
   }
 
-  withProgress<R>(extension: IExtensionDescription, options: ProgressOptions, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>): Thenable<R> {
+  withProgress<R>(
+    extension: IExtensionDescription,
+    options: ProgressOptions,
+    task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>,
+  ): Thenable<R> {
     const handle = this._handles++;
     const { title, location, cancellable } = options;
     const source = formatLocalize('extensionSource', '{0} (Extension)', extension.name);
 
-    this._proxy.$startProgress(handle, { location: ProgressLocation.from(location), title, source, cancellable }, extension);
+    this._proxy.$startProgress(
+      handle,
+      { location: ProgressLocation.from(location), title, source, cancellable },
+      extension,
+    );
     return this._withProgress(handle, task, !!cancellable);
   }
 
-  private _withProgress<R>(handle: number, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>, cancellable: boolean): Thenable<R> {
+  private _withProgress<R>(
+    handle: number,
+    task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>,
+    cancellable: boolean,
+  ): Thenable<R> {
     let source: CancellationTokenSource | undefined;
     if (cancellable) {
       source = new CancellationTokenSource();
@@ -45,13 +69,19 @@ export class ExtHostProgress implements IExtHostProgress {
     let p: Thenable<R>;
 
     try {
-      p = task(new ProgressCallback(this._proxy, handle), cancellable && source ? source.token : CancellationToken.None);
+      p = task(
+        new ProgressCallback(this._proxy, handle),
+        cancellable && source ? source.token : CancellationToken.None,
+      );
     } catch (err) {
       progressEnd(handle);
       throw err;
     }
 
-    p.then((result) => progressEnd(handle), (err) => progressEnd(handle));
+    p.then(
+      (result) => progressEnd(handle),
+      (err) => progressEnd(handle),
+    );
     return p;
   }
 
@@ -82,7 +112,11 @@ class ProgressCallback extends Progress<IProgressStep> {
     super((p) => this.throttledReport(p));
   }
 
-  @throttle(100, (result: IProgressStep, currentValue: IProgressStep) => mergeProgress(result, currentValue), () => Object.create(null))
+  @throttle(
+    100,
+    (result: IProgressStep, currentValue: IProgressStep) => mergeProgress(result, currentValue),
+    () => Object.create(null),
+  )
   throttledReport(p: IProgressStep): void {
     this._proxy.$progressReport(this._handle, p);
   }

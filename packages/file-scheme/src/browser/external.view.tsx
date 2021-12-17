@@ -9,8 +9,12 @@ export const BinaryEditorComponent: ReactEditorComponent<null> = (props) => {
   const srcPath = props.resource.uri.codeUri.fsPath;
   const injector = useInjectable(INJECTOR_TOKEN);
 
-  return (<div className={styles.external}>
-    {localize('editor.cannotOpenBinary')}
-    { isElectronRenderer() ? <a onClick={() => injector.get(IElectronMainUIService).openPath(srcPath) }>{localize('editor.openExternal')}</a> : null }
-  </div>);
+  return (
+    <div className={styles.external}>
+      {localize('editor.cannotOpenBinary')}
+      {isElectronRenderer() ? (
+        <a onClick={() => injector.get(IElectronMainUIService).openPath(srcPath)}>{localize('editor.openExternal')}</a>
+      ) : null}
+    </div>
+  );
 };

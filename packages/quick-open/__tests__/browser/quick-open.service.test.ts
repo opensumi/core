@@ -9,7 +9,6 @@ import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
 
 describe(__filename, () => {
-
   let injector: MockInjector;
   let quickOpenService: QuickOpenService;
   let container: HTMLDivElement;
@@ -27,14 +26,17 @@ describe(__filename, () => {
   });
 
   beforeEach(() => {
-    injector = createBrowserInjector([ QuickOpenModule ]);
-    injector.addProviders({
-      token: MonacoContextKeyService,
-      useValue: mockService({}),
-    }, {
-      token: IContextKeyService,
-      useClass: MockContextKeyService,
-    });
+    injector = createBrowserInjector([QuickOpenModule]);
+    injector.addProviders(
+      {
+        token: MonacoContextKeyService,
+        useValue: mockService({}),
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+    );
     model = {
       onType: jest.fn(),
     };
@@ -55,7 +57,12 @@ describe(__filename, () => {
     quickOpenService.open(model);
     expect(widget.isShow).toBeTruthy();
     expect($widgetShow).toBeCalledTimes(1);
-    expect($widgetShow).toBeCalledWith('', {'inputEnable': true, 'password': false, 'placeholder': '', 'valueSelection': [-1, -1]});
+    expect($widgetShow).toBeCalledWith('', {
+      inputEnable: true,
+      password: false,
+      placeholder: '',
+      valueSelection: [-1, -1],
+    });
   });
 
   it('show quick-open with options', () => {
@@ -68,7 +75,12 @@ describe(__filename, () => {
       valueSelection: [2, 2],
     });
     expect($widgetShow).toBeCalledTimes(1);
-    expect($widgetShow).toBeCalledWith('>', {'inputEnable': false, 'password': true, 'placeholder': 'This is placeholder', 'valueSelection': [2, 2]});
+    expect($widgetShow).toBeCalledWith('>', {
+      inputEnable: false,
+      password: true,
+      placeholder: 'This is placeholder',
+      valueSelection: [2, 2],
+    });
   });
 
   it('when emit onType show quick-open', () => {
@@ -171,8 +183,12 @@ describe(__filename, () => {
         },
       });
       expect(widget.items).toHaveLength(1);
-      const [ labelHighlights ] = widget.items[0].getHighlights();
-      expect(labelHighlights).toStrictEqual([{end: 1, start: 0}, {end: 3, start: 2}, {end: 11, start: 10}]);
+      const [labelHighlights] = widget.items[0].getHighlights();
+      expect(labelHighlights).toStrictEqual([
+        { end: 1, start: 0 },
+        { end: 3, start: 2 },
+        { end: 11, start: 10 },
+      ]);
     });
 
     it('match label width fallback', () => {
@@ -183,9 +199,7 @@ describe(__filename, () => {
       };
       model = {
         onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
-          acceptor([
-            new MyQuickOpenItem({label: 'CCC'}),
-          ]);
+          acceptor([new MyQuickOpenItem({ label: 'CCC' })]);
         },
       };
       quickOpenService.open(model, {
@@ -200,8 +214,8 @@ describe(__filename, () => {
         fuzzyMatchDescription: true,
       });
       expect(widget.items).toHaveLength(4);
-      const [, descriptionHighlights ] = widget.items[2].getHighlights();
-      expect(descriptionHighlights).toStrictEqual([ { start: 23, end: 26 } ]);
+      const [, descriptionHighlights] = widget.items[2].getHighlights();
+      expect(descriptionHighlights).toStrictEqual([{ start: 23, end: 26 }]);
     });
 
     it('match detail', () => {
@@ -210,16 +224,16 @@ describe(__filename, () => {
         fuzzyMatchDetail: true,
       });
       expect(widget.items).toHaveLength(4);
-      const [, , detailHighlights ] = widget.items[3].getHighlights();
-      expect(detailHighlights).toStrictEqual([ { start: 8, end: 13 } ]);
+      const [, , detailHighlights] = widget.items[3].getHighlights();
+      expect(detailHighlights).toStrictEqual([{ start: 8, end: 13 }]);
     });
 
     it('compare label with fuzzySort', () => {
       model = {
         onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
           acceptor([
-            new QuickOpenItem({label: 'Show Running Extensions', description: 'Show Running Extensions'}),
-            new QuickOpenItem({label: 'Hon', description: 'Hon'}),
+            new QuickOpenItem({ label: 'Show Running Extensions', description: 'Show Running Extensions' }),
+            new QuickOpenItem({ label: 'Hon', description: 'Hon' }),
           ]);
         },
       };
@@ -233,12 +247,10 @@ describe(__filename, () => {
       expect(widget.items).toHaveLength(2);
       expect(widget.items[0].getLabel()).toBe('Hon');
     });
-
   });
 
   // callback 为 widget 组件内主动调用
   describe('callbacks', () => {
-
     it('onSelect to be called when onSelect be called', () => {
       const $onSelect = jest.fn();
       const item = new QuickOpenItem({
@@ -321,7 +333,5 @@ describe(__filename, () => {
       expect(ignoreFocusOut).toBeFalsy();
       expect($onClose).toBeCalledWith(true);
     });
-
   });
-
 });

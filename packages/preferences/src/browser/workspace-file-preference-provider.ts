@@ -10,11 +10,12 @@ export class WorkspaceFilePreferenceProviderOptions {
 }
 
 export const WorkspaceFilePreferenceProviderFactory = Symbol('WorkspaceFilePreferenceProviderFactory');
-export type WorkspaceFilePreferenceProviderFactory = (options: WorkspaceFilePreferenceProviderOptions) => WorkspaceFilePreferenceProvider;
+export type WorkspaceFilePreferenceProviderFactory = (
+  options: WorkspaceFilePreferenceProviderOptions,
+) => WorkspaceFilePreferenceProvider;
 
 @Injectable()
 export class WorkspaceFilePreferenceProvider extends AbstractResourcePreferenceProvider {
-
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 

@@ -1,16 +1,50 @@
-import { CommentThread, CommentInput, CommentReaction as CoreCommentReaction, CommentMode as CoreCommentMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import {
+  CommentThread,
+  CommentInput,
+  CommentReaction as CoreCommentReaction,
+  CommentMode as CoreCommentMode,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { UriComponents, CommentThreadCollapsibleState, Comment as CoreComment, CommentThreadChanges } from '../../../common/vscode/models';
-import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable, WithEventBus, OnEvent } from '@opensumi/ide-core-common';
-import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';
+import {
+  UriComponents,
+  CommentThreadCollapsibleState,
+  Comment as CoreComment,
+  CommentThreadChanges,
+} from '../../../common/vscode/models';
+import {
+  IRange,
+  Emitter,
+  Event,
+  URI,
+  CancellationToken,
+  IDisposable,
+  positionToRange,
+  isUndefined,
+  Disposable,
+  WithEventBus,
+  OnEvent,
+} from '@opensumi/ide-core-common';
+import {
+  IMainThreadComments,
+  CommentProviderFeatures,
+  IExtHostComments,
+  IMainThreadCommands,
+} from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ICommentsService, ICommentsThread, ICommentsFeatureRegistry, CommentMode, CommentReactionClick, IThreadComment, CommentReaction } from '@opensumi/ide-comments';
+import {
+  ICommentsService,
+  ICommentsThread,
+  ICommentsFeatureRegistry,
+  CommentMode,
+  CommentReactionClick,
+  IThreadComment,
+  CommentReaction,
+} from '@opensumi/ide-comments';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
 export class MainthreadComments implements IDisposable, IMainThreadComments {
-
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 
@@ -25,10 +59,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
 
   private disposable = new Disposable();
 
-  constructor(
-    private rpcProtocol: IRPCProtocol,
-    private mainThreadCommands: IMainThreadCommands,
-  ) {
+  constructor(private rpcProtocol: IRPCProtocol, private mainThreadCommands: IMainThreadCommands) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostComments);
     this.disposable.addDispose(this.registerCommentThreadTemplateHander());
     this.disposable.addDispose(this.registerArgumentProcessor());
@@ -101,13 +132,26 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
               commentUniqueId: +arg.comment.id,
               text: arg.body,
             };
-          default: return arg;
+          default:
+            return arg;
         }
       },
     });
   }
 
-  $updateCommentThread(handle: number, commentThreadHandle: number, threadId: string, resource: UriComponents, changes: Partial<{ range: IRange; label: string; contextValue: string; comments: CoreComment[]; collapseState: CommentThreadCollapsibleState; }>): void {
+  $updateCommentThread(
+    handle: number,
+    commentThreadHandle: number,
+    threadId: string,
+    resource: UriComponents,
+    changes: Partial<{
+      range: IRange;
+      label: string;
+      contextValue: string;
+      comments: CoreComment[];
+      collapseState: CommentThreadCollapsibleState;
+    }>,
+  ): void {
     const provider = this._commentControllers.get(handle);
     if (!provider) {
       return undefined;
@@ -123,9 +167,11 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     // 注册后触发 decoration
     this.commentsService.forceUpdateDecoration();
 
-    this.disposable.addDispose(Disposable.create(() => {
-      this.$unregisterCommentController(handle);
-    }));
+    this.disposable.addDispose(
+      Disposable.create(() => {
+        this.$unregisterCommentController(handle);
+      }),
+    );
   }
   $updateCommentControllerFeatures(handle: number, features: CommentProviderFeatures): void {
     const provider = this._commentControllers.get(handle);
@@ -143,7 +189,14 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     }
     this._commentControllers.delete(handle);
   }
-  $createCommentThread(handle: number, commentThreadHandle: number, threadId: string, resource: UriComponents, range: IRange, extensionId: string): CommentThread | undefined {
+  $createCommentThread(
+    handle: number,
+    commentThreadHandle: number,
+    threadId: string,
+    resource: UriComponents,
+    range: IRange,
+    extensionId: string,
+  ): CommentThread | undefined {
     const provider = this._commentControllers.get(handle);
     if (!provider) {
       return undefined;
@@ -162,12 +215,10 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     this.disposable.dispose();
     this._commentControllers.clear();
   }
-
 }
 
 @Injectable({ multiple: true })
 export class MainThreadCommentThread implements CommentThread {
-
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 
@@ -182,7 +233,9 @@ export class MainThreadCommentThread implements CommentThread {
   }
 
   private readonly _onDidChangeInput = new Emitter<CommentInput | undefined>();
-  get onDidChangeInput(): Event<CommentInput | undefined> { return this._onDidChangeInput.event; }
+  get onDidChangeInput(): Event<CommentInput | undefined> {
+    return this._onDidChangeInput.event;
+  }
 
   get label(): string | undefined {
     return this._thread.label;
@@ -268,7 +321,9 @@ export class MainThreadCommentThread implements CommentThread {
   }
 
   private readonly _onDidChangeComments = new Emitter<CoreComment[] | undefined>();
-  get onDidChangeComments(): Event<CoreComment[] | undefined> { return this._onDidChangeComments.event; }
+  get onDidChangeComments(): Event<CoreComment[] | undefined> {
+    return this._onDidChangeComments.event;
+  }
 
   set range(range: IRange) {
     this._thread.range = range;
@@ -280,7 +335,9 @@ export class MainThreadCommentThread implements CommentThread {
   }
 
   private readonly _onDidChangeCanReply = new Emitter<boolean>();
-  get onDidChangeCanReply(): Event<boolean> { return this._onDidChangeCanReply.event; }
+  get onDidChangeCanReply(): Event<boolean> {
+    return this._onDidChangeCanReply.event;
+  }
   set canReply(state: boolean) {
     this._thread.readOnly = !state;
     this._onDidChangeCanReply.fire(state);
@@ -325,9 +382,12 @@ export class MainThreadCommentThread implements CommentThread {
   ) {
     // 查找当前位置 的 threads
     // 框架支持同一个位置多个 thread
-    const threads = this.commentsService.commentsThreads.filter((commentThread) => commentThread.uri.toString() === resource && commentThread.range.startLineNumber === _range.startLineNumber);
+    const threads = this.commentsService.commentsThreads.filter(
+      (commentThread) =>
+        commentThread.uri.toString() === resource && commentThread.range.startLineNumber === _range.startLineNumber,
+    );
     // 取最后一个 thread，因为新建的评论在最后一个位置
-    const [ thread ] = threads.slice(-1);
+    const [thread] = threads.slice(-1);
     // 在 data 字段保存 handle id
     const threadData = {
       commentControlHandle: controllerHandle,
@@ -351,12 +411,24 @@ export class MainThreadCommentThread implements CommentThread {
     const modified = (value: keyof CommentThreadChanges): boolean =>
       Object.prototype.hasOwnProperty.call(changes, value);
 
-    if (modified('range')) { this.range = changes.range!; }
-    if (modified('label')) { this.label = changes.label; }
-    if (modified('contextValue')) { this.contextValue = changes.contextValue; }
-    if (modified('comments')) { this.comments = changes.comments; }
-    if (modified('collapseState')) { this.collapsibleState = changes.collapseState; }
-    if (modified('canReply')) { this.canReply = changes.canReply!; }
+    if (modified('range')) {
+      this.range = changes.range!;
+    }
+    if (modified('label')) {
+      this.label = changes.label;
+    }
+    if (modified('contextValue')) {
+      this.contextValue = changes.contextValue;
+    }
+    if (modified('comments')) {
+      this.comments = changes.comments;
+    }
+    if (modified('collapseState')) {
+      this.collapsibleState = changes.collapseState;
+    }
+    if (modified('canReply')) {
+      this.canReply = changes.canReply!;
+    }
   }
 
   dispose() {
@@ -380,7 +452,6 @@ export class MainThreadCommentThread implements CommentThread {
 
 @Injectable({ multiple: true })
 export class MainThreadCommentController extends WithEventBus {
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -435,9 +506,11 @@ export class MainThreadCommentController extends WithEventBus {
     private _features: CommentProviderFeatures,
   ) {
     super();
-    this.addDispose(this.commentsService.registerCommentRangeProvider(_id, {
-      getCommentingRanges: (documentModel) => this.getCommentingRanges(documentModel.uri, CancellationToken.None),
-    }));
+    this.addDispose(
+      this.commentsService.registerCommentRangeProvider(_id, {
+        getCommentingRanges: (documentModel) => this.getCommentingRanges(documentModel.uri, CancellationToken.None),
+      }),
+    );
   }
 
   updateFeatures(features: CommentProviderFeatures) {
@@ -484,7 +557,8 @@ export class MainThreadCommentController extends WithEventBus {
     commentThreadHandle: number,
     _threadId: string,
     _resource: UriComponents,
-    changes: CommentThreadChanges): void {
+    changes: CommentThreadChanges,
+  ): void {
     const thread = this.getKnownThread(commentThreadHandle);
     thread.batchUpdate(changes);
   }
@@ -528,7 +602,12 @@ export class MainThreadCommentController extends WithEventBus {
     this.toggleReaction(thread.uri, mainThread, coreComment, coreReaction);
   }
 
-  async toggleReaction(uri: URI, thread: CommentThread, comment: CoreComment, reaction: CoreCommentReaction): Promise<void> {
+  async toggleReaction(
+    uri: URI,
+    thread: CommentThread,
+    comment: CoreComment,
+    reaction: CoreCommentReaction,
+  ): Promise<void> {
     return this._proxy.$toggleReaction(this._handle, thread.commentThreadHandle, uri.codeUri, comment, reaction);
   }
 
@@ -546,5 +625,4 @@ export class MainThreadCommentController extends WithEventBus {
       handle: this.handle,
     };
   }
-
 }

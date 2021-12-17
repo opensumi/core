@@ -24,15 +24,14 @@ export interface ViewWelcome {
 export type ViewsWelcomeSchema = ViewWelcome[];
 
 export const ViewIdentifierMap: { [key: string]: string } = {
-  'explorer': 'file-explorer-next',
-  'debug': DEBUG_WELCOME_ID,
-  'scm': 'scm_view',
+  explorer: 'file-explorer-next',
+  debug: DEBUG_WELCOME_ID,
+  scm: 'scm_view',
 };
 
 @Injectable()
 @Contributes('viewsWelcome')
 export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWelcomeSchema> {
-
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
@@ -41,35 +40,47 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
 
   schema = {
     type: 'array',
-    description: localize('contributes.viewsWelcome', 'Contributed views welcome content. Welcome content will be rendered in tree based views whenever they have no meaningful content to display, ie. the File Explorer when no folder is open. Such content is useful as in-product documentation to drive users to use certain features before they are available. A good example would be a `Clone Repository` button in the File Explorer welcome view.'),
+    description: localize(
+      'contributes.viewsWelcome',
+      'Contributed views welcome content. Welcome content will be rendered in tree based views whenever they have no meaningful content to display, ie. the File Explorer when no folder is open. Such content is useful as in-product documentation to drive users to use certain features before they are available. A good example would be a `Clone Repository` button in the File Explorer welcome view.',
+    ),
     items: {
       type: 'object',
       description: localize('contributes.viewsWelcome.view', 'Contributed welcome content for a specific view.'),
-      required: [
-        ViewsWelcomeExtensionPointFields.view,
-        ViewsWelcomeExtensionPointFields.contents,
-      ],
+      required: [ViewsWelcomeExtensionPointFields.view, ViewsWelcomeExtensionPointFields.contents],
       properties: {
         [ViewsWelcomeExtensionPointFields.view]: {
           anyOf: [
             {
               type: 'string',
-              description: localize('contributes.viewsWelcome.view.view', 'Target view identifier for this welcome content. Only tree based views are supported.'),
+              description: localize(
+                'contributes.viewsWelcome.view.view',
+                'Target view identifier for this welcome content. Only tree based views are supported.',
+              ),
             },
             {
               type: 'string',
-              description: localize('contributes.viewsWelcome.view.view', 'Target view identifier for this welcome content. Only tree based views are supported.'),
+              description: localize(
+                'contributes.viewsWelcome.view.view',
+                'Target view identifier for this welcome content. Only tree based views are supported.',
+              ),
               enum: Object.keys(ViewIdentifierMap),
             },
           ],
         },
         [ViewsWelcomeExtensionPointFields.contents]: {
           type: 'string',
-          description: localize('contributes.viewsWelcome.view.contents', 'Welcome content to be displayed. The format of the contents is a subset of Markdown, with support for links only.'),
+          description: localize(
+            'contributes.viewsWelcome.view.contents',
+            'Welcome content to be displayed. The format of the contents is a subset of Markdown, with support for links only.',
+          ),
         },
         [ViewsWelcomeExtensionPointFields.when]: {
           type: 'string',
-          description: localize('contributes.viewsWelcome.view.when', 'Condition when the welcome content should be displayed.'),
+          description: localize(
+            'contributes.viewsWelcome.view.when',
+            'Condition when the welcome content should be displayed.',
+          ),
         },
         [ViewsWelcomeExtensionPointFields.group]: {
           type: 'string',
@@ -77,7 +88,10 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
         },
         [ViewsWelcomeExtensionPointFields.enablement]: {
           type: 'string',
-          description: localize('contributes.viewsWelcome.view.enablement', 'Condition when the welcome content buttons and command links should be enabled.'),
+          description: localize(
+            'contributes.viewsWelcome.view.enablement',
+            'Condition when the welcome content buttons and command links should be enabled.',
+          ),
         },
       },
     },
@@ -118,11 +132,9 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
   dispose() {
     this.disposableCollection.dispose();
   }
-
 }
 
-function parseGroupAndOrder(welcome: ViewWelcome): { group: string | undefined, order: number | undefined } {
-
+function parseGroupAndOrder(welcome: ViewWelcome): { group: string | undefined; order: number | undefined } {
   let group: string | undefined;
   let order: number | undefined;
   if (welcome.group) {

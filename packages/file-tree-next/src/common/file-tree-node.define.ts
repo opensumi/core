@@ -4,7 +4,6 @@ import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@opensum
 import { IFileTreeService } from './index';
 
 export class Directory extends CompositeTreeNode {
-
   private fileTreeService: IFileTreeService;
   private _displayName: string;
 
@@ -12,7 +11,7 @@ export class Directory extends CompositeTreeNode {
     tree: IFileTreeService,
     parent: ICompositeTreeNode | undefined,
     public uri: URI = new URI(''),
-    name: string = '',
+    name = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
     id?: number,
@@ -68,7 +67,7 @@ export class File extends TreeNode {
     tree: IFileTreeService,
     parent: CompositeTreeNode | undefined,
     public uri: URI = new URI(''),
-    name: string = '',
+    name = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
     id?: number,

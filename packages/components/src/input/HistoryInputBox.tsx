@@ -19,20 +19,19 @@ export interface IHistoryInputBoxHandler {
 }
 
 export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
-
   private inputRef = React.createRef<any>();
   public history: HistoryNavigator<string>;
   public inputProps: HistoryInputBoxProp;
 
   public readonly state: {
-    inputValue: '',
+    inputValue: '';
   };
 
   public componentDidMount() {
     const { history, onReady } = this.props;
 
     this.history = new HistoryNavigator(history || [], 100);
-    this.inputProps = {...this.props};
+    this.inputProps = { ...this.props };
     delete this.inputProps.onReady;
 
     this.setState({
@@ -56,11 +55,9 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     if (this.history && v && v !== this.getCurrentValue()) {
       this.history.add(v);
     }
-  }
+  };
 
-  public getHistory = (): string[] => {
-    return this.history && this.history.getHistory() || [];
-  }
+  public getHistory = (): string[] => (this.history && this.history.getHistory()) || [];
 
   public showNextValue = () => {
     const value = this.getCurrentValue() || '';
@@ -76,7 +73,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     if (next) {
       this.onValueChange(next);
     }
-  }
+  };
 
   public showPreviousValue = (): void => {
     const value = this.getCurrentValue() || '';
@@ -92,11 +89,11 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     if (previous) {
       this.onValueChange(previous);
     }
-  }
+  };
 
   public clearHistory = (): void => {
     this.history && this.history.clear();
-  }
+  };
 
   public getCurrentValue = (): string | null => {
     if (!this.history) {
@@ -109,15 +106,12 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
       this.history.next();
     }
     return currentValue;
-  }
+  };
 
-  public getPreviousValue = (): string | null => {
-    return this.history && (this.history.previous() || this.history.first()) || null;
-  }
+  public getPreviousValue = (): string | null =>
+    (this.history && (this.history.previous() || this.history.first())) || null;
 
-  public getNextValue = (): string | null => {
-    return this.history && (this.history.next() || this.history.last()) || null;
-  }
+  public getNextValue = (): string | null => (this.history && (this.history.next() || this.history.last())) || null;
 
   public onValueChange = (v: string) => {
     const { onValueChange } = this.props;
@@ -129,7 +123,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     if (onValueChange) {
       onValueChange(v);
     }
-  }
+  };
 
   private onKeyDown = (e) => {
     const { onKeyDown } = this.props;
@@ -137,16 +131,24 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     if (onKeyDown) {
       onKeyDown(e);
     }
-  }
+  };
 
   private focus = () => {
     if (this.inputRef && this.inputRef.current) {
       this.inputRef.current.focus();
     }
-  }
+  };
 
   public render() {
     const inputValue = this.state && this.state.inputValue;
-    return <Input ref={this.inputRef} {...this.inputProps} onValueChange={this.onValueChange} onKeyDown={this.onKeyDown} value={inputValue}/>;
+    return (
+      <Input
+        ref={this.inputRef}
+        {...this.inputProps}
+        onValueChange={this.onValueChange}
+        onKeyDown={this.onKeyDown}
+        value={inputValue}
+      />
+    );
   }
 }

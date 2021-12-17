@@ -6,17 +6,17 @@ import * as paths from '@opensumi/ide-core-common/lib/path';
 import * as extpath from '@opensumi/ide-core-common/lib/utils/paths';
 
 export class ResourceGlobMatcher {
-
   private readonly globalExpression: ParsedExpression;
-  private readonly expressionsByRoot: TernarySearchTree<{ root: URI, expression: ParsedExpression }> = TernarySearchTree.forPaths<{ root: URI, expression: ParsedExpression }>();
+  private readonly expressionsByRoot: TernarySearchTree<{ root: URI; expression: ParsedExpression }> =
+    TernarySearchTree.forPaths<{ root: URI; expression: ParsedExpression }>();
 
-  constructor(
-    globalExpression: IExpression,
-    rootExpressions: { root: URI, expression: IExpression }[],
-  ) {
+  constructor(globalExpression: IExpression, rootExpressions: { root: URI; expression: IExpression }[]) {
     this.globalExpression = parse(globalExpression);
     for (const expression of rootExpressions) {
-      this.expressionsByRoot.set(expression.root.toString(), { root: expression.root, expression: parse(expression.expression) });
+      this.expressionsByRoot.set(expression.root.toString(), {
+        root: expression.root,
+        expression: parse(expression.expression),
+      });
     }
   }
 

@@ -14,7 +14,7 @@ export class RenameAdapter {
   constructor(
     private readonly provider: vscode.RenameProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
   provideRenameEdits(
     resource: URI,
@@ -30,9 +30,7 @@ export class RenameAdapter {
     const doc = document.document;
     const pos = Converter.toPosition(position);
 
-    return Promise.resolve(
-      this.provider.provideRenameEdits(doc, pos, newName, token),
-    ).then(
+    return Promise.resolve(this.provider.provideRenameEdits(doc, pos, newName, token)).then(
       (value) => {
         if (!value) {
           return undefined;

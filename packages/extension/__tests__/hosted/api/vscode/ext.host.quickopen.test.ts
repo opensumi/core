@@ -1,4 +1,3 @@
-
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
@@ -30,23 +29,29 @@ let mainThread: MainThreadQuickOpen;
 describe(__filename, () => {
   const injector = createBrowserInjector([]);
 
-  injector.addProviders({
-    token: QuickPickService,
-    useValue: mockService({
-      // 默认返回第一个
-      show: (_, options) => options.canPickMany ? [0] : 0,
-    }),
-  }, {
-    token: QuickTitleBar,
-    useValue: mockService({
-      onDidTriggerButton: () => Disposable.NULL,
-    }),
-  });
+  injector.addProviders(
+    {
+      token: QuickPickService,
+      useValue: mockService({
+        // 默认返回第一个
+        show: (_, options) => (options.canPickMany ? [0] : 0),
+      }),
+    },
+    {
+      token: QuickTitleBar,
+      useValue: mockService({
+        onDidTriggerButton: () => Disposable.NULL,
+      }),
+    },
+  );
   const extHostWorkspace = mockService({});
   extHost = new ExtHostQuickOpen(rpcProtocolExt, extHostWorkspace);
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostQuickOpen, extHost);
 
-  mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadQuickOpen, injector.get(MainThreadQuickOpen, [rpcProtocolMain]));
+  mainThread = rpcProtocolMain.set(
+    MainThreadAPIIdentifier.MainThreadQuickOpen,
+    injector.get(MainThreadQuickOpen, [rpcProtocolMain]),
+  );
 
   afterAll(() => {
     mainThread.dispose();

@@ -5,20 +5,22 @@ import { createBrowserApi } from '../../../src/browser/sumi-browser';
 import { mockExtension } from '../../../__mocks__/extensions';
 
 describe('activation event test', () => {
-
   let injector: MockInjector;
   let browserApi;
 
   beforeAll(() => {
-    registerLocalizationBundle({
-      languageId: 'zh-CN',
-      languageName: 'Chinese',
-      localizedLanguageName: '中文(中国)',
-      contents: {
-        'test': '测试',
-        'test.format': '测试{0}',
+    registerLocalizationBundle(
+      {
+        languageId: 'zh-CN',
+        languageName: 'Chinese',
+        localizedLanguageName: '中文(中国)',
+        contents: {
+          test: '测试',
+          'test.format': '测试{0}',
+        },
       },
-    }, mockExtension.id);
+      mockExtension.id,
+    );
   });
 
   beforeEach(() => {

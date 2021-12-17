@@ -1,6 +1,15 @@
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@opensumi/di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource, Deferred, CancellationToken } from '@opensumi/ide-core-browser';
+import {
+  WithEventBus,
+  MaybeNull,
+  OnEvent,
+  BasicEvent,
+  URI,
+  CancellationTokenSource,
+  Deferred,
+  CancellationToken,
+} from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
@@ -8,7 +17,6 @@ import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/e
 
 @Injectable()
 export class DocumentSymbolStore extends WithEventBus {
-
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelRegistry: IEditorDocumentModelService;
 
@@ -25,11 +33,13 @@ export class DocumentSymbolStore extends WithEventBus {
 
   constructor() {
     super();
-    this.addDispose(modes.DocumentSymbolProviderRegistry.onDidChange(() => {
-      Array.from(this.documentSymbols.keys()).forEach((uriString) => {
-        this.markNeedUpdate(new URI(uriString));
-      });
-    }));
+    this.addDispose(
+      modes.DocumentSymbolProviderRegistry.onDidChange(() => {
+        Array.from(this.documentSymbols.keys()).forEach((uriString) => {
+          this.markNeedUpdate(new URI(uriString));
+        });
+      }),
+    );
   }
 
   getDocumentSymbol(uri: URI): INormalizedDocumentSymbol[] | undefined {
@@ -77,7 +87,10 @@ export class DocumentSymbolStore extends WithEventBus {
       const supports = await modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel());
       let result: MaybeNull<DocumentSymbol[]>;
       for (const support of supports) {
-        result = await support.provideDocumentSymbols(modelRef.instance.getMonacoModel(), new CancellationTokenSource().token);
+        result = await support.provideDocumentSymbols(
+          modelRef.instance.getMonacoModel(),
+          new CancellationTokenSource().token,
+        );
         if (result) {
           break;
         }
@@ -95,9 +108,10 @@ export class DocumentSymbolStore extends WithEventBus {
 
   updateDocumentSymbolCache(uri: URI) {
     if (!this.debounced.has(uri.toString())) {
-      this.debounced.set(uri.toString(), debounce(() => {
-        return this.doUpdateDocumentSymbolCache(uri);
-      }, 100, { maxWait: 1000 }));
+      this.debounced.set(
+        uri.toString(),
+        debounce(() => this.doUpdateDocumentSymbolCache(uri), 100, { maxWait: 1000 }),
+      );
     }
     this.debounced.get(uri.toString())!();
   }
@@ -124,15 +138,11 @@ export class DocumentSymbolStore extends WithEventBus {
     }
     return false;
   }
-
 }
 
-export class DocumentSymbolChangedEvent extends BasicEvent<URI> { }
+export class DocumentSymbolChangedEvent extends BasicEvent<URI> {}
 
-export {
-  DocumentSymbol,
-  SymbolTag,
-};
+export { DocumentSymbol, SymbolTag };
 
 export interface INormalizedDocumentSymbol extends DocumentSymbol {
   parent?: INormalizedDocumentSymbol | IDummyRoot;
@@ -144,7 +154,11 @@ export interface IDummyRoot {
   children?: INormalizedDocumentSymbol[];
 }
 
-function normalizeDocumentSymbols(documentSymbols: DocumentSymbol[], parent: INormalizedDocumentSymbol | IDummyRoot, uri: URI): INormalizedDocumentSymbol[] {
+function normalizeDocumentSymbols(
+  documentSymbols: DocumentSymbol[],
+  parent: INormalizedDocumentSymbol | IDummyRoot,
+  uri: URI,
+): INormalizedDocumentSymbol[] {
   documentSymbols.forEach((documentSymbol, index) => {
     const symbol = documentSymbol as INormalizedDocumentSymbol;
     symbol.parent = parent;

@@ -3,7 +3,11 @@ import { RPCProtocol } from '@opensumi/ide-connection';
 import { ITerminalApiService, ITerminalController } from '@opensumi/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { EnvironmentVariableCollection, ExtHostTerminal, Terminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
+import {
+  EnvironmentVariableCollection,
+  ExtHostTerminal,
+  Terminal,
+} from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { IExtension } from '@opensumi/ide-extension';
@@ -30,37 +34,42 @@ let mainThread: MainThreadTerminal;
 describe(__filename, () => {
   const injector = createBrowserInjector([]);
 
-  injector.addProviders({
-    token: ITerminalApiService,
-    useValue: mockService({
-      terminals: [],
-      onDidChangeActiveTerminal: () => Disposable.NULL,
-      onDidCloseTerminal: () => Disposable.NULL,
-      onDidOpenTerminal: () => Disposable.NULL,
-      createTerminal: (options) => {
-        return {
+  injector.addProviders(
+    {
+      token: ITerminalApiService,
+      useValue: mockService({
+        terminals: [],
+        onDidChangeActiveTerminal: () => Disposable.NULL,
+        onDidCloseTerminal: () => Disposable.NULL,
+        onDidOpenTerminal: () => Disposable.NULL,
+        createTerminal: (options) => ({
           id: options.name,
-        };
-      },
-    }),
-  }, {
-    token: ITerminalController,
-    useValue: mockService({
-      onInstanceRequestStartExtensionTerminal: () => Disposable.NULL,
-      ready: {
-        promise: Promise.resolve(),
-      },
-    }),
-  }, {
-    token: EnvironmentVariableServiceToken,
-    useValue: {
-      set: () => {},
-      delete: () => {},
+        }),
+      }),
     },
-  });
+    {
+      token: ITerminalController,
+      useValue: mockService({
+        onInstanceRequestStartExtensionTerminal: () => Disposable.NULL,
+        ready: {
+          promise: Promise.resolve(),
+        },
+      }),
+    },
+    {
+      token: EnvironmentVariableServiceToken,
+      useValue: {
+        set: () => {},
+        delete: () => {},
+      },
+    },
+  );
 
   extHost = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostTerminal, injector.get(ExtHostTerminal, [rpcProtocolMain]));
-  mainThread = rpcProtocolExt.set(MainThreadAPIIdentifier.MainThreadTerminal, injector.get(MainThreadTerminal, [rpcProtocolExt]));
+  mainThread = rpcProtocolExt.set(
+    MainThreadAPIIdentifier.MainThreadTerminal,
+    injector.get(MainThreadTerminal, [rpcProtocolExt]),
+  );
 
   afterAll(() => {
     mainThread.dispose();
@@ -110,10 +119,7 @@ describe(__filename, () => {
   });
 
   it('extension terminal exit status should defined', async (done) => {
-
-    mainThread['$createTerminal'] = () => {
-      return Promise.resolve('fake-id-1');
-    };
+    mainThread['$createTerminal'] = () => Promise.resolve('fake-id-1');
 
     mainThread['$sendProcessExit'] = () => {
       //
@@ -137,16 +143,12 @@ describe(__filename, () => {
     });
 
     extHost['terminalsMap'].set('fake-id-1', terminal4);
-    mainThread['_terminalProcessProxies'].set('fake-id-1', {
-
-    } as any);
+    mainThread['_terminalProcessProxies'].set('fake-id-1', {} as any);
 
     expect(terminal4).toBeInstanceOf(Terminal);
     expect(terminal4.name).toBe('terminal-4');
 
-    mainThread['$sendProcessReady'] = jest.fn(() => {
-      return;
-    });
+    mainThread['$sendProcessReady'] = jest.fn(() => {});
 
     await mainThread['proxy'].$startExtensionTerminal('fake-id-1', {
       columns: 80,
@@ -203,7 +205,7 @@ describe(__filename, () => {
     }, 0);
   });
 
-  //#region ExthostTerminal#EnvironmentVariableCollection
+  // #region ExthostTerminal#EnvironmentVariableCollection
   const mockExtension = {
     id: 'test-terminal-env',
   };
@@ -219,7 +221,7 @@ describe(__filename, () => {
 
   it('EnvironmentVariableCollection#append', () => {
     collection.append('FOO', 'BAR');
-    const serialized = [[ 'FOO', { value: 'BAR', type: 2 /**EnvironmentVariableMutatorType.Append */ } ]];
+    const serialized = [['FOO', { value: 'BAR', type: 2 /** EnvironmentVariableMutatorType.Append */ }]];
 
     expect(mocksyncEnvironmentVariableCollection).toBeCalled();
     expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
@@ -228,7 +230,7 @@ describe(__filename, () => {
 
   it('EnvironmentVariableCollection#replace', () => {
     collection.replace('FOO', 'BAR2');
-    const serialized = [[ 'FOO', { value: 'BAR2', type: 1 /**EnvironmentVariableMutatorType.Replace */ } ]];
+    const serialized = [['FOO', { value: 'BAR2', type: 1 /** EnvironmentVariableMutatorType.Replace */ }]];
 
     expect(mocksyncEnvironmentVariableCollection).toBeCalled();
     expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
@@ -237,7 +239,7 @@ describe(__filename, () => {
 
   it('EnvironmentVariableCollection#prepend', () => {
     collection.prepend('FOO', 'BAR3');
-    const serialized = [[ 'FOO', { value: 'BAR3', type: 3 /**EnvironmentVariableMutatorType.Prepend */ } ]];
+    const serialized = [['FOO', { value: 'BAR3', type: 3 /** EnvironmentVariableMutatorType.Prepend */ }]];
 
     expect(mocksyncEnvironmentVariableCollection).toBeCalled();
     expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
@@ -262,8 +264,8 @@ describe(__filename, () => {
       valueSet.push(collection.get(variable)?.value!);
     });
 
-    expect(variableSet).toEqual([ 'FOO', 'ENV1', 'ENV2', 'ENV3' ]);
-    expect(valueSet).toEqual([ 'BAR3', 'VALUE1', 'VALUE2', 'VALUE3' ]);
+    expect(variableSet).toEqual(['FOO', 'ENV1', 'ENV2', 'ENV3']);
+    expect(valueSet).toEqual(['BAR3', 'VALUE1', 'VALUE2', 'VALUE3']);
     done();
   });
 
@@ -280,5 +282,5 @@ describe(__filename, () => {
     expect(collection.get('ENV3')).toBeUndefined();
   });
 
-  //#endregion
+  // #endregion
 });

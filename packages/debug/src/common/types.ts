@@ -39,7 +39,6 @@ export interface IDebuggerContribution extends IPlatformSpecificAdapterContribut
 }
 
 export enum DEBUG_REPORT_NAME {
-
   /**
    * 启动调试响应耗时
    */

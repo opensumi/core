@@ -11,7 +11,13 @@ export class ExtHostMessage implements IExtHostMessage {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadMessages);
   }
 
-  async showMessage(type: MessageType, rawMessage: string, optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined, from?: string, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined> {
+  async showMessage(
+    type: MessageType,
+    rawMessage: string,
+    optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined,
+    from?: string,
+    ...rest: (string | vscode.MessageItem)[]
+  ): Promise<string | vscode.MessageItem | undefined> {
     let message = rawMessage;
     if (message.length > MAX_MESSAGE_LENGTH) {
       message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
@@ -44,5 +50,4 @@ export class ExtHostMessage implements IExtHostMessage {
     const actionHandle = await this.proxy.$showMessage(type, message, options, actions, from);
     return actionHandle !== undefined ? items[actionHandle] : undefined;
   }
-
 }

@@ -3,16 +3,7 @@ import { URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { TerminalValidatedLocalLinkProvider } from '../../../src/browser/links/validated-local-link-provider';
 
-const unixLinks = [
-  '/foo',
-  '~/foo',
-  './foo',
-  '../foo',
-  '/foo/bar',
-  '/foo/bar+more',
-  'foo/bar',
-  'foo/bar+more',
-];
+const unixLinks = ['/foo', '~/foo', './foo', '../foo', '/foo/bar', '/foo/bar+more', 'foo/bar', 'foo/bar+more'];
 
 const windowsLinks = [
   'c:\\foo',
@@ -67,10 +58,18 @@ function format(pattern: string, ...args: any[]) {
 }
 
 describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
-  async function assertLink(text: string, isWindows: boolean, expected: { text: string, range: [number, number][] }[]) {
+  async function assertLink(text: string, isWindows: boolean, expected: { text: string; range: [number, number][] }[]) {
     const xterm = new Terminal();
     const client = { os: isWindows ? OperatingSystem.Windows : OperatingSystem.Linux } as any;
-    const provider = new TerminalValidatedLocalLinkProvider(xterm, client, () => {}, (() => {}) as any, (_: string, cb: (result: { uri: URI, isDirectory: boolean } | undefined) => void) => { cb({ uri: URI.file('/'), isDirectory: false }); });
+    const provider = new TerminalValidatedLocalLinkProvider(
+      xterm,
+      client,
+      () => {},
+      (() => {}) as any,
+      (_: string, cb: (result: { uri: URI; isDirectory: boolean } | undefined) => void) => {
+        cb({ uri: URI.file('/'), isDirectory: false });
+      },
+    );
 
     // Write the text and wait for the parser to finish
     await new Promise<void>((r) => xterm.write(text, r));
@@ -99,21 +98,81 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
         for (const linkFormat of supportedLinkFormats) {
           test(`Format: ${linkFormat.urlFormat}`, async () => {
             const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
-            await assertLink(formattedLink, isWindows, [{ text: formattedLink, range: [[1, 1], [formattedLink.length, 1]] }]);
-            await assertLink(` ${formattedLink} `, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
-            await assertLink(`(${formattedLink})`, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
-            await assertLink(`[${formattedLink}]`, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
+            await assertLink(formattedLink, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [1, 1],
+                  [formattedLink.length, 1],
+                ],
+              },
+            ]);
+            await assertLink(` ${formattedLink} `, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
+            await assertLink(`(${formattedLink})`, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
+            await assertLink(`[${formattedLink}]`, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
           });
         }
       });
     });
     test('Git diff links', async () => {
-      await assertLink(`diff --git a/foo/bar b/foo/bar`, isWindows, [
-        { text: 'foo/bar', range: [[14, 1], [20, 1]] },
-        { text: 'foo/bar', range: [[24, 1], [30, 1]] },
+      await assertLink('diff --git a/foo/bar b/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [14, 1],
+            [20, 1],
+          ],
+        },
+        {
+          text: 'foo/bar',
+          range: [
+            [24, 1],
+            [30, 1],
+          ],
+        },
       ]);
-      await assertLink(`--- a/foo/bar`, isWindows, [{ text: 'foo/bar', range: [[7, 1], [13, 1]] }]);
-      await assertLink(`+++ b/foo/bar`, isWindows, [{ text: 'foo/bar', range: [[7, 1], [13, 1]] }]);
+      await assertLink('--- a/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [7, 1],
+            [13, 1],
+          ],
+        },
+      ]);
+      await assertLink('+++ b/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [7, 1],
+            [13, 1],
+          ],
+        },
+      ]);
     });
   });
 
@@ -124,28 +183,100 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
         for (const linkFormat of supportedLinkFormats) {
           test(`Format: ${linkFormat.urlFormat}`, async () => {
             const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
-            await assertLink(formattedLink, isWindows, [{ text: formattedLink, range: [[1, 1], [formattedLink.length, 1]] }]);
-            await assertLink(` ${formattedLink} `, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
-            await assertLink(`(${formattedLink})`, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
-            await assertLink(`[${formattedLink}]`, isWindows, [{ text: formattedLink, range: [[2, 1], [formattedLink.length + 1, 1]] }]);
+            await assertLink(formattedLink, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [1, 1],
+                  [formattedLink.length, 1],
+                ],
+              },
+            ]);
+            await assertLink(` ${formattedLink} `, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
+            await assertLink(`(${formattedLink})`, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
+            await assertLink(`[${formattedLink}]`, isWindows, [
+              {
+                text: formattedLink,
+                range: [
+                  [2, 1],
+                  [formattedLink.length + 1, 1],
+                ],
+              },
+            ]);
           });
         }
       });
     });
     test('Git diff links', async () => {
-      await assertLink(`diff --git a/foo/bar b/foo/bar`, isWindows, [
-        { text: 'foo/bar', range: [[14, 1], [20, 1]] },
-        { text: 'foo/bar', range: [[24, 1], [30, 1]] },
+      await assertLink('diff --git a/foo/bar b/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [14, 1],
+            [20, 1],
+          ],
+        },
+        {
+          text: 'foo/bar',
+          range: [
+            [24, 1],
+            [30, 1],
+          ],
+        },
       ]);
-      await assertLink(`--- a/foo/bar`, isWindows, [{ text: 'foo/bar', range: [[7, 1], [13, 1]] }]);
-      await assertLink(`+++ b/foo/bar`, isWindows, [{ text: 'foo/bar', range: [[7, 1], [13, 1]] }]);
+      await assertLink('--- a/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [7, 1],
+            [13, 1],
+          ],
+        },
+      ]);
+      await assertLink('+++ b/foo/bar', isWindows, [
+        {
+          text: 'foo/bar',
+          range: [
+            [7, 1],
+            [13, 1],
+          ],
+        },
+      ]);
     });
   });
 
   test('should support multiple link results', async () => {
     await assertLink('./foo ./bar', false, [
-      { range: [[1, 1], [5, 1]], text: './foo' },
-      { range: [[7, 1], [11, 1]], text: './bar' },
+      {
+        range: [
+          [1, 1],
+          [5, 1],
+        ],
+        text: './foo',
+      },
+      {
+        range: [
+          [7, 1],
+          [11, 1],
+        ],
+        text: './bar',
+      },
     ]);
   });
 });

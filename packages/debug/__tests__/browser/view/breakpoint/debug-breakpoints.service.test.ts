@@ -13,23 +13,26 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
 
 describe('Debug Breakpoints Service', () => {
-  const mockInjector = createBrowserInjector([], new MockInjector([
-    {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-  ]));
+  const mockInjector = createBrowserInjector(
+    [],
+    new MockInjector([
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+    ]),
+  );
   let debugBreakpointsService: DebugBreakpointsService;
   let eventBus: IEventBus;
 
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockBreakpointManager = {
-    onDidChangeBreakpoints: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeExceptionsBreakpoints: jest.fn(() => Disposable.create(() => { })),
+    onDidChangeBreakpoints: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeExceptionsBreakpoints: jest.fn(() => Disposable.create(() => {})),
     clearBreakpoints: jest.fn(),
     breakpointsEnabled: false,
     getExceptionBreakpoints: jest.fn(() => []),
@@ -119,7 +122,7 @@ describe('Debug Breakpoints Service', () => {
 
   it('toggleBreakpointEnable method should be work', async (done) => {
     // DebugBreakpoint
-    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), {line: 1});
+    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), { line: 1 });
     mockBreakpointManager.getBreakpoint.mockReturnValueOnce(breakpoint as any);
     await debugBreakpointsService.toggleBreakpointEnable(breakpoint);
     expect(mockBreakpointManager.updateBreakpoint).toBeCalledTimes(1);
@@ -131,7 +134,7 @@ describe('Debug Breakpoints Service', () => {
   });
 
   it('extractNodes method should be work', () => {
-    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), {line: 1});
+    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), { line: 1 });
     const exceptionBreakpoint = { filter: 'test' };
     const items = [breakpoint, exceptionBreakpoint];
     const nodes = debugBreakpointsService.extractNodes(items as any);
@@ -150,13 +153,13 @@ describe('Debug Breakpoints Service', () => {
   });
 
   it('onRenameFile should be work', async (done) => {
-    await eventBus.fireAndAwait(new WorkspaceEditDidRenameFileEvent({oldUri: URI.file('test.js')} as any));
+    await eventBus.fireAndAwait(new WorkspaceEditDidRenameFileEvent({ oldUri: URI.file('test.js') } as any));
     expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(1);
     done();
   });
 
   it('onDeleteFile should be work', async (done) => {
-    await eventBus.fireAndAwait(new WorkspaceEditDidDeleteFileEvent({oldUri: URI.file('test.js')} as any));
+    await eventBus.fireAndAwait(new WorkspaceEditDidDeleteFileEvent({ oldUri: URI.file('test.js') } as any));
     expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(2);
     done();
   });

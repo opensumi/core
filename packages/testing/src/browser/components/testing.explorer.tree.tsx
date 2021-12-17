@@ -43,8 +43,8 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     }
   }, []);
 
-  const asTreeData = React.useCallback((item: ITestTreeItem) => {
-    return {
+  const asTreeData = React.useCallback(
+    (item: ITestTreeItem) => ({
       label: item.label,
       icon: getItemIcon(item),
       rawItem: item,
@@ -54,11 +54,16 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
         }
         return null;
       },
-    };
-  }, []);
+    }),
+    [],
+  );
 
   useEffect(() => {
-    const disposable = Event.debounce(testViewModel.onUpdate, () => { }, 500)(() => {
+    const disposable = Event.debounce(
+      testViewModel.onUpdate,
+      () => {},
+      500,
+    )(() => {
       for (const root of testViewModel.roots) {
         if (root.depth === 0 && root.children.size > 0) {
           const result: IBasicTreeData[] = [];
@@ -86,23 +91,25 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     const { rawItem } = node.raw;
     switch (action.command) {
       case RuntTestCommand.id: {
-        testService.runTests(
-          {
-            tests: rawItem.tests,
-            group: TestRunProfileBitset.Run,
-          },
-        );
+        testService.runTests({
+          tests: rawItem.tests,
+          group: TestRunProfileBitset.Run,
+        });
       }
     }
   }, []);
 
-  return (<div>
-    {treeData.length > 0 && <BasicRecycleTree
-      treeData={treeData}
-      height={900}
-      resolveChildren={resolveTestChildren}
-      inlineMenus={TestingExplorerInlineMenus}
-      inlineMenuActuator={inlineMenuActuator}
-    />}
-  </div>);
+  return (
+    <div>
+      {treeData.length > 0 && (
+        <BasicRecycleTree
+          treeData={treeData}
+          height={900}
+          resolveChildren={resolveTestChildren}
+          inlineMenus={TestingExplorerInlineMenus}
+          inlineMenuActuator={inlineMenuActuator}
+        />
+      )}
+    </div>
+  );
 });

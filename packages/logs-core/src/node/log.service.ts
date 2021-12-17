@@ -1,4 +1,3 @@
-
 import path from 'path';
 import spdlog from 'spdlog';
 import process from 'process';
@@ -18,7 +17,7 @@ import {
   IBaseLogService,
 } from '../common/';
 
-export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), `.sumi/logs/`);
+export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), '.sumi/logs/');
 
 type SpdLogger = spdlog.RotatingLogger;
 interface ILog {
@@ -48,10 +47,7 @@ export class BaseLogService implements IBaseLogService {
   constructor(options: BaseLogServiceOptions) {
     this.init(options);
     this.debugLog = new DebugLog(this.namespace);
-    this.spdLogLoggerPromise = this.createSpdLogLoggerPromise(
-      this.namespace,
-      this.logDir,
-    );
+    this.spdLogLoggerPromise = this.createSpdLogLoggerPromise(this.namespace, this.logDir);
   }
 
   protected init(options: BaseLogServiceOptions) {
@@ -158,16 +154,14 @@ export class BaseLogService implements IBaseLogService {
     }
   }
 
-  protected async createSpdLogLoggerPromise(
-    namespace: string,
-    logsFolder: string,
-  ): Promise<SpdLogger | null> {
+  protected async createSpdLogLoggerPromise(namespace: string, logsFolder: string): Promise<SpdLogger | null> {
     // Do not crash if spdlog cannot be loaded
     try {
       const _spdlog = require('spdlog');
       _spdlog.setAsyncMode(8192, 500);
       const logFilePath = path.join(logsFolder, `${namespace}.log`);
-      return _spdlog.createRotatingLoggerAsync(namespace, logFilePath, 1024 * 1024 * 5, 6)
+      return _spdlog
+        .createRotatingLoggerAsync(namespace, logFilePath, 1024 * 1024 * 5, 6)
         .then((logger) => {
           if (logger) {
             this.logger = logger;
@@ -178,7 +172,8 @@ export class BaseLogService implements IBaseLogService {
             }
             this.buffer = [];
           }
-        }).catch((e) => {
+        })
+        .catch((e) => {
           this.debugLog.error(e);
         });
     } catch (e) {
@@ -214,7 +209,8 @@ export class BaseLogService implements IBaseLogService {
         return logger.error(this.applyLogPreString(message, level));
       case LogLevel.Critical:
         return logger.critical(this.applyLogPreString(message, level));
-      default: throw new Error('Invalid log level');
+      default:
+        throw new Error('Invalid log level');
     }
   }
 
@@ -232,7 +228,8 @@ export class BaseLogService implements IBaseLogService {
         return this.debugLog.error(message);
       case LogLevel.Critical:
         return this.debugLog.error(message);
-      default: throw new Error('Invalid log level');
+      default:
+        throw new Error('Invalid log level');
     }
   }
 }
@@ -281,7 +278,6 @@ interface IRPCLogService {
 
 @Injectable()
 export class LogServiceForClient extends RPCService<IRPCLogService> implements ILogServiceForClient {
-
   @Autowired(ILogServiceManager)
   loggerManager: ILogServiceManager;
 

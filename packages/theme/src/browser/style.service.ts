@@ -3,7 +3,6 @@ import { ICSSStyleService } from '../common/style';
 
 @Injectable()
 export class CSSStyleService implements ICSSStyleService {
-
   private styleSheet: CSSStyleSheet;
 
   constructor() {
@@ -23,7 +22,7 @@ export class CSSStyleService implements ICSSStyleService {
   }
 
   removeClass(classname: string) {
-    for (let i = this.styleSheet.rules.length - 1; i >= 0; i --) {
+    for (let i = this.styleSheet.rules.length - 1; i >= 0; i--) {
       if ((this.styleSheet.rules[i] as any).selectorText === '.' + classname) {
         this.styleSheet.removeRule(i);
       }
@@ -31,7 +30,7 @@ export class CSSStyleService implements ICSSStyleService {
   }
 }
 
-function createStyleCssText(styles: {[key: string]: string | undefined}): string {
+function createStyleCssText(styles: { [key: string]: string | undefined }): string {
   const texts: string[] = [];
   Object.keys(styles).forEach((key) => {
     if (styles[key]) {
@@ -43,5 +42,9 @@ function createStyleCssText(styles: {[key: string]: string | undefined}): string
 }
 
 function toDashSplitForm(key: string) {
-  return key.trim().split(/(?=[A-Z])/).join('-').toLowerCase();
+  return key
+    .trim()
+    .split(/(?=[A-Z])/)
+    .join('-')
+    .toLowerCase();
 }

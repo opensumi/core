@@ -29,10 +29,7 @@ describe('Semantic Tokens Registry', () => {
   });
 
   it('registerTokenType', () => {
-    semanticTokenRegistry.registerTokenType(
-      'annotation',
-      'Style for annotations',
-    );
+    semanticTokenRegistry.registerTokenType('annotation', 'Style for annotations');
 
     const annotationTokenType = semanticTokenRegistry['tokenTypeById']['annotation'];
     expect(annotationTokenType).toBeDefined();
@@ -43,17 +40,11 @@ describe('Semantic Tokens Registry', () => {
 
     const tokenStylingSchema = semanticTokenRegistry['tokenStylingSchema'].properties['annotation'];
     expect(tokenStylingSchema).toBeDefined();
-    expect(tokenStylingSchema).toEqual(getStylingSchemeEntry(
-      'Style for annotations',
-      undefined,
-    ));
+    expect(tokenStylingSchema).toEqual(getStylingSchemeEntry('Style for annotations', undefined));
   });
 
   it('registerTokenModifier', () => {
-    semanticTokenRegistry.registerTokenModifier(
-      'public',
-      'Style for symbols with the public access modifier.',
-    );
+    semanticTokenRegistry.registerTokenModifier('public', 'Style for symbols with the public access modifier.');
 
     const publicTokenModifier = semanticTokenRegistry['tokenModifierById']['public'];
     expect(publicTokenModifier).toBeDefined();
@@ -63,28 +54,24 @@ describe('Semantic Tokens Registry', () => {
 
     const publicStylingSchema = semanticTokenRegistry['tokenStylingSchema'].properties['*.public'];
     expect(publicStylingSchema).toBeDefined();
-    expect(publicStylingSchema).toEqual(getStylingSchemeEntry(
-      'Style for symbols with the public access modifier.',
-      undefined,
-    ));
+    expect(publicStylingSchema).toEqual(
+      getStylingSchemeEntry('Style for symbols with the public access modifier.', undefined),
+    );
   });
 
   it('parseTokenSelector & registerTokenScope', () => {
     const parsedSelector = semanticTokenRegistry.parseTokenSelector('annotation', 'java');
-    const scopes = [
-      'storage.type.annotation.java',
-    ];
+    const scopes = ['storage.type.annotation.java'];
     expect(parsedSelector.match('keyword', [], 'java')).toBe(-1);
     expect(parsedSelector.match('annotation', ['public'], 'java')).toBe(110);
     expect(parsedSelector.id).toBe('annotation:java');
-    semanticTokenRegistry.registerTokenStyleDefault(
-      parsedSelector,
-      {
-        scopesToProbe: scopes.map((s) => s.split(' ')),
-      },
-    );
+    semanticTokenRegistry.registerTokenStyleDefault(parsedSelector, {
+      scopesToProbe: scopes.map((s) => s.split(' ')),
+    });
 
-    const tokenStyleDefault = semanticTokenRegistry['tokenStylingDefaultRules'].find((r) => r.selector.id === 'annotation:java');
+    const tokenStyleDefault = semanticTokenRegistry['tokenStylingDefaultRules'].find(
+      (r) => r.selector.id === 'annotation:java',
+    );
     expect(tokenStyleDefault).toBeDefined();
     expect(tokenStyleDefault?.defaults.scopesToProbe).toBeDefined();
     expect(tokenStyleDefault?.defaults.scopesToProbe).toEqual([['storage.type.annotation.java']]);

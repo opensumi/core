@@ -9,7 +9,6 @@ export const StorageService = Symbol('IStorageService');
  * StorageService用于提供给插件或模块进行session级别的数据存储能力
  */
 export interface StorageService {
-
   /**
    * 值设置
    */
@@ -54,7 +53,7 @@ abstract class BaseBrowserStorageService implements StorageService {
     if (typeof window !== 'undefined' && window.localStorage) {
       this.testLocalStorage();
     } else {
-      this.logger.warn('The browser doesn\'t support localStorage. state will not be persisted across sessions.');
+      this.logger.warn("The browser doesn't support localStorage. state will not be persisted across sessions.");
     }
   }
 

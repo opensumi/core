@@ -16,8 +16,6 @@ export class ThemesContributionPoint extends VSCodeContributePoint<ThemesSchema>
       ...t,
       label: this.getLocalizeFromNlsJSON(t.label),
     }));
-    this.addDispose(
-      this.themeService.registerThemes(themes, URI.from(this.extension.uri!)),
-    );
+    this.addDispose(this.themeService.registerThemes(themes, URI.from(this.extension.uri!)));
   }
 }

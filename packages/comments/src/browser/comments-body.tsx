@@ -8,9 +8,7 @@ const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, ro
 
 const renderer = new marked.Renderer();
 
-renderer.link = ( href, title, text ) => {
-  return `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
-};
+renderer.link = (href, title, text) => `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
 
 export const CommentsBody: React.FC<{
   body: string;
@@ -31,21 +29,22 @@ export const CommentsBody: React.FC<{
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
           <style>{markdownCss}</style>
-          <div dangerouslySetInnerHTML={{
-            __html: marked(body, {
-              gfm: true,
-              tables: true,
-              breaks: false,
-              pedantic: false,
-              sanitize: true,
-              smartLists: true,
-              smartypants: false,
-              renderer,
-            }),
-          }}></div>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: marked(body, {
+                gfm: true,
+                tables: true,
+                breaks: false,
+                pedantic: false,
+                sanitize: true,
+                smartLists: true,
+                smartypants: false,
+                renderer,
+              }),
+            }}
+          ></div>
         </ShadowContent>
       )}
     </div>
-
   );
 });

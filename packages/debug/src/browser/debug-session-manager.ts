@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -17,9 +17,39 @@
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { DebugSession } from './debug-session';
-import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid, localize, COMMON_COMMANDS, CommandService } from '@opensumi/ide-core-browser';
+import {
+  WaitUntilEvent,
+  Emitter,
+  Event,
+  URI,
+  IContextKey,
+  DisposableCollection,
+  IContextKeyService,
+  formatLocalize,
+  Uri,
+  IReporterService,
+  uuid,
+  localize,
+  COMMON_COMMANDS,
+  CommandService,
+} from '@opensumi/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, IDebugSessionDTO, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
+import {
+  DebugConfiguration,
+  DebugError,
+  IDebugServer,
+  DebugServer,
+  DebugSessionOptions,
+  IDebugSessionDTO,
+  DEBUG_REPORT_NAME,
+  IDebugSessionManager,
+  DebugSessionExtra,
+  DebugThreadExtra,
+  CONTEXT_DEBUG_STOPPED_KEY,
+  CONTEXT_IN_DEBUG_MODE_KEY,
+  CONTEXT_DEBUG_TYPE_KEY,
+  DebugState,
+} from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IVariableResolverService } from '@opensumi/ide-variable';
@@ -33,9 +63,7 @@ import { isRemoteAttach } from './debugUtils';
 import { IDebugProgress } from '../common/debug-progress';
 import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 
-// tslint:disable-next-line:no-empty-interface
-export interface WillStartDebugSession extends WaitUntilEvent {
-}
+export type WillStartDebugSession = WaitUntilEvent;
 
 export interface WillResolveDebugConfiguration extends WaitUntilEvent {
   debugType: string;
@@ -63,7 +91,8 @@ export class DebugSessionManager implements IDebugSessionManager {
   readonly onWillStartDebugSession: Event<WillStartDebugSession> = this.onWillStartDebugSessionEmitter.event;
 
   protected readonly onWillResolveDebugConfigurationEmitter = new Emitter<WillResolveDebugConfiguration>();
-  readonly onWillResolveDebugConfiguration: Event<WillResolveDebugConfiguration> = this.onWillResolveDebugConfigurationEmitter.event;
+  readonly onWillResolveDebugConfiguration: Event<WillResolveDebugConfiguration> =
+    this.onWillResolveDebugConfigurationEmitter.event;
 
   protected readonly onDidCreateDebugSessionEmitter = new Emitter<DebugSession>();
   readonly onDidCreateDebugSession: Event<DebugSession> = this.onDidCreateDebugSessionEmitter.event;
@@ -75,13 +104,15 @@ export class DebugSessionManager implements IDebugSessionManager {
   readonly onDidStopDebugSession: Event<DebugSession> = this.onDidStopDebugSessionEmitter.event;
 
   protected readonly onDidChangeActiveDebugSessionEmitter = new Emitter<DidChangeActiveDebugSession>();
-  readonly onDidChangeActiveDebugSession: Event<DidChangeActiveDebugSession> = this.onDidChangeActiveDebugSessionEmitter.event;
+  readonly onDidChangeActiveDebugSession: Event<DidChangeActiveDebugSession> =
+    this.onDidChangeActiveDebugSessionEmitter.event;
 
   protected readonly onDidDestroyDebugSessionEmitter = new Emitter<DebugSession>();
   readonly onDidDestroyDebugSession: Event<DebugSession> = this.onDidDestroyDebugSessionEmitter.event;
 
   protected readonly onDidReceiveDebugSessionCustomEventEmitter = new Emitter<DebugSessionCustomEvent>();
-  readonly onDidReceiveDebugSessionCustomEvent: Event<DebugSessionCustomEvent> = this.onDidReceiveDebugSessionCustomEventEmitter.event;
+  readonly onDidReceiveDebugSessionCustomEvent: Event<DebugSessionCustomEvent> =
+    this.onDidReceiveDebugSessionCustomEventEmitter.event;
 
   protected readonly onDidChangeEmitter = new Emitter<DebugSession | undefined>();
   readonly onDidChange: Event<DebugSession | undefined> = this.onDidChangeEmitter.event;
@@ -154,8 +185,7 @@ export class DebugSessionManager implements IDebugSessionManager {
         const uri = URI.parse(newModelUrl.toString());
         const model = this.modelManager.model;
         if (this.currentSession && this.currentThread && model) {
-          const frame = this.currentThread.frames.find(
-            (f) => f.source?.uri.toString() === uri.toString());
+          const frame = this.currentThread.frames.find((f) => f.source?.uri.toString() === uri.toString());
           if (frame && frame !== this.currentFrame) {
             this.currentThread.currentFrame = frame;
             setTimeout(() => {
@@ -169,7 +199,10 @@ export class DebugSessionManager implements IDebugSessionManager {
     });
   }
 
-  private _getExtra(sessionId: string | undefined, threadId: number | string | undefined): DebugThreadExtra | undefined {
+  private _getExtra(
+    sessionId: string | undefined,
+    threadId: number | string | undefined,
+  ): DebugThreadExtra | undefined {
     if (sessionId == null) {
       return;
     }
@@ -180,7 +213,7 @@ export class DebugSessionManager implements IDebugSessionManager {
         remote: data.remote,
         adapterID: data.adapterID,
         request: data.request,
-        ...threadId && data.threads.get(`${threadId}`),
+        ...(threadId && data.threads.get(`${threadId}`)),
       };
     }
   }
@@ -286,7 +319,9 @@ export class DebugSessionManager implements IDebugSessionManager {
           const timeTask = this.reportTime(DEBUG_REPORT_NAME.DEBUG_PRE_LAUNCH_TASK_TIME, extra);
           const result = await this.taskService.run(task);
           if (result.exitCode !== 0) {
-            this.messageService.error(`The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`);
+            this.messageService.error(
+              `The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`,
+            );
           }
           timeTask(workspaceFolderUri.toString(), {
             exitCode: result.exitCode,
@@ -334,7 +369,7 @@ export class DebugSessionManager implements IDebugSessionManager {
         // 当返回值为 `null` 时，打开配置文件
         this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
       }
-      return ;
+      return;
     }
     configuration = await this.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
     if (!configuration) {
@@ -343,7 +378,7 @@ export class DebugSessionManager implements IDebugSessionManager {
         // 当返回值为 `null` 时，打开配置文件
         this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
       }
-      return ;
+      return;
     }
     const key = configuration.name + workspaceFolderUri;
     const id = this.configurationIds.has(key) ? this.configurationIds.get(key)! + 1 : 0;
@@ -361,12 +396,18 @@ export class DebugSessionManager implements IDebugSessionManager {
     };
   }
 
-  async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  async resolveDebugConfiguration(
+    configuration: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     await this.fireWillResolveDebugConfiguration(configuration.type);
     return this.debug.resolveDebugConfiguration(configuration, workspaceFolderUri);
   }
 
-  protected async resolveDebugConfigurationWithSubstitutedVariables(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration | undefined | null> {
+  protected async resolveDebugConfigurationWithSubstitutedVariables(
+    configuration: DebugConfiguration,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration | undefined | null> {
     return this.debug.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
   }
 
@@ -374,7 +415,11 @@ export class DebugSessionManager implements IDebugSessionManager {
     await WaitUntilEvent.fire(this.onWillResolveDebugConfigurationEmitter, { debugType });
   }
 
-  protected async doStart(sessionId: string, options: DebugSessionOptions, extra: DebugSessionExtra): Promise<DebugSession> {
+  protected async doStart(
+    sessionId: string,
+    options: DebugSessionOptions,
+    extra: DebugSessionExtra,
+  ): Promise<DebugSession> {
     const contrib = this.sessionContributionRegistry.get(options.configuration.type);
     const sessionFactory = contrib ? contrib.debugSessionFactory() : this.debugSessionFactory;
     const session = sessionFactory.get(sessionId, options);
@@ -493,15 +538,19 @@ export class DebugSessionManager implements IDebugSessionManager {
     this._currentSession = current;
     this.onDidChangeActiveDebugSessionEmitter.fire({ previous, current });
     if (current) {
-      this.toDisposeOnCurrentSession.push(current.onDidChange(() => {
-        if (this.currentFrame === this.topFrame) {
-          this.open();
-        }
-        this.fireDidChange(current);
-      }));
-      this.toDisposeOnCurrentSession.push(current.onCurrentThreadChange(() => {
-        this.fireDidChange(current);
-      }));
+      this.toDisposeOnCurrentSession.push(
+        current.onDidChange(() => {
+          if (this.currentFrame === this.topFrame) {
+            this.open();
+          }
+          this.fireDidChange(current);
+        }),
+      );
+      this.toDisposeOnCurrentSession.push(
+        current.onCurrentThreadChange(() => {
+          this.fireDidChange(current);
+        }),
+      );
     }
     this.open();
     this.fireDidChange(current);
@@ -519,7 +568,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       return disconnect ? session.disconnect() : session.terminate();
     }
 
-    return Promise.all(this.sessions.map((s) => disconnect ? s.disconnect() : s.terminate()));
+    return Promise.all(this.sessions.map((s) => (disconnect ? s.disconnect() : s.terminate())));
   }
 
   /**

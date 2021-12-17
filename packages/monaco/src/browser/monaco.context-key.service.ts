@@ -1,15 +1,34 @@
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { ContextKeyExpression, IContextKeyServiceTarget, ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpression,
+  IContextKeyServiceTarget,
+  ContextKeyExpr,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { KeybindingResolver } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
-import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import {
+  ConfigurationTarget,
+  IConfigurationChangeEvent,
+  IConfigurationService,
+  IConfigurationOverrides,
+  IConfigurationData,
+  IConfigurationValue,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { Emitter as EventEmitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 import {
-  IContextKey, Event,
+  IContextKey,
+  Event,
   IContextKeyService,
-  ContextKeyChangeEvent, getDebugLogger, Emitter,
-  IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope, PreferenceSchemaProvider, createPreferenceProxy,
+  ContextKeyChangeEvent,
+  getDebugLogger,
+  Emitter,
+  IScopedContextKeyService,
+  PreferenceService,
+  PreferenceChanges,
+  PreferenceScope,
+  PreferenceSchemaProvider,
+  createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
 import { Disposable, ILogger } from '@opensumi/ide-core-common';
 import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
@@ -114,7 +133,9 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     if (workspaceFolderScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
         affectedKeys: workspaceFolderScopeChanges.map((n) => n.preferenceName),
-        source: this.workspaceService.isMultiRootWorkspaceOpened ? ConfigurationTarget.WORKSPACE_FOLDER : ConfigurationTarget.WORKSPACE,
+        source: this.workspaceService.isMultiRootWorkspaceOpened
+          ? ConfigurationTarget.WORKSPACE_FOLDER
+          : ConfigurationTarget.WORKSPACE,
         change: {
           keys: [],
           overrides: [],
@@ -137,11 +158,19 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     } else {
       section = sectionOrOverrides;
     }
-    const overrideIdentifier = overrides && 'overrideIdentifier' in overrides && overrides['overrideIdentifier'] as string || undefined;
-    const resourceUri = overrides && 'resource' in overrides && !!overrides['resource'] && overrides['resource'].toString();
-    const proxy = createPreferenceProxy<{ [key: string]: any }>(this.preferenceService, this.preferenceSchemaProvider.getCombinedSchema(), {
-      resourceUri: (resourceUri || undefined), overrideIdentifier, style: 'both',
-    });
+    const overrideIdentifier =
+      (overrides && 'overrideIdentifier' in overrides && (overrides['overrideIdentifier'] as string)) || undefined;
+    const resourceUri =
+      overrides && 'resource' in overrides && !!overrides['resource'] && overrides['resource'].toString();
+    const proxy = createPreferenceProxy<{ [key: string]: any }>(
+      this.preferenceService,
+      this.preferenceSchemaProvider.getCombinedSchema(),
+      {
+        resourceUri: resourceUri || undefined,
+        overrideIdentifier,
+        style: 'both',
+      },
+    );
     if (section) {
       return proxy[section] as T;
     }
@@ -149,27 +178,55 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   }
 
   public async updateValue(key: string, value: any): Promise<void>;
-  public async updateValue(key: string, value: any, targetOrOverrides?: ConfigurationTarget | IConfigurationOverrides, target?: ConfigurationTarget, donotNotifyError?: boolean): Promise<void> {
+  public async updateValue(
+    key: string,
+    value: any,
+    targetOrOverrides?: ConfigurationTarget | IConfigurationOverrides,
+    target?: ConfigurationTarget,
+    donotNotifyError?: boolean,
+  ): Promise<void> {
     let scope: PreferenceScope = PreferenceScope.Default;
     if (typeof target === 'number') {
       scope = this.getPreferenceScope(target);
     } else if (typeof targetOrOverrides === 'number') {
       scope = this.getPreferenceScope(targetOrOverrides);
     }
-    const overrideIdentifier = typeof targetOrOverrides === 'object' && 'overrideIdentifier' in targetOrOverrides && targetOrOverrides['overrideIdentifier'] as string || undefined;
-    const resourceUri = typeof targetOrOverrides === 'object' && 'resource' in targetOrOverrides && !!targetOrOverrides['resource'] && targetOrOverrides['resource'].toString();
+    const overrideIdentifier =
+      (typeof targetOrOverrides === 'object' &&
+        'overrideIdentifier' in targetOrOverrides &&
+        (targetOrOverrides['overrideIdentifier'] as string)) ||
+      undefined;
+    const resourceUri =
+      typeof targetOrOverrides === 'object' &&
+      'resource' in targetOrOverrides &&
+      !!targetOrOverrides['resource'] &&
+      targetOrOverrides['resource'].toString();
 
     this.preferenceService.set(key, value, scope, resourceUri || '', overrideIdentifier);
   }
 
   public inspect<T>(key: string, overrides?: IConfigurationOverrides): IConfigurationValue<T> {
-    const overrideIdentifier = typeof overrides === 'object' && 'overrideIdentifier' in overrides && overrides['overrideIdentifier'] as string || undefined;
-    const resourceUri = typeof overrides === 'object' && 'resource' in overrides && !!overrides['resource'] && overrides['resource'].toString();
+    const overrideIdentifier =
+      (typeof overrides === 'object' &&
+        'overrideIdentifier' in overrides &&
+        (overrides['overrideIdentifier'] as string)) ||
+      undefined;
+    const resourceUri =
+      typeof overrides === 'object' &&
+      'resource' in overrides &&
+      !!overrides['resource'] &&
+      overrides['resource'].toString();
     const value = this.preferenceService.inspect(key, resourceUri || '', overrideIdentifier);
-    const effectValue = typeof value?.workspaceFolderValue !== 'undefined' ? value?.workspaceFolderValue :
-    typeof value?.workspaceValue !== 'undefined' ? value?.workspaceValue :
-    typeof value?.globalValue !== 'undefined' ? value?.globalValue :
-    typeof value?.defaultValue !== 'undefined' ? value?.defaultValue : undefined;
+    const effectValue =
+      typeof value?.workspaceFolderValue !== 'undefined'
+        ? value?.workspaceFolderValue
+        : typeof value?.workspaceValue !== 'undefined'
+        ? value?.workspaceValue
+        : typeof value?.globalValue !== 'undefined'
+        ? value?.globalValue
+        : typeof value?.defaultValue !== 'undefined'
+        ? value?.defaultValue
+        : undefined;
 
     return {
       defaultValue: value?.defaultValue as T,
@@ -182,27 +239,27 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
       value: effectValue as T,
       default: {
         value: value?.defaultValue as T,
-        override: overrideIdentifier ? value?.defaultValue as T : undefined,
+        override: overrideIdentifier ? (value?.defaultValue as T) : undefined,
       },
       user: {
         value: value?.globalValue as T,
-        override: overrideIdentifier ? value?.globalValue as T : undefined,
+        override: overrideIdentifier ? (value?.globalValue as T) : undefined,
       },
       userLocal: {
         value: value?.globalValue as T,
-        override: overrideIdentifier ? value?.globalValue as T : undefined,
+        override: overrideIdentifier ? (value?.globalValue as T) : undefined,
       },
       userRemote: {
         value: value?.globalValue as T,
-        override: overrideIdentifier ? value?.globalValue as T : undefined,
+        override: overrideIdentifier ? (value?.globalValue as T) : undefined,
       },
       workspace: {
         value: value?.workspaceValue as T,
-        override: overrideIdentifier ? value?.workspaceValue as T : undefined,
+        override: overrideIdentifier ? (value?.workspaceValue as T) : undefined,
       },
       workspaceFolder: {
         value: value?.workspaceFolderValue as T,
-        override: overrideIdentifier ? value?.workspaceFolderValue as T : undefined,
+        override: overrideIdentifier ? (value?.workspaceFolderValue as T) : undefined,
       },
       overrideIdentifiers: overrideIdentifier ? [overrideIdentifier] : undefined,
     };
@@ -291,7 +348,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
       // https://github.com/microsoft/vscode/commit/c88888aa9bcc76b05779edb21c19eb8c7ebac787
       const domNode = target || document.createElement('div');
       const scopedContextKeyService = this.contextKeyService.createScoped(domNode as IContextKeyServiceTarget);
-      return this.injector.get(ScopedContextKeyService, [scopedContextKeyService  as ContextKeyService]);
+      return this.injector.get(ScopedContextKeyService, [scopedContextKeyService as ContextKeyService]);
     }
   }
 
@@ -306,7 +363,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     let expression = this.expressions.get(when);
     if (!expression) {
       const parsedExpr = ContextKeyExpr.deserialize(when) as unknown;
-      expression = parsedExpr ? parsedExpr as ContextKeyExpression : undefined;
+      expression = parsedExpr ? (parsedExpr as ContextKeyExpression) : undefined;
       this.expressions.set(when, expression);
     }
     return expression;
@@ -321,7 +378,6 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
 
 @Injectable()
 export class MonacoContextKeyService extends BaseContextKeyService implements IContextKeyService {
-
   @Autowired(IConfigurationService)
   protected readonly configurationService: IConfigurationService;
 
@@ -336,7 +392,8 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
   match(expression: string | ContextKeyExpression | undefined, context?: HTMLElement): boolean {
     try {
       // keybinding 将 html target 传递过来完成激活区域的 context 获取和匹配
-      const ctx = context || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
+      const ctx =
+        context || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
       let parsed: ContextKeyExpression | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
@@ -392,6 +449,9 @@ class ScopedContextKeyService extends BaseContextKeyService implements IScopedCo
       this.contextKeyService['_domNode'].removeAttribute(KEYBINDING_CONTEXT_ATTR);
     }
     this.contextKeyService['_domNode'] = domNode;
-    this.contextKeyService['_domNode'].setAttribute(KEYBINDING_CONTEXT_ATTR, String(this.contextKeyService['_myContextId']));
+    this.contextKeyService['_domNode'].setAttribute(
+      KEYBINDING_CONTEXT_ATTR,
+      String(this.contextKeyService['_myContextId']),
+    );
   }
 }

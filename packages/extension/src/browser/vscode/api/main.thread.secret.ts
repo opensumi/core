@@ -20,10 +20,12 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
   constructor(@Optional(Symbol()) rpcProtocol: IRPCProtocol) {
     super();
     this._proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostSecret);
-    this.addDispose(this.credentialsService.onDidChangePassword((e) => {
-      const extensionId = e.service.substring(this.appConfig.uriScheme!.length);
-      this._proxy.$onDidChangePassword({ extensionId, key: e.account });
-    }));
+    this.addDispose(
+      this.credentialsService.onDidChangePassword((e) => {
+        const extensionId = e.service.substring(this.appConfig.uriScheme!.length);
+        this._proxy.$onDidChangePassword({ extensionId, key: e.account });
+      }),
+    );
   }
 
   private getFullKey(extensionId: string): string {
@@ -33,7 +35,7 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
   async $getPassword(extensionId: string, key: string): Promise<string | undefined> {
     const fullKey = this.getFullKey(extensionId);
     const password = await this.credentialsService.getPassword(fullKey, key);
-    const decrypted = password && await this.cryptrService.decrypt(password);
+    const decrypted = password && (await this.cryptrService.decrypt(password));
 
     if (decrypted) {
       try {

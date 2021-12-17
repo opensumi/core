@@ -12,10 +12,7 @@ export class DebugStackFrameData {
 }
 
 export class DebugStackFrame extends DebugStackFrameData {
-  constructor(
-    readonly thread: DebugThread,
-    readonly session: DebugSession,
-  ) {
+  constructor(readonly thread: DebugThread, readonly session: DebugSession) {
     super();
   }
 
@@ -100,7 +97,12 @@ export class DebugStackFrame extends DebugStackFrameData {
 
     const scopesContainingRange = nonExpensiveScopes
       .filter((scope) => scope.range() && Range.containsRange(scope.range()!, range))
-      .sort((first, second) => (first.range()!.endLineNumber - first.range()!.startLineNumber) - (second.range()!.endLineNumber - second.range()!.startLineNumber));
+      .sort(
+        (first, second) =>
+          first.range()!.endLineNumber -
+          first.range()!.startLineNumber -
+          (second.range()!.endLineNumber - second.range()!.startLineNumber),
+      );
     return scopesContainingRange.length ? scopesContainingRange : nonExpensiveScopes;
   }
 }

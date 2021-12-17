@@ -1,4 +1,13 @@
-import { Domain, localize, CommandContribution, CommandRegistry, OPEN_EDITORS_COMMANDS, CommandService, FILE_COMMANDS, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  localize,
+  CommandContribution,
+  CommandRegistry,
+  OPEN_EDITORS_COMMANDS,
+  CommandService,
+  FILE_COMMANDS,
+  EDITOR_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Autowired } from '@opensumi/di';
 import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
@@ -13,8 +22,9 @@ import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
 @Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution)
-export class OpenedEditorContribution implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution {
-
+export class OpenedEditorContribution
+  implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution
+{
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
 
@@ -28,14 +38,17 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
   private readonly commandService: CommandService;
 
   async onStart() {
-    this.mainLayoutService.collectViewComponent({
-      id: ExplorerOpenedEditorViewId,
-      name: localize('opened.editors.title'),
-      weight: 1,
-      priority: 10,
-      collapsed: true,
-      component: ExplorerOpenEditorPanel,
-    }, ExplorerContainerId);
+    this.mainLayoutService.collectViewComponent(
+      {
+        id: ExplorerOpenedEditorViewId,
+        name: localize('opened.editors.title'),
+        weight: 1,
+        priority: 10,
+        collapsed: true,
+        component: ExplorerOpenEditorPanel,
+      },
+      ExplorerContainerId,
+    );
   }
 
   registerCommands(commands: CommandRegistry) {
@@ -69,7 +82,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
         if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
           group = (node.parent as EditorFileGroup).group;
         }
-        await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, {group, uri: node.uri});
+        await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, { group, uri: node.uri });
         // 提前移除节点
         (node.parent as EditorFileGroup).unlinkItem(node);
       },
@@ -91,7 +104,10 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
         if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
           groupIndex = (node.parent as EditorFileGroup).group.index;
         }
-        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, split: 4 /** right */ });
+        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, {
+          groupIndex,
+          split: 4 /** right */,
+        });
       },
     });
 
@@ -127,7 +143,6 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       viewId: ExplorerOpenedEditorViewId,
       label: localize('opened.editors.close.all'),
     });
-
   }
 
   registerMenus(menuRegistry: IMenuRegistry): void {

@@ -1,5 +1,12 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
-import { FileStat,
+import {
+  URI,
+  Event,
+  IFileServiceClient as IFileServiceClientToken,
+  IDisposable,
+  FileSystemProviderCapabilities,
+} from '@opensumi/ide-core-common';
+import {
+  FileStat,
   FileMoveOptions,
   FileDeleteOptions,
   FileSetContentOptions,
@@ -17,7 +24,6 @@ import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
-
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;
@@ -46,11 +52,15 @@ export interface IFileServiceClient {
    */
   getFileStat(uri: string, withChildren?: boolean): Promise<FileStat | undefined>;
 
-  getFileType(uri: string): Promise<string|undefined>;
+  getFileType(uri: string): Promise<string | undefined>;
 
   setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat | void>;
 
-  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<void | FileStat>;
+  updateContent(
+    file: FileStat,
+    contentChanges: TextDocumentContentChangeEvent[],
+    options?: FileSetContentOptions,
+  ): Promise<void | FileStat>;
 
   createFile(uri: string, options?: FileCreateOptions): Promise<FileStat>;
 
@@ -86,7 +96,7 @@ export interface IFileServiceClient {
 
   isReadonly(uri: string): Promise<boolean>;
 
-  listCapabilities(): Iterable<{ scheme: string, capabilities: FileSystemProviderCapabilities }>;
+  listCapabilities(): Iterable<{ scheme: string; capabilities: FileSystemProviderCapabilities }>;
 
   readonly onDidChangeFileSystemProviderRegistrations: Event<IFileSystemProviderRegistrationEvent>;
 
@@ -94,9 +104,7 @@ export interface IFileServiceClient {
 }
 
 export interface IBrowserFileSystemRegistry {
-
   registerFileSystemProvider(provider: IFileSystemProvider): IDisposable;
-
 }
 
 export const IBrowserFileSystemRegistry = Symbol('IBrowserFileSystemRegistry');

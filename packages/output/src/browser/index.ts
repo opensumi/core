@@ -5,9 +5,7 @@ import { bindOutputPreference } from './output-preference';
 
 @Injectable()
 export class OutputModule extends BrowserModule {
-  providers: Provider[] = [
-    OutputContribution,
-  ];
+  providers: Provider[] = [OutputContribution];
 
   preferences = bindOutputPreference;
 }

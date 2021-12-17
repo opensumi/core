@@ -3,7 +3,6 @@ import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from
 
 export type TVariableResolve = string | undefined | { [x: string]: string | undefined };
 export interface Variable {
-
   /**
    * 变量名，也作为唯一标识使用
    */
@@ -37,7 +36,6 @@ export interface VariableRegistry {
 
 @Injectable()
 export class VariableRegistryImpl implements IDisposable {
-
   protected readonly variables: Map<string, Variable> = new Map();
   protected readonly toDispose = new DisposableCollection();
 
@@ -51,7 +49,6 @@ export class VariableRegistryImpl implements IDisposable {
    */
   registerVariable(variable: Variable): IDisposable {
     if (this.variables.has(variable.name)) {
-      // tslint:disable-next-line:no-console
       console.warn(`A variables with name ${variable.name} is already registered.`);
       return Disposable.NULL;
     }

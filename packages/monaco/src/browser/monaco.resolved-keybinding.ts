@@ -1,12 +1,29 @@
-import { ChordKeybinding, KeybindingModifier, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-import { AriaLabelProvider, Modifiers, UILabelProvider } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
+import {
+  ChordKeybinding,
+  KeybindingModifier,
+  ResolvedKeybinding,
+  ResolvedKeybindingPart,
+  SimpleKeybinding,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+import {
+  AriaLabelProvider,
+  Modifiers,
+  UILabelProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
 import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
-import { KeySequence, KeybindingRegistry, Key, isOSX, KeyModifier, KeyCode, Keystroke } from '@opensumi/ide-core-browser';
+import {
+  KeySequence,
+  KeybindingRegistry,
+  Key,
+  isOSX,
+  KeyModifier,
+  KeyCode,
+  Keystroke,
+} from '@opensumi/ide-core-browser';
 import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { KeyCode as MonacoKeyCode } from '@opensumi/monaco-editor-core';
 import * as platform from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
-
   protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];
 
   constructor(protected readonly keySequence: KeySequence, keybindingService: KeybindingRegistry) {
@@ -23,13 +40,19 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   }
 
   public getLabel(): string | null {
-    return UILabelProvider
-      .toLabel(platform.OS, this.parts.map((part) => part.modifiers), this.keyLabelProvider);
+    return UILabelProvider.toLabel(
+      platform.OS,
+      this.parts.map((part) => part.modifiers),
+      this.keyLabelProvider,
+    );
   }
 
   public getAriaLabel(): string | null {
-    return AriaLabelProvider
-      .toLabel(platform.OS, this.parts.map((part) => part.modifiers), this.keyLabelProvider);
+    return AriaLabelProvider.toLabel(
+      platform.OS,
+      this.parts.map((part) => part.modifiers),
+      this.keyLabelProvider,
+    );
   }
 
   public getElectronAccelerator(): string | null {
@@ -51,13 +74,15 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   public getDispatchParts(): (string | null)[] {
     return this.parts.map((part, index) => {
       const keyCode = KEY_CODE_MAP[this.keySequence[index].key!.keyCode];
-      return USLayoutResolvedKeybinding.getDispatchStr(new SimpleKeybinding(
-        part.modifiers.ctrlKey,
-        part.modifiers.shiftKey,
-        part.modifiers.altKey,
-        part.modifiers.metaKey,
-        keyCode,
-      ));
+      return USLayoutResolvedKeybinding.getDispatchStr(
+        new SimpleKeybinding(
+          part.modifiers.ctrlKey,
+          part.modifiers.shiftKey,
+          part.modifiers.altKey,
+          part.modifiers.metaKey,
+          keyCode,
+        ),
+      );
     });
   }
 
@@ -66,14 +91,17 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   }
 
   public getParts(): ResolvedKeybindingPart[] {
-    return this.parts.map((part) => new ResolvedKeybindingPart(
-      part.modifiers.ctrlKey,
-      part.modifiers.shiftKey,
-      part.modifiers.altKey,
-      part.modifiers.metaKey,
-      part.modifiers.key!,
-      part.modifiers.key!,
-    ));
+    return this.parts.map(
+      (part) =>
+        new ResolvedKeybindingPart(
+          part.modifiers.ctrlKey,
+          part.modifiers.shiftKey,
+          part.modifiers.altKey,
+          part.modifiers.metaKey,
+          part.modifiers.key!,
+          part.modifiers.key!,
+        ),
+    );
   }
 
   private keyLabelProvider<T extends Modifiers & { key: string | null }>(keybinding: T): string | null {

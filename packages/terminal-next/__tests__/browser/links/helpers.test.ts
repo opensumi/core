@@ -7,7 +7,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'AA http://t', width: 11 },
       { text: '.com/f/', width: 8 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 1 },
       end: { x: 7, y: 2 },
@@ -18,7 +23,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A文 http://', width: 11 },
       { text: 't.com/f/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4 + 1, y: 1 },
       end: { x: 7 + 1, y: 2 },
@@ -29,7 +39,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A🙂 http://', width: 11 },
       { text: 't.com/f/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4 + 1, startLineNumber: 1, endColumn: 19 + 1, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4 + 1, startLineNumber: 1, endColumn: 19 + 1, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 1 },
       end: { x: 7, y: 2 },
@@ -40,7 +55,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'AA http://t', width: 11 },
       { text: '.com/文/', width: 8 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 1 },
       end: { x: 7 + 1, y: 2 },
@@ -51,7 +71,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A文 http://', width: 11 },
       { text: 't.com/文/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4, startLineNumber: 1, endColumn: 19, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4 + 1, y: 1 },
       end: { x: 7 + 2, y: 2 },
@@ -62,7 +87,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A🙂 http://', width: 11 },
       { text: 't.com/文/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 4 + 1, startLineNumber: 1, endColumn: 19 + 1, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 4 + 1, startLineNumber: 1, endColumn: 19 + 1, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 1 },
       end: { x: 7 + 1, y: 2 },
@@ -74,7 +104,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'AA http://t', width: 11 },
       { text: '.com/f/', width: 8 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 2 },
       end: { x: 7, y: 3 },
@@ -86,7 +121,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A文 http://', width: 11 },
       { text: 't.com/f/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4 + 1, y: 2 },
       end: { x: 7 + 1, y: 3 },
@@ -98,7 +138,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'AA http://t', width: 11 },
       { text: '.com/文/', width: 8 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4, y: 2 },
       end: { x: 7 + 1, y: 3 },
@@ -110,7 +155,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'A文 http://', width: 11 },
       { text: 't.com/文/', width: 9 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 },
+      0,
+    );
     expect(bufferRange).toEqual({
       start: { x: 4 + 1, y: 2 },
       end: { x: 7 + 2, y: 3 },
@@ -122,7 +172,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: 'AA文文 http', width: 11 },
       { text: '://t.com/f/', width: 11 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 30, endLineNumber: 1 },
+      0,
+    );
     // This test ensures that the start offset is applies to the end before it's counted
     expect(bufferRange).toEqual({
       start: { x: 4 + 4, y: 2 },
@@ -136,7 +191,12 @@ describe('convertLinkRangeToBuffer', () => {
       { text: '://t.com/文', width: 11 },
       { text: '文/', width: 3 },
     ]);
-    const bufferRange = convertLinkRangeToBuffer(lines, 11, { startColumn: 15, startLineNumber: 1, endColumn: 31, endLineNumber: 1 }, 0);
+    const bufferRange = convertLinkRangeToBuffer(
+      lines,
+      11,
+      { startColumn: 15, startLineNumber: 1, endColumn: 31, endLineNumber: 1 },
+      0,
+    );
     // This test ensures that the start offset is applies to the end before it's counted
     expect(bufferRange).toEqual({
       start: { x: 4 + 4, y: 2 },
@@ -148,26 +208,16 @@ describe('convertLinkRangeToBuffer', () => {
 const TEST_WIDE_CHAR = '文';
 const TEST_NULL_CHAR = 'C';
 
-function createBufferLineArray(lines: { text: string, width: number }[]): IBufferLine[] {
+function createBufferLineArray(lines: { text: string; width: number }[]): IBufferLine[] {
   const result: IBufferLine[] = [];
   lines.forEach((l, i) => {
-    result.push(new TestBufferLine(
-      l.text,
-      l.width,
-      i + 1 !== lines.length,
-    ));
+    result.push(new TestBufferLine(l.text, l.width, i + 1 !== lines.length));
   });
   return result;
 }
 
 class TestBufferLine implements IBufferLine {
-  constructor(
-    private _text: string,
-    public length: number,
-    public isWrapped: boolean,
-  ) {
-
-  }
+  constructor(private _text: string, public length: number, public isWrapped: boolean) {}
   getCell(x: number): IBufferCell | undefined {
     // Create a fake line of cells and use that to resolve the width
     const cells: string[] = [];
@@ -187,14 +237,15 @@ class TestBufferLine implements IBufferLine {
       }
     }
     return {
-      getChars: () => {
-        return x >= cells.length ? '' : cells[x];
-      },
+      getChars: () => (x >= cells.length ? '' : cells[x]),
       getWidth: () => {
         switch (cells[x]) {
-          case TEST_WIDE_CHAR: return 2;
-          case TEST_NULL_CHAR: return 0;
-          default: return 1;
+          case TEST_WIDE_CHAR:
+            return 2;
+          case TEST_NULL_CHAR:
+            return 0;
+          default:
+            return 1;
         }
       },
     } as any;

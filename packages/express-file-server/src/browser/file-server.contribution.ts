@@ -1,11 +1,13 @@
 import { Domain, URI, AppConfig } from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
-import { StaticResourceContribution, StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
+import {
+  StaticResourceContribution,
+  StaticResourceService,
+} from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { EXPRESS_SERVER_PATH } from '../common';
 
 @Domain(StaticResourceContribution)
 export class ExpressFileServerContribution implements StaticResourceContribution {
-
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
@@ -25,5 +27,4 @@ export class ExpressFileServerContribution implements StaticResourceContribution
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });
   }
-
 }

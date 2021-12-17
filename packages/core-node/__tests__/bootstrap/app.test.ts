@@ -15,15 +15,18 @@ describe('ServerApp', () => {
 
   beforeAll(() => {
     injector = createNodeInjector([]);
-    injector.addProviders({
-      token: INodeLogger,
-      useValue: mockNodeLogger,
-    }, {
-      token: ILogServiceManager,
-      useValue: {
-        getLogger: () => console,
+    injector.addProviders(
+      {
+        token: INodeLogger,
+        useValue: mockNodeLogger,
       },
-    });
+      {
+        token: ILogServiceManager,
+        useValue: {
+          getLogger: () => console,
+        },
+      },
+    );
   });
 
   afterAll(() => {
@@ -34,9 +37,7 @@ describe('ServerApp', () => {
     const rpcListenPath = normalizedIpcHandlerPath('NODE-TEST', true);
     const app = new ServerApp({
       injector,
-      modules: [
-        ServerCommonModule,
-      ],
+      modules: [ServerCommonModule],
       webSocketHandler: [],
       logDir: path.join(__dirname, 'logs'),
       processCloseExitThreshold: 0,
@@ -57,9 +58,7 @@ describe('ServerApp', () => {
     const koa = new Koa();
     const app = new ServerApp({
       injector,
-      modules: [
-        ServerCommonModule,
-      ],
+      modules: [ServerCommonModule],
       use: koa.use.bind(koa),
       webSocketHandler: [],
       logDir: path.join(__dirname, 'logs'),
@@ -75,5 +74,4 @@ describe('ServerApp', () => {
       });
     });
   });
-
 });

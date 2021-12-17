@@ -76,39 +76,47 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
 
     const disposable = new DisposableCollection();
 
-    disposable.push(session.onDidChange(() => {
-      setThreads([...session.threads]);
-    }));
+    disposable.push(
+      session.onDidChange(() => {
+        setThreads([...session.threads]);
+      }),
+    );
 
-    disposable.push(session.onDidThread(async ({ body: { reason } }) => {
-      if (!session.supportsThreadIdCorrespond) {
-        return;
-      }
+    disposable.push(
+      session.onDidThread(async ({ body: { reason } }) => {
+        if (!session.supportsThreadIdCorrespond) {
+          return;
+        }
 
-      if (session.state === DebugState.Stopped && reason === 'started') {
+        if (session.state === DebugState.Stopped && reason === 'started') {
+          await fetchOtherThreads();
+        }
+      }),
+    );
+
+    disposable.push(
+      session.onDidStop(async () => {
+        if (!session.supportsThreadIdCorrespond) {
+          return;
+        }
+
+        const multipleThreads = Array.from(session.multipleThreadPaused.values());
+        setMultipleThreadPaused(multipleThreads);
+
         await fetchOtherThreads();
-      }
-    }));
+      }),
+    );
 
-    disposable.push(session.onDidStop(async () => {
-      if (!session.supportsThreadIdCorrespond) {
-        return;
-      }
+    disposable.push(
+      session.onDidContinued(async () => {
+        if (!session.supportsThreadIdCorrespond) {
+          return;
+        }
 
-      const multipleThreads = Array.from(session.multipleThreadPaused.values());
-      setMultipleThreadPaused(multipleThreads);
-
-      await fetchOtherThreads();
-    }));
-
-    disposable.push(session.onDidContinued(async () => {
-      if (!session.supportsThreadIdCorrespond) {
-        return;
-      }
-
-      const multipleThreads = Array.from(session.multipleThreadPaused.values());
-      setMultipleThreadPaused(multipleThreads);
-    }));
+        const multipleThreads = Array.from(session.multipleThreadPaused.values());
+        setMultipleThreadPaused(multipleThreads);
+      }),
+    );
 
     return () => {
       disposable.dispose();
@@ -122,12 +130,23 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     }
 
     if (supportsThreadIdCorrespond && unfold) {
-      return loading
-      ? <div className={ styles.debug_stack_item_loading }>
-        <span>正在加载线程...</span>
-      </div>
-      : otherThreads.map((thread) =>
-        !session.hasInMultipleThreadPaused(thread.raw.id) && <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session } />,
+      return loading ? (
+        <div className={styles.debug_stack_item_loading}>
+          <span>正在加载线程...</span>
+        </div>
+      ) : (
+        otherThreads.map(
+          (thread) =>
+            !session.hasInMultipleThreadPaused(thread.raw.id) && (
+              <DebugStackThreadView
+                key={thread.id}
+                indent={mutipleSession ? 16 : 0}
+                viewState={viewState}
+                thread={thread}
+                session={session}
+              />
+            ),
+        )
       );
     }
   };
@@ -152,64 +171,65 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   if (isIncompressible(session)) {
     const sub = findSubSessions();
     return (
-      <div className={ styles.debug_stack_item }>
-        {
-          sub.map((s) => <DebugStackSessionView key={s.id} viewState={ viewState } session={ s } indent={1} />)
-        }
+      <div className={styles.debug_stack_item}>
+        {sub.map((s) => (
+          <DebugStackSessionView key={s.id} viewState={viewState} session={s} indent={1} />
+        ))}
       </div>
     );
   }
 
   return (
     <div
-      className={ styles.debug_stack_item }
-      onContextMenu={ (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => debugCallStackService.handleContextMenu(event, session)}
+      className={styles.debug_stack_item}
+      onContextMenu={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
+        debugCallStackService.handleContextMenu(event, session)
+      }
     >
-      <div style={{paddingLeft: indent * 10 + 'px'}}>
-        {
-          mutipleSession &&
+      <div style={{ paddingLeft: indent * 10 + 'px' }}>
+        {mutipleSession && (
           <div
-            className={ styles.debug_stack_item_label }
-            onMouseEnter={ () => setHover(true) }
-            onMouseLeave={ () => setHover(false) }
+            className={styles.debug_stack_item_label}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
           >
-            {
-              (supportsThreadIdCorrespond || threads.length > 0) &&
+            {(supportsThreadIdCorrespond || threads.length > 0) && (
               <>
-                <div className={ unfold ? getIcon('down') : getIcon('right') } onClick={ () => setUnfold(!unfold) }></div>,
-                <div className={ cls([getIcon('debug'), styles.debug_session_icon]) }></div>,
+                <div className={unfold ? getIcon('down') : getIcon('right')} onClick={() => setUnfold(!unfold)}></div>,
+                <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>,
               </>
-            }
-            <div
-              className={ styles.debug_stack_item_label_title }
-            >
-              { session.label }
-            </div>
-            {
-              hover &&
-              <DebugStackOperationView session={ session } />
-            }
+            )}
+            <div className={styles.debug_stack_item_label_title}>{session.label}</div>
+            {hover && <DebugStackOperationView session={session} />}
           </div>
-        }
-        {
-          supportsThreadIdCorrespond && unfold
-          ? multipleThreadPaused.map((t) =>
-            <DebugStackThreadView key={ t.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ t } session={ session }/>)
-          : null
-        }
-        {
-          !supportsThreadIdCorrespond && (!mutipleSession || unfold) &&
-          threads.map((thread) =>
-            <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread }  session={ session } />)
-        }
-        {
-          subSession.length > 0 && subSession.map((s) => {
-            return unfold && <DebugStackSessionView key={s.id} viewState={ viewState } session={ s } indent={1} />;
-          })
-        }
-        {
-          renderLoadMoreThread()
-        }
+        )}
+        {supportsThreadIdCorrespond && unfold
+          ? multipleThreadPaused.map((t) => (
+              <DebugStackThreadView
+                key={t.id}
+                indent={mutipleSession ? 16 : 0}
+                viewState={viewState}
+                thread={t}
+                session={session}
+              />
+            ))
+          : null}
+        {!supportsThreadIdCorrespond &&
+          (!mutipleSession || unfold) &&
+          threads.map((thread) => (
+            <DebugStackThreadView
+              key={thread.id}
+              indent={mutipleSession ? 16 : 0}
+              viewState={viewState}
+              thread={thread}
+              session={session}
+            />
+          ))}
+        {subSession.length > 0 &&
+          subSession.map(
+            (s) => unfold && <DebugStackSessionView key={s.id} viewState={viewState} session={s} indent={1} />,
+          )}
+        {renderLoadMoreThread()}
       </div>
     </div>
   );

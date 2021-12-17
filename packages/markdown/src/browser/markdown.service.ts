@@ -8,7 +8,6 @@ import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 
 @Injectable()
 export class MarkdownServiceImpl implements IMarkdownService {
-
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
 
@@ -20,38 +19,46 @@ export class MarkdownServiceImpl implements IMarkdownService {
     return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme);
   }
 
-  async previewMarkdownInContainer(content: string, container: HTMLElement, cancellationToken: CancellationToken, onUpdate?: Event<string>): Promise<IDisposable> {
+  async previewMarkdownInContainer(
+    content: string,
+    container: HTMLElement,
+    cancellationToken: CancellationToken,
+    onUpdate?: Event<string>,
+  ): Promise<IDisposable> {
     const body = await this.getBody(content);
     if (cancellationToken.isCancellationRequested) {
       return new Disposable();
     }
 
     const disposer = new Disposable();
-    const webviewElement = this.webviewService.createWebview(
-      {
-        enableFindWidget: true,
-        localResourceRoots: [],
-      });
+    const webviewElement = this.webviewService.createWebview({
+      enableFindWidget: true,
+      localResourceRoots: [],
+    });
     webviewElement.appendTo(container);
     webviewElement.setContent(body);
 
-    disposer.addDispose(webviewElement.onDidClickLink((link) => {
-      if (!link) {
-        return;
-      }
-      // Whitelist supported schemes for links
-      if (this.isSupportedLink(link)) {
-        this.openerService.open(link);
-      }
-    }));
+    disposer.addDispose(
+      webviewElement.onDidClickLink((link) => {
+        if (!link) {
+          return;
+        }
+        // Whitelist supported schemes for links
+        if (this.isSupportedLink(link)) {
+          this.openerService.open(link);
+        }
+      }),
+    );
     disposer.addDispose(webviewElement);
     if (onUpdate) {
-      disposer.addDispose(onUpdate(async (content) => {
-        const body = await this.getBody(content);
-        if (!cancellationToken.isCancellationRequested) {
-          webviewElement.setContent(body);
-        }
-      }));
+      disposer.addDispose(
+        onUpdate(async (content) => {
+          const body = await this.getBody(content);
+          if (!cancellationToken.isCancellationRequested) {
+            webviewElement.setContent(body);
+          }
+        }),
+      );
     }
 
     return disposer;
@@ -67,7 +74,6 @@ export class MarkdownServiceImpl implements IMarkdownService {
       });
     });
   }
-
 }
 
 function renderBody(body: string): string {
@@ -93,14 +99,13 @@ function removeEmbeddedSVGs(documentContent: string): string {
   // remove all inline svgs
   const allSVGs = newDocument.documentElement.querySelectorAll('svg');
   if (allSVGs) {
-    /*tslint:disable */
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < allSVGs.length; i++) {
       const svg = allSVGs[i];
       if (svg.parentNode) {
         svg.parentNode.removeChild(allSVGs[i]);
       }
     }
-    /*tslint:enable */
   }
 
   return newDocument.documentElement.outerHTML;

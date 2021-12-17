@@ -130,8 +130,8 @@ export interface IBasicRecycleTreeProps {
    */
   onContextMenu?: (event: React.MouseEvent, node?: ITreeNodeOrCompositeTreeNode) => void;
   /**
-    * 箭头点击事件
-    */
+   * 箭头点击事件
+   */
   onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将有限执行 `onContextMenu` 函数

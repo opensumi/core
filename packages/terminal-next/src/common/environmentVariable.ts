@@ -1,11 +1,9 @@
 import { Event, OS } from '@opensumi/ide-core-common';
 import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 
-export const EnvironmentVariableServiceToken = Symbol(
-  'EnvironmentVariableServiceToken',
-);
+export const EnvironmentVariableServiceToken = Symbol('EnvironmentVariableServiceToken');
 
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -24,8 +22,7 @@ export interface IEnvironmentVariableCollectionWithPersistence extends IEnvironm
   readonly persistent: boolean;
 }
 
-export interface IExtensionOwnedEnvironmentVariableMutator
-  extends IEnvironmentVariableMutator {
+export interface IExtensionOwnedEnvironmentVariableMutator extends IEnvironmentVariableMutator {
   readonly extensionIdentifier: string;
 }
 
@@ -40,10 +37,7 @@ export interface IMergedEnvironmentVariableCollectionDiff {
  * together.
  */
 export interface IMergedEnvironmentVariableCollection {
-  readonly map: ReadonlyMap<
-    string,
-    IExtensionOwnedEnvironmentVariableMutator[]
-  >;
+  readonly map: ReadonlyMap<string, IExtensionOwnedEnvironmentVariableMutator[]>;
 
   /**
    * Applies this collection to a process environment.
@@ -60,13 +54,10 @@ export interface IMergedEnvironmentVariableCollection {
    * Generates a diff of this connection against another. Returns undefined if the collections are
    * the same.
    */
-  diff(
-    other: IMergedEnvironmentVariableCollection,
-  ): IMergedEnvironmentVariableCollectionDiff | undefined;
+  diff(other: IMergedEnvironmentVariableCollection): IMergedEnvironmentVariableCollectionDiff | undefined;
 }
 
 export interface IEnvironmentVariableService {
-
   initEnvironmentVariableCollections(): Promise<void>;
 
   /**
@@ -90,10 +81,7 @@ export interface IEnvironmentVariableService {
   /**
    * Sets an extension's environment variable collection.
    */
-  set(
-    extensionIdentifier: string,
-    collection: IEnvironmentVariableCollection,
-  ): void;
+  set(extensionIdentifier: string, collection: IEnvironmentVariableCollection): void;
 
   /**
    * Deletes an extension's environment variable collection.
@@ -105,16 +93,18 @@ export interface EnvironmentVariableCollection {
   readonly map: ReadonlyMap<string, EnvironmentVariableMutator>;
 }
 
-export interface EnvironmentVariableCollectionWithPersistence
-  extends EnvironmentVariableCollection {
+export interface EnvironmentVariableCollectionWithPersistence extends EnvironmentVariableCollection {
   readonly persistent: boolean;
 }
 
 export function mutatorTypeLabel(type: EnvironmentVariableMutatorType, value: string, variable: string): string {
   switch (type) {
-    case EnvironmentVariableMutatorType.Prepend: return `${variable}=${value}\${env:${variable}}`;
-    case EnvironmentVariableMutatorType.Append: return `${variable}=\${env:${variable}}${value}`;
-    default: return `${variable}=${value}`;
+    case EnvironmentVariableMutatorType.Prepend:
+      return `${variable}=${value}\${env:${variable}}`;
+    case EnvironmentVariableMutatorType.Append:
+      return `${variable}=\${env:${variable}}${value}`;
+    default:
+      return `${variable}=${value}`;
   }
 }
 
@@ -129,8 +119,7 @@ export interface EnvironmentVariableMutator {
   readonly type: EnvironmentVariableMutatorType;
 }
 
-export interface ExtensionOwnedEnvironmentVariableMutator
-  extends EnvironmentVariableMutator {
+export interface ExtensionOwnedEnvironmentVariableMutator extends EnvironmentVariableMutator {
   readonly extensionIdentifier: string;
 }
 
@@ -152,10 +141,7 @@ export interface SerializableExtensionEnvironmentVariableCollection {
   collection: SerializableEnvironmentVariableCollection;
 }
 
-export type SerializableEnvironmentVariableCollection = [
-  string,
-  EnvironmentVariableMutator
-][];
+export type SerializableEnvironmentVariableCollection = [string, EnvironmentVariableMutator][];
 
 export interface IEnvironmentVariableMutator {
   readonly value: string;
@@ -163,10 +149,7 @@ export interface IEnvironmentVariableMutator {
 }
 
 /** [variable, mutator] */
-export type ISerializableEnvironmentVariableCollection = [
-  string,
-  IEnvironmentVariableMutator
-][];
+export type ISerializableEnvironmentVariableCollection = [string, IEnvironmentVariableMutator][];
 
 export function serializeEnvironmentVariableCollection(
   collection: ReadonlyMap<string, IEnvironmentVariableMutator>,

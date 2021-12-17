@@ -7,16 +7,16 @@ const path = require('path');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const srcDir = path.join(__dirname, '../src/browser');
-const distDir = path.join(__dirname, '../app/dist/browser')
+const distDir = path.join(__dirname, '../app/dist/browser');
 
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
   node: {
-    net: "empty",
-    child_process: "empty",
+    net: 'empty',
+    child_process: 'empty',
     path: true,
     url: false,
-    fs: "empty",
+    fs: 'empty',
     Buffer: false,
     process: false,
   },
@@ -26,20 +26,23 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
-    plugins: [new TsconfigPathsPlugin({
-      configFile: tsConfigPath,
-    })]
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
   },
   mode: 'development',
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
-    rules: [{
+    rules: [
+      {
         test: /\.tsx?$/,
         loader: 'ts-loader',
         options: {
-          configFile: tsConfigPath
-        }
+          configFile: tsConfigPath,
+        },
       },
       {
         test: /\.png$/,
@@ -51,54 +54,59 @@ module.exports = {
       },
       {
         test: /\.module.less$/,
-        use: [{
-            loader: "style-loader"
+        use: [
+          {
+            loader: 'style-loader',
           },
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               sourceMap: true,
               modules: true,
-              localIdentName: "[local]___[hash:base64:5]"
-            }
+              localIdentName: '[local]___[hash:base64:5]',
+            },
           },
           {
-            loader: "less-loader",
+            loader: 'less-loader',
             options: {
               lessOptions: {
-                javascriptEnabled: true
-              }
-            }
-          }
-        ]
+                javascriptEnabled: true,
+              },
+            },
+          },
+        ],
       },
       {
         test: /^((?!\.module).)*less$/,
-        use: [{
-          loader: "style-loader"
-        },
-        {
-          loader: "css-loader",
-        },
-        {
-          loader: "less-loader",
-          options: {
-            lessOptions: {
-              javascriptEnabled: true
-            }
-          }
-        }]
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true,
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
-      }
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/',
+            },
+          },
+        ],
+      },
     ],
   },
   resolveLoader: {
@@ -109,7 +117,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(srcDir,'/index.html'),
+      template: path.join(srcDir, '/index.html'),
     }),
 
     new MiniCssExtractPlugin({
@@ -117,8 +125,11 @@ module.exports = {
       chunkFilename: '[id].css',
     }),
     new CopyPlugin([
-      { from: path.join(srcDir, './vendor'), to: distDir},
-      { from: require.resolve('@opensumi/ide-core-electron-main/browser-preload/index.js'), to: path.join(distDir,'preload.js')},
+      { from: path.join(srcDir, './vendor'), to: distDir },
+      {
+        from: require.resolve('@opensumi/ide-core-electron-main/browser-preload/index.js'),
+        to: path.join(distDir, 'preload.js'),
+      },
     ]),
   ],
 };

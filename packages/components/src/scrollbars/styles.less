@@ -5,11 +5,10 @@
 @kt-scrollbar-width: 10px;
 
 .kt-scrollbar {
-
   .scrollbar-thumb-vertical,
   .scrollbar-thumb-horizontal {
     opacity: 0;
-    transition: opacity .5s ease;
+    transition: opacity 0.5s ease;
     background: var(--scrollbarSlider-background);
     width: @kt-scrollbar-width;
     height: @kt-scrollbar-height;
@@ -24,7 +23,6 @@
 
   // 设置滚动条样式
   &:hover {
-
     .scrollbar-thumb-vertical,
     .scrollbar-thumb-horizontal {
       opacity: 1;
@@ -38,9 +36,6 @@
     width: 100%;
     height: 6px;
     z-index: 999;
-    box-shadow: var(--scrollbar-shadow)0 6px 6px -6px inset;
+    box-shadow: var(--scrollbar-shadow) 0 6px 6px -6px inset;
   }
 }
-
-
-

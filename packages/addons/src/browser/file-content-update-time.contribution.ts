@@ -1,7 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
-import { FileOperation, WorkspaceFileEvent, IWorkspaceFileOperationParticipant, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import {
+  FileOperation,
+  WorkspaceFileEvent,
+  IWorkspaceFileOperationParticipant,
+  IWorkspaceFileService,
+} from '@opensumi/ide-workspace-edit';
 import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@opensumi/ide-core-browser';
 import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -92,7 +97,7 @@ export class FileAndContentUpdateTimeContribution extends WithEventBus {
   @Autowired(PreferenceSchemaProvider)
   private readonly preferenceSchemaProvider: PreferenceSchemaProvider;
 
-  private _traceConfig: boolean = false;
+  private _traceConfig = false;
 
   private _markedFileUris = new StaleLRUMap<string, FileChangeMarker>(100, 50, 10 * 60 * 1000 /* 十分钟超时清理 */);
 
@@ -136,14 +141,14 @@ export class FileAndContentUpdateTimeContribution extends WithEventBus {
     );
 
     // AFTER file operation SUCCEED
-    this.addDispose(this.workspaceFileService.onDidRunWorkspaceFileOperation(
-      this._handleFileOperationDidRun.bind(this),
-    ));
+    this.addDispose(
+      this.workspaceFileService.onDidRunWorkspaceFileOperation(this._handleFileOperationDidRun.bind(this)),
+    );
 
     // AFTER file operation FAILED
-    this.addDispose(this.workspaceFileService.onDidFailWorkspaceFileOperation(
-      this._handleFileOperationDidFail.bind(this),
-    ));
+    this.addDispose(
+      this.workspaceFileService.onDidFailWorkspaceFileOperation(this._handleFileOperationDidFail.bind(this)),
+    );
   }
 
   private async fileOperationParticipant(...args: Parameters<IWorkspaceFileOperationParticipant['participate']>) {

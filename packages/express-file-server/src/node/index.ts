@@ -4,7 +4,5 @@ import { ExpressFileServerContribution } from './express-file-server.contributio
 
 @Injectable()
 export class ExpressFileServerModule extends NodeModule {
-  providers: Provider[] = [
-    ExpressFileServerContribution,
-  ];
+  providers: Provider[] = [ExpressFileServerContribution];
 }

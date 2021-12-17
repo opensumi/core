@@ -4,9 +4,26 @@ import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';
+import {
+  IMainThreadMessage,
+  IExtHostMessage,
+  IExtHostQuickOpen,
+  IMainThreadQuickOpen,
+  IMainThreadStatusBar,
+  IExtHostStatusBar,
+  IMainThreadOutput,
+  IExtHostOutput,
+  IExtHostWindowState,
+  IExtHostWindow,
+  IMainThreadWindow,
+} from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
-import { IMainThreadEditorsService, IExtensionHostEditorService, IMainThreadCustomEditor, IExtHostCustomEditor } from './editor';
+import {
+  IMainThreadEditorsService,
+  IExtensionHostEditorService,
+  IMainThreadCustomEditor,
+  IExtHostCustomEditor,
+} from './editor';
 import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
 import { IExtension, IExtensionHostService } from '..';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
@@ -38,7 +55,6 @@ import { IExtHostTests } from './tests';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
-
   $getExtensions(): Promise<IExtensionProps[]>;
 
   $activateExtension(extensionPath: string): Promise<void>;

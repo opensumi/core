@@ -10,11 +10,10 @@ export interface IExtHostEventPayload {
   eventArgs: Serializable[];
 }
 
-export class ExtHostEvent extends BasicEvent<IExtHostEventPayload> { }
+export class ExtHostEvent extends BasicEvent<IExtHostEventPayload> {}
 
 @Injectable()
 export abstract class IActivationEventService {
-
   abstract fireEvent(topic: string, data?: string): Promise<void>;
 
   abstract onEvent(event: string, listener): IDisposable;
@@ -22,7 +21,6 @@ export abstract class IActivationEventService {
   abstract addWildCardTopic(topic: string): IDisposable;
 
   activatedEventSet: Set<string>;
-
 }
 
 /**
@@ -84,26 +82,26 @@ export abstract class AbstractExtInstanceManagementService {
   abstract checkIsDevelopment(extensionMetaData: IExtensionMetaData): boolean;
 }
 
-export class ExtensionApiReadyEvent extends BasicEvent<void> { }
+export class ExtensionApiReadyEvent extends BasicEvent<void> {}
 
 /**
  * 扩展被激活前的事件
  */
-export class ExtensionBeforeActivateEvent extends BasicEvent<void> { }
+export class ExtensionBeforeActivateEvent extends BasicEvent<void> {}
 
-export class ExtensionWillActivateEvent extends BasicEvent<IExtension> { }
+export class ExtensionWillActivateEvent extends BasicEvent<IExtension> {}
 
-export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData> { }
+export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData> {}
 
 // 将激活的插件作为 payload 📢 出去
-export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> { }
+export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> {}
 
 /**
  * 插件卸载时的事件
  */
-export class ExtensionDidUninstalledEvent extends BasicEvent<void> { }
+export class ExtensionDidUninstalledEvent extends BasicEvent<void> {}
 
 /**
  * 插件启用时的事件
  */
-export class ExtensionDidEnabledEvent extends BasicEvent<IExtensionProps> { }
+export class ExtensionDidEnabledEvent extends BasicEvent<IExtensionProps> {}

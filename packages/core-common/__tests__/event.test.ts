@@ -1,911 +1,915 @@
 // copied from https://github.com/microsoft/vscode/blob/master/src/vs/base/test/common/event.test.ts
 // converted by [jest-codemods](https://github.com/skovhus/jest-codemods)
 
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter, EventBufferer, EventMultiplexer, PauseableEmitter, AsyncEmitter, WaitUntilEvent } from '../src/event';
+import {
+  Event,
+  Emitter,
+  EventBufferer,
+  EventMultiplexer,
+  PauseableEmitter,
+  AsyncEmitter,
+  WaitUntilEvent,
+} from '../src/event';
 import { IDisposable, Disposable } from '../src/disposable';
 import { errorHandler, setUnexpectedErrorHandler } from '../src/errors';
 import { timeout } from '../src/async';
 import { CancellationToken } from '../src/cancellation';
 
 function deepStrictEqual(a, b) {
-	expect(a).toEqual(b);
+  expect(a).toEqual(b);
 }
 
 function strictEqual(a, b) {
-	expect(a).toBe(b);
+  expect(a).toBe(b);
 }
 
 namespace Samples {
+  export class EventCounter {
+    count = 0;
 
-	export class EventCounter {
+    reset() {
+      this.count = 0;
+    }
 
-		count = 0;
+    onEvent() {
+      this.count += 1;
+    }
+  }
 
-		reset() {
-			this.count = 0;
-		}
+  export class Document3 {
+    private readonly _onDidChange = new Emitter<string>();
 
-		onEvent() {
-			this.count += 1;
-		}
-	}
+    onDidChange: Event<string> = this._onDidChange.event;
 
-	export class Document3 {
-
-		private readonly _onDidChange = new Emitter<string>();
-
-		onDidChange: Event<string> = this._onDidChange.event;
-
-		setText(value: string) {
-			//...
-			this._onDidChange.fire(value);
-		}
-
-	}
+    setText(value: string) {
+      // ...
+      this._onDidChange.fire(value);
+    }
+  }
 }
 
 describe('Event', () => {
+  const counter = new Samples.EventCounter();
 
-	const counter = new Samples.EventCounter();
+  beforeEach(() => counter.reset());
 
-	beforeEach(() => counter.reset());
+  test('Emitter plain', () => {
+    const doc = new Samples.Document3();
 
-	test('Emitter plain', () => {
+    document.createElement('div').onclick = function () {};
+    const subscription = doc.onDidChange(counter.onEvent, counter);
 
-		let doc = new Samples.Document3();
+    doc.setText('far');
+    doc.setText('boo');
 
-		document.createElement('div').onclick = function () { };
-		let subscription = doc.onDidChange(counter.onEvent, counter);
+    // unhook listener
+    subscription.dispose();
+    doc.setText('boo');
+    expect(counter.count).toBe(2);
+  });
 
-		doc.setText('far');
-		doc.setText('boo');
+  test('Emitter, bucket', () => {
+    const bucket: IDisposable[] = [];
+    const doc = new Samples.Document3();
+    const subscription = doc.onDidChange(counter.onEvent, counter, bucket);
 
-		// unhook listener
-		subscription.dispose();
-		doc.setText('boo');
-		expect(counter.count).toBe(2);
-	});
+    doc.setText('far');
+    doc.setText('boo');
 
+    // unhook listener
+    while (bucket.length) {
+      bucket.pop()!.dispose();
+    }
+    doc.setText('boo');
 
-	test('Emitter, bucket', () => {
+    // noop
+    subscription.dispose();
 
-		let bucket: IDisposable[] = [];
-		let doc = new Samples.Document3();
-		let subscription = doc.onDidChange(counter.onEvent, counter, bucket);
+    doc.setText('boo');
+    expect(counter.count).toBe(2);
+  });
 
-		doc.setText('far');
-		doc.setText('boo');
+  test('Emitter, store', () => {
+    const bucket = [Disposable.create(() => {})];
+    const doc = new Samples.Document3();
+    const subscription = doc.onDidChange(counter.onEvent, counter, bucket);
 
-		// unhook listener
-		while (bucket.length) {
-			bucket.pop()!.dispose();
-		}
-		doc.setText('boo');
+    doc.setText('far');
+    doc.setText('boo');
 
-		// noop
-		subscription.dispose();
+    // unhook listener
+    for (const dis of bucket) {
+      dis.dispose();
+    }
+    doc.setText('boo');
 
-		doc.setText('boo');
-		expect(counter.count).toBe(2);
-	});
+    // noop
+    subscription.dispose();
 
-	test('Emitter, store', () => {
+    doc.setText('boo');
+    expect(counter.count).toBe(2);
+  });
 
-		let bucket = [Disposable.create(() => {})];
-		let doc = new Samples.Document3();
-		let subscription = doc.onDidChange(counter.onEvent, counter, bucket);
+  test('onFirstAdd|onLastRemove', () => {
+    let firstCount = 0;
+    let lastCount = 0;
+    const a = new Emitter({
+      onFirstListenerAdd() {
+        firstCount += 1;
+      },
+      onLastListenerRemove() {
+        lastCount += 1;
+      },
+    });
 
-		doc.setText('far');
-		doc.setText('boo');
+    expect(firstCount).toBe(0);
+    expect(lastCount).toBe(0);
 
-		// unhook listener
-		for(const dis of bucket) {
-			dis.dispose();
-		}
-		doc.setText('boo');
+    let subscription = a.event(function () {});
+    expect(firstCount).toBe(1);
+    expect(lastCount).toBe(0);
 
-		// noop
-		subscription.dispose();
+    subscription.dispose();
+    expect(firstCount).toBe(1);
+    expect(lastCount).toBe(1);
 
-		doc.setText('boo');
-		expect(counter.count).toBe(2);
-	});
+    subscription = a.event(function () {});
+    expect(firstCount).toBe(2);
+    expect(lastCount).toBe(1);
+  });
 
-	test('onFirstAdd|onLastRemove', () => {
+  test('throwingListener', () => {
+    const origErrorHandler = errorHandler.getUnexpectedErrorHandler();
+    setUnexpectedErrorHandler(() => null);
 
-		let firstCount = 0;
-		let lastCount = 0;
-		let a = new Emitter({
-			onFirstListenerAdd() { firstCount += 1; },
-			onLastListenerRemove() { lastCount += 1; }
-		});
+    try {
+      const a = new Emitter<undefined>();
+      let hit = false;
+      a.event(function () {
+        // eslint-disable-next-line no-throw-literal
+        throw 9;
+      });
+      a.event(function () {
+        hit = true;
+      });
+      a.fire(undefined);
+      expect(hit).toBe(true);
+    } finally {
+      setUnexpectedErrorHandler(origErrorHandler);
+    }
+  });
 
-		expect(firstCount).toBe(0);
-		expect(lastCount).toBe(0);
+  test('reusing event function and context', () => {
+    let counter = 0;
+    function listener() {
+      counter += 1;
+    }
+    const context = {};
 
-		let subscription = a.event(function () { });
-		expect(firstCount).toBe(1);
-		expect(lastCount).toBe(0);
+    const emitter = new Emitter<undefined>();
+    const reg1 = emitter.event(listener, context);
+    const reg2 = emitter.event(listener, context);
 
-		subscription.dispose();
-		expect(firstCount).toBe(1);
-		expect(lastCount).toBe(1);
+    emitter.fire(undefined);
+    expect(counter).toBe(2);
 
-		subscription = a.event(function () { });
-		expect(firstCount).toBe(2);
-		expect(lastCount).toBe(1);
-	});
+    reg1.dispose();
+    emitter.fire(undefined);
+    expect(counter).toBe(3);
 
-	test('throwingListener', () => {
-		const origErrorHandler = errorHandler.getUnexpectedErrorHandler();
-		setUnexpectedErrorHandler(() => null);
+    reg2.dispose();
+    emitter.fire(undefined);
+    expect(counter).toBe(3);
+  });
 
-		try {
-			let a = new Emitter<undefined>();
-			let hit = false;
-			a.event(function () {
-				// eslint-disable-next-line no-throw-literal
-				throw 9;
-			});
-			a.event(function () {
-				hit = true;
-			});
-			a.fire(undefined);
-			expect(hit).toBe(true);
+  test('Debounce Event', (done: () => void) => {
+    const doc = new Samples.Document3();
 
-		} finally {
-			setUnexpectedErrorHandler(origErrorHandler);
-		}
-	});
+    const onDocDidChange = Event.debounce(
+      doc.onDidChange,
+      (prev: string[] | undefined, cur) => {
+        if (!prev) {
+          prev = [cur];
+        } else if (prev.indexOf(cur) < 0) {
+          prev.push(cur);
+        }
+        return prev;
+      },
+      10,
+    );
 
-	test('reusing event function and context', () => {
-		let counter = 0;
-		function listener() {
-			counter += 1;
-		}
-		const context = {};
+    let count = 0;
 
-		let emitter = new Emitter<undefined>();
-		let reg1 = emitter.event(listener, context);
-		let reg2 = emitter.event(listener, context);
+    onDocDidChange((keys) => {
+      count++;
+      expect(keys).toBeTruthy();
+      if (count === 1) {
+        doc.setText('4');
+        deepStrictEqual(keys, ['1', '2', '3']);
+      } else if (count === 2) {
+        deepStrictEqual(keys, ['4']);
+        done();
+      }
+    });
 
-		emitter.fire(undefined);
-		expect(counter).toBe(2);
+    doc.setText('1');
+    doc.setText('2');
+    doc.setText('3');
+  });
 
-		reg1.dispose();
-		emitter.fire(undefined);
-		expect(counter).toBe(3);
+  test('Debounce Event - leading', async () => {
+    const emitter = new Emitter<void>();
+    const debounced = Event.debounce(emitter.event, (l, e) => e, 0, /* leading=*/ true);
 
-		reg2.dispose();
-		emitter.fire(undefined);
-		expect(counter).toBe(3);
-	});
+    let calls = 0;
+    debounced(() => {
+      calls++;
+    });
 
-	test('Debounce Event', (done: () => void) => {
-		let doc = new Samples.Document3();
+    // If the source event is fired once, the debounced (on the leading edge) event should be fired only once
+    emitter.fire();
 
-		let onDocDidChange = Event.debounce(doc.onDidChange, (prev: string[] | undefined, cur) => {
-			if (!prev) {
-				prev = [cur];
-			} else if (prev.indexOf(cur) < 0) {
-				prev.push(cur);
-			}
-			return prev;
-		}, 10);
+    await timeout(1);
+    expect(calls).toBe(1);
+  });
 
-		let count = 0;
+  test('Debounce Event - leading', async () => {
+    const emitter = new Emitter<void>();
+    const debounced = Event.debounce(emitter.event, (l, e) => e, 0, /* leading=*/ true);
 
-		onDocDidChange(keys => {
-			count++;
-			expect(keys).toBeTruthy();
-			if (count === 1) {
-				doc.setText('4');
-				deepStrictEqual(keys, ['1', '2', '3']);
-			} else if (count === 2) {
-				deepStrictEqual(keys, ['4']);
-				done();
-			}
-		});
+    let calls = 0;
+    debounced(() => {
+      calls++;
+    });
 
-		doc.setText('1');
-		doc.setText('2');
-		doc.setText('3');
-	});
+    // If the source event is fired multiple times, the debounced (on the leading edge) event should be fired twice
+    emitter.fire();
+    emitter.fire();
+    emitter.fire();
+    await timeout(1);
+    expect(calls).toBe(2);
+  });
 
-	test('Debounce Event - leading', async () => {
-		const emitter = new Emitter<void>();
-		let debounced = Event.debounce(emitter.event, (l, e) => e, 0, /*leading=*/true);
+  test('Debounce Event - leading reset', async () => {
+    const emitter = new Emitter<number>();
+    const debounced = Event.debounce(emitter.event, (l, e) => (l ? l + 1 : 1), 0, /* leading=*/ true);
 
-		let calls = 0;
-		debounced(() => {
-			calls++;
-		});
+    const calls: number[] = [];
+    debounced((e) => calls.push(e));
 
-		// If the source event is fired once, the debounced (on the leading edge) event should be fired only once
-		emitter.fire();
+    emitter.fire(1);
+    emitter.fire(1);
 
-		await timeout(1);
-		expect(calls).toBe(1);
-	});
+    await timeout(1);
+    // deepStrictEqual(calls, [1, 1]);
+    deepStrictEqual(calls, [1, 2]);
+  });
 
-	test('Debounce Event - leading', async () => {
-		const emitter = new Emitter<void>();
-		let debounced = Event.debounce(emitter.event, (l, e) => e, 0, /*leading=*/true);
+  test('Emitter - In Order Delivery', () => {
+    const a = new Emitter<string>();
+    const listener2Events: string[] = [];
+    a.event(function listener1(event) {
+      if (event === 'e1') {
+        a.fire('e2');
+        // assert that all events are delivered at this point
+        deepStrictEqual(listener2Events, ['e1', 'e2']);
+      }
+    });
+    a.event(function listener2(event) {
+      listener2Events.push(event);
+    });
+    a.fire('e1');
 
-		let calls = 0;
-		debounced(() => {
-			calls++;
-		});
-
-		// If the source event is fired multiple times, the debounced (on the leading edge) event should be fired twice
-		emitter.fire();
-		emitter.fire();
-		emitter.fire();
-		await timeout(1);
-		expect(calls).toBe(2);
-	});
-
-	test('Debounce Event - leading reset', async () => {
-		const emitter = new Emitter<number>();
-		let debounced = Event.debounce(emitter.event, (l, e) => l ? l + 1 : 1, 0, /*leading=*/true);
-
-		let calls: number[] = [];
-		debounced((e) => calls.push(e));
-
-		emitter.fire(1);
-		emitter.fire(1);
-
-		await timeout(1);
-		// deepStrictEqual(calls, [1, 1]);
-		deepStrictEqual(calls, [1, 2]);
-	});
-
-	test('Emitter - In Order Delivery', () => {
-		const a = new Emitter<string>();
-		const listener2Events: string[] = [];
-		a.event(function listener1(event) {
-			if (event === 'e1') {
-				a.fire('e2');
-				// assert that all events are delivered at this point
-				deepStrictEqual(listener2Events, ['e1', 'e2']);
-			}
-		});
-		a.event(function listener2(event) {
-			listener2Events.push(event);
-		});
-		a.fire('e1');
-
-		// assert that all events are delivered in order
-		deepStrictEqual(listener2Events, ['e1', 'e2']);
-	});
+    // assert that all events are delivered in order
+    deepStrictEqual(listener2Events, ['e1', 'e2']);
+  });
 });
 
 describe('AsyncEmitter', () => {
+  test('event has waitUntil-function', async () => {
+    interface E extends WaitUntilEvent {
+      foo: boolean;
+      bar: number;
+    }
 
-	test('event has waitUntil-function', async () => {
+    const emitter = new AsyncEmitter<E>();
 
-		interface E extends WaitUntilEvent {
-			foo: boolean;
-			bar: number;
-		}
+    emitter.event((e) => {
+      expect(e.foo).toBe(true);
+      expect(e.bar).toBe(1);
+      expect(typeof e.waitUntil).toBe('function');
+    });
 
-		let emitter = new AsyncEmitter<E>();
+    emitter.fireAsync({ foo: true, bar: 1 }, CancellationToken.None);
+    emitter.dispose();
+  });
 
-		emitter.event(e => {
-			expect(e.foo).toBe(true);
-			expect(e.bar).toBe(1);
-			expect(typeof e.waitUntil).toBe('function');
-		});
+  test('sequential delivery', async () => {
+    interface E extends WaitUntilEvent {
+      foo: boolean;
+    }
 
-		emitter.fireAsync({ foo: true, bar: 1, }, CancellationToken.None);
-		emitter.dispose();
-	});
+    let globalState = 0;
+    const emitter = new AsyncEmitter<E>();
 
-	test('sequential delivery', async () => {
+    emitter.event((e) => {
+      e.waitUntil!(
+        timeout(10).then((_) => {
+          expect(globalState).toBe(0);
+          globalState += 1;
+        }),
+      );
+    });
 
-		interface E extends WaitUntilEvent {
-			foo: boolean;
-		}
+    emitter.event((e) => {
+      e.waitUntil!(
+        timeout(1).then((_) => {
+          expect(globalState).toBe(1);
+          globalState += 1;
+        }),
+      );
+    });
 
-		let globalState = 0;
-		let emitter = new AsyncEmitter<E>();
+    await emitter.fireAsync({ foo: true }, CancellationToken.None);
+    expect(globalState).toBe(2);
+  });
 
-		emitter.event(e => {
-			e.waitUntil!(timeout(10).then(_ => {
-				expect(globalState).toBe(0);
-				globalState += 1;
-			}));
-		});
+  test('sequential, in-order delivery', async () => {
+    interface E extends WaitUntilEvent {
+      foo: number;
+    }
+    const events: number[] = [];
+    let done = false;
+    const emitter = new AsyncEmitter<E>();
 
-		emitter.event(e => {
-			e.waitUntil!(timeout(1).then(_ => {
-				expect(globalState).toBe(1);
-				globalState += 1;
-			}));
-		});
+    // e1
+    emitter.event((e) => {
+      e.waitUntil!(
+        timeout(10).then(async (_) => {
+          if (e.foo === 1) {
+            await emitter.fireAsync({ foo: 2 }, CancellationToken.None);
+            deepStrictEqual(events, [1, 2]);
+            done = true;
+          }
+        }),
+      );
+    });
 
-		await emitter.fireAsync({ foo: true }, CancellationToken.None);
-		expect(globalState).toBe(2);
-	});
+    // e2
+    emitter.event((e) => {
+      events.push(e.foo);
+      e.waitUntil!(timeout(7));
+    });
 
-	test('sequential, in-order delivery', async () => {
-		interface E extends WaitUntilEvent {
-			foo: number;
-		}
-		let events: number[] = [];
-		let done = false;
-		let emitter = new AsyncEmitter<E>();
+    await emitter.fireAsync({ foo: 1 }, CancellationToken.None);
+    expect(done).toBeTruthy();
+  });
 
-		// e1
-		emitter.event(e => {
-			e.waitUntil!(timeout(10).then(async _ => {
-				if (e.foo === 1) {
-					await emitter.fireAsync({ foo: 2 }, CancellationToken.None);
-					deepStrictEqual(events, [1, 2]);
-					done = true;
-				}
-			}));
-		});
+  test('catch errors', async () => {
+    const origErrorHandler = errorHandler.getUnexpectedErrorHandler();
+    setUnexpectedErrorHandler(() => null);
 
-		// e2
-		emitter.event(e => {
-			events.push(e.foo);
-			e.waitUntil!(timeout(7));
-		});
+    interface E extends WaitUntilEvent {
+      foo: boolean;
+    }
 
-		await emitter.fireAsync({ foo: 1 }, CancellationToken.None);
-		expect(done).toBeTruthy();
-	});
+    let globalState = 0;
+    const emitter = new AsyncEmitter<E>();
 
-	test('catch errors', async () => {
-		const origErrorHandler = errorHandler.getUnexpectedErrorHandler();
-		setUnexpectedErrorHandler(() => null);
+    emitter.event((e) => {
+      globalState += 1;
+      e.waitUntil!(new Promise((_r, reject) => reject(new Error())));
+    });
 
-		interface E extends WaitUntilEvent {
-			foo: boolean;
-		}
+    emitter.event((e) => {
+      globalState += 1;
+      e.waitUntil!(timeout(10));
+      e.waitUntil!(timeout(20).then(() => globalState++)); // multiple `waitUntil` are supported and awaited on
+    });
 
-		let globalState = 0;
-		let emitter = new AsyncEmitter<E>();
+    await emitter
+      .fireAsync({ foo: true }, CancellationToken.None)
+      .then(() => {
+        expect(globalState).toBe(3);
+      })
+      .catch((e) => {
+        console.log(e);
+        expect(false).toBeTruthy();
+      });
 
-		emitter.event(e => {
-			globalState += 1;
-			e.waitUntil!(new Promise((_r, reject) => reject(new Error())));
-		});
-
-		emitter.event(e => {
-			globalState += 1;
-			e.waitUntil!(timeout(10));
-			e.waitUntil!(timeout(20).then(() => globalState++)); // multiple `waitUntil` are supported and awaited on
-		});
-
-		await emitter.fireAsync({ foo: true }, CancellationToken.None).then(() => {
-			expect(globalState).toBe(3);
-		}).catch(e => {
-			console.log(e);
-			expect(false).toBeTruthy();
-		});
-
-		setUnexpectedErrorHandler(origErrorHandler);
-	});
+    setUnexpectedErrorHandler(origErrorHandler);
+  });
 });
 
 describe('PausableEmitter', () => {
+  test('basic', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>();
 
-	test('basic', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>();
+    emitter.event((e) => data.push(e));
+    emitter.fire(1);
+    emitter.fire(2);
 
-		emitter.event(e => data.push(e));
-		emitter.fire(1);
-		emitter.fire(2);
+    deepStrictEqual(data, [1, 2]);
+  });
 
-		deepStrictEqual(data, [1, 2]);
-	});
+  test('pause/resume - no merge', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>();
 
-	test('pause/resume - no merge', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>();
+    emitter.event((e) => data.push(e));
+    emitter.fire(1);
+    emitter.fire(2);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.event(e => data.push(e));
-		emitter.fire(1);
-		emitter.fire(2);
-		deepStrictEqual(data, [1, 2]);
+    emitter.pause();
+    emitter.fire(3);
+    emitter.fire(4);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.pause();
-		emitter.fire(3);
-		emitter.fire(4);
-		deepStrictEqual(data, [1, 2]);
+    emitter.resume();
+    deepStrictEqual(data, [1, 2, 3, 4]);
+    emitter.fire(5);
+    deepStrictEqual(data, [1, 2, 3, 4, 5]);
+  });
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 2, 3, 4]);
-		emitter.fire(5);
-		deepStrictEqual(data, [1, 2, 3, 4, 5]);
-	});
+  test('pause/resume - merge', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>({ merge: (a) => a.reduce((p, c) => p + c, 0) });
 
-	test('pause/resume - merge', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>({ merge: (a) => a.reduce((p, c) => p + c, 0) });
+    emitter.event((e) => data.push(e));
+    emitter.fire(1);
+    emitter.fire(2);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.event(e => data.push(e));
-		emitter.fire(1);
-		emitter.fire(2);
-		deepStrictEqual(data, [1, 2]);
+    emitter.pause();
+    emitter.fire(3);
+    emitter.fire(4);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.pause();
-		emitter.fire(3);
-		emitter.fire(4);
-		deepStrictEqual(data, [1, 2]);
+    emitter.resume();
+    deepStrictEqual(data, [1, 2, 7]);
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 2, 7]);
+    emitter.fire(5);
+    deepStrictEqual(data, [1, 2, 7, 5]);
+  });
 
-		emitter.fire(5);
-		deepStrictEqual(data, [1, 2, 7, 5]);
-	});
+  test('double pause/resume', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>();
 
-	test('double pause/resume', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>();
+    emitter.event((e) => data.push(e));
+    emitter.fire(1);
+    emitter.fire(2);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.event(e => data.push(e));
-		emitter.fire(1);
-		emitter.fire(2);
-		deepStrictEqual(data, [1, 2]);
+    emitter.pause();
+    emitter.pause();
+    emitter.fire(3);
+    emitter.fire(4);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.pause();
-		emitter.pause();
-		emitter.fire(3);
-		emitter.fire(4);
-		deepStrictEqual(data, [1, 2]);
+    emitter.resume();
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 2]);
+    emitter.resume();
+    deepStrictEqual(data, [1, 2, 3, 4]);
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 2, 3, 4]);
+    emitter.resume();
+    deepStrictEqual(data, [1, 2, 3, 4]);
+  });
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 2, 3, 4]);
-	});
+  test('resume, no pause', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>();
 
-	test('resume, no pause', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>();
+    emitter.event((e) => data.push(e));
+    emitter.fire(1);
+    emitter.fire(2);
+    deepStrictEqual(data, [1, 2]);
 
-		emitter.event(e => data.push(e));
-		emitter.fire(1);
-		emitter.fire(2);
-		deepStrictEqual(data, [1, 2]);
+    emitter.resume();
+    emitter.fire(3);
+    deepStrictEqual(data, [1, 2, 3]);
+  });
 
-		emitter.resume();
-		emitter.fire(3);
-		deepStrictEqual(data, [1, 2, 3]);
-	});
+  test('nested pause', () => {
+    const data: number[] = [];
+    const emitter = new PauseableEmitter<number>();
 
-	test('nested pause', () => {
-		const data: number[] = [];
-		const emitter = new PauseableEmitter<number>();
+    let once = true;
+    emitter.event((e) => {
+      data.push(e);
 
-		let once = true;
-		emitter.event(e => {
-			data.push(e);
+      if (once) {
+        emitter.pause();
+        once = false;
+      }
+    });
+    emitter.event((e) => {
+      data.push(e);
+    });
 
-			if (once) {
-				emitter.pause();
-				once = false;
-			}
-		});
-		emitter.event(e => {
-			data.push(e);
-		});
+    emitter.pause();
+    emitter.fire(1);
+    emitter.fire(2);
+    deepStrictEqual(data, []);
 
-		emitter.pause();
-		emitter.fire(1);
-		emitter.fire(2);
-		deepStrictEqual(data, []);
+    emitter.resume();
+    deepStrictEqual(data, [1, 1]); // paused after first event
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 1]); // paused after first event
+    emitter.resume();
+    deepStrictEqual(data, [1, 1, 2, 2]); // remaing event delivered
 
-		emitter.resume();
-		deepStrictEqual(data, [1, 1, 2, 2]); // remaing event delivered
-
-		emitter.fire(3);
-		deepStrictEqual(data, [1, 1, 2, 2, 3, 3]);
-
-	});
+    emitter.fire(3);
+    deepStrictEqual(data, [1, 1, 2, 2, 3, 3]);
+  });
 });
 
 describe('Event utils', () => {
+  describe('EventBufferer', () => {
+    test('should not buffer when not wrapped', () => {
+      const bufferer = new EventBufferer();
+      const counter = new Samples.EventCounter();
+      const emitter = new Emitter<void>();
+      const event = bufferer.wrapEvent(emitter.event);
+      const listener = event(counter.onEvent, counter);
+
+      expect(counter.count).toBe(0);
+      emitter.fire();
+      expect(counter.count).toBe(1);
+      emitter.fire();
+      expect(counter.count).toBe(2);
+      emitter.fire();
+      expect(counter.count).toBe(3);
+
+      listener.dispose();
+    });
+
+    test('should buffer when wrapped', () => {
+      const bufferer = new EventBufferer();
+      const counter = new Samples.EventCounter();
+      const emitter = new Emitter<void>();
+      const event = bufferer.wrapEvent(emitter.event);
+      const listener = event(counter.onEvent, counter);
+
+      expect(counter.count).toBe(0);
+      emitter.fire();
+      expect(counter.count).toBe(1);
+
+      bufferer.bufferEvents(() => {
+        emitter.fire();
+        expect(counter.count).toBe(1);
+        emitter.fire();
+        expect(counter.count).toBe(1);
+      });
+
+      expect(counter.count).toBe(3);
+      emitter.fire();
+      expect(counter.count).toBe(4);
+
+      listener.dispose();
+    });
+
+    test('once', () => {
+      const emitter = new Emitter<void>();
+
+      let counter1 = 0;
+      let counter2 = 0;
+      let counter3 = 0;
+
+      const listener1 = emitter.event(() => counter1++);
+      const listener2 = Event.once(emitter.event)(() => counter2++);
+      const listener3 = Event.once(emitter.event)(() => counter3++);
+
+      expect(counter1).toBe(0);
+      expect(counter2).toBe(0);
+      expect(counter3).toBe(0);
+
+      listener3.dispose();
+      emitter.fire();
+      expect(counter1).toBe(1);
+      expect(counter2).toBe(1);
+      expect(counter3).toBe(0);
+
+      emitter.fire();
+      expect(counter1).toBe(2);
+      expect(counter2).toBe(1);
+      expect(counter3).toBe(0);
+
+      listener1.dispose();
+      listener2.dispose();
+    });
+  });
+
+  describe('fromPromise', () => {
+    test('should emit when done', async () => {
+      let count = 0;
+
+      const event = Event.fromPromise(Promise.resolve(null));
+      event(() => count++);
+
+      expect(count).toBe(0);
+
+      await timeout(10);
+      expect(count).toBe(1);
+    });
+
+    test('should emit when done - setTimeout', async () => {
+      let count = 0;
+
+      const promise = timeout(5);
+      const event = Event.fromPromise(promise);
+      event(() => count++);
+
+      expect(count).toBe(0);
+      await promise;
+      expect(count).toBe(1);
+    });
+  });
+
+  describe('stopwatch', () => {
+    test('should emit', () => {
+      const emitter = new Emitter<void>();
+      const event = Event.stopwatch(emitter.event);
+
+      return new Promise((c, e) => {
+        event((duration) => {
+          try {
+            expect(duration > 0).toBeTruthy();
+          } catch (err) {
+            e(err);
+          }
+
+          c(undefined);
+        });
+
+        setTimeout(() => emitter.fire(), 10);
+      });
+    });
+  });
+
+  describe('buffer', () => {
+    test('should buffer events', () => {
+      const result: number[] = [];
+      const emitter = new Emitter<number>();
+      const event = emitter.event;
+      const bufferedEvent = Event.buffer(event);
+
+      emitter.fire(1);
+      emitter.fire(2);
+      emitter.fire(3);
+      expect(result).toEqual([]);
+
+      const listener = bufferedEvent((num) => result.push(num));
+      deepStrictEqual(result, [1, 2, 3]);
+
+      emitter.fire(4);
+      deepStrictEqual(result, [1, 2, 3, 4]);
+
+      listener.dispose();
+      emitter.fire(5);
+      deepStrictEqual(result, [1, 2, 3, 4]);
+    });
+
+    test('should buffer events on next tick', async () => {
+      const result: number[] = [];
+      const emitter = new Emitter<number>();
+      const event = emitter.event;
+      const bufferedEvent = Event.buffer(event, true);
+
+      emitter.fire(1);
+      emitter.fire(2);
+      emitter.fire(3);
+      expect(result).toEqual([]);
+
+      const listener = bufferedEvent((num) => result.push(num));
+      deepStrictEqual(result, []);
+
+      await timeout(10);
+      emitter.fire(4);
+      deepStrictEqual(result, [1, 2, 3, 4]);
+      listener.dispose();
+      emitter.fire(5);
+      deepStrictEqual(result, [1, 2, 3, 4]);
+    });
+
+    test('should fire initial buffer events', () => {
+      const result: number[] = [];
+      const emitter = new Emitter<number>();
+      const event = emitter.event;
+      const bufferedEvent = Event.buffer(event, false, [-2, -1, 0]);
+
+      emitter.fire(1);
+      emitter.fire(2);
+      emitter.fire(3);
+      expect(result).toEqual([]);
+
+      bufferedEvent((num) => result.push(num));
+      deepStrictEqual(result, [-2, -1, 0, 1, 2, 3]);
+    });
+  });
+
+  describe('EventMultiplexer', () => {
+    test('works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
+      m.event((r) => result.push(r));
+
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+
+      deepStrictEqual(result, []);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+    });
+
+    test('multiplexer dispose works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
+      m.event((r) => result.push(r));
+
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+
+      deepStrictEqual(result, []);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+
+      m.dispose();
+      deepStrictEqual(result, [0]);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+    });
+
+    test('event dispose works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
+      m.event((r) => result.push(r));
+
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+
+      deepStrictEqual(result, []);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+
+      e1.dispose();
+      deepStrictEqual(result, [0]);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+    });
+
+    test('mutliplexer event dispose works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
+      m.event((r) => result.push(r));
+
+      const e1 = new Emitter<number>();
+      const l1 = m.add(e1.event);
+
+      deepStrictEqual(result, []);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+
+      l1.dispose();
+      deepStrictEqual(result, [0]);
+
+      e1.fire(0);
+      deepStrictEqual(result, [0]);
+    });
+
+    test('hot start works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
+      m.event((r) => result.push(r));
+
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+      const e2 = new Emitter<number>();
+      m.add(e2.event);
+      const e3 = new Emitter<number>();
+      m.add(e3.event);
+
+      e1.fire(1);
+      e2.fire(2);
+      e3.fire(3);
+      deepStrictEqual(result, [1, 2, 3]);
+    });
 
-	describe('EventBufferer', () => {
-
-		test('should not buffer when not wrapped', () => {
-			const bufferer = new EventBufferer();
-			const counter = new Samples.EventCounter();
-			const emitter = new Emitter<void>();
-			const event = bufferer.wrapEvent(emitter.event);
-			const listener = event(counter.onEvent, counter);
-
-			expect(counter.count).toBe(0);
-			emitter.fire();
-			expect(counter.count).toBe(1);
-			emitter.fire();
-			expect(counter.count).toBe(2);
-			emitter.fire();
-			expect(counter.count).toBe(3);
-
-			listener.dispose();
-		});
-
-		test('should buffer when wrapped', () => {
-			const bufferer = new EventBufferer();
-			const counter = new Samples.EventCounter();
-			const emitter = new Emitter<void>();
-			const event = bufferer.wrapEvent(emitter.event);
-			const listener = event(counter.onEvent, counter);
-
-			expect(counter.count).toBe(0);
-			emitter.fire();
-			expect(counter.count).toBe(1);
-
-			bufferer.bufferEvents(() => {
-				emitter.fire();
-				expect(counter.count).toBe(1);
-				emitter.fire();
-				expect(counter.count).toBe(1);
-			});
-
-			expect(counter.count).toBe(3);
-			emitter.fire();
-			expect(counter.count).toBe(4);
-
-			listener.dispose();
-		});
-
-		test('once', () => {
-			const emitter = new Emitter<void>();
-
-			let counter1 = 0, counter2 = 0, counter3 = 0;
-
-			const listener1 = emitter.event(() => counter1++);
-			const listener2 = Event.once(emitter.event)(() => counter2++);
-			const listener3 = Event.once(emitter.event)(() => counter3++);
-
-			expect(counter1).toBe(0);
-			expect(counter2).toBe(0);
-			expect(counter3).toBe(0);
-
-			listener3.dispose();
-			emitter.fire();
-			expect(counter1).toBe(1);
-			expect(counter2).toBe(1);
-			expect(counter3).toBe(0);
-
-			emitter.fire();
-			expect(counter1).toBe(2);
-			expect(counter2).toBe(1);
-			expect(counter3).toBe(0);
-
-			listener1.dispose();
-			listener2.dispose();
-		});
-	});
-
-	describe('fromPromise', () => {
-
-		test('should emit when done', async () => {
-			let count = 0;
-
-			const event = Event.fromPromise(Promise.resolve(null));
-			event(() => count++);
-
-			expect(count).toBe(0);
-
-			await timeout(10);
-			expect(count).toBe(1);
-		});
-
-		test('should emit when done - setTimeout', async () => {
-			let count = 0;
-
-			const promise = timeout(5);
-			const event = Event.fromPromise(promise);
-			event(() => count++);
-
-			expect(count).toBe(0);
-			await promise;
-			expect(count).toBe(1);
-		});
-	});
-
-	describe('stopwatch', () => {
-
-		test('should emit', () => {
-			const emitter = new Emitter<void>();
-			const event = Event.stopwatch(emitter.event);
-
-			return new Promise((c, e) => {
-				event(duration => {
-					try {
-						expect(duration > 0).toBeTruthy();
-					} catch (err) {
-						e(err);
-					}
-
-					c(undefined);
-				});
-
-				setTimeout(() => emitter.fire(), 10);
-			});
-		});
-	});
-
-	describe('buffer', () => {
-
-		test('should buffer events', () => {
-			const result: number[] = [];
-			const emitter = new Emitter<number>();
-			const event = emitter.event;
-			const bufferedEvent = Event.buffer(event);
-
-			emitter.fire(1);
-			emitter.fire(2);
-			emitter.fire(3);
-			expect(result).toEqual([]);
+    test('cold start works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
 
-			const listener = bufferedEvent(num => result.push(num));
-			deepStrictEqual(result, [1, 2, 3]);
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+      const e2 = new Emitter<number>();
+      m.add(e2.event);
+      const e3 = new Emitter<number>();
+      m.add(e3.event);
 
-			emitter.fire(4);
-			deepStrictEqual(result, [1, 2, 3, 4]);
+      m.event((r) => result.push(r));
 
-			listener.dispose();
-			emitter.fire(5);
-			deepStrictEqual(result, [1, 2, 3, 4]);
-		});
+      e1.fire(1);
+      e2.fire(2);
+      e3.fire(3);
+      deepStrictEqual(result, [1, 2, 3]);
+    });
 
-		test('should buffer events on next tick', async () => {
-			const result: number[] = [];
-			const emitter = new Emitter<number>();
-			const event = emitter.event;
-			const bufferedEvent = Event.buffer(event, true);
+    test('late add works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
 
-			emitter.fire(1);
-			emitter.fire(2);
-			emitter.fire(3);
-			expect(result).toEqual([]);
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+      const e2 = new Emitter<number>();
+      m.add(e2.event);
 
-			const listener = bufferedEvent(num => result.push(num));
-			deepStrictEqual(result, []);
+      m.event((r) => result.push(r));
 
-			await timeout(10);
-			emitter.fire(4);
-			deepStrictEqual(result, [1, 2, 3, 4]);
-			listener.dispose();
-			emitter.fire(5);
-			deepStrictEqual(result, [1, 2, 3, 4]);
-		});
+      e1.fire(1);
+      e2.fire(2);
 
-		test('should fire initial buffer events', () => {
-			const result: number[] = [];
-			const emitter = new Emitter<number>();
-			const event = emitter.event;
-			const bufferedEvent = Event.buffer(event, false, [-2, -1, 0]);
+      const e3 = new Emitter<number>();
+      m.add(e3.event);
+      e3.fire(3);
 
-			emitter.fire(1);
-			emitter.fire(2);
-			emitter.fire(3);
-			expect(result).toEqual([]);
+      deepStrictEqual(result, [1, 2, 3]);
+    });
 
-			bufferedEvent(num => result.push(num));
-			deepStrictEqual(result, [-2, -1, 0, 1, 2, 3]);
-		});
-	});
-
-	describe('EventMultiplexer', () => {
-
-		test('works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
-			m.event(r => result.push(r));
-
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-
-			deepStrictEqual(result, []);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-		});
-
-		test('multiplexer dispose works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
-			m.event(r => result.push(r));
-
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-
-			deepStrictEqual(result, []);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-
-			m.dispose();
-			deepStrictEqual(result, [0]);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-		});
-
-		test('event dispose works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
-			m.event(r => result.push(r));
-
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-
-			deepStrictEqual(result, []);
+    test('add dispose works', () => {
+      const result: number[] = [];
+      const m = new EventMultiplexer<number>();
 
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
+      const e1 = new Emitter<number>();
+      m.add(e1.event);
+      const e2 = new Emitter<number>();
+      m.add(e2.event);
 
-			e1.dispose();
-			deepStrictEqual(result, [0]);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-		});
-
-		test('mutliplexer event dispose works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
-			m.event(r => result.push(r));
-
-			const e1 = new Emitter<number>();
-			const l1 = m.add(e1.event);
-
-			deepStrictEqual(result, []);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-
-			l1.dispose();
-			deepStrictEqual(result, [0]);
-
-			e1.fire(0);
-			deepStrictEqual(result, [0]);
-		});
+      m.event((r) => result.push(r));
 
-		test('hot start works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
-			m.event(r => result.push(r));
+      e1.fire(1);
+      e2.fire(2);
 
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-			const e2 = new Emitter<number>();
-			m.add(e2.event);
-			const e3 = new Emitter<number>();
-			m.add(e3.event);
+      const e3 = new Emitter<number>();
+      const l3 = m.add(e3.event);
+      e3.fire(3);
+      deepStrictEqual(result, [1, 2, 3]);
 
-			e1.fire(1);
-			e2.fire(2);
-			e3.fire(3);
-			deepStrictEqual(result, [1, 2, 3]);
-		});
+      l3.dispose();
+      e3.fire(4);
+      deepStrictEqual(result, [1, 2, 3]);
 
-		test('cold start works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
+      e2.fire(4);
+      e1.fire(5);
+      deepStrictEqual(result, [1, 2, 3, 4, 5]);
+    });
+  });
 
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-			const e2 = new Emitter<number>();
-			m.add(e2.event);
-			const e3 = new Emitter<number>();
-			m.add(e3.event);
+  test('latch', () => {
+    const emitter = new Emitter<number>();
+    const event = Event.latch(emitter.event);
 
-			m.event(r => result.push(r));
+    const result: number[] = [];
+    const listener = event((num) => result.push(num));
 
-			e1.fire(1);
-			e2.fire(2);
-			e3.fire(3);
-			deepStrictEqual(result, [1, 2, 3]);
-		});
+    deepStrictEqual(result, []);
 
-		test('late add works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
+    emitter.fire(1);
+    deepStrictEqual(result, [1]);
 
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-			const e2 = new Emitter<number>();
-			m.add(e2.event);
+    emitter.fire(2);
+    deepStrictEqual(result, [1, 2]);
 
-			m.event(r => result.push(r));
+    emitter.fire(2);
+    deepStrictEqual(result, [1, 2]);
 
-			e1.fire(1);
-			e2.fire(2);
+    emitter.fire(1);
+    deepStrictEqual(result, [1, 2, 1]);
 
-			const e3 = new Emitter<number>();
-			m.add(e3.event);
-			e3.fire(3);
+    emitter.fire(1);
+    deepStrictEqual(result, [1, 2, 1]);
 
-			deepStrictEqual(result, [1, 2, 3]);
-		});
+    emitter.fire(3);
+    deepStrictEqual(result, [1, 2, 1, 3]);
 
-		test('add dispose works', () => {
-			const result: number[] = [];
-			const m = new EventMultiplexer<number>();
+    emitter.fire(3);
+    deepStrictEqual(result, [1, 2, 1, 3]);
 
-			const e1 = new Emitter<number>();
-			m.add(e1.event);
-			const e2 = new Emitter<number>();
-			m.add(e2.event);
+    emitter.fire(3);
+    deepStrictEqual(result, [1, 2, 1, 3]);
 
-			m.event(r => result.push(r));
-
-			e1.fire(1);
-			e2.fire(2);
-
-			const e3 = new Emitter<number>();
-			const l3 = m.add(e3.event);
-			e3.fire(3);
-			deepStrictEqual(result, [1, 2, 3]);
-
-			l3.dispose();
-			e3.fire(4);
-			deepStrictEqual(result, [1, 2, 3]);
-
-			e2.fire(4);
-			e1.fire(5);
-			deepStrictEqual(result, [1, 2, 3, 4, 5]);
-		});
-	});
-
-	test('latch', () => {
-		const emitter = new Emitter<number>();
-		const event = Event.latch(emitter.event);
-
-		const result: number[] = [];
-		const listener = event(num => result.push(num));
-
-		deepStrictEqual(result, []);
-
-		emitter.fire(1);
-		deepStrictEqual(result, [1]);
-
-		emitter.fire(2);
-		deepStrictEqual(result, [1, 2]);
-
-		emitter.fire(2);
-		deepStrictEqual(result, [1, 2]);
-
-		emitter.fire(1);
-		deepStrictEqual(result, [1, 2, 1]);
-
-		emitter.fire(1);
-		deepStrictEqual(result, [1, 2, 1]);
-
-		emitter.fire(3);
-		deepStrictEqual(result, [1, 2, 1, 3]);
-
-		emitter.fire(3);
-		deepStrictEqual(result, [1, 2, 1, 3]);
-
-		emitter.fire(3);
-		deepStrictEqual(result, [1, 2, 1, 3]);
-
-		listener.dispose();
-	});
-
+    listener.dispose();
+  });
 });

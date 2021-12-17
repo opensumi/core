@@ -15,7 +15,6 @@ import { IActivationEventService } from './types';
 
 @Injectable()
 export class ActivationEventServiceImpl implements IActivationEventService {
-
   private eventListeners: Map<string, IActivationEventListener[]> = new Map();
 
   private wildCardTopics: Set<string> = new Set();
@@ -26,8 +25,8 @@ export class ActivationEventServiceImpl implements IActivationEventService {
     this.wildCardTopics.add('workspaceContains');
   }
 
-  async fireEvent(topic: string, data: string = ''): Promise<void> {
-    this.activatedEventSet.add(JSON.stringify({topic, data}));
+  async fireEvent(topic: string, data = ''): Promise<void> {
+    this.activatedEventSet.add(JSON.stringify({ topic, data }));
 
     let listeners: IActivationEventListener[] | undefined;
     if (this.wildCardTopics.has(topic)) {
@@ -114,15 +113,12 @@ export class ActivationEventServiceImpl implements IActivationEventService {
       await listener.execute();
     }
   }
-
 }
 
 interface IActivationEventListener {
-
   topic: string;
 
   data: string;
 
   execute: () => MaybePromise<void>;
-
 }

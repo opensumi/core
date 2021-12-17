@@ -1,4 +1,3 @@
-// tslint:disable:new-parens
 import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -13,7 +12,7 @@ describe('DecorationsService', () => {
   const toTearDown = new DisposableCollection();
 
   beforeEach(() => {
-    injector = createBrowserInjector([ DecorationModule ]);
+    injector = createBrowserInjector([DecorationModule]);
     service = injector.get(IDecorationsService);
     toTearDown.push(service);
   });
@@ -29,20 +28,24 @@ describe('DecorationsService', () => {
     const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
-    service.registerDecorationsProvider(new class implements IDecorationsProvider {
-      readonly label: string = 'Test';
-      readonly onDidChange: Event<Uri[]> = Event.None;
-      provideDecorations(_uri: Uri) {
-        callCounter += 1;
-        return new Promise<IDecorationData>((resolve) => {
-          setTimeout(() => resolve({
-            color: 'someBlue',
-            tooltip: 'Tooltip',
-            letter: 'L',
-          }));
-        });
-      }
-    });
+    service.registerDecorationsProvider(
+      new (class implements IDecorationsProvider {
+        readonly label: string = 'Test';
+        readonly onDidChange: Event<Uri[]> = Event.None;
+        provideDecorations(_uri: Uri) {
+          callCounter += 1;
+          return new Promise<IDecorationData>((resolve) => {
+            setTimeout(() =>
+              resolve({
+                color: 'someBlue',
+                tooltip: 'Tooltip',
+                letter: 'L',
+              }),
+            );
+          });
+        }
+      })(),
+    );
 
     // trigger -> async
     expect(service.getDecoration(uri, false)).toBe(undefined);
@@ -63,14 +66,16 @@ describe('DecorationsService', () => {
     const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
-    service.registerDecorationsProvider(new class implements IDecorationsProvider {
-      readonly label: string = 'Test';
-      readonly onDidChange: Event<Uri[]> = Event.None;
-      provideDecorations(_uri: Uri) {
-        callCounter += 1;
-        return { color: 'someBlue', tooltip: 'Z' };
-      }
-    });
+    service.registerDecorationsProvider(
+      new (class implements IDecorationsProvider {
+        readonly label: string = 'Test';
+        readonly onDidChange: Event<Uri[]> = Event.None;
+        provideDecorations(_uri: Uri) {
+          callCounter += 1;
+          return { color: 'someBlue', tooltip: 'Z' };
+        }
+      })(),
+    );
 
     // trigger -> sync
     expect(service.getDecoration(uri, false)!.tooltip).toBe('Z');
@@ -81,14 +86,16 @@ describe('DecorationsService', () => {
     const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
-    const reg = service.registerDecorationsProvider(new class implements IDecorationsProvider {
-      readonly label: string = 'Test';
-      readonly onDidChange: Event<Uri[]> = Event.None;
-      provideDecorations(_uri: Uri) {
-        callCounter += 1;
-        return { color: 'someBlue', tooltip: 'J' };
-      }
-    });
+    const reg = service.registerDecorationsProvider(
+      new (class implements IDecorationsProvider {
+        readonly label: string = 'Test';
+        readonly onDidChange: Event<Uri[]> = Event.None;
+        provideDecorations(_uri: Uri) {
+          callCounter += 1;
+          return { color: 'someBlue', tooltip: 'J' };
+        }
+      })(),
+    );
 
     // trigger -> sync
     expect(service.getDecoration(uri, false)!.tooltip).toBe('J');
@@ -115,9 +122,7 @@ describe('DecorationsService', () => {
       label: 'Test',
       onDidChange: Event.None,
       provideDecorations(uri: Uri) {
-        return uri.path.match(/\.txt/)
-          ? { tooltip: '.txt', weight: 17 }
-          : undefined;
+        return uri.path.match(/\.txt/) ? { tooltip: '.txt', weight: 17 } : undefined;
       },
     });
 
@@ -135,9 +140,7 @@ describe('DecorationsService', () => {
       label: 'Test',
       onDidChange: Event.None,
       provideDecorations(uri: Uri) {
-        return uri.path.match(/\.txt/)
-          ? { tooltip: '.txt.bubble', weight: 71, bubble: true }
-          : undefined;
+        return uri.path.match(/\.txt/) ? { tooltip: '.txt.bubble', weight: 71, bubble: true } : undefined;
       },
     });
 
@@ -152,14 +155,13 @@ describe('DecorationsService', () => {
     let cancelCount = 0;
     let callCount = 0;
 
-    const provider = new class implements IDecorationsProvider {
+    const provider = new (class implements IDecorationsProvider {
       _onDidChange = new Emitter<Uri[]>();
       onDidChange: Event<Uri[]> = this._onDidChange.event;
 
-      label: string = 'foo';
+      label = 'foo';
 
       provideDecorations(_uri: Uri, token: CancellationToken): Promise<IDecorationData> {
-
         token.onCancellationRequested(() => {
           cancelCount += 1;
         });
@@ -171,7 +173,7 @@ describe('DecorationsService', () => {
           }, 10);
         });
       }
-    };
+    })();
 
     const reg = service.registerDecorationsProvider(provider);
 
@@ -188,7 +190,6 @@ describe('DecorationsService', () => {
   });
 
   it('Decorations not bubbling... #48745', () => {
-
     const reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: Event.None,
@@ -196,7 +197,7 @@ describe('DecorationsService', () => {
         if (uri.path.match(/hello$/)) {
           return { tooltip: 'FOO', weight: 17, bubble: true };
         } else {
-          return new Promise<IDecorationData>((_resolve) => { });
+          return new Promise<IDecorationData>((_resolve) => {});
         }
       },
     });
@@ -213,8 +214,7 @@ describe('DecorationsService', () => {
     reg.dispose();
   });
 
-  it('Folder decorations don\'t go away when file with problems is deleted #61919 (part1)', () => {
-
+  it("Folder decorations don't go away when file with problems is deleted #61919 (part1)", () => {
     const emitter = new Emitter<Uri[]>();
     let gone = false;
     const reg = service.registerDecorationsProvider({
@@ -248,8 +248,7 @@ describe('DecorationsService', () => {
     reg.dispose();
   });
 
-  it('Folder decorations don\'t go away when file with problems is deleted #61919 (part2)', () => {
-
+  it("Folder decorations don't go away when file with problems is deleted #61919 (part2)", () => {
     const emitter = new Emitter<Uri[]>();
     let gone = false;
     const reg = service.registerDecorationsProvider({
@@ -292,11 +291,11 @@ describe('DecorationsService', () => {
   it('Initial flush/Flush all', async () => {
     let callCount = 0;
 
-    const provider = new class implements IDecorationsProvider {
+    const provider = new (class implements IDecorationsProvider {
       _onDidChange = new Emitter<Uri[]>();
       onDidChange: Event<Uri[]> = this._onDidChange.event;
 
-      label: string = 'foo';
+      label = 'foo';
 
       provideDecorations(_uri: Uri): IDecorationData {
         callCount += 1;
@@ -304,7 +303,7 @@ describe('DecorationsService', () => {
           letter: 'foo',
         };
       }
-    };
+    })();
 
     const uri = Uri.file('/test/workspace');
     service.getDecoration(uri, false);
@@ -342,18 +341,20 @@ describe('DecorationsService', () => {
     let callCounter = 0;
 
     toTearDown.push(
-      service.registerDecorationsProvider(new class implements IDecorationsProvider {
-        readonly label: string = 'TestSync';
-        readonly onDidChange: Event<Uri[]> = Event.None;
-        provideDecorations(_uri: Uri) {
-          callCounter += 1;
-          return {
-            color: 'someBlue',
-            tooltip: 'Z',
-            letter: 'A',
-          };
-        }
-      }),
+      service.registerDecorationsProvider(
+        new (class implements IDecorationsProvider {
+          readonly label: string = 'TestSync';
+          readonly onDidChange: Event<Uri[]> = Event.None;
+          provideDecorations(_uri: Uri) {
+            callCounter += 1;
+            return {
+              color: 'someBlue',
+              tooltip: 'Z',
+              letter: 'A',
+            };
+          }
+        })(),
+      ),
     );
 
     // trigger -> sync
@@ -363,19 +364,21 @@ describe('DecorationsService', () => {
     expect(callCounter).toBe(1);
 
     toTearDown.push(
-      service.registerDecorationsProvider(new class implements IDecorationsProvider {
-        readonly label: string = 'TestSync1';
-        readonly onDidChange: Event<Uri[]> = Event.None;
-        provideDecorations(_uri: Uri) {
-          callCounter += 1;
-          return {
-            color: 'someGreen',
-            tooltip: 'Tooltip',
-            letter: 'L',
-            weight: 1,
-          };
-        }
-      }),
+      service.registerDecorationsProvider(
+        new (class implements IDecorationsProvider {
+          readonly label: string = 'TestSync1';
+          readonly onDidChange: Event<Uri[]> = Event.None;
+          provideDecorations(_uri: Uri) {
+            callCounter += 1;
+            return {
+              color: 'someGreen',
+              tooltip: 'Tooltip',
+              letter: 'L',
+              weight: 1,
+            };
+          }
+        })(),
+      ),
     );
 
     // trigger -> sync

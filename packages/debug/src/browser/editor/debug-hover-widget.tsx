@@ -3,7 +3,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@opensumi/di';
-import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@opensumi/ide-core-browser';
+import {
+  DisposableCollection,
+  Disposable,
+  AppConfig,
+  ConfigProvider,
+  IReporterService,
+} from '@opensumi/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugEditor, IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
 import { DebugExpressionProvider } from './debug-expression-provider';
@@ -94,13 +100,15 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   getPosition(): monaco.editor.IContentWidgetPosition {
     const position = this.options && this.options.selection.getStartPosition();
     const word = position && this.editor.getModel()!.getWordAtPosition(position);
-    return position && word ? {
-      position: new monaco.Position(position.lineNumber, word.startColumn),
-      preference: [
-        monaco.editor.ContentWidgetPositionPreference.BELOW,
-        monaco.editor.ContentWidgetPositionPreference.ABOVE,
-      ],
-    } : undefined!;
+    return position && word
+      ? {
+          position: new monaco.Position(position.lineNumber, word.startColumn),
+          preference: [
+            monaco.editor.ContentWidgetPositionPreference.BELOW,
+            monaco.editor.ContentWidgetPositionPreference.ABOVE,
+          ],
+        }
+      : undefined!;
   }
 
   dispose(): void {
@@ -117,7 +125,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   protected options: ShowDebugHoverOptions | undefined;
 
-  protected schedule(fn: () => void, immediate: boolean = true): void {
+  protected schedule(fn: () => void, immediate = true): void {
     if (immediate) {
       this.doSchedule.cancel();
       fn();
@@ -129,7 +137,12 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   protected isEditorFrame(): boolean {
     const { currentFrame } = this.sessions;
-    return !!currentFrame && !!currentFrame.source && !!this.editor.getModel() && this.editor.getModel()!.uri.toString() === currentFrame.source.uri.toString();
+    return (
+      !!currentFrame &&
+      !!currentFrame.source &&
+      !!this.editor.getModel() &&
+      this.editor.getModel()!.uri.toString() === currentFrame.source.uri.toString()
+    );
   }
 
   protected doHide(): void {
@@ -148,11 +161,15 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   private renderView(): void {
-    ReactDOM.render((<ConfigProvider value={ this.configContext } >
-      <DebugHoverView />
-    </ConfigProvider>), this.getDomNode(), () => {
-      this.layoutContentWidget();
-    });
+    ReactDOM.render(
+      <ConfigProvider value={this.configContext}>
+        <DebugHoverView />
+      </ConfigProvider>,
+      this.getDomNode(),
+      () => {
+        this.layoutContentWidget();
+      },
+    );
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
@@ -169,14 +186,17 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     }
 
     this.options = options;
-    const expression = await this.expressionProvider.get(this.editor.getModel()! as unknown as ITextModel, options.selection);
+    const expression = await this.expressionProvider.get(
+      this.editor.getModel()! as unknown as ITextModel,
+      options.selection,
+    );
     if (!expression) {
       return;
     }
 
     this.hoverSource.clearEvaluate();
 
-    if (!await this.hoverSource.evaluate(expression)) {
+    if (!(await this.hoverSource.evaluate(expression))) {
       return;
     }
 

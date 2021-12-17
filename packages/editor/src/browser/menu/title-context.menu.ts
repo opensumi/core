@@ -8,7 +8,6 @@ import { IContextKeyService } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class TabTitleMenuService {
-
   @Autowired(AbstractContextMenuService)
   ctxMenuService: AbstractContextMenuService;
 
@@ -45,11 +44,10 @@ export class TabTitleMenuService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [{uri, group}],
+      args: [{ uri, group }],
       onHide: () => {
         this.editorTitleContextKey.set(false);
       },
     });
   }
-
 }

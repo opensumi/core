@@ -1,7 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event, getDebugLogger, Uri } from '@opensumi/ide-core-common';
-import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import {
+  combinedDisposable,
+  dispose,
+  DisposableStore,
+  IDisposable,
+  toDisposable,
+} from '@opensumi/ide-core-common/lib/disposable';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { action, observable } from 'mobx';
 
@@ -29,8 +35,7 @@ export class ResourceGroupSplicer {
   private _onDidSplice = new Emitter<IResourceGroupSpliceEvent<ISCMDataItem>>();
   readonly onDidSplice: Event<IResourceGroupSpliceEvent<ISCMDataItem>> = this._onDidSplice.event;
 
-  constructor(private repository: ISCMRepository) {
-  }
+  constructor(private repository: ISCMRepository) {}
 
   run() {
     const groupSequence = this.repository.provider.groups;
@@ -243,12 +248,14 @@ export class ViewModelContext extends Disposable {
 
     // 只处理当前 repository 的事件
     const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
-    disposables.add(repoOnDidSplice(({ index, deleteCount, elements }) => {
-      if (repository.provider.rootUri) {
-        // 只处理存在工作区路径的 SCMList
-        this.spliceSCMList(repository.provider.rootUri, index, deleteCount, ...elements);
-      }
-    }));
+    disposables.add(
+      repoOnDidSplice(({ index, deleteCount, elements }) => {
+        if (repository.provider.rootUri) {
+          // 只处理存在工作区路径的 SCMList
+          this.spliceSCMList(repository.provider.rootUri, index, deleteCount, ...elements);
+        }
+      }),
+    );
 
     resourceGroup.run();
 
@@ -263,7 +270,7 @@ export class ViewModelContext extends Disposable {
     this.disposables.push(
       this.preferenceService.onSpecificPreferenceChange(
         'scm.alwaysShowActions',
-        (changes) => this.alwaysShowActions = changes.newValue,
+        (changes) => (this.alwaysShowActions = changes.newValue),
       ),
     );
   }
@@ -272,17 +279,29 @@ export class ViewModelContext extends Disposable {
   public alwaysShowActions: boolean;
 
   start() {
-    this.scmService.onDidAddRepository((repo: ISCMRepository) => {
-      this.addRepo(repo);
-    }, this, this.disposables);
+    this.scmService.onDidAddRepository(
+      (repo: ISCMRepository) => {
+        this.addRepo(repo);
+      },
+      this,
+      this.disposables,
+    );
 
-    this.scmService.onDidRemoveRepository((repo: ISCMRepository) => {
-      this.deleteRepo(repo);
-    }, this, this.disposables);
+    this.scmService.onDidRemoveRepository(
+      (repo: ISCMRepository) => {
+        this.deleteRepo(repo);
+      },
+      this,
+      this.disposables,
+    );
 
-    this.scmService.onDidChangeSelectedRepositories((repos: ISCMRepository[]) => {
-      this.changeSelectedRepos(repos);
-    }, this, this.disposables);
+    this.scmService.onDidChangeSelectedRepositories(
+      (repos: ISCMRepository[]) => {
+        this.changeSelectedRepos(repos);
+      },
+      this,
+      this.disposables,
+    );
 
     this.scmService.repositories.forEach((repo) => {
       this.addRepo(repo);
@@ -310,12 +329,16 @@ export class ViewModelContext extends Disposable {
     }
     this._currentWorkspace = workspace;
     this._onDidSCMListChangeEmitter.fire();
-  }
+  };
 
   @action
   private addRepo(repo: ISCMRepository) {
     // 因为这里每个传入的 repo 均为新实例，这里需要通过 Uri.toString() 去判断
-    if (this.repoList.find((exist: ISCMRepository) => exist.provider.rootUri?.toString() === repo.provider.rootUri?.toString())) {
+    if (
+      this.repoList.find(
+        (exist: ISCMRepository) => exist.provider.rootUri?.toString() === repo.provider.rootUri?.toString(),
+      )
+    ) {
       this.logger.warn('duplicate scm repo', repo);
       return;
     }

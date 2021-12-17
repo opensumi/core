@@ -31,9 +31,7 @@ const mockMainThreadCommandProxy = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -71,49 +69,49 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.window.test.ts',
       done();
     });
 
-    it ('message event can be received', async (done) => {
+    it('message event can be received', async (done) => {
       expect(window).toBeDefined();
       const testMessage = 'message';
-      window.onMessage((message)  => {
+      window.onMessage((message) => {
         expect(message).toBe(testMessage);
         done();
       });
       extHostIDEWindow.$postMessage(webviewId, testMessage);
     });
 
-    it ('closed event can be received', async (done) => {
-      window.onClosed(()  => {
+    it('closed event can be received', async (done) => {
+      window.onClosed(() => {
         done();
       });
       extHostIDEWindow.$dispatchClosed(webviewId);
     });
 
-    it ('show method should be work', () => {
+    it('show method should be work', () => {
       window.show();
       expect(mockMainThreadIDEWindowProxy.$show).toBeCalledTimes(1);
     });
 
-    it ('hide method should be work', () => {
+    it('hide method should be work', () => {
       window.hide();
       expect(mockMainThreadIDEWindowProxy.$hide).toBeCalledTimes(1);
     });
 
-    it ('postMessage method should be work', () => {
+    it('postMessage method should be work', () => {
       window.postMessage('message');
       expect(mockMainThreadIDEWindowProxy.$postMessage).toBeCalledTimes(1);
     });
 
-    it ('loadUrl method should be work', () => {
+    it('loadUrl method should be work', () => {
       window.loadUrl('http://opensumi.com');
       expect(mockMainThreadIDEWindowProxy.$loadURL).toBeCalledTimes(1);
     });
 
-    it ('setSize method should be work', () => {
-      window.setSize({width: 100, height: 200});
+    it('setSize method should be work', () => {
+      window.setSize({ width: 100, height: 200 });
       expect(mockMainThreadIDEWindowProxy.$setSize).toBeCalledTimes(1);
     });
 
-    it ('setAlwaysOnTop method should be work', () => {
+    it('setAlwaysOnTop method should be work', () => {
       window.setAlwaysOnTop(true);
       expect(mockMainThreadIDEWindowProxy.$setSize).toBeCalledTimes(1);
     });
@@ -123,10 +121,9 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.window.test.ts',
       expect(window.webContentsId).toBe(100);
     });
 
-    it ('dispose method should be work', () => {
+    it('dispose method should be work', () => {
       window.dispose();
       expect(mockMainThreadIDEWindowProxy.$destroy).toBeCalledTimes(1);
     });
-
   });
 });

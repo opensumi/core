@@ -4,7 +4,7 @@ import cls from 'classnames';
 import { isUndefined, isString } from '@opensumi/ide-core-common';
 import { Badge, Loading } from '@opensumi/ide-components';
 
-import {  TreeViewAction, isTreeViewActionComponent } from '../../tree';
+import { TreeViewAction, isTreeViewActionComponent } from '../../tree';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
@@ -52,21 +52,23 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
     return '';
   }
   if (isString(template)) {
-    if (!!ranges) {
+    if (ranges) {
       const rangeLen = ranges.length;
       if (rangeLen > 0) {
         const content: any = [];
-        for (let i = 0; i < rangeLen; i ++) {
-          content.push(<span key={`${i}-highlight-start`}>
-            { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
-            <span className={cls(styles.search_match, replace && styles.replace)} key={`${i}-highlight-content`}>
-              {template.slice(ranges[i].start, ranges[i].end)}
-            </span>
-            <span className={replace && styles.search_replace} key={`${i}--highlight-end`}>
-              {replace}
-            </span>
-            { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
-          </span>);
+        for (let i = 0; i < rangeLen; i++) {
+          content.push(
+            <span key={`${i}-highlight-start`}>
+              {i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
+              <span className={cls(styles.search_match, replace && styles.replace)} key={`${i}-highlight-content`}>
+                {template.slice(ranges[i].start, ranges[i].end)}
+              </span>
+              <span className={replace && styles.search_replace} key={`${i}--highlight-end`}>
+                {replace}
+              </span>
+              {i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end)}
+            </span>,
+          );
         }
         return content;
       } else {
@@ -84,9 +86,11 @@ const renderBadge = (node: TreeNode) => {
     return <Badge style={node.badgeStyle}>{node.badge > limit ? `${limit}+` : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
     const limit = node.badgeLimit || node.badge.length;
-    return <div className={styles.treenode_status} style={node.badgeStyle}>
-      {node.badge.slice(0, limit)}
-    </div>;
+    return (
+      <div className={styles.treenode_status} style={node.badgeStyle}>
+        {node.badge.slice(0, limit)}
+      </div>
+    );
   }
 };
 
@@ -95,9 +99,11 @@ const renderDescription = (node: any, replace: string) => {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
   } else if (!isUndefined(node.description)) {
-    return <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
-      {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
-    </div>;
+    return (
+      <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
+        {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
+      </div>
+    );
   }
 };
 
@@ -105,45 +111,42 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
   if (node.isLoading) {
     return <Loading />;
   }
-  return <div
-    onClick={clickHandler}
-    className={cls(
-      styles.treenode_segment,
-      styles.expansion_toggle,
-      getIcon('arrow-right'),
-      { [`${styles.mod_collapsed}`]: !node.expanded },
-    )}
-  />;
+  return (
+    <div
+      onClick={clickHandler}
+      className={cls(styles.treenode_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        [`${styles.mod_collapsed}`]: !node.expanded,
+      })}
+    />
+  );
 };
 
-export const TreeContainerNode = (
-  {
-    node,
-    leftPadding,
-    defaultLeftPadding,
-    onSelect,
-    onTwistieClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnter,
-    onDragOver,
-    onDragLeave,
-    onDragEnd,
-    onDrag,
-    onDrop,
-    onChange,
-    draggable,
-    foldable,
-    isEdited,
-    isComplex,
-    actions = [],
-    alwaysShowActions,
-    commandActuator,
-    replace = '',
-    itemLineHeight,
-    validate,
-  }: TreeNodeProps,
-) => {
+export const TreeContainerNode = ({
+  node,
+  leftPadding,
+  defaultLeftPadding,
+  onSelect,
+  onTwistieClick,
+  onContextMenu,
+  onDragStart,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDragEnd,
+  onDrag,
+  onDrop,
+  onChange,
+  draggable,
+  foldable,
+  isEdited,
+  isComplex,
+  actions = [],
+  alwaysShowActions,
+  commandActuator,
+  replace = '',
+  itemLineHeight,
+  validate,
+}: TreeNodeProps) => {
   defaultLeftPadding = typeof defaultLeftPadding === 'number' ? defaultLeftPadding : 10;
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -244,19 +247,21 @@ export const TreeContainerNode = (
     height: itemLineHeight,
     backgroundColor: node.background || 'inherit',
     left: '0',
-    opacity: isEdited && !node.isTemporary ? .3 : 1,
+    opacity: isEdited && !node.isTemporary ? 0.3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + (isComplex ? 5 : 0)}px`,
+    paddingLeft: ExpandableTreeNode.is(node)
+      ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px`
+      : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + (isComplex ? 5 : 0)}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
   } as React.CSSProperties;
 
-  const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
-    return actions.map((action: TreeViewAction, index) => {
+  const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) =>
+    actions.map((action: TreeViewAction, index) => {
       if (isTreeViewActionComponent(action)) {
         return <span key={`${node.id}-${action.location}-${index}`}>{action.component}</span>;
       }
@@ -265,45 +270,42 @@ export const TreeContainerNode = (
         event.stopPropagation();
         event.preventDefault();
         const params = action.paramsKey
-          ? (typeof action.paramsKey === 'string' ? node[action.paramsKey] : action.paramsKey(node))
+          ? typeof action.paramsKey === 'string'
+            ? node[action.paramsKey]
+            : action.paramsKey(node)
           : node.id;
         commandActuator(action.command, params);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
-      return <Icon
-        key={`${node.id}-${typeof action.paramsKey === 'string' ? node[action.paramsKey] : node.id}-${action.command}`}
-        iconClass={cls(styles.action_icon, icon)}
-        tooltip={action.title} // Icon 用 tooltip 当 title
-        onClick={clickHandler} />;
+      return (
+        <Icon
+          key={`${node.id}-${typeof action.paramsKey === 'string' ? node[action.paramsKey] : node.id}-${
+            action.command
+          }`}
+          iconClass={cls(styles.action_icon, icon)}
+          tooltip={action.title} // Icon 用 tooltip 当 title
+          onClick={clickHandler}
+        />
+      );
     });
-  };
 
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
     if (actions.length === 0) {
       return;
     }
-    return <div className={styles.left_actions}>
-      {renderTreeNodeActions(node, actions, commandActuator)}
-    </div>;
-
+    return <div className={styles.left_actions}>{renderTreeNodeActions(node, actions, commandActuator)}</div>;
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
     if (actions.length === 0) {
       return;
     }
-    return <div className={styles.right_actions}>
-      {renderTreeNodeActions(node, actions, commandActuator)}
-    </div>;
-
+    return <div className={styles.right_actions}>{renderTreeNodeActions(node, actions, commandActuator)}</div>;
   };
 
-  const renderTreeContainerActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
-    return <div className={styles.container_actions}>
-      {renderTreeNodeActions(node, actions, commandActuator)}
-    </div>;
-
-  };
+  const renderTreeContainerActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => (
+    <div className={styles.container_actions}>{renderTreeNodeActions(node, actions, commandActuator)}</div>
+  );
 
   const renderHead = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
@@ -318,27 +320,31 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div
-      className={cls(
-        styles.treenode_head,
-      )}
-    >
-      { node.headIconClass && <div className={cls(
-        styles.treenode_head_icon,
-        node.headIconClass,
-      )}></div>}
-      {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
-    </div>;
+    return (
+      <div className={cls(styles.treenode_head)}>
+        {node.headIconClass && <div className={cls(styles.treenode_head_icon, node.headIconClass)}></div>}
+        {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
+      </div>
+    );
   };
 
-  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
-    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
-    </div>;
-  };
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => (
+    <div
+      className={cls(node.icon, styles.file_icon, { expanded: node.expanded })}
+      style={{ ...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px` }}
+    ></div>
+  );
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
+  const renderDisplayName = (
+    node: TreeNode,
+    actions: TreeViewAction[],
+    commandActuator: any,
+    onChange: any = () => {},
+  ) => {
     const isComponent = !isString(node.name);
-    const [value, setValue] = React.useState<string>(!isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
+    const [value, setValue] = React.useState<string>(
+      !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : (node.name as string),
+    );
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
@@ -388,36 +394,42 @@ export const TreeContainerNode = (
           end: node.name.replace(/\..+/, '').length,
         };
       }
-      return <div
-        className={cls(styles.treenode_segment, styles.treenode_inputbox, actualValidate(value) && styles.overflow_visible)}
-      >
-        <div className={styles.input_wrapper}>
-          <ValidateInput
-            type='text'
-            className={cls(styles.input_box)}
-            autoFocus={true}
-            popup
-            onBlur={blurHandler}
-            value={value}
-            onChange={changeHandler}
-            onKeyDown={keydownHandler}
-            validate={actualValidate}
-            selection={selection}
-          />
+      return (
+        <div
+          className={cls(
+            styles.treenode_segment,
+            styles.treenode_inputbox,
+            actualValidate(value) && styles.overflow_visible,
+          )}
+        >
+          <div className={styles.input_wrapper}>
+            <ValidateInput
+              type='text'
+              className={cls(styles.input_box)}
+              autoFocus={true}
+              popup
+              onBlur={blurHandler}
+              value={value}
+              onChange={changeHandler}
+              onKeyDown={keydownHandler}
+              validate={actualValidate}
+              selection={selection}
+            />
+          </div>
         </div>
-      </div>;
+      );
     }
     if (isComponent) {
       const Template = node.name as React.JSXElementConstructor<any>;
       return <Template />;
     } else {
-      return <div
-        className={cls(styles.treenode_segment, styles.treenode_displayname, node.labelClass)}
-      >
-        {node.beforeLabel}
-        {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
-        {node.afterLabel}
-      </div>;
+      return (
+        <div className={cls(styles.treenode_segment, styles.treenode_displayname, node.labelClass)}>
+          {node.beforeLabel}
+          {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
+          {node.afterLabel}
+        </div>
+      );
     }
   };
 
@@ -439,24 +451,24 @@ export const TreeContainerNode = (
 
     if (ExpandableTreeNode.is(node)) {
       if (treeContainerActions.length > 0) {
-        return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
-          {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
-          {renderBadge(node)}
-        </div>;
+        return (
+          <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
+            {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
+            {renderBadge(node)}
+          </div>
+        );
       } else {
-        return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
-          {renderBadge(node)}
-        </div>;
+        return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>{renderBadge(node)}</div>;
       }
     } else if (treeNodeRightActions.length !== 0) {
-      return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
-        {renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator)}
-        {renderBadge(node)}
-      </div>;
+      return (
+        <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
+          {renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator)}
+          {renderBadge(node)}
+        </div>
+      );
     } else {
-      return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
-        {renderBadge(node)}
-      </div>;
+      return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>{renderBadge(node)}</div>;
     }
   };
 
@@ -474,7 +486,11 @@ export const TreeContainerNode = (
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.treenode_title} style={titleStyle}>{node.title}</div>;
+      return (
+        <div className={styles.treenode_title} style={titleStyle}>
+          {node.title}
+        </div>
+      );
     }
   };
 
@@ -495,22 +511,26 @@ export const TreeContainerNode = (
       onClick={selectHandler}
     >
       <div
-        className={cls(
-          styles.treenode,
-          {
-            [styles.alwaysShowActions]: alwaysShowActions || node.alwaysShowActions,
-            [styles.mod_focused]: SelectableTreeNode.hasFocus(node),
-            [styles.mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
-          },
-        )}
+        className={cls(styles.treenode, {
+          [styles.alwaysShowActions]: alwaysShowActions || node.alwaysShowActions,
+          [styles.mod_focused]: SelectableTreeNode.hasFocus(node),
+          [styles.mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
+        })}
         style={TreeNodeStyle}
       >
         {renderTitle(node)}
         <div className={cls(styles.treenode_content, node.badge ? styles.treenode_has_badge : '')} style={itemStyle}>
-          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || renderHead(node)}
+          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) ||
+            renderHead(node)}
           {renderIcon(node)}
           <div
-            className={isEdited ? styles.treenode_edit_wrap : isString(node.name) ? styles.treenode_overflow_wrap : styles.treenode_flex_wrap}
+            className={
+              isEdited
+                ? styles.treenode_edit_wrap
+                : isString(node.name)
+                ? styles.treenode_overflow_wrap
+                : styles.treenode_flex_wrap
+            }
           >
             {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
             {renderDescription(node, replace)}

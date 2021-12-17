@@ -26,7 +26,9 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
     if (history) {
       try {
         return this.controller.recovery(JSON.parse(history));
-      } catch { /** nothing */ }
+      } catch {
+        /** nothing */
+      }
     }
     return Promise.resolve();
   }

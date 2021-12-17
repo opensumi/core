@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -65,10 +65,7 @@ export class ExtHostPreference implements IExtHostPreference {
   private readonly _onDidChangeConfiguration = new Emitter<ConfigurationChangeEvent>();
   readonly onDidChangeConfiguration: Event<ConfigurationChangeEvent> = this._onDidChangeConfiguration.event;
 
-  constructor(
-    rpcProtocol: IRPCProtocol,
-    private readonly workspace: IExtHostWorkspace,
-  ) {
+  constructor(rpcProtocol: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadPreference);
   }
@@ -152,9 +149,11 @@ export class ExtHostPreference implements IExtHostPreference {
 
   getConfiguration(section?: string, resource?: Uri | null, extensionId?: string): WorkspaceConfiguration {
     resource = resource === null ? undefined : resource;
-    const preferences = this.toReadonlyValue(section
-      ? lookUp(this._preferences.getValue(undefined, this.workspace, resource), section)
-      : this._preferences.getValue(undefined, this.workspace, resource));
+    const preferences = this.toReadonlyValue(
+      section
+        ? lookUp(this._preferences.getValue(undefined, this.workspace, resource), section)
+        : this._preferences.getValue(undefined, this.workspace, resource),
+    );
     const configuration: WorkspaceConfiguration = {
       has(key: string): boolean {
         return typeof lookUp(preferences, key) !== 'undefined';
@@ -257,25 +256,26 @@ export class ExtHostPreference implements IExtHostPreference {
   }
 
   private toReadonlyValue(data: any): any {
-    const readonlyProxy = (target: any): any => isObject(target)
-      ? new Proxy(target, {
-        get: (targ: any, prop: string) => readonlyProxy(targ[prop]),
-        set: (targ: any, prop: string, val: any) => {
-          throw new Error(`TypeError: Cannot assign to read only property '${prop}' of object`);
-        },
-        deleteProperty: (targ: any, prop: string) => {
-          throw new Error(`TypeError: Cannot delete read only property '${prop}' of object`);
-        },
-        defineProperty: (targ: any, prop: string) => {
-          throw new Error(`TypeError: Cannot define property '${prop}' of a readonly object`);
-        },
-        setPrototypeOf: (targ: any) => {
-          throw new Error('TypeError: Cannot set prototype for a readonly object');
-        },
-        isExtensible: () => false,
-        preventExtensions: () => true,
-      })
-      : target;
+    const readonlyProxy = (target: any): any =>
+      isObject(target)
+        ? new Proxy(target, {
+            get: (targ: any, prop: string) => readonlyProxy(targ[prop]),
+            set: (targ: any, prop: string, val: any) => {
+              throw new Error(`TypeError: Cannot assign to read only property '${prop}' of object`);
+            },
+            deleteProperty: (targ: any, prop: string) => {
+              throw new Error(`TypeError: Cannot delete read only property '${prop}' of object`);
+            },
+            defineProperty: (targ: any, prop: string) => {
+              throw new Error(`TypeError: Cannot define property '${prop}' of a readonly object`);
+            },
+            setPrototypeOf: (targ: any) => {
+              throw new Error('TypeError: Cannot set prototype for a readonly object');
+            },
+            isExtensible: () => false,
+            preventExtensions: () => true,
+          })
+        : target;
     return readonlyProxy(data);
   }
 }

@@ -4,9 +4,7 @@ import { IMenuRegistry, MenuId, IMenuItem } from '../../menu/next';
 
 export const TabBarToolbarContribution = Symbol('TabBarToolbarContribution');
 export interface TabBarToolbarContribution {
-
   registerToolbarItems(registry: ToolbarRegistry): void;
-
 }
 
 @Injectable()
@@ -48,5 +46,4 @@ export interface TabBarToolbarItem extends IMenuItem {
   viewId?: string;
 
   readonly onDidChange?: Event<void>;
-
 }

@@ -1,8 +1,25 @@
 import type vscode from 'vscode';
 import {
-  IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
-  IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
-  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls, WebviewViewProvider,
+  IExtHostMessage,
+  IExtHostTreeView,
+  TreeViewOptions,
+  ViewColumn,
+  IWebviewPanelOptions,
+  IWebviewOptions,
+  WebviewPanel,
+  WebviewPanelSerializer,
+  IExtHostWindowState,
+  IExtHostStatusBar,
+  IExtHostQuickOpen,
+  IExtHostOutput,
+  IExtHostTerminal,
+  IExtHostWindow,
+  IMainThreadWindow,
+  MainThreadAPIIdentifier,
+  IExtOpenDialogOptions,
+  IExtSaveDialogOptions,
+  IExtHostUrls,
+  WebviewViewProvider,
 } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@opensumi/ide-core-common';
 
@@ -45,15 +62,34 @@ export function createWindowApiFactory(
   return {
     // @deprecated
     withScmProgress<R>(task: (progress: vscode.Progress<number>) => Thenable<R>) {
-      return extHostProgress.withProgress(extension, { location: types.ProgressLocation.SourceControl }, (progress, token) => task({ report(n: number) { /*noop*/ } }));
+      return extHostProgress.withProgress(
+        extension,
+        { location: types.ProgressLocation.SourceControl },
+        (progress, token) =>
+          task({
+            report(n: number) {
+              /* noop*/
+            },
+          }),
+      );
     },
-    withProgress<R>(options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string; worked?: number }>, token: vscode.CancellationToken) => Thenable<R>) {
+    withProgress<R>(
+      options: vscode.ProgressOptions,
+      task: (
+        progress: vscode.Progress<{ message?: string; worked?: number }>,
+        token: vscode.CancellationToken,
+      ) => Thenable<R>,
+    ) {
       if (typeof options.location === 'object') {
         throwProposedApiError(extension);
       }
       return extHostProgress.withProgress(extension, options, task);
     },
-    createStatusBarItem(alignmentOrId?: vscode.StatusBarAlignment | string, priorityOrAlignment?: number | vscode.StatusBarAlignment, priorityArg?: number): vscode.StatusBarItem {
+    createStatusBarItem(
+      alignmentOrId?: vscode.StatusBarAlignment | string,
+      priorityOrAlignment?: number | vscode.StatusBarAlignment,
+      priorityArg?: number,
+    ): vscode.StatusBarItem {
       let id: string | undefined;
       let alignment: number | undefined;
       let priority: number | undefined;
@@ -72,19 +108,47 @@ export function createWindowApiFactory(
       return extHostOutput.createOutputChannel(name);
     },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable {
-
       // step2
       return extHostStatusBar.setStatusBarMessage(text, arg);
-
     },
-    showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {
-      return extHostMessage.showMessage(MessageType.Info, message, first, extension.displayName || extension.name, ...rest);
+    showInformationMessage(
+      message: string,
+      first: vscode.MessageOptions | string | vscode.MessageItem,
+      ...rest: (string | vscode.MessageItem)[]
+    ) {
+      return extHostMessage.showMessage(
+        MessageType.Info,
+        message,
+        first,
+        extension.displayName || extension.name,
+        ...rest,
+      );
     },
-    showWarningMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MessageType.Warning, message, first, extension.displayName || extension.name, ...rest);
+    showWarningMessage(
+      message: string,
+      first: vscode.MessageOptions | string | vscode.MessageItem,
+      ...rest: Array<string | vscode.MessageItem>
+    ) {
+      return extHostMessage.showMessage(
+        MessageType.Warning,
+        message,
+        first,
+        extension.displayName || extension.name,
+        ...rest,
+      );
     },
-    showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MessageType.Error, message, first, extension.displayName || extension.name, ...rest);
+    showErrorMessage(
+      message: string,
+      first: vscode.MessageOptions | string | vscode.MessageItem,
+      ...rest: Array<string | vscode.MessageItem>
+    ) {
+      return extHostMessage.showMessage(
+        MessageType.Error,
+        message,
+        first,
+        extension.displayName || extension.name,
+        ...rest,
+      );
     },
     registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
       return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
@@ -104,7 +168,11 @@ export function createWindowApiFactory(
     onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
     onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
-    showTextDocument(documentOrUri: vscode.TextDocument | Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean) {
+    showTextDocument(
+      documentOrUri: vscode.TextDocument | Uri,
+      columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions,
+      preserveFocus?: boolean,
+    ) {
       return extHostEditors.showTextDocument(documentOrUri, columnOrOptions, preserveFocus);
     },
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
@@ -125,8 +193,20 @@ export function createWindowApiFactory(
     createInputBox(): vscode.InputBox {
       return extHostQuickOpen.createInputBox();
     },
-    createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { preserveFocus: boolean, viewColumn: ViewColumn }, options?: IWebviewPanelOptions & IWebviewOptions): WebviewPanel {
-      return extHostWebviews.createWebview(Uri.parse('not-implemented://'), viewType, title, showOptions, options, extensionInfo);
+    createWebviewPanel(
+      viewType: string,
+      title: string,
+      showOptions: ViewColumn | { preserveFocus: boolean; viewColumn: ViewColumn },
+      options?: IWebviewPanelOptions & IWebviewOptions,
+    ): WebviewPanel {
+      return extHostWebviews.createWebview(
+        Uri.parse('not-implemented://'),
+        viewType,
+        title,
+        showOptions,
+        options,
+        extensionInfo,
+      );
     },
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
@@ -136,21 +216,16 @@ export function createWindowApiFactory(
      * proposed api registerDecorationProvider
      * please use registerFileDecorationProvider
      */
-    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
-      return extHostDecorations.registerFileDecorationProvider(provider, extension.id);
-    }),
-    registerFileDecorationProvider: (provider: vscode.FileDecorationProvider) => {
-      return extHostDecorations.registerFileDecorationProvider(provider, extension.id);
-    },
+    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) =>
+      extHostDecorations.registerFileDecorationProvider(provider, extension.id),
+    ),
+    registerFileDecorationProvider: (provider: vscode.FileDecorationProvider) =>
+      extHostDecorations.registerFileDecorationProvider(provider, extension.id),
     registerUriHandler(handler: vscode.UriHandler) {
       return extHostUrls.registerUriHandler(extension.id, handler);
     },
-    showOpenDialog: (options: vscode.OpenDialogOptions) => {
-      return extHostWindow.openDialog(options);
-    },
-    showSaveDialog: (options) => {
-      return extHostWindow.showSaveDialog(options);
-    },
+    showOpenDialog: (options: vscode.OpenDialogOptions) => extHostWindow.openDialog(options),
+    showSaveDialog: (options) => extHostWindow.showSaveDialog(options),
 
     get onDidChangeWindowState() {
       return extHostWindowState.onDidChangeWindowState;
@@ -177,7 +252,11 @@ export function createWindowApiFactory(
 
     onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
 
-    createTerminal(nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
+    createTerminal(
+      nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string,
+      shellPath?: string,
+      shellArgs?: string[] | string,
+    ): vscode.Terminal {
       if (typeof nameOrOptions === 'object') {
         if ('pty' in nameOrOptions) {
           return extHostTerminal.createExtensionTerminal(nameOrOptions);
@@ -194,13 +273,21 @@ export function createWindowApiFactory(
     onDidChangeActiveColorTheme(listener, thisArg?, disposables?) {
       return extHostTheming.onDidChangeActiveColorTheme(listener, thisArg, disposables);
     },
-    registerCustomEditorProvider(viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider, options: { supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: vscode.WebviewPanelOptions } = {}): IDisposable {
+    registerCustomEditorProvider(
+      viewType: string,
+      provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider,
+      options: { supportsMultipleEditorsPerDocument?: boolean; webviewOptions?: vscode.WebviewPanelOptions } = {},
+    ): IDisposable {
       return extHostCustomEditor.registerCustomEditorProvider(viewType, provider, options, extensionInfo);
     },
     registerTerminalLinkProvider(handler: vscode.TerminalLinkProvider): vscode.Disposable {
       return extHostTerminal.registerLinkProvider(handler);
     },
-    registerWebviewViewProvider(viewId: string, provider: WebviewViewProvider, options?: { webviewOptions: { retainContextWhenHidden: boolean } }) {
+    registerWebviewViewProvider(
+      viewId: string,
+      provider: WebviewViewProvider,
+      options?: { webviewOptions: { retainContextWhenHidden: boolean } },
+    ) {
       return extHostWebviewView.registerWebviewViewProvider(extension, viewId, provider, options?.webviewOptions);
     },
   };
@@ -215,12 +302,11 @@ function proposedApiFunction<T>(extension: IExtensionDescription, fn: T): T {
 }
 
 export class ExtHostWindow implements IExtHostWindow {
-
   protected readonly proxy: IMainThreadWindow;
 
   private id = 0;
-  private _onOpenedResult = new Emitter<{ id: string, result: types.UriComponents[] | undefined }>();
-  private _onSavedResult = new Emitter<{ id: string, result: types.UriComponents | undefined }>();
+  private _onOpenedResult = new Emitter<{ id: string; result: types.UriComponents[] | undefined }>();
+  private _onSavedResult = new Emitter<{ id: string; result: types.UriComponents | undefined }>();
   constructor(rpcProtocol: IRPCProtocol) {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWindow);
   }
@@ -258,5 +344,4 @@ export class ExtHostWindow implements IExtHostWindow {
   $onSaveDialogResult(id: string, result: types.UriComponents | undefined): void {
     this._onSavedResult.fire({ id, result });
   }
-
 }

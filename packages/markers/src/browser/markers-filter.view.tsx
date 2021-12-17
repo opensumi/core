@@ -19,15 +19,13 @@ export const MarkerFilterPanel = observer(() => {
 
   const [filterValue, setFilterValue] = React.useState<string>('');
 
-  useDisposable(() => {
-    return [
-      markerService.onMarkerFilterChanged((opt) => {
-        if (opt === undefined) {
-          setFilterValue('');
-        }
-      }),
-    ];
-  });
+  useDisposable(() => [
+    markerService.onMarkerFilterChanged((opt) => {
+      if (opt === undefined) {
+        setFilterValue('');
+      }
+    }),
+  ]);
 
   const onChangeCallback = debounce((value) => {
     setFilterValue(value);
@@ -42,7 +40,8 @@ export const MarkerFilterPanel = observer(() => {
         className={styles.filterInput}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
         value={filterValue}
-        onValueChange={onChangeCallback} />
+        onValueChange={onChangeCallback}
+      />
     </div>
   );
 });

@@ -1,13 +1,31 @@
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  ClientAppContribution,
+  SlotLocation,
+  SlotRendererContribution,
+  SlotRendererRegistry,
+  slotRendererRegistry,
+  KeybindingRegistry,
+} from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '../common';
-import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import {
+  ComponentContribution,
+  ComponentRegistry,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+} from '@opensumi/ide-core-browser/lib/layout';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, MenuCommandDesc, MenuContribution as MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  IMenuRegistry,
+  MenuCommandDesc,
+  MenuContribution as MenuContribution,
+  MenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -72,8 +90,10 @@ export const RETRACT_BOTTOM_PANEL: Command = {
 };
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution)
-export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution {
-
+export class MainLayoutModuleContribution
+  extends WithEventBus
+  implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution
+{
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
 
@@ -134,13 +154,17 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   async onStart() {
     this.registerSideToggleKey();
     // vscode用于测试插件使用的默认container
-    this.mainLayoutService.collectTabbarComponent([], {
-      hideIfEmpty: true,
-      containerId: 'test',
-      title: localize('workbench.testViewContainer').toUpperCase(),
-      iconClass: getIcon('experiment'),
-      fromExtension: true,
-    }, SlotLocation.left);
+    this.mainLayoutService.collectTabbarComponent(
+      [],
+      {
+        hideIfEmpty: true,
+        containerId: 'test',
+        title: localize('workbench.testViewContainer').toUpperCase(),
+        iconClass: getIcon('experiment'),
+        fromExtension: true,
+      },
+      SlotLocation.left,
+    );
   }
 
   async onDidStart() {
@@ -208,19 +232,13 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       },
     });
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
-      execute: () => {
-        return this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '';
-      },
+      execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '',
     });
     commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        return this.mainLayoutService.isVisible(SlotLocation.left);
-      },
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
     });
     commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        return this.mainLayoutService.isVisible(SlotLocation.left);
-      },
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
     });
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
       execute: (size: number) => {
@@ -238,34 +256,46 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       },
     });
 
-    commands.registerCommand({
-      id: 'view.outward.right-panel.hide',
-    }, {
-      execute: () => {
-        this.commandService.executeCommand('main-layout.right-panel.toggle', false);
+    commands.registerCommand(
+      {
+        id: 'view.outward.right-panel.hide',
       },
-    });
-    commands.registerCommand({
-      id: 'view.outward.right-panel.show',
-    }, {
-      execute: (size?: number) => {
-        this.commandService.executeCommand('main-layout.right-panel.toggle', true, size);
+      {
+        execute: () => {
+          this.commandService.executeCommand('main-layout.right-panel.toggle', false);
+        },
       },
-    });
-    commands.registerCommand({
-      id: 'view.outward.left-panel.hide',
-    }, {
-      execute: () => {
-        this.commandService.executeCommand('main-layout.left-panel.toggle', false);
+    );
+    commands.registerCommand(
+      {
+        id: 'view.outward.right-panel.show',
       },
-    });
-    commands.registerCommand({
-      id: 'view.outward.left-panel.show',
-    }, {
-      execute: (size?: number) => {
-        this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
+      {
+        execute: (size?: number) => {
+          this.commandService.executeCommand('main-layout.right-panel.toggle', true, size);
+        },
       },
-    });
+    );
+    commands.registerCommand(
+      {
+        id: 'view.outward.left-panel.hide',
+      },
+      {
+        execute: () => {
+          this.commandService.executeCommand('main-layout.left-panel.toggle', false);
+        },
+      },
+    );
+    commands.registerCommand(
+      {
+        id: 'view.outward.left-panel.show',
+      },
+      {
+        execute: (size?: number) => {
+          this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
+        },
+      },
+    );
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -298,5 +328,4 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
     });
   }
-
 }

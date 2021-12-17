@@ -1,11 +1,16 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
-import { ITerminalPreference, IPreferenceValue, DefaultOptions, OptionTypeName, DefaultOptionValue } from '../common/preference';
+import {
+  ITerminalPreference,
+  IPreferenceValue,
+  DefaultOptions,
+  OptionTypeName,
+  DefaultOptionValue,
+} from '../common/preference';
 
 @Injectable()
 export class TerminalPreference implements ITerminalPreference {
-
   static defaultOptions: DefaultOptions = {
     allowTransparency: true,
     macOptionIsMeta: false,

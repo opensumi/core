@@ -24,7 +24,7 @@ const cachedArgs: Map<string, [MessageType, ArgsProps]> = new Map();
 export function open<T = string>(
   message: string | React.ReactNode,
   type: MessageType,
-  closable: boolean = true,
+  closable = true,
   key: string,
   buttons?: string[],
   description?: string | React.ReactNode,
@@ -39,7 +39,7 @@ export function open<T = string>(
         ['kt-notification-error']: type === MessageType.Error,
         ['kt-notification-warn']: type === MessageType.Warning,
       }),
-      duration: duration !== undefined ? null : (DURATION[type] / 1000),
+      duration: duration !== undefined ? null : DURATION[type] / 1000,
       onClose: () => {
         onClose && onClose();
         cachedArgs.delete(key);
@@ -47,17 +47,19 @@ export function open<T = string>(
       },
       btn: buttons
         ? buttons.map((button, index) => (
-          <Button
-            className={clx('kt-notification-button')}
-            size='small'
-            ghost={index === 0}
-            onClick={() => {
-              resolve(button as any);
-              antdNotification.close(key);
-            }}
-            key={button}>
-            {button}
-          </Button>))
+            <Button
+              className={clx('kt-notification-button')}
+              size='small'
+              ghost={index === 0}
+              onClick={() => {
+                resolve(button as any);
+                antdNotification.close(key);
+              }}
+              key={button}
+            >
+              {button}
+            </Button>
+          ))
         : null,
       message,
       description,

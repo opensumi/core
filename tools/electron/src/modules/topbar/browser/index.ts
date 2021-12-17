@@ -26,17 +26,18 @@ export class TopbarModule extends BrowserModule {
 
 @Domain(ComponentContribution)
 export class TopbarContribution implements ComponentContribution {
-
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('topbar', {
-      id: 'topbar',
-      component: Topbar,
-    }, {
-      size: 56,
-    });
+    registry.register(
+      'topbar',
+      {
+        id: 'topbar',
+        component: Topbar,
+      },
+      {
+        size: 56,
+      },
+    );
   }
 
-  registerRenderer() {
-  }
-
+  registerRenderer() {}
 }

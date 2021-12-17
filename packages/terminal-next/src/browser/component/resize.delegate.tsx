@@ -32,7 +32,7 @@ export default (props: IResizeDelegateProps) => {
     }
 
     const endX = event.clientX;
-    const move = (endX - startX) / wholeWidth * 100;
+    const move = ((endX - startX) / wholeWidth) * 100;
     startX = endX;
 
     if (move < 0) {
@@ -58,19 +58,8 @@ export default (props: IResizeDelegateProps) => {
   };
 
   return (
-    <div
-      className={ styles.resizeDelegetContainer }
-      onMouseUp={ onMouseUp }
-      onMouseMove={ onMouseMove }
-    >
-      {
-        !last &&
-        <div
-          className={ styles.resizeDelegateBar }
-          onMouseDown={ onMouseDown }
-          onMouseUp={ onMouseUp }
-        ></div>
-      }
+    <div className={styles.resizeDelegetContainer} onMouseUp={onMouseUp} onMouseMove={onMouseMove}>
+      {!last && <div className={styles.resizeDelegateBar} onMouseDown={onMouseDown} onMouseUp={onMouseUp}></div>}
     </div>
   );
 };

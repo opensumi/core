@@ -1,7 +1,21 @@
-import { CONTEXT_IN_DEBUG_MODE, CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
+import {
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
+  CONTEXT_WATCH_ITEM_TYPE,
+} from './../../../common/constants';
 import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandContribution,
+  CommandRegistry,
+  TabBarToolbarContribution,
+  localize,
+  ToolbarRegistry,
+  ClientAppContribution,
+  KeybindingContribution,
+  KeybindingRegistry,
+} from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DEBUG_WATCH_ID } from '../../../common';
 import { DebugWatchModelService } from './debug-watch-tree.model.service';
@@ -9,8 +23,14 @@ import { MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next'
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
 @Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution)
-export class WatchPanelContribution implements ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution {
-
+export class WatchPanelContribution
+  implements
+    ClientAppContribution,
+    MenuContribution,
+    CommandContribution,
+    TabBarToolbarContribution,
+    KeybindingContribution
+{
   @Autowired(DebugWatchModelService)
   private readonly debugWatchModelService: DebugWatchModelService;
 
@@ -105,7 +125,9 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         id: DEBUG_COMMANDS.COPY_WATCHER_VALUE.id,
         label: localize('debug.watch.copyValue'),
       },
-      when: `${CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression')} || ${CONTEXT_WATCH_ITEM_TYPE.equalsTo('variable')} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+      when: `${CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression')} || ${CONTEXT_WATCH_ITEM_TYPE.equalsTo('variable')} && ${
+        CONTEXT_IN_DEBUG_MODE.raw
+      }`,
       order: 30,
       enabledWhen: CONTEXT_IN_DEBUG_MODE.raw,
       group: '3_modification',

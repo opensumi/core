@@ -4,7 +4,6 @@ import { observable, action } from 'mobx';
 
 @Injectable({ multiple: true })
 export class ProgressIndicator implements IProgressIndicator {
-
   @observable
   public progressModel: IProgressModel = {
     show: false,

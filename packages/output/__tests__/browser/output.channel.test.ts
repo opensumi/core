@@ -11,13 +11,11 @@ import { ContentChangeEvent, ContentChangeType } from '@opensumi/ide-output/lib/
 
 @Injectable()
 class MockLoggerManagerClient {
-  getLogger = () => {
-    return {
-      log() {},
-      debug() {},
-      error() {},
-    };
-  }
+  getLogger = () => ({
+    log() {},
+    debug() {},
+    error() {},
+  });
 }
 
 @Injectable()
@@ -28,49 +26,52 @@ class MockMainLayoutService {
       activate() {},
     };
   }
-
 }
 
 const preferences: Map<string, any> = new Map();
 
 const mockedPreferenceService: any = {
-  get: (k) => {
-    return preferences.get(k);
-  },
+  get: (k) => preferences.get(k),
   set: (k, v) => {
     preferences.set(k, v);
   },
-  onPreferenceChanged: (listener) => {
-    return {
-      dispose: () => {},
-    };
-  },
+  onPreferenceChanged: (listener) => ({
+    dispose: () => {},
+  }),
 };
 
 describe('OutputChannel Test Sutes', () => {
-  const injector: Injector = createBrowserInjector([], new Injector([
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    }, {
-      token: IMainLayoutService,
-      useClass : MockMainLayoutService,
-    }, {
-      token: PreferenceService,
-      useValue: mockedPreferenceService,
-    }, {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    }, {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    }, {
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
+  const injector: Injector = createBrowserInjector(
+    [],
+    new Injector([
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManagerClient,
       },
-    },
-  ]));
+      {
+        token: IMainLayoutService,
+        useClass: MockMainLayoutService,
+      },
+      {
+        token: PreferenceService,
+        useValue: mockedPreferenceService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
+      },
+    ]),
+  );
 
   const outputChannel = injector.get(OutputChannel, ['test channel']);
   const eventBus: IEventBus = injector.get(IEventBus);

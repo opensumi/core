@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -12,7 +12,7 @@ export interface IFullSemanticTokensDto {
 export interface IDeltaSemanticTokensDto {
   id: number;
   type: 'delta';
-  deltas: { start: number; deleteCount: number; data?: Uint32Array; }[];
+  deltas: { start: number; deleteCount: number; data?: Uint32Array }[];
 }
 
 export type ISemanticTokensDto = IFullSemanticTokensDto | IDeltaSemanticTokensDto;
@@ -70,7 +70,7 @@ export function isLittleEndian(): boolean {
     test[0] = 1;
     test[1] = 2;
     const view = new Uint16Array(test.buffer);
-    _isLittleEndian = (view[0] === (2 << 8) + 1);
+    _isLittleEndian = view[0] === (2 << 8) + 1;
   }
   return _isLittleEndian;
 }
@@ -82,7 +82,8 @@ export function encodeSemanticTokensDto(semanticTokens: ISemanticTokensDto): Uin
   if (semanticTokens.type === 'full') {
     dest[offset++] = EncodedSemanticTokensType.Full;
     dest[offset++] = semanticTokens.data.length;
-    dest.set(semanticTokens.data, offset); offset += semanticTokens.data.length;
+    dest.set(semanticTokens.data, offset);
+    offset += semanticTokens.data.length;
   } else {
     dest[offset++] = EncodedSemanticTokensType.Delta;
     dest[offset++] = semanticTokens.deltas.length;
@@ -91,7 +92,8 @@ export function encodeSemanticTokensDto(semanticTokens: ISemanticTokensDto): Uin
       dest[offset++] = delta.deleteCount;
       if (delta.data) {
         dest[offset++] = delta.data.length;
-        dest.set(delta.data, offset); offset += delta.data.length;
+        dest.set(delta.data, offset);
+        offset += delta.data.length;
       } else {
         dest[offset++] = 0;
       }
@@ -102,24 +104,20 @@ export function encodeSemanticTokensDto(semanticTokens: ISemanticTokensDto): Uin
 
 function encodeSemanticTokensDtoSize(semanticTokens: ISemanticTokensDto): number {
   let result = 0;
-  result += (
-    + 1 // id
-    + 1 // type
-  );
+  result +=
+    +1 + // id
+    1; // type
   if (semanticTokens.type === 'full') {
-    result += (
-      + 1 // data length
-      + semanticTokens.data.length
-    );
+    result +=
+      +1 + // data length
+      semanticTokens.data.length;
   } else {
-    result += (
-      + 1 // delta count
-    );
-    result += (
-      + 1 // start
-      + 1 // deleteCount
-      + 1 // data length
-    ) * semanticTokens.deltas.length;
+    result += +1; // delta count
+    result +=
+      (+1 + // start
+        1 + // deleteCount
+        1) * // data length
+      semanticTokens.deltas.length;
     for (const delta of semanticTokens.deltas) {
       if (delta.data) {
         result += delta.data.length;
@@ -136,7 +134,8 @@ export function decodeSemanticTokensDto(_buff: Uint8Array): ISemanticTokensDto {
   const type: EncodedSemanticTokensType = src[offset++];
   if (type === EncodedSemanticTokensType.Full) {
     const length = src[offset++];
-    const data = src.subarray(offset, offset + length); offset += length;
+    const data = src.subarray(offset, offset + length);
+    offset += length;
     return {
       id,
       type: 'full',
@@ -144,14 +143,15 @@ export function decodeSemanticTokensDto(_buff: Uint8Array): ISemanticTokensDto {
     };
   }
   const deltaCount = src[offset++];
-  const deltas: { start: number; deleteCount: number; data?: Uint32Array; }[] = [];
+  const deltas: { start: number; deleteCount: number; data?: Uint32Array }[] = [];
   for (let i = 0; i < deltaCount; i++) {
     const start = src[offset++];
     const deleteCount = src[offset++];
     const length = src[offset++];
     let data: Uint32Array | undefined;
     if (length > 0) {
-      data = src.subarray(offset, offset + length); offset += length;
+      data = src.subarray(offset, offset + length);
+      offset += length;
     }
     deltas[i] = { start, deleteCount, data };
   }

@@ -6,7 +6,6 @@ import { ITerminalGroupViewService } from '../../common';
 import styles from './terminal.module.less';
 
 export default observer(() => {
-
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 
   const onChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -18,12 +17,10 @@ export default observer(() => {
 
   return (
     <div className={styles.toolbarSelect}>
-      <select value={ index || 0 } onChange={ onChange }>
-        {
-          (view.groups || []).map((group, index) => {
-            return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${group.snapshot}` }</option>;
-          })
-        }
+      <select value={index || 0} onChange={onChange}>
+        {(view.groups || []).map((group, index) => (
+          <option key={`${group}-${index}`} value={index}>{`${index + 1}: ${group.snapshot}`}</option>
+        ))}
       </select>
     </div>
   );

@@ -1,10 +1,17 @@
 import { Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '../common';
-import { VariableContribution, VariableRegistry, Domain, URI, CommandService, EDITOR_COMMANDS, COMMON_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  VariableContribution,
+  VariableRegistry,
+  Domain,
+  URI,
+  CommandService,
+  EDITOR_COMMANDS,
+  COMMON_COMMANDS,
+} from '@opensumi/ide-core-browser';
 
 @Domain(VariableContribution)
 export class WorkspaceVariableContribution implements VariableContribution {
-
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
@@ -95,7 +102,9 @@ export class WorkspaceVariableContribution implements VariableContribution {
     variables.registerVariable({
       name: 'env',
       resolve: async () => {
-        const envVariable = await this.commandService.executeCommand<{ [x: string]: string | undefined }>(COMMON_COMMANDS.ENVIRONMENT_VARIABLE.id);
+        const envVariable = await this.commandService.executeCommand<{ [x: string]: string | undefined }>(
+          COMMON_COMMANDS.ENVIRONMENT_VARIABLE.id,
+        );
         return envVariable;
       },
     });
@@ -106,7 +115,9 @@ export class WorkspaceVariableContribution implements VariableContribution {
   }
 
   async getResourceUri(): Promise<URI | undefined> {
-    const currentResource = await this.commandService.executeCommand<{ uri: URI }>(EDITOR_COMMANDS.GET_CURRENT_RESOURCE.id);
+    const currentResource = await this.commandService.executeCommand<{ uri: URI }>(
+      EDITOR_COMMANDS.GET_CURRENT_RESOURCE.id,
+    );
     if (currentResource) {
       return currentResource.uri;
     }

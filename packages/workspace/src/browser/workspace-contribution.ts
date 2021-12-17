@@ -20,8 +20,9 @@ import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { WorkspaceContextKey } from './workspace-contextkey';
 
 @Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)
-export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution {
-
+export class WorkspaceContribution
+  implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution
+{
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 
@@ -85,12 +86,10 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
     registry.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
       execute: async (_: URI, uris: URI[]) => {
         if (!uris.length || !this.workspaceService.isMultiRootWorkspaceOpened) {
-          return ;
+          return;
         }
         const roots = await this.workspaceService.roots;
-        const workspaceUris = uris.filter((uri) => {
-          return roots.find((file) => file.uri === uri.toString());
-        });
+        const workspaceUris = uris.filter((uri) => roots.find((file) => file.uri === uri.toString()));
         if (workspaceUris.length > 0) {
           await this.workspaceService.removeRoots(workspaceUris);
         }

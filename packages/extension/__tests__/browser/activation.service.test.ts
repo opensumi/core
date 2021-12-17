@@ -3,16 +3,14 @@ import { IActivationEventService } from '../../src/browser/types';
 import { ExtensionModule } from '../../src/browser';
 
 describe('activation event test', () => {
-
   const injector = createBrowserInjector([ExtensionModule]);
   const service: IActivationEventService = injector.get(IActivationEventService);
 
   it('normal event should be listened', async (done) => {
-
     let executed = 0;
 
     const disposer = service.onEvent('onCommand:A', () => {
-      executed ++;
+      executed++;
     });
 
     await service.fireEvent('onCommand', 'A');
@@ -23,7 +21,7 @@ describe('activation event test', () => {
     expect(executed).toEqual(1);
 
     service.onEvent('*', () => {
-      executed ++;
+      executed++;
     });
 
     await service.fireEvent('*');
@@ -33,13 +31,12 @@ describe('activation event test', () => {
   });
 
   it('wildcard event should be listened', async (done) => {
-
     let executed = 0;
 
     service.addWildCardTopic('wildCard');
 
     const disposer = service.onEvent('wildCard:*.js', () => {
-      executed ++;
+      executed++;
     });
 
     await service.fireEvent('wildCard', 'a.js');
@@ -56,7 +53,7 @@ describe('activation event test', () => {
     expect(executed).toEqual(2);
 
     service.onEvent('wildCard:**/.a', () => {
-      executed ++;
+      executed++;
     });
 
     await service.fireEvent('wildCard', 'b/c/.a');
@@ -64,5 +61,4 @@ describe('activation event test', () => {
 
     done();
   });
-
 });

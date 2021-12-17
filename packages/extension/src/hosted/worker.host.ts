@@ -1,11 +1,24 @@
 import { Injector } from '@opensumi/di';
-import { Emitter, Deferred, IExtensionProps, Uri, IReporterService, ReporterService, REPORT_HOST, IReporter, REPORT_NAME } from '@opensumi/ide-core-common';
 import {
-  RPCProtocol, ProxyIdentifier,
-} from '@opensumi/ide-connection';
+  Emitter,
+  Deferred,
+  IExtensionProps,
+  Uri,
+  IReporterService,
+  ReporterService,
+  REPORT_HOST,
+  IReporter,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
+import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory } from './api/worker/worker.host.api.impl';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionIdentifier, SumiWorkerExtensionService } from '../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  ExtHostAPIIdentifier,
+  ExtensionIdentifier,
+  SumiWorkerExtensionService,
+} from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
@@ -41,7 +54,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   private sumiExtAPIImpl: Map<string, any> = new Map();
   public logger: ExtensionLogger;
 
-  private initDeferred =  new Deferred();
+  private initDeferred = new Deferred();
 
   private activatedExtensions: Map<string, ActivatedExtension> = new Map<string, ActivatedExtension>();
 
@@ -57,14 +70,13 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private reporterService: IReporterService;
 
-  constructor(
-    private rpcProtocol: RPCProtocol,
-    private injector: Injector,
-  ) {
+  constructor(private rpcProtocol: RPCProtocol, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
 
     this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this, 'worker');
-    this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
+    this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(
+      MainThreadAPIIdentifier.MainThreadExtensionService,
+    );
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
@@ -73,7 +85,6 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });
-
   }
 
   async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
@@ -89,14 +100,9 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   getExtensions(): KTWorkerExtension[] {
-    return this.extensions.map((ext) => {
-      return new KTWorkerExtension(
-        ext,
-        this,
-        this.mainThreadExtensionService,
-        this.getExtensionExports(ext.id),
-      );
-    });
+    return this.extensions.map(
+      (ext) => new KTWorkerExtension(ext, this, this.mainThreadExtensionService, this.getExtensionExports(ext.id)),
+    );
   }
 
   createExtension(extensionDescription: IExtensionProps) {
@@ -136,9 +142,10 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       identifier: new ExtensionIdentifier(ext.id),
       extensionLocation: Uri.from(ext.extensionLocation),
     }));
-    this.logger.verbose('worker $handleExtHostCreated', this.extensions.map((extension) => {
-      return extension.packageJSON.name;
-    }));
+    this.logger.verbose(
+      'worker $handleExtHostCreated',
+      this.extensions.map((extension) => extension.packageJSON.name),
+    );
 
     this.extendExtHostErrorStackTrace();
 
@@ -166,18 +173,18 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
             extension = maybeExtension;
             const columnNumber = call.getColumnNumber();
             const lineNumber = call.getLineNumber();
-            stackTraceMessage = `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` + stackTraceMessage;
+            stackTraceMessage =
+              `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` +
+              stackTraceMessage;
           }
         }
       }
 
       if (extension) {
-        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
-        this.reportRuntimeError(
-          error,
-          extension,
-          traceMessage,
-        );
+        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${
+          error.message || ''
+        }${stackTraceMessage}`;
+        this.reportRuntimeError(error, extension, traceMessage);
         return traceMessage;
       }
       return error.stack;
@@ -205,15 +212,9 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
      *  "viewsProxies": ["ViewComponentID"],
      * }
      */
-    if (extension.packageJSON.kaitianContributes &&
-      extension.packageJSON.kaitianContributes.viewsProxies
-    ) {
+    if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.viewsProxies) {
       return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
-    } else if (
-      extension.extendConfig &&
-      extension.extendConfig.browser &&
-      extension.extendConfig.browser.componentId
-    ) {
+    } else if (extension.extendConfig && extension.extendConfig.browser && extension.extendConfig.browser.componentId) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {
       return {};
@@ -249,14 +250,15 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
     }
 
-    this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
+    this.rpcProtocol.set(
+      { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` } as ProxyIdentifier<any>,
+      service,
+    );
   }
 
   private async loadContext(extensionDescription: IExtensionProps) {
     const componentProxy = this.getExtendModuleProxy(extensionDescription);
-    const registerExtendFn = (exportsData) => {
-      return this.registerExtendModuleService(exportsData, extensionDescription);
-    };
+    const registerExtendFn = (exportsData) => this.registerExtendModuleService(exportsData, extensionDescription);
 
     const context = new ExtensionContext({
       extensionDescription,
@@ -270,12 +272,9 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       extensionLocation: extensionDescription.extensionLocation,
     });
 
-    return Promise.all([
-      context.globalState.whenReady,
-      context.workspaceState.whenReady,
-    ]).then(() => {
-      return Object.freeze(context);
-    });
+    return Promise.all([context.globalState.whenReady, context.workspaceState.whenReady]).then(() =>
+      Object.freeze(context),
+    );
   }
 
   public async $activateExtension(id: string) {
@@ -284,7 +283,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   public async activateExtension(id: string) {
-    const extension = this.extensions.find((extension) => extension.id === id );
+    const extension = this.extensions.find((extension) => extension.id === id);
 
     if (!extension) {
       this.logger.error(`[Worker-Host] extension worker not found ${id} `);
@@ -302,7 +301,13 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
 
       // https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Debug_eval_sources
-      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `\n//# sourceURL=${extension.workerScriptPath}`);
+      const initFn = new Function(
+        'module',
+        'exports',
+        'require',
+        'window',
+        (await response.text()) + `\n//# sourceURL=${extension.workerScriptPath}`,
+      );
       const _exports = {};
 
       const _module = { exports: _exports };
@@ -311,7 +316,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
           let sumiAPIImpl = this.sumiExtAPIImpl.get(id);
           if (!sumiAPIImpl) {
             try {
-              sumiAPIImpl =  this.sumiAPIFactory(extension);
+              sumiAPIImpl = this.sumiAPIFactory(extension);
               this.sumiExtAPIImpl.set(id, sumiAPIImpl);
             } catch (e) {
               this.logger.error('[Worker-Host] worker error');

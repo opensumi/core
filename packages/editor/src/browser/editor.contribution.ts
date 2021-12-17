@@ -1,12 +1,54 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService, getLanguageIdFromMonaco, QuickPickItem } from '@opensumi/ide-core-browser';
+import {
+  IClientApp,
+  ClientAppContribution,
+  KeybindingContribution,
+  KeybindingRegistry,
+  EDITOR_COMMANDS,
+  CommandContribution,
+  CommandRegistry,
+  URI,
+  Domain,
+  localize,
+  MonacoService,
+  ServiceNames,
+  MonacoContribution,
+  CommandService,
+  QuickPickService,
+  IEventBus,
+  isElectronRenderer,
+  Schemas,
+  PreferenceService,
+  Disposable,
+  IPreferenceSettingsService,
+  OpenerContribution,
+  IOpenerService,
+  IClipboardService,
+  QuickOpenContribution,
+  IQuickOpenHandlerRegistry,
+  PrefixQuickOpenService,
+  MonacoOverrideServiceRegistry,
+  IContextKeyService,
+  getLanguageIdFromMonaco,
+  QuickPickItem,
+} from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason } from '../common';
+import {
+  WorkbenchEditorService,
+  IResourceOpenOptions,
+  EditorGroupSplitAction,
+  ILanguageService,
+  Direction,
+  ResourceService,
+  IDocPersistentCacheProvider,
+  IEditor,
+  SaveReason,
+} from '../common';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { EditorStatusBarService } from './editor.status-bar.service';
@@ -30,9 +72,27 @@ interface ResourceArgs {
   uri: URI;
 }
 
-@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution, QuickOpenContribution)
-export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution, QuickOpenContribution {
-
+@Domain(
+  CommandContribution,
+  ClientAppContribution,
+  KeybindingContribution,
+  MonacoContribution,
+  ComponentContribution,
+  MenuContribution,
+  OpenerContribution,
+  QuickOpenContribution,
+)
+export class EditorContribution
+  implements
+    CommandContribution,
+    ClientAppContribution,
+    KeybindingContribution,
+    MonacoContribution,
+    ComponentContribution,
+    MenuContribution,
+    OpenerContribution,
+    QuickOpenContribution
+{
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -106,17 +166,22 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     const globalContextKeyService: IContextKeyService = this.injector.get(IContextKeyService);
     const editorContextKeyService = globalContextKeyService.createScoped();
     this.workbenchEditorService.setEditorContextKeyService(editorContextKeyService);
-    registry.registerOverrideService(ServiceNames.CONTEXT_KEY_SERVICE, (editorContextKeyService as any).contextKeyService);
+    registry.registerOverrideService(
+      ServiceNames.CONTEXT_KEY_SERVICE,
+      (editorContextKeyService as any).contextKeyService,
+    );
 
     // Monaco CodeEditorService
     registry.registerOverrideService(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
 
     // Monaco ContextViewService
-    registry.registerOverrideService(ServiceNames.CONTEXT_VIEW_SERVICE, new MonacoContextViewService(codeEditorService));
+    registry.registerOverrideService(
+      ServiceNames.CONTEXT_VIEW_SERVICE,
+      new MonacoContextViewService(codeEditorService),
+    );
 
     // Monaco TextModelService
     registry.registerOverrideService(ServiceNames.TEXT_MODEL_SERVICE, this.injector.get(MonacoTextModelService));
-
   }
 
   registerMonacoDefaultFormattingSelector(register): void {
@@ -143,9 +208,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   }
 
   // editorTitle出现了参数不统一。。
-  private extractGroupAndUriFromArgs(resource: ResourceArgs | URI, editorGroup?: EditorGroup): {
-    group?: EditorGroup,
-    uri?: URI,
+  private extractGroupAndUriFromArgs(
+    resource: ResourceArgs | URI,
+    editorGroup?: EditorGroup,
+  ): {
+    group?: EditorGroup;
+    uri?: URI;
   } {
     let group: EditorGroup;
     let uri: URI;
@@ -166,7 +234,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   async onWillStopElectron() {
     for (const group of this.workbenchEditorService.editorGroups) {
       for (const resource of group.resources) {
-        if (!await this.resourceService.shouldCloseResource(resource, [])) {
+        if (!(await this.resourceService.shouldCloseResource(resource, []))) {
           return true;
         }
       }
@@ -354,7 +422,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
-      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }, options: IResourceOpenOptions = {}) => {
+      execute: (
+        { original, modified, name }: { original: URI; modified: URI; name?: string },
+        options: IResourceOpenOptions = {},
+      ) => {
         name = name || `${original.displayName} <=> ${modified.displayName}`;
         return this.workbenchEditorService.open(
           URI.from({
@@ -365,7 +436,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
               modified,
             }),
           }),
-          options);
+          options,
+        );
       },
     });
 
@@ -392,9 +464,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
       execute: async (args0: ResourceArgs | URI, args1?: EditorGroup) => {
-        const {
-          group,
-        } = this.extractGroupAndUriFromArgs(args0, args1);
+        const { group } = this.extractGroupAndUriFromArgs(args0, args1);
         if (group) {
           await group.closeAll();
         }
@@ -404,9 +474,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_SAVED, {
       execute: async (resource: ResourceArgs) => {
         resource = resource || {};
-        const {
-          group = this.workbenchEditorService.currentEditorGroup,
-        } = resource;
+        const { group = this.workbenchEditorService.currentEditorGroup } = resource;
         if (group) {
           await group.closeSaved();
         }
@@ -502,7 +570,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.GO_TO_GROUP, {
-      execute: async (index: number = 1) => {
+      execute: async (index = 1) => {
         const group = this.workbenchEditorService.sortedEditorGroups[index - 1];
         if (group) {
           group.focus();
@@ -511,7 +579,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
         // 如果找的索引比 editorGroups 的数量大1，就向右拆分一个
         const groupLength = this.workbenchEditorService.sortedEditorGroups.length;
-        if (groupLength === (index - 1)) {
+        if (groupLength === index - 1) {
           const rightEditorGroup = this.workbenchEditorService.sortedEditorGroups[groupLength - 1];
           const uri = rightEditorGroup?.currentResource?.uri;
 
@@ -578,7 +646,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }));
         const targetLanguageId = await this.quickPickService.show(allLanguageItems, {
           placeholder: localize('editor.changeLanguageId'),
-          selectIndex: () => allLanguageItems.findIndex((item) => item.value === this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.languageId),
+          selectIndex: () =>
+            allLanguageItems.findIndex(
+              (item) => item.value === this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.languageId,
+            ),
         });
         if (targetLanguageId && currentLanguageId !== targetLanguageId) {
           if (this.workbenchEditorService.currentEditor) {
@@ -604,7 +675,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           return;
         }
 
-        const configuredEncoding = this.preferenceService.get<string>('files.encoding', 'utf8', resource.uri.toString(), getLanguageIdFromMonaco(resource.uri)!);
+        const configuredEncoding = this.preferenceService.get<string>(
+          'files.encoding',
+          'utf8',
+          resource.uri.toString(),
+          getLanguageIdFromMonaco(resource.uri)!,
+        );
 
         const provider = await this.contentRegistry.getProvider(resource.uri);
         const guessedEncoding = await provider?.guessEncoding?.(resource.uri);
@@ -674,13 +750,16 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         const resource = this.workbenchEditorService.currentResource;
         const currentCodeEditor = this.workbenchEditorService.currentCodeEditor;
         if (currentCodeEditor && currentCodeEditor.currentDocumentModel && resource) {
-          const res: EOL | undefined = await this.quickPickService.show([
-            {label: 'LF', value: EOL.LF},
-            {label: 'CRLF', value: EOL.CRLF},
-          ], {
-            placeholder: localize('editor.changeEol'),
-            selectIndex: () => currentCodeEditor.currentDocumentModel!.eol === EOL.LF ? 0 : 1,
-          });
+          const res: EOL | undefined = await this.quickPickService.show(
+            [
+              { label: 'LF', value: EOL.LF },
+              { label: 'CRLF', value: EOL.CRLF },
+            ],
+            {
+              placeholder: localize('editor.changeEol'),
+              selectIndex: () => (currentCodeEditor.currentDocumentModel!.eol === EOL.LF ? 0 : 1),
+            },
+          );
           if (res) {
             this.editorDocumentModelService.changeModelOptions(resource.uri, {
               eol: res,
@@ -781,9 +860,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[index].uri, { focus: true });
         } else {
-          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, { focus: true });
         }
       },
     });
@@ -796,12 +875,13 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[index].uri, { focus: true });
         } else {
-          const nextEditorGroupIndex = editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
+          const nextEditorGroupIndex =
+            editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
           const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
-          return nextEditorGroup.open(nextEditorGroup.resources[0].uri, {focus: true});
+          return nextEditorGroup.open(nextEditorGroup.resources[0].uri, { focus: true });
         }
       },
     });
@@ -814,12 +894,15 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[index].uri, { focus: true });
         } else {
-          const nextEditorGroupIndex = editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
+          const nextEditorGroupIndex =
+            editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
           const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
-          return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri, {focus: true});
+          return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri, {
+            focus: true,
+          });
         }
       },
     });
@@ -828,7 +911,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: async () => {
         const editorGroup = this.workbenchEditorService.currentEditorGroup;
         if (editorGroup.resources.length > 0) {
-          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, { focus: true });
         }
       },
     });
@@ -855,7 +938,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         const editorGroup = this.workbenchEditorService.currentEditorGroup;
         const target = editorGroup.resources[index];
         if (target) {
-          await editorGroup.open(target.uri, {focus: true});
+          await editorGroup.open(target.uri, { focus: true });
         }
       },
     });
@@ -927,19 +1010,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         if (currentCodeEditor) {
           const selections = currentCodeEditor.getSelections();
           if (selections && selections.length > 0 && currentCodeEditor.currentDocumentModel) {
-            const {
-              selectionStartLineNumber,
-              selectionStartColumn,
-              positionLineNumber,
-              positionColumn,
-            } = selections[0];
+            const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } =
+              selections[0];
             const selectionText = currentCodeEditor.currentDocumentModel.getText(
-              new monaco.Range(
-                selectionStartLineNumber,
-                selectionStartColumn,
-                positionLineNumber,
-                positionColumn,
-              ),
+              new monaco.Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
             );
 
             this.monacoService.testTokenize(selectionText, currentCodeEditor.currentDocumentModel.languageId);
@@ -1078,25 +1152,34 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
         const disposable = new Disposable();
-        disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
-          if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
-            if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
-              editor.currentDocumentModel.save(undefined, SaveReason.FocusOut);
-            }
-          }
-        }));
-        disposable.addDispose(editor.monacoEditor.onDidChangeModel((e) => {
-          if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
-            if (e.oldModelUrl) {
-              const oldUri = new URI(e.oldModelUrl.toString());
-              const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
-              if (docRef && !docRef.instance.closeAutoSave && docRef.instance.dirty && docRef.instance.savable) {
-                docRef.instance.save(undefined, SaveReason.FocusOut);
-                docRef.dispose();
+        disposable.addDispose(
+          editor.monacoEditor.onDidBlurEditorWidget(() => {
+            if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
+              if (
+                editor.currentDocumentModel &&
+                !editor.currentDocumentModel.closeAutoSave &&
+                editor.currentDocumentModel.dirty &&
+                editor.currentDocumentModel.savable
+              ) {
+                editor.currentDocumentModel.save(undefined, SaveReason.FocusOut);
               }
             }
-          }
-        }));
+          }),
+        );
+        disposable.addDispose(
+          editor.monacoEditor.onDidChangeModel((e) => {
+            if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
+              if (e.oldModelUrl) {
+                const oldUri = new URI(e.oldModelUrl.toString());
+                const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
+                if (docRef && !docRef.instance.closeAutoSave && docRef.instance.dirty && docRef.instance.savable) {
+                  docRef.instance.save(undefined, SaveReason.FocusOut);
+                  docRef.dispose();
+                }
+              }
+            }
+          }),
+        );
         return disposable;
       },
     });
@@ -1106,7 +1189,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       }
     });
     this.preferenceSettings.setEnumLabels('editor.autoSave', {
-      [AUTO_SAVE_MODE.OFF] : localize('editor.autoSave.enum.off'),
+      [AUTO_SAVE_MODE.OFF]: localize('editor.autoSave.enum.off'),
       [AUTO_SAVE_MODE.AFTER_DELAY]: localize('editor.autoSave.enum.afterDelay'),
       [AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE]: localize('editor.autoSave.enum.editorFocusChange'),
       [AUTO_SAVE_MODE.WINDOWS_LOST_FOCUS]: localize('editor.autoSave.enum.windowLostFocus'),
@@ -1143,16 +1226,19 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
     commands.registerCommand(EDITOR_COMMANDS.AUTO_SAVE, {
       execute: () => {
         const autoSavePreferenceField = 'editor.autoSave';
-        const value = this.preferenceSettings.getPreference(autoSavePreferenceField, PreferenceScope.User).value as string || AUTO_SAVE_MODE.OFF;
+        const value =
+          (this.preferenceSettings.getPreference(autoSavePreferenceField, PreferenceScope.User).value as string) ||
+          AUTO_SAVE_MODE.OFF;
         const nextValue = [
           AUTO_SAVE_MODE.AFTER_DELAY,
           AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE,
           AUTO_SAVE_MODE.WINDOWS_LOST_FOCUS,
-        ].includes(value) ? AUTO_SAVE_MODE.OFF : AUTO_SAVE_MODE.AFTER_DELAY;
+        ].includes(value)
+          ? AUTO_SAVE_MODE.OFF
+          : AUTO_SAVE_MODE.AFTER_DELAY;
 
         return this.preferenceSettings.setPreference(autoSavePreferenceField, nextValue, PreferenceScope.User);
       },
     });
   }
-
 }

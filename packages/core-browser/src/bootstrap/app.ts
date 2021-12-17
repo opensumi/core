@@ -10,7 +10,8 @@ import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
 import {
   CommandRegistry,
-  isOSX, ContributionProvider,
+  isOSX,
+  ContributionProvider,
   MaybePromise,
   createContributionProvider,
   StorageProvider,
@@ -36,13 +37,26 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection, WSChannelHandler } from '@opensumi/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, registerLocalStorageProvider,
+  PreferenceProviderProvider,
+  injectPreferenceSchemaProvider,
+  injectPreferenceConfigurations,
+  PreferenceScope,
+  PreferenceProvider,
+  PreferenceService,
+  PreferenceServiceImpl,
+  getPreferenceLanguageId,
+  registerLocalStorageProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import { DEFAULT_APPLICATION_DESKTOP_HOST, DEFAULT_APPLICATION_NAME, DEFAULT_APPLICATION_WEB_HOST, DEFAULT_URI_SCHEME } from '@opensumi/ide-core-common/lib/const/application';
+import {
+  DEFAULT_APPLICATION_DESKTOP_HOST,
+  DEFAULT_APPLICATION_NAME,
+  DEFAULT_APPLICATION_WEB_HOST,
+  DEFAULT_URI_SCHEME,
+} from '@opensumi/ide-core-common/lib/const/application';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
@@ -51,14 +65,18 @@ import { RenderedEvent } from '../layout';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
-export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
+export type Direction = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
 export interface IconMap {
   [iconKey: string]: string;
 }
 export interface IPreferences {
   [key: string]: any;
 }
-export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
+export interface IconInfo {
+  cssPath: string;
+  prefix: string;
+  iconMap: IconMap;
+}
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   contributions?: ContributionConstructor[];
@@ -88,7 +106,6 @@ if (typeof (window as any).ResizeObserver === 'undefined') {
 }
 
 export class ClientApp implements IClientApp, IDisposable {
-
   /**
    * 应用是否完成初始化
    */
@@ -123,9 +140,15 @@ export class ClientApp implements IClientApp, IDisposable {
 
   constructor(opts: IClientAppOpts) {
     const {
-      modules, contributions, modulesInstances,
-      connectionPath, connectionProtocols, iconStyleSheets,
-      useCdnIcon, editorBackgroundImage, defaultPreferences,
+      modules,
+      contributions,
+      modulesInstances,
+      connectionPath,
+      connectionProtocols,
+      iconStyleSheets,
+      useCdnIcon,
+      editorBackgroundImage,
+      defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
       ...restOpts // rest part 为 AppConfig
     } = opts;
@@ -159,16 +182,19 @@ export class ClientApp implements IClientApp, IDisposable {
 
     if (opts.extensionDevelopmentPath) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
-        Array.isArray(opts.extensionDevelopmentPath) ?
-          opts.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
-          [asExtensionCandidate(opts.extensionDevelopmentPath, true)]);
+        Array.isArray(opts.extensionDevelopmentPath)
+          ? opts.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true))
+          : [asExtensionCandidate(opts.extensionDevelopmentPath, true)],
+      );
 
       this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
     }
 
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata?.extensionCandidate) {
-      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
+      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
+        electronEnv.metadata.extensionCandidate || [],
+      );
     }
 
     this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
@@ -195,7 +221,11 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
-  public async start(container: HTMLElement | IAppRenderer, type?: string, connection?: RPCMessageConnection): Promise<void> {
+  public async start(
+    container: HTMLElement | IAppRenderer,
+    type?: string,
+    connection?: RPCMessageConnection,
+  ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
@@ -206,10 +236,16 @@ export class ClientApp implements IClientApp, IDisposable {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
       } else if (type === 'web') {
-
-        await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
-          this.onReconnectContributions();
-        }, this.connectionProtocols, this.config.clientId);
+        await createClientConnection2(
+          this.injector,
+          this.modules,
+          this.connectionPath,
+          () => {
+            this.onReconnectContributions();
+          },
+          this.connectionProtocols,
+          this.config.clientId,
+        );
 
         this.logger = this.getLogger();
         // 回写需要用到打点的 Logger 的地方
@@ -296,7 +332,6 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injectStorageProvider(this.injector);
 
     for (const instance of this.browserModules) {
-
       if (instance.contributionProvider) {
         if (Array.isArray(instance.contributionProvider)) {
           for (const contributionProvider of instance.contributionProvider) {
@@ -307,7 +342,6 @@ export class ClientApp implements IClientApp, IDisposable {
         }
       }
     }
-
   }
 
   get contributions(): ClientAppContribution[] {
@@ -361,9 +395,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
   private async runContributionsPhase(contributions: ClientAppContribution[], phaseName: keyof ClientAppContribution) {
     return await Promise.all(
-      contributions.map((contribution) => {
-        return this.contributionPhaseRunner(contribution, phaseName);
-      }),
+      contributions.map((contribution) => this.contributionPhaseRunner(contribution, phaseName)),
     );
   }
 
@@ -408,7 +440,7 @@ export class ClientApp implements IClientApp, IDisposable {
       if (contribution.onWillStop) {
         try {
           const res = contribution.onWillStop(this);
-          if (!!res) {
+          if (res) {
             return true;
           }
         } catch (e) {
@@ -433,7 +465,7 @@ export class ClientApp implements IClientApp, IDisposable {
       if (contribution.onWillStop) {
         try {
           const res = await contribution.onWillStop(this);
-          if (!!res) {
+          if (res) {
             return true;
           }
         } catch (e) {
@@ -463,13 +495,15 @@ export class ClientApp implements IClientApp, IDisposable {
     const promises: Array<Promise<void>> = [];
     for (const contribution of this.contributions) {
       if (contribution.onStop) {
-        promises.push((async () => {
-          try {
-            await contribution.onStop!(this);
-          } catch (error) {
-            this.logger.error('Could not stop contribution', error);
-          }
-        })());
+        promises.push(
+          (async () => {
+            try {
+              await contribution.onStop!(this);
+            } catch (error) {
+              this.logger.error('Could not stop contribution', error);
+            }
+          })(),
+        );
       }
     }
     await Promise.all(promises);
@@ -496,25 +530,26 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   injectPreferenceService(injector: Injector, defaultPreferences?: IPreferences): void {
-    const preferencesProviderFactory = () => {
-      return (scope: PreferenceScope) => {
-        const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
-        provider.asScope(scope);
-        return provider;
-      };
+    const preferencesProviderFactory = () => (scope: PreferenceScope) => {
+      const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
+      provider.asScope(scope);
+      return provider;
     };
     injectPreferenceConfigurations(injector);
 
     injectPreferenceSchemaProvider(injector);
 
     // 用于获取不同scope下的PreferenceProvider
-    injector.addProviders({
-      token: PreferenceProviderProvider,
-      useFactory: preferencesProviderFactory,
-    }, {
-      token: PreferenceService,
-      useClass: PreferenceServiceImpl,
-    });
+    injector.addProviders(
+      {
+        token: PreferenceProviderProvider,
+        useFactory: preferencesProviderFactory,
+      },
+      {
+        token: PreferenceService,
+        useClass: PreferenceServiceImpl,
+      },
+    );
     // 设置默认配置
     if (defaultPreferences) {
       const providerFactory: PreferenceProviderProvider = injector.get(PreferenceProviderProvider);
@@ -532,11 +567,7 @@ export class ClientApp implements IClientApp, IDisposable {
     });
     injector.addProviders({
       token: StorageProvider,
-      useFactory: () => {
-        return (storageId) => {
-          return injector.get(DefaultStorageProvider).get(storageId);
-        };
-      },
+      useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
     });
     createContributionProvider(injector, StorageResolverContribution);
   }
@@ -545,7 +576,7 @@ export class ClientApp implements IClientApp, IDisposable {
    * 通知上层需要刷新浏览器
    * @param forcedReload 当取值为 true 时，将强制浏览器从服务器重新获取当前页面资源，而不是从浏览器的缓存中读取，如果取值为 false 或不传该参数时，浏览器则可能会从缓存中读取当前页面。
    */
-  fireOnReload(forcedReload: boolean = false) {
+  fireOnReload(forcedReload = false) {
     // 默认调用 location reload
     // @ts-ignore
     window.location.reload(forcedReload);
@@ -639,7 +670,7 @@ export class ClientApp implements IClientApp, IDisposable {
         return true;
       }
     }
-  }
+  };
 
   private _handleUnload = () => {
     // 浏览器关闭事件
@@ -648,31 +679,31 @@ export class ClientApp implements IClientApp, IDisposable {
       this.disposeSideEffect();
       this.stopContributions();
     }
-  }
+  };
 
   private _handleResize = () => {
     // 浏览器resize事件
-  }
+  };
 
   private _handleKeydown = (event: any) => {
     if (event && event.target!.name !== NO_KEYBINDING_NAME && !this._inComposition) {
       this.keybindingService.run(event);
     }
-  }
+  };
 
   private _handleKeyup = (event: any) => {
     this.keybindingService.resolveModifierKey(event);
-  }
+  };
 
   private _handleCompositionstart = () => {
     this._inComposition = true;
-  }
+  };
 
   private _handleCompositionend = () => {
     this._inComposition = false;
-  }
+  };
 
   private _handleWheel = () => {
     // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
-  }
+  };
 }

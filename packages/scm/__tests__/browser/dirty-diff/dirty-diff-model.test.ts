@@ -28,10 +28,7 @@ class MockEditorDocumentModelService {
 
   async createModelReference(uri: URI) {
     if (!this.instances.has(uri.toString())) {
-      const instance = this.injector.get(EditorDocumentModel, [
-        uri,
-        'test-content',
-      ]);
+      const instance = this.injector.get(EditorDocumentModel, [uri, 'test-content']);
       this.instances.set(uri.toString(), instance);
     }
     return { instance: this.instances.get(uri.toString()) };
@@ -67,18 +64,20 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     async function createModel(filePath: string) {
       const modelManager = injector.get(IEditorDocumentModelService);
       const fileTextModel = await modelManager.createModelReference(URI.file(filePath));
-      const gitTextModel = await modelManager.createModelReference(URI.from({
-        scheme: 'git',
-        path: filePath,
-        query: 'ref=""',
-      }));
+      const gitTextModel = await modelManager.createModelReference(
+        URI.from({
+          scheme: 'git',
+          path: filePath,
+          query: 'ref=""',
+        }),
+      );
 
       return {
         fileTextModel: fileTextModel.instance,
         gitTextModel: gitTextModel.instance,
       } as {
-        fileTextModel: IEditorDocumentModel,
-        gitTextModel: IEditorDocumentModel,
+        fileTextModel: IEditorDocumentModel;
+        gitTextModel: IEditorDocumentModel;
       };
     }
 
@@ -86,34 +85,35 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     const mockComputeDiff = jest.fn();
 
     beforeEach(() => {
-      StaticServices.editorWorkerService.get = (() => {
-        return {
-          canComputeDiff: (): boolean => true,
-          computeDiff: async () => computeDiffRet,
-        };
-      }) as any;
+      StaticServices.editorWorkerService.get = (() => ({
+        canComputeDiff: (): boolean => true,
+        computeDiff: async () => computeDiffRet,
+      })) as any;
 
-      injector = createBrowserInjector([], new MockInjector([
-        {
-          token: IDocPersistentCacheProvider,
-          useClass: EmptyDocCacheImpl,
-        },
-        {
-          token: IEditorDocumentModelService,
-          useClass: MockEditorDocumentModelService,
-        },
-        {
-          token: CommandService,
-          useValue: {
-            executeCommand: jest.fn(),
+      injector = createBrowserInjector(
+        [],
+        new MockInjector([
+          {
+            token: IDocPersistentCacheProvider,
+            useClass: EmptyDocCacheImpl,
           },
-        },
-        {
-          token: EditorCollectionService,
-          useValue: {},
-        },
-        SCMService,
-      ]));
+          {
+            token: IEditorDocumentModelService,
+            useClass: MockEditorDocumentModelService,
+          },
+          {
+            token: CommandService,
+            useValue: {
+              executeCommand: jest.fn(),
+            },
+          },
+          {
+            token: EditorCollectionService,
+            useValue: {},
+          },
+          SCMService,
+        ]),
+      );
 
       scmService = injector.get(SCMService);
       provider = new MockSCMProvider(1);
@@ -129,7 +129,6 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     });
 
     it('ok: check basic property', async () => {
-
       const { fileTextModel } = await createModel('/test/workspace/abc1.ts');
       codeEditor.setModel(fileTextModel.getMonacoModel());
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
@@ -169,11 +168,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       fileTextModel.getMonacoModel().setValue('insert some content for testing');
 
       return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
-        expect(changes).toEqual([{
-          start: 0,
-          deleteCount: 0,
-          toInsert: [change0],
-        }]);
+        expect(changes).toEqual([
+          {
+            start: 0,
+            deleteCount: 0,
+            toInsert: [change0],
+          },
+        ]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
       });
     });
@@ -201,11 +202,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       provider.onDidChangeEmitter.fire();
 
       return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
-        expect(changes).toEqual([{
-          start: 0,
-          deleteCount: 0,
-          toInsert: [change0],
-        }]);
+        expect(changes).toEqual([
+          {
+            start: 0,
+            deleteCount: 0,
+            toInsert: [change0],
+          },
+        ]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
       });
     });
@@ -233,11 +236,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       provider.onDidChangeResourcesEmitter.fire();
 
       return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
-        expect(changes).toEqual([{
-          start: 0,
-          deleteCount: 0,
-          toInsert: [change0],
-        }]);
+        expect(changes).toEqual([
+          {
+            start: 0,
+            deleteCount: 0,
+            toInsert: [change0],
+          },
+        ]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
       });
     });
@@ -395,13 +400,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         injector.overrideProviders({
           token: EditorCollectionService,
           useValue: {
-            createDiffEditor: () => {
-              return {
-                compare: mockCompare,
-                originalEditor: { monacoEditor: originalMonacoEditor },
-                modifiedEditor: { monacoEditor: modifiedMonacoEditor },
-              };
-            },
+            createDiffEditor: () => ({
+              compare: mockCompare,
+              originalEditor: { monacoEditor: originalMonacoEditor },
+              modifiedEditor: { monacoEditor: modifiedMonacoEditor },
+            }),
           },
         });
 
@@ -466,13 +469,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         const updateOptionsSpy2 = jest.spyOn(modifiedMonacoEditor, 'updateOptions');
         const revealLineInCenterSpy = jest.spyOn(modifiedMonacoEditor, 'revealLineInCenter');
         const relayoutSpy = jest.spyOn(dirtyDiffWidget, 'relayout');
-        spyList.push(
-          createDiffEditorSpy,
-          updateOptionsSpy1,
-          updateOptionsSpy2,
-          revealLineInCenterSpy,
-          relayoutSpy,
-        );
+        spyList.push(createDiffEditorSpy, updateOptionsSpy1, updateOptionsSpy2, revealLineInCenterSpy, relayoutSpy);
 
         const range = positionToRange(12);
         await dirtyDiffModel.onClickDecoration(dirtyDiffWidget, range);
@@ -503,11 +500,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
         // this.onDidChange
         dirtyDiffModel['_changes'].unshift(change0);
-        dirtyDiffModel['_onDidChange'].fire([{
-          start: 0,
-          deleteCount: 0,
-          toInsert: [change0],
-        }]);
+        dirtyDiffModel['_onDidChange'].fire([
+          {
+            start: 0,
+            deleteCount: 0,
+            toInsert: [change0],
+          },
+        ]);
 
         expect(dirtyDiffWidget.currentIndex).toBe(2);
         expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(12));

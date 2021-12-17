@@ -1,6 +1,28 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
-import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, Event, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@opensumi/ide-core-browser';
+import {
+  IPreferenceViewDesc,
+  IPreferenceSettingsService,
+  ISettingGroup,
+  ISettingSection,
+  PreferenceProviderProvider,
+  Emitter,
+  Event,
+  CommandService,
+  getDebugLogger,
+  isString,
+  getIcon,
+  PreferenceScope,
+  PreferenceProvider,
+  PreferenceSchemaProvider,
+  IDisposable,
+  addElement,
+  getAvailableLanguages,
+  PreferenceService,
+  localize,
+  replaceLocalizePlaceholder,
+  ThrottledDelayer,
+} from '@opensumi/ide-core-browser';
 import { toPreferenceReadableName, PreferenceSettingId } from '../common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IRecycleListHandler } from '@opensumi/ide-components';
@@ -8,7 +30,7 @@ import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
-  private static DEFAULT_CHANGE_DELAY: number = 500;
+  private static DEFAULT_CHANGE_DELAY = 500;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
@@ -26,10 +48,10 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   protected readonly commandService: CommandService;
 
   @observable
-  public currentGroup: string = '';
+  public currentGroup = '';
 
   @observable
-  public currentSearch: string = '';
+  public currentSearch = '';
 
   private currentScope: PreferenceScope;
 
@@ -52,18 +74,22 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private _listHandler: IRecycleListHandler;
 
   private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
-  private enumLabelsChangeDelayer =  new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
+  private enumLabelsChangeDelayer = new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
 
   constructor() {
-    this.setEnumLabels('general.language', new Proxy({}, {
-      get: (target, key) => {
-        return getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName;
-      },
-    }));
+    this.setEnumLabels(
+      'general.language',
+      new Proxy(
+        {},
+        {
+          get: (target, key) => getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName,
+        },
+      ),
+    );
     this.setEnumLabels('files.eol', {
       '\n': 'LF',
       '\r\n': 'CRLF',
-      'auto': 'auto',
+      auto: 'auto',
     });
   }
 
@@ -76,7 +102,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   private filterPreferences(preference: string | IPreferenceViewDesc, scope: PreferenceScope): boolean {
-    return typeof preference !== 'string' && Array.isArray(preference.hiddenInScope) && preference.hiddenInScope.includes(scope);
+    return (
+      typeof preference !== 'string' &&
+      Array.isArray(preference.hiddenInScope) &&
+      preference.hiddenInScope.includes(scope)
+    );
   }
 
   @action
@@ -91,7 +121,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   openJSON = (scope: PreferenceScope, preferenceId: string) => {
     // 根据节点信息打开 Settings.json 配置文件
     this.commandService.executeCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE.id, scope, preferenceId);
-  }
+  };
 
   /**
    * 设置某个作用域下的配置值
@@ -109,7 +139,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   handleListHandler = (handler: any) => {
     this._listHandler = handler;
-  }
+  };
 
   /**
    * 获取搜索条件下展示的设置面板配置组
@@ -188,21 +218,24 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     res.forEach((section) => {
       if (section.preferences) {
         const sec = { ...section };
-        sec.preferences = section.preferences
-          .filter((pref) => {
-            if (this.filterPreferences(pref, scope)) {
-              return false;
-            }
-            if (!search) {
-              return true;
-            }
+        sec.preferences = section.preferences.filter((pref) => {
+          if (this.filterPreferences(pref, scope)) {
+            return false;
+          }
+          if (!search) {
+            return true;
+          }
 
-            const prefId = typeof pref === 'string' ? pref : pref.id;
-            const schema = this.schemaProvider.getPreferenceProperty(prefId);
-            const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : localize(pref.localized);
-            const description = schema && replaceLocalizePlaceholder(schema.description);
-            return this.isContainSearchValue(prefId, search) || this.isContainSearchValue(prefLabel, search) || (description && this.isContainSearchValue(description, search));
-          });
+          const prefId = typeof pref === 'string' ? pref : pref.id;
+          const schema = this.schemaProvider.getPreferenceProperty(prefId);
+          const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : localize(pref.localized);
+          const description = schema && replaceLocalizePlaceholder(schema.description);
+          return (
+            this.isContainSearchValue(prefId, search) ||
+            this.isContainSearchValue(prefLabel, search) ||
+            (description && this.isContainSearchValue(description, search))
+          );
+        });
         if (sec.preferences.length > 0) {
           result.push(sec);
         }
@@ -218,9 +251,19 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    * @param scope 作用域
    * @param inherited 是否继承低优先级的配置值
    */
-  getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): { value: any, effectingScope: PreferenceScope } {
-    const { value } = this.preferenceService.resolve(preferenceName, undefined, undefined, undefined, scope) || { value: undefined, scope: PreferenceScope.Default };
-    const { scope: effectingScope } = this.preferenceService.resolve(preferenceName) || { value: undefined, scope: PreferenceScope.Default };
+  getPreference(
+    preferenceName: string,
+    scope: PreferenceScope,
+    inherited = false,
+  ): { value: any; effectingScope: PreferenceScope } {
+    const { value } = this.preferenceService.resolve(preferenceName, undefined, undefined, undefined, scope) || {
+      value: undefined,
+      scope: PreferenceScope.Default,
+    };
+    const { scope: effectingScope } = this.preferenceService.resolve(preferenceName) || {
+      value: undefined,
+      scope: PreferenceScope.Default,
+    };
     return {
       value,
       effectingScope: effectingScope || PreferenceScope.Default,
@@ -300,7 +343,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    */
   search = (value: string) => {
     this.doSearch(value);
-  }
+  };
 
   private readonly _onFocus: Emitter<void> = new Emitter<void>();
 
@@ -342,14 +385,18 @@ export const defaultSettingGroup: ISettingGroup[] = [
 ];
 
 export const defaultSettingSections: {
-  [key: string]: ISettingSection[],
+  [key: string]: ISettingSection[];
 } = {
   general: [
     {
       preferences: [
         { id: 'general.theme', localized: 'preference.general.theme' },
         { id: 'general.icon', localized: 'preference.general.icon' },
-        { id: 'general.language', localized: 'preference.general.language', hiddenInScope: [PreferenceScope.Workspace] },
+        {
+          id: 'general.language',
+          localized: 'preference.general.language',
+          hiddenInScope: [PreferenceScope.Workspace],
+        },
       ],
     },
   ],
@@ -358,11 +405,17 @@ export const defaultSettingSections: {
       preferences: [
         // 预览模式
         { id: 'editor.previewMode', localized: 'preference.editor.previewMode' },
-        { id: 'editor.enablePreviewFromCodeNavigation', localized: 'preference.editor.enablePreviewFromCodeNavigation' },
+        {
+          id: 'editor.enablePreviewFromCodeNavigation',
+          localized: 'preference.editor.enablePreviewFromCodeNavigation',
+        },
         // 自动保存
         { id: 'editor.autoSave', localized: 'preference.editor.autoSave' },
         { id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay' },
-        { id: 'workbench.refactoringChanges.showPreviewStrategy', localized: 'preference.workbench.refactoringChanges.showPreviewStrategy.title' },
+        {
+          id: 'workbench.refactoringChanges.showPreviewStrategy',
+          localized: 'preference.workbench.refactoringChanges.showPreviewStrategy.title',
+        },
         { id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         // 光标样式
         { id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle' },
@@ -376,7 +429,10 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.filterGraceful', localized: 'preference.editor.suggest.filterGraceful' },
         { id: 'editor.suggest.localityBonus', localized: 'preference.editor.suggest.localityBonus' },
         { id: 'editor.suggest.shareSuggestSelections', localized: 'preference.editor.suggest.shareSuggestSelections' },
-        { id: 'editor.suggest.snippetsPreventQuickSuggestions', localized: 'preference.editor.suggest.snippetsPreventQuickSuggestions' },
+        {
+          id: 'editor.suggest.snippetsPreventQuickSuggestions',
+          localized: 'preference.editor.suggest.snippetsPreventQuickSuggestions',
+        },
         { id: 'editor.suggest.showIcons', localized: 'preference.editor.suggest.showIcons' },
         { id: 'editor.suggest.maxVisibleSuggestions', localized: 'preference.editor.suggest.maxVisibleSuggestions' },
         { id: 'editor.suggest.showMethods', localized: 'preference.editor.suggest.showMethods' },
@@ -412,7 +468,10 @@ export const defaultSettingSections: {
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
         { id: 'editor.guides.indentation', localized: 'preference.editor.guides.indentation' },
-        { id: 'editor.guides.highlightActiveIndentation', localized: 'preference.editor.guides.highlightActiveIndentation' },
+        {
+          id: 'editor.guides.highlightActiveIndentation',
+          localized: 'preference.editor.guides.highlightActiveIndentation',
+        },
 
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
@@ -446,7 +505,10 @@ export const defaultSettingSections: {
         { id: 'files.associations', localized: 'preference.files.associations.title' },
         { id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength' },
         { id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
-        { id: 'editor.bracketPairColorization.enabled', localized: 'preference.editor.bracketPairColorization.enabled' },
+        {
+          id: 'editor.bracketPairColorization.enabled',
+          localized: 'preference.editor.bracketPairColorization.enabled',
+        },
         // Diff 编辑器
         { id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
         { id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },

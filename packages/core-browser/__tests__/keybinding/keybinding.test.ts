@@ -1,10 +1,31 @@
-import { ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyRegexExpr, ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyDefinedExpr,
+  ContextKeyEqualsExpr,
+  ContextKeyNotEqualsExpr,
+  ContextKeyNotExpr,
+  ContextKeyRegexExpr,
+  ContextKeyExpr,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  KeybindingContribution,
+  KeybindingRegistry,
+  KeybindingRegistryImpl,
+  Keybinding,
+  KeybindingScope,
+  ILogger,
+  BrowserKeyboardLayoutImpl,
+  KeybindingService,
+  SpecialCases,
+} from '@opensumi/ide-core-browser';
 import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
 import { KeybindingsResultCollection } from '../../src';
-import { KeyboardLayoutChangeNotifierService, KeyboardNativeLayoutService } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import {
+  KeyboardLayoutChangeNotifierService,
+  KeyboardNativeLayoutService,
+} from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
 import { MockLogger } from '../../__mocks__/logger';
 
@@ -17,34 +38,35 @@ describe('KeybindingRegistry', () => {
     setData: (key, value) => {
       storage[key] = value;
     },
-    getData: (key) => {
-      return storage[key];
-    },
+    getData: (key) => storage[key],
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: GlobalBrowserStorageService,
-        useValue: mockGlobalBrowserStorageService,
-      },
-      {
-        token: KeyboardNativeLayoutService,
-        useClass: BrowserKeyboardLayoutImpl,
-      },
-      {
-        token: KeyboardLayoutChangeNotifierService,
-        useClass: BrowserKeyboardLayoutImpl,
-      },
-      {
-        token: KeyboardLayoutService,
-        useClass: KeyboardLayoutService,
-      },
-      {
-        token: KeybindingRegistry,
-        useClass: KeybindingRegistryImpl,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: GlobalBrowserStorageService,
+          useValue: mockGlobalBrowserStorageService,
+        },
+        {
+          token: KeyboardNativeLayoutService,
+          useClass: BrowserKeyboardLayoutImpl,
+        },
+        {
+          token: KeyboardLayoutChangeNotifierService,
+          useClass: BrowserKeyboardLayoutImpl,
+        },
+        {
+          token: KeyboardLayoutService,
+          useClass: KeyboardLayoutService,
+        },
+        {
+          token: KeybindingRegistry,
+          useClass: KeybindingRegistryImpl,
+        },
+      ]),
+    );
 
     // mock used instance
     injector.overrideProviders(
@@ -76,7 +98,6 @@ describe('KeybindingRegistry', () => {
 
   describe('01 #Init', () => {
     test('should ready to work after init', async (done) => {
-
       expect(typeof keybindingRegistry.initialize).toBe('function');
       expect(typeof keybindingRegistry.registerKeybinding).toBe('function');
       expect(typeof keybindingRegistry.registerKeybindings).toBe('function');
@@ -100,7 +121,6 @@ describe('KeybindingRegistry', () => {
   });
 
   describe('02 #API should be work', () => {
-
     test('registerKeybinding/unregisterKeybinding', () => {
       const keybinding = {
         command: 'test.command',
@@ -120,9 +140,11 @@ describe('KeybindingRegistry', () => {
         command: 'test.acceleratorForKeyString',
         keybinding: 'ctrl+o',
       };
-      injector.mockCommand('test.command', () => { });
+      injector.mockCommand('test.command', () => {});
       keybindingRegistry.registerKeybinding(keybinding, KeybindingScope.USER);
-      expect(keybindingRegistry.acceleratorForKeyString(keybinding.keybinding, '+')).toBe(`${SpecialCases.CTRL.replace(/^\S/, (key) => key.toUpperCase())}+O`);
+      expect(keybindingRegistry.acceleratorForKeyString(keybinding.keybinding, '+')).toBe(
+        `${SpecialCases.CTRL.replace(/^\S/, (key) => key.toUpperCase())}+O`,
+      );
     });
 
     test('containsKeybinding', () => {
@@ -189,7 +211,6 @@ describe('KeybindingRegistry', () => {
       res = keybindingRegistry.validateKeybinding([keybinding1], keybinding2);
       expect(res).toBe('');
     });
-
   });
 
   describe('03 #Namespace function', () => {
@@ -222,30 +243,37 @@ describe('KeybindingRegistry', () => {
     describe('KeybindingsResultCollection', () => {
       it('merge', () => {
         const result1 = new KeybindingsResultCollection.KeybindingsResult();
-        result1.full = [{
-          keybinding: 'ctrl+c',
-          command: 'copy',
-          when: 'editorFocus',
-        }];
+        result1.full = [
+          {
+            keybinding: 'ctrl+c',
+            command: 'copy',
+            when: 'editorFocus',
+          },
+        ];
         const result2 = new KeybindingsResultCollection.KeybindingsResult();
-        result2.full = [{
-          keybinding: 'ctrl+c',
-          command: 'cut',
-          when: 'editorFocus',
-        }];
+        result2.full = [
+          {
+            keybinding: 'ctrl+c',
+            command: 'cut',
+            when: 'editorFocus',
+          },
+        ];
         expect(result1.merge(result2).full.length).toBe(2);
       });
 
       it('filter', () => {
         const result1 = new KeybindingsResultCollection.KeybindingsResult();
-        result1.full = [{
-          keybinding: 'ctrl+c',
-          command: 'copy',
-          when: 'editorFocus',
-        }, {
-          keybinding: 'ctrl+c',
-          command: 'cut',
-        }];
+        result1.full = [
+          {
+            keybinding: 'ctrl+c',
+            command: 'copy',
+            when: 'editorFocus',
+          },
+          {
+            keybinding: 'ctrl+c',
+            command: 'cut',
+          },
+        ];
         const result = result1.filter((keybinding) => !!keybinding.when);
         expect(result.full.length).toBe(1);
       });
@@ -263,40 +291,39 @@ describe('KeybindingService', () => {
     setData: (key, value) => {
       storage[key] = value;
     },
-    getData: (key) => {
-      return storage[key];
-    },
+    getData: (key) => storage[key],
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: GlobalBrowserStorageService,
-        useValue: mockGlobalBrowserStorageService,
-      },
-      {
-        token: KeyboardNativeLayoutService,
-        useClass: BrowserKeyboardLayoutImpl,
-      },
-      {
-        token: KeyboardLayoutChangeNotifierService,
-        useClass: BrowserKeyboardLayoutImpl,
-      },
-      {
-        token: KeyboardLayoutService,
-        useClass: KeyboardLayoutService,
-      },
-      {
-        token: KeybindingService,
-        useClass: KeybindingRegistryImpl,
-      },
-      {
-        token: KeybindingRegistry,
-        useFactory: (injector) => {
-          return injector.get(KeybindingService);
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: GlobalBrowserStorageService,
+          useValue: mockGlobalBrowserStorageService,
         },
-      },
-    ]));
+        {
+          token: KeyboardNativeLayoutService,
+          useClass: BrowserKeyboardLayoutImpl,
+        },
+        {
+          token: KeyboardLayoutChangeNotifierService,
+          useClass: BrowserKeyboardLayoutImpl,
+        },
+        {
+          token: KeyboardLayoutService,
+          useClass: KeyboardLayoutService,
+        },
+        {
+          token: KeybindingService,
+          useClass: KeybindingRegistryImpl,
+        },
+        {
+          token: KeybindingRegistry,
+          useFactory: (injector) => injector.get(KeybindingService),
+        },
+      ]),
+    );
 
     // mock used instance
     injector.overrideProviders(
@@ -328,7 +355,6 @@ describe('KeybindingService', () => {
 
   describe('01 #Init', () => {
     test('should ready to work after init', async (done) => {
-
       expect(typeof keybindingService.run).toBe('function');
       expect(typeof keybindingService.convert).toBe('function');
       expect(typeof keybindingService.clearConvert).toBe('function');
@@ -339,15 +365,12 @@ describe('KeybindingService', () => {
   });
 
   describe('02 #API should be work', () => {
-
     test('convertMonacoWhen', () => {
-      const getKeybindingByWhen = (when: any) => {
-        return {
-          command: 'test.command',
-          keybinding: 'ctrl+c',
-          when,
-        };
-      };
+      const getKeybindingByWhen = (when: any) => ({
+        command: 'test.command',
+        keybinding: 'ctrl+c',
+        when,
+      });
       const keybinding = getKeybindingByWhen('focus');
       expect(keybindingService.convertMonacoWhen(keybinding.when)).toBe(keybinding.when);
 
@@ -370,8 +393,12 @@ describe('KeybindingService', () => {
       const notEquals = {
         key: 'notEqualsKey',
       };
-      const contextKeyNotEqualsExprKeybinding = getKeybindingByWhen(ContextKeyNotEqualsExpr.create(notEquals.key, 'true'));
-      expect(keybindingService.convertMonacoWhen(contextKeyNotEqualsExprKeybinding.when)).toBe(`${notEquals.key} != 'true'`);
+      const contextKeyNotEqualsExprKeybinding = getKeybindingByWhen(
+        ContextKeyNotEqualsExpr.create(notEquals.key, 'true'),
+      );
+      expect(keybindingService.convertMonacoWhen(contextKeyNotEqualsExprKeybinding.when)).toBe(
+        `${notEquals.key} != 'true'`,
+      );
 
       const not = {
         key: 'notKey',
@@ -385,14 +412,22 @@ describe('KeybindingService', () => {
         },
         key: 'regexKey',
       };
-      const contextKeyAndRegexExprKeybinding = getKeybindingByWhen(ContextKeyRegexExpr.create(regex.key, new RegExp(regex.regexp.source, 'i')));
-      expect(keybindingService.convertMonacoWhen(contextKeyAndRegexExprKeybinding.when)).toBe(`${regex.key} =~ /${regex.regexp.source}/i`);
+      const contextKeyAndRegexExprKeybinding = getKeybindingByWhen(
+        ContextKeyRegexExpr.create(regex.key, new RegExp(regex.regexp.source, 'i')),
+      );
+      expect(keybindingService.convertMonacoWhen(contextKeyAndRegexExprKeybinding.when)).toBe(
+        `${regex.key} =~ /${regex.regexp.source}/i`,
+      );
 
-      const contextKeyAndExprKeybinding = getKeybindingByWhen(ContextKeyExpr.and(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')));
-      expect(keybindingService.convertMonacoWhen(contextKeyAndExprKeybinding.when)).toBe(`a && b`);
+      const contextKeyAndExprKeybinding = getKeybindingByWhen(
+        ContextKeyExpr.and(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')),
+      );
+      expect(keybindingService.convertMonacoWhen(contextKeyAndExprKeybinding.when)).toBe('a && b');
 
-      const contextKeyOrExprKeybinding = getKeybindingByWhen(ContextKeyExpr.or(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')));
-      expect(keybindingService.convertMonacoWhen(contextKeyOrExprKeybinding.when)).toBe(`a || b`);
+      const contextKeyOrExprKeybinding = getKeybindingByWhen(
+        ContextKeyExpr.or(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')),
+      );
+      expect(keybindingService.convertMonacoWhen(contextKeyOrExprKeybinding.when)).toBe('a || b');
     });
 
     test('convert', () => {
@@ -414,7 +449,11 @@ describe('KeybindingService', () => {
       (ctrlSEvent as any).character = 's';
       (ctrlSEvent as any).ctrlKey = true;
       text = keybindingService.convert(ctrlSEvent as any);
-      expect(text).toBe(`${SpecialCases.CTRL.replace(/^\S/, function(s) {return s.toUpperCase(); })}+S`);
+      expect(text).toBe(
+        `${SpecialCases.CTRL.replace(/^\S/, function (s) {
+          return s.toUpperCase();
+        })}+S`,
+      );
       keybindingService.clearConvert();
       // Numpad_add
       const numpadAddEvent = new window.Event('keydown', { bubbles: true });
@@ -454,8 +493,6 @@ describe('KeybindingService', () => {
       keybindingService.run(ctrlSEvent as any);
       expect(testFn).toBeCalled();
       handle.dispose();
-
     });
-
   });
 });

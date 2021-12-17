@@ -1,5 +1,10 @@
 import { Disposable, QuickPickService, IContextKeyService } from '@opensumi/ide-core-browser';
-import { BreakpointManager, DebugConfigurationManager, DebugModelManager, DebugPreferences } from '@opensumi/ide-debug/lib/browser';
+import {
+  BreakpointManager,
+  DebugConfigurationManager,
+  DebugModelManager,
+  DebugPreferences,
+} from '@opensumi/ide-debug/lib/browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
@@ -82,9 +87,7 @@ describe('Debug Model Manager', () => {
     debugModelManager = mockInjector.get(DebugModelManager);
   });
 
-  afterAll(() => {
-
-  });
+  afterAll(() => {});
 
   it('debugModelManager should be init success', () => {
     debugModelManager.init();

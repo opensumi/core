@@ -1,4 +1,6 @@
-export const SUPPORTED_ENCODINGS: { [encoding: string]: { labelLong: string; labelShort: string; order: number; encodeOnly?: boolean; alias?: string } } = {
+export const SUPPORTED_ENCODINGS: {
+  [encoding: string]: { labelLong: string; labelShort: string; order: number; encodeOnly?: boolean; alias?: string };
+} = {
   utf8: {
     labelLong: 'UTF-8',
     labelShort: 'UTF-8',

@@ -11,8 +11,13 @@ class CustomBuildTaskTerminal {
 
   private fileWatcher;
 
-  constructor(private workspaceRoot: string, private flavor: string, private flags: string[], private getSharedState: () => string | undefined, private setSharedState: (state: string) => void) {
-  }
+  constructor(
+    private workspaceRoot: string,
+    private flavor: string,
+    private flags: string[],
+    private getSharedState: () => string | undefined,
+    private setSharedState: (state: string) => void,
+  ) {}
 
   open(initialDimensions): void {
     this.doBuild();
@@ -39,15 +44,18 @@ class CustomBuildTaskTerminal {
       }
 
       // Since we don't actually build anything in this example set a timeout instead.
-      setTimeout(() => {
-        const date = new Date();
-        this.setSharedState(date.toTimeString() + ' ' + date.toDateString());
-        this.writeEmitter.fire('Build complete.\r\n\r\n');
-        if (this.flags.indexOf('watch') === -1) {
-          this.closeEmitter.fire();
-          resolve();
-        }
-      }, isIncremental ? 1000 : 4000);
+      setTimeout(
+        () => {
+          const date = new Date();
+          this.setSharedState(date.toTimeString() + ' ' + date.toDateString());
+          this.writeEmitter.fire('Build complete.\r\n\r\n');
+          if (this.flags.indexOf('watch') === -1) {
+            this.closeEmitter.fire();
+            resolve();
+          }
+        },
+        isIncremental ? 1000 : 4000,
+      );
     });
   }
 }
@@ -63,7 +71,7 @@ export class CustomBuildTaskProvider implements TaskProvider {
   // Since our build has this shared state, the CustomExecution is used below.
   private sharedState: string | undefined;
 
-  constructor(private workspaceRoot: string) { }
+  constructor(private workspaceRoot: string) {}
 
   public async provideTasks(): Promise<extTypes.Task[]> {
     return this.getTasks();
@@ -104,9 +112,21 @@ export class CustomBuildTaskProvider implements TaskProvider {
         flags,
       };
     }
-    return new extTypes.Task(definition, extTypes.TaskScope.Global, `${flavor} ${flags.join(' ')}`,
-      CustomBuildTaskProvider.CustomBuildScriptType, new extTypes.CustomExecution(async (): Promise<any> => {
-        return new CustomBuildTaskTerminal(this.workspaceRoot, flavor, flags, () => this.sharedState, (state: string) => this.sharedState = state);
-      }));
+    return new extTypes.Task(
+      definition,
+      extTypes.TaskScope.Global,
+      `${flavor} ${flags.join(' ')}`,
+      CustomBuildTaskProvider.CustomBuildScriptType,
+      new extTypes.CustomExecution(
+        async (): Promise<any> =>
+          new CustomBuildTaskTerminal(
+            this.workspaceRoot,
+            flavor,
+            flags,
+            () => this.sharedState,
+            (state: string) => (this.sharedState = state),
+          ),
+      ),
+    );
   }
 }

@@ -32,21 +32,15 @@ class SubMenu extends React.Component<SubMenuProps, any> {
 
   onKeyDown = (e: React.MouseEvent<HTMLElement>) => {
     this.subMenu.onKeyDown(e);
-  }
+  };
 
   saveSubMenu = (subMenu: any) => {
     this.subMenu = subMenu;
-  }
+  };
 
   render() {
     const { popupClassName } = this.props;
-    return (
-      <RcSubMenu
-        {...this.props}
-        ref={this.saveSubMenu}
-        popupClassName={popupClassName}
-      />
-    );
+    return <RcSubMenu {...this.props} ref={this.saveSubMenu} popupClassName={popupClassName} />;
   }
 }
 

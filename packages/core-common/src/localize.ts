@@ -3,20 +3,20 @@ import { CaseInsensitiveMap } from './map';
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 
-let _currentLanguageId: string = 'zh-CN';
+let _currentLanguageId = 'zh-CN';
 
 const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
 
-export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope: string = 'host'): string {
+export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope = 'host'): string {
   const localizationRegistry = getLocalizationRegistry(scope);
   return localizationRegistry.getLocalizeString(symbol, defaultMessage);
 }
 
-export function formatLocalize(symbol: ILocalizationKey, ...args: any){
+export function formatLocalize(symbol: ILocalizationKey, ...args: any) {
   return format(localize(symbol), ...args);
 }
 
-export function registerLocalizationBundle(bundle: ILocalizationBundle, scope: string = 'host') {
+export function registerLocalizationBundle(bundle: ILocalizationBundle, scope = 'host') {
   return getLocalizationRegistry(scope).registerLocalizationBundle(bundle);
 }
 
@@ -44,7 +44,6 @@ export interface ILocalizationContents {
 }
 
 interface ILocalizationRegistry {
-
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
 
   getLocalizeString(symbol: ILocalizationKey, defaultLabel?: string): string;
@@ -57,8 +56,7 @@ function isExtensionLocalizationValue(thing: any): thing is IExtensionLocalizati
 }
 
 class LocalizationRegistry implements ILocalizationRegistry {
-
-  private localizationMap = new CaseInsensitiveMap<string, ILocalizationContents>() ;
+  private localizationMap = new CaseInsensitiveMap<string, ILocalizationContents>();
 
   public readonly localizationInfo = new CaseInsensitiveMap<string, ILocalizationInfo>();
 
@@ -68,7 +66,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
       return;
     }
     const existingMessages = this.getContents(languageId);
-    Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
+    Object.keys(bundle.contents).forEach((key: ILocalizationKey) => {
       const rawContent = bundle.contents[key];
       let content: string;
       if (isExtensionLocalizationValue(rawContent)) {
@@ -79,7 +77,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
       existingMessages[key] = mnemonicButtonLabel(content, true); // 暂时去除所有注记符
     });
     if (!this.localizationInfo.has(languageId)) {
-      this.localizationInfo.set(languageId, Object.assign({}, bundle, {contents: undefined}));
+      this.localizationInfo.set(languageId, Object.assign({}, bundle, { contents: undefined }));
     }
   }
 
@@ -92,7 +90,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
       return {};
     }
     if (!this.localizationMap.has(languageId)) {
-      this.localizationMap.set(languageId, {})
+      this.localizationMap.set(languageId, {});
     }
     return this.localizationMap.get(languageId) as ILocalizationContents;
   }
@@ -107,11 +105,11 @@ class LocalizationRegistry implements ILocalizationRegistry {
  * TODO 临时通过 href 获取
  * @returns 当前语言别名
  */
-export function getLanguageId(scope: string = 'host'): string {
+export function getLanguageId(scope = 'host'): string {
   return _currentLanguageId;
 }
 
-export function getCurrentLanguageInfo(scope: string = 'host'): ILocalizationInfo {
+export function getCurrentLanguageInfo(scope = 'host'): ILocalizationInfo {
   return getLocalizationRegistry(scope).localizationInfo.get(_currentLanguageId)!;
 }
 
@@ -119,12 +117,12 @@ export function setLanguageId(languageId: string): void {
   _currentLanguageId = languageId;
 }
 
-export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo[] {
+export function getAvailableLanguages(scope = 'host'): ILocalizationInfo[] {
   return getLocalizationRegistry(scope).getAllLanguages();
 }
 
 function getLocalizationRegistry(scope: string): LocalizationRegistry {
-  if(!localizationRegistryMap.has(scope)){
+  if (!localizationRegistryMap.has(scope)) {
     localizationRegistryMap.set(scope, new LocalizationRegistry());
   }
   return localizationRegistryMap.get(scope)!;
@@ -142,25 +140,29 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  */
 export function replaceLocalizePlaceholder(label?: string, scope?: string): string | undefined {
   if (label) {
-    return label.replace(/%(.*?)%/g, (w, p) => localize(p, w, scope).replace(/\"/g,'\\"'))
+    return label.replace(/%(.*?)%/g, (w, p) => localize(p, w, scope).replace(/\"/g, '\\"'));
   }
   return label;
 }
 
 /**
-* 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
-* 占位符找不到时返回 fallback 值(默认为 undefined)
-* @param label 要转换的字段
-* @param scope 默认为 host
-* @param fallback 默认为 undefined
-*/
-export function replaceNlsField(label?: string, scope?: string, fallback: string | undefined = undefined): string | undefined {
- if (label) {
-   const nlsRegex = /^%([\w\d.-]+)%$/i;
-   const result = nlsRegex.exec(label);
-   if (result) {
-     return localize(result[1], fallback, scope);
-   }
- }
- return label;
+ * 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
+ * 占位符找不到时返回 fallback 值(默认为 undefined)
+ * @param label 要转换的字段
+ * @param scope 默认为 host
+ * @param fallback 默认为 undefined
+ */
+export function replaceNlsField(
+  label?: string,
+  scope?: string,
+  fallback: string | undefined = undefined,
+): string | undefined {
+  if (label) {
+    const nlsRegex = /^%([\w\d.-]+)%$/i;
+    const result = nlsRegex.exec(label);
+    if (result) {
+      return localize(result[1], fallback, scope);
+    }
+  }
+  return label;
 }

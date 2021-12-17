@@ -1,14 +1,12 @@
 import { Autowired } from '@opensumi/di';
-import {
-  Domain,
-  URI,
-  FsProviderContribution,
-  AppConfig,
-} from '@opensumi/ide-core-browser';
+import { Domain, URI, FsProviderContribution, AppConfig } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { StaticResourceContribution, StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
+import {
+  StaticResourceContribution,
+  StaticResourceService,
+} from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
@@ -18,7 +16,6 @@ const EXPRESS_SERVER_PATH = window.location.href;
 // file 文件资源 远程读取
 @Domain(StaticResourceContribution, FsProviderContribution)
 export class FileProviderContribution implements StaticResourceContribution, FsProviderContribution {
-
   @Autowired(AbstractHttpFileService)
   private httpImpl: AbstractHttpFileService;
 
@@ -33,7 +30,10 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
 
   registerProvider(registry: IFileServiceClient) {
     // 处理 file 协议的文件部分
-    registry.registerProvider('file', new BrowserFsProvider(this.httpImpl, { rootFolder: this.appConfig.workspaceDir }));
+    registry.registerProvider(
+      'file',
+      new BrowserFsProvider(this.httpImpl, { rootFolder: this.appConfig.workspaceDir }),
+    );
   }
 
   registerStaticResolver(service: StaticResourceService): void {
@@ -49,8 +49,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
         const relativePath = rootUri.relative(uri);
         return assetsUri
           .withPath(
-            new Path('asset-service/v3/projects')
-            .join(
+            new Path('asset-service/v3/projects').join(
               this.metaService.repo!,
               'repository/blobs',
               this.metaService.ref,

@@ -1,7 +1,5 @@
 import { Injectable, Autowired, Optional } from '@opensumi/di';
-import {
-  URI,
-} from '@opensumi/ide-core-browser';
+import { URI } from '@opensumi/ide-core-browser';
 import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -9,9 +7,8 @@ import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-
 import { Directory } from '../../common/file-tree-node.define';
 import { FileStat } from '@opensumi/ide-file-service';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class FileTreeDialogService extends Tree implements IFileTreeService {
-
   @Autowired(IFileTreeAPI)
   private fileTreeAPI: IFileTreeAPI;
 
@@ -58,7 +55,7 @@ export class FileTreeDialogService extends Tree implements IFileTreeService {
     } else {
       // 加载子目录
       if (parent.uri) {
-        const { children } =  await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent);
+        const { children } = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent);
         this.cacheNodes(children as (File | Directory)[]);
         return children;
       }
@@ -109,9 +106,7 @@ export class FileTreeDialogService extends Tree implements IFileTreeService {
       // numeric 参数确保数字为第一排序优先级
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
-    return a.type === TreeNodeType.CompositeTreeNode ? -1
-      : b.type === TreeNodeType.CompositeTreeNode  ? 1
-      : 0;
+    return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
   }
 
   private cacheNodes(nodes: (File | Directory)[]) {

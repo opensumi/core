@@ -4,12 +4,7 @@ import paths from 'path';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
-import {
-  FileChangeType,
-  FileSystemWatcherClient,
-  FileSystemWatcherServer,
-  WatchOptions,
-} from '..';
+import { FileChangeType, FileSystemWatcherClient, FileSystemWatcherServer, WatchOptions } from '..';
 import { FileChangeCollection } from './file-change-collection';
 import { INsfw } from '../common/watcher';
 import debounce = require('lodash.debounce');
@@ -26,35 +21,33 @@ export interface NsfwFileSystemWatcherOption {
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
-  private static WATCHER_FILE_DETECTED_TIME: number = 500;
+  private static WATCHER_FILE_DETECTED_TIME = 500;
 
   protected client: FileSystemWatcherClient | undefined;
 
   protected watcherSequence = 1;
   protected watcherOptions = new Map<number, WatcherOptions>();
-  protected readonly watchers = new Map<number, { path: string, disposable: IDisposable }>();
+  protected readonly watchers = new Map<number, { path: string; disposable: IDisposable }>();
 
-  protected readonly toDispose = new DisposableCollection(
-    Disposable.create(() => this.setClient(undefined)),
-  );
+  protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
 
   protected changes = new FileChangeCollection();
 
   protected readonly options: {
-    verbose: boolean,
+    verbose: boolean;
     // tslint:disable-next-line
-    info: (message: string, ...args: any[]) => void,
+    info: (message: string, ...args: any[]) => void;
     // tslint:disable-next-line
-    error: (message: string, ...args: any[]) => void,
+    error: (message: string, ...args: any[]) => void;
   };
 
   constructor(options?: NsfwFileSystemWatcherOption) {
     this.options = {
       verbose: false,
       // tslint:disable-next-line
-      info: (message, ...args) => { },
+      info: (message, ...args) => {},
       // tslint:disable-next-line
-      error: (message, ...args) => { },
+      error: (message, ...args) => {},
       ...options,
     };
   }
@@ -138,10 +131,10 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    * @param path 监听路径
    * @param count 向上查找层级
    */
-  protected async lookup(path: string, count: number = 3) {
+  protected async lookup(path: string, count = 3) {
     let uri = new URI(path);
     let times = 0;
-    while (!await fs.pathExists(uri.codeUri.fsPath) && times <= count) {
+    while (!(await fs.pathExists(uri.codeUri.fsPath)) && times <= count) {
       uri = uri.parent;
       times++;
     }
@@ -175,7 +168,9 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
       // Fix https://github.com/Axosoft/nsfw/issues/26
       if (isWindows) {
-        if (renameEvent && event.action === INsfw.actions.CREATED &&
+        if (
+          renameEvent &&
+          event.action === INsfw.actions.CREATED &&
           event.directory === renameEvent.directory &&
           event.file === renameEvent.oldFile
         ) {
@@ -192,46 +187,56 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     return events;
   }
 
-  protected async start(watcherId: number, basePath: string, rawOptions: WatchOptions | undefined, toDisposeWatcher: DisposableCollection, rawFile?: string): Promise<void> {
+  protected async start(
+    watcherId: number,
+    basePath: string,
+    rawOptions: WatchOptions | undefined,
+    toDisposeWatcher: DisposableCollection,
+    rawFile?: string,
+  ): Promise<void> {
     const options: WatchOptions = {
       excludes: [],
       ...rawOptions,
     };
     let watcher: INsfw.NSFW | undefined;
 
-    watcher = await (nsfw as any)(await fs.realpath(basePath), (events: INsfw.ChangeEvent[]) => {
-      events = this.trimChangeEvent(events);
-      for (const event of events) {
-        if (rawFile && event.file !== rawFile) {
-          return;
-        }
-        if (event.action === INsfw.actions.CREATED) {
-          this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
-        }
-        if (event.action === INsfw.actions.DELETED) {
-          this.pushDeleted(watcherId, this.resolvePath(event.directory, event.file!));
-        }
-        if (event.action === INsfw.actions.MODIFIED) {
-          this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
-        }
-        if (event.action === INsfw.actions.RENAMED) {
-          if (event.newDirectory) {
-            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
-            this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
-          } else {
-            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
-            this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
+    watcher = await (nsfw as any)(
+      await fs.realpath(basePath),
+      (events: INsfw.ChangeEvent[]) => {
+        events = this.trimChangeEvent(events);
+        for (const event of events) {
+          if (rawFile && event.file !== rawFile) {
+            return;
+          }
+          if (event.action === INsfw.actions.CREATED) {
+            this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
+          }
+          if (event.action === INsfw.actions.DELETED) {
+            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.file!));
+          }
+          if (event.action === INsfw.actions.MODIFIED) {
+            this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
+          }
+          if (event.action === INsfw.actions.RENAMED) {
+            if (event.newDirectory) {
+              this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+              this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
+            } else {
+              this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+              this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
+            }
           }
         }
-      }
-    }, {
-      errorCallback: (error: any) => {
-        // see https://github.com/atom/github/issues/342
-        // tslint:disable-next-line
-        console.warn(`Failed to watch "${basePath}":`, error);
-        this.unwatchFileChanges(watcherId);
       },
-    });
+      {
+        errorCallback: (error: any) => {
+          // see https://github.com/atom/github/issues/342
+          // tslint:disable-next-line
+          console.warn(`Failed to watch "${basePath}":`, error);
+          this.unwatchFileChanges(watcherId);
+        },
+      },
+    );
 
     await watcher!.start();
     // this.options.info('Started watching:', basePath);
@@ -243,16 +248,18 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       this.options.info('Stopped watching:', basePath);
       return;
     }
-    toDisposeWatcher.push(Disposable.create(async () => {
-      this.watcherOptions.delete(watcherId);
-      if (watcher) {
-        this.debug('Stopping watching:', basePath);
-        await watcher.stop();
-        // remove a reference to nsfw otherwise GC cannot collect it
-        watcher = undefined;
-        this.options.info('Stopped watching:', basePath);
-      }
-    }));
+    toDisposeWatcher.push(
+      Disposable.create(async () => {
+        this.watcherOptions.delete(watcherId);
+        if (watcher) {
+          this.debug('Stopping watching:', basePath);
+          await watcher.stop();
+          // remove a reference to nsfw otherwise GC cannot collect it
+          watcher = undefined;
+          this.options.info('Stopped watching:', basePath);
+        }
+      }),
+    );
     this.watcherOptions.set(watcherId, {
       excludesPattern: options.excludes.map((pattern) => parse(pattern)),
       excludes: options.excludes,
@@ -341,9 +348,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     if (!options || !options.excludes || options.excludes.length < 1) {
       return false;
     }
-    return options.excludesPattern.some((match) => {
-      return match(path);
-    });
+    return options.excludesPattern.some((match) => match(path));
   }
 
   protected debug(message: string, ...params: any[]): void {
@@ -351,5 +356,4 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       this.options.info(message, ...params);
     }
   }
-
 }

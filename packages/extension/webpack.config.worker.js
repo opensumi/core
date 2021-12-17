@@ -1,17 +1,14 @@
-const path = require('path')
-const fs = require('fs')
+const path = require('path');
+const fs = require('fs');
 
-const tsconfigPath = path.join(
-  __dirname,
-  '../../configs/ts/references/tsconfig.extension.json'
-);
+const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');
 
-const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'))
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'));
 
 module.exports = {
   entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
   node: {
-    net: 'empty'
+    net: 'empty',
   },
   output: {
     filename: 'worker-host.js',
@@ -23,17 +20,17 @@ module.exports = {
   devtool: 'none',
   mode: 'none',
   optimization: {
-    minimize: false
+    minimize: false,
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
   },
   module: {
     rules: [
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
-      { test: /\.tsx?$/, loader: 'ts-loader', options: { onlyCompileBundledFiles: true, configFile: tsconfigPath} },
+      { test: /\.tsx?$/, loader: 'ts-loader', options: { onlyCompileBundledFiles: true, configFile: tsconfigPath } },
       // css won't be bundled
       { test: /\.css$/, loader: 'null-loader' },
-    ]
-  }
-}
+    ],
+  },
+};

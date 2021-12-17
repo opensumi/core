@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -56,7 +56,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     BracketRight: [']', '}', ']', '}', 0],
     Backslash: ['\\', '|', '\\', '|', 0],
     Semicolon: [';', ':', ';', ':', 0],
-    Quote: ['\'', '"', '\'', '"', 0],
+    Quote: ["'", '"', "'", '"', 0],
     Backquote: ['₩', '~', '`', '~', 0],
     Comma: [',', '<', ',', '<', 0],
     Period: ['.', '>', '.', '>', 0],

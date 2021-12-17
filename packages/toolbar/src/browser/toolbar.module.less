@@ -1,11 +1,10 @@
-
 .action {
   color: var(--tab-activeForeground);
   cursor: pointer;
   &.active {
     transform: scale(1.1);
   }
-  margin:0 5px;
+  margin: 0 5px;
 }
 
 #space1 {
@@ -13,7 +12,7 @@
 }
 
 .tool-bar {
-  min-height:0;
+  min-height: 0;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -30,15 +29,15 @@
     justify-content: left;
     height: 100%;
   }
-  .right :global(.kt-toolbar-location-visible){ 
+  .right :global(.kt-toolbar-location-visible) {
     justify-content: flex-end;
     height: 100%;
-    overflow: hidden
+    overflow: hidden;
   }
   .center :global(.kt-toolbar-location-visible) {
     justify-content: center;
     height: 100%;
-    padding:0 30px;
+    padding: 0 30px;
   }
 
   :global(.iconfont) {

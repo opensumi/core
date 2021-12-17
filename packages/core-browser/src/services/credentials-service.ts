@@ -1,4 +1,9 @@
-import { Emitter, ICredentialsChangeEvent, INativeCredentialService, KeytarServicePath } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  ICredentialsChangeEvent,
+  INativeCredentialService,
+  KeytarServicePath,
+} from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event } from '@opensumi/ide-core-common';
 
@@ -9,7 +14,7 @@ export interface ICredentialsProvider {
   setPassword(service: string, account: string, password: string): Promise<void>;
   deletePassword(service: string, account: string): Promise<boolean>;
   findPassword(service: string): Promise<string | null>;
-  findCredentials(service: string): Promise<Array<{ account: string, password: string }>>;
+  findCredentials(service: string): Promise<Array<{ account: string; password: string }>>;
 }
 
 export interface ICredentialsService extends ICredentialsProvider {
@@ -62,8 +67,7 @@ export class CredentialsService implements ICredentialsService {
 }
 
 class KeytarCredentialsProvider implements ICredentialsProvider {
-
-  constructor(private readonly keytarService: INativeCredentialService) { }
+  constructor(private readonly keytarService: INativeCredentialService) {}
 
   deletePassword(service: string, account: string): Promise<boolean> {
     return this.keytarService.deletePassword(service, account);

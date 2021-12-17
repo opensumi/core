@@ -28,7 +28,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
    * Menubar 本身发生变化时的事件
    * undefined 表示整个都需要刷新
    * 带了 menuId 只需要刷新单个 MenuBarItem
-  */
+   */
   private readonly _onDidMenuBarChange = new Emitter<void>();
   public get onDidMenubarChange(): Event<void> {
     return this._onDidMenuBarChange.event;
@@ -58,18 +58,12 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     this._build();
 
     // 监听 menubar 刷新事件
-    this.addDispose(Event.debounce(
-      this.menuRegistry.onDidChangeMenubar,
-      () => { },
-      50,
-    )(this._build, this));
+    this.addDispose(Event.debounce(this.menuRegistry.onDidChangeMenubar, () => {}, 50)(this._build, this));
 
     // 监听内部的 onMenuChange 刷新单个 menubarItem 下的所有节点
-    this.addDispose(Event.debounce(
-      this.onMenuChange,
-      (l, menuId: string) => menuId,
-      50,
-    )(this._rebuildSingleRootMenus, this));
+    this.addDispose(
+      Event.debounce(this.onMenuChange, (l, menuId: string) => menuId, 50)(this._rebuildSingleRootMenus, this),
+    );
 
     this.addDispose(this._onDidMenuBarChange);
     this.addDispose(this._onDidMenuChange);
@@ -152,10 +146,12 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
         if (!this._menus.has(submenuId)) {
           const menus = this.registerDispose(this.menuService.createMenu(submenuId));
           this._menus.set(submenuId, menus);
-          this.registerDispose(menus.onDidChange(() => {
-            // 通知外部 顶层 menuId 下所有结构变了, 需要重新生成数据结构
-            this._onMenuChange.fire(rootMenuId);
-          }));
+          this.registerDispose(
+            menus.onDidChange(() => {
+              // 通知外部 顶层 menuId 下所有结构变了, 需要重新生成数据结构
+              this._onMenuChange.fire(rootMenuId);
+            }),
+          );
         }
 
         const menuToDispose = this.menuService.createMenu(submenuId);

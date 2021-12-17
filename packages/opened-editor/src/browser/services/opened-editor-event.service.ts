@@ -1,7 +1,17 @@
 import { Event, Emitter, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
-import { IResource, IEditorGroup, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@opensumi/ide-editor';
+import {
+  IResource,
+  IEditorGroup,
+  ResourceDecorationChangeEvent,
+  IResourceDecorationChangeEventPayload,
+} from '@opensumi/ide-editor';
 import { Injectable } from '@opensumi/di';
-import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorGroupOpenEvent,
+  EditorGroupCloseEvent,
+  EditorGroupDisposeEvent,
+  EditorGroupChangeEvent,
+} from '@opensumi/ide-editor/lib/browser';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 export interface OpenedEditorEvent {
@@ -11,7 +21,6 @@ export interface OpenedEditorEvent {
 
 @Injectable()
 export class OpenedEditorEventService extends WithEventBus {
-
   private _onDidChange: Emitter<OpenedEditorEvent | null> = new Emitter();
   private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = new Emitter();
   private _onDidActiveChange: Emitter<OpenedEditorEvent | null> = new Emitter();

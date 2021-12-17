@@ -14,7 +14,14 @@ export class ViewZoneDelegate implements monaco.editor.IViewZone {
   private readonly _onDomNodeTop: (top: number) => void;
   private readonly _onComputedHeight: (height: number) => void;
 
-  constructor(domNode: HTMLElement, afterLineNumber: number, afterColumn: number, heightInLines: number, onDomNodeTop: (top: number) => void, onComputedHeight: (height: number) => void) {
+  constructor(
+    domNode: HTMLElement,
+    afterLineNumber: number,
+    afterColumn: number,
+    heightInLines: number,
+    onDomNodeTop: (top: number) => void,
+    onComputedHeight: (height: number) => void,
+  ) {
     this.domNode = domNode;
     this.afterLineNumber = afterLineNumber;
     this.afterColumn = afterColumn;
@@ -33,13 +40,9 @@ export class ViewZoneDelegate implements monaco.editor.IViewZone {
 }
 
 export class OverlayWidgetDelegate extends Disposable implements monaco.editor.IOverlayWidget {
-
   static id = 'monaco-enhance-overlay-widget';
 
-  constructor(
-    readonly id: string,
-    readonly dom: HTMLDivElement,
-  ) {
+  constructor(readonly id: string, readonly dom: HTMLDivElement) {
     super();
   }
 
@@ -66,8 +69,8 @@ export abstract class ZoneWidget extends Disposable {
   protected _container: HTMLDivElement;
 
   // 宽度和左定位不需要继承下去，完全交给父容器控制
-  private width: number = 0;
-  private left: number = 0;
+  private width = 0;
+  private left = 0;
   private _overlay: OverlayWidgetDelegate | null;
   private _viewZone: ViewZoneDelegate | null;
   private _current: monaco.IRange;
@@ -76,9 +79,7 @@ export abstract class ZoneWidget extends Disposable {
   private _onDomNodeTop = new Emitter<number>();
   protected onDomNodeTop = this._onDomNodeTop.event;
 
-  constructor(
-    protected readonly editor: IMonacoCodeEditor,
-  ) {
+  constructor(protected readonly editor: IMonacoCodeEditor) {
     super();
     this._container = document.createElement('div');
     this._listenEvents();
@@ -105,7 +106,8 @@ export abstract class ZoneWidget extends Disposable {
       this._container.style.top = '-1000px';
       this._viewZone = new ViewZoneDelegate(
         viewZoneDomNode,
-        lineNumber, column,
+        lineNumber,
+        column,
         heightInLines,
         (top: number) => this._onViewZoneTop(top),
         (height: number) => this._onViewZoneHeight(height),
@@ -133,8 +135,7 @@ export abstract class ZoneWidget extends Disposable {
     this._showImpl(where, heightInLines);
   }
 
-  hide() {
-  }
+  hide() {}
 
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {
     if (info.minimap && info.minimap.minimapWidth > 0 && info.minimap.minimapLeft === 0) {
@@ -208,7 +209,6 @@ export abstract class ZoneWidget extends Disposable {
  * 可以自适应高度的 ZoneWidget
  */
 export abstract class ResizeZoneWidget extends ZoneWidget {
-
   private preWrapperHeight: number;
   private heightInLines: number;
   private lineHeight: number;
@@ -218,20 +218,19 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   public onFirstDisplay = Event.once(this.onDomNodeTop);
   protected _isShow = false;
 
-  constructor(
-    protected readonly editor: IMonacoCodeEditor,
-    private range: monaco.IRange,
-  ) {
+  constructor(protected readonly editor: IMonacoCodeEditor, private range: monaco.IRange) {
     super(editor);
     this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
-    this.addDispose(this.editor.onDidChangeConfiguration((e) => {
-      if (e.hasChanged(monaco.editor.EditorOption.lineHeight)) {
-        this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
-        if (this.wrap) {
-          this.resizeZoneWidget();
+    this.addDispose(
+      this.editor.onDidChangeConfiguration((e) => {
+        if (e.hasChanged(monaco.editor.EditorOption.lineHeight)) {
+          this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
+          if (this.wrap) {
+            this.resizeZoneWidget();
+          }
         }
-      }
-    }));
+      }),
+    );
     // 在第一次设置 container top 值的时候重置一下高度
     Event.once(this.onDomNodeTop)(() => {
       // 等待渲染帧以便获取到真实 warp 高度

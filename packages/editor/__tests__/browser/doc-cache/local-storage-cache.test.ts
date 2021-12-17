@@ -25,22 +25,20 @@ describe('LocalStorageDocCacheImpl', () => {
       {
         token: ILoggerManagerClient,
         useValue: {
-          getLogger: () => {
-            return {
-              log: () => {},
-              debug: () => {},
-              error: () => {},
-              verbose: () => {},
-              warn: () => {},
-            };
-          },
+          getLogger: () => ({
+            log: () => {},
+            debug: () => {},
+            error: () => {},
+            verbose: () => {},
+            warn: () => {},
+          }),
         },
       },
       {
         token: IWorkspaceStorageService,
         useValue: {
-          getData() { },
-          setData() { },
+          getData() {},
+          setData() {},
         },
       },
     );
@@ -68,11 +66,7 @@ describe('LocalStorageDocCacheImpl', () => {
     jest.spyOn(storageService, 'getData').mockResolvedValue({
       path: uri.path.toString(),
       startMD5: hashCalculateService.calculate(content),
-      changeMatrix: [
-        [
-          ['a', 0, 0, 1, 0],
-        ],
-      ],
+      changeMatrix: [[['a', 0, 0, 1, 0]]],
     } as never);
 
     const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
@@ -96,11 +90,7 @@ describe('LocalStorageDocCacheImpl', () => {
     expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, {
       path: '',
       startMD5: hashCalculateService.calculate(content),
-      changeMatrix: [
-        [
-          [newContent, 1, 1, 1, 9],
-        ],
-      ],
+      changeMatrix: [[[newContent, 1, 1, 1, 9]]],
     });
   });
 

@@ -2,22 +2,23 @@ import { ipcMain } from 'electron';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IDisposable, Disposable, getDebugLogger } from '@opensumi/ide-core-common';
 import { IElectronURLService, IURLHandler } from '@opensumi/ide-core-common/lib/electron';
-import { ElectronMainApiRegistry, ElectronURLHandlerRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
+import {
+  ElectronMainApiRegistry,
+  ElectronURLHandlerRegistry,
+  IElectronMainApiProvider,
+  IElectronMainApp,
+} from './types';
 
 @Injectable()
 export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
-
   private apis: Map<string, ElectronMainApiProxy> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  constructor() {
-
-  }
+  constructor() {}
 
   registerMainApi(name: string, api: IElectronMainApiProvider): IDisposable {
-
     if (this.apis.has(name)) {
       this.apis.get(name)!.dispose();
     }
@@ -34,7 +35,6 @@ export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
       },
     };
   }
-
 }
 
 @Injectable()
@@ -47,7 +47,7 @@ export class ElectronURLHandlerRegistryImpl implements ElectronURLHandlerRegistr
     urlService.registerDefaultHandler(handler);
 
     return {
-      dispose: () => { },
+      dispose: () => {},
     };
   }
 
@@ -61,12 +61,10 @@ export class ElectronURLHandlerRegistryImpl implements ElectronURLHandlerRegistr
       },
     };
   }
-
 }
 
 @Injectable({ multiple: true })
 export class ElectronMainApiProxy extends Disposable {
-
   @Autowired(IElectronMainApp)
   app: IElectronMainApp;
 
@@ -77,7 +75,7 @@ export class ElectronMainApiProxy extends Disposable {
         if (!target[method] || typeof target[method] !== 'function') {
           throw new Error(`No Request Handler for ${name}.${method}`);
         }
-        const result = await target[method].apply(target, args);
+        const result = await target[method](...args);
         if (!event.sender.isDestroyed()) {
           event.sender.send('response:' + name, requestId, undefined, result);
         }
@@ -111,5 +109,4 @@ export class ElectronMainApiProxy extends Disposable {
       },
     });
   }
-
 }

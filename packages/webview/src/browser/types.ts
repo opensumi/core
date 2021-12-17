@@ -1,4 +1,4 @@
-import {Event, URI, IDisposable, MaybeNull, MaybePromise } from '@opensumi/ide-core-common';
+import { Event, URI, IDisposable, MaybeNull, MaybePromise } from '@opensumi/ide-core-common';
 import { ITheme } from '@opensumi/ide-theme';
 import { IEditorGroup } from '@opensumi/ide-editor';
 
@@ -12,7 +12,6 @@ export const EDITOR_WEBVIEW_SCHEME = 'editor-webview';
  *      因此如果有些webview需要保证安全和稳定性的话需要使用不同的EndPoint）
  */
 export interface IWebview extends IDisposable {
-
   readonly id: string;
 
   readonly options: IWebviewContentOptions;
@@ -89,7 +88,6 @@ export interface IWebviewContentScrollPosition {
 
 // 纯粹的Webview或者Iframe元素。加载一个url
 export interface IPlainWebview extends IDisposable {
-
   readonly url: string | undefined;
 
   loadURL(url: string): Promise<void>;
@@ -109,7 +107,6 @@ export interface IPlainWebview extends IDisposable {
   remove(): void;
 
   onLoadURL: Event<string>;
-
 }
 
 /**
@@ -117,7 +114,6 @@ export interface IPlainWebview extends IDisposable {
  * 暂时仅限 electron 中使用
  */
 export interface IPlainWebviewWindow extends IDisposable {
-
   ready: Promise<void>;
 
   readonly url: string | undefined;
@@ -134,7 +130,7 @@ export interface IPlainWebviewWindow extends IDisposable {
 
   onClosed: Event<void>;
 
-  setSize(size: {width?: number; height?: number; }): Promise<void>;
+  setSize(size: { width?: number; height?: number }): Promise<void>;
 
   setAlwaysOnTop(flag: boolean): Promise<void>;
 
@@ -146,7 +142,6 @@ export interface IPlainWebviewWindow extends IDisposable {
 export const IWebviewService = Symbol('IWebviewService');
 
 export interface IWebviewService {
-
   createPlainWebview(options?: IPlainWebviewConstructionOptions): IPlainWebview;
 
   createWebview(options?: IWebviewContentOptions): IWebview;
@@ -155,11 +150,17 @@ export interface IWebviewService {
 
   createEditorWebviewComponent(options?: IWebviewContentOptions, id?: string): IEditorWebviewComponent<IWebview>;
 
-  createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions, id?: string): IEditorWebviewComponent<IPlainWebview>;
+  createEditorPlainWebviewComponent(
+    options?: IPlainWebviewConstructionOptions,
+    id?: string,
+  ): IEditorWebviewComponent<IPlainWebview>;
 
   getWebviewThemeData(theme: ITheme): IWebviewThemeData;
 
-  getOrCreatePlainWebviewComponent(id: string, options?: IPlainWebviewConstructionOptions): IPlainWebviewComponentHandle;
+  getOrCreatePlainWebviewComponent(
+    id: string,
+    options?: IPlainWebviewConstructionOptions,
+  ): IPlainWebviewComponentHandle;
 
   getEditorPlainWebviewComponent(id: string): IEditorWebviewComponent<IPlainWebview> | undefined;
 
@@ -170,7 +171,10 @@ export interface IWebviewService {
    * @param options electron的创建的options
    * @param env 会传递给 webview内的 window.env 的内容
    */
-  createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow;
+  createWebviewWindow(
+    options?: Electron.BrowserWindowConstructorOptions,
+    env?: { [key: string]: string },
+  ): IPlainWebviewWindow;
 
   registerWebviewReviver(reviver: IWebviewReviver): IDisposable;
 
@@ -178,11 +182,9 @@ export interface IWebviewService {
 }
 
 export interface IPlainWebviewConstructionOptions {
-
   // 喜好使用的实现
   // 在web上无法使用 webview
   preferredImpl?: 'webview' | 'iframe';
-
 }
 
 export interface IWebviewThemeData {
@@ -191,7 +193,6 @@ export interface IWebviewThemeData {
 }
 
 export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> extends IDisposable {
-
   // 唯一id
   id: string;
 
@@ -205,10 +206,7 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
 
   title: string;
 
-  open(options: {
-    groupIndex?: number,
-    relativeGroupIndex?: number,
-  });
+  open(options: { groupIndex?: number; relativeGroupIndex?: number });
 
   close();
 
@@ -225,12 +223,10 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
 }
 
 export interface IPlainWebviewComponentHandle extends IDisposable {
-
   // 唯一id
   id: string;
 
   webview: IPlainWebview;
-
 }
 
 export interface IEditorWebviewMetaData {

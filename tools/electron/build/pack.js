@@ -4,22 +4,20 @@ const rootPackage = require('../package.json');
 
 electronBuilder.build({
   config: {
-    productName: "OpenSumi IDE",
+    productName: 'OpenSumi IDE',
     electronVersion: rootPackage.devDependencies.electron,
-    files:[
-      "app/dist"
-    ],
-    extraResources:[
+    files: ['app/dist'],
+    extraResources: [
       {
-        "from": path.join(__dirname, "../extensions"),
-        "to": "extensions",
+        from: path.join(__dirname, '../extensions'),
+        to: 'extensions',
         filter: ['**/*'],
-      }
+      },
     ],
     asar: true,
     asarUnpack: 'node_modules/vscode-ripgrep',
     mac: {
-      target:'dmg',
+      target: 'dmg',
     },
-  }
-})
+  },
+});

@@ -4,7 +4,6 @@ import { Injectable } from '@opensumi/di';
 
 @Injectable()
 export class StaticResourceServiceImpl implements StaticResourceService {
-
   private providers = new Map<string, IStaticResourceProvider>();
 
   public readonly resourceRoots: Set<string> = new Set();
@@ -34,5 +33,4 @@ export class StaticResourceServiceImpl implements StaticResourceService {
     url.toString = url.toString.bind(url, true);
     return url;
   }
-
 }

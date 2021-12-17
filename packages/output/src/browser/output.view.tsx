@@ -21,9 +21,11 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
     }
   }, []);
 
-  return <React.Fragment>
-    <div className={styles.output} ref={outputRef} />
-  </React.Fragment>;
+  return (
+    <React.Fragment>
+      <div className={styles.output} ref={outputRef} />
+    </React.Fragment>
+  );
 });
 
 export const ChannelSelector = observer(() => {
@@ -33,16 +35,28 @@ export const ChannelSelector = observer(() => {
   const channelOptionElements: React.ReactNode[] = [];
   outputService.getChannels().forEach((channel, idx) => {
     channelOptionElements.push(
-      isElectronRenderer() ?
-      <option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</option> :
-      <Option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</Option>,
+      isElectronRenderer() ? (
+        <option value={channel.name} key={`${idx} - ${channel.name}`}>
+          {channel.name}
+        </option>
+      ) : (
+        <Option value={channel.name} key={`${idx} - ${channel.name}`}>
+          {channel.name}
+        </Option>
+      ),
     );
   });
   if (channelOptionElements.length === 0) {
     channelOptionElements.push(
-      isElectronRenderer() ?
-      <option key={NONE} value={NONE}>{NONE}</option> :
-      <Option key={NONE} value={NONE}>{NONE}</Option>,
+      isElectronRenderer() ? (
+        <option key={NONE} value={NONE}>
+          {NONE}
+        </option>
+      ) : (
+        <Option key={NONE} value={NONE}>
+          {NONE}
+        </Option>
+      ),
     );
   }
 
@@ -59,18 +73,22 @@ export const ChannelSelector = observer(() => {
     }
   }
 
-  return (
-   isElectronRenderer() ?
+  return isElectronRenderer() ? (
     <NativeSelect
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
       onChange={handleChange}
-    >{channelOptionElements}</NativeSelect> :
+    >
+      {channelOptionElements}
+    </NativeSelect>
+  ) : (
     <Select
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
       className={styles.select}
       size='small'
       maxHeight={outputService.viewHeight}
       onChange={handleChange}
-    >{channelOptionElements}</Select>
+    >
+      {channelOptionElements}
+    </Select>
   );
 });

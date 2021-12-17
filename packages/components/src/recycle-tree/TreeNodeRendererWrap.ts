@@ -23,7 +23,11 @@ interface IRenamePromptRendererProps {
   itemType: TreeNodeType.RenamePrompt;
 }
 
-export type INodeRendererProps = ITreeNodeRendererProps | ICompositeTreeNodeRendererProps | INewPromptRendererProps | IRenamePromptRendererProps;
+export type INodeRendererProps =
+  | ITreeNodeRendererProps
+  | ICompositeTreeNodeRendererProps
+  | INewPromptRendererProps
+  | IRenamePromptRendererProps;
 
 export type INodeRenderer = (props: any) => JSX.Element;
 
@@ -38,10 +42,9 @@ export interface INodeRendererWrapProps {
 }
 
 export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
-
   public render() {
     const { item, itemType, children, template, hasPrompt } = this.props;
-    return React.createElement(children, {item, itemType, template, hasPrompt, key: item.id});
+    return React.createElement(children, { item, itemType, template, hasPrompt, key: item.id });
   }
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {

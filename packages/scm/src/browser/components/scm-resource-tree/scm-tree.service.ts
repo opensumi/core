@@ -3,7 +3,15 @@ import { Emitter, Event, PreferenceScope } from '@opensumi/ide-core-common';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 
-import { SCMResourceRoot, SCMResourceGroup, SCMResourceFile, SCMResourceFolder, SCMResourceNotRoot, SCMResourceNotFile, SCMResourceItem } from './scm-tree-node';
+import {
+  SCMResourceRoot,
+  SCMResourceGroup,
+  SCMResourceFile,
+  SCMResourceFolder,
+  SCMResourceNotRoot,
+  SCMResourceNotFile,
+  SCMResourceItem,
+} from './scm-tree-node';
 import { SCMTreeAPI, ISCMTreeNodeDescription } from './scm-tree-api';
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
 
@@ -37,9 +45,7 @@ export class SCMTreeService extends Tree {
   private cachedListNodeMap: Map<string, SCMResourceNotRoot> = new Map();
 
   public getCachedNodeItem(uid: string) {
-    return this.isTreeMode
-      ? this.cachedTreeNodeMap.get(uid)
-      : this.cachedListNodeMap.get(uid);
+    return this.isTreeMode ? this.cachedTreeNodeMap.get(uid) : this.cachedListNodeMap.get(uid);
   }
 
   // tslint:disable-next-line:no-unused-variable
@@ -49,9 +55,7 @@ export class SCMTreeService extends Tree {
   }
 
   private cacheNodeItem(uriStr: string, node: SCMResourceNotRoot) {
-    return this.isTreeMode
-      ? this.cachedTreeNodeMap.set(uriStr, node)
-      : this.cachedListNodeMap.set(uriStr, node);
+    return this.isTreeMode ? this.cachedTreeNodeMap.set(uriStr, node) : this.cachedListNodeMap.set(uriStr, node);
   }
   // cache related ends
 
@@ -90,9 +94,7 @@ export class SCMTreeService extends Tree {
       this._root = new SCMResourceRoot(this, this._isTreeMode);
       children = [this._root as SCMResourceRoot];
     } else if (SCMResourceRoot.is(parent)) {
-      const initData = this.scmTreeAPI.init(
-        this._isTreeMode ? SCMViewModelMode.Tree : SCMViewModelMode.List,
-      );
+      const initData = this.scmTreeAPI.init(this._isTreeMode ? SCMViewModelMode.Tree : SCMViewModelMode.List);
       // 这里针对 children 做一个排序
       children.push(
         ...initData.map((child) => {
@@ -100,7 +102,7 @@ export class SCMTreeService extends Tree {
           return node;
         }),
       );
-      this.cacheNodes(children as (SCMResourceNotRoot)[]);
+      this.cacheNodes(children as SCMResourceNotRoot[]);
     } else {
       if (parent.raw) {
         // 这里针对 children 做一个排序
@@ -111,13 +113,13 @@ export class SCMTreeService extends Tree {
             return node;
           }),
         );
-        this.cacheNodes(children as (SCMResourceNotRoot)[]);
+        this.cacheNodes(children as SCMResourceNotRoot[]);
       }
     }
     return children;
   }
 
-  private cacheNodes(nodes: (SCMResourceNotRoot)[]) {
+  private cacheNodes(nodes: SCMResourceNotRoot[]) {
     nodes.forEach((node) => {
       // 利用唯一 Key 进行缓存
       this.cacheNodeItem(node.raw.id, node);
@@ -127,33 +129,14 @@ export class SCMTreeService extends Tree {
   private toNode(child: ISCMTreeNodeDescription, parent: SCMResourceNotFile, isTree: boolean) {
     if (child.type === 'group') {
       const c = child as ISCMTreeNodeDescription<ISCMResourceGroup>;
-      return new SCMResourceGroup(
-        this,
-        parent,
-        c,
-        c.resource,
-        this.getCachedNodeItem(c.id)?.id,
-      );
+      return new SCMResourceGroup(this, parent, c, c.resource, this.getCachedNodeItem(c.id)?.id);
     }
 
     const c = child as ISCMTreeNodeDescription<ISCMResource>;
     if (child.type === 'file') {
-      return new SCMResourceFile(
-        this,
-        parent,
-        c,
-        c.resource,
-        isTree,
-        this.getCachedNodeItem(c.id)?.id,
-      );
+      return new SCMResourceFile(this, parent, c, c.resource, isTree, this.getCachedNodeItem(c.id)?.id);
     } else {
-      return new SCMResourceFolder(
-        this,
-        parent,
-        c,
-        c.resource,
-        this.getCachedNodeItem(c.id)?.id,
-      );
+      return new SCMResourceFolder(this, parent, c, c.resource, this.getCachedNodeItem(c.id)?.id);
     }
   }
 
@@ -162,9 +145,9 @@ export class SCMTreeService extends Tree {
     if (SCMResourceGroup.is(a) && SCMResourceGroup.is(b)) {
       // 数字越大优先级越高
       const priority = {
-        'merge': 3,
-        'index': 2,
-        'workingTree': 1,
+        merge: 3,
+        index: 2,
+        workingTree: 1,
       };
       return priority[(b.resource as ISCMResourceGroup).id] - priority[(a.resource as ISCMResourceGroup).id];
     }

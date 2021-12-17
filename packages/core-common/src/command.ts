@@ -75,7 +75,6 @@ export namespace Command {
       return 0;
     }
   }
-
 }
 
 /**
@@ -158,16 +157,6 @@ interface CoreCommandRegistry {
    * @returns 销毁命令的方法
    */
   registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
-  /**
-   * 解绑命令
-   * @param command 要解绑的命令
-   */
-  unregisterCommand(command: Command): void;
-  /**
-   * 解绑命令
-   * @param id 要解绑命令 id
-   */
-  unregisterCommand(id: string): void;
   /**
    * 解绑命令
    * @param commandOrId 要解绑命令或命令 id
@@ -257,7 +246,10 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
 
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
-  private readonly postCommandInterceptor: Map<string, InterceptorFunction[]> = new Map<string, InterceptorFunction[]>();
+  private readonly postCommandInterceptor: Map<string, InterceptorFunction[]> = new Map<
+    string,
+    InterceptorFunction[]
+  >();
 
   /**
    * 命令执行方法
@@ -267,7 +259,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     const command = this.getCommand(commandId);
     // 执行代理命令
-    if(command && command.delegate) {
+    if (command && command.delegate) {
       return this.executeCommand<T>(command.delegate, ...args);
     }
     // 把 before 在 handler 判断前置，对于 onCommand 激活的插件如果没有在 contributes 配置，那么 handler 是不存在的，也就无法激活
@@ -292,11 +284,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     let argsMessage = '';
     try {
       argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
-    } catch(e) {
+    } catch (e) {
       argsMessage = 'args cannot be convert to JSON';
     }
     const err = new Error(
-      `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
+      `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`,
     );
     err.name = HANDLER_NOT_FOUND;
     throw err;
@@ -306,7 +298,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * 获取所有命令
    */
   getCommands(): Command[] {
-    return Object.keys(this._commands).map(id => this.getCommand(id)!);
+    return Object.keys(this._commands).map((id) => this.getCommand(id)!);
   }
 
   /**
@@ -342,7 +334,6 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * 解绑命令
    * @param id 命令 id
    */
-  unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void {
     const id = Command.is(commandOrId) ? commandOrId.id : commandOrId;
     const unregisterCommand = this.unregisterCommands.get(id);
@@ -439,7 +430,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
     const command = this.getCommand(commandId);
     if (command && command.delegate) {
-      return this.getActiveHandler(command.delegate, ...args)
+      return this.getActiveHandler(command.delegate, ...args);
     }
     const handlers = this._handlers[commandId];
     if (handlers) {
@@ -464,7 +455,10 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       return this.isPermittedCommand(command.delegate, extensionInfo, ...args);
     }
     const handlers = this._handlers[commandId];
-    return !Array.isArray(handlers) || handlers.every(handler => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args));
+    return (
+      !Array.isArray(handlers) ||
+      handlers.every((handler) => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args))
+    );
   }
 
   /**
@@ -498,11 +492,13 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    */
   getCommand(id: string): Command | undefined {
     const command = this._commands[id];
-    return command ? {
-      ...command,
-      category: replaceLocalizePlaceholder(command.category),
-      label: replaceLocalizePlaceholder(command.label),
-    }: undefined;
+    return command
+      ? {
+          ...command,
+          category: replaceLocalizePlaceholder(command.category),
+          label: replaceLocalizePlaceholder(command.label),
+        }
+      : undefined;
   }
 
   /**
@@ -526,8 +522,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
         if (index !== -1) {
           this.preCommandInterceptors.splice(index, 1);
         }
-      }
-    }
+      },
+    };
   }
 
   public afterExecuteCommand(command: string, result: InterceptorFunction);
@@ -548,8 +544,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
               commandInterceptor.splice(index, 1);
             }
           }
-        }
-      }
+        },
+      };
     } else {
       this.postCommandInterceptors.push(interceptor);
       return {
@@ -558,10 +554,9 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
           if (index !== -1) {
             this.postCommandInterceptors.splice(index, 1);
           }
-        }
-      }
+        },
+      };
     }
-
   }
 
   /**
@@ -576,8 +571,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    */
   setRecentCommands(commands: Command[]) {
     commands.forEach((command: Command) => {
-      this.addRecentCommand(command)
-    })
+      this.addRecentCommand(command);
+    });
     return this._recent;
   }
 
@@ -601,10 +596,9 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
 }
 
 @Injectable()
-export class CommandRegistryImpl extends CoreCommandRegistryImpl implements CommandRegistry  {
-
+export class CommandRegistryImpl extends CoreCommandRegistryImpl implements CommandRegistry {
   @Autowired(CommandContribution)
-  protected readonly contributionProvider: ContributionProvider<CommandContribution>
+  protected readonly contributionProvider: ContributionProvider<CommandContribution>;
 
   /**
    * 执行 CommandContribution 的注册方法
@@ -619,7 +613,6 @@ export class CommandRegistryImpl extends CoreCommandRegistryImpl implements Comm
 
 @Injectable()
 export class CommandServiceImpl implements CommandService {
-
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistryImpl;
 
@@ -629,8 +622,8 @@ export class CommandServiceImpl implements CommandService {
 
   async tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     try {
-      return await this.executeCommand(commandId, ...args)
-    } catch(err) {
+      return await this.executeCommand(commandId, ...args);
+    } catch (err) {
       // no-op: failed when command not found
       getDebugLogger().warn(err);
     }

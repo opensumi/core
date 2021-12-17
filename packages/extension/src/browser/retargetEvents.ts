@@ -1,11 +1,62 @@
-const reactEvents = ['onAbort', 'onAnimationCancel', 'onAnimationEnd', 'onAnimationIteration', 'onAuxClick', 'onBlur',
-  'onChange', 'onClick', 'onClose', 'onContextMenu', 'onDoubleClick', 'onError', 'onFocus', 'onGotPointerCapture',
-  'onInput', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onLoad', 'onLoadEnd', 'onLoadStart', 'onLostPointerCapture',
-  'onMouseDown', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onPointerCancel', 'onPointerDown',
-  'onPointerEnter', 'onPointerLeave', 'onPointerMove', 'onPointerOut', 'onPointerOver', 'onPointerUp', 'onReset',
-  'onResize', 'onScroll', 'onSelect', 'onSelectionChange', 'onSelectStart', 'onSubmit', 'onTouchCancel',
-  'onTouchMove', 'onTouchStart', 'onTouchEnd', 'onTransitionCancel', 'onTransitionEnd', 'onDrag', 'onDragEnd',
-  'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onFocusOut'];
+const reactEvents = [
+  'onAbort',
+  'onAnimationCancel',
+  'onAnimationEnd',
+  'onAnimationIteration',
+  'onAuxClick',
+  'onBlur',
+  'onChange',
+  'onClick',
+  'onClose',
+  'onContextMenu',
+  'onDoubleClick',
+  'onError',
+  'onFocus',
+  'onGotPointerCapture',
+  'onInput',
+  'onKeyDown',
+  'onKeyPress',
+  'onKeyUp',
+  'onLoad',
+  'onLoadEnd',
+  'onLoadStart',
+  'onLostPointerCapture',
+  'onMouseDown',
+  'onMouseMove',
+  'onMouseOut',
+  'onMouseOver',
+  'onMouseUp',
+  'onPointerCancel',
+  'onPointerDown',
+  'onPointerEnter',
+  'onPointerLeave',
+  'onPointerMove',
+  'onPointerOut',
+  'onPointerOver',
+  'onPointerUp',
+  'onReset',
+  'onResize',
+  'onScroll',
+  'onSelect',
+  'onSelectionChange',
+  'onSelectStart',
+  'onSubmit',
+  'onTouchCancel',
+  'onTouchMove',
+  'onTouchStart',
+  'onTouchEnd',
+  'onTransitionCancel',
+  'onTransitionEnd',
+  'onDrag',
+  'onDragEnd',
+  'onDragEnter',
+  'onDragExit',
+  'onDragLeave',
+  'onDragOver',
+  'onDragStart',
+  'onDrop',
+  'onFocusOut',
+];
 
 const divergentNativeEvents = {
   onDoubleClick: 'dblclick',
@@ -21,11 +72,9 @@ export function retargetEvents(shadowRoot: ShadowRoot) {
   const removeEventListeners: Array<() => void> = [];
 
   reactEvents.forEach((reactEventName) => {
-
     const nativeEventName = getNativeEventName(reactEventName);
 
     function retargetEvent(event) {
-
       event.nativeEvent = event;
       const path = event.path || (event.composedPath && event.composedPath()) || composedPath(event.target);
 
@@ -66,7 +115,6 @@ export function retargetEvents(shadowRoot: ShadowRoot) {
   });
 
   return () => {
-
     removeEventListeners.forEach((removeEventListener) => {
       removeEventListener();
     });
@@ -90,9 +138,15 @@ function findReactProperty(item, propertyPrefix) {
 }
 
 function findReactProps(component) {
-  if (!component) { return undefined; }
-  if (component.memoizedProps) { return component.memoizedProps; } // React 16 Fiber
-  if (component._currentElement && component._currentElement.props) { return component._currentElement.props; } // React <=15
+  if (!component) {
+    return undefined;
+  }
+  if (component.memoizedProps) {
+    return component.memoizedProps;
+  } // React 16 Fiber
+  if (component._currentElement && component._currentElement.props) {
+    return component._currentElement.props;
+  } // React <=15
 }
 
 function dispatchEvent(event, eventType, componentProps) {

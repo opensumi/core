@@ -1,8 +1,23 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
-import { getCodeActions, CodeActionItem } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
-import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry, Progress } from '@opensumi/ide-core-browser';
+import {
+  getCodeActions,
+  CodeActionItem,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
+import {
+  ClientAppContribution,
+  WithEventBus,
+  Domain,
+  OnEvent,
+  PreferenceService,
+  CommandService,
+  MonacoService,
+  ServiceNames,
+  ILogger,
+  MonacoOverrideServiceRegistry,
+  Progress,
+} from '@opensumi/ide-core-browser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
@@ -10,7 +25,6 @@ import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 export class CodeActionOnSaveParticipant extends WithEventBus {
-
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
@@ -39,13 +53,17 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
 
   @OnEvent(EditorDocumentModelWillSaveEvent)
   async onEditorDocumentModelWillSave(e: EditorDocumentModelWillSaveEvent) {
-
     // 自动保存不运行
     if (e.payload.reason !== SaveReason.Manual) {
       return;
     }
 
-    const preferenceActions = this.preferenceService.get<any>('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
+    const preferenceActions = this.preferenceService.get<any>(
+      'editor.codeActionsOnSave',
+      undefined,
+      e.payload.uri.toString(),
+      e.payload.language,
+    );
     if (!preferenceActions) {
       return undefined;
     }
@@ -71,14 +89,20 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
 
     const tokenSource = new monaco.CancellationTokenSource();
 
-    const timeout = this.preferenceService.get<number>('editor.codeActionsOnSaveTimeout', undefined, e.payload.uri.toString(), e.payload.language);
+    const timeout = this.preferenceService.get<number>(
+      'editor.codeActionsOnSaveTimeout',
+      undefined,
+      e.payload.uri.toString(),
+      e.payload.language,
+    );
 
     return Promise.race([
       new Promise<void>((_resolve, reject) =>
         setTimeout(() => {
           tokenSource.cancel();
           reject('codeActionsOnSave timeout');
-        }, timeout)),
+        }, timeout),
+      ),
       this.applyOnSaveActions(model, codeActionsOnSave, tokenSource.token),
     ]).finally(() => {
       tokenSource.cancel();
@@ -104,28 +128,34 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
         await this.bulkEditService?.apply(actionItem.action.edit);
       }
       if (actionItem.action.command) {
-        await this.commandService.executeCommand(actionItem.action.command.id, ...(actionItem.action.command.arguments || []));
+        await this.commandService.executeCommand(
+          actionItem.action.command.id,
+          ...(actionItem.action.command.arguments || []),
+        );
       }
     }
   }
 
   private async getActionsToRun(model: ITextModel, codeActionKind: CodeActionKind, token: monaco.CancellationToken) {
-    return getCodeActions(model, model.getFullModelRange(), {
-      type: modes.CodeActionTriggerType.Auto,
-      filter: { include: codeActionKind, includeSourceActions: true },
-    }, Progress.None, token);
+    return getCodeActions(
+      model,
+      model.getFullModelRange(),
+      {
+        type: modes.CodeActionTriggerType.Auto,
+        filter: { include: codeActionKind, includeSourceActions: true },
+      },
+      Progress.None,
+      token,
+    );
   }
-
 }
 
 @Domain(ClientAppContribution)
 export class SaveParticipantsContribution implements ClientAppContribution {
-
   @Autowired()
   codeActionOnSaveParticipant: CodeActionOnSaveParticipant;
 
   onStart() {
     this.codeActionOnSaveParticipant.activate();
   }
-
 }

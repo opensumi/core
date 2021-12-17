@@ -2,7 +2,15 @@ import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/edi
 import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 // 内置的api类型声明
-import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken, Event } from '@opensumi/ide-core-common';
+import {
+  Uri as URI,
+  IRange,
+  IDisposable,
+  UriComponents,
+  SymbolTag,
+  CancellationToken,
+  Event,
+} from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import type vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -216,7 +224,8 @@ export interface CompletionContext {
   triggerCharacter?: string;
 }
 
-export type CompletionType = 'method'
+export type CompletionType =
+  | 'method'
   | 'function'
   | 'constructor'
   | 'field'
@@ -311,7 +320,7 @@ export interface CompletionItem {
    * *Note:* The range must be a [single line](#Range.isSingleLine) and it must
    * [contain](#Range.contains) the position at which completion has been [requested](#CompletionItemProvider.provideCompletionItems).
    */
-  range?: IRange | { insert: IRange, replace: IRange };
+  range?: IRange | { insert: IRange; replace: IRange };
   /**
    * An optional set of characters that when pressed while this completion is active will accept it first and
    * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
@@ -361,7 +370,6 @@ export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;
-  // tslint:disable-next-line:no-any
   arguments?: any[];
 }
 
@@ -390,12 +398,10 @@ export interface DefinitionLink {
   selectionRange?: Range;
 }
 
-// tslint:disable-next-line
-export interface FoldingContext {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FoldingContext {}
 
 export interface FoldingRange {
-
   /**
    * The one-based start line of the range to fold. The folded area starts after the line's last character.
    */
@@ -434,8 +440,7 @@ export class FoldingRangeKind {
    *
    * @param value of the kind.
    */
-  public constructor(public value: string) {
-  }
+  public constructor(public value: string) {}
 }
 
 export interface SelectionRange {
@@ -532,7 +537,6 @@ export interface DocumentLink {
  * requesting references.
  */
 export interface ReferenceContext {
-
   /**
    * Include the declaration of the current symbol.
    */
@@ -690,11 +694,7 @@ export enum CompletionItemTag {
  * Mapped-type that replaces all occurrences of URI with UriComponents and
  * drops all functions.
  */
-export type Dto<T> = T extends { toJSON(): infer U }
-  ? U
-  : T extends object
-  ? { [k in keyof T]: Dto<T[k]>; }
-  : T;
+export type Dto<T> = T extends { toJSON(): infer U } ? U : T extends object ? { [k in keyof T]: Dto<T[k]> } : T;
 
 export type ICallHierarchyItemDto = Dto<CallHierarchyItem>;
 
@@ -713,19 +713,21 @@ export interface IOutgoingCallDto {
  */
 export function isIRange(obj: any): obj is Range {
   return (
-    obj
-    && (typeof obj.startLineNumber === 'number')
-    && (typeof obj.startColumn === 'number')
-    && (typeof obj.endLineNumber === 'number')
-    && (typeof obj.endColumn === 'number')
+    obj &&
+    typeof obj.startLineNumber === 'number' &&
+    typeof obj.startColumn === 'number' &&
+    typeof obj.endLineNumber === 'number' &&
+    typeof obj.endColumn === 'number'
   );
 }
 
 export function isLocationLink(thing: any): thing is LocationLink {
-  return thing
-    && URI.isUri((thing as LocationLink).uri)
-    && isIRange((thing as LocationLink).range)
-    && (isIRange((thing as LocationLink).originSelectionRange) || isIRange((thing as LocationLink).targetSelectionRange));
+  return (
+    thing &&
+    URI.isUri((thing as LocationLink).uri) &&
+    isIRange((thing as LocationLink).range) &&
+    (isIRange((thing as LocationLink).originSelectionRange) || isIRange((thing as LocationLink).targetSelectionRange))
+  );
 }
 
 export interface SemanticTokensLegend {
@@ -758,7 +760,6 @@ export interface WithDuration<T> {
  * A provider of folding ranges for editor models.
  */
 export interface FoldingRangeProvider {
-
   /**
    * An optional event to signal that the folding ranges from this provider have changed.
    */
@@ -767,7 +768,11 @@ export interface FoldingRangeProvider {
   /**
    * Provides the folding ranges for a specific model.
    */
-  provideFoldingRanges(model: editor.ITextModel, context: FoldingContext, token: CancellationToken): vscode.ProviderResult<FoldingRange[]>;
+  provideFoldingRanges(
+    model: editor.ITextModel,
+    context: FoldingContext,
+    token: CancellationToken,
+  ): vscode.ProviderResult<FoldingRange[]>;
 }
 
 export const FoldingRangeProviderRegistry = new LanguageFeatureRegistry<FoldingRangeProvider>();

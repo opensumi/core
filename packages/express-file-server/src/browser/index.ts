@@ -4,7 +4,5 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class ExpressFileServerModule extends BrowserModule {
-  providers: Provider[] = [
-    ExpressFileServerContribution,
-  ];
+  providers: Provider[] = [ExpressFileServerContribution];
 }

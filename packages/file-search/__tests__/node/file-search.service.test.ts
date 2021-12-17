@@ -8,13 +8,16 @@ import { FileSearchModule, IFileSearchService } from '../../src';
 
 describe('search-service', () => {
   const injector = createNodeInjector([FileSearchModule, ProcessModule, LogServiceModule]);
-  injector.addProviders({
-    token: AppConfig,
-    useValue: {},
-  }, {
-    token: INodeLogger,
-    useClass: NodeLogger,
-  });
+  injector.addProviders(
+    {
+      token: AppConfig,
+      useValue: {},
+    },
+    {
+      token: INodeLogger,
+      useClass: NodeLogger,
+    },
+  );
   const service = injector.get(IFileSearchService);
 
   it('shall fuzzy search this spec file', async () => {
@@ -78,51 +81,60 @@ describe('search-service', () => {
     it('should NOT ignore strings passed through the search options', async () => {
       const rootUri = FileUri.create(path.resolve(__dirname, '../test-resources/subdir1/sub2')).toString();
 
-      const matches = await service.find('', { rootUris: [rootUri], includePatterns: ['**/*oo.*'], excludePatterns: ['foo'] });
+      const matches = await service.find('', {
+        rootUris: [rootUri],
+        includePatterns: ['**/*oo.*'],
+        excludePatterns: ['foo'],
+      });
       expect(matches).toBeDefined();
       expect(matches.length).toEqual(1);
     });
 
     const ignoreGlobsUri = FileUri.create(path.resolve(__dirname, '../test-resources/subdir1/sub2')).toString();
-    it('should ignore globs passed through the search options #1', () => assertIgnoreGlobs({
-      rootUris: [ignoreGlobsUri],
-      includePatterns: ['**/*oo.*'],
-      excludePatterns: ['*fo*'],
-    }));
+    it('should ignore globs passed through the search options #1', () =>
+      assertIgnoreGlobs({
+        rootUris: [ignoreGlobsUri],
+        includePatterns: ['**/*oo.*'],
+        excludePatterns: ['*fo*'],
+      }));
 
-    it('should ignore globs passed through the search options #2', () => assertIgnoreGlobs({
-      rootOptions: {
-        [ignoreGlobsUri]: {
-          includePatterns: ['**/*oo.*'],
-          excludePatterns: ['*fo*'],
+    it('should ignore globs passed through the search options #2', () =>
+      assertIgnoreGlobs({
+        rootOptions: {
+          [ignoreGlobsUri]: {
+            includePatterns: ['**/*oo.*'],
+            excludePatterns: ['*fo*'],
+          },
         },
-      },
-    }));
+      }));
 
-    it('should ignore globs passed through the search options #3', () => assertIgnoreGlobs({
-      rootOptions: {
-        [ignoreGlobsUri]: {
-          includePatterns: ['**/*oo.*'],
+    it('should ignore globs passed through the search options #3', () =>
+      assertIgnoreGlobs({
+        rootOptions: {
+          [ignoreGlobsUri]: {
+            includePatterns: ['**/*oo.*'],
+          },
         },
-      },
-      excludePatterns: ['*fo*'],
-    }));
+        excludePatterns: ['*fo*'],
+      }));
 
-    it('should ignore globs passed through the search options #4', () => assertIgnoreGlobs({
-      rootOptions: {
-        [ignoreGlobsUri]: {
-          excludePatterns: ['*fo*'],
+    it('should ignore globs passed through the search options #4', () =>
+      assertIgnoreGlobs({
+        rootOptions: {
+          [ignoreGlobsUri]: {
+            excludePatterns: ['*fo*'],
+          },
         },
-      },
-      includePatterns: ['**/*oo.*'],
-    }));
-    it('should ignore globs passed through the search options #5', () => assertIgnoreGlobs({
-      rootOptions: {
-        [ignoreGlobsUri]: {},
-      },
-      excludePatterns: ['*fo*'],
-      includePatterns: ['**/*oo.*'],
-    }));
+        includePatterns: ['**/*oo.*'],
+      }));
+    it('should ignore globs passed through the search options #5', () =>
+      assertIgnoreGlobs({
+        rootOptions: {
+          [ignoreGlobsUri]: {},
+        },
+        excludePatterns: ['*fo*'],
+        includePatterns: ['**/*oo.*'],
+      }));
 
     async function assertIgnoreGlobs(options: any): Promise<void> {
       const matches = await service.find('', options);
@@ -136,12 +148,22 @@ describe('search-service', () => {
     const searchPattern = 'oox';
 
     it('not fuzzy', async () => {
-      const matches = await service.find(searchPattern, { rootUris: [rootUri.toString()], fuzzyMatch: false, useGitIgnore: true, limit: 200 });
+      const matches = await service.find(searchPattern, {
+        rootUris: [rootUri.toString()],
+        fuzzyMatch: false,
+        useGitIgnore: true,
+        limit: 200,
+      });
       expect(matches.length).toBe(0);
     });
 
     it('fuzzy', async () => {
-      const matches = await service.find(searchPattern, { rootUris: [rootUri.toString()], fuzzyMatch: true, useGitIgnore: true, limit: 200 });
+      const matches = await service.find(searchPattern, {
+        rootUris: [rootUri.toString()],
+        fuzzyMatch: true,
+        useGitIgnore: true,
+        limit: 200,
+      });
       for (const match of matches) {
         const relativeUri = rootUri.relative(new URI(match));
         expect(relativeUri !== undefined).toBe(true);
@@ -154,5 +176,4 @@ describe('search-service', () => {
       }
     });
   });
-
 });

@@ -10,7 +10,13 @@ import { MaybePromise, ContributionProvider, createContributionProvider, isWindo
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
-import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@opensumi/ide-core-common';
+import {
+  LogLevel,
+  ILogServiceManager,
+  ILogService,
+  SupportLogNamespace,
+  StoragePaths,
+} from '@opensumi/ide-core-common';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
@@ -48,7 +54,7 @@ interface Config {
   injector: Injector;
   /**
    * 设置落盘日志级别，默认为 Info 级别的log落盘
-  */
+   */
   logLevel?: LogLevel;
   /**
    * 设置日志的目录，默认：~/.sumi/logs
@@ -121,7 +127,7 @@ export interface IServerAppOpts extends Partial<Config> {
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
   marketplace?: Partial<MarketplaceConfig>;
-  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>): void;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -134,12 +140,11 @@ export interface ServerAppContribution {
 }
 
 export interface IServerApp {
-  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>): void;
   start(server: http.Server | https.Server): Promise<void>;
 }
 
 export class ServerApp implements IServerApp {
-
   private injector: Injector;
 
   private config: AppConfig;
@@ -150,7 +155,7 @@ export class ServerApp implements IServerApp {
 
   private modulesInstances: NodeModule[];
 
-  use: (middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>) => void;
+  use: (middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>) => void;
 
   protected contributionsProvider: ContributionProvider<ServerAppContribution>;
 
@@ -172,19 +177,22 @@ export class ServerApp implements IServerApp {
       logDir: opts.logDir,
       logLevel: opts.logLevel,
       LogServiceClass: opts.LogServiceClass,
-      marketplace: Object.assign({
-        endpoint: 'https://open-vsx.org/api',
-        extensionDir: path.join(
-          os.homedir(),
-          ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
-          StoragePaths.DEFAULT_STORAGE_DIR_NAME,
-          StoragePaths.MARKETPLACE_DIR,
-        ),
-        showBuiltinExtensions: false,
-        accountId: '',
-        masterKey: '',
-        ignoreId: [],
-      }, opts.marketplace),
+      marketplace: Object.assign(
+        {
+          endpoint: 'https://open-vsx.org/api',
+          extensionDir: path.join(
+            os.homedir(),
+            ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
+            StoragePaths.DEFAULT_STORAGE_DIR_NAME,
+            StoragePaths.MARKETPLACE_DIR,
+          ),
+          showBuiltinExtensions: false,
+          accountId: '',
+          masterKey: '',
+          ignoreId: [],
+        },
+        opts.marketplace,
+      ),
       processCloseExitThreshold: opts.processCloseExitThreshold,
       terminalPtyCloseThreshold: opts.terminalPtyCloseThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
@@ -257,8 +265,10 @@ export class ServerApp implements IServerApp {
     }
   }
 
-  async start(server: http.Server | https.Server | net.Server, serviceHandler?: (serviceCenter: RPCServiceCenter) => void) {
-
+  async start(
+    server: http.Server | https.Server | net.Server,
+    serviceHandler?: (serviceCenter: RPCServiceCenter) => void,
+  ) {
     await this.initializeContribution();
 
     let serviceCenter;
@@ -279,7 +289,6 @@ export class ServerApp implements IServerApp {
     // bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
-
   }
 
   private async onStop() {

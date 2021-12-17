@@ -22,9 +22,9 @@ export class Disposable implements IDisposable {
     };
   }
 
-  static NULL = Disposable.create(() => { });
+  static NULL = Disposable.create(() => {});
 
-  static None = Object.freeze<IDisposable>({ dispose() { } });
+  static None = Object.freeze<IDisposable>({ dispose() {} });
 
   get onDispose(): Event<void> {
     return this.onDisposeEmitter.event;
@@ -50,7 +50,6 @@ export class Disposable implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
-        // tslint:disable-next-line:no-console
         console.error(e);
       }
     }
@@ -98,7 +97,6 @@ export class Disposable implements IDisposable {
 }
 
 export class DisposableCollection implements IDisposable {
-
   protected readonly disposables: IDisposable[] = [];
   protected readonly onDisposeEmitter = new Emitter<void>();
 
@@ -130,7 +128,6 @@ export class DisposableCollection implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
-        // tslint:disable-next-line:no-console
         console.error(e);
       }
     }
@@ -157,9 +154,6 @@ export class DisposableCollection implements IDisposable {
   }
 
   pushAll(disposables: IDisposable[]): IDisposable[] {
-    return disposables.map((disposable) =>
-      this.push(disposable),
-    );
+    return disposables.map((disposable) => this.push(disposable));
   }
-
 }

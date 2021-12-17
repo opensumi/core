@@ -1,4 +1,4 @@
-import { NodeModule, ConstructorOf} from '@opensumi/ide-core-node';
+import { NodeModule, ConstructorOf } from '@opensumi/ide-core-node';
 import { ServerCommonModule } from '@opensumi/ide-core-node';
 import { FileServiceModule } from '@opensumi/ide-file-service/lib/node';
 

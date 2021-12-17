@@ -1,7 +1,35 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenItem, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@opensumi/ide-core-browser';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
+import {
+  EDITOR_COMMANDS,
+  UriComponents,
+  ClientAppContribution,
+  CommandContribution,
+  CommandRegistry,
+  CommandService,
+  Domain,
+  electronEnv,
+  FILE_COMMANDS,
+  formatLocalize,
+  getIcon,
+  IAsyncResult,
+  IClientApp,
+  IContextKeyService,
+  IEventBus,
+  IPreferenceSettingsService,
+  isElectronEnv,
+  localize,
+  QuickOpenItem,
+  QuickOpenService,
+  replaceLocalizePlaceholder,
+  URI,
+  ILogger,
+} from '@opensumi/ide-core-browser';
+import {
+  IStatusBarService,
+  StatusBarAlignment,
+  StatusBarEntryAccessor,
+} from '@opensumi/ide-core-browser/lib/services/status-bar-service';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
@@ -9,10 +37,24 @@ import type vscode from 'vscode';
 import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
-import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionService, IExtensionHostProfilerService, ExtensionHostTypeUpperCase } from '../common';
+import {
+  ExtensionNodeServiceServerPath,
+  IExtensionNodeClientService,
+  EMIT_EXT_HOST_EVENT,
+  ExtensionHostProfilerServicePath,
+  ExtensionService,
+  IExtensionHostProfilerService,
+  ExtensionHostTypeUpperCase,
+} from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
-import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';
+import {
+  AbstractExtInstanceManagementService,
+  ExtensionApiReadyEvent,
+  ExtHostEvent,
+  IActivationEventService,
+  Serializable,
+} from './types';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
 export const getClientId = (injector: Injector) => {
@@ -56,14 +98,13 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
     await this.extensionService.activate();
     const disposer = this.webviewService.registerWebviewReviver({
       handles: (_: string) => 0,
-      revive: async (id: string) => {
-        return new Promise<void>((resolve) => {
+      revive: async (id: string) =>
+        new Promise<void>((resolve) => {
           this.eventBus.on(ExtensionApiReadyEvent, () => {
             disposer.dispose();
             resolve(this.webviewService.tryReviveWebviewComponent(id));
           });
-        });
-      },
+        }),
     });
   }
 
@@ -146,16 +187,19 @@ export class ExtensionCommandContribution implements CommandContribution {
   private cpuProfileStatus: StatusBarEntryAccessor | null;
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: 'ext.restart',
-      label: '重启进程',
-    }, {
-      execute: async () => {
-        this.logger.log('插件进程开始重启');
-        await this.extensionService.restartExtProcess();
-        this.logger.log('插件进程重启结束');
+    registry.registerCommand(
+      {
+        id: 'ext.restart',
+        label: '重启进程',
       },
-    });
+      {
+        execute: async () => {
+          this.logger.log('插件进程开始重启');
+          await this.extensionService.restartExtProcess();
+          this.logger.log('插件进程重启结束');
+        },
+      },
+    );
 
     this.registerVSCBuiltinCommands(registry);
   }
@@ -179,16 +223,18 @@ export class ExtensionCommandContribution implements CommandContribution {
       execute: async (eventName: string, ...eventArgs: Serializable[]) => {
         // activationEvent 添加 onEvent:xxx
         await this.activationEventService.fireEvent('onEvent:' + eventName);
-        const results = await this.eventBus.fireAndAwait<any[]>(new ExtHostEvent({
-          eventName,
-          eventArgs,
-        }));
+        const results = await this.eventBus.fireAndAwait<any[]>(
+          new ExtHostEvent({
+            eventName,
+            eventArgs,
+          }),
+        );
         const mergedResults: IAsyncResult<any[]>[] = [];
         results.forEach((r) => {
           if (r.err) {
             mergedResults.push(r);
           } else {
-            mergedResults.push(...r.result! || []);
+            mergedResults.push(...(r.result! || []));
           }
         });
         return mergedResults;
@@ -198,14 +244,17 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(VSCodeBuiltinCommands.SHOW_RUN_TIME_EXTENSION, {
       execute: async () => {
         const activated = await this.extensionService.getActivatedExtensions();
-        this.quickOpenService.open({
-          onType: (_: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
-        }, {
-          placeholder: '运行中的插件',
-          fuzzyMatchLabel: {
-            enableSeparateSubstringMatching: true,
+        this.quickOpenService.open(
+          {
+            onType: (_: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
           },
-        });
+          {
+            placeholder: '运行中的插件',
+            fuzzyMatchLabel: {
+              enableSeparateSubstringMatching: true,
+            },
+          },
+        );
       },
     });
 
@@ -260,7 +309,11 @@ export class ExtensionCommandContribution implements CommandContribution {
     });
 
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
-      execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
+      execute: (
+        uriComponents: UriComponents,
+        columnOrOptions?: ViewColumn | TextDocumentShowOptions,
+        label?: string,
+      ) => {
         const uri = URI.from(uriComponents);
         const options: IResourceOpenOptions = {};
         if (columnOrOptions) {
@@ -319,11 +372,15 @@ export class ExtensionCommandContribution implements CommandContribution {
           revealFirstDiff: true,
           ...options,
         };
-        return this.commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
-          original: URI.from(left),
-          modified: URI.from(right),
-          name: title,
-        }, openOptions);
+        return this.commandService.executeCommand(
+          EDITOR_COMMANDS.COMPARE.id,
+          {
+            original: URI.from(left),
+            modified: URI.from(right),
+            name: title,
+          },
+          openOptions,
+        );
       },
     });
 
@@ -386,13 +443,15 @@ export class ExtensionCommandContribution implements CommandContribution {
     });
   }
 
-  private asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem[] {
+  private asQuickOpenItems(activated: {
+    node?: ActivatedExtension[] | undefined;
+    worker?: ActivatedExtension[] | undefined;
+  }): QuickOpenItem[] {
     const nodes = activated.node ? activated.node.map((e, i) => this.toQuickOpenItem(e, 'Node.js', i === 0)) : [];
-    const workers = activated.worker ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'Web Worker', i === 0)) : [];
-    return [
-      ...nodes,
-      ...workers,
-    ];
+    const workers = activated.worker
+      ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'Web Worker', i === 0))
+      : [];
+    return [...nodes, ...workers];
   }
 
   private toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostTypeUpperCase, firstItem: boolean): QuickOpenItem {

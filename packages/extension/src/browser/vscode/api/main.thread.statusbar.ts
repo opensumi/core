@@ -7,7 +7,7 @@ import * as types from '../../../common/vscode/ext-types';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
 import { getCodiconAriaLabel } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadStatusBar implements IMainThreadStatusBar {
   private disposable = new Disposable();
   protected readonly proxy: IExtHostStatusBar;
@@ -27,10 +27,12 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   }
 
   $setStatusBarMessage(text: string): void {
-    this.disposable.addDispose(this.statusBar.addElement('ext_default_statusbar_text', {
-      text,
-      alignment: StatusBarAlignment.LEFT,
-    }));
+    this.disposable.addDispose(
+      this.statusBar.addElement('ext_default_statusbar_text', {
+        text,
+        alignment: StatusBarAlignment.LEFT,
+      }),
+    );
   }
 
   $dispose(entryId?: string): void {
@@ -42,11 +44,13 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   }
 
   $createStatusBarItem(entryId: string, id: string, alignment: number, priority: number) {
-    this.disposable.addDispose(this.statusBar.addElement(entryId, {
-      id,
-      alignment,
-      priority,
-    }));
+    this.disposable.addDispose(
+      this.statusBar.addElement(entryId, {
+        id,
+        alignment,
+        priority,
+      }),
+    );
   }
 
   async $setMessage(
@@ -81,5 +85,4 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
 
     this.disposable.addDispose(this.statusBar.addElement(entryId, entry));
   }
-
 }

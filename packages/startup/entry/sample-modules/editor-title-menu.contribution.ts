@@ -1,7 +1,15 @@
 // tslint:disable:no-console
 import { Autowired } from '@opensumi/di';
 import { Disposable, IEventBus } from '@opensumi/ide-core-common';
-import { ClientAppContribution, IContextKey, IContextKeyService, CommandRegistry, CommandContribution, Domain, getIcon } from '@opensumi/ide-core-browser';
+import {
+  ClientAppContribution,
+  IContextKey,
+  IContextKeyService,
+  CommandRegistry,
+  CommandContribution,
+  Domain,
+  getIcon,
+} from '@opensumi/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { EditorGroupChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -19,7 +27,10 @@ class WebSCMCommands {
 const toggledCtx = 'test.ctx.toggled';
 
 @Domain(CommandContribution, NextMenuContribution, ClientAppContribution)
-export class EditorTitleMenuContribution extends Disposable implements CommandContribution, NextMenuContribution, ClientAppContribution {
+export class EditorTitleMenuContribution
+  extends Disposable
+  implements CommandContribution, NextMenuContribution, ClientAppContribution
+{
   @Autowired(IContextKeyService)
   private readonly globalCtxKeyService: IContextKeyService;
 
@@ -92,15 +103,18 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
       },
     });
 
-    commands.registerCommand({
-      id: 'command.test.toggle.explorer',
-    }, {
-      execute: async (...args) => {
-        const explorerRef = this.mainLayoutService.getTabbarHandler('explorer');
-        if (explorerRef) {
-          explorerRef.setCollapsed('file-explorer-next', !explorerRef.isCollapsed('file-explorer-next'));
-        }
+    commands.registerCommand(
+      {
+        id: 'command.test.toggle.explorer',
       },
-    });
+      {
+        execute: async (...args) => {
+          const explorerRef = this.mainLayoutService.getTabbarHandler('explorer');
+          if (explorerRef) {
+            explorerRef.setCollapsed('file-explorer-next', !explorerRef.isCollapsed('file-explorer-next'));
+          }
+        },
+      },
+    );
   }
 }

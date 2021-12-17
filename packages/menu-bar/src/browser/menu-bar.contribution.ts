@@ -7,14 +7,17 @@ import { ToolBarActionContribution, isElectronEnv, IToolbarRegistry } from '@ope
 
 @Domain(ComponentContribution, ToolBarActionContribution)
 export class MenuBarContribution implements ComponentContribution, ToolBarActionContribution {
-
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@opensumi/ide-menu-bar', {
-      id: 'ide-menu-bar',
-      component: MenuBarMixToolbarAction,
-    }, {
-      size: 27,
-    });
+    registry.register(
+      '@opensumi/ide-menu-bar',
+      {
+        id: 'ide-menu-bar',
+        component: MenuBarMixToolbarAction,
+      },
+      {
+        size: 27,
+      },
+    );
 
     if (!isElectronEnv()) {
       registry.register('@opensumi/ide-toolbar-action', {

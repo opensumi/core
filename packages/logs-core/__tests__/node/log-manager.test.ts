@@ -7,9 +7,13 @@ import { toLocalISOString } from '@opensumi/ide-core-common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
-const ktDir = path.join(os.homedir(), `.sumi-test`);
-const logDir = path.join(ktDir, `logs_0`);
-const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
+const ktDir = path.join(os.homedir(), '.sumi-test');
+const logDir = path.join(ktDir, 'logs_0');
+const today = Number(
+  toLocalISOString(new Date())
+    .replace(/-/g, '')
+    .match(/^\d{8}/)![0],
+);
 
 describe('LogServiceManager', () => {
   const injector = createNodeInjector([LogServiceModule]);
@@ -30,13 +34,7 @@ describe('LogServiceManager', () => {
   const logger = loggerManager.getLogger(SupportLogNamespace.Node);
 
   logger.error('Start test!');
-  [
-    '20190801',
-    '20190802',
-    '20190803',
-    '20190804',
-    '20190805',
-  ].forEach((day) => {
+  ['20190801', '20190802', '20190803', '20190804', '20190805'].forEach((day) => {
     try {
       fs.mkdirpSync(path.join(logDir, day));
     } catch (e) {
@@ -60,9 +58,7 @@ describe('LogServiceManager', () => {
 
     const children = fs.readdirSync(logDir);
     expect(children.length).toBe(5);
-    expect(children.some((child) => {
-      return child === '20190801';
-    })).toBe(false);
+    expect(children.some((child) => child === '20190801')).toBe(false);
   });
 
   test('Clean log folder cleanExpiredLogs', () => {
@@ -72,5 +68,4 @@ describe('LogServiceManager', () => {
     expect(children.length).toBe(1);
     expect(children[0]).toBe(String(today));
   });
-
 });

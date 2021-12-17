@@ -6,7 +6,6 @@ import { EMIT_EXT_HOST_EVENT } from '../../../common';
 import { IExtHostCommon, IMainThreadCommon } from '../../../common/sumi/common';
 
 export class ExtHostCommon implements IExtHostCommon {
-
   private emitters = new Map<string, Emitter<any[]>>();
 
   private proxy: IMainThreadCommon;
@@ -30,9 +29,7 @@ export class ExtHostCommon implements IExtHostCommon {
     }
 
     this.proxy.$subscribeEvent(eventName);
-    const disposer = this.emitters.get(eventName)!.event((eventArgs: any[]) => {
-      return listener(...eventArgs);
-    });
+    const disposer = this.emitters.get(eventName)!.event((eventArgs: any[]) => listener(...eventArgs));
     return {
       dispose: () => {
         disposer.dispose();
@@ -42,7 +39,6 @@ export class ExtHostCommon implements IExtHostCommon {
       },
     };
   }
-
 }
 
 export function createEventAPIFactory(
@@ -51,11 +47,9 @@ export function createEventAPIFactory(
   extension: IExtensionDescription,
 ) {
   return {
-    fire: async (eventName: string, ...eventArgs: any[]) => {
-      return await extHostCommands.executeCommand(EMIT_EXT_HOST_EVENT.id, eventName, ...eventArgs);
-    },
-    subscribe: (eventName: string, listener: (...eventArgs: any[]) => any) => {
-      return kaitianCommon.onEvent(eventName, listener);
-    },
+    fire: async (eventName: string, ...eventArgs: any[]) =>
+      await extHostCommands.executeCommand(EMIT_EXT_HOST_EVENT.id, eventName, ...eventArgs),
+    subscribe: (eventName: string, listener: (...eventArgs: any[]) => any) =>
+      kaitianCommon.onEvent(eventName, listener),
   };
 }

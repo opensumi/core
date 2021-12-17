@@ -25,5 +25,4 @@ export class MainThreadTheming implements IMainThreadTheming {
   dispose(): void {
     this._themeChangeListener.dispose();
   }
-
 }

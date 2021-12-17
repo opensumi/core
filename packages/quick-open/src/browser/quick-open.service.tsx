@@ -2,8 +2,24 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider, QuickOpenTabOptions } from '@opensumi/ide-core-browser';
-import { HideReason, Highlight, QuickOpenItem, QuickOpenModel as IKaitianQuickOpenModel, QuickOpenOptions, QuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+import {
+  AppConfig,
+  compareAnything,
+  ConfigProvider,
+  IContextKey,
+  IContextKeyService,
+  KeybindingRegistry,
+  QuickOpenActionProvider,
+  QuickOpenTabOptions,
+} from '@opensumi/ide-core-browser';
+import {
+  HideReason,
+  Highlight,
+  QuickOpenItem,
+  QuickOpenModel as IKaitianQuickOpenModel,
+  QuickOpenOptions,
+  QuickOpenService,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenWidget } from './quick-open.widget';
 import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type';
@@ -28,7 +44,6 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
 
 @Injectable()
 export class MonacoQuickOpenService implements QuickOpenService {
-
   protected _widget: QuickOpenWidget | undefined;
   protected opts: IKaitianQuickOpenControllerOpts;
   protected container: HTMLElement;
@@ -66,7 +81,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     overlayWidgets.classList.add('quick-open-overlay');
     overlayContainer.appendChild(overlayWidgets);
 
-    const container = this.container = document.createElement('quick-open-container');
+    const container = (this.container = document.createElement('quick-open-container'));
     container.style.position = 'fixed';
     container.style.top = '0px';
     container.style.right = '50%';
@@ -196,11 +211,9 @@ export class MonacoQuickOpenService implements QuickOpenService {
   hideDecoration(): void {
     this.widget.validateType = undefined;
   }
-
 }
 
 export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControllerOpts {
-
   protected readonly options: QuickOpenOptions.Resolved;
 
   constructor(
@@ -210,7 +223,6 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   ) {
     this.model = model;
     this.options = QuickOpenOptions.resolve(options);
-
   }
 
   get prefix(): string {
@@ -273,7 +285,6 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
    * as well as associated resources.
    */
   private compareEntries(elementA: QuickOpenItem, elementB: QuickOpenItem, lookFor: string): number {
-
     // Give matches with label highlights higher priority over
     // those with only description highlights
     const labelHighlightsA = elementA.getHighlights()[0] || [];
@@ -293,7 +304,11 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     return compareAnything(nameA, nameB, lookFor);
   }
 
-  private toOpenModel(lookFor: string, items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider): IQuickOpenModel {
+  private toOpenModel(
+    lookFor: string,
+    items: QuickOpenItem[],
+    actionProvider?: QuickOpenActionProvider,
+  ): IQuickOpenModel {
     const originLookFor = lookFor;
 
     if (this.options.skipPrefix) {
@@ -323,21 +338,37 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   protected fuzzyQuickOpenItem(item: QuickOpenItem, lookFor: string): QuickOpenItem | undefined {
     const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
     // 自动匹配若为空，取自定义的匹配
-    const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel, item.getLabelHighlights.bind(item)) : item.getLabelHighlights();
+    const labelHighlights = fuzzyMatchLabel
+      ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel, item.getLabelHighlights.bind(item))
+      : item.getLabelHighlights();
 
-    const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
+    const descriptionHighlights = this.options.fuzzyMatchDescription
+      ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription)
+      : item.getDescriptionHighlights();
 
-    const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail) : item.getDetailHighlights();
+    const detailHighlights = this.options.fuzzyMatchDetail
+      ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail)
+      : item.getDetailHighlights();
 
-    if ((lookFor && !labelHighlights && !descriptionHighlights && (!detailHighlights || detailHighlights.length === 0))
-      && !this.options.showItemsWithoutHighlight) {
+    if (
+      lookFor &&
+      !labelHighlights &&
+      !descriptionHighlights &&
+      (!detailHighlights || detailHighlights.length === 0) &&
+      !this.options.showItemsWithoutHighlight
+    ) {
       return undefined;
     }
     item.setHighlights(labelHighlights || [], descriptionHighlights, detailHighlights);
     return item;
   }
 
-  protected matchesFuzzy(lookFor: string, value: string | undefined, options?: QuickOpenOptions.FuzzyMatchOptions | boolean, fallback?: () => Highlight[] | undefined): Highlight[] | undefined {
+  protected matchesFuzzy(
+    lookFor: string,
+    value: string | undefined,
+    options?: QuickOpenOptions.FuzzyMatchOptions | boolean,
+    fallback?: () => Highlight[] | undefined,
+  ): Highlight[] | undefined {
     if (!lookFor || !value) {
       return [];
     }

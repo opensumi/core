@@ -2,8 +2,15 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { Disposable, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
 import { OutlineModelService } from '@opensumi/ide-outline/lib/browser/services/outline-model.service';
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
-import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import {
+  OutlineRoot,
+  OutlineCompositeTreeNode,
+  OutlineTreeNode,
+} from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import {
+  INormalizedDocumentSymbol,
+  DocumentSymbolStore,
+} from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { OutlineEventService } from '@opensumi/ide-outline/lib/browser/services/outline-event.service';
 import { IOutlineDecorationService } from '@opensumi/ide-outline';
@@ -44,7 +51,7 @@ describe('OutlineTreeModelService', () => {
       }
     }) as any,
     whenReady: Promise.resolve(),
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockDocumentSymbolStore = {
@@ -56,9 +63,9 @@ describe('OutlineTreeModelService', () => {
   };
 
   const mockOutlineEventService = {
-    onDidActiveChange: jest.fn(() => Disposable.create(() => { })),
-    onDidSelectionChange: jest.fn(() => Disposable.create(() => { })),
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidActiveChange: jest.fn(() => Disposable.create(() => {})),
+    onDidSelectionChange: jest.fn(() => Disposable.create(() => {})),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockWorkbenchEditorService = {
@@ -69,7 +76,7 @@ describe('OutlineTreeModelService', () => {
   };
 
   const mockMarkerManager = {
-    onMarkerChanged: jest.fn(() => Disposable.create(() => { })),
+    onMarkerChanged: jest.fn(() => Disposable.create(() => {})),
   };
 
   beforeAll(async (done) => {
@@ -190,7 +197,7 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => {} } as any;
     outlineTreeModelService.handleTreeHandler(treeHandle);
     expect(outlineTreeModelService.outlineTreeHandle).toEqual(treeHandle);
   });

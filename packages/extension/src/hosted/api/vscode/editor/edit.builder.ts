@@ -16,7 +16,6 @@ export interface IEditData {
 }
 
 export class TextEditorEdit {
-
   private readonly _document: vscode.TextDocument;
   private readonly _documentVersionId: number;
   private _collectedEdits: ITextEditOperation[];
@@ -24,7 +23,7 @@ export class TextEditorEdit {
   private readonly _undoStopBefore: boolean;
   private readonly _undoStopAfter: boolean;
 
-  constructor(document: vscode.TextDocument, options: { undoStopBefore: boolean; undoStopAfter: boolean; }) {
+  constructor(document: vscode.TextDocument, options: { undoStopBefore: boolean; undoStopAfter: boolean }) {
     this._document = document;
     this._documentVersionId = document.version;
     this._collectedEdits = [];

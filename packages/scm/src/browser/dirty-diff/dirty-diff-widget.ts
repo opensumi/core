@@ -23,7 +23,7 @@ export class DirtyDiffWidget extends ZoneWidget {
   private _actions: HTMLDivElement;
 
   private _model: IDirtyDiffModel;
-  private _currentChangeIndex: number = 0;
+  private _currentChangeIndex = 0;
 
   private get uri(): URI {
     // vscode 用的是 this.model.modified!.uri
@@ -129,11 +129,7 @@ export class DirtyDiffWidget extends ZoneWidget {
      */
     const current = this.currentRange;
 
-    const args: Parameters<ScmChangeTitleCallback> = [
-      this.uri,
-      this._model.changes,
-      this._currentChangeIndex - 1,
-    ];
+    const args: Parameters<ScmChangeTitleCallback> = [this.uri, this._model.changes, this._currentChangeIndex - 1];
 
     switch (type) {
       case DirtyDiffWidgetActionType.next:

@@ -6,9 +6,7 @@ import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager, IDebugSession } from '../../../common';
 import { DebugSession } from '../../debug-session';
 
-export const DebugCallStackView = observer(({
-  viewState,
-}: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [sessions, setSessions] = React.useState<DebugSession[]>([]);
 
@@ -32,13 +30,11 @@ export const DebugCallStackView = observer(({
 
   return (
     <div style={{ width: viewState.width }}>
-      {
-        sessions.filter((s: IDebugSession) => !s.parentSession).map((session) => {
-          return (
-            <DebugStackSessionView key={session.id} viewState={ viewState } session={ session } indent={0} />
-          );
-        })
-      }
+      {sessions
+        .filter((s: IDebugSession) => !s.parentSession)
+        .map((session) => (
+          <DebugStackSessionView key={session.id} viewState={viewState} session={session} indent={0} />
+        ))}
     </div>
   );
 });

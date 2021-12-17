@@ -44,38 +44,41 @@ describe('MainThreadTreeView API Test Suite', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: IMainLayoutService,
-        useValue: mockMainLayoutService,
-      },
-      {
-        token: IMenuRegistry,
-        useValue: mockMenuRegistry,
-      },
-      {
-        token: PreferenceService,
-        useValue: {},
-      },
-      {
-        token: IContextKeyService,
-        useValue: {},
-      },
-      {
-        token: IIconService,
-        useValue: {
-          fromIcon: () => '',
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IMainLayoutService,
+          useValue: mockMainLayoutService,
         },
-      },
-      {
-        token: IThemeService,
-        useValue: {},
-      },
-      {
-        token: IFileServiceClient,
-        useClass: MockFileServiceClient,
-      },
-    ]));
+        {
+          token: IMenuRegistry,
+          useValue: mockMenuRegistry,
+        },
+        {
+          token: PreferenceService,
+          useValue: {},
+        },
+        {
+          token: IContextKeyService,
+          useValue: {},
+        },
+        {
+          token: IIconService,
+          useValue: {
+            fromIcon: () => '',
+          },
+        },
+        {
+          token: IThemeService,
+          useValue: {},
+        },
+        {
+          token: IFileServiceClient,
+          useClass: MockFileServiceClient,
+        },
+      ]),
+    );
 
     mainThreadTreeView = injector.get(MainThreadTreeView, [mockProxy as any]);
     mainThreadTreeView.$registerTreeDataProvider(testTreeViewId, {});

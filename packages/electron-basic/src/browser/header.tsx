@@ -3,7 +3,19 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import cls from 'classnames';
 import styles from './header.module.less';
-import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@opensumi/ide-core-browser';
+import {
+  useInjectable,
+  MaybeNull,
+  ComponentRenderer,
+  ComponentRegistry,
+  Disposable,
+  DomListener,
+  AppConfig,
+  replaceLocalizePlaceholder,
+  electronEnv,
+  isOSX,
+  IWindowService,
+} from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 import { getIcon } from '@opensumi/ide-core-browser';
@@ -59,7 +71,7 @@ const useMaximize = () => {
 };
 
 // Big Sur increases title bar height
-const isNewMacHeaderBar = () => isOSX && (parseFloat(electronEnv.osRelease) >= 20);
+const isNewMacHeaderBar = () => isOSX && parseFloat(electronEnv.osRelease) >= 20;
 
 export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ Icon?: React.FunctionComponent }>) => {
   const windowService: IWindowService = useInjectable(IWindowService);
@@ -77,9 +89,14 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
       className: 'menubarWrapper',
     };
 
-    return <>
-      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!} initialProps={initialProps} />
-    </>;
+    return (
+      <>
+        <ComponentRenderer
+          Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!}
+          initialProps={initialProps}
+        />
+      </>
+    );
   };
 
   const RightComponent = () => {
@@ -87,38 +104,49 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
       return null;
     }
 
-    return <div className={styles.windowActions}>
-      <div className={getIcon('min')} onClick={() => windowService.minimize()} />
-      {
-        maximized ? <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
-          : <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
-      }
-      <div className={getIcon('close1')} onClick={() => windowService.close()} />
-    </div>;
+    return (
+      <div className={styles.windowActions}>
+        <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+        {maximized ? (
+          <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+        ) : (
+          <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+        )}
+        <div className={getIcon('close1')} onClick={() => windowService.close()} />
+      </div>
+    );
   };
 
   // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
   if (isOSX && isFullScreen) {
-    return <div><TitleInfo hidden={true} /></div>;
+    return (
+      <div>
+        <TitleInfo hidden={true} />
+      </div>
+    );
   }
 
-  return <div className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)} onDoubleClick={async () => {
-    if (await getMaximized()) {
-      windowService.unmaximize();
-    } else {
-      windowService.maximize();
-    }
-  }}>
-    <LeftComponent />
-    <TitleInfo />
-    <RightComponent />
-  </div>;
+  return (
+    <div
+      className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)}
+      onDoubleClick={async () => {
+        if (await getMaximized()) {
+          windowService.unmaximize();
+        } else {
+          windowService.maximize();
+        }
+      }}
+    >
+      <LeftComponent />
+      <TitleInfo />
+      <RightComponent />
+    </div>
+  );
 });
 
 declare const ResizeObserver: any;
 
 export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
-
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
   const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
   const ref = useRef<HTMLDivElement>();
@@ -129,12 +157,16 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   useEffect(() => {
     setPosition();
     const disposer = new Disposable();
-    disposer.addDispose(editorService.onActiveResourceChange((resource) => {
-      setCurrentResource(resource);
-    }));
-    disposer.addDispose(new DomListener(window, 'resize', () => {
-      setPosition();
-    }));
+    disposer.addDispose(
+      editorService.onActiveResourceChange((resource) => {
+        setCurrentResource(resource);
+      }),
+    );
+    disposer.addDispose(
+      new DomListener(window, 'resize', () => {
+        setPosition();
+      }),
+    );
     if (ref.current && ref.current.previousElementSibling) {
       const resizeObserver = new ResizeObserver(setPosition);
       resizeObserver.observe(ref.current.previousElementSibling);
@@ -166,7 +198,10 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
 
-  const title = (currentResource ? currentResource.name + ' — ' : '') + (dirname ? dirname + ' — ' : '') + (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
+  const title =
+    (currentResource ? currentResource.name + ' — ' : '') +
+    (dirname ? dirname + ' — ' : '') +
+    (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
 
   // 同时更新 Html Title
   useEffect(() => {
@@ -182,5 +217,9 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
     return null;
   }
 
-  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{appTitle}</span></div>;
+  return (
+    <div className={styles.title_info} ref={ref as any}>
+      <span ref={spanRef as any}>{appTitle}</span>
+    </div>
+  );
 });

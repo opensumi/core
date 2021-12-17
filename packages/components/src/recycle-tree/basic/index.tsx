@@ -43,29 +43,32 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       pageY: number;
     };
     activeNode?: BasicCompositeTreeNode | BasicTreeNode;
-  }>({show: false});
+  }>({ show: false });
   const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
   const treeService = useRef<BasicTreeService>(new BasicTreeService(treeData, resolveChildren, sortComparator));
   const treeHandle = useRef<IRecycleTreeHandle>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
-  const renderTreeNode = useCallback((props: INodeRendererWrapProps) => {
-    return <BasicTreeNodeRenderer
-      item={props.item as any}
-      itemType={props.itemType}
-      itemHeight={itemHeight}
-      indent={indent}
-      className={itemClassname}
-      inlineMenus={inlineMenus}
-      inlineMenuActuator={inlineMenuActuator}
-      onClick={handleItemClick}
-      onDbClick={handleItemDbClick}
-      onContextMenu={handleContextMenu}
-      onTwistierClick={handleTwistierClick}
-      decorations={treeService.current.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
-    />;
-  }, []);
+  const renderTreeNode = useCallback(
+    (props: INodeRendererWrapProps) => (
+      <BasicTreeNodeRenderer
+        item={props.item as any}
+        itemType={props.itemType}
+        itemHeight={itemHeight}
+        indent={indent}
+        className={itemClassname}
+        inlineMenus={inlineMenus}
+        inlineMenuActuator={inlineMenuActuator}
+        onClick={handleItemClick}
+        onDbClick={handleItemDbClick}
+        onContextMenu={handleContextMenu}
+        onTwistierClick={handleTwistierClick}
+        decorations={treeService.current.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
+      />
+    ),
+    [],
+  );
 
   useEffect(() => {
     ensureLoaded();
@@ -100,63 +103,70 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     treeHandle.current = handle;
   }, []);
 
-  const handleItemClick = useCallback((event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
-    treeService.current?.activeFocusedDecoration(item);
-    if (onClick) {
-      onClick(event, item);
-    }
-    if (BasicCompositeTreeNode.is(item)) {
-      toggleDirectory(item);
-    }
-  }, [onClick]);
-
-  const handleItemDbClick = useCallback((event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (onDbClick) {
-      onDbClick(event, item);
-    }
-  }, [onDbClick]);
-
-  const handleContextMenu = useCallback((event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (item) {
-      treeService.current?.activeContextMenuDecoration(item);
-    } else {
-      treeService.current?.enactiveFocusedDecoration();
-    }
-    if (onContextMenu) {
-      onContextMenu(event, item);
-    } else {
-      // let menus: IBasicTreeMenu[] = [];
-      let rawMenus: IBasicContextMenu[] = [];
-      if (Array.isArray(contextMenus)) {
-        rawMenus = contextMenus;
-      } else if (typeof contextMenus === 'function') {
-        rawMenus = contextMenus(item);
+  const handleItemClick = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      treeService.current?.activeFocusedDecoration(item);
+      if (onClick) {
+        onClick(event, item);
       }
-      const groups = new Set<string>();
-      const menusMap = {};
-      for (const menu of rawMenus) {
-        groups.add(menu.group || '-1');
-        if (!menusMap[menu.group || '-1']) {
-          menusMap[menu.group || '-1'] = [];
+      if (BasicCompositeTreeNode.is(item)) {
+        toggleDirectory(item);
+      }
+    },
+    [onClick],
+  );
+
+  const handleItemDbClick = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (onDbClick) {
+        onDbClick(event, item);
+      }
+    },
+    [onDbClick],
+  );
+
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (item) {
+        treeService.current?.activeContextMenuDecoration(item);
+      } else {
+        treeService.current?.enactiveFocusedDecoration();
+      }
+      if (onContextMenu) {
+        onContextMenu(event, item);
+      } else {
+        // let menus: IBasicTreeMenu[] = [];
+        let rawMenus: IBasicContextMenu[] = [];
+        if (Array.isArray(contextMenus)) {
+          rawMenus = contextMenus;
+        } else if (typeof contextMenus === 'function') {
+          rawMenus = contextMenus(item);
         }
-        menusMap[menu.group || '-1'].push(menu);
+        const groups = new Set<string>();
+        const menusMap = {};
+        for (const menu of rawMenus) {
+          groups.add(menu.group || '-1');
+          if (!menusMap[menu.group || '-1']) {
+            menusMap[menu.group || '-1'] = [];
+          }
+          menusMap[menu.group || '-1'].push(menu);
+        }
+        const sortGroup = Array.from(groups).sort((a, b) => a.localeCompare(b, 'kn', { numeric: true }));
+        let menus: IBasicTreeMenu[] = [];
+        for (const group of sortGroup) {
+          menus = menus.concat(menusMap[group].map((menu) => ({ id: menu.id, label: menu.title, group: menu.group })));
+          menus = menus.concat([{ id: `${group}_divider`, label: '', type: 'divider' }]);
+        }
+        menus.pop();
+        if (JSON.stringify(menus) !== JSON.stringify(menubarItems)) {
+          setMenubarItems(menus);
+        }
+        const { x, y } = event.nativeEvent;
+        setShowMenus({ show: true, point: { pageX: x, pageY: y }, activeNode: item });
       }
-      const sortGroup = Array.from(groups).sort((a, b) => {
-        return a.localeCompare(b, 'kn', { numeric: true });
-      });
-      let menus: IBasicTreeMenu[] = [];
-      for (const group of sortGroup) {
-        menus = menus.concat(menusMap[group].map((menu) => ({ id: menu.id, label: menu.title, group: menu.group })));
-        menus = menus.concat([{ id: `${group}_divider`, label: '', type: 'divider' }]);
-      }
-      menus.pop();
-      if (JSON.stringify(menus) !== JSON.stringify(menubarItems)) {
-        setMenubarItems(menus);
-      }
-      const { x, y } = event.nativeEvent;
-      setShowMenus({ show: true, point: { pageX: x, pageY: y }, activeNode: item});
-    }
-  }, [onDbClick]);
+    },
+    [onDbClick],
+  );
 
   const toggleDirectory = useCallback((item: BasicCompositeTreeNode) => {
     if (item.expanded) {
@@ -166,24 +176,30 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     }
   }, []);
 
-  const handleTwistierClick = useCallback((event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (BasicCompositeTreeNode.is(item)) {
-      toggleDirectory(item);
-    }
-    if (onTwistierClick) {
-      onTwistierClick(event, item);
-    }
-  }, [onTwistierClick]);
+  const handleTwistierClick = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (BasicCompositeTreeNode.is(item)) {
+        toggleDirectory(item);
+      }
+      if (onTwistierClick) {
+        onTwistierClick(event, item);
+      }
+    },
+    [onTwistierClick],
+  );
 
   const handleOuterClick = useCallback(() => {
     treeService.current?.enactiveFocusedDecoration();
   }, []);
 
-  const handleOuterContextMenu = useCallback((event: React.MouseEvent, item?: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (onContextMenu) {
-      onContextMenu(event);
-    }
-  }, []);
+  const handleOuterContextMenu = useCallback(
+    (event: React.MouseEvent, item?: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (onContextMenu) {
+        onContextMenu(event);
+      }
+    },
+    [],
+  );
 
   const handleMouseLeave = useCallback(() => {
     setShowMenus({ ...showMenus, show: false });
@@ -193,67 +209,69 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     if (!contextMenus) {
       return null;
     }
-    return <CtxMenuTrigger
-    popupPlacement='bottomLeft'
-    popupVisible={showMenus.show}
-    action={['contextMenu']}
-    popupAlign={{
-      overflow: {
-        adjustX: 1,
-        adjustY: 1,
-      },
-      offset: [window.scrollX, window.scrollY],
-    }}
-    point={showMenus.point || {}}
-    builtinPlacements={placements}
-    popup={(
-      <ClickOutside
-        className='basic_tree_menubars'
-        mouseEvents={['click', 'contextmenu']}
-        onOutsideClick={handleMouseLeave}>
-        {
-          menubarItems.map(({ id, label, type }) => (
-            <BasicMenuItem
-              key={id}
-              id={id}
-              label={label}
-              type={type}
-              focusMode={showMenus.show}
-              onClick={(id: string) => {
-                if (contextMenuActuator) {
-                  contextMenuActuator(showMenus.activeNode!, id);
-                }
-                setShowMenus({ show: false });
-              }} />
-          ))
+    return (
+      <CtxMenuTrigger
+        popupPlacement='bottomLeft'
+        popupVisible={showMenus.show}
+        action={['contextMenu']}
+        popupAlign={{
+          overflow: {
+            adjustX: 1,
+            adjustY: 1,
+          },
+          offset: [window.scrollX, window.scrollY],
+        }}
+        point={showMenus.point || {}}
+        builtinPlacements={placements}
+        popup={
+          <ClickOutside
+            className='basic_tree_menubars'
+            mouseEvents={['click', 'contextmenu']}
+            onOutsideClick={handleMouseLeave}
+          >
+            {menubarItems.map(({ id, label, type }) => (
+              <BasicMenuItem
+                key={id}
+                id={id}
+                label={label}
+                type={type}
+                focusMode={showMenus.show}
+                onClick={(id: string) => {
+                  if (contextMenuActuator) {
+                    contextMenuActuator(showMenus.activeNode!, id);
+                  }
+                  setShowMenus({ show: false });
+                }}
+              />
+            ))}
+          </ClickOutside>
         }
-      </ClickOutside>
-    )}
-    alignPoint
-  />;
+        alignPoint
+      />
+    );
   }, [menubarItems, contextMenuActuator, showMenus]);
 
-  return <div
-    className='basic_tree'
-    tabIndex={-1}
-    ref={wrapperRef}
-    onClick={handleOuterClick}
-    onContextMenu={handleOuterContextMenu}
-  >
-    { renderContextMenu() }
-    {
-      model
-      ? <RecycleTree
-        height={height}
-        width={width}
-        itemHeight={itemHeight}
-        model={model}
-        onReady={handleTreeReady}
-        className={cls(containerClassname)}
-      >
-        {renderTreeNode}
-      </RecycleTree>
-      : null
-    }
-  </div>;
+  return (
+    <div
+      className='basic_tree'
+      tabIndex={-1}
+      ref={wrapperRef}
+      onClick={handleOuterClick}
+      onContextMenu={handleOuterContextMenu}
+    >
+      {renderContextMenu()}
+      {model ? (
+        <RecycleTree
+          height={height}
+          width={width}
+          itemHeight={itemHeight}
+          model={model}
+          onReady={handleTreeReady}
+          className={cls(containerClassname)}
+        >
+          {renderTreeNode}
+        </RecycleTree>
+      ) : null}
+    </div>
+  );
 };

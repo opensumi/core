@@ -3,14 +3,14 @@ import { IDisposable } from '@opensumi/ide-core-common';
 import { ExtensionHostType } from '.';
 
 export class ExtensionActivationTimes {
-
   public static readonly NONE = new ExtensionActivationTimes(false, -1, -1, -1);
 
   constructor(
     public readonly startup: boolean,
     public readonly codeLoadingTime: number,
     public readonly activateCallTime: number,
-    public readonly activateResolvedTime: number) { }
+    public readonly activateResolvedTime: number,
+  ) {}
 }
 
 export interface IExtensionModule {
@@ -18,13 +18,11 @@ export interface IExtensionModule {
   deactivate?(): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface IExtensionAPI {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface IExtensionAPI {}
 
-// tslint:disable-next-line: no-empty-interface
-export interface IExtendExportAPI {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface IExtendExportAPI {}
 
 export interface ActivatedExtensionJSON {
   id: string;
@@ -48,8 +46,7 @@ export class ActivatedExtension {
     public readonly activationTimes?: ExtensionActivationTimes,
     public readonly extendExports?: IExtendExportAPI,
     public readonly extendModule?: IExtensionModule,
-  ) {
-  }
+  ) {}
 
   public toJSON() {
     return {
@@ -67,10 +64,7 @@ export class ActivatedExtension {
 export class ExtensionsActivator {
   private readonly activatedExtensions: Map<string, ActivatedExtension> = new Map();
 
-  constructor(
-    private logger: any = console,
-  ) {
-  }
+  constructor(private logger: any = console) {}
 
   has(id: string) {
     return this.activatedExtensions.has(id);

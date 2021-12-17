@@ -49,7 +49,6 @@ export abstract class StorageServer implements IStorageServer {
 
 @Injectable()
 export class WorkspaceStorageServer extends StorageServer {
-
   private workspaceNamespace: string | undefined;
 
   public async init(storageDirName?: string, workspaceNamespace?: string) {
@@ -76,7 +75,7 @@ export class WorkspaceStorageServer extends StorageServer {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
       const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!await this.fileSystem.access(uriString)) {
+      if (!(await this.fileSystem.access(uriString))) {
         await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
@@ -104,7 +103,7 @@ export class WorkspaceStorageServer extends StorageServer {
       }
     }
     this._cache[storageName] = items;
-    if (!!workspaceNamespace) {
+    if (workspaceNamespace) {
       items = items[workspaceNamespace] || {};
     }
     return items;
@@ -117,7 +116,7 @@ export class WorkspaceStorageServer extends StorageServer {
       raw = this._cache[storageName];
     } else {
       raw = await this.getItems(storageName);
-      if (!!workspaceNamespace) {
+      if (workspaceNamespace) {
         raw = raw[workspaceNamespace];
       }
     }
@@ -140,7 +139,7 @@ export class WorkspaceStorageServer extends StorageServer {
     if (request.delete && request.delete.length > 0) {
       const deleteSet = new Set(request.delete);
       deleteSet.forEach((key) => {
-        if (!!workspaceNamespace) {
+        if (workspaceNamespace) {
           if (raw[workspaceNamespace][key]) {
             delete raw[workspaceNamespace][key];
           }
@@ -174,7 +173,6 @@ export class WorkspaceStorageServer extends StorageServer {
 
 @Injectable()
 export class GlobalStorageServer extends StorageServer {
-
   public async init(storageDirName: string) {
     return await this.setupDirectories(storageDirName);
   }
@@ -198,7 +196,7 @@ export class GlobalStorageServer extends StorageServer {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
       const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!await this.asAccess(uriString)) {
+      if (!(await this.asAccess(uriString))) {
         await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
@@ -260,7 +258,7 @@ export class GlobalStorageServer extends StorageServer {
     if (storagePath) {
       let storageFile = await this.fileSystem.getFileStat(storagePath);
       if (!storageFile) {
-        storageFile = await this.fileSystem.createFile(storagePath, {content: ''});
+        storageFile = await this.fileSystem.createFile(storagePath, { content: '' });
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
       const change: StorageChange = {

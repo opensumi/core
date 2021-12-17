@@ -5,14 +5,12 @@ import { InternalTestItem, TestResultState } from './testCollection';
 export const TestTreeViewModelToken = Symbol('TestTreeViewModel');
 
 export interface ITestTreeViewModel {
-
   roots: Iterable<ITestTreeItem>;
   onUpdate: Event<void>;
 
   initTreeModel(): Promise<void>;
 
   expandElement(element: ITestTreeItem, depth: number): void;
-
 }
 
 export interface ITestTreeItem {

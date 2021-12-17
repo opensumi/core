@@ -1,3 +1,1 @@
-export function createMonacoServicesApi() {
-
-}
+export function createMonacoServicesApi() {}

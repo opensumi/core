@@ -1,10 +1,4 @@
-import {
-  ILogServiceClient,
-  ILogServiceForClient,
-  SupportLogNamespace,
-  LogLevel,
-  format,
-} from '../common/';
+import { ILogServiceClient, ILogServiceForClient, SupportLogNamespace, LogLevel, format } from '../common/';
 import { DebugLog } from '../common/';
 
 export class LogServiceClient implements ILogServiceClient {
@@ -29,32 +23,32 @@ export class LogServiceClient implements ILogServiceClient {
   }
 
   async verbose(...args: any[]) {
-    this.debugLog.verbose.apply(this.debugLog, args);
+    this.debugLog.verbose(...args);
     await this.logServiceForClient.verbose(this.namespace, format(args), this.pid);
   }
 
   async debug(...args: any[]) {
-    this.debugLog.debug.apply(this.debugLog, args);
+    this.debugLog.debug(...args);
     await this.logServiceForClient.debug(this.namespace, format(args), this.pid);
   }
 
   async log(...args: any[]) {
-    this.debugLog.log.apply(this.debugLog, args);
+    this.debugLog.log(...args);
     await this.logServiceForClient.log(this.namespace, format(args), this.pid);
   }
 
   async warn(...args: any[]) {
-    this.debugLog.warn.apply(this.debugLog, args);
+    this.debugLog.warn(...args);
     await this.logServiceForClient.warn(this.namespace, format(args), this.pid);
   }
 
   async error(...args: any[]) {
-    this.debugLog.error.apply(this.debugLog, args);
+    this.debugLog.error(...args);
     await this.logServiceForClient.error(this.namespace, format(args), this.pid);
   }
 
   async critical(...args: any[]) {
-    this.debugLog.error.apply(this.debugLog, args);
+    this.debugLog.error(...args);
     await this.logServiceForClient.critical(this.namespace, format(args), this.pid);
   }
 

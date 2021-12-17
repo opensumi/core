@@ -3,7 +3,14 @@ import { observer } from 'mobx-react-lite';
 
 import { CtxMenu } from './ctx-menu/ctx-menu.view';
 import { Dialog } from './dialog.view';
-import { ComponentRenderer, ComponentRegistry, SlotLocation, useInjectable, AppConfig, IClientApp } from '@opensumi/ide-core-browser';
+import {
+  ComponentRenderer,
+  ComponentRegistry,
+  SlotLocation,
+  useInjectable,
+  AppConfig,
+  IClientApp,
+} from '@opensumi/ide-core-browser';
 import './styles.module.less';
 
 export const Overlay = observer(() => {

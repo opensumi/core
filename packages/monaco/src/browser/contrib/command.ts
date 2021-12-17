@@ -2,7 +2,11 @@ import { Command } from '@opensumi/ide-core-common';
 import { ICommandService } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { ICodeEditor } from '../monaco-api/types';
 
-export type { ICommandEvent, ICommandService, ICommandRegistry } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
+export type {
+  ICommandEvent,
+  ICommandService,
+  ICommandRegistry,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
 export { CommandsRegistry } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
 export { EditorExtensionsRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 

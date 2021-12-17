@@ -7,13 +7,22 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]> {
+  getAllExtensions(
+    scan: string[],
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]> {
     return Promise.resolve(mockExtensions);
   }
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData | undefined,
+  ): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   restartExtProcessByClient(): void {

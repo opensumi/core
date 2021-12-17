@@ -8,7 +8,6 @@ import { BaseFileSystemEditorDocumentProvider } from './fs-editor-doc';
 
 @Domain(BrowserEditorContribution)
 export class FileSystemResourceContribution implements BrowserEditorContribution {
-
   @Autowired(FileSystemResourceProvider)
   fsResourceProvider: FileSystemResourceProvider;
 

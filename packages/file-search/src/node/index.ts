@@ -5,13 +5,17 @@ import { IFileSearchService, FileSearchServicePath } from '../common';
 
 @Injectable()
 export class FileSearchModule extends NodeModule {
-  providers = [{
-    token: IFileSearchService,
-    useClass: FileSearchService,
-  }];
+  providers = [
+    {
+      token: IFileSearchService,
+      useClass: FileSearchService,
+    },
+  ];
 
-  backServices = [{
-    token: IFileSearchService,
-    servicePath: FileSearchServicePath,
-  }];
+  backServices = [
+    {
+      token: IFileSearchService,
+      servicePath: FileSearchServicePath,
+    },
+  ];
 }

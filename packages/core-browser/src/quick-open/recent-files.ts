@@ -64,5 +64,4 @@ export class RecentFilesManager extends WithEventBus {
       }
     });
   }
-
 }

@@ -1,5 +1,8 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { ITextModelService, ITextModelContentProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/resolverService';
+import {
+  ITextModelService,
+  ITextModelContentProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/resolverService';
 /* istanbul ignore file */
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';
@@ -7,7 +10,6 @@ import { IEditorDocumentModelService } from './types';
 
 @Injectable()
 export class MonacoTextModelService implements ITextModelService {
-
   canHandleResource(resource: any): boolean {
     return true;
   }

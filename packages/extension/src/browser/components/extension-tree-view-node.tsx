@@ -14,9 +14,17 @@ export interface ITreeViewNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onTwistierClick?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onTwistierClick?: (
+    ev: React.MouseEvent,
+    item: ExtensionTreeNode | ExtensionCompositeTreeNode,
+    type: TreeNodeType,
+  ) => void;
   onClick: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onContextMenu?: (
+    ev: React.MouseEvent,
+    item: ExtensionTreeNode | ExtensionCompositeTreeNode,
+    type: TreeNodeType,
+  ) => void;
 }
 
 export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
@@ -58,7 +66,9 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   };
 
   const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
-  const paddingLeft = isDirectory ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
+  const paddingLeft = isDirectory
+    ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px`
+    : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
 
   const fileTreeNodeStyle = {
     height: TREE_VIEW_NODE_HEIGHT,
@@ -70,29 +80,29 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return <Loading />;
     }
-    return <div
-      onClick={clickHandler}
-      className={cls(
-        styles.tree_view_node_segment,
-        styles.expansion_toggle,
-        getIcon('arrow-right'),
-        { [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded },
-      )}
-    />;
-
+    return (
+      <div
+        onClick={clickHandler}
+        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
+        })}
+      />
+    );
   };
 
-  const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
-    return <div className={cls(styles.file_icon, node.icon)} style={{ height: TREE_VIEW_NODE_HEIGHT, lineHeight: `${TREE_VIEW_NODE_HEIGHT}px` }}>
-    </div>;
-  };
+  const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
+    <div
+      className={cls(styles.file_icon, node.icon)}
+      style={{ height: TREE_VIEW_NODE_HEIGHT, lineHeight: `${TREE_VIEW_NODE_HEIGHT}px` }}
+    ></div>
+  );
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
     const displayName = () => {
       if (node.highlights) {
         let hightlightSnaps: React.ReactNode[] = [];
-        let endIndex: number = 0;
-        const hightlights = node.highlights.sort(((a, b) => a[0] - b[0]));
+        let endIndex = 0;
+        const hightlights = node.highlights.sort((a, b) => a[0] - b[0]);
         hightlightSnaps = hightlights.map((highlight, index: number) => {
           const [start, end] = highlight;
           const addonStr = node.displayName.slice(endIndex, start);
@@ -100,7 +110,9 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
           const highlightStr = node.displayName.slice(start, end);
           const hls = [
             <span key={`line_begin_${index}_${addonStr}`}>{addonStr}</span>,
-            <span className={styles.highlight} key={`line_hightlight_${index}_${highlightStr}`}>{highlightStr}</span>,
+            <span className={styles.highlight} key={`line_hightlight_${index}_${highlightStr}`}>
+              {highlightStr}
+            </span>,
           ];
           if (index === hightlights.length - 1) {
             const leftStr = node.displayName.slice(end);
@@ -113,29 +125,35 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
         return node.displayName;
       }
     };
-    return <div
-      className={cls(styles.tree_view_node_segment, styles.tree_view_node_displayname, node.strikethrough && styles.strikethrough)}
-    >
-      {displayName()}
-    </div>;
+    return (
+      <div
+        className={cls(
+          styles.tree_view_node_segment,
+          styles.tree_view_node_displayname,
+          node.strikethrough && styles.strikethrough,
+        )}
+      >
+        {displayName()}
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.tree_view_node_segment, styles.tree_view_node_tail)}>
-      {renderInlineActions()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.tree_view_node_segment, styles.tree_view_node_tail)}>{renderInlineActions()}</div>
+  );
 
   const renderInlineActions = () => {
     if (item.actions.length > 0) {
-      return <div className={styles.tree_view_actions}>
-        <TitleActionList
-          className={styles.inlineMenu}
-          context={[{ treeViewId, treeItemId: item.treeItemId }]}
-          nav={item.actions}
-          menuId={MenuId.ViewItemContext}
-        />
-      </div>;
+      return (
+        <div className={styles.tree_view_actions}>
+          <TitleActionList
+            className={styles.inlineMenu}
+            context={[{ treeViewId, treeItemId: item.treeItemId }]}
+            nav={item.actions}
+            menuId={MenuId.ViewItemContext}
+          />
+        </div>
+      );
     }
   };
 
@@ -150,11 +168,11 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     return tooltip || item.name;
   };
 
-  const renderDescription = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
-    return <div className={cls(styles.tree_view_node_segment_grow, styles.tree_view_node_description)}>
+  const renderDescription = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
+    <div className={cls(styles.tree_view_node_segment_grow, styles.tree_view_node_description)}>
       {!node.name && !node.description ? '——' : node.description}
-    </div>;
-  };
+    </div>
+  );
 
   return (
     <div
@@ -162,10 +180,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
-        styles.tree_view_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(styles.tree_view_node, decorations ? decorations.classlist : null)}
       data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
@@ -173,9 +188,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
       <div className={cls(styles.tree_view_node_content)}>
         {renderTwice(item)}
         {renderIcon(item)}
-        <div
-          className={styles.tree_view_node_overflow_wrap}
-        >
+        <div className={styles.tree_view_node_overflow_wrap}>
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

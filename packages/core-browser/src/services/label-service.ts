@@ -3,7 +3,17 @@ import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/stand
 import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@opensumi/ide-core-common';
+import {
+  URI,
+  Emitter,
+  addElement,
+  IDisposable,
+  LRUMap,
+  Event,
+  WithEventBus,
+  BasicEvent,
+  Disposable,
+} from '@opensumi/ide-core-common';
 import { getIcon } from '../style/icon/icon';
 import classnames from 'classnames';
 
@@ -11,7 +21,6 @@ import classnames from 'classnames';
  * Data URI related helpers.
  */
 export namespace DataUri {
-
   export const META_DATA_LABEL = 'label';
   export const META_DATA_DESCRIPTION = 'description';
   export const META_DATA_SIZE = 'size';
@@ -42,7 +51,6 @@ export namespace DataUri {
 }
 
 export interface ILabelProvider {
-
   /**
    * 判断该Contribution是否能处理该类型，返回权重
    */
@@ -67,7 +75,6 @@ export interface ILabelProvider {
    * 通知使用方发生了变更
    */
   onDidChange?: Event<URI>;
-
 }
 
 export interface ILabelOptions {
@@ -80,7 +87,11 @@ export function serializeLabelOptions(options?: ILabelOptions): string {
   if (!options) {
     return 'default';
   } else {
-    return [options.isDirectory ? '0' : '1', options.isOpenedDirectory ? '0' : '1', options.isSymbolicLink ? '0' : '1'].join('');
+    return [
+      options.isDirectory ? '0' : '1',
+      options.isOpenedDirectory ? '0' : '1',
+      options.isSymbolicLink ? '0' : '1',
+    ].join('');
   }
 }
 
@@ -98,7 +109,6 @@ export function deserializeLabelOptions(key: string): ILabelOptions | undefined 
 
 @Injectable()
 export class DefaultUriLabelProvider extends Disposable implements ILabelProvider {
-
   private _onDidChange = this.registerDispose(new Emitter<URI>());
 
   public onDidChange = this._onDidChange.event;
@@ -112,7 +122,7 @@ export class DefaultUriLabelProvider extends Disposable implements ILabelProvide
 
   public getIcon(uri: URI, options?: ILabelOptions): string {
     const { iconClass, onDidChange } = getIconClass(uri, options);
-    if ( onDidChange ) {
+    if (onDidChange) {
       const disposer = onDidChange(() => {
         this._onDidChange.fire(uri);
         disposer.dispose();
@@ -129,7 +139,6 @@ export class DefaultUriLabelProvider extends Disposable implements ILabelProvide
   public getLongName(uri: URI): string {
     return uri.path.toString();
   }
-
 }
 
 interface ICachedLabelProvider {
@@ -167,7 +176,7 @@ export class LabelService extends WithEventBus {
       return cached[optionKey];
     } else {
       let candidate: ILabelProvider | undefined;
-      let currentWeight: number = -1;
+      let currentWeight = -1;
       for (const provider of this.providers) {
         const weight = provider.canHandle(uri, options);
         if (weight > currentWeight) {
@@ -185,10 +194,12 @@ export class LabelService extends WithEventBus {
     this.cachedProviderMap.clear();
     const disposer = new Disposable();
     if (provider.onDidChange) {
-      disposer.addDispose(provider.onDidChange((uri) => {
-        this.onDidChangeEmitter.fire(uri);
-        this.cachedProviderMap.delete(uri.toString());
-      }));
+      disposer.addDispose(
+        provider.onDidChange((uri) => {
+          this.onDidChangeEmitter.fire(uri);
+          this.cachedProviderMap.delete(uri.toString());
+        }),
+      );
     }
     disposer.addDispose(addElement(this.providers, provider, true));
     disposer.addDispose({
@@ -240,14 +251,16 @@ export class LabelService extends WithEventBus {
       return '';
     }
   }
-
 }
 
 let modeService: any;
 let modelService: any;
-const getIconClass = (resource: URI, options?: ILabelOptions): {
-  iconClass: string,
-  onDidChange?: Event<void>,
+const getIconClass = (
+  resource: URI,
+  options?: ILabelOptions,
+): {
+  iconClass: string;
+  onDidChange?: Event<void>;
 } => {
   const classes = options && options.isDirectory ? ['folder-icon'] : ['file-icon'];
   let name: string | undefined;
@@ -263,7 +276,8 @@ const getIconClass = (resource: URI, options?: ILabelOptions): {
   // 文件夹图标
   if (options && options.isDirectory) {
     classes.push(`${name}-name-folder-icon`);
-  } else {// 文件图标
+  } else {
+    // 文件图标
     // Name & Extension(s)
     if (name) {
       classes.push(`${name}-name-file-icon`);
@@ -271,7 +285,7 @@ const getIconClass = (resource: URI, options?: ILabelOptions): {
       for (let i = 1; i < dotSegments.length; i++) {
         classes.push(`${dotSegments.slice(i).join('.')}-ext-file-icon`); // add each combination of all found extensions if more than one
       }
-      classes.push(`ext-file-icon`); // extra segment to increase file-ext score
+      classes.push('ext-file-icon'); // extra segment to increase file-ext score
     }
     // Language Mode探测
     if (!modeService) {
@@ -286,7 +300,7 @@ const getIconClass = (resource: URI, options?: ILabelOptions): {
     } else {
       _onDidChange = new Emitter<void>();
       StaticServices.modeService.get().onDidEncounterLanguage(() => {
-        if (!!detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
+        if (detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();
         }
@@ -310,7 +324,11 @@ export function basenameOrAuthority(resource: URI) {
   return resource.path.base || resource.authority;
 }
 
-export function detectModeId(modelService: IModelService, modeService: IModeService, resource: monaco.Uri): string | null {
+export function detectModeId(
+  modelService: IModelService,
+  modeService: IModeService,
+  resource: monaco.Uri,
+): string | null {
   if (!resource) {
     return null; // we need a resource at least
   }
@@ -350,4 +368,4 @@ export function getLanguageIdFromMonaco(uri: URI) {
 /**
  * labelService所处理的label或者icon变更的事件
  */
-export class ResourceLabelOrIconChangedEvent extends BasicEvent<URI> { }
+export class ResourceLabelOrIconChangedEvent extends BasicEvent<URI> {}

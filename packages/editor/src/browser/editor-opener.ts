@@ -4,7 +4,6 @@ import { WorkbenchEditorService, ResourceService } from '../common';
 
 @Injectable()
 export class EditorOpener implements IOpener {
-
   @Autowired(ResourceService)
   resourceService: ResourceService;
 

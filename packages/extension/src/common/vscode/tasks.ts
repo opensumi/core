@@ -30,13 +30,29 @@ export interface IMainThreadTasks {
 
 export interface IExtHostTasks {
   // Task API start
-  onDidStartTask(listener: (e: vscode.TaskStartEvent) => any, thisArg: any, disposables: vscode.Disposable[] | undefined): vscode.Disposable;
+  onDidStartTask(
+    listener: (e: vscode.TaskStartEvent) => any,
+    thisArg: any,
+    disposables: vscode.Disposable[] | undefined,
+  ): vscode.Disposable;
 
-  onDidEndTask(listener: (e: vscode.TaskEndEvent) => any, thisArg: any, disposables: vscode.Disposable[] | undefined): vscode.Disposable;
+  onDidEndTask(
+    listener: (e: vscode.TaskEndEvent) => any,
+    thisArg: any,
+    disposables: vscode.Disposable[] | undefined,
+  ): vscode.Disposable;
 
-  onDidStartTaskProcess(listener: (e: vscode.TaskProcessStartEvent) => any, thisArg: any, disposables: vscode.Disposable[] | undefined): vscode.Disposable;
+  onDidStartTaskProcess(
+    listener: (e: vscode.TaskProcessStartEvent) => any,
+    thisArg: any,
+    disposables: vscode.Disposable[] | undefined,
+  ): vscode.Disposable;
 
-  onDidEndTaskProcess(listener: (e: vscode.TaskProcessEndEvent) => any, thisArg: any, disposables: vscode.Disposable[] | undefined): vscode.Disposable;
+  onDidEndTaskProcess(
+    listener: (e: vscode.TaskProcessEndEvent) => any,
+    thisArg: any,
+    disposables: vscode.Disposable[] | undefined,
+  ): vscode.Disposable;
   // Task API end
 
   taskExecutions: readonly vscode.TaskExecution[];
@@ -81,9 +97,7 @@ export interface ExecutionOptionsDTO {
   env?: { [key: string]: string };
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface ProcessExecutionOptionsDTO extends ExecutionOptionsDTO {
-}
+export type ProcessExecutionOptionsDTO = ExecutionOptionsDTO;
 
 export interface ProcessExecutionDTO {
   process: string;
@@ -92,10 +106,12 @@ export interface ProcessExecutionDTO {
 }
 
 export interface ShellQuotingOptionsDTO {
-  escape?: string | {
-    escapeChar: string;
-    charsToEscape: string;
-  };
+  escape?:
+    | string
+    | {
+        escapeChar: string;
+        charsToEscape: string;
+      };
   strong?: string;
   weak?: string;
 }

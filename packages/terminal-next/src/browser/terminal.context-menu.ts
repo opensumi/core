@@ -1,13 +1,17 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateMergedCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractMenuService,
+  IMenu,
+  ICtxMenuRenderer,
+  generateMergedCtxMenu,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { memoize, IContextKeyService } from '@opensumi/ide-core-browser';
 import { MenuId } from '../common/menu';
 import { ITerminalController } from '../common';
 
 @Injectable()
 export class TerminalContextMenuService extends Disposable {
-
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
 
@@ -21,7 +25,10 @@ export class TerminalContextMenuService extends Disposable {
   private contextKeyService: IContextKeyService;
 
   @memoize get contextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.controller.contextKeyService || this.contextKeyService);
+    const contributedContextMenu = this.menuService.createMenu(
+      MenuId.TermPanel,
+      this.controller.contextKeyService || this.contextKeyService,
+    );
     this.addDispose(contributedContextMenu);
     return contributedContextMenu;
   }
@@ -56,7 +63,7 @@ export class TerminalContextMenuService extends Disposable {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ event.target, index ],
+      args: [event.target, index],
     });
   }
 }

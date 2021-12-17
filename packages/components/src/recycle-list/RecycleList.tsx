@@ -105,13 +105,25 @@ export interface IRecycleListHandler {
   scrollToIndex: (index: number, position?: Align) => void;
 }
 
-export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
-export const RECYCLE_LIST_OVER_SCAN_COUNT: number = 50;
+export const RECYCLE_LIST_STABILIZATION_TIME = 500;
+export const RECYCLE_LIST_OVER_SCAN_COUNT = 50;
 
 export const RecycleList: React.FC<IRecycleListProps> = ({
-  width, height, maxHeight, minHeight, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize, getSize: customGetSize,
+  width,
+  height,
+  maxHeight,
+  minHeight,
+  className,
+  style,
+  data,
+  onReady,
+  itemHeight,
+  header: Header,
+  footer: Footer,
+  template: Template,
+  paddingBottomSize,
+  getSize: customGetSize,
 }) => {
-
   const listRef = React.useRef<FixedSizeList | VariableSizeList>();
   const sizeMap = React.useRef<{ [key: string]: number }>({});
   const scrollToIndexTimer = React.useRef<any>();
@@ -125,7 +137,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
         // custom alignment: center, start, or end
         scrollToIndex: (index: number, position: Align = 'start') => {
           let locationIndex = index;
-          if (!!Header) {
+          if (Header) {
             locationIndex++;
           }
           if (typeof itemHeight === 'number') {
@@ -163,12 +175,15 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     }
   };
 
-  const getSize = React.useCallback((index: string | number) => {
-    if (customGetSize) {
-      return customGetSize(Number(index));
-    }
-    return (sizeMap?.current || [])[index] || itemHeight || 100;
-  }, [itemHeight, customGetSize]);
+  const getSize = React.useCallback(
+    (index: string | number) => {
+      if (customGetSize) {
+        return customGetSize(Number(index));
+      }
+      return (sizeMap?.current || [])[index] || itemHeight || 100;
+    },
+    [itemHeight, customGetSize],
+  );
 
   const getMaxListHeight = React.useCallback(() => {
     if (maxHeight) {
@@ -192,10 +207,10 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
 
   const adjustedRowCount = React.useMemo(() => {
     let count = data.length;
-    if (!!Header) {
+    if (Header) {
       count++;
     }
-    if (!!Footer) {
+    if (Footer) {
       count++;
     }
     return count;
@@ -205,19 +220,23 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     let node;
     if (index === 0) {
       if (Header) {
-        return <div style={style}>
-          <Header />
-        </div>;
+        return (
+          <div style={style}>
+            <Header />
+          </div>
+        );
       }
     }
-    if ((index + 1) === adjustedRowCount) {
-      if (!!Footer) {
-        return <div style={style}>
-          <Footer />
-        </div>;
+    if (index + 1 === adjustedRowCount) {
+      if (Footer) {
+        return (
+          <div style={style}>
+            <Footer />
+          </div>
+        );
       }
     }
-    if (!!Header) {
+    if (Header) {
       node = data[index - 1];
     } else {
       node = data[index];
@@ -232,9 +251,11 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       'aria-posinset': index,
     };
 
-    return <div style={style} role='listitem' {...ariaInfo}>
-      <Template data={node} index={index} />
-    </div>;
+    return (
+      <div style={style} role='listitem' {...ariaInfo}>
+        <Template data={node} index={index} />
+      </div>
+    );
   };
 
   const renderDynamicItem = ({ index, style }): JSX.Element => {
@@ -243,7 +264,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     const setItemSize = () => {
       if (rowRoot.current) {
         let height = 0;
-        // tslint:disable-next-line:prefer-for-of
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < rowRoot.current.children.length; i++) {
           height += rowRoot.current.children[i].getBoundingClientRect().height;
         }
@@ -275,19 +296,23 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     let node;
     if (index === 0) {
       if (Header) {
-        return <div style={style}>
-          <Header />
-        </div>;
+        return (
+          <div style={style}>
+            <Header />
+          </div>
+        );
       }
     }
-    if ((index + 1) === adjustedRowCount) {
-      if (!!Footer) {
-        return <div style={style}>
-          <Footer />
-        </div>;
+    if (index + 1 === adjustedRowCount) {
+      if (Footer) {
+        return (
+          <div style={style}>
+            <Footer />
+          </div>
+        );
       }
     }
-    if (!!Header) {
+    if (Header) {
       node = data[index - 1];
     } else {
       node = data[index];
@@ -296,9 +321,11 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       return <div style={style}></div>;
     }
 
-    return <div style={style} ref={rowRoot}>
-      <Template data={node} index={index} />
-    </div>;
+    return (
+      <div style={style} ref={rowRoot}>
+        <Template data={node} index={index} />
+      </div>
+    );
   };
 
   const getItemKey = (index: number) => {
@@ -319,14 +346,16 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   // 为 List 添加下边距
   const InnerElementType = React.forwardRef((props, ref) => {
     const { style, ...rest } = props as any;
-    return <div
-      ref={ref!}
-      style={{
-        ...style,
-        height: `${parseFloat(style.height) + (paddingBottomSize ? paddingBottomSize : 0)}px`,
-      }}
-      {...rest}
-    />;
+    return (
+      <div
+        ref={ref!}
+        style={{
+          ...style,
+          height: `${parseFloat(style.height) + (paddingBottomSize ? paddingBottomSize : 0)}px`,
+        }}
+        {...rest}
+      />
+    );
   });
 
   const render = () => {
@@ -351,55 +380,59 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
           currentHeight = maxH;
         }
         if (isDynamicList) {
-          return <List
-            width={width}
-            height={currentHeight}
-            // 这里的数据不是必要的，主要用于在每次更新列表
-            itemData={[]}
-            itemSize={getSize}
-            itemCount={adjustedRowCount}
-            getItemKey={getItemKey}
-            overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
-            ref={listRef}
-            style={{
-              transform: 'translate3d(0px, 0px, 0px)',
-              ...style,
-            }}
-            className={cls(className, 'kt-recycle-list')}
-            innerElementType={InnerElementType}
-            outerElementType={ScrollbarsVirtualList}
-            estimatedItemSize={calcEstimatedSize}>
-            {renderDynamicItem}
-          </List>;
+          return (
+            <List
+              width={width}
+              height={currentHeight}
+              // 这里的数据不是必要的，主要用于在每次更新列表
+              itemData={[]}
+              itemSize={getSize}
+              itemCount={adjustedRowCount}
+              getItemKey={getItemKey}
+              overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
+              ref={listRef}
+              style={{
+                transform: 'translate3d(0px, 0px, 0px)',
+                ...style,
+              }}
+              className={cls(className, 'kt-recycle-list')}
+              innerElementType={InnerElementType}
+              outerElementType={ScrollbarsVirtualList}
+              estimatedItemSize={calcEstimatedSize}
+            >
+              {renderDynamicItem}
+            </List>
+          );
         } else {
-          return <List
-            width={width}
-            height={currentHeight}
-            // 这里的数据不是必要的，主要用于在每次更新列表
-            itemData={[]}
-            itemSize={itemHeight}
-            itemCount={adjustedRowCount}
-            getItemKey={getItemKey}
-            overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
-            ref={listRef}
-            style={{
-              transform: 'translate3d(0px, 0px, 0px)',
-              ...style,
-            }}
-            className={cls(className, 'kt-recycle-list')}
-            innerElementType={InnerElementType}
-            outerElementType={ScrollbarsVirtualList}>
-            {renderItem}
-          </List>;
+          return (
+            <List
+              width={width}
+              height={currentHeight}
+              // 这里的数据不是必要的，主要用于在每次更新列表
+              itemData={[]}
+              itemSize={itemHeight}
+              itemCount={adjustedRowCount}
+              getItemKey={getItemKey}
+              overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
+              ref={listRef}
+              style={{
+                transform: 'translate3d(0px, 0px, 0px)',
+                ...style,
+              }}
+              className={cls(className, 'kt-recycle-list')}
+              innerElementType={InnerElementType}
+              outerElementType={ScrollbarsVirtualList}
+            >
+              {renderItem}
+            </List>
+          );
         }
       };
 
       if (!isAutoSizeList) {
         return renderContent({ width, height });
       } else {
-        return <AutoSizer>
-          {renderContent}
-        </AutoSizer>;
+        return <AutoSizer>{renderContent}</AutoSizer>;
       }
     };
 

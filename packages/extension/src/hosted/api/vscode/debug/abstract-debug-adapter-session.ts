@@ -1,19 +1,16 @@
 import { Disposable, DisposableCollection, Event } from '@opensumi/ide-core-common';
-import {
-  DebugStreamConnection,
-} from '@opensumi/ide-debug';
+import { DebugStreamConnection } from '@opensumi/ide-debug';
 import type vscode from 'vscode';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { IWebSocket } from '@opensumi/ide-connection';
 import { getSequenceId } from '@opensumi/ide-debug';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
-
-  constructor(readonly id: string) { }
+  constructor(readonly id: string) {}
 
   onDidSendMessage: Event<vscode.DebugProtocolMessage>;
   handleMessage: (message: vscode.DebugProtocolMessage) => void;
-  dispose: () => {};
+  dispose: () => unknown;
 }
 
 export class DirectDebugAdapter extends AbstractDebugAdapter {
@@ -45,17 +42,18 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
   private contentLength: number;
   private buffer: Buffer;
 
-  constructor(
-    readonly id: string,
-    protected readonly debugStreamConnection: DebugStreamConnection,
-  ) {
+  constructor(readonly id: string, protected readonly debugStreamConnection: DebugStreamConnection) {
     super(id);
     this.contentLength = -1;
     this.buffer = Buffer.alloc(0);
     this.toDispose.pushAll([
       this.debugStreamConnection,
-      Disposable.create(() => this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'disconnect' }))),
-      Disposable.create(() => this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'terminate' }))),
+      Disposable.create(() =>
+        this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'disconnect' })),
+      ),
+      Disposable.create(() =>
+        this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'terminate' })),
+      ),
     ]);
   }
 
@@ -65,7 +63,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     }
     this.channel = channel;
     this.channel.onMessage((message: string) => this.write(message));
-    this.channel.onClose(() => this.channel = undefined);
+    this.channel.onClose(() => (this.channel = undefined));
 
     this.debugStreamConnection.output.on('data', (data: Buffer) => this.handleData(data));
     this.debugStreamConnection.output.on('close', () => this.onDebugAdapterExit(1, undefined));
@@ -146,7 +144,10 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     const finalMessage = message + '\r\n';
     // 在 Stream 关闭后不再发送消息
     if (this.debugStreamConnection.input.writable) {
-      this.debugStreamConnection.input.write(`Content-Length: ${Buffer.byteLength(finalMessage, 'utf8')}\r\n\r\n${finalMessage}`, 'utf8');
+      this.debugStreamConnection.input.write(
+        `Content-Length: ${Buffer.byteLength(finalMessage, 'utf8')}\r\n\r\n${finalMessage}`,
+        'utf8',
+      );
     }
   }
 

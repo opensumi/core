@@ -1,4 +1,11 @@
-import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, PreferenceService, createPreferenceProxy } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  Domain,
+  ClientAppContribution,
+  ContributionProvider,
+  PreferenceService,
+  createPreferenceProxy,
+} from '@opensumi/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -6,7 +13,15 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';
+import {
+  EditorComponentRegistry,
+  BrowserEditorContribution,
+  IEditorDecorationCollectionService,
+  IEditorActionRegistry,
+  ICompareService,
+  IBreadCrumbService,
+  IEditorFeatureRegistry,
+} from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
@@ -26,8 +41,16 @@ import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
 import { FileSystemResourceContribution } from './fs-resource';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { CallHierarchyContribution, CallHierarchyService } from './monaco-contrib';
-import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
-import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from './monaco-contrib/command/command.service';
+import {
+  ICommandServiceToken,
+  IMonacoActionRegistry,
+  IMonacoCommandsRegistry,
+} from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import {
+  MonacoActionRegistry,
+  MonacoCommandRegistry,
+  MonacoCommandService,
+} from './monaco-contrib/command/command.service';
 import { TextmateService } from './monaco-contrib/tokenizer/textmate.service';
 import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 export * from './preference/schema';
@@ -58,15 +81,15 @@ export class EditorModule extends BrowserModule {
     },
     {
       token: IEditorDecorationCollectionService,
-      useClass : EditorDecorationCollectionService,
+      useClass: EditorDecorationCollectionService,
     },
     {
       token: IEditorDocumentModelContentRegistry,
-      useClass : EditorDocumentModelContentRegistryImpl,
+      useClass: EditorDocumentModelContentRegistryImpl,
     },
     {
       token: IEditorDocumentModelService,
-      useClass : EditorDocumentModelServiceImpl,
+      useClass: EditorDocumentModelServiceImpl,
     },
     {
       token: ILanguageService,
@@ -134,12 +157,10 @@ export class EditorModule extends BrowserModule {
   contributionProvider = BrowserEditorContribution;
 
   component = EditorView;
-
 }
 
 @Domain(ClientAppContribution)
 export class EditorClientAppContribution implements ClientAppContribution {
-
   @Autowired()
   resourceService!: ResourceService;
 
@@ -192,5 +213,4 @@ export class EditorClientAppContribution implements ClientAppContribution {
   async onDidStart() {
     this.workbenchEditorService.prepareContextKeyService();
   }
-
 }

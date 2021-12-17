@@ -3,14 +3,21 @@ import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contri
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { IRange, Uri, localize, ILogger, Disposable, IDisposable, DisposableCollection } from '@opensumi/ide-core-common';
+import {
+  IRange,
+  Uri,
+  localize,
+  ILogger,
+  Disposable,
+  IDisposable,
+  DisposableCollection,
+} from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { isPatternInWord } from '@opensumi/ide-core-common/lib/filters';
 import { ITextModel } from './monaco-api/types';
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
-
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
 
@@ -32,13 +39,21 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     return allLanguageIds;
   }
 
-  async provideCompletionItems(model: ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList | undefined> {
+  async provideCompletionItems(
+    model: ITextModel,
+    position: monaco.Position,
+    context: monaco.languages.CompletionContext,
+    token: monaco.CancellationToken,
+  ): Promise<monaco.languages.CompletionList | undefined> {
     if (position.column >= MonacoSnippetSuggestProvider._maxPrefix) {
       // 如果单行过长则忽略
       return undefined;
     }
 
-    if (context.triggerKind === monaco.languages.CompletionTriggerKind.TriggerCharacter && context.triggerCharacter === ' ') {
+    if (
+      context.triggerKind === monaco.languages.CompletionTriggerKind.TriggerCharacter &&
+      context.triggerCharacter === ' '
+    ) {
       // 如果通过空格触发则忽略
       return undefined;
     }
@@ -78,8 +93,22 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     for (const start of lineOffsets) {
       availableSnippets.forEach((snippet) => {
         // 对于特殊节点需要处理一下range
-        if (isPatternInWord(linePrefixLow, start, linePrefixLow.length, snippet.prefix.toLowerCase(), 0, snippet.prefix.length)) {
-          suggestions.push(new MonacoSnippetSuggestion(snippet, monaco.Range.fromPositions(position.delta(0, -(linePrefixLow.length - start)), position)));
+        if (
+          isPatternInWord(
+            linePrefixLow,
+            start,
+            linePrefixLow.length,
+            snippet.prefix.toLowerCase(),
+            0,
+            snippet.prefix.length,
+          )
+        ) {
+          suggestions.push(
+            new MonacoSnippetSuggestion(
+              snippet,
+              monaco.Range.fromPositions(position.delta(0, -(linePrefixLow.length - start)), position),
+            ),
+          );
           availableSnippets.delete(snippet);
         }
       });
@@ -96,7 +125,11 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
       const item = suggestions[i];
       let to = i + 1;
       for (; to < suggestions.length && item.label === suggestions[to].label; to++) {
-        suggestions[to].label = localize('snippetSuggest.longLabel', suggestions[to].label, suggestions[to].snippet.name);
+        suggestions[to].label = localize(
+          'snippetSuggest.longLabel',
+          suggestions[to].label,
+          suggestions[to].snippet.name,
+        );
       }
       if (to > i + 1) {
         suggestions[i].label = localize('snippetSuggest.longLabel', suggestions[i].label, suggestions[i].snippet.name);
@@ -120,24 +153,30 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
   }
 
   fromPath(path: string, options: SnippetLoadOptions): IDisposable {
-    const toDispose = new DisposableCollection(Disposable.create(() => { /* mark as not disposed */ }));
+    const toDispose = new DisposableCollection(
+      Disposable.create(() => {
+        /* mark as not disposed */
+      }),
+    );
     const snippetPath = new Path(options.extPath).join(path.replace(/^\.\//, '')).toString();
     const pending = this.loadURI(Uri.file(snippetPath), options, toDispose);
     const { language } = options;
-    const scopes = Array.isArray(language) ? language : !!language ? [language] : ['*'];
+    const scopes = Array.isArray(language) ? language : language ? [language] : ['*'];
     for (const scope of scopes) {
       const pendingSnippets = this.pendingSnippets.get(scope) || [];
       pendingSnippets.push(pending);
       this.pendingSnippets.set(scope, pendingSnippets);
 
-      toDispose.push(Disposable.create(() => {
-        const index = pendingSnippets.indexOf(pending);
-        if (index !== -1) {
-          pendingSnippets.splice(index, 1);
-        }
+      toDispose.push(
+        Disposable.create(() => {
+          const index = pendingSnippets.indexOf(pending);
+          if (index !== -1) {
+            pendingSnippets.splice(index, 1);
+          }
 
-        this.pendingSnippets.delete(scope);
-      }));
+          this.pendingSnippets.delete(scope);
+        }),
+      );
     }
 
     return toDispose;
@@ -145,7 +184,11 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
   /**
    * should NOT throw to prevent load erros on suggest
    */
-  protected async loadURI(uri: string | Uri, options: SnippetLoadOptions, toDispose: DisposableCollection): Promise<void> {
+  protected async loadURI(
+    uri: string | Uri,
+    options: SnippetLoadOptions,
+    toDispose: DisposableCollection,
+  ): Promise<void> {
     try {
       const { content } = await this.filesystem.resolveContent(uri.toString(), { encoding: 'utf-8' });
       if (toDispose.disposed) {
@@ -159,11 +202,13 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     }
   }
 
-  protected fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): IDisposable {
+  protected fromJSON(
+    snippets: JsonSerializedSnippets | undefined,
+    { language, source }: SnippetLoadOptions,
+  ): IDisposable {
     const toDispose = new DisposableCollection();
 
     this.parseSnippets(snippets, (name, snippet) => {
-      // tslint:disable-next-line:prefer-const
       let { prefix, body, description } = snippet;
       if (Array.isArray(body)) {
         body = body.join('\n');
@@ -186,21 +231,26 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
           }
         }
       }
-      toDispose.push(this.push({
-        scopes,
-        name,
-        prefix,
-        description,
-        body,
-        source,
-      }));
+      toDispose.push(
+        this.push({
+          scopes,
+          name,
+          prefix,
+          description,
+          body,
+          source,
+        }),
+      );
     });
 
     return toDispose;
   }
-  protected parseSnippets(snippets: JsonSerializedSnippets | undefined, accept: (name: string, snippet: JsonSerializedSnippet) => void): void {
+  protected parseSnippets(
+    snippets: JsonSerializedSnippets | undefined,
+    accept: (name: string, snippet: JsonSerializedSnippet) => void,
+  ): void {
     if (typeof snippets === 'object') {
-      // tslint:disable-next-line:forin
+      // eslint-disable-next-line guard-for-in
       for (const name in snippets) {
         const scopeOrTemplate = snippets[name];
         if (JsonSerializedSnippet.is(scopeOrTemplate)) {
@@ -221,19 +271,20 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
         languageSnippets.push(snippet);
         this.snippets.set(scope, languageSnippets);
 
-        toDispose.push(Disposable.create(() => {
-          const index = languageSnippets.indexOf(snippet);
-          if (index !== -1) {
-            languageSnippets.splice(index, 1);
-            this.snippets.delete(scope);
-          }
-        }));
+        toDispose.push(
+          Disposable.create(() => {
+            const index = languageSnippets.indexOf(snippet);
+            if (index !== -1) {
+              languageSnippets.splice(index, 1);
+              this.snippets.delete(scope);
+            }
+          }),
+        );
       }
     }
 
     return toDispose;
   }
-
 }
 
 export interface SnippetLoadOptions {
@@ -252,7 +303,6 @@ export interface JsonSerializedSnippet {
   description: string;
 }
 export namespace JsonSerializedSnippet {
-  // tslint:disable-next-line:ban-types
   export function is(obj: Object | undefined): obj is JsonSerializedSnippet {
     return typeof obj === 'object' && 'body' in obj && 'prefix' in obj;
   }
@@ -268,7 +318,6 @@ export interface Snippet {
 }
 
 export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem {
-
   label: string;
   readonly detail: string;
   readonly sortText: string;
@@ -280,7 +329,8 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
 
   insertText: string;
   documentation?: monaco.IMarkdownString;
-  insertTextRules: monaco.languages.CompletionItemInsertTextRule = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+  insertTextRules: monaco.languages.CompletionItemInsertTextRule =
+    monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
 
   static compareByLabel(a: MonacoSnippetSuggestion, b: MonacoSnippetSuggestion): number {
     return a.label > b.label ? 1 : a.label < b.label ? -1 : 0;
@@ -303,5 +353,4 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
     }
     return this;
   }
-
 }

@@ -56,7 +56,7 @@ export class StoragePathServer implements IStoragePathServer {
 
   private async doEnsureStorageDir(uri: string) {
     try {
-      if (!await this.fileSystem.access(uri)) {
+      if (!(await this.fileSystem.access(uri))) {
         await this.fileSystem.createFolder(uri);
       }
     } catch (e) {
@@ -81,7 +81,7 @@ export class StoragePathServer implements IStoragePathServer {
 
     this.deferredWorkspaceStoragePath.resolve(uriString);
     this.workspaceStoragePathInitialized = true;
-    return this.cachedWorkspaceStoragePath = uriString;
+    return (this.cachedWorkspaceStoragePath = uriString);
   }
 
   async provideGlobalStorageDirPath(storageDirName: string): Promise<string | undefined> {
@@ -101,7 +101,7 @@ export class StoragePathServer implements IStoragePathServer {
     this.deferredGlobalStoragePath.resolve(uriString);
     this.globalStoragePathInitialized = true;
 
-    return this.cachedGlobalStoragePath = uriString;
+    return (this.cachedGlobalStoragePath = uriString);
   }
 
   /**
@@ -130,7 +130,7 @@ export class StoragePathServer implements IStoragePathServer {
     if (!homeDirStat) {
       throw new Error('Unable to get user home directory');
     }
-    const userHome = await this.fileSystem.getFsPath(homeDirStat.uri) || '';
+    const userHome = (await this.fileSystem.getFsPath(homeDirStat.uri)) || '';
     return userHome;
   }
 
@@ -155,5 +155,4 @@ export class StoragePathServer implements IStoragePathServer {
       return this.deferredGlobalStoragePath.promise;
     }
   }
-
 }

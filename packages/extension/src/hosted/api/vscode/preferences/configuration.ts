@@ -3,7 +3,6 @@ import { Uri, isObject } from '@opensumi/ide-core-common';
 import cloneDeep = require('lodash.clonedeep');
 
 export class Configuration {
-
   private combinedConfig: ConfigurationModel | undefined;
   private folderCombinedConfigs: { [resource: string]: ConfigurationModel } = {};
 
@@ -12,18 +11,22 @@ export class Configuration {
     private userConfiguration: ConfigurationModel,
     private workspaceConfiguration: ConfigurationModel = new ConfigurationModel(),
     private folderConfigurations: { [resource: string]: ConfigurationModel } = {},
-  ) { }
+  ) {}
 
   getValue(section: string | undefined, workspace: IExtHostWorkspace, resource?: Uri): any {
     return this.getCombinedResourceConfig(workspace, resource).getValue(section);
   }
 
-  inspect<C>(key: string, workspace: IExtHostWorkspace, resource?: Uri): {
-    default: C,
-    user: C,
-    workspace: C | undefined,
-    workspaceFolder: C | undefined,
-    value: C,
+  inspect<C>(
+    key: string,
+    workspace: IExtHostWorkspace,
+    resource?: Uri,
+  ): {
+    default: C;
+    user: C;
+    workspace: C | undefined;
+    workspaceFolder: C | undefined;
+    value: C;
   } {
     const combinedConfiguration = this.getCombinedResourceConfig(workspace, resource);
     const folderConfiguration = this.getFolderResourceConfig(workspace, resource);
@@ -85,15 +88,10 @@ export class Configuration {
     }
     return this.folderConfigurations[workspaceFolder.uri.toString()];
   }
-
 }
 
 export class ConfigurationModel {
-
-  constructor(
-    private contents: any = {},
-    private keys: string[] = [],
-  ) { }
+  constructor(private contents: any = {}, private keys: string[] = []) {}
 
   getValue(section?: string): any {
     if (!section) {
@@ -141,11 +139,9 @@ export class ConfigurationModel {
       }
     }
   }
-
 }
 
 export interface ConfigurationChangeEvent {
-
   /**
    * @param section 配置名称，支持用`.`隔开的配置.
    * @param resource 资源路径

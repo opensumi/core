@@ -38,7 +38,6 @@ import {
 } from '../common';
 
 export abstract class FileSystemNodeOptions {
-
   public static DEFAULT: FileSystemNodeOptions = {
     encoding: 'utf8',
     overwrite: false,
@@ -50,12 +49,11 @@ export abstract class FileSystemNodeOptions {
   abstract recursive: boolean;
   abstract overwrite: boolean;
   abstract moveToTrash: boolean;
-
 }
 
 @Injectable()
 export class FileService implements IFileService {
-  protected watcherId: number = 0;
+  protected watcherId = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly onFileChangedEmitter = new Emitter<DidFilesChangedParams>();
@@ -72,9 +70,7 @@ export class FileService implements IFileService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  constructor(
-    @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
-  ) {
+  constructor(@Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions) {
     this.initProvider();
   }
 
@@ -84,8 +80,8 @@ export class FileService implements IFileService {
     this.toDisposable.push({
       dispose: () => {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
-      }
-    })
+      },
+    });
     return this.toDisposable;
   }
 
@@ -97,16 +93,13 @@ export class FileService implements IFileService {
 
     const watcherId = provider.watch(_uri.codeUri, {
       recursive: true,
-      excludes: (options && options.excludes) || []
+      excludes: (options && options.excludes) || [],
     }) as number;
     this.watcherDisposerMap.set(id, {
       dispose: () => provider.unwatch!(watcherId),
     });
     schemaWatchIdList.push(id);
-    this.watcherWithSchemaMap.set(
-      _uri.scheme,
-      schemaWatchIdList,
-    )
+    this.watcherWithSchemaMap.set(_uri.scheme, schemaWatchIdList);
     return id;
   }
 
@@ -168,7 +161,7 @@ export class FileService implements IFileService {
   }
 
   // 后端仍然保留 encoding 能力
-  async resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }> {
+  async resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat; content: string }> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -206,7 +199,11 @@ export class FileService implements IFileService {
     return newStat;
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
+  async updateContent(
+    file: FileStat,
+    contentChanges: TextDocumentContentChangeEvent[],
+    options?: FileSetContentOptions,
+  ): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -241,7 +238,9 @@ export class FileService implements IFileService {
     const _targetUri = this.getUri(targetUri);
 
     const provider = await this.getProvider(_sourceUri.scheme);
-    const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite) });
+    const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, {
+      overwrite: !!(options && options.overwrite),
+    });
 
     if (result) {
       return result;
@@ -250,11 +249,7 @@ export class FileService implements IFileService {
     return stat as FileStat;
   }
 
-  async copy(
-    sourceUri: string,
-    targetUri: string,
-    options?: FileCopyOptions
-  ): Promise<FileStat> {
+  async copy(sourceUri: string, targetUri: string, options?: FileCopyOptions): Promise<FileStat> {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
     const provider = await this.getProvider(_sourceUri.scheme);
@@ -264,12 +259,9 @@ export class FileService implements IFileService {
       throw this.getErrorProvideNotSupport(_sourceUri.scheme, 'copy');
     }
 
-    const result: any = await provider.copy(
-      _sourceUri.codeUri,
-      _targetUri.codeUri,
-      {
-        overwrite: !!overwrite,
-      })
+    const result: any = await provider.copy(_sourceUri.codeUri, _targetUri.codeUri, {
+      overwrite: !!overwrite,
+    });
 
     if (result) {
       return result;
@@ -287,10 +279,10 @@ export class FileService implements IFileService {
     const buffer = encode(content, encoding);
     let newStat: any = await provider.writeFile(_uri.codeUri, buffer, {
       create: true,
-      overwrite: options && options.overwrite || false,
+      overwrite: (options && options.overwrite) || false,
       encoding,
     });
-    newStat = newStat || await provider.stat(_uri.codeUri);
+    newStat = newStat || (await provider.stat(_uri.codeUri));
     return newStat;
   }
 
@@ -322,7 +314,7 @@ export class FileService implements IFileService {
 
     await (provider as any).delete(_uri.codeUri, {
       recursive: true,
-      moveToTrash: await this.doGetMoveToTrash(options)
+      moveToTrash: await this.doGetMoveToTrash(options),
     });
   }
 
@@ -363,7 +355,7 @@ export class FileService implements IFileService {
     // return encoding || this.options.encoding || UTF8;
   }
 
-  getEncodingInfo = getEncodingInfo
+  getEncodingInfo = getEncodingInfo;
 
   async getCurrentUserHome(): Promise<FileStat | undefined> {
     return this.getFileStat(FileUri.create(os.homedir()).toString());
@@ -371,7 +363,7 @@ export class FileService implements IFileService {
 
   getDrives(): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
-      drivelist.list((error: Error, drives: Array<{ readonly mountpoints: Array<{ readonly path: string; }> }>) => {
+      drivelist.list((error: Error, drives: Array<{ readonly mountpoints: Array<{ readonly path: string }> }>) => {
         if (error) {
           reject(error);
           return;
@@ -410,9 +402,8 @@ export class FileService implements IFileService {
       // const lstat = await fs.lstat(FileUri.fsPath(uri));
       const stat = await fs.stat(FileUri.fsPath(uri));
 
-      let ext: string = '';
+      let ext = '';
       if (!stat.isDirectory()) {
-
         // if(lstat.isSymbolicLink){
 
         // }else {
@@ -435,14 +426,13 @@ export class FileService implements IFileService {
         }
       }
     }
-
   }
 
   getUri(uri: string | Uri): URI {
-    const _uri = new URI(uri)
+    const _uri = new URI(uri);
 
     if (!_uri.scheme) {
-      throw new Error(`没有设置 scheme: ${uri}`)
+      throw new Error(`没有设置 scheme: ${uri}`);
     }
 
     return _uri;
@@ -469,22 +459,20 @@ export class FileService implements IFileService {
     this.filesExcludes.forEach((str) => {
       if (this.workspaceRoots.length > 0) {
         this.workspaceRoots.forEach((root: string) => {
-          const uri = new URI(root)
+          const uri = new URI(root);
           const pathStrWithExclude = uri.resolve(str).path.toString();
           this.filesExcludesMatcherList.push(parse(pathStrWithExclude));
         });
       } else {
         this.filesExcludesMatcherList.push(parse(str));
       }
-    })
+    });
   }
 
   private isExclude(uriString: string) {
     const uri = new URI(uriString);
 
-    return this.filesExcludesMatcherList.some((matcher) => {
-      return matcher(uri.path.toString());
-    });
+    return this.filesExcludesMatcherList.some((matcher) => matcher(uri.path.toString()));
   }
 
   private filterStat(stat?: FileStat) {
@@ -535,7 +523,7 @@ export class FileService implements IFileService {
   }
 
   private getErrorProvideNotSupport(scheme: string, funName: string): string {
-    return `Scheme ${scheme} not support this function: ${funName}.`
+    return `Scheme ${scheme} not support this function: ${funName}.`;
   }
 
   private initProvider() {
@@ -544,7 +532,7 @@ export class FileService implements IFileService {
 
   private getProvider<T extends string>(scheme: T): T extends 'file' ? IDiskFileProvider : FileSystemProvider;
   private getProvider(scheme: string): IDiskFileProvider | FileSystemProvider {
-    let provider = this.fileSystemManage.get(scheme);
+    const provider = this.fileSystemManage.get(scheme);
 
     if (!provider) {
       throw new Error(`Not find ${scheme} provider.`);
@@ -597,45 +585,36 @@ export class FileService implements IFileService {
   }
 
   private _getFileType(ext) {
-    let type = 'text'
+    let type = 'text';
 
     if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
-      type = 'image'
+      type = 'image';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
-      type = 'binary'
+      type = 'binary';
     }
 
-    return type
+    return type;
   }
 
   protected async doGetEncoding(option?: { encoding?: string }): Promise<string> {
-    return option && typeof (option.encoding) !== 'undefined'
-      ? option.encoding
-      : this.options.encoding;
+    return option && typeof option.encoding !== 'undefined' ? option.encoding : this.options.encoding;
   }
 
   protected async doGetOverwrite(option?: { overwrite?: boolean }): Promise<boolean | undefined> {
-    return option && typeof (option.overwrite) !== 'undefined'
-      ? option.overwrite
-      : this.options.overwrite;
+    return option && typeof option.overwrite !== 'undefined' ? option.overwrite : this.options.overwrite;
   }
 
   protected async doGetRecursive(option?: { recursive?: boolean }): Promise<boolean> {
-    return option && typeof (option.recursive) !== 'undefined'
-      ? option.recursive
-      : this.options.recursive;
+    return option && typeof option.recursive !== 'undefined' ? option.recursive : this.options.recursive;
   }
 
   protected async doGetMoveToTrash(option?: { moveToTrash?: boolean }): Promise<boolean> {
-    return option && typeof (option.moveToTrash) !== 'undefined'
-      ? option.moveToTrash
-      : this.options.moveToTrash;
+    return option && typeof option.moveToTrash !== 'undefined' ? option.moveToTrash : this.options.moveToTrash;
   }
 
   protected async doGetContent(option?: { content?: string }): Promise<string> {
     return (option && option.content) || '';
   }
-
 }
 // 每一个后端连接对应一个 injector
 const safeFsInstanceMap: Map<Injector, IFileService> = new Map();
@@ -645,21 +624,25 @@ export function getSafeFileservice(injector: Injector) {
   }
   const fileService = injector.get(FileService, [FileSystemNodeOptions.DEFAULT]);
   const appConfig: AppConfig = injector.get(AppConfig);
-  fileServiceInterceptor(fileService, [
-    'exists',
-    'resolveContent',
-    'setContent',
-    'updateContent',
-    'createFile',
-    'createFolder',
-    'delete',
-    'access',
-    'getFsPath',
-    'getFileType',
-    'getFileStat',
-    'move',
-    'copy',
-  ], appConfig.blockPatterns || [])
+  fileServiceInterceptor(
+    fileService,
+    [
+      'exists',
+      'resolveContent',
+      'setContent',
+      'updateContent',
+      'createFile',
+      'createFolder',
+      'delete',
+      'access',
+      'getFsPath',
+      'getFileType',
+      'getFileStat',
+      'move',
+      'copy',
+    ],
+    appConfig.blockPatterns || [],
+  );
   safeFsInstanceMap.set(injector, fileService);
   return fileService;
 }
@@ -673,7 +656,6 @@ function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.E
 function fileServiceInterceptor(fileService: IFileService, blackList: string[], blockPatterns: string[]) {
   for (const method of blackList) {
     if (typeof fileService[method] === 'function') {
-      // tslint:disable-next-line: ban-types
       const originFunc: Function = fileService[method];
       fileService[method] = (...args) => {
         // 第一个参数为uri/{uri}
@@ -687,7 +669,7 @@ function fileServiceInterceptor(fileService: IFileService, blackList: string[], 
                *
                * 防止被绕过
                */
-              resolvedURI = `file://${paths.resolve(uri.slice(7))}`
+              resolvedURI = `file://${paths.resolve(uri.slice(7))}`;
             }
             for (const blockPattern of blockPatterns) {
               if (match(blockPattern, resolvedURI)) {

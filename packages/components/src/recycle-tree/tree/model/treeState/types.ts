@@ -2,8 +2,8 @@ export interface ISerializableState {
   specVersion: number;
   scrollPosition: number;
   expandedDirectories: {
-    atSurface: string[],
-    buried: string[],
+    atSurface: string[];
+    buried: string[];
   };
 }
 

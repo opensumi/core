@@ -6,7 +6,6 @@ import { GridResizeEvent } from '../types';
 export const editorGridUid = new Set();
 
 export class EditorGrid implements IDisposable {
-
   public editorGroup: IGridEditorGroup | null = null;
 
   public children: EditorGrid[] = [];
@@ -146,7 +145,11 @@ export class EditorGrid implements IDisposable {
     }
   }
 
-  async deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup, editorGroupRestoreStatePromises: Promise<any>[]): Promise<any> {
+  async deserialize(
+    state: IEditorGridState,
+    editorGroupFactory: () => IGridEditorGroup,
+    editorGroupRestoreStatePromises: Promise<any>[],
+  ): Promise<any> {
     const promises: Promise<any>[] = [];
     if (state.editorGroup) {
       this.setEditorGroup(editorGroupFactory());
@@ -164,7 +167,7 @@ export class EditorGrid implements IDisposable {
 
   findGird(direction: Direction, currentIndex = 0): MaybeNull<EditorGrid> {
     if (this.splitDirection && splitDirectionMatches(this.splitDirection, direction)) {
-      const targetIndex = currentIndex + ((direction === Direction.LEFT || direction === Direction.UP) ? -1 : 1);
+      const targetIndex = currentIndex + (direction === Direction.LEFT || direction === Direction.UP ? -1 : 1);
       if (this.children[targetIndex]) {
         return this.children[targetIndex].getFirstLeaf();
       }
@@ -238,7 +241,6 @@ export class EditorGrid implements IDisposable {
       }
     }
   }
-
 }
 
 export interface IEditorGridState {

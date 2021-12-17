@@ -1,6 +1,13 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
-import { ITerminalErrorService, ITerminalError, ITerminalService, ITerminalGroupViewService, ITerminalController, IPtyExitEvent } from '../common';
+import {
+  ITerminalErrorService,
+  ITerminalError,
+  ITerminalService,
+  ITerminalGroupViewService,
+  ITerminalController,
+  IPtyExitEvent,
+} from '../common';
 
 @Injectable()
 export class TerminalErrorService implements ITerminalErrorService {
@@ -27,7 +34,9 @@ export class TerminalErrorService implements ITerminalErrorService {
         if (!widget.reuse) {
           this.view.removeWidget(event.sessionId);
         }
-      } catch { /** nothing */ }
+      } catch {
+        /** nothing */
+      }
     });
 
     this.controller.onDidCloseTerminal((e) => {

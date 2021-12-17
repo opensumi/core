@@ -3,7 +3,7 @@ import { ReactEditorComponent, IEditorDocumentModelService } from '@opensumi/ide
 import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@opensumi/ide-core-browser';
 import { IMarkdownService } from '../common';
 
-export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) => {
+export const MarkdownEditorComponent: ReactEditorComponent<any> = ({ resource }) => {
   let container: HTMLElement | null = null;
   const markdownService: IMarkdownService = useInjectable(IMarkdownService);
   const documentService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
@@ -26,14 +26,18 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
         }
         const onUpdate = new Emitter<string>();
         disposer.addDispose(onUpdate);
-        disposer.addDispose(documentRef.instance.getMonacoModel().onDidChangeContent((e) => {
-          onUpdate.fire(documentRef.instance.getText());
-        }));
+        disposer.addDispose(
+          documentRef.instance.getMonacoModel().onDidChangeContent((e) => {
+            onUpdate.fire(documentRef.instance.getText());
+          }),
+        );
         if (container) {
           // container可能已不存在
-          markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event).then((r) => {
-            disposer.addDispose(r);
-          });
+          markdownService
+            .previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event)
+            .then((r) => {
+              disposer.addDispose(r);
+            });
         }
         disposer.addDispose(documentRef);
       });
@@ -44,6 +48,12 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
     }
   });
 
-  return <div ref={(el) => {container = el; }} style={{height: '100%'}}></div>;
-
+  return (
+    <div
+      ref={(el) => {
+        container = el;
+      }}
+      style={{ height: '100%' }}
+    ></div>
+  );
 };

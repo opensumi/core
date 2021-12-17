@@ -3,17 +3,37 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@open
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource, LRUMap } from '@opensumi/ide-core-browser';
+import {
+  Emitter,
+  Event,
+  DisposableStore,
+  toDisposable,
+  isUndefined,
+  CommandRegistry,
+  localize,
+  getIcon,
+  getExternalIcon,
+  LabelService,
+  URI,
+  IContextKeyService,
+  CancellationTokenSource,
+} from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
-import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractMenuService,
+  generateCtxMenu,
+  IMenuRegistry,
+  MenuId,
+  MenuNode,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadTreeView implements IMainThreadTreeView {
   static TREE_VIEW_COLLAPSE_ALL_COMMAND_ID = 'TREE_VIEW_COLLAPSE_ALL';
 
@@ -77,7 +97,11 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.disposableCollection.clear();
   }
 
-  createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider, options: TreeViewBaseOptions): ExtensionTreeViewModel {
+  createTreeModel(
+    treeViewId: string,
+    dataProvider: TreeViewDataProvider,
+    options: TreeViewBaseOptions,
+  ): ExtensionTreeViewModel {
     return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId, options || {});
   }
 
@@ -86,18 +110,30 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       return;
     }
     const disposable = new DisposableStore();
-    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService, this.contextKeyService, this.menuService, this.userhome);
+    const dataProvider = new TreeViewDataProvider(
+      treeViewId,
+      this.proxy,
+      this.iconService,
+      this.themeService,
+      this.labelService,
+      this.contextKeyService,
+      this.menuService,
+      this.userhome,
+    );
     const model = this.createTreeModel(treeViewId, dataProvider, options);
     this.treeModels.set(treeViewId, model);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
-    this.mainLayoutService.replaceViewComponent({
-      id: treeViewId,
-      component: ExtensionTabBarTreeView,
-    }, {
-      model,
-      dataProvider,
-      treeViewId,
-    });
+    this.mainLayoutService.replaceViewComponent(
+      {
+        id: treeViewId,
+        component: ExtensionTabBarTreeView,
+      },
+      {
+        model,
+        dataProvider,
+        treeViewId,
+      },
+    );
 
     // const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(treeViewId);
     if (options?.showCollapseAll) {
@@ -115,21 +151,29 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         }),
       );
     }
-    disposable.add(model.onDidSelectedNodeChange((treeItemIds: string[]) => {
-      dataProvider.setSelection(treeViewId, treeItemIds);
-    }));
-    disposable.add(model.onDidChangeExpansionState((state: {treeItemId: string, expanded: boolean}) => {
-      const { treeItemId, expanded } = state;
-      dataProvider.setExpanded(treeViewId, treeItemId, expanded);
-    }));
+    disposable.add(
+      model.onDidSelectedNodeChange((treeItemIds: string[]) => {
+        dataProvider.setSelection(treeViewId, treeItemIds);
+      }),
+    );
+    disposable.add(
+      model.onDidChangeExpansionState((state: { treeItemId: string; expanded: boolean }) => {
+        const { treeItemId, expanded } = state;
+        dataProvider.setExpanded(treeViewId, treeItemId, expanded);
+      }),
+    );
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
     if (handler) {
-      disposable.add(handler.onActivate(() => {
-        dataProvider.setVisible(treeViewId, true);
-      }));
-      disposable.add(handler.onInActivate(() => {
-        dataProvider.setVisible(treeViewId, false);
-      }));
+      disposable.add(
+        handler.onActivate(() => {
+          dataProvider.setVisible(treeViewId, true);
+        }),
+      );
+      disposable.add(
+        handler.onInActivate(() => {
+          dataProvider.setVisible(treeViewId, false);
+        }),
+      );
       disposable.add(disposable.add(toDisposable(() => handler.disposeView(treeViewId))));
     }
     this.disposableCollection.set(treeViewId, disposable);
@@ -174,22 +218,24 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   private _registerInternalCommands() {
     this.disposable.add(
-      this.commandRegistry.registerCommand({
-        id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
-      }, {
-        execute: (treeViewId: string) => {
-          const treeModel = this.treeModels.get(treeViewId);
-          if (treeModel) {
-            treeModel.collapseAll();
-          }
+      this.commandRegistry.registerCommand(
+        {
+          id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
         },
-      }),
+        {
+          execute: (treeViewId: string) => {
+            const treeModel = this.treeModels.get(treeViewId);
+            if (treeModel) {
+              treeModel.collapseAll();
+            }
+          },
+        },
+      ),
     );
   }
 }
 
 export class TreeViewDataProvider extends Tree {
-
   private cachedMenu: Map<string, MenuNode[]> = new Map();
 
   private onTreeDataChangedEmitter = new Emitter<any>();
@@ -199,7 +245,8 @@ export class TreeViewDataProvider extends Tree {
   private _onDidChangeEmpty: Emitter<void> = new Emitter();
   public onDidChangeEmpty: Event<void> = this._onDidChangeEmpty.event;
 
-  private treeItemId2TreeNode: Map<string, ExtensionTreeNode | ExtensionCompositeTreeNode | ExtensionTreeRoot> = new Map();
+  private treeItemId2TreeNode: Map<string, ExtensionTreeNode | ExtensionCompositeTreeNode | ExtensionTreeRoot> =
+    new Map();
 
   constructor(
     public readonly treeViewId: string,
@@ -239,9 +286,7 @@ export class TreeViewDataProvider extends Tree {
       if (this.userhome) {
         const path = URI.from(item.resourceUri);
         if (this.userhome.isEqualOrParent(path)) {
-          return decodeURIComponent(
-            item.resourceUri.path.toString().replace(this.userhome.codeUri.fsPath, '~'),
-          );
+          return decodeURIComponent(item.resourceUri.path.toString().replace(this.userhome.codeUri.fsPath, '~'));
         }
       }
       return item.resourceUri.path.toString();
@@ -334,7 +379,7 @@ export class TreeViewDataProvider extends Tree {
         }
       }
       const themeColorClass = this.themeService.getColorClassNameByColorToken(item.themeIcon.color);
-      return `${themeIconClass} ${themeColorClass ?? '' }`;
+      return `${themeIconClass} ${themeColorClass ?? ''}`;
     } else {
       return '';
     }
@@ -363,14 +408,19 @@ export class TreeViewDataProvider extends Tree {
    *
    * @param item tree view item from the ext
    */
-  async createTreeNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode | ExtensionTreeNode> {
+  async createTreeNode(
+    item: TreeViewItem,
+    parent: ExtensionCompositeTreeNode,
+  ): Promise<ExtensionCompositeTreeNode | ExtensionTreeNode> {
     if (!isUndefined(item.collapsibleState) && item.collapsibleState !== TreeItemCollapsibleState.None) {
       return await this.createFoldNode(item, parent);
     }
     return await this.createNormalNode(item, parent);
   }
 
-  async resolveChildren(parent?: ExtensionCompositeTreeNode): Promise<(ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[]> {
+  async resolveChildren(
+    parent?: ExtensionCompositeTreeNode,
+  ): Promise<(ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[]> {
     let nodes: (ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[] = [];
     if (parent) {
       let children: TreeViewItem[] | undefined;

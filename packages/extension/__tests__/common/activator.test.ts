@@ -41,21 +41,24 @@ describe(__filename, () => {
   });
 
   it('activator will catch if deactivate throw error', async () => {
-    extensionsActivator.set('test', new ActivatedExtension(
+    extensionsActivator.set(
       'test',
-      'test',
-      'test',
-      'node',
-      false,
-      null,
-      mockService({
-        deactivate: async () => {
-          throw new Error('error');
-        },
-      }),
-      mockService({}),
-      [],
-    ));
+      new ActivatedExtension(
+        'test',
+        'test',
+        'test',
+        'node',
+        false,
+        null,
+        mockService({
+          deactivate: async () => {
+            throw new Error('error');
+          },
+        }),
+        mockService({}),
+        [],
+      ),
+    );
     // deactivate 会 catch 中所有错误
     await expect(extensionsActivator.deactivate()).resolves.toBeTruthy();
   });

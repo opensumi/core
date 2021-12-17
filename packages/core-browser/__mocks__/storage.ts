@@ -1,4 +1,12 @@
-import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@opensumi/ide-core-common';
+import {
+  isUndefinedOrNull,
+  StorageProvider,
+  IStorage,
+  Event,
+  Emitter,
+  Disposable,
+  URI,
+} from '@opensumi/ide-core-common';
 import { Injector } from '@opensumi/di';
 
 let mockedStorage: MockedStorage | null = null;
@@ -11,7 +19,6 @@ export const MockedStorageProvider: StorageProvider = async (storageId: URI) => 
 };
 
 export class MockedStorage extends Disposable implements IStorage {
-
   items: Map<string, string> = new Map();
 
   get size(): number {
@@ -53,8 +60,8 @@ export class MockedStorage extends Disposable implements IStorage {
   }
 
   async set(key: string, value: any): Promise<void> {
-   this.items.set(key, value);
-   this._onDidChangeStorage.fire(key);
+    this.items.set(key, value);
+    this._onDidChangeStorage.fire(key);
   }
 
   async delete(key: string): Promise<void> {
@@ -68,7 +75,6 @@ export class MockedStorage extends Disposable implements IStorage {
   async reConnectInit(): Promise<void> {
     return;
   }
-
 }
 
 export function useMockStorage(injector: Injector) {

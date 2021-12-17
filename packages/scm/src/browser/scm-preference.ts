@@ -1,5 +1,11 @@
 import { Injector } from '@opensumi/di';
-import { PreferenceService, PreferenceProxy, createPreferenceProxy, PreferenceSchema, localize } from '@opensumi/ide-core-browser';
+import {
+  PreferenceService,
+  PreferenceProxy,
+  createPreferenceProxy,
+  PreferenceSchema,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { SCMViewModelMode } from '../common';
 
 // 这里都是 scm 相关配置项注册
@@ -12,12 +18,18 @@ export const scmPreferenceSchema: PreferenceSchema = {
   properties: {
     'scm.alwaysShowProviders': {
       type: 'boolean',
-      description: localize('alwaysShowProviders', 'Controls whether to always show the Source Control Provider section.'),
+      description: localize(
+        'alwaysShowProviders',
+        'Controls whether to always show the Source Control Provider section.',
+      ),
       default: false,
     },
     'scm.providers.visible': {
       type: 'number',
-      description: localize('providersVisible', 'Controls how many providers are visible in the Source Control Provider section. Set to `0` to be able to manually resize the view.'),
+      description: localize(
+        'providersVisible',
+        'Controls how many providers are visible in the Source Control Provider section. Set to `0` to be able to manually resize the view.',
+      ),
       default: 10,
     },
     'scm.diffDecorations': {
@@ -35,11 +47,17 @@ export const scmPreferenceSchema: PreferenceSchema = {
       type: 'number',
       enum: [1, 2, 3, 4, 5],
       default: 3,
-      description: localize('diffGutterWidth', 'Controls the width(px) of diff decorations in gutter (added & modified).'),
+      description: localize(
+        'diffGutterWidth',
+        'Controls the width(px) of diff decorations in gutter (added & modified).',
+      ),
     },
     'scm.alwaysShowActions': {
       type: 'boolean',
-      description: localize('alwaysShowActions', 'Controls whether inline actions are always visible in the Source Control view.'),
+      description: localize(
+        'alwaysShowActions',
+        'Controls whether inline actions are always visible in the Source Control view.',
+      ),
       default: false,
     },
     'scm.defaultViewMode': {
@@ -50,7 +68,10 @@ export const scmPreferenceSchema: PreferenceSchema = {
     },
     'scm.listView.compactFolders': {
       type: 'boolean',
-      description: localize('scmListViewCompactFolders', 'Controls whether the source control view should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element.'),
+      description: localize(
+        'scmListViewCompactFolders',
+        'Controls whether the source control view should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element.',
+      ),
       default: true,
     },
   },

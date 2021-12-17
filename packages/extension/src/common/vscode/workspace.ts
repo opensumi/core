@@ -9,8 +9,19 @@ import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/t
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
   $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean>;
-  $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: { [key: string]: string }, ...rootsToAdd: string[]): Promise<void>;
-  $startFileSearch(includePattern: string, options: { cwd?: string; absolute: boolean }, excludePatternOrDisregardExcludes: string | false | undefined, maxResult: number | undefined, token: CancellationToken): Promise<string[]>;
+  $updateWorkspaceFolders(
+    start: number,
+    deleteCount?: number,
+    workspaceToName?: { [key: string]: string },
+    ...rootsToAdd: string[]
+  ): Promise<void>;
+  $startFileSearch(
+    includePattern: string,
+    options: { cwd?: string; absolute: boolean },
+    excludePatternOrDisregardExcludes: string | false | undefined,
+    maxResult: number | undefined,
+    token: CancellationToken,
+  ): Promise<string[]>;
 }
 
 export interface IExtHostWorkspace {
@@ -21,7 +32,6 @@ export interface IExtHostWorkspace {
 }
 
 export interface WorkspaceConfiguration {
-
   /**
    * Return a value from this configuration.
    *
@@ -64,7 +74,9 @@ export interface WorkspaceConfiguration {
    * @param section Configuration name, supports _dotted_ names.
    * @return Information about a configuration setting or `undefined`.
    */
-  inspect<T>(section: string): { key: string; defaultValue?: T; globalValue?: T; workspaceValue?: T, workspaceFolderValue?: T } | undefined;
+  inspect<T>(
+    section: string,
+  ): { key: string; defaultValue?: T; globalValue?: T; workspaceValue?: T; workspaceFolderValue?: T } | undefined;
 
   /**
    * Update a configuration value. The updated configuration values are persisted.
@@ -114,7 +126,7 @@ export interface WorkspaceConfiguration {
 export enum ConfigurationTarget {
   /**
    * Global configuration
-  */
+   */
   Global = 1,
 
   /**
@@ -132,7 +144,11 @@ export interface WorkspaceRootsChangeEvent {
   roots: FileStat[];
 }
 
-export interface ITextEdit { range: IRange; text: string; eol?: EndOfLineSequence; }
+export interface ITextEdit {
+  range: IRange;
+  text: string;
+  eol?: EndOfLineSequence;
+}
 
 export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined): IWorkspaceEdit {
   if (data && data.edits) {
@@ -144,8 +160,12 @@ export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined)
         (edit as unknown as IResourceTextEdit).versionId = (edit as model.ResourceTextEditDto).modelVersionId;
       } else {
         const resourceFileEdit = edit as unknown as IResourceFileEdit;
-        resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newUri ? URI.from((edit as model.ResourceFileEditDto).newUri!) : undefined;
-        resourceFileEdit.oldResource = (edit as model.ResourceFileEditDto).oldUri ? URI.from((edit as model.ResourceFileEditDto).oldUri!) : undefined;
+        resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newUri
+          ? URI.from((edit as model.ResourceFileEditDto).newUri!)
+          : undefined;
+        resourceFileEdit.oldResource = (edit as model.ResourceFileEditDto).oldUri
+          ? URI.from((edit as model.ResourceFileEditDto).oldUri!)
+          : undefined;
         // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
         resourceFileEdit.options = {
           ...resourceFileEdit.options,

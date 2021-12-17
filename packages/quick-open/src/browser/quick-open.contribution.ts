@@ -1,5 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  CommandContribution,
+  ContributionProvider,
+  KeybindingContribution,
+  CommandRegistry,
+  KeybindingRegistry,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
@@ -12,7 +20,6 @@ import { QUICK_OPEN_COMMANDS } from '../common';
 // 作为 contribution provider 的职责
 @Domain(ClientAppContribution)
 export class CoreQuickOpenContribution implements ClientAppContribution {
-
   @Autowired()
   private readonly quickOpenHandlerRegistry: QuickOpenHandlerRegistry;
 
@@ -29,7 +36,9 @@ export class CoreQuickOpenContribution implements ClientAppContribution {
 
 // 作为 command platte 等相关功能的贡献点
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
-export class QuickOpenFeatureContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
+export class QuickOpenFeatureContribution
+  implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution
+{
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 

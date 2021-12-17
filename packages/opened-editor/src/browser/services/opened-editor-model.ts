@@ -1,18 +1,17 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Injectable, Optional, Autowired} from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import { EditorFileGroup } from '../opened-editor-node.define';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class OpenedEditorModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
   @Autowired(OpenedEditorDecorationService)
   public readonly decorationService: OpenedEditorDecorationService;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(OpenedEditorModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(OpenedEditorModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: EditorFileGroup) {

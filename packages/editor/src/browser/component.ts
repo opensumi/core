@@ -1,4 +1,14 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent, RegisterEditorSideComponentEvent } from './types';
+import {
+  EditorComponentRegistry,
+  IEditorComponent,
+  IEditorComponentResolver,
+  EditorComponentRenderMode,
+  IEditorSideWidget,
+  EditorSide,
+  EditorComponentDisposeEvent,
+  RegisterEditorComponentEvent,
+  RegisterEditorSideComponentEvent,
+} from './types';
 import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
@@ -13,14 +23,13 @@ interface INormalizedEditorComponentResolver {
 
 @Injectable()
 export class EditorComponentRegistryImpl implements EditorComponentRegistry {
-
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
   private components: Map<string, IEditorComponent> = new Map();
 
   private sideWidgets = {
-    'bottom': new Set<IEditorSideWidget>(),
+    bottom: new Set<IEditorSideWidget>(),
   };
 
   private initialPropsMap: Map<string, any> = new Map();
@@ -51,7 +60,10 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     };
   }
 
-  public registerEditorComponentResolver<T>(scheme: string | ((scheme: string) => number), resolver: IEditorComponentResolver<any>): IDisposable {
+  public registerEditorComponentResolver<T>(
+    scheme: string | ((scheme: string) => number),
+    resolver: IEditorComponentResolver<any>,
+  ): IDisposable {
     let normalizedResolver: INormalizedEditorComponentResolver;
     if (typeof scheme === 'function') {
       normalizedResolver = {
@@ -111,9 +123,9 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
   private calculateSchemeResolver(scheme: string): IEditorComponentResolver[] {
     const resolvers = this.normalizedResolvers.slice();
     const calculated: {
-      weight: number, // handleScheme 的权重
-      index: number, // resolver 在resolver中的位置(后来的先处理)
-      resolver: IEditorComponentResolver,
+      weight: number; // handleScheme 的权重
+      index: number; // resolver 在resolver中的位置(后来的先处理)
+      resolver: IEditorComponentResolver;
     }[] = [];
 
     resolvers.forEach((r, index) => {
@@ -127,15 +139,17 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
       }
     });
 
-    return calculated.sort((a, b) => {
-      if (a.weight > b.weight) {
-        return -1;
-      } else if (a.weight < b.weight) {
-        return 1;
-      } else {
-        return b.index - a.index;
-      }
-    }).map((c) => c.resolver);
+    return calculated
+      .sort((a, b) => {
+        if (a.weight > b.weight) {
+          return -1;
+        } else if (a.weight < b.weight) {
+          return 1;
+        } else {
+          return b.index - a.index;
+        }
+      })
+      .map((c) => c.resolver);
   }
 
   private getResolvers(scheme: string): IEditorComponentResolver[] {
@@ -182,5 +196,4 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
       },
     };
   }
-
 }

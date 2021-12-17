@@ -1,6 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@opensumi/ide-core-browser';
+import {
+  IEditorDocumentModelSaveResult,
+  IEditorDocumentEditChange,
+  TextDocumentContentChangeEvent,
+} from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { Range } from 'vscode-languageserver-types';
@@ -16,12 +20,17 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
-  async saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force?: boolean | undefined): Promise<IEditorDocumentModelSaveResult> {
+  async saveByChange(
+    uri: string,
+    change: IContentChange,
+    encoding?: string | undefined,
+    force?: boolean | undefined,
+  ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {
         if (!force) {
-          const res = await this.fileService.resolveContent(uri, {encoding});
+          const res = await this.fileService.resolveContent(uri, { encoding });
           if (change.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
@@ -32,7 +41,12 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
         change.changes!.forEach((c) => {
           if ((c as IEditorDocumentEditChange).changes) {
             (c as IEditorDocumentEditChange).changes.forEach((e) => {
-              const range = Range.create(e.range.startLineNumber - 1, e.range.startColumn - 1, e.range.endLineNumber - 1, e.range.endColumn - 1);
+              const range = Range.create(
+                e.range.startLineNumber - 1,
+                e.range.startColumn - 1,
+                e.range.endLineNumber - 1,
+                e.range.endColumn - 1,
+              );
               docChanges.push({
                 range,
                 text: e.text,
@@ -58,7 +72,12 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
     }
   }
 
-  async saveByContent(uri: string, content: ISavingContent, encoding?: string | undefined, force?: boolean | undefined): Promise<IEditorDocumentModelSaveResult> {
+  async saveByContent(
+    uri: string,
+    content: ISavingContent,
+    encoding?: string | undefined,
+    force?: boolean | undefined,
+  ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {

@@ -1,5 +1,26 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize, IEventBus } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  Domain,
+  AppConfig,
+  isOSX,
+  ClientAppContribution,
+  IElectronMainMenuService,
+  localize,
+  SlotLocation,
+  IElectronNativeDialogService,
+  CommandContribution,
+  CommandRegistry,
+  KeybindingContribution,
+  KeybindingRegistry,
+  isWindows,
+  electronEnv,
+  replaceLocalizePlaceholder,
+  URI,
+  ILogger,
+  formatLocalize,
+  IEventBus,
+} from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
@@ -8,7 +29,11 @@ import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-brow
 import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IMessageService } from '@opensumi/ide-overlay/lib/common';
-import { EditorGroupFileDropEvent, DragOverPosition, getSplitActionFromDragDrop } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorGroupFileDropEvent,
+  DragOverPosition,
+  getSplitActionFromDragDrop,
+} from '@opensumi/ide-editor/lib/browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
 
 @Injectable()
@@ -63,7 +88,14 @@ const nativeRoles = [
 ];
 
 @Domain(ComponentContribution, ClientAppContribution, MenuContribution, CommandContribution, KeybindingContribution)
-export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, MenuContribution {
+export class ElectronBasicContribution
+  implements
+    KeybindingContribution,
+    CommandContribution,
+    ComponentContribution,
+    ClientAppContribution,
+    MenuContribution
+{
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -99,13 +131,17 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
         top.modules.splice(index, 1, 'electron-header');
       }
     }
-    registry.register('electron-header', {
-      id: 'electron-header',
-      component: ElectronHeaderBar,
-    }, {
-      size: 27,
-      containerId: 'electron-header',
-    });
+    registry.register(
+      'electron-header',
+      {
+        id: 'electron-header',
+        component: ElectronHeaderBar,
+      },
+      {
+        size: 27,
+        containerId: 'electron-header',
+      },
+    );
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
@@ -149,100 +185,126 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
   registerCommands(commands: CommandRegistry): void {
     nativeRoles.forEach((role) => {
-      commands.registerCommand({
-        id: 'electron.' + role.name,
-        label: replaceLocalizePlaceholder(role.label),
-        alias: role.alias,
-      }, {
-        execute: () => {
-          this.electronMainMenuService.runNativeRoleAction(role.name);
+      commands.registerCommand(
+        {
+          id: 'electron.' + role.name,
+          label: replaceLocalizePlaceholder(role.label),
+          alias: role.alias,
         },
-      });
+        {
+          execute: () => {
+            this.electronMainMenuService.runNativeRoleAction(role.name);
+          },
+        },
+      );
     });
 
-    commands.registerCommand({
-      id: 'electron.zoomIn',
-      label: localize('view.zoomIn'),
-      alias: 'View: Zoom In',
-    }, {
-      execute: () => {
-        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
-          delta: 0.1,
-        });
+    commands.registerCommand(
+      {
+        id: 'electron.zoomIn',
+        label: localize('view.zoomIn'),
+        alias: 'View: Zoom In',
       },
-    });
-
-    commands.registerCommand({
-      id: 'electron.zoomOut',
-      label: localize('view.zoomOut'),
-      alias: 'View: Zoom Out',
-    }, {
-      execute: () => {
-        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
-          delta: -0.1,
-        });
+      {
+        execute: () => {
+          this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+            delta: 0.1,
+          });
+        },
       },
-    });
+    );
 
-    commands.registerCommand({
-      id: 'electron.zoomReset',
-      label: localize('view.zoomReset'),
-      alias: 'View: Zoom Reset',
-    }, {
-      execute: () => {
-        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
-          value: 1,
-        });
+    commands.registerCommand(
+      {
+        id: 'electron.zoomOut',
+        label: localize('view.zoomOut'),
+        alias: 'View: Zoom Out',
       },
-    });
-
-    commands.registerCommand({
-      id: 'electron.reload',
-      label: localize('window.reload'),
-      alias: 'Reload Window',
-    }, {
-      execute: () => {
-        this.electronMainLifeCycleService.reloadWindow(electronEnv.currentWindowId);
+      {
+        execute: () => {
+          this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+            delta: -0.1,
+          });
+        },
       },
-    });
+    );
 
-    commands.registerCommand({
-      id: 'electron.revealInFinder',
-      label: localize('explorer.electron.revealInFinder'),
-    }, {
-      execute: (uri: URI) => {
-        if (uri && uri.scheme === 'file') {
-          this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
-        }
+    commands.registerCommand(
+      {
+        id: 'electron.zoomReset',
+        label: localize('view.zoomReset'),
+        alias: 'View: Zoom Reset',
       },
-    });
-
-    commands.registerCommand({
-      id: 'electron.revealInFinderTab',
-      label: localize('explorer.electron.revealInFinder'),
-    }, {
-      execute: ({ uri }: { uri?: URI } = {}) => {
-        if (uri && uri.scheme === 'file') {
-          this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
-        }
+      {
+        execute: () => {
+          this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+            value: 1,
+          });
+        },
       },
-    });
+    );
 
-    commands.registerCommand({
-      id: 'electron.openInSystemTerminal',
-      label: localize('explorer.electron.openInSystemTerminal'),
-    }, {
-      execute: (uri: URI) => {
-        if (uri && uri.scheme === 'file') {
-          try {
-            this.electronMainUIService.revealInSystemTerminal(uri.codeUri.fsPath);
-          } catch (e) {
-            this.logger.error(e);
-            this.messageService.error(formatLocalize('explorer.electron.openInSystemTerminal.error', uri.displayName, e.message));
+    commands.registerCommand(
+      {
+        id: 'electron.reload',
+        label: localize('window.reload'),
+        alias: 'Reload Window',
+      },
+      {
+        execute: () => {
+          this.electronMainLifeCycleService.reloadWindow(electronEnv.currentWindowId);
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: 'electron.revealInFinder',
+        label: localize('explorer.electron.revealInFinder'),
+      },
+      {
+        execute: (uri: URI) => {
+          if (uri && uri.scheme === 'file') {
+            this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
           }
-        }
+        },
       },
-    });
+    );
+
+    commands.registerCommand(
+      {
+        id: 'electron.revealInFinderTab',
+        label: localize('explorer.electron.revealInFinder'),
+      },
+      {
+        execute: ({ uri }: { uri?: URI } = {}) => {
+          if (uri && uri.scheme === 'file') {
+            this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
+          }
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: 'electron.openInSystemTerminal',
+        label: localize('explorer.electron.openInSystemTerminal'),
+      },
+      {
+        execute: (uri: URI) => {
+          if (uri && uri.scheme === 'file') {
+            try {
+              this.electronMainUIService.revealInSystemTerminal(uri.codeUri.fsPath);
+            } catch (e) {
+              this.logger.error(e);
+              this.messageService.error(
+                formatLocalize('explorer.electron.openInSystemTerminal.error', uri.displayName, e.message),
+              );
+            }
+          }
+        },
+      },
+    );
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {
@@ -282,7 +344,6 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     this.eventBus.on(EditorGroupFileDropEvent, async (event) => {
       const payload = event.payload;
       // fileList 只能这样遍历
-      // tslint:disable-next-line: prefer-for-of
       for (let i = 0; i < payload.files.length; i++) {
         const file = payload.files[i];
         let group = event.payload.group;

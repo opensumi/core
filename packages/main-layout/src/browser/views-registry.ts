@@ -51,11 +51,13 @@ export class ViewsController {
 
   private disposables: IDisposable[] = [];
 
-  constructor(
-    private id: string,
-  ) {
+  constructor(private id: string) {
     this.contextKeyService.onDidChangeContext(this.onDidChangeContext, this, this.disposables);
-    Event.filter(this.viewsRegistry.onDidChangeViewWelcomeContent, (id) => id === this.id)(this.onDidChangeViewWelcomeContent, this, this.disposables);
+    Event.filter(this.viewsRegistry.onDidChangeViewWelcomeContent, (id) => id === this.id)(
+      this.onDidChangeViewWelcomeContent,
+      this,
+      this.disposables,
+    );
     this.onDidChangeViewWelcomeContent();
   }
 
@@ -123,16 +125,22 @@ export class ViewsRegistry implements IViewsRegistry {
     };
   }
 
-  registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable> {
+  registerViewWelcomeContent2<TKey>(
+    id: string,
+    viewContentMap: Map<TKey, IViewContentDescriptor>,
+  ): Map<TKey, IDisposable> {
     const disposables = new Map<TKey, IDisposable>();
 
     for (const [key, content] of viewContentMap) {
       this.viewWelcomeContent.add(id, content);
 
-      disposables.set(key, toDisposable(() => {
-        this.viewWelcomeContent.delete(id, content);
-        this._onDidChangeViewWelcomeContent.fire(id);
-      }));
+      disposables.set(
+        key,
+        toDisposable(() => {
+          this.viewWelcomeContent.delete(id, content);
+          this._onDidChangeViewWelcomeContent.fire(id);
+        }),
+      );
     }
     this._onDidChangeViewWelcomeContent.fire(id);
 

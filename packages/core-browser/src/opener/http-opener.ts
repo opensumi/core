@@ -5,12 +5,7 @@ import { IWindowService } from '../window';
 
 @Injectable()
 export class HttpOpener implements IOpener {
-
-  static standardSupportedLinkSchemes = new Set([
-    Schemas.http,
-    Schemas.https,
-    Schemas.mailto,
-  ]);
+  static standardSupportedLinkSchemes = new Set([Schemas.http, Schemas.https, Schemas.mailto]);
 
   @Autowired(IWindowService)
   private readonly windowService: IWindowService;

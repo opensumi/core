@@ -12,7 +12,14 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IWebSocket } from '@opensumi/ide-connection';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
-import { DebugEventTypes, DebugExitEvent, DebugRequestTypes, DEBUG_REPORT_NAME, getSequenceId, IDebugSessionManager } from '../common';
+import {
+  DebugEventTypes,
+  DebugExitEvent,
+  DebugRequestTypes,
+  DEBUG_REPORT_NAME,
+  getSequenceId,
+  IDebugSessionManager,
+} from '../common';
 import { DebugConfiguration } from 'vscode';
 import { DebugSessionManager } from './debug-session-manager';
 
@@ -37,9 +44,8 @@ const standardDebugEvents = new Set<Required<keyof DebugEventTypes>>([
   'invalidated',
 ]);
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class DebugSessionConnection implements IDisposable {
-
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
 
@@ -88,9 +94,11 @@ export class DebugSessionConnection implements IDisposable {
 
       connection.onMessage((data) => this.handleMessage(data));
 
-      this.toDispose.push(Disposable.create(() => {
-        connection.close();
-      }));
+      this.toDispose.push(
+        Disposable.create(() => {
+          connection.close();
+        }),
+      );
       return connection;
     }
   }
@@ -99,7 +107,12 @@ export class DebugSessionConnection implements IDisposable {
 
   protected sessionAdapterID: DebugProtocol.InitializeRequestArguments['adapterID'];
 
-  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], configuration: DebugConfiguration, token?: CancellationToken): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(
+    command: K,
+    args: DebugRequestTypes[K][0],
+    configuration: DebugConfiguration,
+    token?: CancellationToken,
+  ): Promise<DebugRequestTypes[K][1]> {
     /**
      * 在接收到 initialize 请求的时候记录当前的 session 适配器类型
      */
@@ -109,16 +122,16 @@ export class DebugSessionConnection implements IDisposable {
 
     const reportDAP = this.manager.reportTime(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME, {
       sessionId: this.sessionId,
-      threadId: args && (args as DebugProtocol.ThreadsArguments).threadId || this.manager.currentThread?.raw.id,
+      threadId: (args && (args as DebugProtocol.ThreadsArguments).threadId) || this.manager.currentThread?.raw.id,
     });
     const result = await this.doSendRequest(command, args, token);
 
     /*
-    * 对 threads 请求增加 数量 统计
-    */
+     * 对 threads 请求增加 数量 统计
+     */
     const reportExtra: any = {
-        adapterID: this.sessionAdapterID,
-        request: configuration.request,
+      adapterID: this.sessionAdapterID,
+      request: configuration.request,
     };
 
     if (command === 'threads') {
@@ -127,9 +140,14 @@ export class DebugSessionConnection implements IDisposable {
 
     reportDAP(command, reportExtra);
 
-    if (command === 'next' || command === 'stepIn' ||
-      command === 'stepOut' || command === 'stepBack' ||
-      command === 'reverseContinue' || command === 'restartFrame') {
+    if (
+      command === 'next' ||
+      command === 'stepIn' ||
+      command === 'stepOut' ||
+      command === 'stepBack' ||
+      command === 'reverseContinue' ||
+      command === 'restartFrame'
+    ) {
       this.fireContinuedEvent((args as any).threadId);
     }
     if (command === 'continue') {
@@ -148,7 +166,11 @@ export class DebugSessionConnection implements IDisposable {
     return this.doSendRequest<T>(command, args);
   }
 
-  protected async doSendRequest<K extends DebugProtocol.Response>(command: string, args: any = null, token?: CancellationToken): Promise<K> {
+  protected async doSendRequest<K extends DebugProtocol.Response>(
+    command: string,
+    args: any = null,
+    token?: CancellationToken,
+  ): Promise<K> {
     const result = new Deferred<K>();
 
     const request: DebugProtocol.Request = {
@@ -249,7 +271,8 @@ export class DebugSessionConnection implements IDisposable {
   protected handleEvent(event: DebugProtocol.Event): void {
     if ('event' in event) {
       if (event.event === 'continued') {
-        this.allThreadsContinued = (event as DebugProtocol.ContinuedEvent).body.allThreadsContinued === false ? false : true;
+        this.allThreadsContinued =
+          (event as DebugProtocol.ContinuedEvent).body.allThreadsContinued === false ? false : true;
       }
       if (standardDebugEvents.has(event.event as keyof DebugEventTypes)) {
         this.doFire(event.event, event);
@@ -275,7 +298,7 @@ export class DebugSessionConnection implements IDisposable {
 
   protected doFire(kind: string, e: DebugProtocol.Event | DebugExitEvent): void {
     if (this.disposed) {
-      return ;
+      return;
     }
     this.getEmitter(kind).fire(e);
   }
@@ -303,5 +326,4 @@ export class DebugSessionConnection implements IDisposable {
       seq: getSequenceId(),
     });
   }
-
 }

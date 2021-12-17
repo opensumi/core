@@ -60,9 +60,9 @@ export interface IFocusTracker extends Disposable {
   onDidBlur: BaseEvent<void>;
 }
 
-export function isAncestor( testChild: Node | null, testAncestor: Node | null ): boolean {
-  while ( testChild ) {
-    if ( testChild === testAncestor ) {
+export function isAncestor(testChild: Node | null, testAncestor: Node | null): boolean {
+  while (testChild) {
+    if (testChild === testAncestor) {
       return true;
     }
     testChild = testChild.parentNode;
@@ -72,7 +72,6 @@ export function isAncestor( testChild: Node | null, testAncestor: Node | null ):
 }
 
 export class DomListener implements IDisposable {
-
   private _handler: (e: any) => void;
   private _node: Element | Window | Document;
   private readonly _type: string;
@@ -82,7 +81,7 @@ export class DomListener implements IDisposable {
     this._node = node;
     this._type = type;
     this._handler = handler;
-    this._useCapture = (useCapture || false);
+    this._useCapture = useCapture || false;
     this._node.addEventListener(this._type, this._handler, this._useCapture);
   }
 
@@ -101,7 +100,6 @@ export class DomListener implements IDisposable {
 }
 
 export class FocusTracker extends Disposable {
-
   private readonly didFocus = new Emitter<void>();
   public readonly onDidFocus: BaseEvent<void> = this.didFocus.event;
 
@@ -124,13 +122,13 @@ export class FocusTracker extends Disposable {
     const onBlur = () => {
       if (hasFocus) {
         loosingFocus = true;
-        window.setTimeout( () => {
-          if ( loosingFocus ) {
+        window.setTimeout(() => {
+          if (loosingFocus) {
             loosingFocus = false;
             hasFocus = false;
             this.didBlur.fire();
           }
-        }, 0 );
+        }, 0);
       }
     };
 

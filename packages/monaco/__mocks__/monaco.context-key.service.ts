@@ -35,9 +35,7 @@ class WhenExpressionParser {
 
     const expr = expression.replace(/==/g, '===').replace(/!=/g, '!==');
     const orPieces = expr.split('||');
-    const templateStr = orPieces
-      .map((orPiece) => this._deserializeOne(orPiece, data))
-      .join('||');
+    const templateStr = orPieces.map((orPiece) => this._deserializeOne(orPiece, data)).join('||');
 
     return eval(templateStr);
   }
@@ -76,10 +74,12 @@ class WhenExpressionParser {
 
   // 解析基本类型
   private static deserialize(serializedValue: string) {
-    const ret = [{
-      'true': true,
-      'false': false,
-    }][serializedValue];
+    const ret = [
+      {
+        true: true,
+        false: false,
+      },
+    ][serializedValue];
 
     if (ret !== undefined) {
       return ret;
@@ -95,7 +95,6 @@ class WhenExpressionParser {
 
   // 解析正则表达式
   private static deserializeRegex(serializedValue: string): RegExp | null {
-
     if (isFalsyOrWhitespace(serializedValue)) {
       // tslint:disable:no-console
       console.warn('missing regexp-value for =~-expression');

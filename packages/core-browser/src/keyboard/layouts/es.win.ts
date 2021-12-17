@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     Backspace: [],
     Tab: [],
     Space: [' ', ' ', '', '', 0, 'VK_SPACE'],
-    Minus: ['\'', '?', '', '', 0, 'VK_OEM_4'],
+    Minus: ["'", '?', '', '', 0, 'VK_OEM_4'],
     Equal: ['¡', '¿', '', '', 0, 'VK_OEM_6'],
     BracketLeft: ['`', '^', '[', '', 0, 'VK_OEM_1'],
     BracketRight: ['+', '*', ']', '', 0, 'VK_OEM_PLUS'],

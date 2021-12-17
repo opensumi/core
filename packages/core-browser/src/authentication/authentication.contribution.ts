@@ -1,10 +1,15 @@
 import { Autowired } from '@opensumi/di';
 import { ClientAppContribution } from '../common/common.define';
-import { Domain, IAuthenticationService, CommandContribution, CommandRegistry, noAccountsId } from '@opensumi/ide-core-common';
+import {
+  Domain,
+  IAuthenticationService,
+  CommandContribution,
+  CommandRegistry,
+  noAccountsId,
+} from '@opensumi/ide-core-common';
 
 @Domain(ClientAppContribution, CommandContribution)
 export class AuthenticationContribution implements ClientAppContribution, CommandContribution {
-
   @Autowired(IAuthenticationService)
   protected readonly authenticationService: IAuthenticationService;
 
@@ -13,14 +18,17 @@ export class AuthenticationContribution implements ClientAppContribution, Comman
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand({
-      id: noAccountsId,
-      label: '%authentication.noAccounts%',
-    }, {
-      execute: () => {
-        // noop
-        // 点击菜单时空实现
+    commands.registerCommand(
+      {
+        id: noAccountsId,
+        label: '%authentication.noAccounts%',
       },
-    });
+      {
+        execute: () => {
+          // noop
+          // 点击菜单时空实现
+        },
+      },
+    );
   }
 }

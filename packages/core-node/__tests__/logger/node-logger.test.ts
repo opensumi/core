@@ -26,18 +26,20 @@ describe('NodeLogger', () => {
   beforeAll(() => {
     injector = createNodeInjector([]);
 
-    injector.overrideProviders(...[
-      {
-        token: ILogServiceManager,
-        useValue: {
-          getLogger: () => mockLogServiceManager,
+    injector.overrideProviders(
+      ...[
+        {
+          token: ILogServiceManager,
+          useValue: {
+            getLogger: () => mockLogServiceManager,
+          },
         },
-      },
-      {
-        token: INodeLogger,
-        useClass: NodeLogger,
-      },
-    ]);
+        {
+          token: INodeLogger,
+          useClass: NodeLogger,
+        },
+      ],
+    );
     logger = injector.get(INodeLogger);
   });
 
@@ -124,5 +126,4 @@ describe('NodeLogger', () => {
     logger.setLevel(LogLevel.Error);
     expect(mockLogServiceManager.setLevel).toBeCalledWith(LogLevel.Error);
   });
-
 });

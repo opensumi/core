@@ -1,5 +1,9 @@
 import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from '@opensumi/ide-core-browser';
-import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  EditorComponentRegistry,
+  EditorComponentRenderMode,
+} from '@opensumi/ide-editor/lib/browser';
 import { ResourceService, IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorWelcomeComponent } from './welcome';
 import { Autowired } from '@opensumi/di';
@@ -8,7 +12,6 @@ import { IWelcomeMetaData } from './common';
 
 @Domain(BrowserEditorContribution, ClientAppContribution)
 export class WelcomeContribution implements BrowserEditorContribution, ClientAppContribution {
-
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
@@ -36,19 +39,19 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
   registerResource(service: ResourceService) {
     service.registerResourceProvider({
       scheme: 'welcome',
-      provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> => {
-        return Promise.all([this.workspaceService.getMostRecentlyUsedWorkspaces(), this.recentFilesManager.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
-          return {
-            uri,
-            name: localize('welcome.title'),
-            icon: '',
-            metadata: {
-              recentWorkspaces: workspaces || [],
-              recentFiles: files || [],
-            },
-          };
-        });
-      },
+      provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> =>
+        Promise.all([
+          this.workspaceService.getMostRecentlyUsedWorkspaces(),
+          this.recentFilesManager.getMostRecentlyOpenedFiles(),
+        ]).then(([workspaces, files]) => ({
+          uri,
+          name: localize('welcome.title'),
+          icon: '',
+          metadata: {
+            recentWorkspaces: workspaces || [],
+            recentFiles: files || [],
+          },
+        })),
     });
   }
 
@@ -57,5 +60,4 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
       this.editorService.open(new URI('welcome://'));
     }
   }
-
 }

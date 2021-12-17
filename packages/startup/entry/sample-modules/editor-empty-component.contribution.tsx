@@ -1,6 +1,12 @@
 import React from 'react';
 import { useMemo, useState } from 'react';
-import { Domain, ComponentContribution, ComponentRegistry, EDITOR_COMMANDS, SEARCH_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  ComponentContribution,
+  ComponentRegistry,
+  EDITOR_COMMANDS,
+  SEARCH_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
@@ -46,10 +52,12 @@ registerLocalizationBundle(localizationBundle['en-US']);
  * @param param0
  * @returns
  */
-const ShortcutRow = ({ label, keybinding }) => <dl className={styles.shortcutRow}>
-  <span className={styles.label}>{label}</span>
-  <KeybindingView keybinding={keybinding} className={styles.keybinding} />
-</dl>;
+const ShortcutRow = ({ label, keybinding }) => (
+  <dl className={styles.shortcutRow}>
+    <span className={styles.label}>{label}</span>
+    <KeybindingView keybinding={keybinding} className={styles.keybinding} />
+  </dl>
+);
 
 /**
  * 编辑器空白页引导信息
@@ -68,21 +76,19 @@ export const EditorEmptyComponent = () => {
       return;
     }
 
-    const keyBindings = bindings.sort((a, b) => ((b.priority || 0) - (a.priority || 0)));
+    const keyBindings = bindings.sort((a, b) => (b.priority || 0) - (a.priority || 0));
     // 如果快捷键条目没有 when 条件，优先使用
     const primaryKeybinding = bindings.find((binding) => !binding.when);
     return primaryKeybinding || keyBindings[0];
   };
 
-  const init = () => {
+  const init = () =>
     // 监听快捷键是否有更新
-    return keymapService.onDidKeymapChanges(() => {
+    keymapService.onDidKeymapChanges(() => {
       keymapChangeDelayer.trigger(async () => {
         setKeyMapLoaded(true);
       });
     });
-  };
-
   React.useEffect(() => {
     const disposer = new Disposable();
     disposer.addDispose(init());
@@ -120,16 +126,22 @@ export const EditorEmptyComponent = () => {
       },
     ].filter((e) => e.keybinding);
 
-    return <div className={styles.shortcutPanel}>
-      {keyInfos.map((keyInfo) => <ShortcutRow key={keyInfo.command} label={keyInfo.label} keybinding={keyInfo.keybinding}></ShortcutRow>)}
-    </div>;
+    return (
+      <div className={styles.shortcutPanel}>
+        {keyInfos.map((keyInfo) => (
+          <ShortcutRow key={keyInfo.command} label={keyInfo.label} keybinding={keyInfo.keybinding}></ShortcutRow>
+        ))}
+      </div>
+    );
   }, [imgLoaded, keyMapLoaded]);
 
   const logoUri = 'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';
-  return <div className={styles.empty_component}>
-    <img src={logoUri} onLoad={() => setImgLoaded(true)} />
-    {ShortcutView}
-  </div>;
+  return (
+    <div className={styles.empty_component}>
+      <img src={logoUri} onLoad={() => setImgLoaded(true)} />
+      {ShortcutView}
+    </div>
+  );
 };
 
 @Domain(ComponentContribution)

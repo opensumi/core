@@ -1,5 +1,16 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, ComponentContribution, ComponentRegistry, getIcon, CommandContribution, CommandRegistry, ClientAppContribution, Command, URI, CommandService } from '@opensumi/ide-core-browser';
+import {
+  Domain,
+  ComponentContribution,
+  ComponentRegistry,
+  getIcon,
+  CommandContribution,
+  CommandRegistry,
+  ClientAppContribution,
+  Command,
+  URI,
+  CommandService,
+} from '@opensumi/ide-core-browser';
 import { IMetaService } from '../services/meta-service/base';
 import { toSCMUri } from '../utils/scm-uri';
 import { SampleView, SampleTopView, SampleBottomView, SampleMainView } from './view/sample.view';
@@ -16,7 +27,6 @@ const TOGGLE_REF: Command = {
 
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution)
 export class SampleContribution implements ClientAppContribution, ComponentContribution, CommandContribution {
-
   @Autowired(CommandService)
   private readonly commands: CommandService;
 
@@ -41,11 +51,7 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
       path: '/README.md',
       ref: 'a9b8074f',
     });
-    this.commands.executeCommand(
-      'vscode.open',
-      gitUri.codeUri,
-      { preview: false },
-    );
+    this.commands.executeCommand('vscode.open', gitUri.codeUri, { preview: false });
     this.accessor = this.statusBarService.addElement('ide-s.toggleRef', {
       text: this.metaService.ref,
       alignment: StatusBarAlignment.LEFT,
@@ -55,41 +61,49 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
 
   // 注册视图和token的绑定关系
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@opensumi/ide-dw', [
+    registry.register(
+      '@opensumi/ide-dw',
+      [
+        {
+          id: 'dw-view1',
+          component: SampleView,
+          name: 'dw手风琴视图1',
+        },
+        {
+          id: 'dw-view2',
+          component: SampleView,
+          name: 'dw手风琴视图2',
+        },
+      ],
       {
-        id: 'dw-view1',
-        component: SampleView,
-        name: 'dw手风琴视图1',
+        containerId: 'ide-dw',
+        title: 'Hello DW',
+        priority: 10,
+        iconClass: getIcon('explorer'),
       },
-      {
-        id: 'dw-view2',
-        component: SampleView,
-        name: 'dw手风琴视图2',
-      },
-    ], {
-      containerId: 'ide-dw',
-      title: 'Hello DW',
-      priority: 10,
-      iconClass: getIcon('explorer'),
-    });
+    );
 
-    registry.register('@opensumi/ide-dw-right', [
+    registry.register(
+      '@opensumi/ide-dw-right',
+      [
+        {
+          id: 'dw-view3',
+          component: SampleView,
+          name: 'dw手风琴视图3',
+        },
+        {
+          id: 'dw-view4',
+          component: SampleView,
+          name: 'dw手风琴视图4',
+        },
+      ],
       {
-        id: 'dw-view3',
-        component: SampleView,
-        name: 'dw手风琴视图3',
+        containerId: 'ide-dw-right',
+        title: 'HelloDW2',
+        priority: 10,
+        iconClass: getIcon('debug'),
       },
-      {
-        id: 'dw-view4',
-        component: SampleView,
-        name: 'dw手风琴视图4',
-      },
-    ], {
-      containerId: 'ide-dw-right',
-      title: 'HelloDW2',
-      priority: 10,
-      iconClass: getIcon('debug'),
-    });
+    );
 
     registry.register('@opensumi/ide-mock-top', {
       id: 'fake-top',
@@ -108,12 +122,15 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
   }
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand({
-      id: 'core.get.projectId',
-      label: '获取项目ID',
-    }, {
-      execute: () => this.metaService.projectId,
-    });
+    registry.registerCommand(
+      {
+        id: 'core.get.projectId',
+        label: '获取项目ID',
+      },
+      {
+        execute: () => this.metaService.projectId,
+      },
+    );
 
     registry.registerCommand(TOGGLE_REF, {
       execute: async () => {

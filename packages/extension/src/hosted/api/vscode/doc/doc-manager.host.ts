@@ -2,7 +2,18 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, Emitter, IDisposable } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 
-import { ExtensionDocumentDataManager, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadDocumentsShape, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import {
+  ExtensionDocumentDataManager,
+  IExtensionDocumentModelChangedEvent,
+  IExtensionDocumentModelOpenedEvent,
+  IExtensionDocumentModelOptionsChangedEvent,
+  IExtensionDocumentModelRemovedEvent,
+  IExtensionDocumentModelSavedEvent,
+  IExtensionDocumentModelWillSaveEvent,
+  IMainThreadDocumentsShape,
+  IMainThreadWorkspace,
+  MainThreadAPIIdentifier,
+} from '../../../../common/vscode';
 import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
 import { TextDocumentChangeReason, TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
@@ -49,9 +60,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   }
 
   getAllDocument() {
-    return this.allDocumentData.map((data) => {
-      return data.document;
-    });
+    return this.allDocumentData.map((data) => data.document);
   }
 
   getDocument(uri: Uri | string) {
@@ -92,7 +101,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
             }
           });
         });
-
       }
     }
   }
@@ -133,7 +141,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
     if (provider) {
       // cancellation token 暂时还没接入，以后可能优化
-      let content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token) || '';
+      let content = (await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token)) || '';
       if (content && encoding && !isUTF8(encoding)) {
         // 默认 encoding 为 UTF8，所以仅在非 UTF8 的情况下做转换
         const buffer = BinaryBuffer.wrap(Buffer.from(content));
@@ -183,27 +191,17 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
     this._onDidChangeTextDocument.fire({
       document: document.document,
-      contentChanges: changes.map((change) => {
-        return {
-          ...change,
-          range: toRange(change.range) as any,
-        };
-      }),
+      contentChanges: changes.map((change) => ({
+        ...change,
+        range: toRange(change.range) as any,
+      })),
       reason,
     });
   }
 
   $fireModelOpenedEvent(e: IExtensionDocumentModelOpenedEvent) {
     const { uri, eol, languageId, versionId, lines, dirty } = e;
-    const document = new ExtHostDocumentData(
-      this._proxy,
-      Uri.parse(uri),
-      lines,
-      eol,
-      languageId,
-      versionId,
-      dirty,
-    );
+    const document = new ExtHostDocumentData(this._proxy, Uri.parse(uri), lines, eol, languageId, versionId, dirty);
 
     this._documents.set(uri, document);
     this._onDidOpenTextDocument.fire(document.document);
@@ -262,10 +260,12 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
   applyEdit(uri: Uri, edit: model.TextEdit): Promise<boolean> {
     const dto: model.WorkspaceEditDto = {
-      edits: [{
-        resource: uri,
-        edit,
-      }],
+      edits: [
+        {
+          resource: uri,
+          edit,
+        },
+      ],
     };
     return this._workspaceProxy.$tryApplyWorkspaceEdit(dto);
   }

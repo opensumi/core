@@ -8,7 +8,6 @@ import { Disposable } from '@opensumi/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class MainThreadTheme extends Disposable implements IMainThreadTheme {
-
   _proxy: IExtHostTheme;
 
   @Autowired(IThemeService)
@@ -18,22 +17,25 @@ export class MainThreadTheme extends Disposable implements IMainThreadTheme {
     super();
     this._proxy = this.rpcProtocol.getProxy(ExtHostSumiAPIIdentifier.ExtHostTheme);
 
-    this.addDispose(this.themeService.onThemeChange(() => {
-      this._proxy.$notifyThemeChanged();
-    }));
+    this.addDispose(
+      this.themeService.onThemeChange(() => {
+        this._proxy.$notifyThemeChanged();
+      }),
+    );
   }
 
-  async $getThemeColors(): Promise<{ [key: string]: string; }> {
+  async $getThemeColors(): Promise<{ [key: string]: string }> {
     const currentTheme = this.themeService.getCurrentThemeSync();
 
-    const exportedColors = getColorRegistry().getColors().reduce((colors, entry) => {
-      const color = currentTheme.getColor(entry.id);
-      if (color) {
-        colors[entry.id.replace('.', '-')] = color.toString();
-      }
-      return colors;
-    }, {} as { [key: string]: string });
+    const exportedColors = getColorRegistry()
+      .getColors()
+      .reduce((colors, entry) => {
+        const color = currentTheme.getColor(entry.id);
+        if (color) {
+          colors[entry.id.replace('.', '-')] = color.toString();
+        }
+        return colors;
+      }, {} as { [key: string]: string });
     return exportedColors;
   }
-
 }

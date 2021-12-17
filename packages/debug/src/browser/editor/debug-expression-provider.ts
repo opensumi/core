@@ -6,7 +6,6 @@ import { CancellationTokenSource, coalesce, IRange } from '@opensumi/ide-core-co
 
 @Injectable()
 export class DebugExpressionProvider {
-
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
@@ -18,18 +17,14 @@ export class DebugExpressionProvider {
       const cancellationSource = new CancellationTokenSource();
       const supports = this.evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(model);
 
-      const pos = new monaco.Position(
-        selection.startLineNumber,
-        selection.startColumn,
-      );
+      const pos = new monaco.Position(selection.startLineNumber, selection.startColumn);
 
-      const promises = supports.map((support) => {
-        return Promise.resolve(support.provideEvaluatableExpression(model, pos, cancellationSource.token)).then((expression) => {
-          return expression;
-        }, () => {
-          return undefined;
-        });
-      });
+      const promises = supports.map((support) =>
+        Promise.resolve(support.provideEvaluatableExpression(model, pos, cancellationSource.token)).then(
+          (expression) => expression,
+          () => undefined,
+        ),
+      );
 
       const results = await Promise.all(promises).then(coalesce);
       if (results.length > 0) {
@@ -43,7 +38,11 @@ export class DebugExpressionProvider {
       }
     } else {
       const lineContent = model.getLineContent(selection.startLineNumber);
-      const { start, end } = this.getExactExpressionStartAndEnd(lineContent, selection.startColumn, selection.endColumn);
+      const { start, end } = this.getExactExpressionStartAndEnd(
+        lineContent,
+        selection.startColumn,
+        selection.endColumn,
+      );
 
       matchingExpression = lineContent.substring(start - 1, end);
     }
@@ -51,18 +50,21 @@ export class DebugExpressionProvider {
     return matchingExpression;
   }
 
-  protected getExactExpressionStartAndEnd(lineContent: string, looseStart: number, looseEnd: number): { start: number, end: number } {
+  protected getExactExpressionStartAndEnd(
+    lineContent: string,
+    looseStart: number,
+    looseEnd: number,
+  ): { start: number; end: number } {
     let matchingExpression: string | undefined;
     let startOffset = 0;
 
     // Some example supported expressions: myVar.prop, a.b.c.d, myVar?.prop, myVar->prop, MyClass::StaticProp, *myVar
     // Match any character except a set of characters which often break interesting sub-expressions
-    const expression = /([^()\[\]{}<>\s+\-/%~#^;=|,`!]|\->)+/g;
-    // tslint:disable-next-line
+    const expression = /([^()[\]{}<>\s+\-/%~#^;=|,`!]|->)+/g;
     let result: RegExpExecArray | null = null;
 
     // First find the full expression under the cursor
-    while (result = expression.exec(lineContent)) {
+    while ((result = expression.exec(lineContent))) {
       const start = result.index + 1;
       const end = start + result[0].length;
 
@@ -76,10 +78,9 @@ export class DebugExpressionProvider {
     // If there are non-word characters after the cursor, we want to truncate the expression then.
     // For example in expression 'a.b.c.d', if the focus was under 'b', 'a.b' would be evaluated.
     if (matchingExpression) {
-      const subExpression: RegExp = /\w+/g;
-      // tslint:disable-next-line
+      const subExpression = /\w+/g;
       let subExpressionResult: RegExpExecArray | null = null;
-      while (subExpressionResult = subExpression.exec(matchingExpression)) {
+      while ((subExpressionResult = subExpression.exec(matchingExpression))) {
         const subEnd = subExpressionResult.index + 1 + startOffset + subExpressionResult[0].length;
         if (subEnd >= looseEnd) {
           break;
@@ -90,8 +91,8 @@ export class DebugExpressionProvider {
         matchingExpression = matchingExpression.substring(0, subExpression.lastIndex);
       }
     }
-    return matchingExpression ?
-      { start: startOffset, end: startOffset + matchingExpression.length - 1 } :
-      { start: 0, end: 0 };
+    return matchingExpression
+      ? { start: startOffset, end: startOffset + matchingExpression.length - 1 }
+      : { start: 0, end: 0 };
   }
 }

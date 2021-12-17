@@ -7,13 +7,13 @@ import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/render
 @Injectable()
 export class BrowserCtxMenuService implements IBrowserCtxMenu {
   @observable
-  visible: boolean = false;
+  visible = false;
 
   @observable
   onHide: ((canceled: boolean) => void) | undefined = undefined;
 
   @observable
-  point: { pageX: number; pageY: number; } | undefined = undefined;
+  point: { pageX: number; pageY: number } | undefined = undefined;
 
   @observable
   context: any = undefined;

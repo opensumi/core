@@ -5,7 +5,25 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@opensumi/ide-theme';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalExitEvent, ITerminalExternalLinkProvider } from '../common';
+import {
+  ITerminalController,
+  ITerminalClient,
+  ITerminalClientFactory,
+  IWidget,
+  ITerminalInfo,
+  ITerminalBrowserHistory,
+  ITerminalTheme,
+  ITerminalGroupViewService,
+  TerminalOptions,
+  ITerminalErrorService,
+  ITerminalInternalService,
+  TerminalContainerId,
+  ITerminalLaunchError,
+  ITerminalProcessExtHostProxy,
+  IStartExtensionTerminalRequest,
+  ITerminalExitEvent,
+  ITerminalExternalLinkProvider,
+} from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
@@ -29,7 +47,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
-  readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest> = this._onInstanceRequestStartExtensionTerminal.event;
+  readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest> =
+    this._onInstanceRequestStartExtensionTerminal.event;
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
@@ -101,9 +120,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
-    client.addDispose(client.onExit((e) => {
-      this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
-    }));
+    client.addDispose(
+      client.onExit((e) => {
+        this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
+      }),
+    );
 
     client.addDispose({
       dispose: () => {
@@ -112,9 +133,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       },
     });
 
-    client.addDispose(client.onLinksReady(() => {
-      this._setInstanceLinkProviders(client);
-    }));
+    client.addDispose(
+      client.onLinksReady(() => {
+        this._setInstanceLinkProviders(client);
+      }),
+    );
 
     this._onDidOpenTerminal.fire({
       id: client.id,
@@ -151,13 +174,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: ITerminalBrowserHistory) {
-    let currentWidgetId: string = '';
+    let currentWidgetId = '';
     const { groups, current } = history;
 
     const ids: (string | { clientId: string })[] = [];
 
     groups.forEach((widgets) => ids.concat(widgets));
-    const checked = await this.service.check(ids.map((id) => typeof id === 'string' ? id : id.clientId));
+    const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
 
     if (!checked) {
       return;
@@ -178,8 +201,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         /**
          * widget 创建完成后会同时创建 client
          */
-        const widget = this.terminalView.createWidget(group,
-          typeof sessionId === 'string' ? sessionId : sessionId.clientId);
+        const widget = this.terminalView.createWidget(
+          group,
+          typeof sessionId === 'string' ? sessionId : sessionId.clientId,
+        );
         const client = this.clientFactory(widget, {});
         this._clients.set(client.id, client);
 
@@ -219,75 +244,95 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-
     this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId)!;
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
-    this.addDispose(this.terminalView.onWidgetCreated((widget) => {
-      this._createClientOrIgnore(widget, {});
-    }));
+    this.addDispose(
+      this.terminalView.onWidgetCreated((widget) => {
+        this._createClientOrIgnore(widget, {});
+      }),
+    );
 
-    this.addDispose(this.terminalView.onWidgetDisposed((widget) => {
-      this._disposeClient(widget);
-    }));
+    this.addDispose(
+      this.terminalView.onWidgetDisposed((widget) => {
+        this._disposeClient(widget);
+      }),
+    );
 
-    this.addDispose(this.terminalView.onWidgetEmpty(() => {
-      this.hideTerminalPanel();
-    }));
+    this.addDispose(
+      this.terminalView.onWidgetEmpty(() => {
+        this.hideTerminalPanel();
+      }),
+    );
 
-    this.addDispose(this.terminalView.onWidgetSelected((widget) => {
-      const client = this.findClientFromWidgetId(widget.id);
-      if (client) {
-        this._onDidChangeActiveTerminal.fire(client.id);
-        if (client.ready) {
-          // 事件是同步触发的，事件发出时，界面可能还没更新完成，所以加个延迟
-          // 当前选中的 client 已经完成渲染，聚焦
-          setTimeout(() => {
-            client.focus();
-          });
+    this.addDispose(
+      this.terminalView.onWidgetSelected((widget) => {
+        const client = this.findClientFromWidgetId(widget.id);
+        if (client) {
+          this._onDidChangeActiveTerminal.fire(client.id);
+          if (client.ready) {
+            // 事件是同步触发的，事件发出时，界面可能还没更新完成，所以加个延迟
+            // 当前选中的 client 已经完成渲染，聚焦
+            setTimeout(() => {
+              client.focus();
+            });
+          }
         }
-      }
-      this._activeClientId = client?.id;
-    }));
+        this._activeClientId = client?.id;
+      }),
+    );
 
-    this.addDispose(this.themeService.onThemeChange((_) => {
-      this._clients.forEach((client) => {
-        client.updateTheme();
-      });
-      this.themeBackground = this.terminalTheme.terminalTheme.background || '';
-    }));
+    this.addDispose(
+      this.themeService.onThemeChange((_) => {
+        this._clients.forEach((client) => {
+          client.updateTheme();
+        });
+        this.themeBackground = this.terminalTheme.terminalTheme.background || '';
+      }),
+    );
 
-    this.addDispose(this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-      if (
-        (this._tabbarHandler && this._tabbarHandler.isActivated()) &&
-        e.payload.slotLocation === getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig)
-      ) {
-        this.terminalView.resize();
-      }
-    }));
+    this.addDispose(
+      this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
+        if (
+          this._tabbarHandler &&
+          this._tabbarHandler.isActivated() &&
+          e.payload.slotLocation === getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig)
+        ) {
+          this.terminalView.resize();
+        }
+      }),
+    );
 
     if (this._tabbarHandler) {
-      this.addDispose(this._tabbarHandler.onActivate(() => {
-        if (this.terminalView.empty()) {
-          const current = this._reset();
-          this.terminalView.selectWidget(current.id);
-        } else {
-          this.terminalView.selectGroup(this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0);
-        }
-      }));
+      this.addDispose(
+        this._tabbarHandler.onActivate(() => {
+          if (this.terminalView.empty()) {
+            const current = this._reset();
+            this.terminalView.selectWidget(current.id);
+          } else {
+            this.terminalView.selectGroup(
+              this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+            );
+          }
+        }),
+      );
 
-      this.addDispose(this._tabbarHandler.onInActivate(() => {
-        if (this.editorService.currentEditor) {
-          this.editorService.currentEditor.monacoEditor.focus();
-        }
-      }));
+      this.addDispose(
+        this._tabbarHandler.onInActivate(() => {
+          if (this.editorService.currentEditor) {
+            this.editorService.currentEditor.monacoEditor.focus();
+          }
+        }),
+      );
 
       if (this._tabbarHandler.isActivated()) {
         if (this.terminalView.empty()) {
           const widget = this._reset();
           this.terminalView.selectWidget(widget.id);
         } else {
-          this.terminalView.selectGroup(this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0);
+          this.terminalView.selectGroup(
+            this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+          );
         }
       }
     }
@@ -359,12 +404,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   clearCurrentGroup() {
-    this.terminalView.currentGroup && this.terminalView.currentGroup.widgets.forEach((widget) => {
-      const client = this._clients.get(widget.id);
-      if (client) {
-        client.clear();
-      }
-    });
+    this.terminalView.currentGroup &&
+      this.terminalView.currentGroup.widgets.forEach((widget) => {
+        const client = this._clients.get(widget.id);
+        if (client) {
+          client.clear();
+        }
+      });
   }
 
   clearAllGroups() {
@@ -387,7 +433,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined> {
+  requestStartExtensionTerminal(
+    proxy: ITerminalProcessExtHostProxy,
+    cols: number,
+    rows: number,
+  ): Promise<ITerminalLaunchError | undefined> {
     // The initial request came from the extension host, no need to wait for it
     return new Promise<ITerminalLaunchError | undefined>((callback) => {
       this._onInstanceRequestStartExtensionTerminal.fire({ proxy, cols, rows, callback });

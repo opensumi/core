@@ -28,20 +28,17 @@ describe('WorkspaceService should be work while workspace was a single directory
     })),
     setWatchFileExcludes: jest.fn(),
     setFilesExcludes: jest.fn(),
-    getFileStat: jest.fn((uriStr) => {
-      return {
-        uri: uriStr,
-        lastModification: new Date().getTime(),
-        isDirectory: true,
-      } as FileStat;
-    }),
+    getFileStat: jest.fn(
+      (uriStr) =>
+        ({
+          uri: uriStr,
+          lastModification: new Date().getTime(),
+          isDirectory: true,
+        } as FileStat),
+    ),
     exists: jest.fn(() => true),
-    getCurrentUserHome: jest.fn(() => {
-      return workspaceStat;
-    }),
-    setContent: jest.fn((stat) => {
-      return stat;
-    }),
+    getCurrentUserHome: jest.fn(() => workspaceStat),
+    setContent: jest.fn((stat) => stat),
     resolveContent: jest.fn(),
     createFile: jest.fn(),
     access: (...args) => true,
@@ -63,9 +60,7 @@ describe('WorkspaceService should be work while workspace was a single directory
   };
   let mockStorage = {};
   const mockRecentStorage = {
-    get: jest.fn((name) => {
-      return mockStorage[name] || [];
-    }),
+    get: jest.fn((name) => mockStorage[name] || []),
     set: jest.fn((name, value) => {
       mockStorage[name] = value;
     }),
@@ -77,9 +72,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     openNewWindow: jest.fn(),
   };
   beforeEach(async (done) => {
-    injector = createBrowserInjector([
-      WorkspaceModule,
-    ]);
+    injector = createBrowserInjector([WorkspaceModule]);
 
     injector.overrideProviders(
       {
@@ -115,7 +108,7 @@ describe('WorkspaceService should be work while workspace was a single directory
         useValue: mockWindowService,
       },
     );
-    mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}} as never);
+    mockFileSystem.watchFileChanges.mockResolvedValue({ dispose: () => {} } as never);
     workspaceService = injector.get(IWorkspaceService);
     workspaceService.init();
     await workspaceService.whenReady;
@@ -181,7 +174,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       isDirectory: true,
       lastModification: new Date().getTime(),
     } as never);
-    await workspaceService.open(newWorkspaceUri, {preserveWindow: true});
+    await workspaceService.open(newWorkspaceUri, { preserveWindow: true });
     expect(mockClientApp.fireOnReload).toBeCalledWith(true);
     await workspaceService.open(newWorkspaceUri);
     expect(mockWindowService.openNewWindow).toBeCalledTimes(1);
@@ -201,13 +194,14 @@ describe('WorkspaceService should be work while workspace was a single directory
       lastModification: new Date().getTime(),
       isDirectory: true,
     } as never);
-    mockFileSystem.getFileStat.mockImplementation((uriStr) => {
-      return {
-        uri: uriStr,
-        lastModification: new Date().getTime(),
-        isDirectory: true,
-      } as FileStat;
-    });
+    mockFileSystem.getFileStat.mockImplementation(
+      (uriStr) =>
+        ({
+          uri: uriStr,
+          lastModification: new Date().getTime(),
+          isDirectory: true,
+        } as FileStat),
+    );
     mockFileSystem.resolveContent.mockResolvedValue({
       stat: {},
       content: JSON.stringify({
@@ -215,9 +209,7 @@ describe('WorkspaceService should be work while workspace was a single directory
         settings: {},
       }),
     });
-    mockFileSystem.setContent.mockImplementation((stat) => {
-      return stat;
-    });
+    mockFileSystem.setContent.mockImplementation((stat) => stat);
     await workspaceService.addRoot(newWorkspaceUri);
     expect(mockFileSystem.setContent).toBeCalledTimes(2);
     done();
@@ -225,7 +217,11 @@ describe('WorkspaceService should be work while workspace was a single directory
 
   it('removeRoots method should be work', async (done) => {
     const newWorkspaceUri = workspaceUri.resolve('new_folder');
-    injector.mock(IFileServiceClient, 'exists', jest.fn(() => true));
+    injector.mock(
+      IFileServiceClient,
+      'exists',
+      jest.fn(() => true),
+    );
     // re-set _workspace cause the workspace would be undefined in some cases
     injector.mock(IWorkspaceService, '_workspace', {
       uri: workspaceUri.toString(),
@@ -245,9 +241,7 @@ describe('WorkspaceService should be work while workspace was a single directory
   });
 
   it('containsSome method should be work', async (done) => {
-    injector.mock(IWorkspaceService, '_roots', [
-      workspaceStat,
-    ]);
+    injector.mock(IWorkspaceService, '_roots', [workspaceStat]);
     injector.mock(IWorkspaceService, 'opened', true);
     mockFileSystem.exists.mockResolvedValue(true as never);
     const result = await workspaceService.containsSome(['test.js']);
@@ -258,9 +252,7 @@ describe('WorkspaceService should be work while workspace was a single directory
 
   it('getWorkspaceRootUri method should be work', async (done) => {
     const newWorkspaceUri = workspaceUri.resolve('new_folder');
-    injector.mock(IWorkspaceService, '_roots', [
-      workspaceStat,
-    ]);
+    injector.mock(IWorkspaceService, '_roots', [workspaceStat]);
     const result = workspaceService.getWorkspaceRootUri(newWorkspaceUri);
     expect(result?.toString()).toBe(workspaceUri.toString());
     done();

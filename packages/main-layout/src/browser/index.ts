@@ -21,20 +21,16 @@ export class MainLayoutModule extends BrowserModule {
     },
     {
       token: TabbarServiceFactory,
-      useFactory: (injector: Injector) => {
-        return (location: string) => {
-          const manager: IMainLayoutService = injector.get(IMainLayoutService);
-          return manager.getTabbarService(location);
-        };
+      useFactory: (injector: Injector) => (location: string) => {
+        const manager: IMainLayoutService = injector.get(IMainLayoutService);
+        return manager.getTabbarService(location);
       },
     },
     {
       token: AccordionServiceFactory,
-      useFactory: (injector: Injector) => {
-        return (containerId: string, noRestore?: boolean) => {
-          const manager: IMainLayoutService = injector.get(IMainLayoutService);
-          return manager.getAccordionService(containerId, noRestore);
-        };
+      useFactory: (injector: Injector) => (containerId: string, noRestore?: boolean) => {
+        const manager: IMainLayoutService = injector.get(IMainLayoutService);
+        return manager.getAccordionService(containerId, noRestore);
       },
     },
   ];

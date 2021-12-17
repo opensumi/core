@@ -30,7 +30,7 @@ export const FILE_TREE_DEFAULTS = {
 };
 
 export const corePreferenceSchema: PreferenceSchema = {
-  'type': 'object',
+  type: 'object',
   properties: {
     'general.language': {
       type: 'string',
@@ -71,11 +71,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'application.confirmExit': {
       type: 'string',
-      enum: [
-        'never',
-        'ifRequired',
-        'always',
-      ],
+      enum: ['never', 'ifRequired', 'always'],
       default: 'always',
       description: 'When to confirm before closing the application window.',
     },
@@ -86,10 +82,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'application.invalidExthostReload': {
       type: 'string',
-      enum: [
-        'ifRequired',
-        'always',
-      ],
+      enum: ['ifRequired', 'always'],
       default: 'ifRequired',
       description: 'Reload strategy when exthost process became invalid.',
     },
@@ -103,7 +96,8 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'number',
       default: 50,
       minimum: 0,
-      description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
+      description:
+        'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
     },
     'workbench.refactoringChanges.showPreviewStrategy': {
       type: 'string',
@@ -145,8 +139,8 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
     },
     'explorer.autoReveal': {
-      'type': 'boolean',
-      'default': true,
+      type: 'boolean',
+      default: true,
     },
     'debug.toolbar.float': {
       type: 'boolean',
@@ -174,15 +168,18 @@ export const corePreferenceSchema: PreferenceSchema = {
       additionalProperties: {
         anyOf: [
           {
-            'type': 'boolean',
-            'description': localize('files.exclude.boolean', 'The glob pattern to match file paths against. Set to true or false to enable or disable the pattern.'),
+            type: 'boolean',
+            description: localize(
+              'files.exclude.boolean',
+              'The glob pattern to match file paths against. Set to true or false to enable or disable the pattern.',
+            ),
           },
         ],
       },
     },
     'files.watcherExclude': {
       type: 'object',
-      default:  FILES_DEFAULTS.filesWatcherExclude,
+      default: FILES_DEFAULTS.filesWatcherExclude,
       description: '%preference.files.watcherExclude%',
     },
     'files.associations': {
@@ -197,11 +194,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'files.eol': {
       type: 'string',
-      enum: [
-        '\n',
-        '\r\n',
-        'auto',
-      ],
+      enum: ['\n', '\r\n', 'auto'],
       default: 'auto',
     },
     'files.autoGuessEncoding': {
@@ -219,18 +212,11 @@ export const corePreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      enum: (isElectronRenderer() && isWindows) ? [
-        'powershell',
-        'cmd',
-        'git-bash',
-        'default',
-      ] : [
-        'bash',
-        'zsh',
-        'sh',
-        'default',
-      ],
-      default: (isElectronRenderer() && isWindows) ? 'git-bash' : '',
+      enum:
+        isElectronRenderer() && isWindows
+          ? ['powershell', 'cmd', 'git-bash', 'default']
+          : ['bash', 'zsh', 'sh', 'default'],
+      default: isElectronRenderer() && isWindows ? 'git-bash' : '',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {
@@ -242,10 +228,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'terminal.fontWeight': {
       type: 'string',
-      enum: [
-        'normal',
-        'bold',
-      ],
+      enum: ['normal', 'bold'],
       default: 400,
     },
     'terminal.lineHeight': {
@@ -293,28 +276,20 @@ export const corePreferenceSchema: PreferenceSchema = {
       patternProperties: {
         '.*': {
           type: 'array',
-          items: [
-            { type: 'string' },
-          ],
+          items: [{ type: 'string' }],
         },
       },
       description: '%preference.toolbar.ignoreActions%',
     },
     'toolbar.buttonDisplay': {
       type: 'string',
-      enum: [
-        'icon',
-        'iconAndText',
-      ],
+      enum: ['icon', 'iconAndText'],
       default: 'iconAndText',
       description: '%preference.toolbar.buttonDisplay%',
     },
     'toolbar.buttonTitleStyle': {
       type: 'string',
-      enum: [
-        'vertical',
-        'horizontal',
-      ],
+      enum: ['vertical', 'horizontal'],
       default: 'horizontal',
     },
     'view.saveLayoutWithWorkspace': {

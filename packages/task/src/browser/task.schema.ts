@@ -9,19 +9,19 @@ export const schema: IJSONSchema = {
     version: {
       type: 'string',
       enum: ['2.0.0'],
-      description: localize('JsonSchema.version', 'The config\'s version number.'),
+      description: localize('JsonSchema.version', "The config's version number."),
     },
     windows: {
-      '$ref': '#/definitions/osSpecificTaskRunnerConfiguration',
-      'description': localize('JsonSchema.windows', 'Windows specific command configuration'),
+      $ref: '#/definitions/osSpecificTaskRunnerConfiguration',
+      description: localize('JsonSchema.windows', 'Windows specific command configuration'),
     },
     osx: {
-      '$ref': '#/definitions/osSpecificTaskRunnerConfiguration',
-      'description': localize('JsonSchema.mac', 'Mac specific command configuration'),
+      $ref: '#/definitions/osSpecificTaskRunnerConfiguration',
+      description: localize('JsonSchema.mac', 'Mac specific command configuration'),
     },
     linux: {
-      '$ref': '#/definitions/osSpecificTaskRunnerConfiguration',
-      'description': localize('JsonSchema.linux', 'Linux specific command configuration'),
+      $ref: '#/definitions/osSpecificTaskRunnerConfiguration',
+      description: localize('JsonSchema.linux', 'Linux specific command configuration'),
     },
   },
   definitions: {
@@ -75,24 +75,15 @@ export const schema: IJSONSchema = {
     shellConfiguration: {
       type: 'object',
       additionalProperties: false,
-      description: localize(
-        'JsonSchema.shellConfiguration',
-        'Configures the shell to be used.',
-      ),
+      description: localize('JsonSchema.shellConfiguration', 'Configures the shell to be used.'),
       properties: {
         executable: {
           type: 'string',
-          description: localize(
-            'JsonSchema.shell.executable',
-            'The shell to be used.',
-          ),
+          description: localize('JsonSchema.shell.executable', 'The shell to be used.'),
         },
         args: {
           type: 'array',
-          description: localize(
-            'JsonSchema.shell.args',
-            'The shell arguments.',
-          ),
+          description: localize('JsonSchema.shell.args', 'The shell arguments.'),
           items: {
             type: 'string',
           },
@@ -112,10 +103,7 @@ export const schema: IJSONSchema = {
         },
         args: {
           type: 'array',
-          description: localize(
-            'JsonSchema.tasks.args',
-            'Arguments passed to the command when this task is invoked.',
-          ),
+          description: localize('JsonSchema.tasks.args', 'Arguments passed to the command when this task is invoked.'),
           items: {
             type: 'string',
           },
@@ -143,10 +131,7 @@ export const schema: IJSONSchema = {
         },
         args: {
           type: 'array',
-          description: localize(
-            'JsonSchema.tasks.args',
-            'Arguments passed to the command when this task is invoked.',
-          ),
+          description: localize('JsonSchema.tasks.args', 'Arguments passed to the command when this task is invoked.'),
           items: {
             type: 'string',
           },
@@ -158,10 +143,7 @@ export const schema: IJSONSchema = {
           anyOf: [
             {
               $ref: '#/definitions/commandConfiguration',
-              description: localize(
-                'JsonSchema.tasks.windows',
-                'Windows specific command configuration',
-              ),
+              description: localize('JsonSchema.tasks.windows', 'Windows specific command configuration'),
             },
             {
               properties: {
@@ -180,10 +162,7 @@ export const schema: IJSONSchema = {
           anyOf: [
             {
               $ref: '#/definitions/commandConfiguration',
-              description: localize(
-                'JsonSchema.tasks.mac',
-                'Mac specific command configuration',
-              ),
+              description: localize('JsonSchema.tasks.mac', 'Mac specific command configuration'),
             },
             {
               properties: {
@@ -202,10 +181,7 @@ export const schema: IJSONSchema = {
           anyOf: [
             {
               $ref: '#/definitions/commandConfiguration',
-              description: localize(
-                'JsonSchema.tasks.linux',
-                'Linux specific command configuration',
-              ),
+              description: localize('JsonSchema.tasks.linux', 'Linux specific command configuration'),
             },
             {
               properties: {
@@ -273,18 +249,12 @@ export const schema: IJSONSchema = {
         },
         isBuildCommand: {
           type: 'boolean',
-          description: localize(
-            'JsonSchema.tasks.build',
-            "Maps this task to Code's default build command.",
-          ),
+          description: localize('JsonSchema.tasks.build', "Maps this task to Code's default build command."),
           default: true,
         },
         isTestCommand: {
           type: 'boolean',
-          description: localize(
-            'JsonSchema.tasks.test',
-            "Maps this task to Code's default test command.",
-          ),
+          description: localize('JsonSchema.tasks.test', "Maps this task to Code's default test command."),
           default: true,
         },
         problemMatcher: {
@@ -309,10 +279,7 @@ export const schema: IJSONSchema = {
         },
         args: {
           type: 'array',
-          description: localize(
-            'JsonSchema.args',
-            'Additional arguments passed to the command.',
-          ),
+          description: localize('JsonSchema.args', 'Additional arguments passed to the command.'),
           items: {
             type: 'string',
           },
@@ -329,10 +296,7 @@ export const schema: IJSONSchema = {
         },
         isWatching: {
           type: 'boolean',
-          deprecationMessage: localize(
-            'JsonSchema.watching.deprecation',
-            'Deprecated. Use isBackground instead.',
-          ),
+          deprecationMessage: localize('JsonSchema.watching.deprecation', 'Deprecated. Use isBackground instead.'),
           description: localize(
             'JsonSchema.watching',
             'Whether the executed task is kept alive and is watching the file system.',
@@ -373,10 +337,7 @@ export const schema: IJSONSchema = {
         },
         taskSelector: {
           type: 'string',
-          description: localize(
-            'JsonSchema.taskSelector',
-            'Prefix to indicate that an argument is task.',
-          ),
+          description: localize('JsonSchema.taskSelector', 'Prefix to indicate that an argument is task.'),
         },
         problemMatcher: {
           $ref: '#/definitions/problemMatcherType',

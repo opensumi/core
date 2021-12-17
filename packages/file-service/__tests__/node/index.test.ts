@@ -2,7 +2,7 @@ import { Injector } from '@opensumi/di';
 import { FileServiceModule, FileService } from '../../src/node';
 import { IFileService, FileChangeType } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
-import { isWindows } from '../../../core-common';
+import { isWindows } from '@opensumi/ide-core-common';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -24,10 +24,15 @@ describe('FileService', () => {
     await fse.ensureDir(testDir);
     root = FileUri.create(testDir);
 
-    injector = createNodeInjector([FileServiceModule], new Injector([{
-      token: AppConfig,
-      useValue: {},
-    }]));
+    injector = createNodeInjector(
+      [FileServiceModule],
+      new Injector([
+        {
+          token: AppConfig,
+          useValue: {},
+        },
+      ]),
+    );
 
     // injector = new Injector([{
     //   token: 'FileServiceOptions',
@@ -74,7 +79,6 @@ describe('FileService', () => {
   });
 
   describe('02 #resolveContent', () => {
-
     it('Should be rejected with an error when trying to resolve the content of a non-existing file.', async () => {
       const uri = root.resolve('foo.txt');
       expect(fs.existsSync(FileUri.fsPath(uri))).toBe(false);
@@ -98,7 +102,10 @@ describe('FileService', () => {
       expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
       // tslint:disable-next-line
-      await expectThrowsAsync(fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }), /unknownEncoding/);
+      await expectThrowsAsync(
+        fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }),
+        /unknownEncoding/,
+      );
     });
 
     it('Should be return with the content for an existing file.', async () => {
@@ -106,8 +113,7 @@ describe('FileService', () => {
       fs.writeFileSync(FileUri.fsPath(uri), 'foo', { encoding: 'utf8' });
       expect(fs.existsSync(FileUri.fsPath(uri))).toBe(true);
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
-      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' }))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
       const content = await fileService.resolveContent(uri.toString());
       expect(content).toHaveProperty('content');
@@ -119,8 +125,7 @@ describe('FileService', () => {
       fs.writeFileSync(FileUri.fsPath(uri), 'foo', { encoding: 'utf8' });
       expect(fs.existsSync(FileUri.fsPath(uri))).toBe(true);
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
-      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' }))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
       const content = await fileService.resolveContent(uri.toString());
       expect.objectContaining(content);
       expect(content).toHaveProperty('stat');
@@ -133,11 +138,9 @@ describe('FileService', () => {
       expect(content.stat.isDirectory).toBe(false);
       expect(content.stat).not.toHaveProperty('children');
     });
-
   });
 
   describe('03 #setContent', () => {
-
     it('Should be rejected with an error when trying to set the content of a non-existing file.', async () => {
       const uri = root.resolve('foo.txt');
       expect(fs.existsSync(FileUri.fsPath(uri))).toBeFalsy();
@@ -167,15 +170,13 @@ describe('FileService', () => {
       fs.writeFileSync(FileUri.fsPath(uri), 'foo', { encoding: 'utf8' });
       expect(fs.existsSync(FileUri.fsPath(uri))).toBeTruthy();
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBeTruthy();
-      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' }))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
       const stat = await fileService.getFileStat(uri.toString());
       // Make sure current file stat is out-of-sync.
       // Here the content is modified in the way that file sizes will differ.
       fs.writeFileSync(FileUri.fsPath(uri), 'longer', { encoding: 'utf8' });
-      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' }))
-        .toEqual('longer');
+      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('longer');
       expect(stat).toBeDefined();
       await expectThrowsAsync(fileService.setContent(stat!, 'baz'), Error);
     });
@@ -209,15 +210,11 @@ describe('FileService', () => {
       expect(currentStat).toBeDefined();
 
       await fileService.setContent(currentStat!, 'baz');
-      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' }))
-        .toEqual('baz');
-
+      expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('baz');
     });
-
   });
 
   describe('04 #move', () => {
-
     it('Should be rejected with an error if no file exists under the source location.', async () => {
       const sourceUri = root.resolve('foo.txt');
       const targetUri = root.resolve('bar.txt');
@@ -226,7 +223,7 @@ describe('FileService', () => {
       await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString()), Error);
     });
 
-    it("Should be rejected with an error if target exists and overwrite is not set to \'true\'.", async () => {
+    it("Should be rejected with an error if target exists and overwrite is not set to 'true'.", async () => {
       const sourceUri = root.resolve('foo.txt');
       const targetUri = root.resolve('bar.txt');
       fs.writeFileSync(FileUri.fsPath(sourceUri), 'foo');
@@ -310,8 +307,7 @@ describe('FileService', () => {
       expect(stat.uri).toEqual(targetUri.toString());
       expect(fs.existsSync(FileUri.fsPath(sourceUri))).toBeFalsy();
       expect(fs.statSync(FileUri.fsPath(targetUri)).isFile()).toBeTruthy();
-      expect(fs.readFileSync(FileUri.fsPath(targetUri), 'utf8'))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(targetUri), 'utf8')).toEqual('foo');
     });
 
     it('Moving an empty directory to an empty directory. Should remove the source directory.', async () => {
@@ -403,11 +399,9 @@ describe('FileService', () => {
 
       await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString(), { overwrite: true }));
     });
-
   });
 
   describe('05 #copy', () => {
-
     it('Copy a file from non existing location. Should be rejected with an error. Nothing to copy.', async () => {
       const sourceUri = root.resolve('foo');
       const targetUri = root.resolve('bar');
@@ -504,11 +498,9 @@ describe('FileService', () => {
       expect(fs.readFileSync(FileUri.fsPath(subSourceUri), 'utf8')).toEqual('foo');
       expect(fs.readFileSync(FileUri.fsPath(targetUri.resolve('foo_01.txt')), 'utf8')).toEqual('foo');
     });
-
   });
 
   describe('07 #createFile', () => {
-
     it('Should be rejected with an error if a file already exists with the given URI.', async () => {
       const uri = root.resolve('foo.txt');
       fs.writeFileSync(FileUri.fsPath(uri), 'foo');
@@ -541,8 +533,7 @@ describe('FileService', () => {
       const stat = await fileService.createFile(uri.toString(), { content: 'foo' });
       expect(stat.uri).toEqual(uri.toString());
       expect(stat.children).toBeUndefined();
-      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8'))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8')).toEqual('foo');
     });
 
     it('Should create a file with the desired content into a non-existing, nested location.', async () => {
@@ -552,8 +543,7 @@ describe('FileService', () => {
       const stat = await fileService.createFile(uri.toString(), { content: 'foo' });
       expect(stat.uri).toEqual(uri.toString());
       expect(stat.children).toBeUndefined();
-      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8'))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8')).toEqual('foo');
     });
 
     it('Should create a file with the desired content and encoding.', async () => {
@@ -563,14 +553,11 @@ describe('FileService', () => {
       const stat = await fileService.createFile(uri.toString(), { content: 'foo', encoding: 'utf8' });
       expect(stat.uri).toEqual(uri.toString());
       expect(stat.children).toBeUndefined();
-      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8'))
-        .toEqual('foo');
+      expect(fs.readFileSync(FileUri.fsPath(uri), 'utf8')).toEqual('foo');
     });
-
   });
 
   describe('08 #createFolder', () => {
-
     it('Should be rejected with an error if a FILE already exist under the desired URI.', async () => {
       const uri = root.resolve('foo');
       fs.writeFileSync(FileUri.fsPath(uri), 'some content');
@@ -606,11 +593,9 @@ describe('FileService', () => {
       expect(stat.uri).toEqual(uri.toString());
       expect(stat.children).toEqual([]);
     });
-
   });
 
   describe('#10 delete', () => {
-
     it('Should be rejected when the file to delete does not exist.', async () => {
       const uri = root.resolve('foo.txt');
       expect(fs.existsSync(FileUri.fsPath(uri))).toBeFalsy();
@@ -648,15 +633,12 @@ describe('FileService', () => {
       expect(fs.existsSync(FileUri.fsPath(uri))).toBeFalsy();
       expect(fs.existsSync(FileUri.fsPath(subUri))).toBeFalsy();
     });
-
   });
 
   describe('#15 getCurrentUserHome', () => {
-
     it('should not throw error', async () => {
       expect(await fileService.getCurrentUserHome()).toBeDefined();
     });
-
   });
 
   describe('watch', () => {
@@ -673,7 +655,6 @@ describe('FileService', () => {
       fileService.setFilesExcludes(['test'], ['/root']);
       expect(fileService.getFilesExcludes()).toEqual(['test']);
     });
-
   });
 
   describe('getFsPath', () => {
@@ -720,17 +701,25 @@ describe('FileService', () => {
   });
 });
 
-// tslint:disable-next-line
-export async function expectThrowsAsync(actual: Promise<any>, expected?: string | RegExp, message?: string): Promise<void>;
-// tslint:disable-next-line
-export async function expectThrowsAsync(actual: Promise<any>, constructor: Error | Function, expected?: string | RegExp, message?: string): Promise<void>;
-// tslint:disable-next-line
+export async function expectThrowsAsync(
+  actual: Promise<any>,
+  expected?: string | RegExp,
+  message?: string,
+): Promise<void>;
+export async function expectThrowsAsync(
+  actual: Promise<any>,
+  constructor: Error | Function,
+  expected?: string | RegExp,
+  message?: string,
+): Promise<void>;
 export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): Promise<void> {
-  let synchronous = () => { };
+  let synchronous = () => {};
   try {
     await promise;
   } catch (e) {
-    synchronous = () => { throw e; };
+    synchronous = () => {
+      throw e;
+    };
   } finally {
     expect(synchronous).toThrow(...args);
   }

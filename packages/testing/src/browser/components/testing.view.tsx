@@ -7,12 +7,10 @@ import { Input } from '@opensumi/ide-components/lib/input/Input';
 import { TestingExplorerTree } from './testing.explorer.tree';
 import styles from './testing.module.less';
 
-export const TestingView = () => {
-  return (
-    <div className={styles.testing_container}>
-      <TitleBar title={localize('test.title')} menubar={null} />
-      <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} />
-      <TestingExplorerTree />
-    </div>
-  );
-};
+export const TestingView = () => (
+  <div className={styles.testing_container}>
+    <TitleBar title={localize('test.title')} menubar={null} />
+    <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} />
+    <TestingExplorerTree />
+  </div>
+);

@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -23,11 +23,10 @@ import { Position, Definition, DefinitionLink, Location } from '../../../../comm
 import { createToken, isDefinitionLinkArray, isLocationArray } from './util';
 
 export class ImplementationAdapter {
-
   constructor(
     private readonly provider: vscode.ImplementationProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
   provideImplementation(resource: URI, position: Position): Promise<Definition | DefinitionLink[] | undefined> {
     const documentData = this.documents.getDocumentData(resource);
@@ -38,34 +37,36 @@ export class ImplementationAdapter {
     const document = documentData.document;
     const zeroBasedPosition = Converter.toPosition(position);
 
-    return Promise.resolve(this.provider.provideImplementation(document, zeroBasedPosition, createToken())).then((definition) => {
-      if (!definition) {
-        return undefined;
-      }
-
-      if (definition instanceof types.Location) {
-        return Converter.fromLocation(definition);
-      }
-
-      if (isLocationArray(definition)) {
-        const locations: Location[] = [];
-
-        for (const location of definition) {
-          locations.push(Converter.fromLocation(location));
+    return Promise.resolve(this.provider.provideImplementation(document, zeroBasedPosition, createToken())).then(
+      (definition) => {
+        if (!definition) {
+          return undefined;
         }
 
-        return locations;
-      }
-
-      if (isDefinitionLinkArray(definition)) {
-        const definitionLinks: DefinitionLink[] = [];
-
-        for (const definitionLink of definition) {
-          definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
+        if (definition instanceof types.Location) {
+          return Converter.fromLocation(definition);
         }
 
-        return definitionLinks;
-      }
-    });
+        if (isLocationArray(definition)) {
+          const locations: Location[] = [];
+
+          for (const location of definition) {
+            locations.push(Converter.fromLocation(location));
+          }
+
+          return locations;
+        }
+
+        if (isDefinitionLinkArray(definition)) {
+          const definitionLinks: DefinitionLink[] = [];
+
+          for (const definitionLink of definition) {
+            definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
+          }
+
+          return definitionLinks;
+        }
+      },
+    );
   }
 }

@@ -29,7 +29,7 @@ describe('Debug Call Frames Service', () => {
   const mockAbstractContextMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: jest.fn(),
-      dispose: jest.fn(() => Disposable.create(() => { })),
+      dispose: jest.fn(() => Disposable.create(() => {})),
     })),
   } as any;
 
@@ -48,7 +48,6 @@ describe('Debug Call Frames Service', () => {
     });
     debugCallStackService = mockInjector.get(DebugCallStackService);
   }),
-
     it('handleContextMenu method should be work', () => {
       const mockNode: DebugStackFrame = {
         source: {
@@ -76,6 +75,5 @@ describe('Debug Call Frames Service', () => {
       expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
       expect(mockEvent.stopPropagation).toBeCalledTimes(1);
       expect(mockEvent.preventDefault).toBeCalledTimes(1);
-
     });
 });

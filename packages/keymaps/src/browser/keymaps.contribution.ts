@@ -31,7 +31,6 @@ const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
 @Injectable()
 export class KeymapsResourceProvider extends WithEventBus implements IResourceProvider {
-
   readonly scheme: string = KEYMAPS_SCHEME;
 
   constructor() {
@@ -71,8 +70,14 @@ export namespace KEYMAP_COMMANDS {
 }
 
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
-export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
-
+export class KeymapsContribution
+  implements
+    CommandContribution,
+    KeybindingContribution,
+    ClientAppContribution,
+    BrowserEditorContribution,
+    MenuContribution
+{
   @Autowired(QuickPickService)
   private readonly quickPickService: QuickPickService;
 
@@ -126,7 +131,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
       iconClass: getIcon('open'),
       group: 'navigation',
       order: 4,
-      when: `resourceFilename =~ /keymaps\.json/`,
+      when: 'resourceFilename =~ /keymaps.json/',
     });
   }
 
@@ -146,7 +151,6 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
-
     editorComponentRegistry.registerEditorComponent({
       component: KeymapsView,
       uid: KEYMAPS_PREVIEW_COMPONENT_ID,
@@ -154,14 +158,12 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
 
     editorComponentRegistry.registerEditorComponentResolver(KEYMAPS_SCHEME, (_, __, resolve) => {
-
       resolve!([
         {
           type: 'component',
           componentId: KEYMAPS_PREVIEW_COMPONENT_ID,
         },
       ]);
-
     });
   }
 
@@ -169,18 +171,19 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     const current = this.layoutProvider.currentLayoutData;
     const autodetect: QuickPickItem<'autodetect'> = {
       label: localize('keyboard.autoDetect.label'),
-      description: current && this.layoutProvider.currentLayoutSource !== 'user-choice' ? formatLocalize('keyboard.autoDetect.description', getKeyboardLayoutId(current.layout)) : undefined,
+      description:
+        current && this.layoutProvider.currentLayoutSource !== 'user-choice'
+          ? formatLocalize('keyboard.autoDetect.description', getKeyboardLayoutId(current.layout))
+          : undefined,
       detail: localize('keyboard.autoDetect.detail'),
       value: 'autodetect',
     };
-    const otherLayouts = this.layoutProvider.allLayoutData
-      .map((layout) => this.toQuickPickValue(layout, current === layout));
+    const otherLayouts = this.layoutProvider.allLayoutData.map((layout) =>
+      this.toQuickPickValue(layout, current === layout),
+    );
 
     let layouts: QuickPickItem<KeymapInfo | 'autodetect'>[];
-    layouts = [
-      autodetect,
-      ...otherLayouts,
-    ];
+    layouts = [autodetect, ...otherLayouts];
     const chosen = await this.quickPickService.show(layouts, { placeholder: 'Choose a keyboard layout' });
     if (chosen) {
       return this.layoutProvider.setLayoutData(chosen);

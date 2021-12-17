@@ -77,25 +77,28 @@ const fakeMarker = {
   endColumn: 2,
 };
 
-const injector: Injector = createBrowserInjector([], new Injector([
-  {
-    token: IMainLayoutService,
-    useValue: MockMainLayoutService,
-  },
-  {
-    token: WorkbenchEditorService,
-    useClass: MockEditorService,
-  },
-  {
-    token: IThemeService,
-    useClass: MockThemeService,
-  },
-  {
-    token: MarkerManager,
-    useClass: MarkerManager,
-  },
-  MarkerService,
-]));
+const injector: Injector = createBrowserInjector(
+  [],
+  new Injector([
+    {
+      token: IMainLayoutService,
+      useValue: MockMainLayoutService,
+    },
+    {
+      token: WorkbenchEditorService,
+      useClass: MockEditorService,
+    },
+    {
+      token: IThemeService,
+      useClass: MockThemeService,
+    },
+    {
+      token: MarkerManager,
+      useClass: MarkerManager,
+    },
+    MarkerService,
+  ]),
+);
 
 const markerService = injector.get(MarkerService);
 const manager = markerService.getManager();
@@ -107,12 +110,11 @@ describe('markers.service.ts', () => {
 
   it('test update markers', () => {
     manager.updateMarkers('test', fakeUri.toString(), [fakeMarker]);
-    expect(manager.getResources()).toEqual([ 'file:///test/workspace/fakeResource.ts' ]);
+    expect(manager.getResources()).toEqual(['file:///test/workspace/fakeResource.ts']);
   });
 
   it('test remove markers', () => {
     markerService.onEditorGroupClose(fakeCloseEvent);
     expect(manager.getResources()).toEqual([]);
   });
-
 });

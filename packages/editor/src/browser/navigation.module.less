@@ -1,4 +1,4 @@
-@import "~@opensumi/ide-components/lib/style/mixins.less";
+@import '~@opensumi/ide-components/lib/style/mixins.less';
 
 .navigation_container {
   display: flex;
@@ -8,20 +8,20 @@
   padding-left: 6px;
   border-bottom: 1px solid var(--kt-editorBreadcrumb-borderDown);
 
-  &::-webkit-scrollbar{
-    display:none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
     background: rgb(50, 50, 50);
   }
 
   .navigation_icon {
     font-size: 12px;
   }
-  .navigation-part{
+  .navigation-part {
     color: var(--breadcrumb-foreground);
-    font-size:12px;
+    font-size: 12px;
     padding: 0 4px;
-    position:relative;
-    line-height:22px;
+    position: relative;
+    line-height: 22px;
     cursor: pointer;
     user-select: none;
     display: flex;
@@ -32,10 +32,10 @@
       vertical-align: middle;
       padding-right: 5px;
     }
-    &:hover{
+    &:hover {
       color: var(--breadcrumb-focusForeground);
     }
-    &:first-child{
+    &:first-child {
       &::before {
         content: none;
       }
@@ -59,7 +59,7 @@
       position: relative;
       text-overflow: ellipsis;
       white-space: nowrap;
-      padding-left:5px;
+      padding-left: 5px;
       cursor: pointer;
       height: 22px;
       display: flex;
@@ -71,14 +71,14 @@
         font-size: 14px;
         vertical-align: middle;
         padding-right: 5px;
-        line-height:20px;
+        line-height: 20px;
       }
       .navigation_right {
         position: absolute;
-        right:0;
-        width:20px;
+        right: 0;
+        width: 20px;
       }
-      &.navigation_menu_item_current{
+      &.navigation_menu_item_current {
         background: var(--list-focusBackground);
       }
     }

@@ -1,6 +1,11 @@
 // tslint:disable:no-console
 import { Domain } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId, IComponentMenuItemProps } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  MenuContribution,
+  IMenuRegistry,
+  MenuId,
+  IComponentMenuItemProps,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import React from 'react';
 
 const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
@@ -8,7 +13,11 @@ const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
     console.log(props.getExecuteArgs(), 'get exec args here');
   };
 
-  return <div style={{color: 'red'}} onClick={handleClick}>hello world</div>;
+  return (
+    <div style={{ color: 'red' }} onClick={handleClick}>
+      hello world
+    </div>
+  );
 };
 
 @Domain(MenuContribution)

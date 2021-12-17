@@ -4,7 +4,13 @@ import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
 import os from 'os';
 import { createHash } from 'crypto';
 
-import { IExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';
+import {
+  IExtraMetaData,
+  IExtensionMetaData,
+  IExtensionNodeService,
+  IExtensionNodeClientService,
+  ICreateProcessOptions,
+} from '../common';
 import { RPCService } from '@opensumi/ide-connection';
 import * as lp from './languagePack';
 import { IFileService } from '@opensumi/ide-file-service';
@@ -18,8 +24,10 @@ interface IRPCExtensionService {
 }
 
 @Injectable()
-export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService> implements IExtensionNodeClientService {
-
+export class ExtensionServiceClientImpl
+  extends RPCService<IRPCExtensionService>
+  implements IExtensionNodeClientService
+{
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
 
@@ -74,7 +82,11 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
    * @param extensionPath 插件路径
    * @param extraMetaData 补充数据
    */
-  public async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  public async getExtension(
+    extensionPath: string,
+    localization: string,
+    extraMetaData?: IExtraMetaData,
+  ): Promise<IExtensionMetaData | undefined> {
     return await this.extensionService.getExtension(extensionPath, localization, extraMetaData);
   }
 
@@ -94,7 +106,7 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
     return await this.extensionService.getAllExtensions(scan, extensionCandidate, localization, extraMetaData);
   }
 
-  public async disposeClientExtProcess(clientId: string, info: boolean = true): Promise<void> {
+  public async disposeClientExtProcess(clientId: string, info = true): Promise<void> {
     return await this.extensionService.disposeClientExtProcess(clientId, info);
   }
 
@@ -104,7 +116,12 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
    * @param languagePackPath language pack path
    */
   private convertLanguagePack(packageJson, languagePackPath: string) {
-    const { contributes: { localizations }, publisher, name, version } = packageJson;
+    const {
+      contributes: { localizations },
+      publisher,
+      name,
+      version,
+    } = packageJson;
     const languagePacks: { [key: string]: any } = {};
     for (const localization of localizations) {
       const md5 = createHash('md5');
@@ -115,13 +132,15 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
       const hash = md5.digest('hex');
       languagePacks[localization.languageId] = {
         hash,
-        extensions: [{
-          version,
-          extensionIdentifier: {
-            id,
-            uuid: _uuid,
+        extensions: [
+          {
+            version,
+            extensionIdentifier: {
+              id,
+              uuid: _uuid,
+            },
           },
-        }],
+        ],
         translations: localization.translations.reduce((pre, translation) => {
           pre[translation.id] = path.join(languagePackPath, translation.path);
           return pre;
@@ -147,7 +166,9 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
       await this.fileService.createFile(languagePath);
     }
 
-    const rawPkgJson = (await this.fileService.resolveContent(Uri.file(path.join(languagePack, 'package.json')).toString())).content;
+    const rawPkgJson = (
+      await this.fileService.resolveContent(Uri.file(path.join(languagePack, 'package.json')).toString())
+    ).content;
     let packageJson;
     try {
       packageJson = JSON.parse(rawPkgJson);
@@ -165,7 +186,11 @@ export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService>
     const languagePackJson = await this.fileService.getFileStat(languagePath);
     await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
 
-    const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', storagePath, languageId.toLowerCase());
+    const nlsConfig = await lp.getNLSConfiguration(
+      'f06011ac164ae4dc8e753a3fe7f9549844d15e35',
+      storagePath,
+      languageId.toLowerCase(),
+    );
     // tslint:disable-next-line: no-string-literal
     nlsConfig['_languagePackSupport'] = true;
     process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);

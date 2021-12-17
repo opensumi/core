@@ -4,7 +4,6 @@ import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronNativeDialogService implements IElectronNativeDialogService {
-
   @Autowired(IElectronMainUIService)
   electronMainUIService: IElectronMainUIService;
 
@@ -15,5 +14,4 @@ export class ElectronNativeDialogService implements IElectronNativeDialogService
   showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined> {
     return this.electronMainUIService.showSaveDialog(electronEnv.currentWindowId, options);
   }
-
 }

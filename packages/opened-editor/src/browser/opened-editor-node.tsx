@@ -1,7 +1,14 @@
 import React from 'react';
 import cls from 'classnames';
 import styles from './opened-editor-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType, Button } from '@opensumi/ide-components';
+import {
+  TreeNode,
+  CompositeTreeNode,
+  INodeRendererProps,
+  ClasslistComposite,
+  TreeNodeType,
+  Button,
+} from '@opensumi/ide-components';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { EditorFileGroup, EditorFile } from './opened-editor-node.define';
@@ -17,7 +24,12 @@ export interface IEditorNodeProps {
   labelService: LabelService;
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onContextMenu: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
 }
 
 export type EditorNodeRenderedProps = IEditorNodeProps & INodeRendererProps;
@@ -51,7 +63,9 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     }
   };
 
-  const paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!EditorFileGroup.is(item) ? 16 : 0)}px`;
+  const paddingLeft = `${
+    defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!EditorFileGroup.is(item) ? 16 : 0)
+  }px`;
 
   const editorNodeStyle = {
     color: decoration ? decoration.color : '',
@@ -65,8 +79,12 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       return null;
     }
     const iconClass = node.resource.icon || labelService.getIcon((node as EditorFile).uri, { isDirectory: false });
-    return <div className={cls(styles.file_icon, iconClass)} style={{ height: OPENED_EDITOR_TREE_NODE_HEIGHT, lineHeight: `${OPENED_EDITOR_TREE_NODE_HEIGHT}px` }}>
-    </div>;
+    return (
+      <div
+        className={cls(styles.file_icon, iconClass)}
+        style={{ height: OPENED_EDITOR_TREE_NODE_HEIGHT, lineHeight: `${OPENED_EDITOR_TREE_NODE_HEIGHT}px` }}
+      ></div>
+    );
   };
 
   const getNodeName = (node: EditorFileGroup | EditorFile) => {
@@ -81,36 +99,32 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     return node.name;
   };
 
-  const renderDisplayName = (node: EditorFileGroup | EditorFile) => {
-    return <div
-      className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_display_name)}
-    >
-     {getNodeName(node)}
-    </div>;
-  };
+  const renderDisplayName = (node: EditorFileGroup | EditorFile) => (
+    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_display_name)}>
+      {getNodeName(node)}
+    </div>
+  );
 
   const renderDescription = (node: EditorFileGroup | EditorFile) => {
     if (EditorFileGroup.is(node)) {
       return null;
     }
-    return <div className={cls(styles.opened_editor_node_segment_grow, styles.opened_editor_node_description)}>
-      {node.tooltip}
-    </div>;
+    return (
+      <div className={cls(styles.opened_editor_node_segment_grow, styles.opened_editor_node_description)}>
+        {node.tooltip}
+      </div>
+    );
   };
 
-  const renderStatusTail = () => {
-    return <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_tail)}>
-      {renderBadge()}
-    </div>;
-  };
+  const renderStatusTail = () => (
+    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_tail)}>{renderBadge()}</div>
+  );
 
   const renderBadge = () => {
     if (!decoration) {
       return null;
     }
-    return <div className={styles.opened_editor_node_status}>
-      {decoration.badge.slice()}
-    </div>;
+    return <div className={styles.opened_editor_node_status}>{decoration.badge.slice()}</div>;
   };
 
   const getItemTooltip = () => {
@@ -124,64 +138,70 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   const renderAction = () => {
     let actions: any[] = [];
     if (EditorFileGroup.is(item)) {
-      actions = [{
-        icon: getIcon('save-all'),
-        title: localize('opened.editors.save.byGroup'),
-        command: OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP.id,
-      },
-      {
-        icon: getIcon('clear'),
-        title: localize('opened.editors.close.byGroup'),
-        command: OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP.id,
-      }];
-      return <div className={styles.opened_editor_right_actions}>
+      actions = [
         {
-          actions.map((action) => {
+          icon: getIcon('save-all'),
+          title: localize('opened.editors.save.byGroup'),
+          command: OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP.id,
+        },
+        {
+          icon: getIcon('clear'),
+          title: localize('opened.editors.close.byGroup'),
+          command: OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP.id,
+        },
+      ];
+      return (
+        <div className={styles.opened_editor_right_actions}>
+          {actions.map((action) => {
             const clickHandler = (event: React.MouseEvent) => {
               event.stopPropagation();
               event.preventDefault();
               commandService.executeCommand(action.command, item);
             };
-            return <Button
-              type='icon'
-              key={`${item.id}-${action.command}`}
-              iconClass={cls(styles.action_icon, action.icon)}
-              title={action.title}
-              onClick={clickHandler} />;
-          })
-        }
-      </div>;
+            return (
+              <Button
+                type='icon'
+                key={`${item.id}-${action.command}`}
+                iconClass={cls(styles.action_icon, action.icon)}
+                title={action.title}
+                onClick={clickHandler}
+              />
+            );
+          })}
+        </div>
+      );
     } else {
-      actions = [{
-        icon: getIcon('close'),
-        title: localize('file.close'),
-        command: OPEN_EDITORS_COMMANDS.CLOSE.id,
-      }];
-      return <div className={styles.opened_editor_left_actions}>
+      actions = [
         {
-          actions.map((action) => {
+          icon: getIcon('close'),
+          title: localize('file.close'),
+          command: OPEN_EDITORS_COMMANDS.CLOSE.id,
+        },
+      ];
+      return (
+        <div className={styles.opened_editor_left_actions}>
+          {actions.map((action) => {
             const clickHandler = (event: React.MouseEvent) => {
               event.stopPropagation();
               event.preventDefault();
               commandService.executeCommand(action.command, item);
             };
-            return <Button
-              type='icon'
-              key={`${item.id}-${action.command}`}
-              iconClass={cls(styles.action_icon, action.icon)}
-              title={action.title}
-              onClick={clickHandler} />;
-          })
-        }
-      </div>;
+            return (
+              <Button
+                type='icon'
+                key={`${item.id}-${action.command}`}
+                iconClass={cls(styles.action_icon, action.icon)}
+                title={action.title}
+                onClick={clickHandler}
+              />
+            );
+          })}
+        </div>
+      );
     }
   };
 
-  const renderActionBar = () => {
-    return <div className={styles.opened_editor_action_bar}>
-      {renderAction()}
-    </div>;
-  };
+  const renderActionBar = () => <div className={styles.opened_editor_action_bar}>{renderAction()}</div>;
 
   return (
     <div
@@ -189,19 +209,14 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
-        styles.opened_editor_node,
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(styles.opened_editor_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >
       {renderActionBar()}
       <div className={cls(styles.opened_editor_node_content)}>
         {renderIcon(item)}
-        <div
-          className={styles.opened_editor_node_overflow_wrap}
-        >
+        <div className={styles.opened_editor_node_overflow_wrap}>
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

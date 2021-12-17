@@ -1,11 +1,18 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from '@opensumi/ide-core-common';
 import { Color } from '../common/color';
-import { ITheme, ColorIdentifier, ColorDefaults, ColorContribution, ColorValue, ColorFunction } from '../common/theme.service';
+import {
+  ITheme,
+  ColorIdentifier,
+  ColorDefaults,
+  ColorContribution,
+  ColorValue,
+  ColorFunction,
+} from '../common/theme.service';
 
 //  ------ API types
 
@@ -15,7 +22,6 @@ export const Extensions = {
 };
 
 export interface IColorRegistry {
-
   /**
    * Register a color to the registry.
    * @param id The color id as used in theme description files
@@ -43,7 +49,6 @@ export interface IColorRegistry {
 }
 
 class ColorRegistry implements IColorRegistry {
-
   private colorsById: { [key: string]: ColorContribution };
 
   private onDidColorChanged: Emitter<void> = new Emitter();
@@ -54,7 +59,13 @@ class ColorRegistry implements IColorRegistry {
     this.colorsById = {};
   }
 
-  public registerColor(id: string, defaults: ColorDefaults | null, description: string, needsTransparency = false, deprecationMessage?: string): ColorIdentifier {
+  public registerColor(
+    id: string,
+    defaults: ColorDefaults | null,
+    description: string,
+    needsTransparency = false,
+    deprecationMessage?: string,
+  ): ColorIdentifier {
     const colorContribution: ColorContribution = { id, description, defaults, needsTransparency, deprecationMessage };
     this.colorsById[id] = colorContribution;
     this.onDidColorChanged.fire();
@@ -88,14 +99,22 @@ class ColorRegistry implements IColorRegistry {
       return a.localeCompare(b);
     };
 
-    return Object.keys(this.colorsById).sort(sorter).map((k) => `- \`${k}\`: ${this.colorsById[k].description}`).join('\n');
+    return Object.keys(this.colorsById)
+      .sort(sorter)
+      .map((k) => `- \`${k}\`: ${this.colorsById[k].description}`)
+      .join('\n');
   }
-
 }
 
 const colorRegistry = new ColorRegistry();
 
-export function registerColor(id: string, defaults: ColorDefaults | null, description: string, needsTransparency?: boolean, deprecationMessage?: string): ColorIdentifier {
+export function registerColor(
+  id: string,
+  defaults: ColorDefaults | null,
+  description: string,
+  needsTransparency?: boolean,
+  deprecationMessage?: string,
+): ColorIdentifier {
   return colorRegistry.registerColor(id, defaults, description, needsTransparency, deprecationMessage);
 }
 
@@ -160,7 +179,12 @@ export function oneOf(...colorValues: ColorValue[]): ColorFunction {
   };
 }
 
-export function lessProminent(colorValue: ColorValue, backgroundColorValue: ColorValue, factor: number, transparency: number): ColorFunction {
+export function lessProminent(
+  colorValue: ColorValue,
+  backgroundColorValue: ColorValue,
+  factor: number,
+  transparency: number,
+): ColorFunction {
   return (theme) => {
     const from = resolveColorValue(colorValue, theme);
     if (from) {

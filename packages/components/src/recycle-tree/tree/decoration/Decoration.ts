@@ -23,7 +23,6 @@ export interface IDecorationTargetChangeEventData {
 }
 
 export class Decoration {
-
   private _cssClassList: Set<string>;
   private _appliedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
   private _negatedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
@@ -61,9 +60,9 @@ export class Decoration {
   set disabled(disabled: boolean) {
     this._disabled = disabled;
     if (disabled) {
-      this.onDidDisableDecorationEmitter.fire({decoration: this});
+      this.onDidDisableDecorationEmitter.fire({ decoration: this });
     } else {
-      this.onDidEnableDecorationEmitter.fire({decoration: this});
+      this.onDidEnableDecorationEmitter.fire({ decoration: this });
     }
   }
 
@@ -112,15 +111,19 @@ export class Decoration {
   }
 
   public addCSSClass(className: string): void {
-    if (this._cssClassList.has(className)) { return; }
+    if (this._cssClassList.has(className)) {
+      return;
+    }
     this._cssClassList.add(className);
-    this.onDidAddCSSClassnameEmitter.fire({decoration: this, classname: className});
+    this.onDidAddCSSClassnameEmitter.fire({ decoration: this, classname: className });
   }
 
   public removeCSSClass(className: string): void {
-    if (!this._cssClassList.has(className)) { return; }
+    if (!this._cssClassList.has(className)) {
+      return;
+    }
     this._cssClassList.delete(className);
-    this.onDidRemoveCSSClassnameEmitter.fire({decoration: this, classname: className});
+    this.onDidRemoveCSSClassnameEmitter.fire({ decoration: this, classname: className });
   }
 
   /**
@@ -137,16 +140,23 @@ export class Decoration {
    * @param target
    * @param flags
    */
-  public addTarget(target: ITreeNode | ICompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
+  public addTarget(
+    target: ITreeNode | ICompositeTreeNode,
+    flags: TargetMatchMode = TargetMatchMode.Self,
+  ): IDisposable | undefined {
     const existingFlags = this._appliedTargets.get(target);
-    if (existingFlags === flags) { return; }
-    if (!(TreeNode.is(target))) { return; }
+    if (existingFlags === flags) {
+      return;
+    }
+    if (!TreeNode.is(target)) {
+      return;
+    }
     this._appliedTargets.set(target, flags);
     const dispose = Disposable.create(() => {
       this.removeTarget(target);
     });
-    this.appliedTargetsDisposables.set(target,  dispose);
-    this.onDidAddTargetEmitter.fire({decoration: this, target});
+    this.appliedTargetsDisposables.set(target, dispose);
+    this.onDidAddTargetEmitter.fire({ decoration: this, target });
     return dispose;
   }
 
@@ -161,7 +171,7 @@ export class Decoration {
       if (disposable) {
         disposable.dispose();
       }
-      this.onDidRemoveTargetEmitter.fire({decoration: this, target});
+      this.onDidRemoveTargetEmitter.fire({ decoration: this, target });
     }
   }
 
@@ -172,16 +182,23 @@ export class Decoration {
    * @param target
    * @param flags
    */
-  public negateTarget(target: ITreeNode | ICompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
-    const existingFlags =   this._negatedTargets.get(target);
-    if (existingFlags === flags) { return; }
-    if (!(TreeNode.is(target))) { return; }
+  public negateTarget(
+    target: ITreeNode | ICompositeTreeNode,
+    flags: TargetMatchMode = TargetMatchMode.Self,
+  ): IDisposable | undefined {
+    const existingFlags = this._negatedTargets.get(target);
+    if (existingFlags === flags) {
+      return;
+    }
+    if (!TreeNode.is(target)) {
+      return;
+    }
     this._negatedTargets.set(target, flags);
     const dispose = Disposable.create(() => {
       this.unNegateTarget(target);
     });
-    this.negatedTargetsDisposables.set(target,  dispose);
-    this.onDidNegateTargetEmitter.fire({decoration: this, target});
+    this.negatedTargetsDisposables.set(target, dispose);
+    this.onDidNegateTargetEmitter.fire({ decoration: this, target });
     return dispose;
   }
 
@@ -190,12 +207,12 @@ export class Decoration {
    * @param target
    */
   public unNegateTarget(target: ITreeNode | ICompositeTreeNode): void {
-    if ( this._negatedTargets.delete(target)) {
-      const disposable =   this.negatedTargetsDisposables.get(target);
+    if (this._negatedTargets.delete(target)) {
+      const disposable = this.negatedTargetsDisposables.get(target);
       if (disposable) {
         disposable.dispose();
       }
-      this.onDidUnNegateTargetEmitter.fire({decoration: this, target});
+      this.onDidUnNegateTargetEmitter.fire({ decoration: this, target });
     }
   }
 }

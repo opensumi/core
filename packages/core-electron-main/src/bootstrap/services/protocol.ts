@@ -5,33 +5,34 @@ import { readFile } from 'fs-extra';
 
 @Domain(ElectronMainContribution)
 export class ProtocolElectronMainContribution implements ElectronMainContribution {
-
   /**
    * 由于 registerSchemesAsPrivileged 只能调用一次，所有 contribution 都往这个里面塞
    */
-  static schemePrivileges: Electron.CustomScheme[] = [{
-    scheme: 'vscode-resource',
-    privileges: {
-      secure: true,
-      bypassCSP: true,
-      standard: true,
-      supportFetchAPI: true,
+  static schemePrivileges: Electron.CustomScheme[] = [
+    {
+      scheme: 'vscode-resource',
+      privileges: {
+        secure: true,
+        bypassCSP: true,
+        standard: true,
+        supportFetchAPI: true,
+      },
     },
-  }];
+  ];
 
   onStart() {
     protocol.registerBufferProtocol('vscode-resource', async (req, callback: any) => {
       try {
         const { url } = req;
         //  对于webview中vscode:/aaaa/a或者 vscode:///aaaa/a 的路径
-         // 旧版electron此处会是vscode://aaaa/a, 少了个斜杠，导致路径解析出现问题
+        // 旧版electron此处会是vscode://aaaa/a, 少了个斜杠，导致路径解析出现问题
         const uri = URI.file(decodeURI(url).replace(/^vscode-resource:(\/\/|)/, ''));
         const fsPath = uri.codeUri.fsPath;
         const data = await readFile(fsPath);
-        callback({ mimeType: getWebviewContentMimeType(uri), data});
+        callback({ mimeType: getWebviewContentMimeType(uri), data });
       } catch (e) {
         getDebugLogger().error(e);
-        callback({ error: -2});
+        callback({ error: -2 });
       }
     });
   }
@@ -48,7 +49,6 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
       });
     }
   }
-
 }
 
 export const MIME_UNKNOWN = 'application/unknown';

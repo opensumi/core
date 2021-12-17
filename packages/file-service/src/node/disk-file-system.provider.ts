@@ -56,11 +56,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   protected watchFileExcludes: string[] = [];
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
 
-  static H5VideoExtList = [
-    'mp4',
-    'ogg',
-    'webm',
-  ];
+  static H5VideoExtList = ['mp4', 'ogg', 'webm'];
 
   constructor() {
     super();
@@ -100,12 +96,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }) {
     let watcherId;
     const _uri = Uri.revive(uri);
-    const watchPromise = this.watcherServer.watchFileChanges(
-      _uri.toString(),
-      {
+    const watchPromise = this.watcherServer
+      .watchFileChanges(_uri.toString(), {
         excludes: options && options.excludes ? options.excludes : [],
-      },
-    ).then((id) => watcherId = id);
+      })
+      .then((id) => (watcherId = id));
     const disposable = {
       dispose: () => {
         if (!watcherId) {
@@ -189,7 +184,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         }
 
         if (error.code === 'EPERM') {
-          throw FileSystemError.FileIsNoPermissions(uri.path, 'Error occurred while reading file: path is a directory.');
+          throw FileSystemError.FileIsNoPermissions(
+            uri.path,
+            'Error occurred while reading file: path is a directory.',
+          );
         }
       }
 
@@ -200,7 +198,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async writeFile(
     uri: UriComponents,
     content: Uint8Array,
-    options: { create: boolean, overwrite: boolean, encoding?: string },
+    options: { create: boolean; overwrite: boolean; encoding?: string },
   ): Promise<void | FileStat> {
     const _uri = Uri.revive(uri);
     const exists = await this.access(uri);
@@ -225,17 +223,20 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   access(uri: UriComponents, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    return fse.access(FileUri.fsPath(URI.from(uri)), mode).then(() => true).catch(() => false);
+    return fse
+      .access(FileUri.fsPath(URI.from(uri)), mode)
+      .then(() => true)
+      .catch(() => false);
   }
 
-  async delete(uri: UriComponents, options: { recursive?: boolean, moveToTrash?: boolean }): Promise<void> {
+  async delete(uri: UriComponents, options: { recursive?: boolean; moveToTrash?: boolean }): Promise<void> {
     const _uri = Uri.revive(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
       throw FileSystemError.FileNotFound(uri.path);
     }
     if (!isUndefined(options.recursive)) {
-      getDebugLogger().warn(`DiskFileSystemProvider not support options.recursive!`);
+      getDebugLogger().warn('DiskFileSystemProvider not support options.recursive!');
     }
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
@@ -266,11 +267,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  async rename(
-    sourceUri: UriComponents,
-    targetUri: UriComponents,
-    options: { overwrite: boolean },
-  ): Promise<FileStat> {
+  async rename(sourceUri: UriComponents, targetUri: UriComponents, options: { overwrite: boolean }): Promise<FileStat> {
     const result = await this.doMove(sourceUri, targetUri, options);
     return result;
   }
@@ -278,14 +275,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async copy(
     sourceUri: UriComponents,
     targetUri: UriComponents,
-    options: { overwrite: boolean, recursive?: boolean },
+    options: { overwrite: boolean; recursive?: boolean },
   ): Promise<FileStat> {
     const _sourceUri = Uri.revive(sourceUri);
     const _targetUri = Uri.revive(targetUri);
-    const [sourceStat, targetStat] = await Promise.all([
-      this.doGetStat(_sourceUri, 0),
-      this.doGetStat(_targetUri, 0),
-    ]);
+    const [sourceStat, targetStat] = await Promise.all([this.doGetStat(_sourceUri, 0), this.doGetStat(_targetUri, 0)]);
     const { overwrite, recursive } = options;
 
     if (!sourceStat) {
@@ -297,7 +291,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (targetStat && targetStat.uri === sourceStat.uri) {
       throw FileSystemError.FileExists(targetUri.path, 'Cannot perform copy, source and destination are the same.');
     }
-    await fse.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite, recursive });
+    await fse.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), {
+      overwrite,
+      recursive,
+    });
     const newStat = await this.doGetStat(_targetUri, 1);
     if (newStat) {
       return newStat;
@@ -408,13 +405,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  protected async doMove(sourceUri: UriComponents, targetUri: UriComponents, options: FileMoveOptions): Promise<FileStat> {
+  protected async doMove(
+    sourceUri: UriComponents,
+    targetUri: UriComponents,
+    options: FileMoveOptions,
+  ): Promise<FileStat> {
     const _sourceUri = Uri.revive(sourceUri);
     const _targetUri = Uri.revive(targetUri);
-    const [sourceStat, targetStat] = await Promise.all([
-      this.doGetStat(_sourceUri, 1),
-      this.doGetStat(_targetUri, 1),
-    ]);
+    const [sourceStat, targetStat] = await Promise.all([this.doGetStat(_sourceUri, 1), this.doGetStat(_targetUri, 1)]);
     const isCapitalizedEqual = _sourceUri.toString().toLocaleUpperCase() === _targetUri.toString().toLocaleUpperCase();
     const { overwrite } = options;
     if (!sourceStat) {
@@ -427,14 +425,31 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     // Different types. Files <-> Directory.
     if (targetStat && sourceStat.isDirectory !== targetStat.isDirectory) {
       if (targetStat.isDirectory) {
-        throw FileSystemError.FileIsDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' file to an existing location.`);
+        throw FileSystemError.FileIsDirectory(
+          targetStat.uri,
+          `Cannot move '${sourceStat.uri}' file to an existing location.`,
+        );
       }
-      throw FileSystemError.FileNotDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' directory to an existing location.`);
+      throw FileSystemError.FileNotDirectory(
+        targetStat.uri,
+        `Cannot move '${sourceStat.uri}' directory to an existing location.`,
+      );
     }
-    const [sourceMightHaveChildren, targetMightHaveChildren] = await Promise.all([this.mayHaveChildren(_sourceUri), this.mayHaveChildren(_targetUri)]);
+    const [sourceMightHaveChildren, targetMightHaveChildren] = await Promise.all([
+      this.mayHaveChildren(_sourceUri),
+      this.mayHaveChildren(_targetUri),
+    ]);
     // Handling special Windows case when source and target resources are empty folders.
     // Source should be deleted and target should be touched.
-    if (!isCapitalizedEqual && overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !sourceMightHaveChildren && !targetMightHaveChildren) {
+    if (
+      !isCapitalizedEqual &&
+      overwrite &&
+      targetStat &&
+      targetStat.isDirectory &&
+      sourceStat.isDirectory &&
+      !sourceMightHaveChildren &&
+      !targetMightHaveChildren
+    ) {
       // 当移动路径跟目标路径均存在文件，同时排除大写路径不等时才进入该逻辑
       // 核心解决在 Mac 等默认大小写不敏感系统中的文件移动问题
       // The value should be a Unix timestamp in seconds.
@@ -446,25 +461,40 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       if (newStat) {
         return newStat;
       }
-      throw FileSystemError.FileNotFound(targetUri.path, `Error occurred when moving resource from '${sourceUri.toString()}' to '${targetUri.toString()}'.`);
-    } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
+      throw FileSystemError.FileNotFound(
+        targetUri.path,
+        `Error occurred when moving resource from '${sourceUri.toString()}' to '${targetUri.toString()}'.`,
+      );
+    } else if (
+      overwrite &&
+      targetStat &&
+      targetStat.isDirectory &&
+      sourceStat.isDirectory &&
+      !targetMightHaveChildren &&
+      sourceMightHaveChildren
+    ) {
       // Copy source to target, since target is empty. Then wipe the source content.
       const newStat = await this.copy(sourceUri, targetUri, { overwrite });
       await this.delete(sourceUri, { moveToTrash: false });
       return newStat;
     } else {
       return new Promise<FileStat>((resolve, reject) => {
-        mv(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { mkdirp: true, clobber: overwrite }, async (error: any) => {
-          if (error) {
-            return reject(error);
-          }
-          const stat = await this.doGetStat(_targetUri, 1);
-          if (stat) {
-            resolve(stat);
-          } else {
-            reject(FileSystemError.FileNotFound(_targetUri.path));
-          }
-        });
+        mv(
+          FileUri.fsPath(_sourceUri.toString()),
+          FileUri.fsPath(_targetUri.toString()),
+          { mkdirp: true, clobber: overwrite },
+          async (error: any) => {
+            if (error) {
+              return reject(error);
+            }
+            const stat = await this.doGetStat(_targetUri, 1);
+            if (stat) {
+              resolve(stat);
+            } else {
+              reject(FileSystemError.FileNotFound(_targetUri.path));
+            }
+          },
+        );
       });
     }
   }
@@ -498,7 +528,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
           isSymbolicLink: true,
           uri: uri.toString(),
         };
-
       } else {
         if (lstat.isDirectory()) {
           return await this.doCreateDirectoryStat(uri, lstat, depth);
@@ -507,7 +536,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
         return fileStat;
       }
-
     } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
@@ -565,7 +593,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   protected async doGetChildren(uri: Uri, depth: number): Promise<FileStat[]> {
     const _uri = new URI(uri);
     const files = await fse.readdir(FileUri.fsPath(_uri));
-    const children = await Promise.all(files.map((fileName) => _uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)));
+    const children = await Promise.all(
+      files.map((fileName) => _uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)),
+    );
     return children.filter(notEmpty);
   }
 
@@ -578,9 +608,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       // const lstat = await fs.lstat(FileUri.fsPath(uri));
       const stat = await fse.stat(FileUri.fsPath(uri));
 
-      let ext: string = '';
+      let ext = '';
       if (!stat.isDirectory()) {
-
         // if(lstat.isSymbolicLink){
 
         // }else {

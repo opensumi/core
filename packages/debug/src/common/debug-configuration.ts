@@ -58,11 +58,11 @@ export interface DebugConfiguration {
 
 export namespace DebugConfiguration {
   export function is(arg: DebugConfiguration | any): arg is DebugConfiguration {
-      return !!arg && typeof arg === 'object' && 'type' in arg && 'name' in arg && 'request' in arg;
+    return !!arg && typeof arg === 'object' && 'type' in arg && 'name' in arg && 'request' in arg;
   }
 }
 
-export const DEFAULT_ADD_CONFIGURATION_KEY: string = '__ADD_CONF__';
-export const DEFAULT_NO_CONFIGURATION_KEY: string = '__NO_CONF__';
-export const DEFAULT_CONFIGURATION_NAME_SEPARATOR: string = '__CONF__';
-export const DEFAULT_CONFIGURATION_INDEX_SEPARATOR: string = '__INDEX__';
+export const DEFAULT_ADD_CONFIGURATION_KEY = '__ADD_CONF__';
+export const DEFAULT_NO_CONFIGURATION_KEY = '__NO_CONF__';
+export const DEFAULT_CONFIGURATION_NAME_SEPARATOR = '__CONF__';
+export const DEFAULT_CONFIGURATION_INDEX_SEPARATOR = '__INDEX__';

@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2017 TypeFox and others.
  *
  * This program and the accompanying materials are made available under the
@@ -25,16 +25,12 @@ export interface ContributionProvider<T extends object> {
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
-
   protected services: T[] | undefined;
 
-  constructor(
-    protected readonly domain: Domain,
-    protected readonly injector: Injector
-  ) { }
+  constructor(protected readonly domain: Domain, protected readonly injector: Injector) {}
 
   addContribution(...contributionsCls: ConstructorOf<T>[]): void {
-    for(const contributionCls of contributionsCls) {
+    for (const contributionCls of contributionsCls) {
       this.injector.addProviders(contributionCls);
       if (this.services) {
         this.services.push(this.injector.get(contributionCls));

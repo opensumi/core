@@ -21,7 +21,10 @@ abstract class BaseExtProcessService {
   abstract activeExtension(extension: IExtension, isWebExtension: boolean): Promise<void>;
 }
 
-export abstract class AbstractNodeExtProcessService<T = any> extends BaseExtProcessService implements VSCodeExtensionService {
+export abstract class AbstractNodeExtProcessService<T = any>
+  extends BaseExtProcessService
+  implements VSCodeExtensionService
+{
   /**
    * 更新插件进程中的插件列表数据
    */
@@ -37,7 +40,10 @@ export abstract class AbstractNodeExtProcessService<T = any> extends BaseExtProc
 }
 
 // 相对 node extension service 额外增加 `$getStaticServicePath`
-export abstract class AbstractWorkerExtProcessService<T = any> extends AbstractNodeExtProcessService<T> implements SumiWorkerExtensionService {
+export abstract class AbstractWorkerExtProcessService<T = any>
+  extends AbstractNodeExtProcessService<T>
+  implements SumiWorkerExtensionService
+{
   abstract activate(ignoreCors?: boolean): Promise<IRPCProtocol>;
   abstract $getStaticServicePath: SumiWorkerExtensionService['$getStaticServicePath'];
 }

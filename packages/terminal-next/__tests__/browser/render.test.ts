@@ -3,11 +3,7 @@
  */
 
 import * as puppeteer from 'puppeteer';
-import {
-  getTerminalControllerState,
-  selectTabIndex,
-  isFocusedClientRenderedAndFit,
-} from './utils';
+import { getTerminalControllerState, selectTabIndex, isFocusedClientRenderedAndFit } from './utils';
 
 const APP = 'http://127.0.0.1:8080';
 
@@ -20,7 +16,7 @@ describe('Terminal Render', (): void => {
   beforeAll(async () => {
     browser = await puppeteer.launch({
       headless: process.argv.indexOf('--headless') !== -1,
-      args: [`--window-size=${width},${height}`, `--no-sandbox`],
+      args: [`--window-size=${width},${height}`, '--no-sandbox'],
     });
     page = (await browser.pages())[0];
     await page.setViewport({ width, height });
@@ -40,22 +36,22 @@ describe('Terminal Render', (): void => {
   });
 
   it('Add, Remove And Select Terminal', async () => {
-    let state: { index: number, focus: boolean };
-    await page.evaluate(`
+    let state: { index: number; focus: boolean };
+    (await page.evaluate(`
       window.__commands__.executeCommand('terminal.add');
-    `) as number;
+    `)) as number;
     state = await getTerminalControllerState(page);
     expect(state.index === 2);
 
-    await page.evaluate(`
+    (await page.evaluate(`
       window.__commands__.executeCommand('terminal.add');
-    `) as number;
+    `)) as number;
     state = await getTerminalControllerState(page);
     expect(state.index === 3);
 
-    await page.evaluate(`
+    (await page.evaluate(`
       window.__commands__.executeCommand('terminal.remove');
-    `) as number;
+    `)) as number;
     state = await getTerminalControllerState(page);
     expect(state.index === 2);
 

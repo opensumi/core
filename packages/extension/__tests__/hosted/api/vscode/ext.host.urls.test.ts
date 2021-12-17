@@ -11,9 +11,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
   beforeEach(() => {
     const map = new Map();
     const rpcProtocol: IRPCProtocol = {
-      getProxy: (key) => {
-        return map.get(key);
-      },
+      getProxy: (key) => map.get(key),
       set: (key, value) => {
         map.set(key, value);
         return value;
@@ -47,10 +45,11 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
       handleUri: jest.fn(),
     });
     // 注册两次会抛异常
-    expect(() => extHostUrls.registerUriHandler(extensionId, {
-      handleUri: jest.fn(),
-    })).toThrowError();
-
+    expect(() =>
+      extHostUrls.registerUriHandler(extensionId, {
+        handleUri: jest.fn(),
+      }),
+    ).toThrowError();
   });
 
   it('distpose a url handler', () => {

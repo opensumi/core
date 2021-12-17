@@ -2,7 +2,7 @@ import React from 'react';
 import { useInjectable, Disposable, CancellationTokenSource } from '@opensumi/ide-core-browser';
 import { IMarkdownService } from '../common';
 
-export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () => void}) => {
+export const Markdown = ({ content, onLoaded }: { content: string; onLoaded?: () => void }) => {
   let container: HTMLElement | null = null;
   const markdownService: IMarkdownService = useInjectable(IMarkdownService);
 
@@ -28,6 +28,12 @@ export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () =>
     }
   }, [content]);
 
-  return <div ref={(el) => {container = el; }} style={{height: '100%'}}></div>;
-
+  return (
+    <div
+      ref={(el) => {
+        container = el;
+      }}
+      style={{ height: '100%' }}
+    ></div>
+  );
 };

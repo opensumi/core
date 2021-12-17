@@ -14,13 +14,11 @@ import { MockedMonacoService } from '@opensumi/ide-monaco/__mocks__/monaco.servi
 
 @Injectable()
 class MockLoggerManagerClient {
-  getLogger = () => {
-    return {
-      log() {},
-      debug() {},
-      error() {},
-    };
-  }
+  getLogger = () => ({
+    log() {},
+    debug() {},
+    error() {},
+  });
 }
 
 @Injectable()
@@ -31,62 +29,65 @@ class MockMainLayoutService {
       activate() {},
     };
   }
-
 }
 
 const preferences: Map<string, any> = new Map();
 
 const mockedPreferenceService: any = {
-  get: (k) => {
-    return preferences.get(k);
-  },
+  get: (k) => preferences.get(k),
   set: (k, v) => {
     preferences.set(k, v);
   },
-  onPreferenceChanged: (listener) => {
+  onPreferenceChanged: (listener) =>
     //
-    return {
+    ({
       dispose: () => {},
-    };
-  },
+    }),
 };
 
 describe('Output.service.ts', () => {
   // let mockPreferenceVal = false;
   let outputService: OutputService;
 
-  const injector: Injector = createBrowserInjector([], new Injector([
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    }, {
-      token: IMainLayoutService,
-      useClass : MockMainLayoutService,
-    }, {
-      token: PreferenceService,
-      useValue: mockedPreferenceService,
-    }, {
-      token: MonacoService,
-      useClass: MockedMonacoService,
-    },
-    {
-      token: OutputService,
-      useClass: OutputService,
-    },
-    {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    },
-    {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    }, {
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
+  const injector: Injector = createBrowserInjector(
+    [],
+    new Injector([
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManagerClient,
       },
-    },
-  ]));
+      {
+        token: IMainLayoutService,
+        useClass: MockMainLayoutService,
+      },
+      {
+        token: PreferenceService,
+        useValue: mockedPreferenceService,
+      },
+      {
+        token: MonacoService,
+        useClass: MockedMonacoService,
+      },
+      {
+        token: OutputService,
+        useClass: OutputService,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
+      },
+    ]),
+  );
 
   beforeAll(async () => {
     const monacoService = injector.get(MonacoService);
@@ -113,5 +114,4 @@ describe('Output.service.ts', () => {
     outputService.deleteChannel('1');
     expect(outputService.getChannels().length).toEqual(origLength);
   });
-
 });

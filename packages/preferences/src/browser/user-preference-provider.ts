@@ -8,7 +8,6 @@ export const USER_PREFERENCE_URI = new URI().withScheme(USER_STORAGE_SCHEME).wit
 
 @Injectable()
 export class UserPreferenceProvider extends AbstractResourcePreferenceProvider {
-
   protected getUri(): URI {
     return USER_PREFERENCE_URI;
   }

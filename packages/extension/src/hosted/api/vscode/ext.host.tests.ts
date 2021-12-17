@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -19,10 +19,10 @@ import type {
   TestRunResult,
 } from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common/lib/cancellation';
 import { hash } from '@opensumi/ide-core-common/lib/utils/hash';
-import { Emitter, Event } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 import { uuid } from '@opensumi/ide-core-common/lib/uuid';
 import { TestId, TestIdPathParts, TestPosition } from '@opensumi/ide-testing/lib/common/testId';
 import {
@@ -74,7 +74,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
     this.runTracker = new TestRunCoordinator(this.proxy);
   }
 
-  //#region API for main thread
+  // #region API for main thread
   async $runControllerTests(req: RunTestForControllerRequest, token: CancellationToken): Promise<void> {
     console.log('do run controller test', req.controllerId, req.profileId, req.testIds);
     const lookup = this.controllers.get(req.controllerId);
@@ -175,7 +175,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
     this.controllers.get(controllerId)?.profiles.get(profileId)?.configureHandler?.();
   }
 
-  //#endregion
+  // #endregion
 
   createTestController(controllerId: string, label: string): TestController {
     if (this.controllers.has(controllerId)) {
@@ -226,9 +226,8 @@ export class ExtHostTestsImpl implements IExtHostTests {
       createTestItem(id, label, uri) {
         return new TestItemImpl(controllerId, id, label, uri);
       },
-      createTestRun: (request, name, persist = true) => {
-        return this.runTracker.createTestRun(controllerId, collection, request, name, persist);
-      },
+      createTestRun: (request, name, persist = true) =>
+        this.runTracker.createTestRun(controllerId, collection, request, name, persist),
       set resolveHandler(fn) {
         collection.resolveHandler = fn;
       },
@@ -479,7 +478,7 @@ class TestRunTracker extends Disposable {
       set coverageProvider(provider) {
         coverage.coverageProvider = provider;
       },
-      //#region state mutation
+      // #region state mutation
       enqueued: guardTestMutation((test) => {
         this.proxy.$updateTestStateInRun(
           runId,
@@ -533,7 +532,7 @@ class TestRunTracker extends Disposable {
           duration,
         );
       }),
-      //#endregion
+      // #endregion
       appendOutput: (output, location?: Location, test?: TestItem) => {
         if (ended) {
           return;
@@ -620,7 +619,7 @@ const tryGetProfileFromTestRunReq = (request: TestRunRequest) => {
   }
 
   if (!(request.profile instanceof TestRunProfileImpl)) {
-    throw new Error(`TestRunRequest.profile is not an instance created from TestController.createRunProfile`);
+    throw new Error('TestRunRequest.profile is not an instance created from TestController.createRunProfile');
   }
 
   return request.profile;

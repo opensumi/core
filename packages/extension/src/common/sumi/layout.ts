@@ -1,8 +1,6 @@
-
 import { Event } from '@opensumi/ide-core-common';
 
 export interface ITabbarHandler {
-
   setSize(size: number): void;
 
   setTitle(title: string): void;
@@ -18,7 +16,6 @@ export interface ITabbarHandler {
   onActivate: Event<void>;
 
   isAttached(): Promise<boolean>;
-
 }
 
 export interface IMainThreadLayout {

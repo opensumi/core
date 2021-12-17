@@ -1,10 +1,13 @@
-import type { ResourceEdit, IBulkEditOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type {
+  ResourceEdit,
+  IBulkEditOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
 import { URI } from '@opensumi/ide-core-browser';
-import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService} from '../src/common';
+import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../src/common';
 import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
 import { WorkspaceEditModule } from '../src/browser';
 import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
@@ -16,6 +19,7 @@ function mockService(target) {
       if (p === 'hasOwnProperty') {
         return t[p];
       }
+      // eslint-disable-next-line no-prototype-builtins
       if (!t.hasOwnProperty(p)) {
         t[p] = jest.fn();
       }
@@ -25,7 +29,6 @@ function mockService(target) {
 }
 
 describe('workspace edit tests', () => {
-
   const monaco = createMockedMonaco();
 
   beforeAll(() => {
@@ -39,11 +42,11 @@ describe('workspace edit tests', () => {
   const injector = createBrowserInjector([WorkspaceEditModule]);
   const editorGroups: IEditorGroup[] = [];
   const files = new Set<string>();
-  injector.addProviders({
-    token: IEditorDocumentModelService,
-    useValue: mockService({
-      createModelReference: jest.fn((uri) => {
-        return {
+  injector.addProviders(
+    {
+      token: IEditorDocumentModelService,
+      useValue: mockService({
+        createModelReference: jest.fn((uri) => ({
           instance: {
             getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
@@ -51,51 +54,46 @@ describe('workspace edit tests', () => {
             save: jest.fn(),
           },
           dispose: jest.fn(),
-        };
-      }),
-      getModelReference: jest.fn((uri) => {
-        return {
+        })),
+        getModelReference: jest.fn((uri) => ({
           instance: {
             getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
             dispose: jest.fn(),
           },
           dispose: jest.fn(),
-        };
+        })),
       }),
-    }),
-  },
-  {
-    token: WorkbenchEditorService,
-    useValue: mockService({
-      currentEditor: undefined,
-      editorGroups,
-    }),
-  },
-  {
-    token: IFileServiceClient,
-    useValue: mockService({
-      access: (uri: URI) => {
-        return true;
-      },
-      createFile: jest.fn((uri: string, options: {overwrite?: boolean} = {}) => {
-        if (files.has(uri)) {
-          if (options.overwrite) {
-            return {
-              uri,
-            };
+    },
+    {
+      token: WorkbenchEditorService,
+      useValue: mockService({
+        currentEditor: undefined,
+        editorGroups,
+      }),
+    },
+    {
+      token: IFileServiceClient,
+      useValue: mockService({
+        access: (uri: URI) => true,
+        createFile: jest.fn((uri: string, options: { overwrite?: boolean } = {}) => {
+          if (files.has(uri)) {
+            if (options.overwrite) {
+              return {
+                uri,
+              };
+            } else {
+              throw FileSystemError.FileExists(uri);
+            }
           } else {
-            throw FileSystemError.FileExists(uri);
+            files.add(uri);
           }
-        } else {
-          files.add(uri);
-        }
+        }),
       }),
-    }),
-  });
+    },
+  );
 
   it('resource edit tests', async (done) => {
-
     const service: IWorkspaceEditService = injector.get(IWorkspaceEditService);
     await service.apply({
       edits: [
@@ -151,7 +149,6 @@ describe('workspace edit tests', () => {
   });
 
   it('file edit tests', async (done) => {
-
     const service: IWorkspaceEditService = injector.get(IWorkspaceEditService);
     const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
     const workspaceFileService: IWorkspaceFileService = injector.get(IWorkspaceFileService);
@@ -192,9 +189,11 @@ describe('workspace edit tests', () => {
       },
     };
 
-    injector.mock(IFileServiceClient, 'exists', jest.fn((uri: URI) => {
-      return true;
-    }));
+    injector.mock(
+      IFileServiceClient,
+      'exists',
+      jest.fn((uri: URI) => true),
+    );
 
     const mockParticipant = jest.fn();
     const mockWillCall = jest.fn();
@@ -208,23 +207,29 @@ describe('workspace edit tests', () => {
     workspaceFileService.onDidRunWorkspaceFileOperation(mockDidCall);
 
     await service.apply({
-      edits: [
-        moveEdit,
-        createEdit,
-        deleteEdit,
-      ],
+      edits: [moveEdit, createEdit, deleteEdit],
     });
 
-    expect(fileServiceClient.move).toHaveBeenLastCalledWith(moveEdit.oldResource!.toString(), moveEdit.newResource!.toString(), expect.objectContaining({
-      overwrite: true,
-    }));
+    expect(fileServiceClient.move).toHaveBeenLastCalledWith(
+      moveEdit.oldResource!.toString(),
+      moveEdit.newResource!.toString(),
+      expect.objectContaining({
+        overwrite: true,
+      }),
+    );
 
-    expect(fileServiceClient.createFile).toHaveBeenLastCalledWith(createEdit.newResource!.toString(), expect.objectContaining({
-      content: '',
-      overwrite: true,
-    }));
+    expect(fileServiceClient.createFile).toHaveBeenLastCalledWith(
+      createEdit.newResource!.toString(),
+      expect.objectContaining({
+        content: '',
+        overwrite: true,
+      }),
+    );
 
-    expect(fileServiceClient.delete).toHaveBeenLastCalledWith(deleteEdit.oldResource!.toString(), expect.objectContaining({}));
+    expect(fileServiceClient.delete).toHaveBeenLastCalledWith(
+      deleteEdit.oldResource!.toString(),
+      expect.objectContaining({}),
+    );
 
     expect(mockParticipant).toBeCalledTimes(3);
     expect(mockWillCall).toBeCalledTimes(3);
@@ -233,18 +238,17 @@ describe('workspace edit tests', () => {
     // 已存在的文件，不添加 ignoreIfExists 和 overwrite 选项， 应该抛出文件已存在的问题
     const createEdit2: IResourceFileEdit = {
       newResource: new URI('file:///createTest.ts'),
-      options: {
-      },
+      options: {},
     };
 
     let error: Error | undefined;
-    await service.apply({
-      edits: [
-        createEdit2,
-      ],
-    }).catch((err) => {
-      error = err;
-    });
+    await service
+      .apply({
+        edits: [createEdit2],
+      })
+      .catch((err) => {
+        error = err;
+      });
 
     expect(FileSystemError.FileExists.is(error)).toBe(true);
 
@@ -257,16 +261,13 @@ describe('workspace edit tests', () => {
     };
     error = undefined;
     await service.apply({
-      edits: [
-        createEdit3,
-      ],
+      edits: [createEdit3],
     });
 
     done();
   });
 
   it('monaco bulk edit test', async (done) => {
-
     const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
     const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
 
@@ -292,9 +293,13 @@ describe('workspace edit tests', () => {
       },
     ] as unknown as ResourceEdit[]);
 
-    expect(fileServiceClient.move).toHaveBeenLastCalledWith('file:///monaco.oldTest.ts', 'file:///monaco.newTest.ts', expect.objectContaining({
-      overwrite: true,
-    }));
+    expect(fileServiceClient.move).toHaveBeenLastCalledWith(
+      'file:///monaco.oldTest.ts',
+      'file:///monaco.newTest.ts',
+      expect.objectContaining({
+        overwrite: true,
+      }),
+    );
 
     const model = monaco.editor.getModel(Uri.parse('file:///monaco-test.ts'))!;
 
@@ -305,26 +310,29 @@ describe('workspace edit tests', () => {
   });
 
   it('monaco bulk edit preview test', async (done) => {
-    const mockedPreviewFn = jest.fn((edits: ResourceEdit[], options?: IBulkEditOptions): Promise<ResourceEdit[]> => {
-      return Promise.resolve(edits);
-    });
+    const mockedPreviewFn = jest.fn(
+      (edits: ResourceEdit[], options?: IBulkEditOptions): Promise<ResourceEdit[]> => Promise.resolve(edits),
+    );
     const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
     monacoBulkEditService.setPreviewHandler(mockedPreviewFn);
 
-    await monacoBulkEditService.apply([
-      {
-        resource: Uri.parse('file:///monaco-test-2.ts'),
-        textEdit: {
-          range: {
-            startColumn: 1,
-            endColumn: 1,
-            startLineNumber: 1,
-            endLineNumber: 1,
+    await monacoBulkEditService.apply(
+      [
+        {
+          resource: Uri.parse('file:///monaco-test-2.ts'),
+          textEdit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
+            },
+            text: 'test1',
           },
-          text: 'test1',
         },
-      },
-    ] as unknown as ResourceEdit[], { showPreview: true });
+      ] as unknown as ResourceEdit[],
+      { showPreview: true },
+    );
 
     const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-2.ts'))!;
     expect(model.pushEditOperations).toBeCalled();

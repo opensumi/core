@@ -5,7 +5,6 @@ import { CommandService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class HelpQuickOpenHandler implements QuickOpenHandler {
-
   readonly prefix: string = '?';
   readonly description: string = '';
   protected items: QuickOpenItem[];
@@ -20,20 +19,24 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
   commandService: CommandService;
 
   init(): void {
-    this.items = this.handlers.getHandlers()
+    this.items = this.handlers
+      .getHandlers()
       .filter((handler) => handler.prefix !== this.prefix)
       .sort((a, b) => this.comparePrefix(a.prefix, b.prefix))
-      .map((handler) => new QuickOpenItem({
-        label: handler.prefix,
-        description: handler.description,
-        run: (mode: Mode) => {
-          if (mode !== Mode.OPEN) {
-            return false;
-          }
-          this.quickOpenService.open(handler.prefix);
-          return false;
-        },
-      }));
+      .map(
+        (handler) =>
+          new QuickOpenItem({
+            label: handler.prefix,
+            description: handler.description,
+            run: (mode: Mode) => {
+              if (mode !== Mode.OPEN) {
+                return false;
+              }
+              this.quickOpenService.open(handler.prefix);
+              return false;
+            },
+          }),
+      );
   }
 
   getModel(): QuickOpenModel {

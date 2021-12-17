@@ -24,7 +24,7 @@
     padding: 10px 5px;
     font-size: @kt-default-font-size;
 
-    >span {
+    > span {
       display: inline-block;
       margin-left: 10px;
     }
@@ -40,13 +40,14 @@
     }
   }
 
-  .result_describe, .result_error {
+  .result_describe,
+  .result_error {
     margin-bottom: 0;
     padding: 0 10px 5px 10px;
 
     &::before {
       display: block;
-      content: "";
+      content: '';
       border-top: 0.5px solid var(--menu-separatorBackground);
       opacity: 0.05;
       margin-top: 12px;
@@ -82,7 +83,7 @@
     color: var(--errorForeground);
   }
 
-  input[type="text"] {
+  input[type='text'] {
     width: 100%;
   }
 
@@ -141,7 +142,6 @@
       }
     }
 
-
     .replace_field {
       display: flex;
     }
@@ -168,7 +168,7 @@
         align-items: center;
       }
 
-      input[type="text"] {
+      input[type='text'] {
         // width: auto;
       }
 
@@ -201,7 +201,7 @@
     background-position: center;
     border: 1px solid transparent;
     cursor: pointer;
-    opacity: .7;
+    opacity: 0.7;
 
     &:hover {
       opacity: 1;
@@ -227,7 +227,7 @@
     line-height: 26px;
     color: var(--focusBorder);
     border: 1px solid transparent;
-    transition: all .3s cubic-bezier(.645,.045,.355,1);
+    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
     flex-shrink: 0;
     cursor: pointer;
     &.disabled {
@@ -302,7 +302,7 @@
   }
 
   &.kt_mod_invalid {
-    color: var(--list-invalidItemForeground)
+    color: var(--list-invalidItemForeground);
   }
 }
 

@@ -1,11 +1,17 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { URI, Uri, FileDecorationsProvider, IFileDecoration, Emitter, DisposableCollection } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Uri,
+  FileDecorationsProvider,
+  IFileDecoration,
+  Emitter,
+  DisposableCollection,
+} from '@opensumi/ide-core-browser';
 import { IThemeService } from '@opensumi/ide-theme';
 
 @Injectable()
 export class OpenedEditorDecorationService implements FileDecorationsProvider {
-
   @Autowired(IDecorationsService)
   private readonly decorationsService: IDecorationsService;
 
@@ -41,7 +47,7 @@ export class OpenedEditorDecorationService implements FileDecorationsProvider {
       return {
         ...decoration,
         // 通过ThemeService获取颜色值
-        color: this.themeService.getColor({id: decoration.color as string}),
+        color: this.themeService.getColor({ id: decoration.color as string }),
       } as IFileDecoration;
     }
     return {
@@ -54,5 +60,4 @@ export class OpenedEditorDecorationService implements FileDecorationsProvider {
   dispose() {
     this.disposeCollection.dispose();
   }
-
 }

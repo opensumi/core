@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  * MIT License Copyright (c) 2020 Dani All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * https://github.com/Daninet/hash-wasm
@@ -7,20 +7,15 @@
 // copy and modified from https://github.com/Daninet/hash-wasm/blob/bd3a205ca5603fc80adf71d0966fc72e8d4fa0ef/lib/WASMInterface.ts
 
 import { Mutex } from './mutex';
-import {
-  decodeBase64, getDigestHex, getUInt8Buffer, IDataType, writeHexToUInt8,
-  hexStringEqualsUInt8,
-} from './util';
+import { decodeBase64, getDigestHex, getUInt8Buffer, IDataType, writeHexToUInt8, hexStringEqualsUInt8 } from './util';
 
 export const MAX_HEAP = 16 * 1024;
 const WASM_FUNC_HASH_LENGTH = 4;
 const wasmMutex = new Mutex();
 
-type ThenArg<T> = T extends Promise<infer U> ? U :
-  T extends ((...args: any[]) => Promise<infer V>) ? V :
-  T;
+type ThenArg<T> = T extends Promise<infer U> ? U : T extends (...args: any[]) => Promise<infer V> ? V : T;
 
-export type IHasher = {
+export interface IHasher {
   /**
    * Initializes hash state to default value
    */
@@ -104,7 +99,6 @@ export async function WASMInterface(binary: any, hashLength: number) {
 
     const module = await wasmModuleCache.get(binary.name);
     wasmInstance = await WebAssembly.instantiate(module!);
-
   });
 
   const setupInterface = async () => {
@@ -208,8 +202,7 @@ export async function WASMInterface(binary: any, hashLength: number) {
     return data.byteLength < MAX_HEAP;
   };
 
-  let canSimplify:
-    (data: IDataType, initParam?: number) => boolean = isDataShort;
+  let canSimplify: (data: IDataType, initParam?: number) => boolean = isDataShort;
 
   switch (binary.name) {
     case 'argon2':
@@ -239,9 +232,7 @@ export async function WASMInterface(binary: any, hashLength: number) {
   }
 
   // shorthand for (init + update + digest) for better performance
-  const calculate = (
-    data: IDataType, initParam = null, digestParam = null,
-  ): string => {
+  const calculate = (data: IDataType, initParam = null, digestParam = null): string => {
     if (!canSimplify(data, initParam!)) {
       init(initParam);
       update(data);

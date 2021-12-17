@@ -15,7 +15,7 @@ export class WebSocketServerRoute {
   constructor(
     server?: http.Server,
     private logger: any = console,
-    port: number = 8729,
+    port = 8729,
     wsServerHandlerArr: WebSocketHandler[] = [],
   ) {
     if (server) {
@@ -28,9 +28,7 @@ export class WebSocketServerRoute {
 
   public registerHandler(handler: WebSocketHandler) {
     const wsServerHandlerArr = this.wsServerHandlerArr;
-    const findHandler = (h: WebSocketHandler) => {
-      return h.handlerId === handler!.handlerId;
-    };
+    const findHandler = (h: WebSocketHandler) => h.handlerId === handler!.handlerId;
 
     if (wsServerHandlerArr.findIndex(findHandler) === -1) {
       this.wsServerHandlerArr.push(handler);
@@ -45,9 +43,7 @@ export class WebSocketServerRoute {
       handlerId = handler as string;
     }
 
-    const handlerIndex = this.wsServerHandlerArr.findIndex((handler) => {
-      return handler.handlerId === handlerId;
-    });
+    const handlerIndex = this.wsServerHandlerArr.findIndex((handler) => handler.handlerId === handlerId);
 
     if (handlerIndex !== -1) {
       this.wsServerHandlerArr.splice(handlerIndex, 1);
@@ -82,7 +78,6 @@ export class WebSocketServerRoute {
     const wsServerHandlerArr = this.wsServerHandlerArr;
 
     server.on('upgrade', (request, socket, head) => {
-
       const wsPathname: string = url.parse(request.url).pathname as string;
 
       let wsHandlerIndex = 0;
@@ -99,8 +94,6 @@ export class WebSocketServerRoute {
       if (wsHandlerIndex === wsHandlerLength) {
         this.logger.error(`request.url ${request.url} mismatch!`);
       }
-
     });
   }
-
 }

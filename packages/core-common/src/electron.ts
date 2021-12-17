@@ -6,13 +6,9 @@ export interface IElectronMainApi<Events> {
   on(event: Events, listener: (...args) => void): IDisposable;
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface IElectronPlainWebviewWindowOptions extends Electron.BrowserWindowConstructorOptions {
-  // 后续可支持更多自定义字段
-}
+export type IElectronPlainWebviewWindowOptions = Electron.BrowserWindowConstructorOptions;
 
 export interface IElectronMainUIServiceShape {
-
   openPath(path: string): Promise<string>;
 
   openExternal(uri: string): void;
@@ -29,7 +25,7 @@ export interface IElectronMainUIServiceShape {
 
   showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined>;
 
-  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; }): void;
+  setZoomFactor(webContentsId: number, options: { value?: number; delta?: number }): void;
 
   /**
    * 在资源管理器里打开文件
@@ -67,7 +63,7 @@ export interface IElectronMainUIServiceShape {
    * @param windowId
    * @param size
    */
-  setSize(windowId: number, size: { width: number; height: number; }): Promise<void>;
+  setSize(windowId: number, size: { width: number; height: number }): Promise<void>;
 
   /**
    * 设置窗口是否始终置顶
@@ -102,8 +98,9 @@ export interface IElectronMainUIServiceShape {
   getWebContentsId(windowId: number): Promise<number>;
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> { }
+export interface IElectronMainUIService
+  extends IElectronMainUIServiceShape,
+    IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {}
 
 export const IElectronMainUIService = 'IElectronMainUIService';
 
@@ -135,7 +132,6 @@ export interface IURLHandler {
 export const IElectronURLService = 'IElectronURLService';
 
 export interface IElectronURLService {
-
   open(url: string): Promise<boolean>;
 
   registerHandler(handler: IURLHandler): void;
@@ -145,5 +141,4 @@ export interface IElectronURLService {
   deregisterHandler(handler: IURLHandler): void;
 }
 
-// tslint:disable-next-line: no-empty-interface
-export interface IElectronRendererURLService extends IElectronMainApi<string>, IElectronURLService { }
+export interface IElectronRendererURLService extends IElectronMainApi<string>, IElectronURLService {}

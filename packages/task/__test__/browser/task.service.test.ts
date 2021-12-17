@@ -21,71 +21,69 @@ import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mo
 const preferences: Map<string, any> = new Map();
 
 const mockedPreferenceService: any = {
-  get: (k) => {
-    return preferences.get(k);
-  },
+  get: (k) => preferences.get(k),
   set: (k, v) => {
     preferences.set(k, v);
   },
-  onPreferenceChanged: (listener) => {
-    return {
-      dispose: () => { },
-    };
-  },
+  onPreferenceChanged: (listener) => ({
+    dispose: () => {},
+  }),
 };
 
 describe('TaskService Test Suite', () => {
   const injector = createBrowserInjector([]);
   let taskService: ITaskService;
   let workspace: MockWorkspaceService;
-  injector.addProviders(...[
-    {
-      token: QuickOpenService,
-      useClass: MockQuickOpenService,
-    },
-    {
-      token: PreferenceService,
-      useValue: mockedPreferenceService,
-    },
-    {
-      token: MonacoService,
-      useClass: MockedMonacoService,
-    },
-    {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    },
-    {
-      token: ITaskService,
-      useClass: TaskService,
-    },
-    {
-      token: ITaskSystem,
-      useClass: TerminalTaskSystem,
-    },
-    {
-      token: ISchemaStore,
-      useClass: SchemaStore,
-    },
-    {
-      token: IJSONSchemaRegistry,
-      useClass: SchemaRegistry,
-    },
-    {
-      token: IMainLayoutService,
-      useClass: LayoutService,
-    },
-    {
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
+  injector.addProviders(
+    ...[
+      {
+        token: QuickOpenService,
+        useClass: MockQuickOpenService,
       },
-    },
-    {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    },
-  ]);
+      {
+        token: PreferenceService,
+        useValue: mockedPreferenceService,
+      },
+      {
+        token: MonacoService,
+        useClass: MockedMonacoService,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useClass: EditorDocumentModelServiceImpl,
+      },
+      {
+        token: ITaskService,
+        useClass: TaskService,
+      },
+      {
+        token: ITaskSystem,
+        useClass: TerminalTaskSystem,
+      },
+      {
+        token: ISchemaStore,
+        useClass: SchemaStore,
+      },
+      {
+        token: IJSONSchemaRegistry,
+        useClass: SchemaRegistry,
+      },
+      {
+        token: IMainLayoutService,
+        useClass: LayoutService,
+      },
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+    ],
+  );
 
   beforeAll(async () => {
     const monacoService = injector.get(MonacoService);
@@ -93,25 +91,21 @@ describe('TaskService Test Suite', () => {
     injector.overrideProviders({
       token: PreferenceService,
       useValue: {
-        onPreferenceChanged: jest.fn(() => ({ dispose: () => { } })),
-        get: () => {
-          return {
-            'version': '2.0.0',
-            'tasks': [
-              {
-                'type': 'shell',
-                'label': 'Echo Hello',
-                'command': 'echo',
-                'args': [
-                  "'hello'",
-                ],
-                'options': {
-                  'cwd': '${workspaceFolder}',
-                },
+        onPreferenceChanged: jest.fn(() => ({ dispose: () => {} })),
+        get: () => ({
+          version: '2.0.0',
+          tasks: [
+            {
+              type: 'shell',
+              label: 'Echo Hello',
+              command: 'echo',
+              args: ["'hello'"],
+              options: {
+                cwd: '${workspaceFolder}',
               },
-            ],
-          };
-        },
+            },
+          ],
+        }),
       },
     });
     taskService = injector.get<ITaskService>(ITaskService);
@@ -125,16 +119,11 @@ describe('TaskService Test Suite', () => {
       isDirectory: true,
       lastModification: 0,
     });
-
   });
   it('registerTaskProider should be work', () => {
     const provider: ITaskProvider = {
-      provideTasks: () => {
-        return Promise.resolve({ tasks: [] });
-      },
-      resolveTask: (task) => {
-        return Promise.resolve(undefined);
-      },
+      provideTasks: () => Promise.resolve({ tasks: [] }),
+      resolveTask: (task) => Promise.resolve(undefined),
     };
     const disposable = taskService.registerTaskProvider(provider, 'test-suite-provider');
     expect(typeof disposable.dispose).toBe('function');

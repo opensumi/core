@@ -18,30 +18,31 @@ process.on('unhandledRejection', (reason) => {
 });
 
 describe('Extension Storage Server -- Setup directory should be worked', () => {
-
   let injector: MockInjector;
   let root: URI;
   const track = temp.track();
 
   const initializeInjector = async () => {
+    injector = createBrowserInjector([ExtensionStorageModule]);
 
-    injector = createBrowserInjector([
-      ExtensionStorageModule,
-    ]);
-
-    injector.addProviders({
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
-    }, {
-      token: AppConfig,
-      useValue: {},
-    }, {
-      token: IFileServiceClient,
-      useClass: FileServiceClient,
-    }, {
-      token: IDiskFileProvider,
-      useClass: DiskFileSystemProvider,
-    });
+    injector.addProviders(
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+      {
+        token: AppConfig,
+        useValue: {},
+      },
+      {
+        token: IFileServiceClient,
+        useClass: FileServiceClient,
+      },
+      {
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
+      },
+    );
 
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
@@ -66,47 +67,51 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
       lastModification: 0,
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
-    injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
-      return root.path.toString();
-    });
-    injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
-      return root.path.toString();
-    });
+    injector.mock(ILoggerManagerClient, 'getLogFolder', () => root.path.toString());
+    injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => root.path.toString());
     await extensionStorage.init(rootFileStat, [rootFileStat], extensionStorageDirName);
     expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName))).toBeTruthy();
-    expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR))).toBeTruthy();
-    expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR))).toBeTruthy();
+    expect(
+      fs.existsSync(
+        path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR),
+      ),
+    ).toBeTruthy();
+    expect(
+      fs.existsSync(
+        path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR),
+      ),
+    ).toBeTruthy();
     done();
   });
-
 });
 
 describe('Extension Storage Server -- Data operation should be worked', () => {
-
   let injector: MockInjector;
   let root: URI;
   let extensionStorage: IExtensionStorageServer;
   const track = temp.track();
 
   const initializeInjector = async () => {
+    injector = createBrowserInjector([ExtensionStorageModule]);
 
-    injector = createBrowserInjector([
-      ExtensionStorageModule,
-    ]);
-
-    injector.addProviders({
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
-    }, {
-      token: AppConfig,
-      useValue: {},
-    }, {
-      token: IFileServiceClient,
-      useClass: FileServiceClient,
-    }, {
-      token: IDiskFileProvider,
-      useClass: DiskFileSystemProvider,
-    });
+    injector.addProviders(
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+      {
+        token: AppConfig,
+        useValue: {},
+      },
+      {
+        token: IFileServiceClient,
+        useClass: FileServiceClient,
+      },
+      {
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
+      },
+    );
 
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
@@ -124,12 +129,8 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
       lastModification: 0,
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
-    injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
-      return root.path.toString();
-    });
-    injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
-      return root.path.toString();
-    });
+    injector.mock(ILoggerManagerClient, 'getLogFolder', () => root.path.toString());
+    injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => root.path.toString());
     await extensionStorage.init(rootFileStat, [rootFileStat], extensionStorageDirName);
   });
 

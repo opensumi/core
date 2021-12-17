@@ -9,7 +9,6 @@ import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
 
 @Injectable()
 export class DebugToolbarService {
-
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
@@ -47,24 +46,24 @@ export class DebugToolbarService {
   updateModel() {
     this.state = this.model.state;
     this.currentSession = this.model.currentSession;
-    this.sessions = Array.from(this.model.sessions).filter((session: DebugSession) => {
-      return session && session.state > DebugState.Inactive;
-    });
+    this.sessions = Array.from(this.model.sessions).filter(
+      (session: DebugSession) => session && session.state > DebugState.Inactive,
+    );
     this.sessionCount = this.sessions.length;
   }
 
   @action
   updateToolBarMenu() {
     if (this.currentSession && this.currentSession.id && !this.toolBarMenuMap.has(this.currentSession.id)) {
-      const contextMenu = this.contextMenuService.createMenu({ id: MenuId.DebugToolBar, contextKeyService: this.contextKeyService.createScoped() });
+      const contextMenu = this.contextMenuService.createMenu({
+        id: MenuId.DebugToolBar,
+        contextKeyService: this.contextKeyService.createScoped(),
+      });
       this.currentSession.on('terminated', () => {
         this.toolBarMenuMap.delete(this.currentSession?.id!);
       });
 
-      this.toolBarMenuMap.set(
-        this.currentSession.id,
-        contextMenu,
-      );
+      this.toolBarMenuMap.set(this.currentSession.id, contextMenu);
     }
   }
 
@@ -87,16 +86,14 @@ export class DebugToolbarService {
     };
   }
 
-  doStart = () => {
-    return this.model.start();
-  }
+  doStart = () => this.model.start();
 
   doRestart = async () => {
     const reportTimeEnd = this.instrumentReporter('restart');
     const terminated = await this.model.restart();
     reportTimeEnd();
     return terminated;
-  }
+  };
 
   doStop = async () => {
     if (!this.model.currentSession) {
@@ -106,7 +103,7 @@ export class DebugToolbarService {
     const terminated = await this.model.currentSession.terminate();
     reportTimeEnd();
     return terminated;
-  }
+  };
   doContinue = async () => {
     if (!this.model.currentThread) {
       return;
@@ -115,7 +112,7 @@ export class DebugToolbarService {
     const terminated = await this.model.currentThread.continue();
     reportTimeEnd();
     return terminated;
-  }
+  };
   doPause = async () => {
     if (!this.model.currentThread) {
       return;
@@ -124,7 +121,7 @@ export class DebugToolbarService {
     const terminated = await this.model.currentThread.pause();
     reportTimeEnd();
     return terminated;
-  }
+  };
   doStepOver = async () => {
     if (!this.model.currentThread) {
       return;
@@ -133,7 +130,7 @@ export class DebugToolbarService {
     const terminated = await this.model.currentThread.stepOver();
     reportTimeEnd();
     return terminated;
-  }
+  };
   doStepIn = async () => {
     if (!this.model.currentThread) {
       return;
@@ -142,7 +139,7 @@ export class DebugToolbarService {
     const terminated = await this.model.currentThread.stepIn();
     reportTimeEnd();
     return terminated;
-  }
+  };
   doStepOut = async () => {
     if (!this.model.currentThread) {
       return;
@@ -151,10 +148,9 @@ export class DebugToolbarService {
     const terminated = await this.model.currentThread.stepOut();
     reportTimeEnd();
     return terminated;
-  }
+  };
 
   updateCurrentSession = (session: DebugSession) => {
     this.model.currentSession = session;
-  }
-
+  };
 }

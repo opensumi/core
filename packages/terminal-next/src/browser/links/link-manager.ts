@@ -7,7 +7,16 @@ import { IOpenerService } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { TerminalProtocolLinkProvider } from './protocol-link-provider';
-import { TerminalValidatedLocalLinkProvider, lineAndColumnClause, unixLocalLinkClause, winLocalLinkClause, winDrivePrefix, winLineAndColumnMatchIndex, unixLineAndColumnMatchIndex, lineAndColumnClauseGroupCount } from './validated-local-link-provider';
+import {
+  TerminalValidatedLocalLinkProvider,
+  lineAndColumnClause,
+  unixLocalLinkClause,
+  winLocalLinkClause,
+  winDrivePrefix,
+  winLineAndColumnMatchIndex,
+  unixLineAndColumnMatchIndex,
+  lineAndColumnClauseGroupCount,
+} from './validated-local-link-provider';
 import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
 import { ITerminalClient, ITerminalExternalLinkProvider } from '../../common';
 import { TerminalClient } from '../terminal.client';
@@ -44,10 +53,7 @@ export class TerminalLinkManager extends Disposable {
 
   private _getHomeDirPromise: Promise<string>;
 
-  constructor(
-    private _xterm: Terminal,
-    private _client: TerminalClient,
-  ) {
+  constructor(private _xterm: Terminal, private _client: TerminalClient) {
     super();
 
     // Protocol links
@@ -81,8 +87,16 @@ export class TerminalLinkManager extends Disposable {
     }
   }
 
-  public registerExternalLinkProvider(instance: ITerminalClient, linkProvider: ITerminalExternalLinkProvider): IDisposable {
-    const wrappedLinkProvider = new TerminalExternalLinkProviderAdapter(this._xterm, instance, linkProvider, this._wrapLinkHandler.bind(this));
+  public registerExternalLinkProvider(
+    instance: ITerminalClient,
+    linkProvider: ITerminalExternalLinkProvider,
+  ): IDisposable {
+    const wrappedLinkProvider = new TerminalExternalLinkProviderAdapter(
+      this._xterm,
+      instance,
+      linkProvider,
+      this._wrapLinkHandler.bind(this),
+    );
     const newLinkProvider = this._xterm.registerLinkProvider(wrappedLinkProvider);
     // Re-register the standard link providers so they are a lower priority that the new one
     this._registerStandardLinkProviders();
@@ -139,7 +153,9 @@ export class TerminalLinkManager extends Disposable {
       // fsPath 是基于当前环境判断 sep 的，连接远程服务时，如果当前系统为 Windows，
       // 而 uri 来自远程 Linux，则会出现生成的链接 sep 不正确，导致打开文件失败。
       const fsPath = FileUri.fsPath(uri);
-      this._handleLocalLink(((this._client.os !== OperatingSystem.Windows) && isWindows) ? fsPath.replace(/\\/g, posix.sep) : fsPath);
+      this._handleLocalLink(
+        this._client.os !== OperatingSystem.Windows && isWindows ? fsPath.replace(/\\/g, posix.sep) : fsPath,
+      );
       return;
     }
 
@@ -212,7 +228,7 @@ export class TerminalLinkManager extends Disposable {
     return link;
   }
 
-  private async _resolvePath(link: string): Promise<{ uri: URI, isDirectory: boolean } | undefined> {
+  private async _resolvePath(link: string): Promise<{ uri: URI; isDirectory: boolean } | undefined> {
     const preprocessedLink = await this._preprocessPath(link);
     if (!preprocessedLink) {
       return undefined;
@@ -251,9 +267,10 @@ export class TerminalLinkManager extends Disposable {
       return lineColumnInfo;
     }
 
-    const lineAndColumnMatchIndex = this._client.os === OperatingSystem.Windows ? winLineAndColumnMatchIndex : unixLineAndColumnMatchIndex;
+    const lineAndColumnMatchIndex =
+      this._client.os === OperatingSystem.Windows ? winLineAndColumnMatchIndex : unixLineAndColumnMatchIndex;
     for (let i = 0; i < lineAndColumnClause.length; i++) {
-      const lineMatchIndex = lineAndColumnMatchIndex + (lineAndColumnClauseGroupCount * i);
+      const lineMatchIndex = lineAndColumnMatchIndex + lineAndColumnClauseGroupCount * i;
       const rowNumber = matches[lineMatchIndex];
       if (rowNumber) {
         lineColumnInfo['lineNumber'] = parseInt(rowNumber, 10);

@@ -9,7 +9,6 @@ import { FileStat } from '@opensumi/ide-file-service';
  */
 @Injectable()
 export class WorkspaceStorageService implements IWorkspaceStorageService {
-
   private prefix: string;
   private initialized: Promise<void>;
 

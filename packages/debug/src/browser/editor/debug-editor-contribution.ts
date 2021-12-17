@@ -5,10 +5,25 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
 import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
-import { IDisposable, Disposable, RunOnceScheduler, CancellationTokenSource, onUnexpectedExternalError, Position, createMemoizer, Emitter, Event } from '@opensumi/ide-core-common';
+import {
+  IDisposable,
+  Disposable,
+  RunOnceScheduler,
+  CancellationTokenSource,
+  onUnexpectedExternalError,
+  Position,
+  createMemoizer,
+  Emitter,
+  Event,
+} from '@opensumi/ide-core-common';
 import { flatten } from '@opensumi/ide-core-common/lib/arrays';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, PreferenceService, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  PreferenceService,
+  MonacoOverrideServiceRegistry,
+  ServiceNames,
+} from '@opensumi/ide-core-browser';
 import { InlineValuesProviderRegistry } from './inline-values';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
@@ -27,10 +42,14 @@ const MAX_INLINE_DECORATOR_LENGTH = 150; // 调试时每个内联修饰符的最
 const MAX_TOKENIZATION_LINE_LEN = 500; // 如果这行太长了，则跳过该行的内联值
 
 class InlineSegment {
-  constructor(public column: number, public text: string) { }
+  constructor(public column: number, public text: string) {}
 }
 
-function createInlineValueDecoration(lineNumber: number, contentText: string, column = Constants.MAX_SAFE_SMALL_INTEGER): IDecorationApplyOptions {
+function createInlineValueDecoration(
+  lineNumber: number,
+  contentText: string,
+  column = Constants.MAX_SAFE_SMALL_INTEGER,
+): IDecorationApplyOptions {
   if (contentText.length > MAX_INLINE_DECORATOR_LENGTH) {
     contentText = contentText.substr(0, MAX_INLINE_DECORATOR_LENGTH) + '...';
   }
@@ -62,7 +81,12 @@ function createInlineValueDecoration(lineNumber: number, contentText: string, co
   };
 }
 
-function createInlineValueDecorationsInsideRange(expressions: ReadonlyArray<DebugVariable>, range: Range, model: ITextModel, wordToLineNumbersMap: Map<string, number[]>): IDecorationApplyOptions[] {
+function createInlineValueDecorationsInsideRange(
+  expressions: ReadonlyArray<DebugVariable>,
+  range: Range,
+  model: ITextModel,
+  wordToLineNumbersMap: Map<string, number[]>,
+): IDecorationApplyOptions[] {
   const nameValueMap = new Map<string, string>();
   for (const expr of expressions) {
     nameValueMap.set(expr.name, expr.value);
@@ -93,10 +117,13 @@ function createInlineValueDecorationsInsideRange(expressions: ReadonlyArray<Debu
   const decorations: IDecorationApplyOptions[] = [];
 
   lineToNamesMap.forEach((names, line) => {
-    const contentText = names.sort((first, second) => {
-      const content = model.getLineContent(line);
-      return content.indexOf(first) - content.indexOf(second);
-    }).map((name) => `${name} = ${nameValueMap.get(name)}`).join(', ');
+    const contentText = names
+      .sort((first, second) => {
+        const content = model.getLineContent(line);
+        return content.indexOf(first) - content.indexOf(second);
+      })
+      .map((name) => `${name} = ${nameValueMap.get(name)}`)
+      .join(', ');
     decorations.push(createInlineValueDecoration(line, contentText));
   });
 
@@ -130,7 +157,6 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
         const wordMatch = DEFAULT_WORD_REGEXP.exec(tokenStr);
 
         if (wordMatch) {
-
           const word = wordMatch[0];
           if (!result.has(word)) {
             result.set(word, []);
@@ -147,7 +173,6 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
 
 @Injectable()
 export class DebugEditorContribution implements IEditorFeatureContribution {
-
   private static readonly MEMOIZER = createMemoizer();
 
   @Autowired(IContextKeyService)
@@ -173,61 +198,73 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
   private readonly disposer: Disposable = new Disposable();
 
-  constructor() { }
+  constructor() {}
 
   public contribute(editor: IEditor): IDisposable {
-    this.disposer.addDispose(this.contextKeyService.onDidChangeContext((e) => {
-      if (this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY)) {
-        this.onDidInDebugModeEmitter.fire(editor);
-        this.toggleHoverEnabled(editor);
-      }
-    }));
+    this.disposer.addDispose(
+      this.contextKeyService.onDidChangeContext((e) => {
+        if (this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY)) {
+          this.onDidInDebugModeEmitter.fire(editor);
+          this.toggleHoverEnabled(editor);
+        }
+      }),
+    );
 
-    this.disposer.addDispose(editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
-      if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
-        editor.monacoEditor.updateOptions({ hover: { enabled: true } });
-        this.debugModelManager.model?.debugHoverWidget.hide();
-        const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
-          if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
-            editor.monacoEditor.updateOptions({ hover: { enabled: false } });
-            this.debugModelManager.model?.debugHoverWidget.show();
-            listener.dispose();
-          }
-        });
-      }
-    }));
+    this.disposer.addDispose(
+      editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
+        if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
+          editor.monacoEditor.updateOptions({ hover: { enabled: true } });
+          this.debugModelManager.model?.debugHoverWidget.hide();
+          const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
+            if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
+              editor.monacoEditor.updateOptions({ hover: { enabled: false } });
+              this.debugModelManager.model?.debugHoverWidget.show();
+              listener.dispose();
+            }
+          });
+        }
+      }),
+    );
 
-    this.disposer.addDispose(editor.monacoEditor.onDidChangeModelContent(async () => {
-      DebugEditorContribution.MEMOIZER.clear();
-      await this.directRunUpdateInlineValueDecorations(editor);
-    }));
+    this.disposer.addDispose(
+      editor.monacoEditor.onDidChangeModelContent(async () => {
+        DebugEditorContribution.MEMOIZER.clear();
+        await this.directRunUpdateInlineValueDecorations(editor);
+      }),
+    );
 
-    this.disposer.addDispose(editor.monacoEditor.onDidChangeModel(async () => {
-      await this.directRunUpdateInlineValueDecorations(editor);
-    }));
+    this.disposer.addDispose(
+      editor.monacoEditor.onDidChangeModel(async () => {
+        await this.directRunUpdateInlineValueDecorations(editor);
+      }),
+    );
 
-    this.disposer.addDispose(this.debugSessionManager.onDidChangeActiveDebugSession(() => {
-      if (this.debugSessionManager.currentSession) {
-        this.disposer.addDispose([
-          Event.any(
-            this.debugSessionManager.currentSession.onDidChangeCallStack,
-            this.debugSessionManager.currentSession.onDidStop as unknown as Event<void>,
-          )(async () => {
-            await this.directRunUpdateInlineValueDecorations(editor);
-          }),
+    this.disposer.addDispose(
+      this.debugSessionManager.onDidChangeActiveDebugSession(() => {
+        if (this.debugSessionManager.currentSession) {
+          this.disposer.addDispose([
+            Event.any(
+              this.debugSessionManager.currentSession.onDidChangeCallStack,
+              this.debugSessionManager.currentSession.onDidStop as unknown as Event<void>,
+            )(async () => {
+              await this.directRunUpdateInlineValueDecorations(editor);
+            }),
 
-          this.debugSessionManager.currentSession.onDidExitAdapter(() => {
-            this.removeInlineValuesScheduler(editor).schedule();
-          }),
-        ]);
-      }
-    }));
+            this.debugSessionManager.currentSession.onDidExitAdapter(() => {
+              this.removeInlineValuesScheduler(editor).schedule();
+            }),
+          ]);
+        }
+      }),
+    );
 
     return this.disposer;
   }
 
   public registerDecorationType(): void {
-    const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE) as MonacoCodeService;
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService(
+      ServiceNames.CODE_EDITOR_SERVICE,
+    ) as MonacoCodeService;
     codeEditorService.registerDecorationType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, {});
   }
 
@@ -253,10 +290,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   }
 
   private removeInlineValuesScheduler(editor: IEditor): RunOnceScheduler {
-    return new RunOnceScheduler(
-      () => editor.monacoEditor.removeDecorations(INLINE_VALUE_DECORATION_KEY),
-      100,
-    );
+    return new RunOnceScheduler(() => editor.monacoEditor.removeDecorations(INLINE_VALUE_DECORATION_KEY), 100);
   }
 
   private async updateInlineValueDecorations(stackFrame: DebugStackFrame | undefined, editor: IEditor): Promise<void> {
@@ -268,8 +302,12 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
     const separator = ', ';
 
     const model = editor.monacoEditor.getModel();
-    if (!this.preferenceService.get('debug.inline.values') ||
-      !model || !stackFrame || model.uri.toString() !== stackFrame.source?.uri.toString()) {
+    if (
+      !this.preferenceService.get('debug.inline.values') ||
+      !model ||
+      !stackFrame ||
+      model.uri.toString() !== stackFrame.source?.uri.toString()
+    ) {
       if (!this.removeInlineValuesScheduler(editor).isScheduled()) {
         this.removeInlineValuesScheduler(editor).schedule();
       }
@@ -281,14 +319,13 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
     let allDecorations: IDecorationApplyOptions[];
 
     if (InlineValuesProviderRegistry.has(model)) {
-
       const findVariable = async (_key: string, caseSensitiveLookup: boolean): Promise<string | undefined> => {
         const scopes = await stackFrame.getMostSpecificScopes(stackFrame.range());
         const key = caseSensitiveLookup ? _key : _key.toLowerCase();
         for (const scope of scopes) {
           await scope.ensureLoaded();
-          const variables = scope.children as DebugVariable[] || [];
-          const found = variables.find((v) => caseSensitiveLookup ? (v.name === key) : (v.name.toLowerCase() === key));
+          const variables = (scope.children as DebugVariable[]) || [];
+          const found = variables.find((v) => (caseSensitiveLookup ? v.name === key : v.name.toLowerCase() === key));
           if (found) {
             return found.value;
           }
@@ -300,7 +337,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
         frameId: stackFrame.raw.id,
         stoppedLocation: (() => {
           const sr = stackFrame.range();
-          return  new Range(sr.startLineNumber, sr.startColumn + 1, sr.endLineNumber, sr.endColumn + 1);
+          return new Range(sr.startLineNumber, sr.startColumn + 1, sr.endLineNumber, sr.endColumn + 1);
         })(),
       };
       const token = new CancellationTokenSource().token;
@@ -311,59 +348,70 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       allDecorations = [];
       const lineDecorations = new Map<number, InlineSegment[]>();
 
-      const promises = flatten(providers.map((provider) => ranges.map((range) => Promise.resolve(provider.provideInlineValues(model, range, ctx, token)).then(async (result) => {
-        if (result) {
-          for (const iv of result) {
+      const promises = flatten(
+        providers.map((provider) =>
+          ranges.map((range) =>
+            Promise.resolve(provider.provideInlineValues(model, range, ctx, token)).then(
+              async (result) => {
+                if (result) {
+                  for (const iv of result) {
+                    let text: string | undefined;
+                    switch (iv.type) {
+                      case 'text':
+                        text = iv.text;
+                        break;
+                      case 'variable': {
+                        let va = iv.variableName;
+                        if (!va) {
+                          const lineContent = model.getLineContent(iv.range.startLineNumber);
+                          va = lineContent.substring(iv.range.startColumn - 1, iv.range.endColumn - 1);
+                        }
+                        const value = await findVariable(va, iv.caseSensitiveLookup);
+                        if (value) {
+                          text = strings.format(varValueFormat, va, value);
+                        }
+                        break;
+                      }
+                      case 'expression': {
+                        let expr = iv.expression;
+                        if (!expr) {
+                          const lineContent = model.getLineContent(iv.range.startLineNumber);
+                          expr = lineContent.substring(iv.range.startColumn - 1, iv.range.endColumn - 1);
+                        }
+                        if (expr) {
+                          const root = new DebugWatchRoot(stackFrame.thread.session);
+                          const expression = new DebugWatchNode(stackFrame.thread.session, expr, root);
+                          await expression.evaluate(expr);
+                          if (expression.available) {
+                            text = strings.format(varValueFormat, expr, expression.description);
+                          }
+                        }
+                        break;
+                      }
+                    }
 
-            let text: string | undefined;
-            switch (iv.type) {
-              case 'text':
-                text = iv.text;
-                break;
-              case 'variable':
-                let va = iv.variableName;
-                if (!va) {
-                  const lineContent = model.getLineContent(iv.range.startLineNumber);
-                  va = lineContent.substring(iv.range.startColumn - 1, iv.range.endColumn - 1);
-                }
-                const value = await findVariable(va, iv.caseSensitiveLookup);
-                if (value) {
-                  text = strings.format(varValueFormat, va, value);
-                }
-                break;
-              case 'expression':
-                let expr = iv.expression;
-                if (!expr) {
-                  const lineContent = model.getLineContent(iv.range.startLineNumber);
-                  expr = lineContent.substring(iv.range.startColumn - 1, iv.range.endColumn - 1);
-                }
-                if (expr) {
-                  const root = new DebugWatchRoot(stackFrame.thread.session);
-                  const expression = new DebugWatchNode(stackFrame.thread.session, expr, root);
-                  await expression.evaluate(expr);
-                  if (expression.available) {
-                    text = strings.format(varValueFormat, expr, expression.description);
+                    if (text) {
+                      const line = iv.range.startLineNumber;
+                      let lineSegments = lineDecorations.get(line);
+                      if (!lineSegments) {
+                        lineSegments = [];
+                        lineDecorations.set(line, lineSegments);
+                      }
+                      if (!lineSegments.some((iv) => iv.text === text)) {
+                        // de-dupe
+                        lineSegments.push(new InlineSegment(iv.range.startColumn, text));
+                      }
+                    }
                   }
                 }
-                break;
-            }
-
-            if (text) {
-              const line = iv.range.startLineNumber;
-              let lineSegments = lineDecorations.get(line);
-              if (!lineSegments) {
-                lineSegments = [];
-                lineDecorations.set(line, lineSegments);
-              }
-              if (!lineSegments.some((iv) => iv.text === text)) {	// de-dupe
-                lineSegments.push(new InlineSegment(iv.range.startColumn, text));
-              }
-            }
-          }
-        }
-      }, (err) => {
-        onUnexpectedExternalError(err);
-      }))));
+              },
+              (err) => {
+                onUnexpectedExternalError(err);
+              },
+            ),
+          ),
+        ),
+      );
 
       await Promise.all(promises);
 
@@ -374,23 +422,29 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
           allDecorations.push(createInlineValueDecoration(line, text));
         }
       });
-
     } else {
       const scopes = await stackFrame.getMostSpecificScopes(stackFrame.range());
       // 获取 scope 链中的所有顶级变量
-      const decorationsPerScope = await Promise.all(scopes.map(async (scope) => {
-        await scope.ensureLoaded();
-        const variables = scope.children || [];
-        const sfr = stackFrame.range();
-        const spr = scope.range();
+      const decorationsPerScope = await Promise.all(
+        scopes.map(async (scope) => {
+          await scope.ensureLoaded();
+          const variables = scope.children || [];
+          const sfr = stackFrame.range();
+          const spr = scope.range();
 
-        let range = new Range(0, 0, sfr.startLineNumber, sfr.startColumn);
-        if (spr) {
-          range = range.setStartPosition(spr.startLineNumber, spr.startColumn);
-        }
+          let range = new Range(0, 0, sfr.startLineNumber, sfr.startColumn);
+          if (spr) {
+            range = range.setStartPosition(spr.startLineNumber, spr.startColumn);
+          }
 
-        return createInlineValueDecorationsInsideRange(variables as DebugVariable[], range, model, getWordToLineNumbersMap(editor?.monacoEditor.getModel()!));
-      }));
+          return createInlineValueDecorationsInsideRange(
+            variables as DebugVariable[],
+            range,
+            model,
+            getWordToLineNumbersMap(editor?.monacoEditor.getModel()!),
+          );
+        }),
+      );
 
       allDecorations = decorationsPerScope.reduce((previous, current) => previous.concat(current), []);
     }

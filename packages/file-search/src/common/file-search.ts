@@ -6,13 +6,15 @@ export const FileSearchServicePath = 'FileSearchServicePath';
  * The JSON-RPC file search service interface.
  */
 export interface IFileSearchService {
-
   /**
    * finds files by a given search pattern.
    * @return the matching paths, relative to the given `options.rootUri`.
    */
-  find(searchPattern: string, options: IFileSearchService.Options, cancellationToken?: CancellationToken): Promise<string[]>;
-
+  find(
+    searchPattern: string,
+    options: IFileSearchService.Options,
+    cancellationToken?: CancellationToken,
+  ): Promise<string[]>;
 }
 
 export const IFileSearchService = Symbol('FileSearchService');

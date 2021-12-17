@@ -1,4 +1,13 @@
-import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, IResourceDecoration, ResourceDecorationNeedChangeEvent, ResourceDecorationChangeEvent } from '../common';
+import {
+  ResourceService,
+  IResource,
+  IResourceProvider,
+  ResourceNeedUpdateEvent,
+  ResourceDidUpdateEvent,
+  IResourceDecoration,
+  ResourceDecorationNeedChangeEvent,
+  ResourceDecorationChangeEvent,
+} from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, IDisposable, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { observable } from 'mobx';
@@ -6,18 +15,23 @@ import { Disposable, addElement, LRUMap, ILogger, Emitter } from '@opensumi/ide-
 
 @Injectable()
 export class ResourceServiceImpl extends WithEventBus implements ResourceService {
-
   private providers: IResourceProvider[] = [];
 
-  private resources: Map<string, {
-    resource: IResource,
-    provider: IResourceProvider,
-  }> = new Map();
+  private resources: Map<
+    string,
+    {
+      resource: IResource;
+      provider: IResourceProvider;
+    }
+  > = new Map();
 
-  private gettingResources: Map<string, Promise<{
-    resource: IResource,
-    provider: IResourceProvider,
-  } | null>> = new Map();
+  private gettingResources: Map<
+    string,
+    Promise<{
+      resource: IResource;
+      provider: IResourceProvider;
+    } | null>
+  > = new Map();
 
   private resourceDecoration: Map<string, IResourceDecoration> = new Map();
 
@@ -88,7 +102,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   async doGetResource(uri: URI): Promise<{
-    resource: IResource<any>,
+    resource: IResource<any>;
     provider: IResourceProvider;
   } | null> {
     if (!this.gettingResources.has(uri.toString())) {
@@ -112,7 +126,6 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       });
     }
     return this.gettingResources.get(uri.toString())!;
-
   }
 
   registerResourceProvider(provider: IResourceProvider): IDisposable {
@@ -149,15 +162,15 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     }
     let currentProvider: IResourceProvider | undefined;
     let currentComparator: {
-      weight: number
-      index: number,
+      weight: number;
+      index: number;
     } = {
       weight: -1,
       index: -1,
     };
 
     function acceptProvider(provider: IResourceProvider, weight: number, index: number) {
-      currentComparator = {weight, index};
+      currentComparator = { weight, index };
       currentProvider = provider;
     }
 
@@ -222,11 +235,11 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 }
 
-const  DefaultResourceDecoration: IResourceDecoration = {
+const DefaultResourceDecoration: IResourceDecoration = {
   dirty: false,
 };
 
 const GhostResourceProvider: IResourceProvider = {
   handlesUri: () => -1,
-  provideResource: (uri: URI) => ({uri, name: '', icon: ''}) ,
+  provideResource: (uri: URI) => ({ uri, name: '', icon: '' }),
 };

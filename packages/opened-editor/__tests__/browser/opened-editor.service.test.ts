@@ -37,9 +37,7 @@ describe('OpenedEditorModelService should be work', () => {
   };
 
   beforeEach(async (done) => {
-    injector = createBrowserInjector([
-      OpenedEditorModule,
-    ]);
+    injector = createBrowserInjector([OpenedEditorModule]);
 
     injector.addProviders(
       {
@@ -75,7 +73,7 @@ describe('OpenedEditorModelService should be work', () => {
             instance: {
               dirty: false,
             },
-            dispose: () => { },
+            dispose: () => {},
           })),
         },
       },
@@ -88,9 +86,9 @@ describe('OpenedEditorModelService should be work', () => {
 
       currentEditor: null,
 
-      codeEditor: (() => { }) as any,
+      codeEditor: (() => {}) as any,
 
-      diffEditor: (() => { }) as any,
+      diffEditor: (() => {}) as any,
 
       currentFocusedEditor: null,
 
@@ -102,23 +100,23 @@ describe('OpenedEditorModelService should be work', () => {
 
       currentOpenType: null,
 
-      open: (() => { }) as any,
+      open: (() => {}) as any,
 
-      pin: (() => { }) as any,
+      pin: (() => {}) as any,
 
-      close: (() => { }) as any,
+      close: (() => {}) as any,
 
-      getState: (() => { }) as any,
+      getState: (() => {}) as any,
 
-      restoreState: (() => { }) as any,
+      restoreState: (() => {}) as any,
 
-      saveAll: (() => { }) as any,
+      saveAll: (() => {}) as any,
 
-      closeAll: (() => { }) as any,
+      closeAll: (() => {}) as any,
 
-      saveCurrent: (() => { }) as any,
+      saveCurrent: (() => {}) as any,
 
-      saveResource: (() => { }) as any,
+      saveResource: (() => {}) as any,
     };
     // 当editorGroup长度为1时
     // 取groups中的resource，
@@ -128,14 +126,16 @@ describe('OpenedEditorModelService should be work', () => {
         ...baseMockGroup,
         index: 1,
         name: 'group 1',
-        resources: [{
-          name: testFileUri.displayName,
-          uri: testFileUri,
-          icon: '',
-          metadata: {},
-        }],
-        saveCurrent: async () => { },
-        saveResource: async () => { },
+        resources: [
+          {
+            name: testFileUri.displayName,
+            uri: testFileUri,
+            icon: '',
+            metadata: {},
+          },
+        ],
+        saveCurrent: async () => {},
+        saveResource: async () => {},
       },
     ];
     injector.get(WorkbenchEditorService);
@@ -187,14 +187,18 @@ describe('OpenedEditorModelService should be work', () => {
 
     it('File should be dirty while file change', async (done) => {
       const eventBus = injector.get(IEventBus);
-      eventBus.fire(new ResourceDecorationChangeEvent({
-        uri: testFileUri,
-        decoration: {
-          dirty: true,
-        },
-      }));
+      eventBus.fire(
+        new ResourceDecorationChangeEvent({
+          uri: testFileUri,
+          decoration: {
+            dirty: true,
+          },
+        }),
+      );
       const node = openedEditorService.getEditorNodeByUri(testFileUri);
-      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(styles.mod_dirty);
+      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
+        styles.mod_dirty,
+      );
       done();
     });
 
@@ -204,7 +208,9 @@ describe('OpenedEditorModelService should be work', () => {
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
       openedEditorModelService.handleItemClick(node as EditorFile, TreeNodeType.TreeNode);
       expect(openFile).toBeCalledTimes(1);
-      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(cls(styles.mod_dirty, styles.mod_selected, styles.mod_focused));
+      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
+        cls(styles.mod_dirty, styles.mod_selected, styles.mod_focused),
+      );
       done();
     });
 

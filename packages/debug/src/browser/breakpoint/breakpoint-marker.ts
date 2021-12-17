@@ -21,12 +21,12 @@ export interface IRuntimeBreakpoint extends ISourceBreakpoint {
 
 export type DebugBreakpoint = ISourceBreakpoint | IRuntimeBreakpoint;
 
-function generateId(uri: string, line: number, column: number = 1) {
+function generateId(uri: string, line: number, column = 1) {
   return btoa(`${uri}:${line}:${column}`);
 }
 
 export namespace DebugBreakpoint {
-  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, enabled: boolean = true): DebugBreakpoint {
+  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, enabled = true): DebugBreakpoint {
     return {
       id: generateId(uri.toString(), data.line, data.column),
       uri: uri.toString(),
@@ -51,7 +51,9 @@ export interface IExceptionBreakpoint {
 
 export type DebugExceptionBreakpoint = IExceptionBreakpoint;
 
-export function isDebugBreakpoint(breakpoint: DebugBreakpoint | DebugExceptionBreakpoint): breakpoint is DebugBreakpoint  {
+export function isDebugBreakpoint(
+  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint,
+): breakpoint is DebugBreakpoint {
   return !!breakpoint && !!(breakpoint as DebugBreakpoint).raw;
 }
 
@@ -64,7 +66,9 @@ export function isRuntimeBreakpoint(breakpoint: DebugBreakpoint): breakpoint is 
   return !!(status && status.verified);
 }
 
-export function isDebugExceptionBreakpoint(breakpoint: DebugBreakpoint | DebugExceptionBreakpoint): breakpoint is DebugExceptionBreakpoint {
+export function isDebugExceptionBreakpoint(
+  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint,
+): breakpoint is DebugExceptionBreakpoint {
   return breakpoint && !!(breakpoint as DebugExceptionBreakpoint).filter;
 }
 

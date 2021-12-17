@@ -118,7 +118,6 @@ export interface ILogServiceManager {
 }
 
 export interface IBaseLogService extends ICoreLogger {
-
   /**
    * 获取当前的log level
    */
@@ -139,7 +138,7 @@ export interface IBaseLogService extends ICoreLogger {
 
   /**
    * 释放spdlog对象
-  */
+   */
   drop(): Promise<void>;
 
   /**
@@ -160,20 +159,18 @@ export interface ILogService extends IBaseLogService {
   setOptions(options: BaseLogServiceOptions);
 }
 
-export const LogServiceForClientPath =  'LogServiceForClientPath';
+export const LogServiceForClientPath = 'LogServiceForClientPath';
 
 export interface ILogServiceClient extends ICoreLogger {
-  getLevel():Promise<LogLevel>;
+  getLevel(): Promise<LogLevel>;
   setLevel(level: LogLevel): Promise<void>;
   critical(...args: any[]): void;
   dispose(): Promise<void>;
 }
 
-export interface IExtensionLogger extends ICoreLogger {
+export type IExtensionLogger = ICoreLogger;
 
-}
-
-export const ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
+export const ILoggerManagerClient = Symbol('ILoggerManagerClient');
 export interface ILoggerManagerClient {
   onDidChangeLogLevel: Event<LogLevel>;
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
@@ -196,13 +193,13 @@ export interface IDebugLog extends ICoreLogger {
 }
 
 /**
-* 只输出在控制台，不会落盘
-* const debugLog = new DebugLog('FileService');
-*
-* @export
-* @class DebugLog
-* @implements {IDebugLog}
-*/
+ * 只输出在控制台，不会落盘
+ * const debugLog = new DebugLog('FileService');
+ *
+ * @export
+ * @class DebugLog
+ * @implements {IDebugLog}
+ */
 const isNode = typeof process !== 'undefined' && process.release;
 const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 export class DebugLog implements IDebugLog {
@@ -210,10 +207,7 @@ export class DebugLog implements IDebugLog {
   private isEnable = false;
 
   constructor(namespace?: string) {
-
-    if (typeof process !== 'undefined' &&
-      process.env &&
-      process.env.KTLOG_SHOW_DEBUG) {
+    if (typeof process !== 'undefined' && process.env && process.env.KTLOG_SHOW_DEBUG) {
       this.isEnable = true;
     }
 
@@ -232,7 +226,7 @@ export class DebugLog implements IDebugLog {
     const colors = {
       reset: '\x1b[0m',
 
-      //text color
+      // text color
 
       black: '\x1b[30m',
       red: '\x1b[31m',
@@ -243,7 +237,7 @@ export class DebugLog implements IDebugLog {
       cyan: '\x1b[36m',
       white: '\x1b[37m',
 
-      //background color
+      // background color
 
       blackBg: '\x1b[40m',
       redBg: '\x1b[41m',
@@ -252,10 +246,10 @@ export class DebugLog implements IDebugLog {
       blueBg: '\x1b[44m',
       magentaBg: '\x1b[45m',
       cyanBg: '\x1b[46m',
-      whiteBg: '\x1b[47m'
-    }
+      whiteBg: '\x1b[47m',
+    };
 
-    return (colors[color] || '' ) + message + colors.reset;
+    return (colors[color] || '') + message + colors.reset;
   }
 
   verbose = (...args: any[]) => {
@@ -263,50 +257,48 @@ export class DebugLog implements IDebugLog {
       return;
     }
     return console.debug(this.getPre('verbose', 'green'), ...args);
-  }
+  };
 
   debug = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.debug(this.getPre('debug', 'blue'), ...args);
-  }
+  };
 
   log = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.log(this.getPre('log', 'green'), ...args);
-  }
+  };
 
-  error = (...args: any[]) => {
+  error = (...args: any[]) =>
     // 错误一直显示
-    return console.error(this.getPre('error', 'red'), ...args);
-  }
+    console.error(this.getPre('error', 'red'), ...args);
 
   warn = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.warn(this.getPre('warn', 'yellow'), ...args);
-  }
+  };
 
   info = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.info(this.getPre('log', 'green'), ...args);
-  }
+  };
 
-  destroy() { }
+  destroy() {}
 }
 
 /**
  * 兼容旧logger 提供的类型，同 ILogServiceClient
  */
 export const ILogger = Symbol('ILogger');
-// tslint:disable-next-line:no-empty-interface
-export interface ILogger extends ILogServiceClient {}
+export type ILogger = ILogServiceClient;
 
 /**
  * 只输出在控制台，不会落盘
@@ -341,6 +333,6 @@ export function getDebugLogger(namespace?: string): IDebugLog {
       showWarn();
       return debugLog.warn;
     },
-    destroy() { }
-  }
+    destroy() {},
+  };
 }

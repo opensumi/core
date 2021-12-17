@@ -53,9 +53,6 @@ export class MainThreadExtensionLog implements IMainThreadExtensionLog {
 /**
  * @deprecated
  */
-export function createExtensionLogFactory(
-  rpcProtocol: IRPCProtocol,
-  injector: Injector,
-) {
+export function createExtensionLogFactory(rpcProtocol: IRPCProtocol, injector: Injector) {
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
 }

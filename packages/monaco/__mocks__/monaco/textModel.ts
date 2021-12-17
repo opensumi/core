@@ -7,7 +7,6 @@ import { partialMock } from './common/util';
 
 export function createMockedMonacoTextModelApi(): typeof textModel {
   class ModelDecorationOptions implements monaco.editor.IModelDecorationOptions {
-
     public static EMPTY: ModelDecorationOptions;
 
     public static register(options: monaco.editor.IModelDecorationOptions): ModelDecorationOptions {
@@ -44,11 +43,15 @@ export function createMockedMonacoTextModelApi(): typeof textModel {
       this.isWholeLine = options.isWholeLine || false;
       this.overviewRuler = options.overviewRuler || null;
       this.glyphMarginClassName = options.glyphMarginClassName ? cleanClassName(options.glyphMarginClassName) : null;
-      this.linesDecorationsClassName = options.linesDecorationsClassName ? cleanClassName(options.linesDecorationsClassName) : null;
+      this.linesDecorationsClassName = options.linesDecorationsClassName
+        ? cleanClassName(options.linesDecorationsClassName)
+        : null;
       this.marginClassName = options.marginClassName ? cleanClassName(options.marginClassName) : null;
       this.inlineClassName = options.inlineClassName ? cleanClassName(options.inlineClassName) : null;
       this.inlineClassNameAffectsLetterSpacing = options.inlineClassNameAffectsLetterSpacing || false;
-      this.beforeContentClassName = options.beforeContentClassName ? cleanClassName(options.beforeContentClassName) : null;
+      this.beforeContentClassName = options.beforeContentClassName
+        ? cleanClassName(options.beforeContentClassName)
+        : null;
       this.afterContentClassName = options.afterContentClassName ? cleanClassName(options.afterContentClassName) : null;
     }
   }

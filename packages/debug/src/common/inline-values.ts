@@ -4,7 +4,7 @@ import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 // Inline Values
 /**
-   * A value-object that contains contextual information when requesting inline values from a InlineValuesProvider.
+ * A value-object that contains contextual information when requesting inline values from a InlineValuesProvider.
  * @internal
  */
 export interface InlineValueContext {
@@ -67,6 +67,11 @@ export interface InlineValuesProvider {
    * position will be merged by the editor. A hover can have a range which defaults
    * to the word range at the position when omitted.
    */
-  provideInlineValues(model: ITextModel, viewPort: Range, context: InlineValueContext, token: CancellationToken): Thenable<InlineValue[]>;
+  provideInlineValues(
+    model: ITextModel,
+    viewPort: Range,
+    context: InlineValueContext,
+    token: CancellationToken,
+  ): Thenable<InlineValue[]>;
 }
 // End Inline Values

@@ -6,7 +6,6 @@ import { useInjectable } from '../react-hooks';
 import React = require('react');
 
 export class VisibleChangedPayload {
-
   constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
 }
 
@@ -162,8 +161,7 @@ export class ResizePayload {
    * Resize事件，会在用户拖动resize或窗口resize时触发
    * @param slotLocation 可能为slot或viewId
    */
-  constructor(public slotLocation: SlotLocation) {
-  }
+  constructor(public slotLocation: SlotLocation) {}
 }
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
@@ -176,9 +174,13 @@ export interface ViewState {
   height: number;
 }
 
-export const useViewState = (location: string, containerRef: React.MutableRefObject<HTMLElement | null | undefined>, manualObserve?: boolean): ViewState => {
+export const useViewState = (
+  location: string,
+  containerRef: React.MutableRefObject<HTMLElement | null | undefined>,
+  manualObserve?: boolean,
+): ViewState => {
   const eventBus = useInjectable<IEventBus>(IEventBus);
-  const [viewState, setViewState] = React.useState({width: 0, height: 0});
+  const [viewState, setViewState] = React.useState({ width: 0, height: 0 });
   const viewStateRef = React.useRef<ViewState>(viewState);
 
   React.useEffect(() => {
@@ -211,11 +213,11 @@ export const useViewState = (location: string, containerRef: React.MutableRefObj
         // 避免视图切换时触发无效的渲染
         // 真正的 resize 操作不会出现 width/height 为 0 的情况
         if (
-          (width !== viewStateRef.current.width || height !== viewStateRef.current.height)
-          && (width !== 0 || height !== 0)
+          (width !== viewStateRef.current.width || height !== viewStateRef.current.height) &&
+          (width !== 0 || height !== 0)
         ) {
-          setViewState({width, height});
-          viewStateRef.current = {width, height};
+          setViewState({ width, height });
+          viewStateRef.current = { width, height };
         }
       };
       const resizeObserver = new ResizeObserver(doUpdate);

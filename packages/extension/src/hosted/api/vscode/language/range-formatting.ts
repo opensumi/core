@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -22,13 +22,16 @@ import { FormattingOptions, Range, SingleEditOperation } from '../../../../commo
 import { createToken } from './util';
 
 export class RangeFormattingAdapter {
-
   constructor(
     private readonly provider: vscode.DocumentRangeFormattingEditProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
-  provideDocumentRangeFormattingEdits(resource: URI, range: Range, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+  provideDocumentRangeFormattingEdits(
+    resource: URI,
+    range: Range,
+    options: FormattingOptions,
+  ): Promise<SingleEditOperation[] | undefined> {
     const document = this.documents.getDocumentData(resource.toString());
     if (!document) {
       return Promise.reject(new Error(`There are no document for ${resource}`));
@@ -38,7 +41,9 @@ export class RangeFormattingAdapter {
     const ran = Converter.toRange(range);
 
     // tslint:disable-next-line:no-any
-    return Promise.resolve(this.provider.provideDocumentRangeFormattingEdits(doc, ran as any, options as any, createToken())).then((value) => {
+    return Promise.resolve(
+      this.provider.provideDocumentRangeFormattingEdits(doc, ran as any, options as any, createToken()),
+    ).then((value) => {
       if (Array.isArray(value)) {
         return value.map(Converter.fromTextEdit);
       }
@@ -48,13 +53,15 @@ export class RangeFormattingAdapter {
 }
 
 export class FormattingAdapter {
-
   constructor(
     private readonly provider: vscode.DocumentFormattingEditProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
-  provideDocumentFormattingEdits(resource: URI, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+  provideDocumentFormattingEdits(
+    resource: URI,
+    options: FormattingOptions,
+  ): Promise<SingleEditOperation[] | undefined> {
     const document = this.documents.getDocumentData(resource.toString());
     if (!document) {
       return Promise.reject(new Error(`There are no document for ${resource}`));
@@ -63,11 +70,13 @@ export class FormattingAdapter {
     const doc = document.document;
 
     // tslint:disable-next-line:no-any
-    return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options as any, createToken())).then((value) => {
-      if (Array.isArray(value)) {
-        return value.map(Converter.fromTextEdit);
-      }
-      return undefined;
-    });
+    return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options as any, createToken())).then(
+      (value) => {
+        if (Array.isArray(value)) {
+          return value.map(Converter.fromTextEdit);
+        }
+        return undefined;
+      },
+    );
   }
 }

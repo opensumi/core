@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -111,7 +111,6 @@ function toNormalCase(str: string) {
 }
 
 export class KeyCode {
-
   public readonly key: Key | undefined;
   public readonly ctrl: boolean;
   public readonly shift: boolean;
@@ -148,7 +147,7 @@ export class KeyCode {
    * Return true if the given KeyCode is equal to this one.
    */
   public equals(other: KeyCode): boolean {
-    if (this.key && (!other.key || this.key.code !== other.key.code) || !this.key && other.key) {
+    if ((this.key && (!other.key || this.key.code !== other.key.code)) || (!this.key && other.key)) {
       return false;
     }
     return this.ctrl === other.ctrl && this.alt === other.alt && this.shift === other.shift && this.meta === other.meta;
@@ -195,10 +194,10 @@ export class KeyCode {
       const key = KeyCode.toKey(input);
       return new KeyCode({
         key: Key.isModifier(key.code) ? undefined : key,
-        meta: isOSX && input.metaKey || (key === Key.OS_RIGHT || key === Key.OS_LEFT),
-        shift: input.shiftKey || (key === Key.SHIFT_RIGHT || key === Key.SHIFT_LEFT),
-        alt: input.altKey || (key === Key.ALT_RIGHT || key === Key.ALT_LEFT),
-        ctrl: input.ctrlKey || (key === Key.CONTROL_RIGHT || key === Key.CONTROL_LEFT),
+        meta: (isOSX && input.metaKey) || key === Key.OS_RIGHT || key === Key.OS_LEFT,
+        shift: input.shiftKey || key === Key.SHIFT_RIGHT || key === Key.SHIFT_LEFT,
+        alt: input.altKey || key === Key.ALT_RIGHT || key === Key.ALT_LEFT,
+        ctrl: input.ctrlKey || key === Key.CONTROL_RIGHT || key === Key.CONTROL_LEFT,
         character: KeyCode.toCharacter(input),
       });
     } else if ((input as Keystroke).first || (input as Keystroke).modifiers) {
@@ -231,8 +230,7 @@ export class KeyCode {
    * @param keybinding
    * @returns
    */
-  public static parse(keybinding: string, separator: string = '+'): KeyCode {
-
+  public static parse(keybinding: string, separator = '+'): KeyCode {
     if (KeyCode.keybindings[keybinding]) {
       return KeyCode.keybindings[keybinding];
     }
@@ -302,11 +300,9 @@ export class KeyCode {
     KeyCode.keybindings[keybinding] = new KeyCode(schema);
     return KeyCode.keybindings[keybinding];
   }
-
 }
 
 export namespace KeyCode {
-
   /**
    * Determines a `true` of `false` value for the key code argument.
    */
@@ -316,10 +312,9 @@ export namespace KeyCode {
    * Return true if the string is a modifier M1 to M4.
    */
   export function isModifierString(key: string) {
-    return key === KeyModifier.CtrlCmd
-      || key === KeyModifier.Shift
-      || key === KeyModifier.Alt
-      || key === KeyModifier.MacCtrl;
+    return (
+      key === KeyModifier.CtrlCmd || key === KeyModifier.Shift || key === KeyModifier.Alt || key === KeyModifier.MacCtrl
+    );
   }
 
   /**
@@ -332,7 +327,8 @@ export namespace KeyCode {
    * Note: just add another check if the current `event.type` checking is insufficient.
    */
   export function isKeyboardEvent(event: object & { readonly type?: string }): event is KeyboardEvent {
-    if (typeof KeyboardEvent === 'undefined') { // This can happen in tests
+    if (typeof KeyboardEvent === 'undefined') {
+      // This can happen in tests
       return false;
     }
     if (event instanceof KeyboardEvent) {
@@ -396,7 +392,6 @@ export namespace KeyCode {
       }
     }
 
-    // tslint:disable-next-line: deprecation
     const keyCode = event.keyCode;
     if (keyCode) {
       const key = Key.getKey(keyCode);
@@ -412,7 +407,9 @@ export namespace KeyCode {
         return key;
       }
     }
-    throw new Error(`Cannot get key code from the keyboard event with code: ${code}, keyCode: ${keyCode}, keyIdentifier: ${keyIdentifier}`);
+    throw new Error(
+      `Cannot get key code from the keyboard event with code: ${code}, keyCode: ${keyCode}, keyIdentifier: ${keyIdentifier}`,
+    );
   }
 
   /**
@@ -433,7 +430,6 @@ export namespace KeyCode {
     }
     return undefined;
   }
-
 }
 
 export enum KeyModifier {
@@ -475,8 +471,10 @@ export namespace KeyModifier {
         case 'M1': // Fall through.
         case 'M2': // Fall through.
         case 'M3': // Fall through.
-        case 'M4': return true;
-        default: return false;
+        case 'M4':
+          return true;
+        default:
+          return false;
       }
     }
     return false;
@@ -495,15 +493,15 @@ const EASY_TO_KEY: { [code: string]: Key } = {}; // From 'ctrl' to Key structure
 const MODIFIERS: Key[] = [];
 
 const SPECIAL_ALIASES: { [index: string]: string } = {
-  'option': 'alt',
-  'command': 'meta',
-  'cmd': 'meta',
-  'return': 'enter',
-  'esc': 'escape',
-  'mod': 'ctrl',
-  'ins': 'insert',
-  'del': 'delete',
-  'control': 'ctrl',
+  option: 'alt',
+  command: 'meta',
+  cmd: 'meta',
+  return: 'enter',
+  esc: 'escape',
+  mod: 'ctrl',
+  ins: 'insert',
+  del: 'delete',
+  control: 'ctrl',
 };
 
 export namespace SpecialCases {
@@ -524,10 +522,8 @@ export namespace SpecialCases {
 }
 
 export namespace Key {
-
-  // tslint:disable-next-line:no-any
   export function isKey(arg: any): arg is Key {
-    return typeof arg === 'object' && ('code' in arg) && ('keyCode' in arg);
+    return typeof arg === 'object' && 'code' in arg && 'keyCode' in arg;
   }
 
   export function getKey(arg: string | number): Key | undefined {
@@ -667,22 +663,24 @@ export namespace Key {
   export const BRACKET_LEFT: Key = { code: 'BracketLeft', keyCode: 219, easyString: '[' };
   export const BACKSLASH: Key = { code: 'Backslash', keyCode: 220, easyString: '\\' };
   export const BRACKET_RIGHT: Key = { code: 'BracketRight', keyCode: 221, easyString: ']' };
-  export const QUOTE: Key = { code: 'Quote', keyCode: 222, easyString: '\'' };
+  export const QUOTE: Key = { code: 'Quote', keyCode: 222, easyString: "'" };
   export const INTL_BACKSLASH: Key = { code: 'IntlBackslash', keyCode: 229, easyString: 'intlbackslash' };
   export const INTL_YEN: Key = { code: 'IntlYen', keyCode: 255, easyString: 'intlyen' };
 
   export const MAX_KEY_CODE = INTL_YEN.keyCode;
-
 }
 
-/*-------------------- Initialize the static key mappings --------------------*/
+/* -------------------- Initialize the static key mappings --------------------*/
 (() => {
   // Set the default key mappings from the constants in the Key namespace
-  Object.keys(Key).map((prop) => Reflect.get(Key, prop)).filter((key) => Key.isKey(key)).forEach((key) => {
-    CODE_TO_KEY[key.code] = key;
-    KEY_CODE_TO_KEY[key.keyCode] = key;
-    EASY_TO_KEY[key.easyString] = key;
-  });
+  Object.keys(Key)
+    .map((prop) => Reflect.get(Key, prop))
+    .filter((key) => Key.isKey(key))
+    .forEach((key) => {
+      CODE_TO_KEY[key.code] = key;
+      KEY_CODE_TO_KEY[key.keyCode] = key;
+      EASY_TO_KEY[key.easyString] = key;
+    });
 
   // Set additional key mappings
   CODE_TO_KEY.Numpad0 = Key.DIGIT0;
@@ -707,25 +705,35 @@ export namespace Key {
   KEY_CODE_TO_KEY[105] = Key.DIGIT9;
   CODE_TO_KEY.NumpadEnter = Key.ENTER;
   CODE_TO_KEY.NumpadEqual = Key.EQUAL;
-  CODE_TO_KEY.MetaLeft = Key.OS_LEFT;   // Chrome, Safari
-  KEY_CODE_TO_KEY[224] = Key.OS_LEFT;      // Firefox on Mac
+  CODE_TO_KEY.MetaLeft = Key.OS_LEFT; // Chrome, Safari
+  KEY_CODE_TO_KEY[224] = Key.OS_LEFT; // Firefox on Mac
   CODE_TO_KEY.MetaRight = Key.OS_RIGHT; // Chrome, Safari
-  KEY_CODE_TO_KEY[93] = Key.OS_RIGHT;      // Chrome, Safari, Edge
-  KEY_CODE_TO_KEY[225] = Key.ALT_RIGHT;    // Linux
-  KEY_CODE_TO_KEY[110] = Key.NUMPAD_DECIMAL;      // Mac, Windows
-  KEY_CODE_TO_KEY[59] = Key.SEMICOLON;     // Firefox
-  KEY_CODE_TO_KEY[61] = Key.EQUAL;         // Firefox
-  KEY_CODE_TO_KEY[173] = Key.MINUS;        // Firefox
-  KEY_CODE_TO_KEY[226] = Key.BACKSLASH;    // Chrome, Edge on Windows
-  KEY_CODE_TO_KEY[60] = Key.BACKSLASH;     // Firefox on Linux
+  KEY_CODE_TO_KEY[93] = Key.OS_RIGHT; // Chrome, Safari, Edge
+  KEY_CODE_TO_KEY[225] = Key.ALT_RIGHT; // Linux
+  KEY_CODE_TO_KEY[110] = Key.NUMPAD_DECIMAL; // Mac, Windows
+  KEY_CODE_TO_KEY[59] = Key.SEMICOLON; // Firefox
+  KEY_CODE_TO_KEY[61] = Key.EQUAL; // Firefox
+  KEY_CODE_TO_KEY[173] = Key.MINUS; // Firefox
+  KEY_CODE_TO_KEY[226] = Key.BACKSLASH; // Chrome, Edge on Windows
+  KEY_CODE_TO_KEY[60] = Key.BACKSLASH; // Firefox on Linux
 
   // Set the modifier keys
-  MODIFIERS.push(...[Key.ALT_LEFT, Key.ALT_RIGHT, Key.CONTROL_LEFT, Key.CONTROL_RIGHT, Key.OS_LEFT, Key.OS_RIGHT, Key.SHIFT_LEFT, Key.SHIFT_RIGHT]);
+  MODIFIERS.push(
+    ...[
+      Key.ALT_LEFT,
+      Key.ALT_RIGHT,
+      Key.CONTROL_LEFT,
+      Key.CONTROL_RIGHT,
+      Key.OS_LEFT,
+      Key.OS_RIGHT,
+      Key.SHIFT_LEFT,
+      Key.SHIFT_RIGHT,
+    ],
+  );
 })();
 
 export type KeysOrKeyCodes = Key | KeyCode | (Key | KeyCode)[];
 export namespace KeysOrKeyCodes {
-
   export const toKeyCode = (keyOrKeyCode: Key | KeyCode) =>
     keyOrKeyCode instanceof KeyCode ? keyOrKeyCode : KeyCode.createKeyCode({ first: keyOrKeyCode });
 

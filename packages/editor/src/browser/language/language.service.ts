@@ -1,17 +1,36 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@opensumi/di';
 import { MonacoDiagnosticCollection } from './diagnostic-collection';
-import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@opensumi/ide-core-common';
-import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';
+import {
+  URI,
+  IDisposable,
+  Disposable,
+  MarkerManager,
+  IMarkerData,
+  IRelatedInformation,
+  MarkerSeverity,
+} from '@opensumi/ide-core-common';
+import {
+  DiagnosticSeverity,
+  DiagnosticRelatedInformation,
+  Diagnostic,
+  Language,
+  WorkspaceSymbolProvider,
+  ILanguageService,
+} from '../../common';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
   switch (severity) {
-    case MarkerSeverity.Error: return DiagnosticSeverity.Error;
-    case MarkerSeverity.Warning: return DiagnosticSeverity.Warning;
-    case MarkerSeverity.Info: return DiagnosticSeverity.Information;
-    case MarkerSeverity.Hint: return DiagnosticSeverity.Hint;
+    case MarkerSeverity.Error:
+      return DiagnosticSeverity.Error;
+    case MarkerSeverity.Warning:
+      return DiagnosticSeverity.Warning;
+    case MarkerSeverity.Info:
+      return DiagnosticSeverity.Information;
+    case MarkerSeverity.Hint:
+      return DiagnosticSeverity.Hint;
   }
 }
 
@@ -59,7 +78,6 @@ function reviveMarker(marker: IMarkerData): Diagnostic {
 
 @Injectable()
 export class LanguageService implements ILanguageService {
-
   @Autowired()
   private markerManager: MarkerManager;
 
@@ -83,7 +101,9 @@ export class LanguageService implements ILanguageService {
   }
 
   getLanguage(languageId: string): Language | undefined {
-    return this.mergeLanguages(monaco.languages.getLanguages().filter((language) => language.id === languageId)).get(languageId);
+    return this.mergeLanguages(monaco.languages.getLanguages().filter((language) => language.id === languageId)).get(
+      languageId,
+    );
   }
 
   protected mergeLanguages(registered: monaco.languages.ILanguageExtensionPoint[]): Map<string, Mutable<Language>> {
@@ -121,10 +141,10 @@ export class LanguageService implements ILanguageService {
   registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): IDisposable {
     this.workspaceSymbolProviders.push(provider);
     return Disposable.create(() => {
-        const index = this.workspaceSymbolProviders.indexOf(provider);
-        if (index !== -1) {
-            this.workspaceSymbolProviders.splice(index, 1);
-        }
+      const index = this.workspaceSymbolProviders.indexOf(provider);
+      if (index !== -1) {
+        this.workspaceSymbolProviders.splice(index, 1);
+      }
     });
   }
 

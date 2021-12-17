@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -18,11 +18,14 @@ export interface CancellationToken {
 
 const shortcutEvent = Object.freeze(function (callback, context?): IDisposable {
   const handle = setTimeout(callback.bind(context), 0);
-  return { dispose() { clearTimeout(handle); } };
+  return {
+    dispose() {
+      clearTimeout(handle);
+    },
+  };
 } as Event<any>);
 
 export namespace CancellationToken {
-
   export function isCancellationToken(thing: any): thing is CancellationToken {
     if (thing === CancellationToken.None || thing === CancellationToken.Cancelled) {
       return true;
@@ -33,25 +36,25 @@ export namespace CancellationToken {
     if (!thing || typeof thing !== 'object') {
       return false;
     }
-    return typeof (thing as CancellationToken).isCancellationRequested === 'boolean'
-      && typeof (thing as CancellationToken).onCancellationRequested === 'function';
+    return (
+      typeof (thing as CancellationToken).isCancellationRequested === 'boolean' &&
+      typeof (thing as CancellationToken).onCancellationRequested === 'function'
+    );
   }
-
 
   export const None: CancellationToken = Object.freeze({
     isCancellationRequested: false,
-    onCancellationRequested: Event.None
+    onCancellationRequested: Event.None,
   });
 
   export const Cancelled: CancellationToken = Object.freeze({
     isCancellationRequested: true,
-    onCancellationRequested: shortcutEvent
+    onCancellationRequested: shortcutEvent,
   });
 }
 
 class MutableToken implements CancellationToken {
-
-  private _isCancelled: boolean = false;
+  private _isCancelled = false;
   private _emitter: Emitter<any> | null = null;
 
   public cancel() {
@@ -87,7 +90,6 @@ class MutableToken implements CancellationToken {
 }
 
 export class CancellationTokenSource {
-
   private _token?: CancellationToken = undefined;
   private _parentListener?: IDisposable = undefined;
 
@@ -110,7 +112,6 @@ export class CancellationTokenSource {
       // cancelled token when cancellation happens
       // before someone asks for the token
       this._token = CancellationToken.Cancelled;
-
     } else if (this._token instanceof MutableToken) {
       // actually cancel
       this._token.cancel();
@@ -127,7 +128,6 @@ export class CancellationTokenSource {
     if (!this._token) {
       // ensure to initialize with an empty token if we had none
       this._token = CancellationToken.None;
-
     } else if (this._token instanceof MutableToken) {
       // actually dispose
       this._token.dispose();

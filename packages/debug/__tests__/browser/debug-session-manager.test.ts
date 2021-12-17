@@ -1,7 +1,13 @@
 import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@opensumi/ide-debug';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { BreakpointManager, DebugModelManager, DebugSessionContributionRegistry, DebugSessionFactory, DebugSessionManager } from '@opensumi/ide-debug/lib/browser';
+import {
+  BreakpointManager,
+  DebugModelManager,
+  DebugSessionContributionRegistry,
+  DebugSessionFactory,
+  DebugSessionManager,
+} from '@opensumi/ide-debug/lib/browser';
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -39,8 +45,8 @@ describe('DebugSessionManager', () => {
   };
 
   const mockTaskService = {
-    getTask: jest.fn(() => ({task: 'npm run build'})),
-    run: jest.fn(() => ({exitCode: 200})),
+    getTask: jest.fn(() => ({ task: 'npm run build' })),
+    run: jest.fn(() => ({ exitCode: 200 })),
   };
 
   const mockDebugSessionContributionRegistry = {
@@ -74,70 +80,73 @@ describe('DebugSessionManager', () => {
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      },
-      {
-        token: DebugModelManager,
-        useValue: mockDebugModelManager,
-      },
-      {
-        token: IReporterService,
-        useValue: mockReporterService,
-      },
-      {
-        token: LabelService,
-        useValue: {},
-      },
-      {
-        token: DebugSessionContributionRegistry,
-        useValue: mockDebugSessionContributionRegistry,
-      },
-      {
-        token: DebugSessionFactory,
-        useValue: mockDebugSessionFactory,
-      },
-      {
-        token: IDebugServer,
-        useValue: mockDebugServer,
-      },
-      {
-        token: WorkbenchEditorService,
-        useValue: {},
-      },
-      {
-        token: IMessageService,
-        useValue: mockMessageService,
-      },
-      {
-        token: IVariableResolverService,
-        useValue: mockVariableResolverService,
-      },
-      {
-        token: BreakpointManager,
-        useValue: mockBreakpointManager,
-      },
-      {
-        token: DebugModelManager,
-        useValue: {},
-      },
-      {
-        token: ITaskService,
-        useValue: mockTaskService,
-      },
-      {
-        token: IDebugSessionManager,
-        useClass: DebugSessionManager,
-      },
-      {
-        token: IDebugProgress,
-        useValue: {
-          onDebugServiceStateChange: jest.fn(),
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
         },
-      },
-    ]));
+        {
+          token: DebugModelManager,
+          useValue: mockDebugModelManager,
+        },
+        {
+          token: IReporterService,
+          useValue: mockReporterService,
+        },
+        {
+          token: LabelService,
+          useValue: {},
+        },
+        {
+          token: DebugSessionContributionRegistry,
+          useValue: mockDebugSessionContributionRegistry,
+        },
+        {
+          token: DebugSessionFactory,
+          useValue: mockDebugSessionFactory,
+        },
+        {
+          token: IDebugServer,
+          useValue: mockDebugServer,
+        },
+        {
+          token: WorkbenchEditorService,
+          useValue: {},
+        },
+        {
+          token: IMessageService,
+          useValue: mockMessageService,
+        },
+        {
+          token: IVariableResolverService,
+          useValue: mockVariableResolverService,
+        },
+        {
+          token: BreakpointManager,
+          useValue: mockBreakpointManager,
+        },
+        {
+          token: DebugModelManager,
+          useValue: {},
+        },
+        {
+          token: ITaskService,
+          useValue: mockTaskService,
+        },
+        {
+          token: IDebugSessionManager,
+          useClass: DebugSessionManager,
+        },
+        {
+          token: IDebugProgress,
+          useValue: {
+            onDebugServiceStateChange: jest.fn(),
+          },
+        },
+      ]),
+    );
     debugSessionManager = injector.get(IDebugSessionManager);
   });
 
@@ -164,7 +173,7 @@ describe('DebugSessionManager', () => {
       restart: true,
       preLaunchTask: 'build',
     };
-    await debugSessionManager.start({configuration});
+    await debugSessionManager.start({ configuration });
     expect(mockDebugServer.createDebugSession).toBeCalledTimes(1);
     expect(mockDebugServer.resolveDebugConfiguration).toBeCalledTimes(1);
     expect(mockDebugServer.resolveDebugConfigurationWithSubstitutedVariables).toBeCalledTimes(1);

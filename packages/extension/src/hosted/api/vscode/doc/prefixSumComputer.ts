@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -17,36 +17,34 @@
 
 export const enum Constants {
   /**
-	 * MAX SMI (SMall Integer) as defined in v8.
-	 * one bit is lost for boxing/unboxing flag.
-	 * one bit is lost for sign flag.
-	 * See https://thibaultlaurens.github.io/javascript/2013/04/29/how-the-v8-engine-works/#tagged-values
-	 */
-  // tslint:disable-next-line:no-bitwise
+   * MAX SMI (SMall Integer) as defined in v8.
+   * one bit is lost for boxing/unboxing flag.
+   * one bit is lost for sign flag.
+   * See https://thibaultlaurens.github.io/javascript/2013/04/29/how-the-v8-engine-works/#tagged-values
+   */
   MAX_SAFE_SMALL_INTEGER = 1 << 30,
 
   /**
-	 * MIN SMI (SMall Integer) as defined in v8.
-	 * one bit is lost for boxing/unboxing flag.
-	 * one bit is lost for sign flag.
-	 * See https://thibaultlaurens.github.io/javascript/2013/04/29/how-the-v8-engine-works/#tagged-values
-	 */
-  // tslint:disable-next-line:no-bitwise
+   * MIN SMI (SMall Integer) as defined in v8.
+   * one bit is lost for boxing/unboxing flag.
+   * one bit is lost for sign flag.
+   * See https://thibaultlaurens.github.io/javascript/2013/04/29/how-the-v8-engine-works/#tagged-values
+   */
   MIN_SAFE_SMALL_INTEGER = -(1 << 30),
 
   /**
-	 * Max unsigned integer that fits on 8 bits.
-	 */
+   * Max unsigned integer that fits on 8 bits.
+   */
   MAX_UINT_8 = 255, // 2^8 - 1
 
   /**
-	 * Max unsigned integer that fits on 16 bits.
-	 */
+   * Max unsigned integer that fits on 16 bits.
+   */
   MAX_UINT_16 = 65535, // 2^16 - 1
 
   /**
-	 * Max unsigned integer that fits on 32 bits.
-	 */
+   * Max unsigned integer that fits on 32 bits.
+   */
   MAX_UINT_32 = 4294967295, // 2^32 - 1
 }
 
@@ -57,7 +55,6 @@ export function toUint32(v: number): number {
   if (v > Constants.MAX_UINT_32) {
     return Constants.MAX_UINT_32;
   }
-  // tslint:disable-next-line:no-bitwise
   return v | 0;
 }
 
@@ -74,20 +71,19 @@ export class PrefixSumIndexOfResult {
 }
 
 export class PrefixSumComputer {
-
   /**
-	 * values[i] is the value at index i
-	 */
+   * values[i] is the value at index i
+   */
   private values: Uint32Array;
 
   /**
-	 * prefixSum[i] = SUM(heights[j]), 0 <= j <= i
-	 */
+   * prefixSum[i] = SUM(heights[j]), 0 <= j <= i
+   */
   private prefixSum: Uint32Array;
 
   /**
-	 * prefixSum[i], 0 <= i <= prefixSumValidIndex can be trusted
-	 */
+   * prefixSum[i], 0 <= i <= prefixSumValidIndex can be trusted
+   */
   private readonly prefixSumValidIndex: Int32Array;
 
   constructor(values: Uint32Array) {
@@ -226,8 +222,7 @@ export class PrefixSumComputer {
     let midStart = 0;
 
     while (low <= high) {
-      // tslint:disable-next-line:no-bitwise
-      mid = low + ((high - low) / 2) | 0;
+      mid = (low + (high - low) / 2) | 0;
 
       midStop = this.prefixSum[mid];
       midStart = midStop - this.values[mid];
@@ -246,9 +241,8 @@ export class PrefixSumComputer {
 }
 
 export class PrefixSumComputerWithCache {
-
   private readonly _actual: PrefixSumComputer;
-  private _cacheAccumulatedValueStart: number = 0;
+  private _cacheAccumulatedValueStart = 0;
   private _cache: PrefixSumIndexOfResult[] | null = null;
 
   constructor(values: Uint32Array) {
@@ -303,8 +297,8 @@ export class PrefixSumComputerWithCache {
   }
 
   /**
-	 * Gives a hint that a lot of requests are about to come in for these accumulated values.
-	 */
+   * Gives a hint that a lot of requests are about to come in for these accumulated values.
+   */
   public warmUpCache(accumulatedValueStart: number, accumulatedValueEnd: number): void {
     const newCache: PrefixSumIndexOfResult[] = [];
     for (let accumulatedValue = accumulatedValueStart; accumulatedValue <= accumulatedValueEnd; accumulatedValue++) {

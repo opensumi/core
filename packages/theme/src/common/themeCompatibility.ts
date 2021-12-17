@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -18,21 +18,26 @@ function addSettingMapping(settingId: string, colorId: string) {
 
 // 旧的settings和新的ITokenColorizationRule的转换（主要是一些key的映射）
 // tslint:disable
-export function convertSettings(oldSettings: ITokenColorizationRule[], resultRules: ITokenColorizationRule[], resultColors: IColorMap): void {
-  for (let rule of oldSettings) {
+export function convertSettings(
+  oldSettings: ITokenColorizationRule[],
+  resultRules: ITokenColorizationRule[],
+  resultColors: IColorMap,
+): void {
+  for (const rule of oldSettings) {
     resultRules.push(rule);
     if (!rule.scope) {
-      let settings = rule.settings;
+      const settings = rule.settings;
       if (!settings) {
         rule.settings = {};
       } else {
-        for (let key in settings) {
-          let mappings = settingToColorIdMapping[key];
+        // eslint-disable-next-line guard-for-in
+        for (const key in settings) {
+          const mappings = settingToColorIdMapping[key];
           if (mappings) {
-            let colorHex = settings[key];
+            const colorHex = settings[key];
             if (typeof colorHex === 'string') {
-              let color = Color.fromHex(colorHex);
-              for (let colorId of mappings) {
+              const color = Color.fromHex(colorHex);
+              for (const colorId of mappings) {
                 resultColors[colorId] = color;
               }
             }
@@ -66,8 +71,23 @@ addSettingMapping('invisibles', colorRegistry.editorWhitespaces);
 addSettingMapping('guide', colorRegistry.editorIndentGuides);
 addSettingMapping('activeGuide', colorRegistry.editorActiveIndentGuides);
 
-const ansiColorMap = ['ansiBlack', 'ansiRed', 'ansiGreen', 'ansiYellow', 'ansiBlue', 'ansiMagenta', 'ansiCyan', 'ansiWhite',
-  'ansiBrightBlack', 'ansiBrightRed', 'ansiBrightGreen', 'ansiBrightYellow', 'ansiBrightBlue', 'ansiBrightMagenta', 'ansiBrightCyan', 'ansiBrightWhite'
+const ansiColorMap = [
+  'ansiBlack',
+  'ansiRed',
+  'ansiGreen',
+  'ansiYellow',
+  'ansiBlue',
+  'ansiMagenta',
+  'ansiCyan',
+  'ansiWhite',
+  'ansiBrightBlack',
+  'ansiBrightRed',
+  'ansiBrightGreen',
+  'ansiBrightYellow',
+  'ansiBrightBlue',
+  'ansiBrightMagenta',
+  'ansiBrightCyan',
+  'ansiBrightWhite',
 ];
 
 for (const color of ansiColorMap) {

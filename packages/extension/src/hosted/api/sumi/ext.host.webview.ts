@@ -5,12 +5,11 @@ import { IPlainWebviewHandle, IExtHostPlainWebview } from '../../../common/sumi/
 import { join } from '@opensumi/ide-core-common/lib/path';
 
 export class ExtHostWebview {
-
   _proxy: IMainThreadWebview;
 
   private handles: Map<string, PlainWebviewHandle> = new Map();
 
-  private _extHostPlainWebviewId: number = 1;
+  private _extHostPlainWebviewId = 1;
 
   constructor(private rpcProtocol: IRPCProtocol, private webviewIdPrefix: string = 'node') {
     this.rpcProtocol = rpcProtocol;
@@ -26,7 +25,7 @@ export class ExtHostWebview {
   }
 
   createPlainWebview(title: string, iconPath?: string): ExtHostPlainWebview {
-    const id = this.webviewIdPrefix + '_webview_' + this._extHostPlainWebviewId ++;
+    const id = this.webviewIdPrefix + '_webview_' + this._extHostPlainWebviewId++;
     const webview = new ExtHostPlainWebview(id, this._proxy, title, iconPath);
     this.handles.set(id, webview);
     webview.addDispose({
@@ -42,11 +41,9 @@ export class ExtHostWebview {
       this.handles.get(id)!.onMessageEmitter.fire(message);
     }
   }
-
 }
 
 export class PlainWebviewHandle extends Disposable implements IPlainWebviewHandle {
-
   public readonly onMessageEmitter = new Emitter<any>();
 
   public readonly onMessage = this.onMessageEmitter.event;
@@ -62,11 +59,9 @@ export class PlainWebviewHandle extends Disposable implements IPlainWebviewHandl
   async loadUrl(url: string) {
     this.proxy.$plainWebviewLoadUrl(this.id, url);
   }
-
 }
 
 export class ExtHostPlainWebview extends PlainWebviewHandle implements IExtHostPlainWebview {
-
   private _ready: Promise<void>;
 
   constructor(id: string, proxy: IMainThreadWebview, title: string, iconPath?: string) {
@@ -88,14 +83,11 @@ export class ExtHostPlainWebview extends PlainWebviewHandle implements IExtHostP
     await this._ready;
     this.proxy.$plainWebviewLoadUrl(this.id, url);
   }
-
 }
 
 export function createWebviewApi(extension: IExtensionDescription, kaitianExtHostWebview: ExtHostWebview) {
   return {
-    getPlainWebviewHandle: (id: string) => {
-      return kaitianExtHostWebview.getWebviewHandle(id);
-    },
+    getPlainWebviewHandle: (id: string) => kaitianExtHostWebview.getWebviewHandle(id),
     createPlainWebview: (title: string, iconPath?: string) => {
       if (iconPath) {
         iconPath = join(extension.realPath, iconPath);

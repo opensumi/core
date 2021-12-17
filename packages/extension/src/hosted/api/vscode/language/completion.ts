@@ -1,5 +1,12 @@
 import { Uri as URI, Cache } from '@opensumi/ide-core-common';
-import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDto, ISuggestResultDtoField, RangeSuggestDataDto } from '../../../../common/vscode';
+import {
+  ExtensionDocumentDataManager,
+  ISuggestDataDto,
+  ISuggestDataDtoField,
+  ISuggestResultDto,
+  ISuggestResultDtoField,
+  RangeSuggestDataDto,
+} from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import type vscode from 'vscode';
 import {
@@ -16,9 +23,9 @@ import { getPerformance } from './util';
 
 export class CompletionAdapter {
   private cache = new Cache<{
-    item: vscode.CompletionItem,
-    resource: URI,
-    position: Position,
+    item: vscode.CompletionItem;
+    resource: URI;
+    position: Position;
   }>('CompletionItem');
   private toDispose = new Map<number, DisposableStore>();
 
@@ -30,7 +37,7 @@ export class CompletionAdapter {
     private readonly delegate: vscode.CompletionItemProvider,
     private readonly commandConverter: CommandsConverter,
     private readonly documents: ExtensionDocumentDataManager,
-  ) { }
+  ) {}
 
   async provideCompletionItems(
     resource: URI,
@@ -42,12 +49,7 @@ export class CompletionAdapter {
 
     const perf = getPerformance();
     const startTime = perf ? perf.now() : 0;
-    const itemOrList = await this.delegate.provideCompletionItems(
-      doc,
-      pos,
-      token,
-      context,
-    );
+    const itemOrList = await this.delegate.provideCompletionItems(doc, pos, token, context);
     const duration = perf ? Math.round(perf.now() - startTime) : 0;
     if (!itemOrList) {
       return undefined;
@@ -55,7 +57,9 @@ export class CompletionAdapter {
 
     const isIncomplete = Array.isArray(itemOrList) ? false : itemOrList.isIncomplete;
     const list = Array.isArray(itemOrList) ? new CompletionList(itemOrList) : itemOrList;
-    const pid = CompletionAdapter.supportsResolving(this.delegate) ? this.cache.add(list.items.map((e: vscode.CompletionItem) => ({ item: e, resource, position }))) : this.cache.add([]);
+    const pid = CompletionAdapter.supportsResolving(this.delegate)
+      ? this.cache.add(list.items.map((e: vscode.CompletionItem) => ({ item: e, resource, position })))
+      : this.cache.add([]);
 
     const disposables = new DisposableStore();
     this.toDispose.set(pid, disposables);
@@ -64,7 +68,10 @@ export class CompletionAdapter {
     const result: ISuggestResultDto = {
       x: pid,
       [ISuggestResultDtoField.completions]: completions,
-      [ISuggestResultDtoField.defaultRanges]: { replace: Converter.Range.from(replacing)!, insert: Converter.Range.from(inserting)! },
+      [ISuggestResultDtoField.defaultRanges]: {
+        replace: Converter.Range.from(replacing)!,
+        insert: Converter.Range.from(inserting)!,
+      },
       [ISuggestResultDtoField.isIncomplete]: isIncomplete || undefined,
       [ISuggestResultDtoField.duration]: duration,
     };
@@ -73,7 +80,8 @@ export class CompletionAdapter {
       const item = list.items[i];
       // check for bad completion item first
       const dto = {
-        [ISuggestDataDtoField.label]: typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
+        [ISuggestDataDtoField.label]:
+          typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
         [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
         [ISuggestDataDtoField.sortText]: item.sortText,
         [ISuggestDataDtoField.filterText]: item.filterText,
@@ -108,7 +116,6 @@ export class CompletionAdapter {
     id: ChainedCacheId,
     token: vscode.CancellationToken,
   ): Promise<ISuggestDataDto | undefined> {
-
     const _cache = this.cache.get(...id);
     if (!_cache) {
       return undefined;
@@ -120,9 +127,9 @@ export class CompletionAdapter {
     let replacing;
 
     if (resource && position) {
-       const _ = await this.getInsertOrReplace(resource, position);
-       inserting = _.inserting;
-       replacing = _.replacing;
+      const _ = await this.getInsertOrReplace(resource, position);
+      inserting = _.inserting;
+      replacing = _.replacing;
     }
 
     const convertItem = this.convertCompletionItem(item, id, inserting, replacing);
@@ -159,9 +166,7 @@ export class CompletionAdapter {
   private async getInsertOrReplace(resource: URI, position: Position) {
     const document = this.documents.getDocumentData(resource);
     if (!document) {
-      return Promise.reject(
-        new Error(`There are no document for  ${resource}`),
-      );
+      return Promise.reject(new Error(`There are no document for  ${resource}`));
     }
 
     const doc = document.document;
@@ -175,8 +180,8 @@ export class CompletionAdapter {
     item: vscode.CompletionItem,
     defaultInserting?: vscode.Range,
     defaultReplacing?: vscode.Range,
-  ): RangeSuggestDataDto.ISuggestRangeDto | { insert: ModelRange; replace: ModelRange } | undefined  {
-    let range: vscode.Range | { inserting: vscode.Range, replacing: vscode.Range; } | undefined;
+  ): RangeSuggestDataDto.ISuggestRangeDto | { insert: ModelRange; replace: ModelRange } | undefined {
+    let range: vscode.Range | { inserting: vscode.Range; replacing: vscode.Range } | undefined;
     if (item.textEdit) {
       range = item.textEdit.range;
     } else if (item.range) {
@@ -187,11 +192,7 @@ export class CompletionAdapter {
 
     if (Range.isRange(range)) {
       toRange = RangeSuggestDataDto.to(Converter.Range.from(range));
-    } else if (
-      range &&
-      (!defaultInserting?.isEqual(range.inserting) ||
-        !defaultReplacing?.isEqual(range.replacing))
-    ) {
+    } else if (range && (!defaultInserting?.isEqual(range.inserting) || !defaultReplacing?.isEqual(range.replacing))) {
       toRange = {
         insert: Converter.Range.from(range.inserting),
         replace: Converter.Range.from(range.replacing),
@@ -227,14 +228,16 @@ export class CompletionAdapter {
       x: id,
       [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
       [ISuggestDataDtoField.kindModifier]: item.tags && item.tags.map(Converter.CompletionItemTag.from),
-      [ISuggestDataDtoField.label]: typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
+      [ISuggestDataDtoField.label]:
+        typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
       [ISuggestDataDtoField.detail]: item.detail,
       [ISuggestDataDtoField.documentation]: item.documentation,
       [ISuggestDataDtoField.filterText]: item.filterText,
       [ISuggestDataDtoField.sortText]: item.sortText,
       [ISuggestDataDtoField.preselect]: item.preselect ? item.preselect : undefined,
       [ISuggestDataDtoField.insertText]: '',
-      [ISuggestDataDtoField.additionalTextEdits]: item.additionalTextEdits && item.additionalTextEdits.map(Converter.fromTextEdit),
+      [ISuggestDataDtoField.additionalTextEdits]:
+        item.additionalTextEdits && item.additionalTextEdits.map(Converter.fromTextEdit),
       [ISuggestDataDtoField.command]: this.commandConverter.toInternal(item.command, disposables),
       [ISuggestDataDtoField.commitCharacters]: item.commitCharacters,
       [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace ? CompletionItemInsertTextRule.KeepWhitespace : 0,

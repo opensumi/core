@@ -21,9 +21,9 @@ export const LargeFilePrevent = () => {
   };
 
   return (
-    <div className={ styles.font }>
-      { localize('editor.largeFile.prevent') }
-      <a onClick={() => handleClick()}>{ localize('editor.largeFile.prevent.stillOpen') }</a>
+    <div className={styles.font}>
+      {localize('editor.largeFile.prevent')}
+      <a onClick={() => handleClick()}>{localize('editor.largeFile.prevent.stillOpen')}</a>
     </div>
   );
 };

@@ -3,9 +3,7 @@ import { IEditorFeatureContribution } from '../types';
 import { IEditor } from '../../common';
 
 export class EditorTopPaddingContribution implements IEditorFeatureContribution {
-
   contribute(editor: IEditor) {
-
     return editor.monacoEditor.onDidChangeModel(() => {
       editor.monacoEditor.changeViewZones((accessor: monaco.editor.IViewZoneChangeAccessor) => {
         accessor.addZone({

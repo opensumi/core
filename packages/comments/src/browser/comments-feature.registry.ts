@@ -1,9 +1,17 @@
 import { Injectable } from '@opensumi/di';
-import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig, ICommentProviderFeature } from '../common';
+import {
+  CommentsPanelOptions,
+  ICommentsFeatureRegistry,
+  PanelTreeNodeHandler,
+  FileUploadHandler,
+  MentionsOptions,
+  ZoneWidgerRender,
+  ICommentsConfig,
+  ICommentProviderFeature,
+} from '../common';
 
 @Injectable()
 export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
-
   private config: ICommentsConfig = {};
 
   private options: CommentsPanelOptions = {};
@@ -32,7 +40,7 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
   registerPanelOptions(options: CommentsPanelOptions): void {
     this.options = {
       ...this.options,
-      ... options,
+      ...options,
     };
   }
 

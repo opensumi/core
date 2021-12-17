@@ -1,7 +1,19 @@
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { Autowired } from '@opensumi/di';
-import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
+import {
+  CommandContribution,
+  CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
+  getIcon,
+  localize,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+  KeybindingContribution,
+  KeybindingRegistry,
+  IContextKeyService,
+} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugConsoleView } from './debug-console.view';
@@ -15,9 +27,23 @@ import { DebugConsoleNode } from '../../tree';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
-@Domain(ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution, KeybindingContribution)
-export class DebugConsoleContribution implements ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution, KeybindingContribution {
-
+@Domain(
+  ComponentContribution,
+  BrowserEditorContribution,
+  TabBarToolbarContribution,
+  CommandContribution,
+  MenuContribution,
+  KeybindingContribution,
+)
+export class DebugConsoleContribution
+  implements
+    ComponentContribution,
+    BrowserEditorContribution,
+    TabBarToolbarContribution,
+    CommandContribution,
+    MenuContribution,
+    KeybindingContribution
+{
   @Autowired()
   private readonly debugConsoleModelService: DebugConsoleModelService;
 
@@ -34,16 +60,20 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
   protected readonly debugConsoleFilterService: DebugConsoleFilterService;
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('debug-console', {
-      id: DEBUG_CONSOLE_VIEW_ID,
-      component: DebugConsoleView,
-    }, {
-      title: localize('debug.console.panel.title'),
-      priority: 8,
-      containerId: DEBUG_CONSOLE_CONTAINER_ID,
-      iconClass: getIcon('debug'),
-      titleComponent: DebugConsoleFilterView,
-    });
+    registry.register(
+      'debug-console',
+      {
+        id: DEBUG_CONSOLE_VIEW_ID,
+        component: DebugConsoleView,
+      },
+      {
+        title: localize('debug.console.panel.title'),
+        priority: 8,
+        containerId: DEBUG_CONSOLE_CONTAINER_ID,
+        iconClass: getIcon('debug'),
+        titleComponent: DebugConsoleFilterView,
+      },
+    );
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {

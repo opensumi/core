@@ -17,8 +17,7 @@ import { DirtyDiffWidget } from './dirty-diff-widget';
 import './dirty-diff.module.less';
 
 export class DirtyDiffItem {
-
-  constructor(readonly model: DirtyDiffModel, readonly decorator: DirtyDiffDecorator) { }
+  constructor(readonly model: DirtyDiffModel, readonly decorator: DirtyDiffDecorator) {}
 
   dispose(): void {
     this.decorator.dispose();
@@ -28,11 +27,10 @@ export class DirtyDiffItem {
 
 @Injectable()
 export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDiffWorkbenchController {
-
   private enabled = false;
   private models: IEditorDocumentModel[] = [];
   private widgets = new Map<string, DirtyDiffWidget>();
-  private items: { [modelId: string]: DirtyDiffItem; } = Object.create(null);
+  private items: { [modelId: string]: DirtyDiffItem } = Object.create(null);
   private readonly transientDisposables = new DisposableStore();
 
   @Autowired(SCMPreferences)
@@ -58,27 +56,33 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   }
 
   public start() {
-    const onDidChangeConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) => e.affects('scm.diffDecorations'));
+    const onDidChangeConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) =>
+      e.affects('scm.diffDecorations'),
+    );
     this.addDispose(onDidChangeConfiguration(this.onDidChangeConfiguration, this));
     this.onDidChangeConfiguration();
 
-    const onDidChangeDiffWidthConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) => e.affects('scm.diffDecorationsGutterWidth'));
+    const onDidChangeDiffWidthConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) =>
+      e.affects('scm.diffDecorationsGutterWidth'),
+    );
     onDidChangeDiffWidthConfiguration(this.onDidChangeDiffWidthConfiguration, this);
     this.onDidChangeDiffWidthConfiguration();
 
-    this.addDispose(this.editorFeatureRegistry.registerEditorFeatureContribution({
-      contribute: (editor) => {
-        return this.attachEvents(editor.monacoEditor);
-      },
-    }));
+    this.addDispose(
+      this.editorFeatureRegistry.registerEditorFeatureContribution({
+        contribute: (editor) => this.attachEvents(editor.monacoEditor),
+      }),
+    );
 
-    this.addDispose(this.scmPreferences.onPreferenceChanged((event) => {
-      if (event.preferenceName === 'scm.alwaysShowDiffWidget' && event.newValue === false) {
-        this.widgets.forEach((widget) => {
-          widget.dispose();
-        });
-      }
-    }));
+    this.addDispose(
+      this.scmPreferences.onPreferenceChanged((event) => {
+        if (event.preferenceName === 'scm.alwaysShowDiffWidget' && event.newValue === false) {
+          this.widgets.forEach((widget) => {
+            widget.dispose();
+          });
+        }
+      }),
+    );
   }
 
   private onDidChangeConfiguration() {
@@ -106,9 +110,11 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       this.disable();
     }
 
-    this.transientDisposables.add(this.eventBus.on(EditorGroupChangeEvent, () => {
-      this.onEditorsChanged();
-    }));
+    this.transientDisposables.add(
+      this.eventBus.on(EditorGroupChangeEvent, () => {
+        this.onEditorsChanged();
+      }),
+    );
     this.onEditorsChanged();
     this.enabled = true;
   }
@@ -146,7 +152,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
           // const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);
           // controller.modelRegistry = this;
-          return currentEditor.currentDocumentModel ;
+          return currentEditor.currentDocumentModel;
         }
         return null;
       })
@@ -210,10 +216,10 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
     const { position, detail, type, element } = target;
     if (
-      type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS
-      && element
-      && element.className.indexOf('dirty-diff-glyph') > -1
-      && position
+      type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+      element &&
+      element.className.indexOf('dirty-diff-glyph') > -1 &&
+      position
     ) {
       const offsetLeftInGutter = (element as HTMLElement).offsetLeft;
       const gutterOffsetX = detail.offsetX - offsetLeftInGutter;
@@ -238,24 +244,30 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   private attachEvents(codeEditor: IMonacoCodeEditor) {
     const disposeCollection = new DisposableCollection();
 
-    disposeCollection.push(codeEditor.onMouseDown((event) => {
-      if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
-        this._doMouseDown(codeEditor, event);
-      }
-    }));
-
-    disposeCollection.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {
-      if (oldModelUrl) {
-        const oldWidget = this.widgets.get(codeEditor.getId());
-        if (oldWidget) {
-          oldWidget.dispose();
+    disposeCollection.push(
+      codeEditor.onMouseDown((event) => {
+        if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
+          this._doMouseDown(codeEditor, event);
         }
-      }
-    }));
+      }),
+    );
 
-    disposeCollection.push(codeEditor.onDidDispose(() => {
-      disposeCollection.dispose();
-    }));
+    disposeCollection.push(
+      codeEditor.onDidChangeModel(({ oldModelUrl }) => {
+        if (oldModelUrl) {
+          const oldWidget = this.widgets.get(codeEditor.getId());
+          if (oldWidget) {
+            oldWidget.dispose();
+          }
+        }
+      }),
+    );
+
+    disposeCollection.push(
+      codeEditor.onDidDispose(() => {
+        disposeCollection.dispose();
+      }),
+    );
     return disposeCollection;
   }
 

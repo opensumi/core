@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -41,82 +41,79 @@ export function startsWith(haystack: string, needle: string): boolean {
  * Determines if haystack ends with needle.
  */
 export function endsWith(haystack: string, needle: string): boolean {
-    const diff = haystack.length - needle.length;
-    if (diff > 0) {
-        return haystack.indexOf(needle, diff) === diff;
-    } else if (diff === 0) {
-        return haystack === needle;
-    } else {
-        return false;
-    }
+  const diff = haystack.length - needle.length;
+  if (diff > 0) {
+    return haystack.indexOf(needle, diff) === diff;
+  } else if (diff === 0) {
+    return haystack === needle;
+  } else {
+    return false;
+  }
 }
 export function isLowerAsciiLetter(code: number): boolean {
-    return code >= CharCode.a && code <= CharCode.z;
+  return code >= CharCode.a && code <= CharCode.z;
 }
 
 export function isUpperAsciiLetter(code: number): boolean {
-    return code >= CharCode.A && code <= CharCode.Z;
+  return code >= CharCode.A && code <= CharCode.Z;
 }
 
 function isAsciiLetter(code: number): boolean {
-    return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
+  return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
 }
 export function equalsIgnoreCase(a: string, b: string): boolean {
-    const len1 = a ? a.length : 0;
-    const len2 = b ? b.length : 0;
+  const len1 = a ? a.length : 0;
+  const len2 = b ? b.length : 0;
 
-    if (len1 !== len2) {
-        return false;
-    }
+  if (len1 !== len2) {
+    return false;
+  }
 
-    return doEqualsIgnoreCase(a, b);
+  return doEqualsIgnoreCase(a, b);
 }
 
 function doEqualsIgnoreCase(a: string, b: string, stopAt = a.length): boolean {
-    if (typeof a !== 'string' || typeof b !== 'string') {
+  if (typeof a !== 'string' || typeof b !== 'string') {
+    return false;
+  }
+
+  for (let i = 0; i < stopAt; i++) {
+    const codeA = a.charCodeAt(i);
+    const codeB = b.charCodeAt(i);
+
+    if (codeA === codeB) {
+      continue;
+    }
+
+    // a-z A-Z
+    if (isAsciiLetter(codeA) && isAsciiLetter(codeB)) {
+      const diff = Math.abs(codeA - codeB);
+      if (diff !== 0 && diff !== 32) {
         return false;
+      }
+    } else {
+      // Any other charcode
+      if (String.fromCharCode(codeA).toLowerCase() !== String.fromCharCode(codeB).toLowerCase()) {
+        return false;
+      }
     }
+  }
 
-    for (let i = 0; i < stopAt; i++) {
-        const codeA = a.charCodeAt(i);
-        const codeB = b.charCodeAt(i);
-
-        if (codeA === codeB) {
-            continue;
-        }
-
-        // a-z A-Z
-        if (isAsciiLetter(codeA) && isAsciiLetter(codeB)) {
-            const diff = Math.abs(codeA - codeB);
-            if (diff !== 0 && diff !== 32) {
-                return false;
-            }
-        }
-
-        // Any other charcode
-        // tslint:disable-next-line:one-line
-        else {
-            if (String.fromCharCode(codeA).toLowerCase() !== String.fromCharCode(codeB).toLowerCase()) {
-                return false;
-            }
-        }
-    }
-
-    return true;
+  return true;
 }
 
 /**
  * Escapes regular expression characters in a given string
  */
 export function escapeRegExpCharacters(value: string): string {
-    return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
+  return value.replace(/[-\\{}*+?|^$.[\]()#]/g, '\\$&');
 }
 
 export function startsWithIgnoreCase(str: string, candidate: string): boolean {
-    const candidateLength = candidate.length;
-    if (candidate.length > str.length) {
-        return false;
-    }
+  const candidateLength = candidate.length;
+  if (candidate.length > str.length) {
+    return false;
+  }
 
-    return doEqualsIgnoreCase(str, candidate, candidateLength);
+  return doEqualsIgnoreCase(str, candidate, candidateLength);
 }

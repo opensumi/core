@@ -3,13 +3,13 @@ import { Injectable, Injector } from '@opensumi/di';
 import { IHashCalculateService, HashCalculateServiceImpl } from '../src/hash-calculate/hash-calculate';
 
 describe('HashCalculate', () => {
-  let injector: Injector = new Injector([
+  const injector: Injector = new Injector([
     {
       token: IHashCalculateService,
       useClass: HashCalculateServiceImpl,
     },
   ]);
-  let hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
+  const hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
 
   it('HashCalculateService should be initialized', async () => {
     await hashCalculateService.initialize();
@@ -24,8 +24,14 @@ describe('HashCalculate', () => {
     expect(hashCalculateService.calculate('abc')).toBe('900150983cd24fb0d6963f7d28e17f72');
     expect(hashCalculateService.calculate('message digest')).toBe('f96b697d7cb7938d525a2f31aaf161d0');
     expect(hashCalculateService.calculate('abcdefghijklmnopqrstuvwxyz')).toBe('c3fcd3d76192e4007dfb496cca67e13b');
-    expect(hashCalculateService.calculate('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')).toBe('d174ab98d277d9f5a5611c2c9f419d9f');
-    expect(hashCalculateService.calculate('12345678901234567890123456789012345678901234567890123456789012345678901234567890')).toBe('57edf4a22be3c955ac49da2e2107b67a');
+    expect(hashCalculateService.calculate('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')).toBe(
+      'd174ab98d277d9f5a5611c2c9f419d9f',
+    );
+    expect(
+      hashCalculateService.calculate(
+        '12345678901234567890123456789012345678901234567890123456789012345678901234567890',
+      ),
+    ).toBe('57edf4a22be3c955ac49da2e2107b67a');
   });
 
   it('HashCalculateService calculate unicode string', () => {

@@ -43,9 +43,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
     ctxMenuService.show({
       anchor: clickEvent,
       onHide,
-      menuNodes: [
-        new MenuNode({ id: 'test.command', label: 'test' }),
-      ],
+      menuNodes: [new MenuNode({ id: 'test.command', label: 'test' })],
       args: [1, 2, 3],
     });
     expect(ctxMenuService.visible).toBeTruthy();
@@ -59,9 +57,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
 
     ctxMenuService.show({
       anchor: { x: 15, y: 20 },
-      menuNodes: [
-        new MenuNode({ id: 'test1.command', label: 'test1' }),
-      ],
+      menuNodes: [new MenuNode({ id: 'test1.command', label: 'test1' })],
     });
 
     expect(ctxMenuService.visible).toBeTruthy();

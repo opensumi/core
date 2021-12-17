@@ -12,14 +12,15 @@ import { CheckBox } from '@opensumi/ide-components/lib/checkbox';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-service';
 import { ViewState } from '@opensumi/ide-core-browser/lib/layout';
 
-import {
-  IRefactorPreviewService,
-} from './refactor-preview.service';
+import { IRefactorPreviewService } from './refactor-preview.service';
 import styles from './refactor_preview.module.less';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { isResourceFileEdit } from './utils';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type { ResourceFileEdit, ResourceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type {
+  ResourceFileEdit,
+  ResourceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 interface IRefactorNodeProps {
   data: ResourceTextEdit | ResourceFileEdit;
@@ -50,19 +51,11 @@ interface IFileEditNodeProps {
  * } = splitLeftAndRightPadInTextModel(range\/** path range *\/, model);
  * ```
  */
-function splitLeftAndRightPadInTextModel(
-  range: IRange,
-  textModel: ITextModel,
-) {
+function splitLeftAndRightPadInTextModel(range: IRange, textModel: ITextModel) {
   const lineContent = textModel.getLineContent(range.startLineNumber);
   const base = textModel.getValueInRange(range);
 
-  const leftPadRange = new monaco.Range(
-    range.startLineNumber,
-    0,
-    range.startLineNumber,
-    range.startColumn,
-  );
+  const leftPadRange = new monaco.Range(range.startLineNumber, 0, range.startLineNumber, range.startColumn);
   const rightPadRange = new monaco.Range(
     range.endLineNumber,
     range.startColumn + base.length,
@@ -87,12 +80,8 @@ const ResourceIcon: React.FC<{ uri: Uri }> = (props) => {
 };
 
 const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
-  const modelService = useInjectable<IEditorDocumentModelService>(
-    IEditorDocumentModelService,
-  );
-  const refactorPreviewService = useInjectable<IRefactorPreviewService>(
-    IRefactorPreviewService,
-  );
+  const modelService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
+  const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
   const renderTextEditDiff = () => {
     const model = modelService.getModelReference(URI.from(item.resource));
@@ -101,18 +90,13 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
     }
 
     const textModel = model.instance.getMonacoModel();
-    const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(
-      item.textEdit.range,
-      textModel,
-    );
+    const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(item.textEdit.range, textModel);
 
     return (
       <div className={styles.refactor_preview_node_wrapper}>
         {leftPad}
         <span className={styles.refactor_preview_node_base}>{base}</span>
-        <span className={styles.refactor_preview_node_new}>
-          {item.textEdit.text}
-        </span>
+        <span className={styles.refactor_preview_node_new}>{item.textEdit.text}</span>
         {rightPad}
       </div>
     );
@@ -158,9 +142,7 @@ function mapDescForFileEdit(edit: ResourceFileEdit) {
 }
 
 const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
-  const refactorPreviewService = useInjectable<IRefactorPreviewService>(
-    IRefactorPreviewService,
-  );
+  const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
   const editDesc = mapDescForFileEdit(item);
   if (editDesc === undefined) {
@@ -180,7 +162,9 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
       />
       <ResourceIcon uri={editDesc.uri as unknown as Uri /* monaco#Uri */} />
       <span className={styles.refactor_preview_node_wrapper}>{filename}</span>
-      <span className={styles.resource_node_path}>{dirname} ({editDesc.desc})</span>
+      <span className={styles.resource_node_path}>
+        {dirname} ({editDesc.desc})
+      </span>
     </div>
   );
 });
@@ -192,24 +176,20 @@ const RefactorNode = observer<IRefactorNodeProps>(({ data, ...restProps }) => {
   return <TextEditNode data={data} {...restProps} />;
 });
 
-export const RefactorPreview = observer(
-  ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
-    const refactorPreviewService = useInjectable<IRefactorPreviewService>(
-      IRefactorPreviewService,
-    );
+export const RefactorPreview = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+  const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
-    return (
-      <div>
-        {refactorPreviewService.edits.length > 0 && (
-          <RecycleList
-            itemHeight={23}
-            width={viewState.width}
-            height={viewState.height}
-            data={refactorPreviewService.edits}
-            template={RefactorNode}
-          />
-        )}
-      </div>
-    );
-  },
-);
+  return (
+    <div>
+      {refactorPreviewService.edits.length > 0 && (
+        <RecycleList
+          itemHeight={23}
+          width={viewState.width}
+          height={viewState.height}
+          data={refactorPreviewService.edits}
+          template={RefactorNode}
+        />
+      )}
+    </div>
+  );
+});

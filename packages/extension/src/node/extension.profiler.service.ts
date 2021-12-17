@@ -14,7 +14,6 @@ export enum ProfileSessionState {
 
 @Injectable()
 export class ExtensionProfilerService implements IExtensionHostProfilerService {
-
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
 

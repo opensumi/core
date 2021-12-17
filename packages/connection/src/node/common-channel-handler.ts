@@ -183,9 +183,7 @@ export class CommonChannelHandler extends WebSocketHandler {
         }
 
         Array.from(this.channelMap.values())
-          .filter((channel) => {
-            return channel.id.toString().indexOf(connectionId) !== -1;
-          })
+          .filter((channel) => channel.id.toString().indexOf(connectionId) !== -1)
           .forEach((channel) => {
             channel.close(1, 'close');
             this.channelMap.delete(channel.id);
@@ -194,17 +192,15 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
     });
   }
-  private channelConnectionSend = (connection: ws) => {
-    return (content: string) => {
-      if (connection.readyState === connection.OPEN) {
-        connection.send(content, (err: any) => {
-          if (err) {
-            this.logger.log(err);
-          }
-        });
-      }
-    };
-  }
+  private channelConnectionSend = (connection: ws) => (content: string) => {
+    if (connection.readyState === connection.OPEN) {
+      connection.send(content, (err: any) => {
+        if (err) {
+          this.logger.log(err);
+        }
+      });
+    }
+  };
   public handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean {
     const routeResult = this.handlerRoute(wsPathname);
 

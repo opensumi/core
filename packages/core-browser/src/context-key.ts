@@ -1,4 +1,7 @@
-import { ContextKeyExpr, IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpr,
+  IContextKeyServiceTarget,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { Event, BasicEvent } from '@opensumi/ide-core-common';
 
@@ -37,4 +40,4 @@ export interface IReadableSet<T> {
   has(value: T): boolean;
 }
 
-export class ContextKeyChangeEvent extends BasicEvent<IContextKeyChangeEventPayload> { }
+export class ContextKeyChangeEvent extends BasicEvent<IContextKeyChangeEventPayload> {}

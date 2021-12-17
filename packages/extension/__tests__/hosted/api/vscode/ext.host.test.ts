@@ -17,7 +17,7 @@ const enum MessageType {
   ReplyErr = 3,
   Cancel = 4,
 }
-const mockLoggger = (new MockLoggerManagerClient()).getLogger();
+const mockLoggger = new MockLoggerManagerClient().getLogger();
 
 describe('Extension process test', () => {
   describe('RPCProtocol', () => {
@@ -27,22 +27,23 @@ describe('Extension process test', () => {
 
     beforeEach(async () => {
       injector = new Injector();
-      injector.addProviders({
-        token: AppConfig,
-        useValue: {
-          builtinCommands: [
-            {
-              id: 'test:builtinCommand:test',
-              handler: () => {
-                return 'fake token';
+      injector.addProviders(
+        {
+          token: AppConfig,
+          useValue: {
+            builtinCommands: [
+              {
+                id: 'test:builtinCommand:test',
+                handler: () => 'fake token',
               },
-            },
-          ],
+            ],
+          },
         },
-      }, {
-        token: IReporter,
-        useClass: DefaultReporter,
-      });
+        {
+          token: IReporter,
+          useClass: DefaultReporter,
+        },
+      );
 
       proxyMaps.set('MainThreadExtensionService', new MainThreadExtensionService());
       proxyMaps.set('MainThreadStorage', new MainThreadStorage());
@@ -57,11 +58,12 @@ describe('Extension process test', () => {
           if (proxy) {
             const result = await proxy[message.method](...message.args);
             if (await fn) {
-              const raw = `{"type": ${MessageType.Reply}, "id": "${message.id}", "res": ${JSON.stringify(result || '')}}`;
+              const raw = `{"type": ${MessageType.Reply}, "id": "${message.id}", "res": ${JSON.stringify(
+                result || '',
+              )}}`;
               (await fn)(raw);
             }
           } else {
-            // tslint:disable-next-line
             console.log(`lost proxy ${message.proxyId} - ${message.method}`);
           }
         },
@@ -121,7 +123,7 @@ describe('Extension process test', () => {
     it('should caught runtime unexpected error', async (done) => {
       const reporter = injector.get(IReporter);
 
-      jest.spyOn((extHostImpl as any), 'findExtension').mockImplementation(() => mockExtensionProps2);
+      jest.spyOn(extHostImpl as any, 'findExtension').mockImplementation(() => mockExtensionProps2);
       jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
         if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
           expect(typeof data.extra.error).toBeTruthy();

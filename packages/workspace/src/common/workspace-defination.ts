@@ -9,16 +9,14 @@ export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export const UNTITLED_WORKSPACE = 'Untitled';
 
 export interface WorkspaceInput {
-
   /**
    * 判断是否复用相同窗口
    */
   preserveWindow?: boolean;
-
 }
 
 export interface WorkspaceData {
-  folders: Array<{ path: string, name?: string }>;
+  folders: Array<{ path: string; name?: string }>;
   settings?: { [id: string]: any };
 }
 
@@ -51,7 +49,10 @@ export namespace WorkspaceData {
     return !!validateSchema(data);
   }
 
-  export function buildWorkspaceData(folders: string[] | FileStat[], settings: { [id: string]: any } | undefined): WorkspaceData {
+  export function buildWorkspaceData(
+    folders: string[] | FileStat[],
+    settings: { [id: string]: any } | undefined,
+  ): WorkspaceData {
     let roots: string[] = [];
     if (folders.length > 0) {
       if (typeof folders[0] !== 'string') {
@@ -133,7 +134,7 @@ export namespace WorkspaceData {
       for (const folder of data.folders) {
         const path = folder.path;
         // 判断是否为绝对路径
-        if (/^.+\:\//.test(path)) {
+        if (/^.+:\//.test(path)) {
           folders.push(path);
         } else {
           if (path === '.') {
@@ -185,7 +186,12 @@ export interface IWorkspaceService {
   // 设置最近使用的工作区
   setMostRecentlyUsedWorkspace(uri: string): Promise<void>;
   // 操作工作区目录
-  spliceRoots(start: number, deleteCount?: number, workspaceToName?: { [key: string]: string }, ...rootsToAdd: URI[]): Promise<URI[]>;
+  spliceRoots(
+    start: number,
+    deleteCount?: number,
+    workspaceToName?: { [key: string]: string },
+    ...rootsToAdd: URI[]
+  ): Promise<URI[]>;
   // 从工作区中移除目录
   removeRoots(roots: URI[]): Promise<void>;
   // 获取相对于工作区的路径

@@ -38,7 +38,6 @@ export interface IKTExtensionContext {
 }
 
 export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionContext {
-
   readonly subscriptions: { dispose(): any }[] = [];
 
   readonly _extensionLocation: Uri;
@@ -136,14 +135,9 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 }
 
-export function createExtensionsApiFactory<T extends IExtensionHost>(
-  extensionService: T,
-) {
-
+export function createExtensionsApiFactory<T extends IExtensionHost>(extensionService: T) {
   return {
-    all: (() => {
-      return extensionService.getExtensions();
-    })(),
+    all: (() => extensionService.getExtensions())(),
     get onDidChange() {
       return extensionService.extensionsChangeEmitter.event;
     },

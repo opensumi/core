@@ -10,12 +10,13 @@ export class RecentStorage {
   private recentGlobalStorage: IStorage;
 
   public async getScopeStorage() {
-    this.recentStorage = this.recentStorage || await this.getStorage(STORAGE_NAMESPACE.RECENT_DATA);
+    this.recentStorage = this.recentStorage || (await this.getStorage(STORAGE_NAMESPACE.RECENT_DATA));
     return this.recentStorage;
   }
 
   public async getGlobalStorage() {
-    this.recentGlobalStorage = this.recentGlobalStorage || await this.getStorage(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
+    this.recentGlobalStorage =
+      this.recentGlobalStorage || (await this.getStorage(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA));
     return this.recentGlobalStorage;
   }
 }

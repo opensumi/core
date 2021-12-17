@@ -1,13 +1,27 @@
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { Disposable, IFileServiceClient } from '@opensumi/ide-core-common';
 import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager, IDebugSession, DebugSessionOptions, DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
+import {
+  IDebugSessionManager,
+  IDebugSession,
+  DebugSessionOptions,
+  DebugModelFactory,
+  IDebugServer,
+} from '@opensumi/ide-debug';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import styles from '../../../../src/browser/view/console/debug-console.module.less';
-import { DebugConsoleModelService, IDebugConsoleModel } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import {
+  DebugConsoleModelService,
+  IDebugConsoleModel,
+} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { DebugSessionFactory, DefaultDebugSessionFactory, DebugPreferences, DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
+import {
+  DebugSessionFactory,
+  DefaultDebugSessionFactory,
+  DebugPreferences,
+  DebugSessionContributionRegistry,
+} from '@opensumi/ide-debug/lib/browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
@@ -26,19 +40,18 @@ describe('Debug Console Tree Model', () => {
   let debugConsoleFilterService: DebugConsoleFilterService;
   let debugSessionFactory: DebugSessionFactory;
   const mockDebugHoverSource = {
-    onDidChange: jest.fn(() => Disposable.create(() => { })),
+    onDidChange: jest.fn(() => Disposable.create(() => {})),
   } as any;
 
-  const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession => {
-    return debugSessionFactory.get(sessionId, options as any);
-  };
+  const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession =>
+    debugSessionFactory.get(sessionId, options as any);
 
   const mockWatcher = {
     callback: jest.fn(),
   };
   const mockRoot = {
     watcher: {
-      on: jest.fn(() => Disposable.create(() => { })),
+      on: jest.fn(() => Disposable.create(() => {})),
     },
     watchEvents: {
       get: jest.fn(() => mockWatcher),
@@ -47,17 +60,17 @@ describe('Debug Console Tree Model', () => {
   } as any;
 
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
     currentSession: IDebugSession,
-    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => { }),
+    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
   };
   // let mockDebugSessionManager: DebugSessionManager;
 
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => { },
+      dispose: () => {},
     })),
   };
 
@@ -271,7 +284,7 @@ describe('Debug Console Tree Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => {} } as any;
     debugConsoleModelService.handleTreeHandler(treeHandle);
     expect(debugConsoleModelService.treeHandle).toEqual(treeHandle);
   });
@@ -317,7 +330,6 @@ describe('Debug Console Tree Model', () => {
     expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
     expect(mockEvent.stopPropagation).toBeCalledTimes(1);
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
-
   });
 
   it('refresh method should be work', async (done) => {
@@ -328,11 +340,9 @@ describe('Debug Console Tree Model', () => {
   });
 
   it('repl merging', async (done) => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => {} } as any;
     debugConsoleModelService.handleTreeHandler(treeHandle);
-    const getBranchSize = (repl: IDebugConsoleModel | undefined) => {
-      return repl ? repl.treeModel.root.branchSize : 0;
-    };
+    const getBranchSize = (repl: IDebugConsoleModel | undefined) => (repl ? repl.treeModel.root.branchSize : 0);
     const parent = createMockSession('parent', { repl: 'mergeWithParent' });
     createMockSession('child1', { parentSession: parent, repl: 'separate' });
     const child2 = createMockSession('child2', { parentSession: parent, repl: 'mergeWithParent' });

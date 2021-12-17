@@ -13,31 +13,29 @@ export class StatusBarContribution implements ComponentContribution, CommandCont
   statusBarService: IStatusBarService;
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@opensumi/ide-status-bar', {
-      component: StatusBarView,
-      id: 'ide-status-bar',
-    }, {
-      size: 24,
-    });
+    registry.register(
+      '@opensumi/ide-status-bar',
+      {
+        component: StatusBarView,
+        id: 'ide-status-bar',
+      },
+      {
+        size: 24,
+      },
+    );
   }
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(StatusBarCommand.changeBackgroundColor, {
-      execute: (backgroundColor: string) => {
-        return this.statusBarService.setBackgroundColor(backgroundColor);
-      },
+      execute: (backgroundColor: string) => this.statusBarService.setBackgroundColor(backgroundColor),
     });
 
     commands.registerCommand(StatusBarCommand.changeColor, {
-      execute: (color: string) => {
-        return this.statusBarService.setColor(color);
-      },
+      execute: (color: string) => this.statusBarService.setColor(color),
     });
 
     commands.registerCommand(StatusBarCommand.addElement, {
-      execute: (id: string, entry: StatusBarEntry) => {
-        return this.statusBarService.addElement(id, entry);
-      },
+      execute: (id: string, entry: StatusBarEntry) => this.statusBarService.addElement(id, entry),
     });
 
     commands.registerCommand(StatusBarCommand.toggleElement, {

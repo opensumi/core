@@ -2,27 +2,35 @@ import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/v
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/language/workspace-symbol-quickopen';
-import { ILanguageService, WorkspaceSymbolProvider, WorkspaceSymbolParams, WorkbenchEditorService } from '../../../src/common';
+import {
+  ILanguageService,
+  WorkspaceSymbolProvider,
+  WorkspaceSymbolParams,
+  WorkbenchEditorService,
+} from '../../../src/common';
 import { SymbolInformation, Location } from 'vscode-languageserver-types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
   provideWorkspaceSymbols(params: WorkspaceSymbolParams, token): Thenable<SymbolInformation[]> {
-    return Promise.resolve([{
-      name: 'test',
-      kind: SymbolKindEnum.Function,
-      location: Location.create('', {
-        start: { line: 5, character: 23 },
-        end : { line: 6, character : 0 },
-      }),
-    }, {
-      name: 'App',
-      kind: SymbolKindEnum.Class,
-      location: Location.create('', {
-        start: { line: 5, character: 23 },
-        end : { line: 6, character : 0 },
-      }),
-    }]);
+    return Promise.resolve([
+      {
+        name: 'test',
+        kind: SymbolKindEnum.Function,
+        location: Location.create('', {
+          start: { line: 5, character: 23 },
+          end: { line: 6, character: 0 },
+        }),
+      },
+      {
+        name: 'App',
+        kind: SymbolKindEnum.Class,
+        location: Location.create('', {
+          start: { line: 5, character: 23 },
+          end: { line: 6, character: 0 },
+        }),
+      },
+    ]);
   }
   resolveWorkspaceSymbol(symbol: SymbolInformation, token): Thenable<SymbolInformation> {
     if (symbol.name === 'test') {
@@ -31,7 +39,7 @@ class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
         kind: SymbolKindEnum.Function,
         location: Location.create('', {
           start: { line: 5, character: 23 },
-          end : { line: 6, character : 0 },
+          end: { line: 6, character: 0 },
         }),
       });
     } else {
@@ -40,7 +48,7 @@ class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
         kind: SymbolKindEnum.Class,
         location: Location.create('', {
           start: { line: 5, character: 23 },
-          end : { line: 6, character : 0 },
+          end: { line: 6, character: 0 },
         }),
       });
     }
@@ -48,7 +56,6 @@ class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
 }
 
 describe('workspace-symbol-quickopen', () => {
-
   let injector: MockInjector;
   let workspaceSymbolQuickOpenHandler: WorkspaceSymbolQuickOpenHandler;
 
@@ -59,9 +66,7 @@ describe('workspace-symbol-quickopen', () => {
       {
         token: ILanguageService,
         useValue: mockService({
-          workspaceSymbolProviders: [
-            new MockWorkspaceSymbolProvider(),
-          ],
+          workspaceSymbolProviders: [new MockWorkspaceSymbolProvider()],
         }),
       },
       {

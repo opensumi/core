@@ -1,12 +1,17 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions } from '../../../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  IMainThreadWindow,
+  IExtHostWindow,
+  IExtOpenDialogOptions,
+  IExtSaveDialogOptions,
+} from '../../../common/vscode';
 import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';
 import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadWindow implements IMainThreadWindow {
-
   private readonly proxy: IExtHostWindow;
 
   @Autowired(INJECTOR_TOKEN)
@@ -41,7 +46,5 @@ export class MainThreadWindow implements IMainThreadWindow {
     this.proxy.$onSaveDialogResult(id, res ? res.codeUri : res);
   }
 
-  dispose() {
-
-  }
+  dispose() {}
 }

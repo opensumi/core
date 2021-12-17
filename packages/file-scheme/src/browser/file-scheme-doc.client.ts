@@ -1,5 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, IFileSchemeDocClient, IContentChange, ISavingContent } from '../common';
+import {
+  IFileSchemeDocNodeService,
+  FileSchemeDocNodeServicePath,
+  IFileSchemeDocClient,
+  IContentChange,
+  ISavingContent,
+} from '../common';
 import { IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
 
 @Injectable()
@@ -7,11 +13,21 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
   @Autowired(FileSchemeDocNodeServicePath)
   protected readonly fileDocBackendService: IFileSchemeDocNodeService;
 
-  saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force?: boolean | undefined): Promise<IEditorDocumentModelSaveResult> {
+  saveByChange(
+    uri: string,
+    change: IContentChange,
+    encoding?: string | undefined,
+    force?: boolean | undefined,
+  ): Promise<IEditorDocumentModelSaveResult> {
     return this.fileDocBackendService.$saveByChange(uri, change, encoding, force);
   }
 
-  saveByContent(uri: string, content: ISavingContent, encoding?: string | undefined, force?: boolean | undefined): Promise<IEditorDocumentModelSaveResult> {
+  saveByContent(
+    uri: string,
+    content: ISavingContent,
+    encoding?: string | undefined,
+    force?: boolean | undefined,
+  ): Promise<IEditorDocumentModelSaveResult> {
     return this.fileDocBackendService.$saveByContent(uri, content, encoding, force);
   }
 

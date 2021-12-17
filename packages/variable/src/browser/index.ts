@@ -18,5 +18,4 @@ export class VariableModule extends BrowserModule {
     },
     VariableResolverContribution,
   ];
-
 }

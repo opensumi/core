@@ -1,7 +1,7 @@
 // copied from https://github.com/microsoft/vscode/blob/master/src/vs/base/test/common/color.test.ts
 // converted by [jest-codemods](https://github.com/skovhus/jest-codemods)
 
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -28,7 +28,6 @@ describe('Color', () => {
     expect(new HSLA(0, 0, 0.851, 1)).toEqual(Color.getLighterColor(color2, color1, 0.3).hsla);
     expect(new HSLA(0, 0, 0.981, 1)).toEqual(Color.getLighterColor(color2, color1, 0.7).hsla);
     expect(new HSLA(0, 0, 1, 1)).toEqual(Color.getLighterColor(color2, color1, 1).hsla);
-
   });
 
   test('isDarkerColor', () => {
@@ -36,7 +35,6 @@ describe('Color', () => {
     const color2 = new Color(new HSLA(0, 0, 0.753, 1));
 
     expect(color2.isDarkerThan(color1)).toBeTruthy();
-
   });
 
   test('getDarkerColor', () => {
@@ -79,14 +77,18 @@ describe('Color', () => {
   });
 
   test('blending', () => {
-    expect(new Color(new RGBA(0, 0, 0, 0)).blend(new Color(new RGBA(243, 34, 43)))).toEqual(new Color(new RGBA(243, 34, 43)));
-    expect(new Color(new RGBA(255, 255, 255)).blend(new Color(new RGBA(243, 34, 43)))).toEqual(new Color(new RGBA(255, 255, 255)));
-    expect(
-      new Color(new RGBA(122, 122, 122, 0.7)).blend(new Color(new RGBA(243, 34, 43))),
-    ).toEqual(new Color(new RGBA(158, 95, 98)));
-    expect(
-      new Color(new RGBA(0, 0, 0, 0.58)).blend(new Color(new RGBA(255, 255, 255, 0.33))),
-    ).toEqual(new Color(new RGBA(49, 49, 49, 0.719)));
+    expect(new Color(new RGBA(0, 0, 0, 0)).blend(new Color(new RGBA(243, 34, 43)))).toEqual(
+      new Color(new RGBA(243, 34, 43)),
+    );
+    expect(new Color(new RGBA(255, 255, 255)).blend(new Color(new RGBA(243, 34, 43)))).toEqual(
+      new Color(new RGBA(255, 255, 255)),
+    );
+    expect(new Color(new RGBA(122, 122, 122, 0.7)).blend(new Color(new RGBA(243, 34, 43)))).toEqual(
+      new Color(new RGBA(158, 95, 98)),
+    );
+    expect(new Color(new RGBA(0, 0, 0, 0.58)).blend(new Color(new RGBA(255, 255, 255, 0.33)))).toEqual(
+      new Color(new RGBA(49, 49, 49, 0.719)),
+    );
   });
 
   describe('HSLA', () => {
@@ -171,7 +173,6 @@ describe('Color', () => {
     });
 
     test('HSVA.fromRGBA', () => {
-
       expect(HSVA.fromRGBA(new RGBA(0, 0, 0, 0))).toEqual(new HSVA(0, 0, 0, 0));
       expect(HSVA.fromRGBA(new RGBA(0, 0, 0, 1))).toEqual(new HSVA(0, 0, 0, 1));
       expect(HSVA.fromRGBA(new RGBA(255, 255, 255, 1))).toEqual(new HSVA(0, 0, 1, 1));
@@ -210,7 +211,6 @@ describe('Color', () => {
   describe('Format', () => {
     describe('CSS', () => {
       test('parseHex', () => {
-
         // invalid
         expect(Color.Format.CSS.parseHex('')).toEqual(null);
         expect(Color.Format.CSS.parseHex('#')).toEqual(null);

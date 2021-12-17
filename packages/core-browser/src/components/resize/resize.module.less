@@ -1,4 +1,4 @@
-.resize-handle-horizontal{
+.resize-handle-horizontal {
   cursor: col-resize;
   position: relative;
   height: 100%;
@@ -6,7 +6,7 @@
   margin-left: -2px;
   z-index: 4;
   width: 4px;
-  transition: background-color .1s ease-out;
+  transition: background-color 0.1s ease-out;
   background: transparent;
   &:hover {
     background-color: var(--sash-hoverBorder);
@@ -20,11 +20,11 @@
     left: 2px;
     width: 1px;
     height: 100%;
-    top:0;
+    top: 0;
   }
 }
 
-.resize-handle-vertical{
+.resize-handle-vertical {
   cursor: row-resize;
   width: 100%;
   position: relative;
@@ -32,7 +32,7 @@
   margin-bottom: -2px;
   height: 4px;
   z-index: 2;
-  transition: background-color .1s ease-out;
+  transition: background-color 0.1s ease-out;
   background: transparent;
   &:hover {
     background-color: var(--sash-hoverBorder);
@@ -43,10 +43,10 @@
   &::before {
     content: '';
     position: absolute;
-    top:2px;
-    height:1px;
+    top: 2px;
+    height: 1px;
     width: 100%;
-    left:0;
+    left: 0;
   }
 }
 

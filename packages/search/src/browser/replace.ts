@@ -3,10 +3,7 @@ import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { MessageType, URI } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-browser';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import {
-  ContentSearchResult,
-  ResultTotal,
-} from '../common/';
+import { ContentSearchResult, ResultTotal } from '../common/';
 
 export async function replaceAll(
   workspaceEditService: IWorkspaceEditService,
@@ -26,13 +23,13 @@ export async function replaceAll(
       [localize('search.replace.buttonOK')]: true,
     };
     const selection = await dialogService!.open(
-        localize('search.removeAll.occurrences.files.confirmation.message')
-          .replace('{1}', String(resultTotal!.fileNum))
-          .replace('{0}', String(resultTotal!.resultNum))
-          .replace('{2}', String(replaceText)),
-        MessageType.Warning,
-        Object.keys(buttons),
-      );
+      localize('search.removeAll.occurrences.files.confirmation.message')
+        .replace('{1}', String(resultTotal!.fileNum))
+        .replace('{0}', String(resultTotal!.resultNum))
+        .replace('{2}', String(replaceText)),
+      MessageType.Warning,
+      Object.keys(buttons),
+    );
     if (!buttons[selection!]) {
       return buttons[selection!];
     }
@@ -67,7 +64,6 @@ export async function replace(
   results: ContentSearchResult[],
   replaceText: string,
 ) {
-
   await workspaceEditService.apply({
     edits: results.map((result) => ({
       options: {
@@ -75,12 +71,7 @@ export async function replace(
       },
       resource: new URI(result.fileUri),
       textEdit: {
-        range: new monaco.Range(
-          result.line,
-          result.matchStart,
-          result.line,
-          result.matchStart + result.matchLength,
-        ),
+        range: new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength),
         text: replaceText,
       },
     })),

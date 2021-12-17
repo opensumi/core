@@ -7,7 +7,6 @@ const logger = getDebugLogger();
 
 @Injectable()
 export class ProcessManage extends Disposable implements IProcessManage {
-
   protected readonly processes: Map<number, Process>;
   protected readonly unregisterEmitter: Emitter<number>;
 

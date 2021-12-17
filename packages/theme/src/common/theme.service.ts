@@ -58,10 +58,7 @@ export interface IIconService {
     type?: IconType,
     shape?: IconShape,
   ): string | undefined;
-  registerIconThemes(
-    iconThemesContribution: ThemeContribution[],
-    extPath: URI,
-  ): void;
+  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -78,10 +75,7 @@ export interface IThemeData extends IStandaloneThemeData {
 export interface IThemeService {
   currentThemeId: string;
   onThemeChange: Event<ITheme>;
-  registerThemes(
-    themeContributions: ThemeContribution[],
-    extPath: URI,
-  ): IDisposable;
+  registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param id 主题ID
@@ -95,9 +89,7 @@ export interface IThemeService {
   /**
    * 获取指定 color token 的 className
    */
-  getColorClassNameByColorToken(
-    colorId: string | IThemeColor | undefined,
-  ): string | undefined;
+  getColorClassNameByColorToken(colorId: string | IThemeColor | undefined): string | undefined;
   registerColor(contribution: ExtColorContribution): void;
 }
 
@@ -207,9 +199,7 @@ export const LIGHT: ThemeType = 'light';
 export const HIGH_CONTRAST: ThemeType = 'hc';
 export type ThemeType = 'light' | 'dark' | 'hc';
 
-export function getBuiltinRules(
-  builtinTheme: BuiltinTheme,
-): IStandaloneThemeData {
+export function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
   switch (builtinTheme) {
     case VS_THEME_NAME:
       return vs;
@@ -314,10 +304,7 @@ export function getThemeId(contribution: ThemeContribution) {
   if (contribution.id) {
     return contribution.id;
   }
-  return `${contribution.uiTheme || 'vs-dark'} ${toCSSSelector(
-    'vscode-theme',
-    contribution.path,
-  )}`;
+  return `${contribution.uiTheme || 'vs-dark'} ${toCSSSelector('vscode-theme', contribution.path)}`;
 }
 
 function toCSSSelector(extensionId: string, path: string) {

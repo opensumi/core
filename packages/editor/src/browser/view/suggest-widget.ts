@@ -14,43 +14,52 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
 
   contribute(editor: IEditor) {
     const disposable = new DisposableCollection();
-    const suggestController = editor.monacoEditor.getContribution<SuggestController>('editor.contrib.suggestController');
+    const suggestController = editor.monacoEditor.getContribution<SuggestController>(
+      'editor.contrib.suggestController',
+    );
     if (suggestController && suggestController['_widget']) {
       const suggestWidget = (suggestController['_widget'] as any).getValue() as SuggestWidget;
       // FIXME: @寻壑 仅通过鼠标选中会走onDidSelect事件，键盘会过acceptSelectedSuggestionOnEnter这个command
       disposable.push(
         suggestWidget.onDidSelect((e) => {
-          this.eventBus.fire(new SuggestEvent({
-            eventType: 'onDidSelect',
-            data: e,
-          }));
+          this.eventBus.fire(
+            new SuggestEvent({
+              eventType: 'onDidSelect',
+              data: e,
+            }),
+          );
         }),
       );
       disposable.push(
         suggestWidget.onDidHide((e) => {
-          this.eventBus.fire(new SuggestEvent({
-            eventType: 'onDidHide',
-            data: e,
-          }));
+          this.eventBus.fire(
+            new SuggestEvent({
+              eventType: 'onDidHide',
+              data: e,
+            }),
+          );
         }),
       );
       disposable.push(
         suggestWidget.onDidShow((e) => {
-          this.eventBus.fire(new SuggestEvent({
-            eventType: 'onDidShow',
-            data: e,
-          }));
+          this.eventBus.fire(
+            new SuggestEvent({
+              eventType: 'onDidShow',
+              data: e,
+            }),
+          );
         }),
       );
       disposable.push(
         suggestWidget.onDidFocus((e) => {
-          this.eventBus.fire(new SuggestEvent({
-            eventType: 'onDidFocus',
-            data: e,
-          }));
+          this.eventBus.fire(
+            new SuggestEvent({
+              eventType: 'onDidFocus',
+              data: e,
+            }),
+          );
         }),
       );
-
     }
 
     return disposable;

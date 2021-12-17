@@ -3,7 +3,17 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI, IContextKeyService } from '@opensumi/ide-core-browser';
+import {
+  PreferenceService,
+  FileUri,
+  Disposable,
+  DisposableCollection,
+  ILogger,
+  PreferenceScope,
+  ILoggerManagerClient,
+  URI,
+  IContextKeyService,
+} from '@opensumi/ide-core-browser';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -24,15 +34,13 @@ import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class MockLoggerManagerClient {
-  getLogger = () => {
-    return {
-      log() { },
-      debug() { },
-      error() { },
-      verbose() { },
-      warn() { },
-    };
-  }
+  getLogger = () => ({
+    log() {},
+    debug() {},
+    error() {},
+    verbose() {},
+    warn() {},
+  });
 }
 
 /**
@@ -40,46 +48,39 @@ export class MockLoggerManagerClient {
  * 见 https://github.com/akosyakov/vscode-launch/blob/master/src/test/extension.test.ts
  */
 describe('Launch Preferences', () => {
-
   type ConfigMode = '.sumi' | ['.sumi'];
 
   const defaultLaunch = {
-    'configurations': [],
-    'compounds': [],
+    configurations: [],
+    compounds: [],
   };
 
   const validConfiguration = {
-    'name': 'Launch Program',
-    'program': '${file}',
-    'request': 'launch',
-    'type': 'node',
+    name: 'Launch Program',
+    program: '${file}',
+    request: 'launch',
+    type: 'node',
   };
 
   const validConfiguration2 = {
-    'name': 'Launch Program 2',
-    'program': '${file}',
-    'request': 'launch',
-    'type': 'node',
+    name: 'Launch Program 2',
+    program: '${file}',
+    request: 'launch',
+    type: 'node',
   };
 
   const bogusConfiguration = {};
 
   const validCompound = {
-    'name': 'Compound',
-    'configurations': [
-      'Launch Program',
-      'Launch Program 2',
-    ],
+    name: 'Compound',
+    configurations: ['Launch Program', 'Launch Program 2'],
   };
 
   const bogusCompound = {};
 
   const bogusCompound2 = {
-    'name': 'Compound 2',
-    'configurations': [
-      'Foo',
-      'Launch Program 2',
-    ],
+    name: 'Compound 2',
+    configurations: ['Foo', 'Launch Program 2'],
   };
 
   const validLaunch = {
@@ -95,83 +96,85 @@ describe('Launch Preferences', () => {
   testLaunchAndSettingsSuite({
     name: 'Empty With Version',
     launch: {
-      'version': '0.2.0',
+      version: '0.2.0',
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [],
-      'compounds': [],
+      version: '0.2.0',
+      configurations: [],
+      compounds: [],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Empty With Version And Configurations',
     launch: {
-      'version': '0.2.0',
-      'configurations': [],
+      version: '0.2.0',
+      configurations: [],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [],
-      'compounds': [],
+      version: '0.2.0',
+      configurations: [],
+      compounds: [],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Empty With Version And Compounds',
     launch: {
-      'version': '0.2.0',
-      'compounds': [],
+      version: '0.2.0',
+      compounds: [],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [],
-      'compounds': [],
+      version: '0.2.0',
+      configurations: [],
+      compounds: [],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Valid Conf',
     launch: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration],
+      version: '0.2.0',
+      configurations: [validConfiguration],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration],
-      'compounds': [],
+      version: '0.2.0',
+      configurations: [validConfiguration],
+      compounds: [],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Bogus Conf',
     launch: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, bogusConfiguration],
+      version: '0.2.0',
+      configurations: [validConfiguration, bogusConfiguration],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, bogusConfiguration],
-      'compounds': [],
+      version: '0.2.0',
+      configurations: [validConfiguration, bogusConfiguration],
+      compounds: [],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Completely Bogus Conf',
     launch: {
-      'version': '0.2.0',
-      'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+      version: '0.2.0',
+      configurations: { valid: validConfiguration, bogus: bogusConfiguration },
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-      'compounds': [],
+      version: '0.2.0',
+      configurations: { valid: validConfiguration, bogus: bogusConfiguration },
+      compounds: [],
     },
   });
 
   const arrayBogusLaunch = [
-    'version', '0.2.0',
-    'configurations', { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+    'version',
+    '0.2.0',
+    'configurations',
+    { valid: validConfiguration, bogus: bogusConfiguration },
   ];
   testSuite({
     name: 'Array Bogus Launch Configuration',
@@ -180,9 +183,9 @@ describe('Launch Preferences', () => {
       '0': 'version',
       '1': '0.2.0',
       '2': 'configurations',
-      '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-      'compounds': [],
-      'configurations': [],
+      '3': { valid: validConfiguration, bogus: bogusConfiguration },
+      compounds: [],
+      configurations: [],
     },
     inspectExpectation: {
       preferenceName: 'launch',
@@ -191,7 +194,7 @@ describe('Launch Preferences', () => {
         '0': 'version',
         '1': '0.2.0',
         '2': 'configurations',
-        '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+        '3': { valid: validConfiguration, bogus: bogusConfiguration },
       },
     },
   });
@@ -204,9 +207,9 @@ describe('Launch Preferences', () => {
       '0': 'version',
       '1': '0.2.0',
       '2': 'configurations',
-      '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-      'compounds': [],
-      'configurations': [],
+      '3': { valid: validConfiguration, bogus: bogusConfiguration },
+      compounds: [],
+      configurations: [],
     },
     inspectExpectation: {
       preferenceName: 'launch',
@@ -219,14 +222,14 @@ describe('Launch Preferences', () => {
     name: 'Null Bogus Launch Configuration',
     launch: null,
     expectation: {
-      'compounds': [],
-      'configurations': [],
+      compounds: [],
+      configurations: [],
     },
   });
   testSuite({
     name: 'Null Bogus Settings Configuration',
     settings: {
-      'launch': null,
+      launch: null,
     },
     expectation: {},
   });
@@ -234,89 +237,93 @@ describe('Launch Preferences', () => {
   testLaunchAndSettingsSuite({
     name: 'Valid Compound',
     launch: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, validConfiguration2],
-      'compounds': [validCompound],
+      version: '0.2.0',
+      configurations: [validConfiguration, validConfiguration2],
+      compounds: [validCompound],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, validConfiguration2],
-      'compounds': [validCompound],
+      version: '0.2.0',
+      configurations: [validConfiguration, validConfiguration2],
+      compounds: [validCompound],
     },
   });
 
   testLaunchAndSettingsSuite({
     name: 'Valid And Bogus',
     launch: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
-      'compounds': [validCompound, bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      configurations: [validConfiguration, validConfiguration2, bogusConfiguration],
+      compounds: [validCompound, bogusCompound, bogusCompound2],
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
-      'compounds': [validCompound, bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      configurations: [validConfiguration, validConfiguration2, bogusConfiguration],
+      compounds: [validCompound, bogusCompound, bogusCompound2],
     },
   });
 
   testSuite({
     name: 'Mixed',
     launch: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, bogusConfiguration],
-      'compounds': [bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      configurations: [validConfiguration, bogusConfiguration],
+      compounds: [bogusCompound, bogusCompound2],
     },
     settings: {
       launch: {
-        'version': '0.2.0',
-        'configurations': [validConfiguration2],
-        'compounds': [validCompound],
+        version: '0.2.0',
+        configurations: [validConfiguration2],
+        compounds: [validCompound],
       },
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration, bogusConfiguration],
-      'compounds': [bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      configurations: [validConfiguration, bogusConfiguration],
+      compounds: [bogusCompound, bogusCompound2],
     },
   });
 
   testSuite({
     name: 'Mixed Launch Without Configurations',
     launch: {
-      'version': '0.2.0',
-      'compounds': [bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      compounds: [bogusCompound, bogusCompound2],
     },
     settings: {
       launch: {
-        'version': '0.2.0',
-        'configurations': [validConfiguration2],
-        'compounds': [validCompound],
+        version: '0.2.0',
+        configurations: [validConfiguration2],
+        compounds: [validCompound],
       },
     },
     expectation: {
-      'version': '0.2.0',
-      'configurations': [validConfiguration2],
-      'compounds': [bogusCompound, bogusCompound2],
+      version: '0.2.0',
+      configurations: [validConfiguration2],
+      compounds: [bogusCompound, bogusCompound2],
     },
     inspectExpectation: {
       preferenceName: 'launch',
       defaultValue: defaultLaunch,
       workspaceValue: {
-        'version': '0.2.0',
-        'configurations': [validConfiguration2],
-        'compounds': [bogusCompound, bogusCompound2],
+        version: '0.2.0',
+        configurations: [validConfiguration2],
+        compounds: [bogusCompound, bogusCompound2],
       },
     },
   });
 
   function testLaunchAndSettingsSuite({
-    name, expectation, launch, only, configMode,
+    name,
+    expectation,
+    launch,
+    only,
+    configMode,
   }: {
-    name: string,
-    expectation: any,
-    launch?: any,
-    only?: boolean,
-    configMode?: ConfigMode,
+    name: string;
+    expectation: any;
+    launch?: any;
+    only?: boolean;
+    configMode?: ConfigMode;
   }): void {
     testSuite({
       name: name + ' Launch Configuration',
@@ -328,7 +335,7 @@ describe('Launch Preferences', () => {
     testSuite({
       name: name + ' Settings Configuration',
       settings: {
-        'launch': launch,
+        launch,
       },
       expectation,
       only,
@@ -337,47 +344,45 @@ describe('Launch Preferences', () => {
   }
 
   function testSuite(options: {
-    name: string,
-    expectation: any,
-    inspectExpectation?: any,
-    launch?: any,
-    settings?: any,
-    only?: boolean,
-    configMode?: ConfigMode,
+    name: string;
+    expectation: any;
+    inspectExpectation?: any;
+    launch?: any;
+    settings?: any;
+    only?: boolean;
+    configMode?: ConfigMode;
   }): void {
-
     describe(options.name, () => {
-
       if (options.configMode) {
         testConfigSuite(options as any);
       } else {
-
         testConfigSuite({
           ...options,
           configMode: '.sumi',
         });
       }
-
     });
-
   }
   const mockEditorCollectionService = {
-    onCodeEditorCreate: jest.fn(() => Disposable.create(() => { })),
+    onCodeEditorCreate: jest.fn(() => Disposable.create(() => {})),
   };
 
   function testConfigSuite({
-    configMode, expectation, inspectExpectation, settings, launch, only,
+    configMode,
+    expectation,
+    inspectExpectation,
+    settings,
+    launch,
+    only,
   }: {
-    configMode: ConfigMode
-    expectation: any,
-    inspectExpectation?: any,
-    launch?: any,
-    settings?: any,
-    only?: boolean,
+    configMode: ConfigMode;
+    expectation: any;
+    inspectExpectation?: any;
+    launch?: any;
+    settings?: any;
+    only?: boolean;
   }): void {
-
     describe(JSON.stringify(configMode, undefined, 2), () => {
-
       const configPaths = Array.isArray(configMode) ? configMode : [configMode];
 
       const rootPath = path.join(os.tmpdir(), 'launch-preference-test');
@@ -407,11 +412,7 @@ describe('Launch Preferences', () => {
           }
         }
 
-        injector = createBrowserInjector([
-          FileServiceClientModule,
-          PreferencesModule,
-          DebugModule,
-        ]);
+        injector = createBrowserInjector([FileServiceClientModule, PreferencesModule, DebugModule]);
 
         injector.overrideProviders(
           {
@@ -451,15 +452,18 @@ describe('Launch Preferences', () => {
           UserStorageContribution,
         );
 
-        injector.addProviders({
-          token: IWorkspaceService,
-          useClass: WorkspaceService,
-        }, {
-          token: WorkspacePreferences,
-          useValue: {
-            onPreferenceChanged: () => { },
+        injector.addProviders(
+          {
+            token: IWorkspaceService,
+            useClass: WorkspaceService,
           },
-        });
+          {
+            token: WorkspacePreferences,
+            useValue: {
+              onPreferenceChanged: () => {},
+            },
+          },
+        );
 
         injector.overrideProviders({
           token: IWorkspaceService,
@@ -468,39 +472,41 @@ describe('Launch Preferences', () => {
             workspace: {
               uri: rootUri,
               isDirectory: true,
-              lastModification: (new Date()).getTime(),
+              lastModification: new Date().getTime(),
             },
             roots: Promise.resolve([
               {
                 uri: rootUri,
                 isDirectory: true,
-                lastModification: (new Date()).getTime(),
+                lastModification: new Date().getTime(),
               },
             ]),
-            onWorkspaceChanged: () => { },
-            onWorkspaceLocationChanged: () => { },
+            onWorkspaceChanged: () => {},
+            onWorkspaceLocationChanged: () => {},
             tryGetRoots: () => [
               {
                 uri: rootUri,
                 isDirectory: true,
-                lastModification: (new Date()).getTime(),
+                lastModification: new Date().getTime(),
               },
             ],
           },
         });
 
         // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-        injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
-          return {
-            uri: new URI(rootPath).resolve('userhome').toString(),
-            isDirectory: true,
-            lastModification: new Date().getTime(),
-          };
-        });
-        injector.mock(IFileServiceClient, 'watchFileChanges', jest.fn(() => ({
-          dispose: () => { },
-          onFilesChanged: jest.fn(),
-        })));
+        injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+          uri: new URI(rootPath).resolve('userhome').toString(),
+          isDirectory: true,
+          lastModification: new Date().getTime(),
+        }));
+        injector.mock(
+          IFileServiceClient,
+          'watchFileChanges',
+          jest.fn(() => ({
+            dispose: () => {},
+            onFilesChanged: jest.fn(),
+          })),
+        );
 
         preferences = injector.get(PreferenceService);
 
@@ -588,7 +594,8 @@ describe('Launch Preferences', () => {
 
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
-        const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
+        const expected =
+          settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
         expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
         done();
       });
@@ -606,7 +613,8 @@ describe('Launch Preferences', () => {
 
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
-        const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
+        const expected =
+          settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
         expect(actual).toEqual(expected);
       });
 
@@ -623,7 +631,8 @@ describe('Launch Preferences', () => {
 
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
-        const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
+        const expected =
+          settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
         expect(actual).toEqual(expected);
       });
 

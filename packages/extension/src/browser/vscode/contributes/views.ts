@@ -23,7 +23,6 @@ export type ViewsSchema = ViewsContribution;
 @Injectable()
 @Contributes('views')
 export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
-
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
@@ -31,17 +30,20 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
 
   contribute() {
     for (const location of Object.keys(this.json)) {
-      const views = this.json[location].map((view: ViewItem) => {
-        return {
-          ...view,
-          name: this.getLocalizeFromNlsJSON(view.name),
-          component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
-        };
-      });
+      const views = this.json[location].map((view: ViewItem) => ({
+        ...view,
+        name: this.getLocalizeFromNlsJSON(view.name),
+        component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
+      }));
       for (const view of views) {
-        const handlerId = this.mainlayoutService.collectViewComponent(view, location, {viewId: view.id}, {
-          fromExtension: true,
-        });
+        const handlerId = this.mainlayoutService.collectViewComponent(
+          view,
+          location,
+          { viewId: view.id },
+          {
+            fromExtension: true,
+          },
+        );
         this.disposableCollection.push({
           dispose: () => {
             const handler = this.mainlayoutService.getTabbarHandler(handlerId);
@@ -55,5 +57,4 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   dispose() {
     this.disposableCollection.dispose();
   }
-
 }

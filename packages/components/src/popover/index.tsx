@@ -24,7 +24,7 @@ export const Popover: React.FC<{
   insertClass?: string;
   content?: React.ReactElement;
   trigger?: PopoverTriggerType;
-  display?: boolean, // 使用程序控制的是否显示
+  display?: boolean; // 使用程序控制的是否显示
   [key: string]: any;
   popoverClass?: string;
   position?: PopoverPosition;
@@ -34,7 +34,20 @@ export const Popover: React.FC<{
   action?: string;
   onClickAction?: (args: any) => void;
 }> = ({
-  delay, children, trigger, display, id, insertClass, popoverClass, content, position = PopoverPosition.top, title, titleClassName, action, onClickAction, ...restProps
+  delay,
+  children,
+  trigger,
+  display,
+  id,
+  insertClass,
+  popoverClass,
+  content,
+  position = PopoverPosition.top,
+  title,
+  titleClassName,
+  action,
+  onClickAction,
+  ...restProps
 }) => {
   const childEl = React.useRef<HTMLSpanElement | null>(null);
   const contentEl = React.useRef<HTMLDivElement | null>(null);
@@ -77,25 +90,25 @@ export const Popover: React.FC<{
       if (position === PopoverPosition.top) {
         const contentLeft = left - contentRect.width / 2 + width / 2;
         const contentTop = top - contentRect.height - 7;
-        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       } else if (position === PopoverPosition.bottom) {
         const contentLeft = left - contentRect.width / 2 + width / 2;
         const contentTop = top + height + 7;
-        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current!.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       } else if (position === PopoverPosition.left) {
         const contentLeft = left - contentRect.width - 7;
         const contentTop = top - contentRect.height / 2 + height / 2;
-        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       } else if (position === PopoverPosition.right) {
         const contentLeft = left + width + 7;
         const contentTop = top - contentRect.height / 2 + height / 2;
-        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       }
@@ -132,27 +145,27 @@ export const Popover: React.FC<{
     };
   }, [display]);
 
-  return(
+  return (
     <div
       {...Object.assign({}, restProps)}
       className={clx('kt-popover', insertClass)}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div
-        className={clx(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)}
-        ref={contentEl}
-        id={id}
-        >
-        {title && <p className={clx('kt-popover-title', titleClassName)}>
-          {title}
-          {action && <Button size='small' type='link' onClick={onClickAction || noop}>{action}</Button>}
-        </p>}
+      <div className={clx(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)} ref={contentEl} id={id}>
+        {title && (
+          <p className={clx('kt-popover-title', titleClassName)}>
+            {title}
+            {action && (
+              <Button size='small' type='link' onClick={onClickAction || noop}>
+                {action}
+              </Button>
+            )}
+          </p>
+        )}
         {content || ''}
       </div>
-      <span ref={childEl}>
-        {children}
-      </span>
+      <span ref={childEl}>{children}</span>
     </div>
   );
 };

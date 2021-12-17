@@ -45,15 +45,13 @@ export interface SearchConfiguration {
 export const SearchPreferences = Symbol('SearchPreferences');
 export type SearchPreferences = PreferenceProxy<SearchConfiguration>;
 
-export const createSearchPreferencesProvider = (injector: Injector) => {
-  return {
-    token: SearchPreferences,
-    useFactory: () => {
-      const preferences: PreferenceService = injector.get(PreferenceService);
-      return createPreferenceProxy(preferences, searchPreferenceSchema);
-    },
-  };
-};
+export const createSearchPreferencesProvider = (injector: Injector) => ({
+  token: SearchPreferences,
+  useFactory: () => {
+    const preferences: PreferenceService = injector.get(PreferenceService);
+    return createPreferenceProxy(preferences, searchPreferenceSchema);
+  },
+});
 
 export function bindSearchPreference(injector: Injector) {
   injector.addProviders(createSearchPreferencesProvider(injector));

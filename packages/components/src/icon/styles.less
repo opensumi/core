@@ -9,7 +9,6 @@
     background-color: var(--foreground);
   }
 
-
   &-loading {
     animation: ktIconloadingCircle 1s infinite linear;
   }
@@ -21,7 +20,6 @@
   &-large {
     font-size: 16px;
   }
-
 
   &-clickable {
     &:hover {
@@ -44,10 +42,9 @@
 
 @keyframes ktIconloadingCircle {
   100% {
-    transform: rotate(360deg)
+    transform: rotate(360deg);
   }
 }
-
 
 // Animated Icons
 // --------------------------
@@ -73,22 +70,35 @@
 // Rotated & Flipped Icons Mixins
 // -------------------------
 .icon-anim-rotate(@degrees, @rotation) {
-  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=#{@rotation})";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=#{@rotation})';
   transform: rotate(@degrees);
 }
 
 .icon-anim-flip(@horiz, @vert, @rotation) {
-  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=#{@rotation}, mirror=1)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=#{@rotation}, mirror=1)';
   transform: scale(@horiz, @vert);
 }
 
-.iconfont-rotate-90  { .icon-anim-rotate(90deg, 1);  }
-.iconfont-rotate-180 { .icon-anim-rotate(180deg, 2); }
-.iconfont-rotate-270 { .icon-anim-rotate(270deg, 3); }
+.iconfont-rotate-90 {
+  .icon-anim-rotate(90deg, 1);
+}
+.iconfont-rotate-180 {
+  .icon-anim-rotate(180deg, 2);
+}
+.iconfont-rotate-270 {
+  .icon-anim-rotate(270deg, 3);
+}
 
-.iconfont-flip-horizontal { .icon-anim-flip(-1, 1, 0); }
-.iconfont-flip-vertical   { .icon-anim-flip(1, -1, 2); }
-.iconfont-flip-both, .iconfont-flip-horizontal.iconfont-flip-vertical { .icon-anim-flip(-1, -1, 2); }
+.iconfont-flip-horizontal {
+  .icon-anim-flip(-1, 1, 0);
+}
+.iconfont-flip-vertical {
+  .icon-anim-flip(1, -1, 2);
+}
+.iconfont-flip-both,
+.iconfont-flip-horizontal.iconfont-flip-vertical {
+  .icon-anim-flip(-1, -1, 2);
+}
 
 // Hook for IE8-9
 // -------------------------

@@ -1,6 +1,15 @@
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { ElectronBasicContribution } from '../src/browser';
-import { AppConfig, SlotLocation, IElectronMainMenuService, ComponentRegistry, CommandRegistry, KeybindingRegistry, addElement, electronEnv } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  SlotLocation,
+  IElectronMainMenuService,
+  ComponentRegistry,
+  CommandRegistry,
+  KeybindingRegistry,
+  addElement,
+  electronEnv,
+} from '@opensumi/ide-core-browser';
 import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
@@ -26,9 +35,9 @@ function mockService(target) {
 }
 
 describe('electron basic contribution test', () => {
-
-    const injector = createBrowserInjector([]);
-    injector.addProviders({
+  const injector = createBrowserInjector([]);
+  injector.addProviders(
+    {
       token: AppConfig,
       useValue: {
         layoutConfig: {
@@ -38,10 +47,12 @@ describe('electron basic contribution test', () => {
         },
       },
       override: true,
-    }, {
+    },
+    {
       token: IElectronMenuBarService,
       useValue: mockService({}),
-    }, {
+    },
+    {
       token: IElectronMainMenuService,
       useValue: mockService({}),
     },
@@ -56,90 +67,85 @@ describe('electron basic contribution test', () => {
     {
       token: IMessageService,
       useValue: mockService({}),
-    });
+    },
+  );
 
-    beforeAll(() => {
-      (global as any).electronEnv =  (global as any).electronEnv || {};
-    });
+  beforeAll(() => {
+    (global as any).electronEnv = (global as any).electronEnv || {};
+  });
 
-    it('component resgiter', () => {
-      const contribution = injector.get(ElectronBasicContribution);
-      const registry: ComponentRegistry = {
-        register: jest.fn(),
-        getComponentRegistryInfo: jest.fn(),
-      };
-      contribution.registerComponent(registry);
+  it('component resgiter', () => {
+    const contribution = injector.get(ElectronBasicContribution);
+    const registry: ComponentRegistry = {
+      register: jest.fn(),
+      getComponentRegistryInfo: jest.fn(),
+    };
+    contribution.registerComponent(registry);
 
-      const appConfig = injector.get(AppConfig) as AppConfig;
-      expect(appConfig.layoutConfig[SlotLocation.top].modules[0]).toBe('electron-header');
+    const appConfig = injector.get(AppConfig) as AppConfig;
+    expect(appConfig.layoutConfig[SlotLocation.top].modules[0]).toBe('electron-header');
 
-      expect(registry.register).toBeCalledTimes(1);
+    expect(registry.register).toBeCalledTimes(1);
+  });
 
-    });
+  it('menu register', () => {
+    const contribution = injector.get(ElectronBasicContribution);
+    const menuItems: any[] = [];
+    const registry: IMenuRegistry = {
+      registerMenuItem: jest.fn((item) => {
+        menuItems.push(item);
+      }),
+      registerMenuItems: jest.fn(),
+      registerMenubarItem: jest.fn(),
+    } as any;
 
-    it('menu register', () => {
-      const contribution = injector.get(ElectronBasicContribution);
-      const menuItems: any[] = [];
-      const registry: IMenuRegistry = {
-        registerMenuItem: jest.fn((item) => {
-          menuItems.push(item);
-        }),
-        registerMenuItems: jest.fn(),
-        registerMenubarItem: jest.fn(),
-      } as any;
+    contribution.registerMenus(registry);
 
-      contribution.registerMenus(registry);
+    expect(registry.registerMenuItem).toBeCalled();
+  });
 
-      expect(registry.registerMenuItem).toBeCalled();
+  it('command register', async (done) => {
+    const contribution = injector.get(ElectronBasicContribution);
+    const commands: { command: any; handler: { execute: () => any } }[] = [];
+    const registry: CommandRegistry = {
+      registerCommand: jest.fn((command, handler) => {
+        commands.push({
+          command,
+          handler,
+        });
+        return {
+          dispose: () => undefined,
+        };
+      }),
+    } as any;
 
-    });
+    contribution.registerCommands(registry);
 
-    it('command register', async (done) => {
+    expect(registry.registerCommand).toBeCalled();
 
-      const contribution = injector.get(ElectronBasicContribution);
-      const commands: {command: any, handler: {execute: () => any}}[] = [];
-      const registry: CommandRegistry = {
-        registerCommand: jest.fn((command, handler) => {
-          commands.push({
-            command,
-            handler,
-          });
-          return {
-            dispose: () => undefined,
-          };
-        }),
-      } as any;
-
-      contribution.registerCommands(registry);
-
-      expect(registry.registerCommand).toBeCalled();
-
-      await Promise.all(commands.map(async (c) => {
+    await Promise.all(
+      commands.map(async (c) => {
         await c.handler.execute();
-      }));
+      }),
+    );
 
-      done();
-    });
+    done();
+  });
 
-    it('keyBinding register', () => {
-      const contribution = injector.get(ElectronBasicContribution);
-      const keybindings: any[] = [];
-      const registry: KeybindingRegistry = {
-        registerKeybinding: jest.fn((keybinding) => {
-          return addElement(keybindings, keybinding);
-        }),
-      } as any;
+  it('keyBinding register', () => {
+    const contribution = injector.get(ElectronBasicContribution);
+    const keybindings: any[] = [];
+    const registry: KeybindingRegistry = {
+      registerKeybinding: jest.fn((keybinding) => addElement(keybindings, keybinding)),
+    } as any;
 
-      contribution.registerKeybindings(registry);
+    contribution.registerKeybindings(registry);
 
-      expect(registry.registerKeybinding).toBeCalled();
-
-    });
-
+    expect(registry.registerKeybinding).toBeCalled();
+  });
 });
 
 describe('native dialog test', () => {
-
   const injector = createBrowserInjector([]);
   injector.addProviders({
     token: IElectronMainUIService,
@@ -162,13 +168,16 @@ describe('native dialog test', () => {
 
 describe('welcomeContribution test', () => {
   const injector = createBrowserInjector([]);
-  injector.addProviders({
-    token: IWorkspaceService,
-    useValue: mockService({workspace: undefined}),
-  }, {
-    token: WorkbenchEditorService,
-    useValue: mockService({}),
-  });
+  injector.addProviders(
+    {
+      token: IWorkspaceService,
+      useValue: mockService({ workspace: undefined }),
+    },
+    {
+      token: WorkbenchEditorService,
+      useValue: mockService({}),
+    },
+  );
   it('basic register', () => {
     const contribution = injector.get(WelcomeContribution) as WelcomeContribution;
 

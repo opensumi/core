@@ -4,7 +4,6 @@ import { IDialogService } from '@opensumi/ide-overlay';
 
 @Domain(ClientAppContribution)
 export class LanguageChangeHintContribution implements ClientAppContribution {
-
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 

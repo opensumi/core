@@ -6,11 +6,11 @@ import { isFalsyOrEmpty } from '../../arrays';
 
 export interface IBaseMarkerManager {
   /**
-  * 更新markers
-  * @param type 类型标识
-  * @param uri markers对应的资源
-  * @param markers 所有markers
-  */
+   * 更新markers
+   * @param type 类型标识
+   * @param uri markers对应的资源
+   * @param markers 所有markers
+   */
   updateMarkers(type: string, uri: string, markers: IMarkerData[]);
 
   /**
@@ -20,8 +20,8 @@ export interface IBaseMarkerManager {
   clearMarkers(type: string);
 
   /**
-  * 获取所有markers的统计信息
-  */
+   * 获取所有markers的统计信息
+   */
   getStats(): MarkerStats;
 
   /**
@@ -30,9 +30,15 @@ export interface IBaseMarkerManager {
   getResources(): string[];
 
   /**
-  * 获取markers
-  */
-  getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; opened?: boolean}): IMarker[];
+   * 获取markers
+   */
+  getMarkers(filter: {
+    type?: string;
+    resource?: string;
+    severities?: number;
+    take?: number;
+    opened?: boolean;
+  }): IMarker[];
 
   /**
    * marker变更事件
@@ -52,13 +58,11 @@ export interface IBaseMarkerManager {
   onEditorGroupClose(resource: string);
 }
 
-
 export class MarkerStats implements MarkerStatistics, IDisposable {
-
-  public errors: number = 0;
-  public infos: number = 0;
-  public warnings: number = 0;
-  public unknowns: number = 0;
+  public errors = 0;
+  public infos = 0;
+  public warnings = 0;
+  public unknowns = 0;
 
   private _data?: { [resource: string]: MarkerStatistics } = Object.create(null);
   private _manager: IBaseMarkerManager;
@@ -102,7 +106,8 @@ export class MarkerStats implements MarkerStatistics, IDisposable {
         result.warnings += 1;
       } else if (severity === MarkerSeverity.Info) {
         result.infos += 1;
-      } else {// Hint
+      } else {
+        // Hint
         result.unknowns += 1;
       }
     }
@@ -127,7 +132,6 @@ export class MarkerStats implements MarkerStatistics, IDisposable {
 
 @Injectable()
 export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
-
   // 所有Marker
   private readonly _byResource: MapMap<IMarker[]> = Object.create(null);
   private readonly _byType: MapMap<IMarker[]> = Object.create(null);
@@ -145,10 +149,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
 
   constructor() {
     super();
-    this.addDispose([
-      this._stats = new MarkerStats(this),
-      this.onMarkerChangedEmitter,
-    ])
+    this.addDispose([(this._stats = new MarkerStats(this)), this.onMarkerChangedEmitter]);
   }
 
   /**
@@ -168,7 +169,6 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
       if (a && b) {
         this.onMarkerChangedEmitter.fire([uri]);
       }
-
     } else {
       // insert marker for this (owner,resource)-tuple
       const markers: IMarkerData[] = [];
@@ -232,7 +232,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     // remove old marker
     if (map) {
       delete this._byType[type];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const resource in map) {
         const entry = MapMap.get(this._byResource, resource, type);
         if (entry) {
@@ -258,7 +258,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     const map = this._byResource[resource];
     if (map) {
       delete this._byResource[resource];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const type in map) {
         const entry = MapMap.get(this._byType, type, resource);
         if (entry) {
@@ -279,7 +279,11 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
    * - opened 是否过滤打开的
    * @param filter 过滤条件
    */
-  public getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; opened?: boolean} = Object.create(null)): IMarker[] {
+  public getMarkers(
+    filter: { type?: string; resource?: string; severities?: number; take?: number; opened?: boolean } = Object.create(
+      null,
+    ),
+  ): IMarker[] {
     const { type, resource, severities, opened } = filter;
     let { take } = filter;
 
@@ -304,13 +308,12 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
         }
         return result;
       }
-
     } else if (!type && !resource) {
       // all
       const result: IMarker[] = [];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const key1 in this._byResource) {
-        // tslint:disable-next-line: forin
+        // eslint-disable-next-line guard-for-in
         for (const key2 in this._byResource[key1]) {
           for (const data of this._byResource[key1][key2]) {
             if (this.isTargetMarker(data, severities, opened)) {
@@ -323,17 +326,20 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
         }
       }
       return result;
-
     } else {
       // of one resource OR owner
-      const map: { [key: string]: IMarker[] } | undefined = type ? this._byType[type] : resource ? this._byResource[resource.toString()] : undefined;
+      const map: { [key: string]: IMarker[] } | undefined = type
+        ? this._byType[type]
+        : resource
+        ? this._byResource[resource.toString()]
+        : undefined;
 
       if (!map) {
         return [];
       }
 
       const result: IMarker[] = [];
-      // tslint:disable-next-line: forin
+      // eslint-disable-next-line guard-for-in
       for (const key in map) {
         for (const data of map[key]) {
           if (this.isTargetMarker(data, severities, opened)) {
@@ -349,7 +355,6 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
   }
 
   private isTargetMarker(marker: IMarker, severities?: number, visible?: boolean): boolean {
-    // tslint:disable-next-line: no-bitwise
     const isTargetSeverity = severities === undefined || (severities & marker.severity) === marker.severity;
     const isTargetVisible = visible ? this._openedResource.has(marker.resource) : true;
     return isTargetSeverity && isTargetVisible;
@@ -384,4 +389,3 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     this.clearMarkersOfUri(resource);
   }
 }
-

@@ -2,7 +2,14 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
 import ResizeView, { ResizeDirection } from './resize.view';
-import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, IWidget, ITerminalErrorService, ITerminalNetwork } from '../../common';
+import {
+  ITerminalController,
+  ITerminalGroupViewService,
+  ITerminalSearchService,
+  IWidget,
+  ITerminalErrorService,
+  ITerminalNetwork,
+} from '../../common';
 import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
@@ -32,9 +39,7 @@ export default observer(() => {
   const renderWidget = (widget: IWidget, index: number) => {
     const client = controller.findClientFromWidgetId(widget.id);
     const error = client && !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
-    return (
-      <TerminalWidget show={ currentGroupIndex === index } error={ error } widget={ widget } />
-    );
+    return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
   };
 
   const searchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,51 +69,47 @@ export default observer(() => {
 
   return (
     <div
-      ref={ wrapperRef }
-      className={ styles.terminalWrapper }
-      style={ { backgroundColor: controller.themeBackground } }
-      data-group-current={ currentGroupId }
+      ref={wrapperRef}
+      className={styles.terminalWrapper}
+      style={{ backgroundColor: controller.themeBackground }}
+      data-group-current={currentGroupId}
     >
-      {
-        search.show && <div className={ styles.terminalSearch }>
+      {search.show && (
+        <div className={styles.terminalSearch}>
           <input
             autoFocus
-            ref={ inputRef }
+            ref={inputRef}
             placeholder='查找'
-            value={ search.input }
-            onChange={ (event) => searchInput(event) }
-            onKeyDown={ (event) => searchKeyDown(event) }
+            value={search.input}
+            onChange={(event) => searchInput(event)}
+            onKeyDown={(event) => searchKeyDown(event)}
           />
-          <div
-            className={ getIcon('close') }
-            onClick={ () => searchClose() }
-          ></div>
+          <div className={getIcon('close')} onClick={() => searchClose()}></div>
         </div>
-      }
-      {
-        groups
-          .map((group, index) => {
-            if (!group.activated) {
-              return;
-            }
-            return (<div
-              data-group-rendered={ group.activated }
-              key={ `terminal-${group.id}` }
-              style={ { display: currentGroupIndex === index ? 'block' : 'none' } }
-              className={ styles.group }
-              onFocus={ () => controller.focus() }
-              onBlur={ () => controller.blur() }
-            >
-              <ResizeView
-                shadow={ false }
-                useFlex={ false }
-                direction={ ResizeDirection.horizontal }
-                group={ group }
-                draw={ (widget: IWidget) => renderWidget(widget, index) }
-              />
-            </div>);
-          })
-      }
+      )}
+      {groups.map((group, index) => {
+        if (!group.activated) {
+          return;
+        }
+        return (
+          <div
+            data-group-rendered={group.activated}
+            key={`terminal-${group.id}`}
+            style={{ display: currentGroupIndex === index ? 'block' : 'none' }}
+            className={styles.group}
+            onFocus={() => controller.focus()}
+            onBlur={() => controller.blur()}
+          >
+            <ResizeView
+              shadow={false}
+              useFlex={false}
+              direction={ResizeDirection.horizontal}
+              group={group}
+              draw={(widget: IWidget) => renderWidget(widget, index)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 });

@@ -14,7 +14,10 @@ export namespace CSSIcon {
   export const iconModifierExpression = '~[A-Za-z]+';
 }
 
-const labelWithIconsRegex = new RegExp(`(\\\\)?\\$\\((${CSSIcon.iconNameExpression}(?:${CSSIcon.iconModifierExpression})?)\\)`, 'g');
+const labelWithIconsRegex = new RegExp(
+  `(\\\\)?\\$\\((${CSSIcon.iconNameExpression}(?:${CSSIcon.iconModifierExpression})?)\\)`,
+  'g',
+);
 
 export function renderLabelWithIcons(text: string): Array<React.ReactElement | string> {
   const elements = new Array<React.ReactElement | string>();
@@ -39,7 +42,9 @@ export function renderLabelWithIcons(text: string): Array<React.ReactElement | s
 
 const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
   const { contents } = props;
-  const [disables, setDisables] = React.useState<(boolean | null)[]>(contents.map((item) => item.precondition ? false : null));
+  const [disables, setDisables] = React.useState<(boolean | null)[]>(
+    contents.map((item) => (item.precondition ? false : null)),
+  );
   const contextKeyService: IContextKeyService = useInjectable(IContextKeyService);
   const openerService: IOpenerService = useInjectable(IOpenerService);
 
@@ -55,7 +60,9 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
     const disposable = contextKeyService.onDidChangeContext((e) => {
       conditionKeys.forEach((keysOrNull, index) => {
         if (keysOrNull && e.payload.affectsSome(keysOrNull)) {
-          setDisables(disables.map((item, idx) => idx === index ? contextKeyService.match(contents[index].precondition) : item));
+          setDisables(
+            disables.map((item, idx) => (idx === index ? contextKeyService.match(contents[index].precondition) : item)),
+          );
         }
       });
     });
@@ -65,9 +72,9 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
   if (contents.length === 0) {
     return null;
   }
-  return <>
-    {
-      contents.map(({ content, precondition }, index) => {
+  return (
+    <>
+      {contents.map(({ content, precondition }, index) => {
         const lines = content.split('\n');
         const lineElements: React.ReactElement[] = [];
         for (let line of lines) {
@@ -80,28 +87,37 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
           const linkedText = parseLinkedText(line);
           if (linkedText.nodes.length === 1 && typeof linkedText.nodes[0] !== 'string') {
             const node = linkedText.nodes[0];
-            lineElements.push(<div key={lineElements.length} title={node.title} className='button-container'>
-              <Button disabled={disables[index] === false} onClick={() => openerService.open(node.href)}>{renderLabelWithIcons(node.label)}</Button>
-            </div>);
+            lineElements.push(
+              <div key={lineElements.length} title={node.title} className='button-container'>
+                <Button disabled={disables[index] === false} onClick={() => openerService.open(node.href)}>
+                  {renderLabelWithIcons(node.label)}
+                </Button>
+              </div>,
+            );
           } else {
             const textNodes = linkedText.nodes.map((node, idx) => {
               if (typeof node === 'string') {
                 return node;
               } else {
-                return <a key={idx} className={clsx({ disabled: node.href.startsWith('command:') && disables[index] === false })} title={node.title} onClick={() => openerService.open(node.href)}>{node.label}</a>;
+                return (
+                  <a
+                    key={idx}
+                    className={clsx({ disabled: node.href.startsWith('command:') && disables[index] === false })}
+                    title={node.title}
+                    onClick={() => openerService.open(node.href)}
+                  >
+                    {node.label}
+                  </a>
+                );
               }
             });
-            lineElements.push(<p key={lineElements.length}>
-              {textNodes}
-            </p>);
+            lineElements.push(<p key={lineElements.length}>{textNodes}</p>);
           }
         }
-        return <React.Fragment key={index}>
-          {lineElements}
-        </React.Fragment>;
-      })
-    }
-  </>;
+        return <React.Fragment key={index}>{lineElements}</React.Fragment>;
+      })}
+    </>
+  );
 };
 
 interface WelcomeViewProps {
@@ -116,12 +132,8 @@ function isWelcomeViewViewIdEqual(prevProps: WelcomeViewProps, nextProps: Welcom
 }
 
 export const WelcomeView: React.FC<WelcomeViewProps> = React.memo((props) => {
-  const viewsController: ViewsController = useInjectable(ViewsController, [
-    props.viewId,
-  ]);
-  const [contents, setContents] = React.useState<IViewContentDescriptor[]>(
-    viewsController.contents,
-  );
+  const viewsController: ViewsController = useInjectable(ViewsController, [props.viewId]);
+  const [contents, setContents] = React.useState<IViewContentDescriptor[]>(viewsController.contents);
   React.useEffect(() => {
     viewsController.onDidChange(() => {
       const newContents = viewsController.contents;

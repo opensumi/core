@@ -1,6 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@opensumi/ide-core-common';
-import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidationInput, IKeymapInfo, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, KeymapInfo, getKeyboardLayoutId } from '@opensumi/ide-core-common/lib/keyboard';
+import {
+  KeyboardNativeLayoutService,
+  KeyboardLayoutChangeNotifierService,
+  KeyValidationInput,
+  IKeymapInfo,
+  ILinuxKeyboardLayoutInfo,
+  IMacKeyboardLayoutInfo,
+  KeymapInfo,
+  getKeyboardLayoutId,
+} from '@opensumi/ide-core-common/lib/keyboard';
 import { GlobalBrowserStorageService } from '../services';
 import { KeyCode } from './keys';
 import { KeyboardLayoutContribution, requireRegister } from './layouts/layout.contribution';
@@ -14,8 +23,9 @@ export interface KeyValidator {
 export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'pressed-keys';
 
 @Injectable()
-export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator {
-
+export class BrowserKeyboardLayoutImpl
+  implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator
+{
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -232,7 +242,6 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
       }
     }
   }
-
 }
 
 export interface LayoutProviderState {
@@ -251,9 +260,8 @@ export interface KeyboardTesterState {
  * 通过对比用户输入 Key Codes 得到的解析结果，处理所有已知键盘布局分数
  */
 export class KeyboardTester {
-
   readonly scores: number[];
-  topScore: number = 0;
+  topScore = 0;
 
   private readonly testedInputs = new Map<string, string>();
 
@@ -271,7 +279,11 @@ export class KeyboardTester {
   constructor() {
     requireRegister();
     const keymapInfos: IKeymapInfo[] = KeyboardLayoutContribution.INSTANCE.layoutInfos;
-    this._keymapInfos.push(...keymapInfos.map((info) => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));
+    this._keymapInfos.push(
+      ...keymapInfos.map(
+        (info) => new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout),
+      ),
+    );
     this.initialized.resolve(true);
     this.scores = this.keymapInfos.map(() => 0);
   }
@@ -320,8 +332,10 @@ export class KeyboardTester {
   }
 
   protected testCandidate(
-    candidate: KeymapInfo, input: KeyValidationInput,
-    property: 'value' | 'withShift' | 'withAltGr' | 'withShiftAltGr'): number {
+    candidate: KeymapInfo,
+    input: KeyValidationInput,
+    property: 'value' | 'withShift' | 'withAltGr' | 'withShiftAltGr',
+  ): number {
     const keyMapping = candidate.mapping[input.code];
     if (keyMapping && keyMapping[property]) {
       return keyMapping[property] === input.character ? 1 : 0;
@@ -379,7 +393,6 @@ export class KeyboardTester {
     }
     return null;
   }
-
 }
 
 /**

@@ -2,11 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { act } from 'react-dom/test-utils';
-import {
-  RecycleTree,
-  IRecycleTreeHandle,
-  INodeRendererWrapProps,
-} from '@opensumi/ide-components';
+import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps } from '@opensumi/ide-components';
 import {
   DebugConsoleModelService,
   IDebugConsoleModel,
@@ -38,11 +34,7 @@ import { WSChannelHandler } from '@opensumi/ide-connection';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { ITaskService } from '@opensumi/ide-task';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
-import {
-  DebugConsoleNode,
-  AnsiConsoleNode,
-  DebugVariableContainer,
-} from '@opensumi/ide-debug/lib/browser/tree';
+import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer } from '@opensumi/ide-debug/lib/browser/tree';
 import { IContextKeyService } from '@opensumi/ide-core-browser/src';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -56,32 +48,22 @@ describe('Debug console component Test Suites', () => {
   let debugSessionFactory: DebugSessionFactory;
   let container;
 
-  const createMockSession = (
-    sessionId: string,
-    options: Partial<DebugSessionOptions>,
-  ): IDebugSession => {
-    return debugSessionFactory.get(sessionId, options as any);
-  };
+  const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession =>
+    debugSessionFactory.get(sessionId, options as any);
 
   const mockCtxMenuRenderer = {
     show: jest.fn(),
-    onDidChangeContext: jest.fn(() => Disposable.create(() => { })),
+    onDidChangeContext: jest.fn(() => Disposable.create(() => {})),
   } as any;
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
     currentSession: IDebugSession,
-    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => { }),
+    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
   };
 
   const DebugConsoleView = observer(
-    ({
-      tree,
-      model,
-    }: {
-      tree: DebugConsoleModelService;
-      model: IDebugConsoleModel;
-    }) => {
+    ({ tree, model }: { tree: DebugConsoleModelService; model: IDebugConsoleModel }) => {
       const [filterValue, setFilterValue] = React.useState<string>('');
       const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
       const handleTreeReady = (handle: IRecycleTreeHandle) => {
@@ -93,27 +75,20 @@ describe('Debug console component Test Suites', () => {
       };
 
       React.useEffect(() => {
-        const filterDispose = debugConsoleFilterService.onDidValueChange(
-          (value: string) => {
-            setFilterValue(value);
-          },
-        );
+        const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
+          setFilterValue(value);
+        });
         return () => {
           filterDispose.dispose();
         };
       }, []);
 
-      const fuzzyOptions = () => {
-        return {
-          pre: '<match>',
-          post: '</match>',
-          extract: (
-            node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer,
-          ) => {
-            return node.description ? node.description : node.name;
-          },
-        };
-      };
+      const fuzzyOptions = () => ({
+        pre: '<match>',
+        post: '</match>',
+        extract: (node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer) =>
+          node.description ? node.description : node.name,
+      });
       if (!model) {
         return null;
       }
@@ -129,17 +104,15 @@ describe('Debug console component Test Suites', () => {
           overflow={'auto'}
         >
           {(props: INodeRendererWrapProps) => {
-            const decorations = tree.decorations.getDecorations(
-              props.item as any,
-            );
+            const decorations = tree.decorations.getDecorations(props.item as any);
             return (
               <DebugConsoleRenderedNode
                 item={props.item}
                 itemType={props.itemType}
                 decorations={decorations}
-                onClick={() => { }}
-                onTwistierClick={() => { }}
-                onContextMenu={() => { }}
+                onClick={() => {}}
+                onTwistierClick={() => {}}
+                onContextMenu={() => {}}
                 defaultLeftPadding={14}
                 leftPadding={8}
               />
@@ -251,16 +224,11 @@ describe('Debug console component Test Suites', () => {
     const session = createMockSession('mock', {});
     // @ts-ignore
     mockDebugSessionManager.currentSession = session;
-    const model = await debugConsoleModelService.initTreeModel(
-      session as DebugSession,
-    );
+    const model = await debugConsoleModelService.initTreeModel(session as DebugSession);
     const tree = debugConsoleModelService;
 
     act(() => {
-      ReactDOM.render(
-        <DebugConsoleView tree={tree} model={model!}></DebugConsoleView>,
-        container,
-      );
+      ReactDOM.render(<DebugConsoleView tree={tree} model={model!}></DebugConsoleView>, container);
     });
 
     await tree.execute('ABCD\n');
@@ -270,6 +238,5 @@ describe('Debug console component Test Suites', () => {
     await tree.execute('🐜\n');
 
     debugConsoleFilterService.setFilterText('KTTQL');
-
   });
 });

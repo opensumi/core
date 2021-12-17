@@ -25,7 +25,7 @@ export interface DebugSessionContribution {
   debugType: string;
 
   /**
-    * 生成DebugSession的工厂函数.
+   * 生成DebugSession的工厂函数.
    */
   debugSessionFactory(): DebugSessionFactory;
 }
@@ -69,7 +69,6 @@ export interface DebugSessionFactory {
 
 @Injectable()
 export class DefaultDebugSessionFactory implements DebugSessionFactory {
-
   @Autowired(WSChannelHandler)
   protected readonly connectionProvider: WSChannelHandler;
   @Autowired(WorkbenchEditorService)
@@ -98,9 +97,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = this.injector.get(DebugSessionConnection, [
       sessionId,
-      (sessionId: string) => {
-        return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
-      },
+      (sessionId: string) => this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`),
       this.getTraceOutputChannel(),
     ]);
     return new DebugSession(

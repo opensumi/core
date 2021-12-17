@@ -24,7 +24,6 @@ export interface IEvaluatableExpression {
  * in a document and VS Code evaluates this expression in the active debug session and shows the result in a debug hover.
  */
 export interface EvaluatableExpressionProvider {
-
   /**
    * Provide an evaluatable expression for the given document and position.
    * VS Code will evaluate this expression in the active debug session and will show the result in the debug hover.
@@ -36,5 +35,9 @@ export interface EvaluatableExpressionProvider {
    * @return An EvaluatableExpression or a thenable that resolves to such. The lack of a result can be
    * signaled by returning `undefined` or `null`.
    */
-  provideEvaluatableExpression(document: ITextModel, position: Position, token: CancellationToken): PromiseLike<IEvaluatableExpression | undefined>;
+  provideEvaluatableExpression(
+    document: ITextModel,
+    position: Position,
+    token: CancellationToken,
+  ): PromiseLike<IEvaluatableExpression | undefined>;
 }

@@ -9,7 +9,6 @@ import Messages from './messages';
 
 @Domain(ComponentContribution, MainLayoutContribution)
 export class MarkersContribution implements ComponentContribution, MainLayoutContribution {
-
   @Autowired()
   logger: Logger;
 
@@ -30,16 +29,19 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('@opensumi/ide-markers', {
-      id: MARKER_CONTAINER_ID,
-      component: MarkerPanel,
-    }, {
-      title: Messages.markerTitle(),
-      priority: 11,
-      containerId: MARKER_CONTAINER_ID,
-      activateKeyBinding: 'ctrlcmd+shift+m',
-      titleComponent: MarkerFilterPanel,
-    });
+    registry.register(
+      '@opensumi/ide-markers',
+      {
+        id: MARKER_CONTAINER_ID,
+        component: MarkerPanel,
+      },
+      {
+        title: Messages.markerTitle(),
+        priority: 11,
+        containerId: MARKER_CONTAINER_ID,
+        activateKeyBinding: 'ctrlcmd+shift+m',
+        titleComponent: MarkerFilterPanel,
+      },
+    );
   }
-
 }

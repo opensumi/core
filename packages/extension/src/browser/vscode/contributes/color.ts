@@ -32,25 +32,28 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
           type: 'object',
           properties: {
             light: {
-              description: localize('contributes.defaults.light', 'The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.'),
+              description: localize(
+                'contributes.defaults.light',
+                'The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.',
+              ),
               type: 'string',
-              anyOf: [
-                { type: 'string', format: 'color-hex' },
-              ],
+              anyOf: [{ type: 'string', format: 'color-hex' }],
             },
             dark: {
-              description: localize('contributes.defaults.dark', 'The default color for dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.'),
+              description: localize(
+                'contributes.defaults.dark',
+                'The default color for dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.',
+              ),
               type: 'string',
-              anyOf: [
-                { type: 'string', format: 'color-hex' },
-              ],
+              anyOf: [{ type: 'string', format: 'color-hex' }],
             },
             highContrast: {
-              description: localize('contributes.defaults.highContrast', 'The default color for high contrast themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.'),
+              description: localize(
+                'contributes.defaults.highContrast',
+                'The default color for high contrast themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.',
+              ),
               type: 'string',
-              anyOf: [
-                { type: 'string', format: 'color-hex' },
-              ],
+              anyOf: [{ type: 'string', format: 'color-hex' }],
             },
           },
         },
@@ -67,5 +70,4 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
       this.themeService.registerColor(color);
     }
   }
-
 }

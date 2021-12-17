@@ -2,11 +2,10 @@ import { IWebviewChannel } from './common';
 import { WebviewPanelManager } from './webview-manager';
 
 class WebIframeChannel implements IWebviewChannel {
-
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
-  fakeLoad: boolean = false;
+  fakeLoad = false;
   private isInDevelopmentMode = false;
   private id = document!.location!.search!.match(/\bid=([\w-]+)/)![1];
 
@@ -27,7 +26,7 @@ class WebIframeChannel implements IWebviewChannel {
       }
     });
 
-    this.ready = new Promise<void>(async (resolve) => {
+    this.ready = new Promise<void>((resolve) => {
       resolve();
     });
 
@@ -59,6 +58,4 @@ class WebIframeChannel implements IWebviewChannel {
   }
 }
 
-/* tslint:disable */
 new WebviewPanelManager(new WebIframeChannel());
-/* tslint:enable */

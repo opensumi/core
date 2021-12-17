@@ -7,9 +7,7 @@ describe('Editor contribution should be work', () => {
   let mockInjector: MockInjector;
 
   beforeEach(() => {
-    mockInjector = createBrowserInjector([
-      EditorModule,
-    ]);
+    mockInjector = createBrowserInjector([EditorModule]);
   });
 
   describe('01 #contribution should be work', () => {
@@ -19,7 +17,5 @@ describe('Editor contribution should be work', () => {
       contribution.registerCommands({ registerCommand: register } as any);
       expect(register).toBeCalled();
     });
-
   });
-
 });

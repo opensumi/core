@@ -1,8 +1,5 @@
 import type vscode from 'vscode';
-import {
-  UriComponents,
-  ICommand,
-} from './models';
+import { UriComponents, ICommand } from './models';
 import { Event, IDisposable, IAccessibilityInformation } from '@opensumi/ide-core-common';
 import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
 import { ThemeType } from '@opensumi/ide-theme';
@@ -54,7 +51,6 @@ export interface ITreeItemLabel {
 }
 
 export class TreeViewItem {
-
   id: string;
 
   label: string | ITreeItemLabel;
@@ -106,9 +102,9 @@ export interface TreeView<T> extends IDisposable {
    */
   readonly selection: T[];
   /**
-    * 节点上的
-    * Setting the message to null, undefined, or empty string will remove the message from the view.
-    */
+   * 节点上的
+   * Setting the message to null, undefined, or empty string will remove the message from the view.
+   */
   message?: string;
   /**
    * TreeView 视图标题
@@ -125,7 +121,7 @@ export interface TreeView<T> extends IDisposable {
    *
    * **NOTE:** 需要在实现TreeDataProvider.getParent接口情况下该接口才可用.
    */
-  reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): PromiseLike<void>;
+  reveal(element: T, options?: { select?: boolean; focus?: boolean; expand?: boolean | number }): PromiseLike<void>;
 }
 
 export interface TreeViewBaseOptions {

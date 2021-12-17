@@ -49,11 +49,7 @@ function setNotificationConfig(options: ConfigProps) {
   }
 }
 
-function getPlacementStyle(
-  placement: NotificationPlacement,
-  top: number = defaultTop,
-  bottom: number = defaultBottom,
-) {
+function getPlacementStyle(placement: NotificationPlacement, top: number = defaultTop, bottom: number = defaultBottom) {
   let style;
   switch (placement) {
     case 'topLeft':
@@ -177,9 +173,7 @@ function notice(args: ArgsProps) {
   }
 
   const autoMarginTag =
-    !args.description && iconNode ? (
-      <span className={`${prefixCls}-message-single-line-auto-margin`} />
-    ) : null;
+    !args.description && iconNode ? <span className={`${prefixCls}-message-single-line-auto-margin`} /> : null;
 
   const { placement, top, bottom, getContainer, closeIcon } = args;
 
@@ -220,9 +214,7 @@ function notice(args: ArgsProps) {
 const api: any = {
   open: notice,
   close(key: string) {
-    Object.keys(notificationInstance).forEach((cacheKey) =>
-      notificationInstance[cacheKey].removeNotice(key),
-    );
+    Object.keys(notificationInstance).forEach((cacheKey) => notificationInstance[cacheKey].removeNotice(key));
   },
   config: setNotificationConfig,
   destroy() {

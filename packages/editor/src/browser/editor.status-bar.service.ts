@@ -1,13 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
 
-import { StatusBarAlignment, IStatusBarService} from '@opensumi/ide-core-browser/lib/services';
+import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { EditorDocumentModelOptionChangedEvent } from './doc-model/types';
 
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
-
   @Autowired(IStatusBarService)
   statusBar: IStatusBarService;
 
@@ -33,7 +32,7 @@ export class EditorStatusBarService extends WithEventBus {
   }
 
   protected updateCursorStatus(cursorStatus: CursorStatus) {
-    const {position, selectionLength} = cursorStatus;
+    const { position, selectionLength } = cursorStatus;
     if (!position) {
       this.statusBar.removeElement('editor-status-cursor');
       return;
@@ -43,7 +42,9 @@ export class EditorStatusBarService extends WithEventBus {
     const selectedLabel = '%status-bar.label.selected%';
     this.statusBar.addElement('editor-status-cursor', {
       name: localize('status-bar.editor-selection'),
-      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? `（${selectedLabel}${selectionLength}）` : ''}`,
+      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${
+        selectionLength ? `（${selectedLabel}${selectionLength}）` : ''
+      }`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
     });
@@ -60,7 +61,7 @@ export class EditorStatusBarService extends WithEventBus {
     let languageId = '';
     let encoding = '';
     let eol = '';
-    let insertSpaces: boolean = false;
+    let insertSpaces = false;
     let tabSize = 2;
     const documentModel = editor.currentDocumentModel;
     if (documentModel) {
@@ -99,11 +100,13 @@ export class EditorStatusBarService extends WithEventBus {
     });
     this.statusBar.addElement('editor-status-space', {
       name: localize('status-bar.editor-space'),
-      text: (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) + ': ' + tabSize,
+      text:
+        (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) +
+        ': ' +
+        tabSize,
       alignment: StatusBarAlignment.RIGHT,
       priority: 4,
       command: undefined,
     });
   }
-
 }

@@ -3,15 +3,14 @@
   <head>
     <script>
       const theme = localStorage.getItem('theme');
-        try {
-          const themeObj = JSON.parse(theme);
-          if (themeObj.editorBackground) {
-            document.documentElement.style.backgroundColor = themeObj.editorBackground;
-          }
-        } catch(e) {
+      try {
+        const themeObj = JSON.parse(theme);
+        if (themeObj.editorBackground) {
+          document.documentElement.style.backgroundColor = themeObj.editorBackground;
         }
+      } catch (e) {}
     </script>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>CloudIDE</title>
     <style>
       body {
@@ -32,13 +31,12 @@
         transition: opacity 500ms;
         font-size: 32px;
         background-color: #2a2a2a;
-
       }
 
       #main {
         display: flex;
-        height:100%;
-        width:100%;
+        height: 100%;
+        width: 100%;
         background: transparent;
       }
 

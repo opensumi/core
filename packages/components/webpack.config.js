@@ -20,37 +20,38 @@ module.exports = {
     }),
   ],
   node: {
-    net: "empty",
-    child_process: "empty",
-    path: "empty",
+    net: 'empty',
+    child_process: 'empty',
+    path: 'empty',
     url: false,
-    fs: "empty",
-    process: "mock"
+    fs: 'empty',
+    process: 'mock',
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
-    plugins: [new TsconfigPathsPlugin({
-      configFile: tsConfigPath
-    })]
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          "css-loader"
-        ]
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/',
+            },
+          },
+        ],
       },
       {
         test: /\.tsx?$/,
@@ -59,13 +60,13 @@ module.exports = {
             loader: 'cache-loader',
             options: {
               cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-            }
+            },
           },
           {
             loader: 'thread-loader',
             options: {
               workers: require('os').cpus().length - 1,
-            }
+            },
           },
           {
             loader: 'ts-loader',
@@ -74,8 +75,8 @@ module.exports = {
               transpileOnly: true,
               configFile: tsConfigPath,
               compilerOptions: {
-                target: 'es2015'
-              }
+                target: 'es2015',
+              },
             },
           },
         ],
@@ -89,8 +90,8 @@ module.exports = {
             options: {
               importLoaders: 1,
               sourceMap: false,
-              localIdentName: '[local]___[hash:base64:5]'
-            }
+              localIdentName: '[local]___[hash:base64:5]',
+            },
           },
           {
             loader: 'less-loader',
@@ -98,9 +99,9 @@ module.exports = {
               lessOptions: {
                 javascriptEnabled: true,
               },
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
     ],
   },

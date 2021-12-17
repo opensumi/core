@@ -5,7 +5,18 @@ import { OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
-import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
+import {
+  generate,
+  ITerminalService,
+  ITerminalInternalService,
+  ITerminalError,
+  ITerminalServiceClient,
+  ITerminalServicePath,
+  ITerminalConnection,
+  IPtyExitEvent,
+  TerminalOptions,
+  ITerminalController,
+} from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';
 
@@ -39,7 +50,14 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this._processExtHostProxies.get(id);
   }
 
-  async attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options: TerminalOptions = {}, type: string) {
+  async attach(
+    sessionId: string,
+    xterm: Terminal,
+    rows: number,
+    cols: number,
+    options: TerminalOptions = {},
+    type: string,
+  ) {
     if (options.isExtensionTerminal) {
       const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
       proxy.start();
@@ -106,7 +124,6 @@ export class TerminalInternalService implements ITerminalInternalService {
 
 @Injectable()
 export class NodePtyTerminalService implements ITerminalService {
-
   static countId = 1;
 
   @Autowired(INJECTOR_TOKEN)
@@ -144,9 +161,7 @@ export class NodePtyTerminalService implements ITerminalService {
     return {
       name,
       readonly: false,
-      onData: (handler: (value: string | ArrayBuffer) => void) => {
-        return this._dispatcher.on(sessionId, handler);
-      },
+      onData: (handler: (value: string | ArrayBuffer) => void) => this._dispatcher.on(sessionId, handler),
       sendData: (message: string) => {
         this.sendText(sessionId, message);
       },
@@ -156,12 +171,12 @@ export class NodePtyTerminalService implements ITerminalService {
   async attach(sessionId: string, _: Terminal, rows: number, cols: number, options = {}, type?: string) {
     let shellPath: string | undefined;
     // default 的情况交给系统环境来决定使用的终端类型
-    if ( type === 'default') {
+    if (type === 'default') {
       type = undefined;
     }
     if (type) {
       if (isWindows) {
-        shellPath = await this.service.$resolveWindowsShellPath(<WindowsShellType> type);
+        shellPath = await this.service.$resolveWindowsShellPath(type as WindowsShellType);
       } else {
         shellPath = `/bin/${type}`;
       }
@@ -181,10 +196,13 @@ export class NodePtyTerminalService implements ITerminalService {
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
     const id = requestId || NodePtyTerminalService.countId++;
 
-    this.service.onMessage(sessionId, JSON.stringify({
-      id,
-      ...json,
-    }));
+    this.service.onMessage(
+      sessionId,
+      JSON.stringify({
+        id,
+        ...json,
+      }),
+    );
   }
 
   async sendText(sessionId: string, message: string) {

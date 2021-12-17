@@ -2,12 +2,20 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@opensumi/di';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
-import { URI , IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
-import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent} from './types';
+import { URI, IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
+import {
+  IEditorDecorationCollectionService,
+  IBrowserTextEditorDecorationType,
+  IDynamicModelDecorationProperty,
+  IThemedCssStyle,
+  IEditorDecorationProvider,
+  EditorDecorationProviderRegistrationEvent,
+  EditorDecorationChangeEvent,
+  EditorDecorationTypeRemovedEvent,
+} from './types';
 import { IThemeService } from '@opensumi/ide-theme';
 @Injectable()
 export class EditorDecorationCollectionService implements IEditorDecorationCollectionService {
-
   decorations: Map<string, IBrowserTextEditorDecorationType> = new Map();
 
   @Autowired(ICSSStyleService)
@@ -21,8 +29,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
 
   private tempId = 0;
 
-  constructor() {
-  }
+  constructor() {}
 
   getNextTempId() {
     this.tempId++;
@@ -40,7 +47,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       key,
       property,
       dispose: () => {
-        if (key && this.decorations.has(key) ) {
+        if (key && this.decorations.has(key)) {
           property.dispose();
           this.decorations.delete(key!);
           this.eventBus.fire(new EditorDecorationTypeRemovedEvent(key!));
@@ -56,7 +63,6 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   }
 
   private resolveDecoration(key: string, options: IDecorationRenderOptions): IDynamicModelDecorationProperty {
-
     const dec = {
       default: this.addedThemeDecorationToCSSStyleSheet(key, options),
       light: options.light ? this.addedThemeDecorationToCSSStyleSheet(key + '-light', options.light) : null,
@@ -75,11 +81,9 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     };
 
     return dec;
-
   }
 
   private addedThemeDecorationToCSSStyleSheet(key, options: IThemeDecorationRenderOptions): IThemedCssStyle {
-
     const className = key;
     const inlineClassName = key + '-inline';
     const disposer = new Disposable();
@@ -101,13 +105,13 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       // 这个改变会使得monaco中hitTest返回错误的结果，导致点击decoration的空白区域时会错误选中文本
       // 临时修复:
       // 此处将before和after的父级span display强制设置为inline-block, 可以避免这个问题, 是否会带来其他风险未知
-      disposer.addDispose(this.cssManager.addClass(afterContentClassName, {display: 'inline-block'} as any));
+      disposer.addDispose(this.cssManager.addClass(afterContentClassName, { display: 'inline-block' } as any));
     }
     if (options.before) {
       const styles = this.resolveContentCSSStyle(options.before);
       disposer.addDispose(this.cssManager.addClass(key + '-before::before', styles));
       beforeContentClassName = key + '-before';
-      disposer.addDispose(this.cssManager.addClass(beforeContentClassName, {display: 'inline-block'} as any));
+      disposer.addDispose(this.cssManager.addClass(beforeContentClassName, { display: 'inline-block' } as any));
     }
     if (options.gutterIconPath) {
       const glyphMarginStyle = this.resolveCSSStyle({
@@ -131,8 +135,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     };
   }
 
-  private resolveCSSStyle(styles: IThemeDecorationRenderOptions ): CSSStyleDeclaration {
-
+  private resolveCSSStyle(styles: IThemeDecorationRenderOptions): CSSStyleDeclaration {
     return {
       backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
       background: styles.backgroundIcon ? `url('${styles.backgroundIcon}') center center no-repeat` : undefined,
@@ -149,12 +152,10 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       borderSpacing: styles.borderSpacing,
       borderStyle: styles.borderStyle,
       borderWidth: styles.borderWidth,
-
     } as CSSStyleDeclaration;
   }
 
-  private resolveInlineCSSStyle(styles: IThemeDecorationRenderOptions ): CSSStyleDeclaration {
-
+  private resolveInlineCSSStyle(styles: IThemeDecorationRenderOptions): CSSStyleDeclaration {
     return {
       fontStyle: styles.fontStyle,
       fontWeight: styles.fontWeight,
@@ -168,7 +169,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
 
   private resolveContentCSSStyle(styles: IContentDecorationRenderOptions): CSSStyleDeclaration {
     let content: string | undefined;
-    if ( styles.contentText ) {
+    if (styles.contentText) {
       content = `"${styles.contentText}"`;
     } else if (styles.contentIconPath) {
       content = `url('${URI.from(styles.contentIconPath).toString(true).replace(/'/g, '%27')}')`;
@@ -193,7 +194,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     this.decorationProviders.set(provider.key, provider);
     this.eventBus.fire(new EditorDecorationProviderRegistrationEvent(provider));
     const disposer = provider.onDidDecorationChange((uri) => {
-      this.eventBus.fire(new EditorDecorationChangeEvent({uri, key: provider.key} ));
+      this.eventBus.fire(new EditorDecorationChangeEvent({ uri, key: provider.key }));
     });
     return {
       dispose: () => {
@@ -206,7 +207,10 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     };
   }
 
-  async getDecorationFromProvider(uri: URI, key?: string): Promise<{[key: string]: monaco.editor.IModelDeltaDecoration[]}> {
+  async getDecorationFromProvider(
+    uri: URI,
+    key?: string,
+  ): Promise<{ [key: string]: monaco.editor.IModelDeltaDecoration[] }> {
     const result = {};
     let decorationProviders: IEditorDecorationProvider[] = [];
     if (!key) {
@@ -225,8 +229,8 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
         if (decoration) {
           result[provider.key] = decoration;
         }
-      }));
+      }),
+    );
     return result;
   }
-
 }

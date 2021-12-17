@@ -12,9 +12,7 @@ const moackMainThreadSecret = {
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -59,6 +57,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.secret.test.ts', () => 
       disposable.dispose();
       done();
     });
-    extHostSecret.$onDidChangePassword({extensionId, key});
+    extHostSecret.$onDidChangePassword({ extensionId, key });
   });
 });

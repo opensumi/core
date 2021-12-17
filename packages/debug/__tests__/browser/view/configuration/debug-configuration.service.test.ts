@@ -11,17 +11,20 @@ import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug
 import { DEFAULT_CONFIGURATION_NAME_SEPARATOR } from '@opensumi/ide-debug';
 
 describe('Debug Configuration Service', () => {
-  const mockInjector = createBrowserInjector([], new MockInjector([
-    {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-  ]));
+  const mockInjector = createBrowserInjector(
+    [],
+    new MockInjector([
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      },
+    ]),
+  );
   let debugConfigurationService: DebugConfigurationService;
 
   const mockDebugSessionManager = {
-    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
-    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
     start: jest.fn(),
   };
 
@@ -33,7 +36,7 @@ describe('Debug Configuration Service', () => {
     roots: [],
     onWorkspaceChanged: jest.fn(),
     isMultiRootWorkspaceEnabled: true,
-    tryGetRoots: () => ([]),
+    tryGetRoots: () => [],
   };
 
   const mockDebugConfigurationManager = {
@@ -113,7 +116,9 @@ describe('Debug Configuration Service', () => {
 
   it('should have enough API', () => {
     expect(typeof debugConfigurationService.init).toBe('function');
-    expect(debugConfigurationService.currentValue).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
+    expect(debugConfigurationService.currentValue).toBe(
+      `test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`,
+    );
     expect(debugConfigurationService.float).toBeTruthy();
     expect(debugConfigurationService.configurationOptions).toEqual(mockDebugConfigurationManager.all);
     expect(typeof debugConfigurationService.updateCurrentValue).toBe('function');
@@ -141,7 +146,9 @@ describe('Debug Configuration Service', () => {
 
   it('updateConfigurationOptions method should be work', () => {
     debugConfigurationService.updateConfigurationOptions();
-    expect(debugConfigurationService.currentValue).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
+    expect(debugConfigurationService.currentValue).toBe(
+      `test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`,
+    );
   });
 
   it('start method should be work', () => {
@@ -175,18 +182,27 @@ describe('Debug Configuration Service', () => {
   });
 
   it('toValue method should be work', () => {
-    let value = debugConfigurationService.toValue({configuration: {name: 'test'}, workspaceFolderUri: URI.file('home/workspace').toString(), index: 1} as any);
+    let value = debugConfigurationService.toValue({
+      configuration: { name: 'test' },
+      workspaceFolderUri: URI.file('home/workspace').toString(),
+      index: 1,
+    } as any);
     expect(value).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__1`);
-    value = debugConfigurationService.toValue({configuration: {name: 'test'}, workspaceFolderUri: URI.file('home/workspace').toString()} as any);
+    value = debugConfigurationService.toValue({
+      configuration: { name: 'test' },
+      workspaceFolderUri: URI.file('home/workspace').toString(),
+    } as any);
     expect(mockDebugConfigurationManager.find).toBeCalledTimes(1);
     expect(value).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
   });
 
   it('toName method should be work', () => {
-    let value = debugConfigurationService.toName({configuration: {name: 'test'}, workspaceFolderUri: URI.file('home/workspace').toString()} as any);
+    let value = debugConfigurationService.toName({
+      configuration: { name: 'test' },
+      workspaceFolderUri: URI.file('home/workspace').toString(),
+    } as any);
     expect(value).toBe('test (workspace)');
-    value = debugConfigurationService.toName({configuration: {name: 'test'}} as any);
+    value = debugConfigurationService.toName({ configuration: { name: 'test' } } as any);
     expect(value).toBe('test');
   });
-
 });

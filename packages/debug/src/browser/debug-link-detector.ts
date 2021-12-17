@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -15,14 +15,24 @@ import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/com
 import styles from './view/console/debug-console.module.less';
 
 const CONTROL_CODES = '\\u0000-\\u0020\\u007f-\\u009f';
-const WEB_LINK_REGEX = new RegExp('(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s' + CONTROL_CODES + '"]{2,}[^\\s' + CONTROL_CODES + '"\')}\\],:;.!?]', 'ug');
+const WEB_LINK_REGEX = new RegExp(
+  '(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s' +
+    CONTROL_CODES +
+    '"]{2,}[^\\s' +
+    CONTROL_CODES +
+    '"\')}\\],:;.!?]',
+  'ug',
+);
 
 const WIN_ABSOLUTE_PATH = /(?:[a-zA-Z]:(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_RELATIVE_PATH = /(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_PATH = new RegExp(`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`);
 const POSIX_PATH = /((?:\~|\.)?(?:\/[\w\.-]*)+)/;
 const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
-const PATH_LINK_REGEX = new RegExp(`${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`, 'g');
+const PATH_LINK_REGEX = new RegExp(
+  `${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`,
+  'g',
+);
 
 const MAX_LENGTH = 2000;
 
@@ -35,7 +45,6 @@ interface LinkPart {
 
 @Injectable({ multiple: true })
 export class LinkDetector {
-
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
@@ -73,12 +82,13 @@ export class LinkDetector {
           case 'web':
             container.appendChild(this.createWebLink(part.value));
             break;
-          case 'path':
+          case 'path': {
             const path = part.captures[0];
             const lineNumber = part.captures[1] ? Number(part.captures[1]) : 0;
             const columnNumber = part.captures[2] ? Number(part.captures[2]) : 0;
             container.appendChild(this.createPathLink(part.value, path, lineNumber, columnNumber, workspaceFolder));
             break;
+          }
         }
       } catch (e) {
         container.appendChild(document.createTextNode(part.value));
@@ -92,11 +102,12 @@ export class LinkDetector {
 
     const uri = URI.parse(url);
     this.decorateLink(link, async () => {
-
       if (uri.scheme === Schemas.file) {
         const fsPath = uri.toString();
         const path = OS.type() === OS.Type.Windows ? osPath.win32 : osPath.posix;
-        const fileUrl = osPath.normalize(((path.sep === osPath.posix.sep) && platform.isWindows) ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath);
+        const fileUrl = osPath.normalize(
+          path.sep === osPath.posix.sep && platform.isWindows ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath,
+        );
 
         await this.workbenchEditorService.open(URI.parse(fileUrl));
         return;
@@ -108,7 +119,13 @@ export class LinkDetector {
     return link;
   }
 
-  private createPathLink(text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined): Node {
+  private createPathLink(
+    text: string,
+    path: string,
+    lineNumber: number,
+    columnNumber: number,
+    workspaceFolder: IWorkspaceFolder | undefined,
+  ): Node {
     if (path[0] === '/' && path[1] === '/') {
       return document.createTextNode(text);
     }
@@ -156,7 +173,9 @@ export class LinkDetector {
   private decorateLink(link: HTMLElement, onClick: (preserveFocus: boolean) => void) {
     link.classList.add(styles.link);
     link.title = formatLocalize('debug.console.followLink', platform.isMacintosh ? 'Cmd' : 'Ctrl');
-    link.onmousemove = (event) => { link.classList.toggle(styles.pointer, platform.isMacintosh ? event.metaKey : event.ctrlKey); };
+    link.onmousemove = (event) => {
+      link.classList.toggle(styles.pointer, platform.isMacintosh ? event.metaKey : event.ctrlKey);
+    };
     link.onmouseleave = () => link.classList.remove(styles.pointer);
     link.onclick = (event) => {
       const selection = window.getSelection();

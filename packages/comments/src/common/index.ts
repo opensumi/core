@@ -320,7 +320,7 @@ export type ZoneWidgerRender = (thread: ICommentsThread, widget: ICommentsZoneWi
 export interface MentionsData {
   id: string;
   display: string;
-  [ key: string ]: any;
+  [key: string]: any;
 }
 
 export interface MentionsOptions {

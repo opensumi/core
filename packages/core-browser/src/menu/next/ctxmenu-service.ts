@@ -6,8 +6,14 @@ import { IContextKeyService } from '../../context-key';
 import { MenuNode } from './base';
 import { generateMergedCtxMenu, generateCtxMenu, mergeTupleMenuNodeResult } from './menu-util';
 import {
-  AbstractMenuService, AbstractContextMenuService, IContextMenu, IMenu,
-  IMenuConfig, SubmenuItemNode, TupleMenuNodeResult, CreateMenuPayload,
+  AbstractMenuService,
+  AbstractContextMenuService,
+  IContextMenu,
+  IMenu,
+  IMenuConfig,
+  SubmenuItemNode,
+  TupleMenuNodeResult,
+  CreateMenuPayload,
 } from './menu.interface';
 
 @Injectable()
@@ -16,7 +22,7 @@ export class ContextMenuServiceImpl implements AbstractContextMenuService {
   private readonly injector: Injector;
 
   public createMenu(payload: CreateMenuPayload): IContextMenu {
-    return this.injector.get(ContextMenu, [ payload ]);
+    return this.injector.get(ContextMenu, [payload]);
   }
 }
 
@@ -49,9 +55,7 @@ export class ContextMenu extends Disposable implements IContextMenu {
     return this._menuId;
   }
 
-  constructor(
-    @Optional() payload: CreateMenuPayload,
-  ) {
+  constructor(@Optional() payload: CreateMenuPayload) {
     super();
     this._menuId = payload.id;
     if (payload.config) {
@@ -64,11 +68,13 @@ export class ContextMenu extends Disposable implements IContextMenu {
     this._build();
 
     // 监听内部的 onMenuChange 刷新单个 menu 下的所有节点
-    this.addDispose(Event.debounce(
-      Event.filter(this.onMenuChange, (menuId) => menuId === this._menuId),
-      () => { },
-      50,
-    )(this._rebuildMenus, this));
+    this.addDispose(
+      Event.debounce(
+        Event.filter(this.onMenuChange, (menuId) => menuId === this._menuId),
+        () => {},
+        50,
+      )(this._rebuildMenus, this),
+    );
 
     this.addDispose(this._onDidMenuChange);
   }
@@ -139,10 +145,12 @@ export class ContextMenu extends Disposable implements IContextMenu {
         if (!this._menus.has(submenuId)) {
           const menus = this.registerDispose(this.menuService.createMenu(submenuId, this.contextKeyService));
           this._menus.set(submenuId, menus);
-          this.registerDispose(menus.onDidChange(() => {
-            // 通知外部 顶层 menuId 下所有结构变了, 需要重新生成数据结构
-            this._onMenuChange.fire(rootMenuId);
-          }));
+          this.registerDispose(
+            menus.onDidChange(() => {
+              // 通知外部 顶层 menuId 下所有结构变了, 需要重新生成数据结构
+              this._onMenuChange.fire(rootMenuId);
+            }),
+          );
         }
 
         const menuToDispose = this.menuService.createMenu(submenuId, this.contextKeyService);

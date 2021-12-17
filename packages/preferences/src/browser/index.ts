@@ -4,9 +4,22 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPreferenceSettingsService } from '@opensumi/ide-core-browser/lib/preferences';
-import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
-import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
+import {
+  PreferenceScope,
+  PreferenceConfigurations,
+  PreferenceProvider,
+  IPreferenceSettingsService,
+} from '@opensumi/ide-core-browser/lib/preferences';
+import {
+  FolderPreferenceProviderFactory,
+  FolderPreferenceProviderOptions,
+  FolderPreferenceProvider,
+} from './folder-preference-provider';
+import {
+  WorkspaceFilePreferenceProviderFactory,
+  WorkspaceFilePreferenceProviderOptions,
+  WorkspaceFilePreferenceProvider,
+} from './workspace-file-preference-provider';
 import { PreferenceSettingsService } from './preference-settings.service';
 import { UserStorageContribution, UserStorageServiceImpl } from './userstorage';
 import { IUserStorageService, SettingContribution } from '../common';
@@ -34,33 +47,33 @@ export class PreferencesModule extends BrowserModule {
 export function injectFolderPreferenceProvider(inject: Injector): void {
   inject.addProviders({
     token: FolderPreferenceProviderFactory,
-    useFactory: () => {
-      return (options: FolderPreferenceProviderOptions) => {
-        const configurations = inject.get(PreferenceConfigurations);
-        const sectionName = configurations.getName(options.configUri);
-        const child = inject.createChild([
+    useFactory: () => (options: FolderPreferenceProviderOptions) => {
+      const configurations = inject.get(PreferenceConfigurations);
+      const sectionName = configurations.getName(options.configUri);
+      const child = inject.createChild(
+        [
           {
             token: FolderPreferenceProviderOptions,
             useValue: options,
           },
-        ], {
+        ],
+        {
           dropdownForTag: true,
           tag: sectionName,
+        },
+      );
+      // 当传入为配置文件时，如settings.json, 获取Setting
+      if (configurations.isConfigUri(options.configUri)) {
+        child.addProviders({
+          token: FolderPreferenceProvider,
+          useClass: FolderPreferenceProvider,
         });
-        // 当传入为配置文件时，如settings.json, 获取Setting
-        if (configurations.isConfigUri(options.configUri)) {
-          child.addProviders({
-            token: FolderPreferenceProvider,
-            useClass: FolderPreferenceProvider,
-          });
-          return child.get(FolderPreferenceProvider);
-        }
-        // 当传入为其他文件时，如launch.json
-        // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
-        // 这里的FolderPreferenceProvider获取必须为多例，因为工作区模式下可能存在多个配置文件
-        return child.get(FolderPreferenceProvider, { tag: sectionName, multiple: true });
-
-      };
+        return child.get(FolderPreferenceProvider);
+      }
+      // 当传入为其他文件时，如launch.json
+      // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
+      // 这里的FolderPreferenceProvider获取必须为多例，因为工作区模式下可能存在多个配置文件
+      return child.get(FolderPreferenceProvider, { tag: sectionName, multiple: true });
     },
   });
 }
@@ -68,20 +81,18 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
 export function injectWorkspaceFilePreferenceProvider(inject: Injector): void {
   inject.addProviders({
     token: WorkspaceFilePreferenceProviderFactory,
-    useFactory: () => {
-      return (options: WorkspaceFilePreferenceProviderOptions) => {
-        const child = inject.createChild([
-          {
-            token: WorkspaceFilePreferenceProviderOptions,
-            useValue: options,
-          },
-          {
-            token: WorkspaceFilePreferenceProvider,
-            useClass: WorkspaceFilePreferenceProvider,
-          },
-        ]);
-        return child.get(WorkspaceFilePreferenceProvider);
-      };
+    useFactory: () => (options: WorkspaceFilePreferenceProviderOptions) => {
+      const child = inject.createChild([
+        {
+          token: WorkspaceFilePreferenceProviderOptions,
+          useValue: options,
+        },
+        {
+          token: WorkspaceFilePreferenceProvider,
+          useClass: WorkspaceFilePreferenceProvider,
+        },
+      ]);
+      return child.get(WorkspaceFilePreferenceProvider);
     },
   });
 }

@@ -29,8 +29,8 @@ export interface IExpansionStateChange {
 export class TreeStateManager {
   private root: CompositeTreeNode;
   private expandedDirectories: Map<CompositeTreeNode, string> = new Map();
-  private _scrollOffset: number = 0;
-  private stashing: boolean = false;
+  private _scrollOffset = 0;
+  private stashing = false;
   private stashKeyframes: Map<number, StashKeyFrameFlag> | null;
   private stashLockingItems: Set<TreeNode> = new Set();
 
@@ -43,7 +43,6 @@ export class TreeStateManager {
     // 监听节点的折叠展开状态变化
     this.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, this.handleExpansionChange);
     this.root.watcher.on(TreeNodeEvent.DidChangePath, this.handleDidChangePath);
-
   }
 
   get scrollOffset() {
@@ -76,10 +75,10 @@ export class TreeStateManager {
       for (const relPath of state.expandedDirectories.buried) {
         try {
           const node = await this.root.forceLoadTreeNodeAtPath(relPath);
-          if (node && CompositeTreeNode.is(node) ) {
+          if (node && CompositeTreeNode.is(node)) {
             await (node as CompositeTreeNode).setExpanded(false);
           }
-        } catch (error) { }
+        } catch (error) {}
       }
       for (const relPath of state.expandedDirectories.atSurface) {
         try {
@@ -87,9 +86,12 @@ export class TreeStateManager {
           if (node && CompositeTreeNode.is(node)) {
             await (node as CompositeTreeNode).setExpanded(true);
           }
-        } catch (error) { }
+        } catch (error) {}
       }
-      this._scrollOffset = typeof state.scrollPosition === 'number' && state.scrollPosition > -1 ? state.scrollPosition : this._scrollOffset;
+      this._scrollOffset =
+        typeof state.scrollPosition === 'number' && state.scrollPosition > -1
+          ? state.scrollPosition
+          : this._scrollOffset;
       this.onDidLoadStateEmitter.fire();
     }
   }
@@ -99,7 +101,11 @@ export class TreeStateManager {
    */
   public excludeFromStash(file: ITreeNodeOrCompositeTreeNode) {
     if (this.stashKeyframes && !this.stashing) {
-      this.handleExpansionChange(!CompositeTreeNode.is(file) ? file.parent as CompositeTreeNode : file as CompositeTreeNode, true, this.root.isItemVisibleAtSurface(file));
+      this.handleExpansionChange(
+        !CompositeTreeNode.is(file) ? (file.parent as CompositeTreeNode) : (file as CompositeTreeNode),
+        true,
+        this.root.isItemVisibleAtSurface(file),
+      );
     }
   }
 
@@ -119,7 +125,6 @@ export class TreeStateManager {
         while (p) {
           if (this.stashKeyframes.has(p.id)) {
             let flags = this.stashKeyframes.get(p.id) as StashKeyFrameFlag;
-            // tslint:disable-next-line:no-bitwise
             flags = flags | StashKeyFrameFlag.Disabled;
             this.stashKeyframes.set(p.id, flags as StashKeyFrameFlag);
           }
@@ -132,7 +137,6 @@ export class TreeStateManager {
         while (p) {
           if (this.stashKeyframes.has(p.id)) {
             let flags = this.stashKeyframes.get(p.id) as StashKeyFrameFlag;
-            // tslint:disable-next-line:no-bitwise
             flags &= ~StashKeyFrameFlag.Disabled;
             this.stashKeyframes.set(p.id, flags);
           }
@@ -145,21 +149,21 @@ export class TreeStateManager {
     if (isExpanded && !relativePath) {
       relativePath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
       this.expandedDirectories.set(target, relativePath);
-      this.onDidChangeExpansionStateEmitter.fire({relativePath, isExpanded, isVisibleAtSurface});
+      this.onDidChangeExpansionStateEmitter.fire({ relativePath, isExpanded, isVisibleAtSurface });
     } else if (!isExpanded && relativePath) {
       this.expandedDirectories.delete(target);
-      this.onDidChangeExpansionStateEmitter.fire({relativePath, isExpanded, isVisibleAtSurface});
+      this.onDidChangeExpansionStateEmitter.fire({ relativePath, isExpanded, isVisibleAtSurface });
     }
-  }
+  };
 
   private handleDidChangePath = (target: CompositeTreeNode) => {
     if (this.expandedDirectories.has(target)) {
       const prevPath = this.expandedDirectories.get(target) as string;
       const newPath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
       this.expandedDirectories.set(target, newPath);
-      this.onDidChangeRelativePathEmitter.fire({prevPath, newPath});
+      this.onDidChangeRelativePathEmitter.fire({ prevPath, newPath });
     }
-  }
+  };
 
   /**
    * 开始记录点
@@ -191,17 +195,14 @@ export class TreeStateManager {
     const keyframes = Array.from(this.stashKeyframes);
     this.stashKeyframes = null;
     for (const [targetID, flags] of keyframes) {
-      // tslint:disable-next-line:no-bitwise
       const frameDisabled = (flags & StashKeyFrameFlag.Disabled) === StashKeyFrameFlag.Disabled;
       const target: CompositeTreeNode = TreeNode.getTreeNodeById(targetID) as CompositeTreeNode;
       // 判断当前操作对象是否有效，无效则做下一步操作
       if (!target || frameDisabled) {
         continue;
       }
-      // tslint:disable-next-line:no-bitwise
       if ((flags & StashKeyFrameFlag.Expanded) === StashKeyFrameFlag.Expanded) {
         target.setCollapsed();
-      // tslint:disable-next-line:no-bitwise
       } else if ((flags & StashKeyFrameFlag.Collapsed) === StashKeyFrameFlag.Collapsed) {
         await target.setExpanded();
       }

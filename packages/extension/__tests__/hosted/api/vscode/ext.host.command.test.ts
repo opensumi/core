@@ -1,7 +1,14 @@
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { ExtHostCommands, createCommandsApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
+import {
+  ExtHostCommands,
+  createCommandsApiFactory,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadCommands,
+  CommandHandler,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
 import * as modes from '@opensumi/ide-extension/lib/common/vscode/model.api';
@@ -21,39 +28,27 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     {
       id: 'test:builtinCommand',
       handler: {
-        handler: async () => {
-          return 'bingo!';
-        },
+        handler: async () => 'bingo!',
       },
     },
     {
       id: 'test:builtinCommand:unpermitted',
       handler: {
-        handler: () => {
-          return 'You shall not pass!';
-        },
-        isPermitted: (extensionInfo: IExtensionInfo) => {
-          return false;
-        },
+        handler: () => 'You shall not pass!',
+        isPermitted: (extensionInfo: IExtensionInfo) => false,
       },
     },
     {
       id: 'test:builtinCommand:permitted',
       handler: {
-        handler: () => {
-          return 'permitted!';
-        },
-        isPermitted: (extensionInfo: IExtensionInfo) => {
-          return true;
-        },
+        handler: () => 'permitted!',
+        isPermitted: (extensionInfo: IExtensionInfo) => true,
       },
     },
   ];
 
   const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => {
-      return map.get(key);
-    },
+    getProxy: (key) => map.get(key),
     set: (key, value) => {
       map.set(key, value);
       return value;
@@ -101,7 +96,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
 
       const commandId = 'ext.test';
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(vscodeCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      expect(vscodeCommand.executeCommand(commandId)).rejects.toThrowError(
+        new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
+      );
       expect(commandHandler.handler).toBeCalledTimes(0);
     });
   });
@@ -130,7 +127,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       const thisArg = {};
       // https://github.com/Microsoft/TypeScript/issues/16016#issuecomment-303462193
-      const extTest = jest.fn(function(this: any) {
+      const extTest = jest.fn(function (this: any) {
         return this;
       });
       extCommand.registerCommand(true, commandId, extTest, thisArg);
@@ -172,7 +169,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     it('execute a builtin command will not permitted', async () => {
       extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand:unpermitted';
-      expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrowError(
+        new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
+      );
     });
 
     it('execute a builtin command with permitted', async () => {
@@ -235,7 +234,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         extensionId: 'cloud-ide.vim',
         isBuiltin: false,
       };
-      expect(extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrowError(new Error('not permitted'));
+      expect(extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrowError(
+        new Error('not permitted'),
+      );
     });
 
     it('execute requiring authentication command to local command when not permitted', async () => {
@@ -250,7 +251,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         isPermitted: () => false,
       };
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      expect(extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrowError(
+        new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
+      );
     });
 
     it('execute requiring authentication command to local command when permitted', async () => {
@@ -320,7 +323,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     it('vscode.executeReferenceProvider', async () => {
       const file = Uri.file('/a.txt');
       await extCommand.executeCommand('vscode.executeReferenceProvider', file, new types.Position(1, 1), []);
-      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), { 'column': 2, 'lineNumber': 2 });
+      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), {
+        column: 2,
+        lineNumber: 2,
+      });
     });
     it('vscode.executeHoverProvider', async () => {
       const file = Uri.file('/a.txt');
@@ -329,9 +335,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     });
     it('vscode.executeSelectionRangeProvider', async () => {
       const file = Uri.file('/a.txt');
-      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([
-        [new Range(1, 1, 1, 1)],
-      ]));
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([[new Range(1, 1, 1, 1)]]));
       await extCommand.executeCommand('vscode.executeSelectionRangeProvider', file, [new types.Position(1, 1)]);
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeSelectionRangeProvider');
     });
@@ -352,13 +356,24 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         selectionRange: new Range(1, 1, 1, 1),
       } as modes.ICallHierarchyItemDto;
       mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
-      const result = await extCommand.executeCommand<vscode.CallHierarchyItem[]>('vscode.prepareCallHierarchy', file, new types.Position(1, 1));
+      const result = await extCommand.executeCommand<vscode.CallHierarchyItem[]>(
+        'vscode.prepareCallHierarchy',
+        file,
+        new types.Position(1, 1),
+      );
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executePrepareCallHierarchy');
       expect(result.length).toBe(1);
       expect(result[0].name).toBe('test');
     });
     it('vscode.provideIncomingCalls', async () => {
-      const item = new types.CallHierarchyItem(types.SymbolKind.Class, 'test', 'test', Uri.file('/a.txt'), new types.Range(1, 1, 1, 1), new types.Range(1, 1, 1, 1));
+      const item = new types.CallHierarchyItem(
+        types.SymbolKind.Class,
+        'test',
+        'test',
+        Uri.file('/a.txt'),
+        new types.Range(1, 1, 1, 1),
+        new types.Range(1, 1, 1, 1),
+      );
       const resultItem = {
         fromRanges: [new Range(1, 1, 1, 1)],
         from: {
@@ -372,13 +387,23 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         },
       } as modes.IIncomingCallDto;
       mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
-      const result = await extCommand.executeCommand<vscode.CallHierarchyIncomingCall[]>('vscode.provideIncomingCalls', item);
+      const result = await extCommand.executeCommand<vscode.CallHierarchyIncomingCall[]>(
+        'vscode.provideIncomingCalls',
+        item,
+      );
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeProvideIncomingCalls');
       expect(result.length).toBe(1);
       expect(result[0].from.name).toBe('test');
     });
     it('vscode.provideOutgoingCalls', async () => {
-      const item = new types.CallHierarchyItem(types.SymbolKind.Class, 'test', 'test', Uri.file('/a.txt'), new types.Range(1, 1, 1, 1), new types.Range(1, 1, 1, 1));
+      const item = new types.CallHierarchyItem(
+        types.SymbolKind.Class,
+        'test',
+        'test',
+        Uri.file('/a.txt'),
+        new types.Range(1, 1, 1, 1),
+        new types.Range(1, 1, 1, 1),
+      );
       const resultItem = {
         fromRanges: [new Range(1, 1, 1, 1)],
         to: {
@@ -392,7 +417,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         },
       } as modes.IOutgoingCallDto;
       mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
-      const result = await extCommand.executeCommand<vscode.CallHierarchyOutgoingCall[]>('vscode.provideOutgoingCalls', item);
+      const result = await extCommand.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
+        'vscode.provideOutgoingCalls',
+        item,
+      );
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeProvideOutgoingCalls');
       expect(result.length).toBe(1);
       expect(result[0].to.name).toBe('test');
@@ -410,12 +438,23 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     });
     it('vscode.executeCompletionItemProvider', async () => {
       const file = Uri.file('/a.txt');
-      await extCommand.executeCommand('vscode.executeCompletionItemProvider', file, new types.Position(1, 1), 'triggerCharacter', 1);
+      await extCommand.executeCommand(
+        'vscode.executeCompletionItemProvider',
+        file,
+        new types.Position(1, 1),
+        'triggerCharacter',
+        1,
+      );
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeCompletionItemProvider');
     });
     it('vscode.executeSignatureHelpProvider', async () => {
       const file = Uri.file('/a.txt');
-      await extCommand.executeCommand('vscode.executeSignatureHelpProvider', file, new types.Position(1, 1), 'triggerCharacter');
+      await extCommand.executeCommand(
+        'vscode.executeSignatureHelpProvider',
+        file,
+        new types.Position(1, 1),
+        'triggerCharacter',
+      );
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeSignatureHelpProvider');
     });
     it('vscode.executeCodeLensProvider', async () => {
@@ -438,7 +477,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     it('vscode.executeColorPresentationProvider', async () => {
       const file = Uri.file('/a.txt');
       mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([]));
-      await extCommand.executeCommand('vscode.executeColorPresentationProvider', new types.Color(0, 0, 0, 0), { uri: file, range: new types.Range(1, 1, 1, 1) });
+      await extCommand.executeCommand('vscode.executeColorPresentationProvider', new types.Color(0, 0, 0, 0), {
+        uri: file,
+        range: new types.Range(1, 1, 1, 1),
+      });
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeColorPresentationProvider');
     });
   });

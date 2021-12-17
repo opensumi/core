@@ -23,7 +23,7 @@ if (!isJestTest) {
 
 function parseEnv(env: string) {
   env = env.split('_SHELL_ENV_DELIMITER_')[1];
-  const ret: {[key: string]: string} = {};
+  const ret: { [key: string]: string } = {};
   const lines = stripAnsi(env).split('\n').filter(Boolean);
   for (const line of lines) {
     const [key, ...values] = line.split('=');
@@ -47,13 +47,14 @@ async function createUpdateShellPathPromise(): Promise<void> {
   try {
     shellPath = await new Promise((resolve, reject) => {
       const buf: Buffer[] = [];
-      const proc = spawn(process.env.SHELL || '/bin/bash', [
-        '-ilc',
-        'echo -n "_SHELL_ENV_DELIMITER_"; env; echo -n "_SHELL_ENV_DELIMITER_"; exit;',
-      ], {
-        stdio: ['ignore', 'pipe', 'pipe'],
-        detached: true, // 在有些场景 zsh 会卡住， detached 后正常
-      });
+      const proc = spawn(
+        process.env.SHELL || '/bin/bash',
+        ['-ilc', 'echo -n "_SHELL_ENV_DELIMITER_"; env; echo -n "_SHELL_ENV_DELIMITER_"; exit;'],
+        {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          detached: true, // 在有些场景 zsh 会卡住， detached 后正常
+        },
+      );
       proc.on('error', (err) => {
         reject(err);
       });
@@ -101,9 +102,12 @@ export async function getShellPath(): Promise<string | undefined> {
     updateShellPath(),
     new Promise<void>((resolve) => {
       // 第一次等待时间长一些，尽量拿到正确的 PATH
-      setTimeout(() => {
-        resolve(undefined);
-      }, hasSuccess ? MAX_WAIT_AFTER_SUCCESS : SHELL_TIMEOUT);
+      setTimeout(
+        () => {
+          resolve(undefined);
+        },
+        hasSuccess ? MAX_WAIT_AFTER_SUCCESS : SHELL_TIMEOUT,
+      );
     }),
   ]);
   // 不管有没有更新成功，都返回当前的最新结果

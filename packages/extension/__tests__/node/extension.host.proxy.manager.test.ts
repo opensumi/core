@@ -12,14 +12,16 @@ extensionHostManagerTester({
     {
       token: IExtensionHostManager,
       useFactory(injector) {
-          return injector.get(ExtensionHostProxyManager, [{
+        return injector.get(ExtensionHostProxyManager, [
+          {
             port: PROXY_PORT,
-          }]);
-        },
+          },
+        ]);
+      },
     },
   ],
-  init: () => {
-    return new Promise((resolve) => {
+  init: () =>
+    new Promise((resolve) => {
       // 启动插件进程管理进程
       extHostProxy = new ExtHostProxy({
         socketConnectOpts: {
@@ -29,8 +31,7 @@ extensionHostManagerTester({
       Event.once(extHostProxy.onConnected)(() => resolve());
       // 监听插件进程后端服务
       extHostProxy.init();
-    });
-  },
+    }),
   dispose: () => {
     extHostProxy.dispose();
   },

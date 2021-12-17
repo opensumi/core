@@ -4,7 +4,6 @@ import { IDataOption, IDataOptionGroup } from '@opensumi/ide-components';
 export const IToolbarRegistry = Symbol('IToolbarRegistry');
 
 export interface IToolbarRegistry {
-
   /**
    * 是否已经存在该位置
    * @param location
@@ -43,7 +42,6 @@ export interface IToolbarRegistry {
   getAllLocations(): string[];
 
   isReady(): boolean;
-
 }
 
 export interface IToolbarActionGroupForRender {
@@ -53,7 +51,6 @@ export interface IToolbarActionGroupForRender {
 }
 
 export interface IToolbarActionGroup {
-
   /**
    * id 请保证全局唯一
    */
@@ -73,7 +70,6 @@ export interface IToolbarActionGroup {
    * 元素紧贴在一起
    */
   compact?: boolean;
-
 }
 
 export interface ISize {
@@ -87,7 +83,6 @@ export interface IToolbarActionPosition {
 }
 
 export interface IToolbarLocationPreference {
-
   // 位置不够时也不添加 more 按钮
   noDropDown?: boolean;
 
@@ -108,7 +103,6 @@ export interface IToolbarLocationProps {
 }
 
 export interface IToolbarActionElementProps {
-
   inDropDown: boolean;
 
   action: IToolbarAction;
@@ -123,7 +117,6 @@ export interface IToolbarActionElementProps {
 export type IToolbarActionReactElement = React.ComponentType<IToolbarActionElementProps>;
 
 export interface IToolbarAction {
-
   id: string;
 
   /**
@@ -178,21 +171,18 @@ export interface IToolbarAction {
    * 是否永远不被收起
    */
   neverCollapse?: boolean;
-
 }
 
 // events
 export class ToolbarRegistryReadyEvent extends BasicEvent<void> {}
 
-export class ToolbarActionsChangedEvent extends BasicEvent<{ position: IToolbarActionPosition }> { }
+export class ToolbarActionsChangedEvent extends BasicEvent<{ position: IToolbarActionPosition }> {}
 
-export class ToolbarActionGroupsChangedEvent extends BasicEvent<{ location: string }> { }
+export class ToolbarActionGroupsChangedEvent extends BasicEvent<{ location: string }> {}
 
 export const ToolBarActionContribution = Symbol('ToolBarActionContribution');
 export interface ToolBarActionContribution {
-
   registerToolbarActions(registry: IToolbarRegistry);
-
 }
 
 export interface IToolbarActionBtnState extends IToolbarActionBtnStyle {
@@ -206,7 +196,7 @@ export interface IToolbarActionBtnProps {
   iconClass: string;
   defaultStyle?: IToolbarActionBtnStyle;
   styles?: {
-    [key: string]: IToolbarActionBtnState,
+    [key: string]: IToolbarActionBtnState;
   };
   defaultState?: string;
   delegate?: (delegate: IToolbarActionBtnDelegate | undefined) => void;
@@ -221,7 +211,6 @@ export interface IToolbarActionBtnProps {
 }
 
 export interface IToolbarActionBtnDelegate {
-
   onClick: Event<React.MouseEvent<HTMLDivElement>>;
 
   onMouseEnter: Event<React.MouseEvent<HTMLDivElement>>;
@@ -250,7 +239,7 @@ export interface IToolbarActionBtnDelegate {
    */
   hidePopOver(): Promise<void>;
 
-  onChangeState: Event<{ from: string, to: string }>;
+  onChangeState: Event<{ from: string; to: string }>;
 }
 
 export interface IToolbarActionBtnStyle {
@@ -303,10 +292,10 @@ export interface IToolbarActionBtnStyle {
 // Select
 export interface IToolbarActionSelectProps<T> {
   options: IDataOption<T>[] | IDataOptionGroup<T>[];
-  customOptionRenderer?: React.FC<{ data: IDataOption<T>, isCurrent: boolean }>;
+  customOptionRenderer?: React.FC<{ data: IDataOption<T>; isCurrent: boolean }>;
   defaultValue?: T;
   styles?: {
-    [key: string]: IToolbarSelectStyle,
+    [key: string]: IToolbarSelectStyle;
   };
   name?: string;
   searchMode?: boolean;
@@ -319,12 +308,14 @@ export interface IToolbarActionSelectProps<T> {
 export interface IToolbarActionSelectDelegate<T> {
   setState(state: string): void;
   setSelect(value: T): void;
-  setOptions(options: {
-    iconClass?: string,
-    label?: string,
-    value: T,
-  }[]): void;
-  onChangeState: Event<{ from: string, to: string }>;
+  setOptions(
+    options: {
+      iconClass?: string;
+      label?: string;
+      value: T;
+    }[],
+  ): void;
+  onChangeState: Event<{ from: string; to: string }>;
   onSelect: Event<T>;
   getValue(): T | undefined;
 }
@@ -338,7 +329,6 @@ export interface IToolbarSelectStyle {
 }
 
 export interface IToolbarPopoverStyle {
-
   /**
    * 在上方还是在下方, 默认下方
    * 暂时只支持 bottom;

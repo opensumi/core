@@ -1,4 +1,3 @@
-
 import * as types from '../../../common/vscode/ext-types';
 import { IExtHostWindowState } from '../../../common/vscode';
 import { Emitter, Event } from '@opensumi/ide-core-common';
@@ -7,9 +6,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();
 
-  // tslint:disable-next-line: no-unused-variable
-  constructor(private rpcProtocol: IRPCProtocol) {
-  }
+  constructor(private rpcProtocol: IRPCProtocol) {}
   private readonly _onDidChangeWindowState: Emitter<types.WindowState> = new Emitter();
 
   public readonly onDidChangeWindowState: Event<types.WindowState> = this._onDidChangeWindowState.event;
@@ -23,9 +20,9 @@ export class ExtHostWindowState implements IExtHostWindowState {
 }
 
 export class WindowStateImpl implements types.WindowState {
-    public focused: boolean;
+  public focused: boolean;
 
-    constructor() {
-      this.focused = false;
-    }
+  constructor() {
+    this.focused = false;
+  }
 }

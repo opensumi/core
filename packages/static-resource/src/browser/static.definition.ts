@@ -13,7 +13,6 @@ import { URI, IDisposable } from '@opensumi/ide-core-browser';
  */
 @Injectable()
 export abstract class StaticResourceService {
-
   /**
    * 注册一个静态资源转换方式的提供方
    * @param provider
@@ -36,7 +35,6 @@ export abstract class StaticResourceService {
    * 例: ['http://127.0.0.1:8000']
    */
   public readonly resourceRoots: Set<string>;
-
 }
 
 /**
@@ -44,7 +42,6 @@ export abstract class StaticResourceService {
  *
  */
 export interface IStaticResourceProvider {
-
   /**
    * 能够处理的scheme，单个scheme只能有一个StaticResourceProvider， 先来的会被后来的覆盖
    */
@@ -62,7 +59,6 @@ export interface IStaticResourceProvider {
    * 例: ['http://127.0.0.1:8000']
    */
   roots?: string[];
-
 }
 
 export const StaticResourceContribution = Symbol('StaticResourceContribution');
@@ -70,7 +66,5 @@ export const StaticResourceContribution = Symbol('StaticResourceContribution');
 export const StaticResourceContributionProvider = Symbol('StaticResourceContributionProvider');
 
 export interface StaticResourceContribution {
-
   registerStaticResolver(service: StaticResourceService): void;
-
 }

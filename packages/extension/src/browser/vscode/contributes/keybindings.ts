@@ -18,13 +18,12 @@ export type KeybindingSchema = Array<ContributedKeyBinding>;
 @Injectable()
 @Contributes('keybindings')
 export class KeybindingContributionPoint extends VSCodeContributePoint<KeybindingSchema> {
-
   @Autowired(KeybindingRegistry)
   protected readonly keybindingRegistry: KeybindingRegistry;
 
   contribute() {
-    const keybindings: Keybinding[] = this.json.map((contributedKeyBinding: ContributedKeyBinding) => (
-      this.toKeybinding(contributedKeyBinding, this.extension.isBuiltin)),
+    const keybindings: Keybinding[] = this.json.map((contributedKeyBinding: ContributedKeyBinding) =>
+      this.toKeybinding(contributedKeyBinding, this.extension.isBuiltin),
     );
 
     this.addDispose(this.keybindingRegistry.registerKeybindings(keybindings));
@@ -33,7 +32,12 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
   protected toKeybinding(contributedKeyBinding: ContributedKeyBinding, isBuiltin: boolean): Keybinding {
     const keybinding = this.toOSKeybinding(contributedKeyBinding);
     const { command, when } = contributedKeyBinding;
-    return { keybinding, command, when, priority: isBuiltin ? KeybindingWeight.BuiltinExtension * 100 : KeybindingWeight.ExternalExtension * 100 };
+    return {
+      keybinding,
+      command,
+      when,
+      priority: isBuiltin ? KeybindingWeight.BuiltinExtension * 100 : KeybindingWeight.ExternalExtension * 100,
+    };
   }
 
   protected toOSKeybinding(ContributedKeyBinding: ContributedKeyBinding): string {
@@ -48,5 +52,4 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
     }
     return keybinding || ContributedKeyBinding.key;
   }
-
 }

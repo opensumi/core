@@ -17,7 +17,8 @@ const mockExtension = {
   path: path.join(__dirname, '../../../../__mocks__/extension'),
   realPath: path.join(__dirname, '../../../../__mocks__/extension'),
   extensionId: 'mock.sumi-extension',
-  extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../../../../__mocks__/extension')}`).codeUri,
+  extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../../../../__mocks__/extension')}`)
+    .codeUri,
   packageJSON: {
     name: 'sumi-extension',
     kaitianContributes: {
@@ -36,8 +37,8 @@ describe(`test ${__filename}`, () => {
 
   const injector = new Injector();
   const mockClient = {
-    send: async (msg) => { },
-    onMessage: (fn) => { },
+    send: async (msg) => {},
+    onMessage: (fn) => {},
   };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
@@ -47,10 +48,9 @@ describe(`test ${__filename}`, () => {
       isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},
-      createExtension: (extensionDescription: IExtensionProps) => {
-        return new ExtensionWorkerHost(rpcProtocol, injector).createExtension(extensionDescription);
-      },
-      registerExtendModuleService: () => { },
+      createExtension: (extensionDescription: IExtensionProps) =>
+        new ExtensionWorkerHost(rpcProtocol, injector).createExtension(extensionDescription),
+      registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,
       storageProxy: extHostStorage,

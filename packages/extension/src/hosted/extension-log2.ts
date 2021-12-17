@@ -1,10 +1,15 @@
 import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
 import { Injector } from '@opensumi/di';
-import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel, IExtensionLogger } from '@opensumi/ide-core-common';
+import {
+  getNodeRequire,
+  SupportLogNamespace,
+  ILogService,
+  LogLevel,
+  IExtensionLogger,
+} from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 
 export class ExtensionLogger2 implements IExtensionLogger {
-
   private injector: Injector;
   private loggerManager: LogServiceManager;
   private logger: ILogService;
@@ -15,7 +20,7 @@ export class ExtensionLogger2 implements IExtensionLogger {
     this.config = this.injector.get(AppConfig);
     this.injectLogService();
 
-    this.loggerManager =  this.injector.get(LogServiceManager);
+    this.loggerManager = this.injector.get(LogServiceManager);
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost, this.config);
   }
 
@@ -25,7 +30,7 @@ export class ExtensionLogger2 implements IExtensionLogger {
 
       this.injector.overrideProviders({
         token: AppConfig,
-        useValue: Object.assign({}, this.config, {LogServiceClass}),
+        useValue: Object.assign({}, this.config, { LogServiceClass }),
       });
     } else if (this.config.extLogServiceClassPath) {
       let LogServiceClass = getNodeRequire()(this.config.extLogServiceClassPath);
@@ -35,7 +40,7 @@ export class ExtensionLogger2 implements IExtensionLogger {
       }
       this.injector.overrideProviders({
         token: AppConfig,
-        useValue: Object.assign({}, this.config, {LogServiceClass}),
+        useValue: Object.assign({}, this.config, { LogServiceClass }),
       });
     }
   }
@@ -90,5 +95,4 @@ export class ExtensionLogger2 implements IExtensionLogger {
   setLevel(level: LogLevel) {
     return this.logger.setLevel(level);
   }
-
 }

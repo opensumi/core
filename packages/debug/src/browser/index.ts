@@ -2,14 +2,27 @@ import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
 import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
 
-import { DebugEditor, DebugModelFactory, IDebugProgress, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
+import {
+  DebugEditor,
+  DebugModelFactory,
+  IDebugProgress,
+  IDebugServer,
+  IDebugService,
+  IDebugSessionManager,
+} from '../common';
 import { BreakpointManager } from './breakpoint';
 import { DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugContribution } from './debug-contribution';
 import { injectDebugPreferences } from './debug-preferences';
 import { DebugService } from './debug-service';
-import { DebugSessionContribution, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionFactory, DefaultDebugSessionFactory } from './debug-session-contribution';
+import {
+  DebugSessionContribution,
+  DebugSessionContributionRegistry,
+  DebugSessionContributionRegistryImpl,
+  DebugSessionFactory,
+  DefaultDebugSessionFactory,
+} from './debug-session-contribution';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
@@ -68,9 +81,7 @@ export class DebugModule extends BrowserModule {
     },
     {
       token: DebugModelFactory,
-      useFactory: (injector: Injector) => (editor: DebugEditor) => {
-        return DebugModel.createModel(injector, editor);
-      },
+      useFactory: (injector: Injector) => (editor: DebugEditor) => DebugModel.createModel(injector, editor),
     },
     {
       token: DebugSessionContributionRegistry,
@@ -101,9 +112,7 @@ export class DebugModule extends BrowserModule {
     // contextkeys
     {
       token: DebugCallStackItemTypeKey,
-      useFactory: (injector: Injector) => {
-        return injector.get(IContextKeyService).createKey('callStackItemType');
-      },
+      useFactory: (injector: Injector) => injector.get(IContextKeyService).createKey('callStackItemType'),
     },
   ];
 

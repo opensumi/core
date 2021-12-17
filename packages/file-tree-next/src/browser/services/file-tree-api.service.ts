@@ -1,4 +1,3 @@
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -14,7 +13,6 @@ import * as paths from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
-
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
@@ -86,7 +84,7 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async resolveNodeByPath(tree: ITree, path: string, parent?: Directory) {
-    const  file = await this.fileServiceClient.getFileStat(path);
+    const file = await this.fileServiceClient.getFileStat(path);
     if (file) {
       return this.toNode(tree, file, parent);
     }
@@ -102,9 +100,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       return [this.toNode(tree, filestat, parent)];
     } else {
       if (filestat.children) {
-        return filestat.children.map((child) => {
-          return this.toNode(tree, child, parent);
-        });
+        return filestat.children.map((child) => this.toNode(tree, child, parent));
       }
     }
     return [];
@@ -158,7 +154,14 @@ export class FileTreeAPI implements IFileTreeAPI {
     if (this.corePreferences['explorer.confirmMove']) {
       const ok = localize('file.confirm.move.ok');
       const cancel = localize('file.confirm.move.cancel');
-      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.move', `[ ${fromFiles.map((uri) => uri.displayName).join(',')} ]`, targetDir.displayName), [cancel, ok]);
+      const confirm = await this.dialogService.warning(
+        formatLocalize(
+          'file.confirm.move',
+          `[ ${fromFiles.map((uri) => uri.displayName).join(',')} ]`,
+          targetDir.displayName,
+        ),
+        [cancel, ok],
+      );
       if (confirm !== ok) {
         return;
       }
@@ -166,14 +169,14 @@ export class FileTreeAPI implements IFileTreeAPI {
     for (const from of fromFiles) {
       const filestat = this.cacheFileStat.get(from.toString());
       const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
-      if (!!res) {
+      if (res) {
         error.push(res);
       }
     }
     return error;
   }
 
-  async mv(from: URI, to: URI, isDirectory: boolean = false) {
+  async mv(from: URI, to: URI, isDirectory = false) {
     try {
       await this.workspaceEditService.apply({
         edits: [

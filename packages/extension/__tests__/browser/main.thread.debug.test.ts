@@ -3,7 +3,12 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { LabelService } from '@opensumi/ide-core-browser/src';
 import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
-import { BreakpointManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@opensumi/ide-debug/lib/browser';
+import {
+  BreakpointManager,
+  DebugPreferences,
+  DebugSessionContributionRegistry,
+  DebugModelManager,
+} from '@opensumi/ide-debug/lib/browser';
 import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
@@ -17,9 +22,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 const map = new Map();
 
 const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => {
-    return map.get(key);
-  },
+  getProxy: (key) => map.get(key),
   set: (key, value) => {
     map.set(key, value);
     return value;
@@ -54,18 +57,22 @@ const mockDebugSessionManager = {
 };
 
 const mockDebugService = {
-  debugContributionPoints: [[
-    URI.file('/home/test').toString(),
-    [{
-      type: 'node',
-      label: 'Node Debug',
-    }],
-  ]],
+  debugContributionPoints: [
+    [
+      URI.file('/home/test').toString(),
+      [
+        {
+          type: 'node',
+          label: 'Node Debug',
+        },
+      ],
+    ],
+  ],
   onDidDebugContributionPointChange: jest.fn(() => Disposable.create(() => {})),
 };
 
 const mockDebugSessionContributionRegistry = {
-    registerDebugSessionContribution: jest.fn(() => Disposable.create(() => {})),
+  registerDebugSessionContribution: jest.fn(() => Disposable.create(() => {})),
 };
 
 const mockBreakpointManager = {
@@ -100,78 +107,79 @@ describe('MainThreadDebug API Test Suite', () => {
   beforeAll(() => {
     jest.clearAllMocks();
 
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: BreakpointManager,
-        useValue: mockBreakpointManager,
-      },
-      {
-        token: IDebugSessionManager,
-        useValue: mockDebugSessionManager,
-      },
-      {
-        token: DebugModelManager,
-        useValue: mockDebugModelManager,
-      },
-      {
-        token: IDebugService,
-        useValue: mockDebugService,
-      },
-      {
-        token: DebugConsoleModelService,
-        useValue: mockDebugConsoleModelService,
-      },
-      {
-        token: ITerminalApiService,
-        useValue: {},
-      },
-      {
-        token: WorkbenchEditorService,
-        useValue: {},
-      },
-      {
-        token: DebugSessionContributionRegistry,
-        useValue: mockDebugSessionContributionRegistry,
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: {
-          getLogger: () => {
-            return {
-              log() { },
-              debug() { },
-              error() { },
-              verbose() { },
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: BreakpointManager,
+          useValue: mockBreakpointManager,
+        },
+        {
+          token: IDebugSessionManager,
+          useValue: mockDebugSessionManager,
+        },
+        {
+          token: DebugModelManager,
+          useValue: mockDebugModelManager,
+        },
+        {
+          token: IDebugService,
+          useValue: mockDebugService,
+        },
+        {
+          token: DebugConsoleModelService,
+          useValue: mockDebugConsoleModelService,
+        },
+        {
+          token: ITerminalApiService,
+          useValue: {},
+        },
+        {
+          token: WorkbenchEditorService,
+          useValue: {},
+        },
+        {
+          token: DebugSessionContributionRegistry,
+          useValue: mockDebugSessionContributionRegistry,
+        },
+        {
+          token: ILoggerManagerClient,
+          useValue: {
+            getLogger: () => ({
+              log() {},
+              debug() {},
+              error() {},
+              verbose() {},
               warn() {},
-            };
+            }),
           },
         },
-      },
-      {
-        token: IMessageService,
-        useValue: {},
-      },
-      {
-        token: IFileServiceClient,
-        useValue: {},
-      },
-      {
-        token: DebugPreferences,
-        useValue: {},
-      },
-      {
-        token: LabelService,
-        useValue: {},
-      },
-      {
-        token: DebugConfigurationManager,
-        useValue: mockDebugConfigurationManager,
-      },
-      {
-        token: IDebugServer,
-        useValue: mockDebugServer,
-      },
-    ]));
+        {
+          token: IMessageService,
+          useValue: {},
+        },
+        {
+          token: IFileServiceClient,
+          useValue: {},
+        },
+        {
+          token: DebugPreferences,
+          useValue: {},
+        },
+        {
+          token: LabelService,
+          useValue: {},
+        },
+        {
+          token: DebugConfigurationManager,
+          useValue: mockDebugConfigurationManager,
+        },
+        {
+          token: IDebugServer,
+          useValue: mockDebugServer,
+        },
+      ]),
+    );
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, mockExtThreadConnection as any);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, mockExtThreadDebug as any);
 
@@ -218,19 +226,21 @@ describe('MainThreadDebug API Test Suite', () => {
   });
 
   it('$addBreakpoints method should be work', async () => {
-    const breakpoints = [{
-      id: 1,
-      enabled: true,
-      location: {
-        uri: Uri.parse('/home/a.js'),
-        range: {
-          startLineNumber: 1,
-          startColumn: 0,
-          endLineNumber: 1,
-          endColumn: 10,
+    const breakpoints = [
+      {
+        id: 1,
+        enabled: true,
+        location: {
+          uri: Uri.parse('/home/a.js'),
+          range: {
+            startLineNumber: 1,
+            startColumn: 0,
+            endLineNumber: 1,
+            endColumn: 10,
+          },
         },
       },
-    }];
+    ];
     mockBreakpointManager.findMarkers.mockClear();
     await mainThreadDebug.$addBreakpoints(breakpoints as any);
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
@@ -238,21 +248,27 @@ describe('MainThreadDebug API Test Suite', () => {
   });
 
   it('$removeBreakpoints method should be work', async () => {
-    const breakpoints = [{
-      id: 1,
-      enabled: true,
-    }];
+    const breakpoints = [
+      {
+        id: 1,
+        enabled: true,
+      },
+    ];
     const remove = jest.fn();
-    mockBreakpointManager.findMarkers.mockReturnValueOnce([{
-      data: {
-        uri: URI.file('/home/a.js').toString(),
+    mockBreakpointManager.findMarkers.mockReturnValueOnce([
+      {
+        data: {
+          uri: URI.file('/home/a.js').toString(),
+        },
       },
-    }]);
-    mockDebugModelManager.resolve.mockReturnValueOnce([{
-      breakpoint: {
-        remove,
+    ]);
+    mockDebugModelManager.resolve.mockReturnValueOnce([
+      {
+        breakpoint: {
+          remove,
+        },
       },
-    }]);
+    ]);
     mockBreakpointManager.findMarkers.mockClear();
     await mainThreadDebug.$removeBreakpoints(breakpoints as any);
     expect(mockBreakpointManager.findMarkers).toBeCalledTimes(1);
@@ -294,5 +310,4 @@ describe('MainThreadDebug API Test Suite', () => {
       label: 'Node Debug',
     });
   });
-
 });

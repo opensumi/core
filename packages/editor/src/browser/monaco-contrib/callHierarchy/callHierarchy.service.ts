@@ -1,22 +1,34 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { CancellationToken, IDisposable, IPosition, isNonEmptyArray, onUnexpectedExternalError, URI, Uri } from '@opensumi/ide-core-common';
-import { CallHierarchyItem, CallHierarchyProvider, CallHierarchyProviderRegistry, ICallHierarchyService, IncomingCall, OutgoingCall } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+import {
+  CancellationToken,
+  IDisposable,
+  IPosition,
+  isNonEmptyArray,
+  onUnexpectedExternalError,
+  URI,
+  Uri,
+} from '@opensumi/ide-core-common';
+import {
+  CallHierarchyItem,
+  CallHierarchyProvider,
+  CallHierarchyProviderRegistry,
+  ICallHierarchyService,
+  IncomingCall,
+  OutgoingCall,
+} from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
 declare type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/tree/main/src/vs/workbench/contrib/callHierarchy/common/callHierarchy.ts
 
 class RefCountedDisposabled {
-  constructor(
-    private readonly _disposable: IDisposable,
-    private _counter = 1,
-  ) {}
+  constructor(private readonly _disposable: IDisposable, private _counter = 1) {}
 
   acquire() {
     this._counter++;
@@ -77,10 +89,7 @@ export class CallHierarchyModel {
     })();
   }
 
-  async resolveIncomingCalls(
-    item: CallHierarchyItem,
-    token: CancellationToken,
-  ): Promise<IncomingCall[]> {
+  async resolveIncomingCalls(item: CallHierarchyItem, token: CancellationToken): Promise<IncomingCall[]> {
     try {
       const result = await this.provider.provideIncomingCalls(item, token);
       if (isNonEmptyArray(result)) {
@@ -92,10 +101,7 @@ export class CallHierarchyModel {
     return [];
   }
 
-  async resolveOutgoingCalls(
-    item: CallHierarchyItem,
-    token: CancellationToken,
-  ): Promise<OutgoingCall[]> {
+  async resolveOutgoingCalls(item: CallHierarchyItem, token: CancellationToken): Promise<OutgoingCall[]> {
     try {
       const result = await this.provider.provideOutgoingCalls(item, token);
       if (isNonEmptyArray(result)) {
@@ -110,7 +116,6 @@ export class CallHierarchyModel {
 
 @Injectable()
 export class CallHierarchyService implements ICallHierarchyService {
-
   @Autowired(IEditorDocumentModelService)
   protected readonly modelService: IEditorDocumentModelService;
 
@@ -130,11 +135,7 @@ export class CallHierarchyService implements ICallHierarchyService {
     }
 
     try {
-      const model = await CallHierarchyModel.create(
-        textModel,
-        position,
-        CancellationToken.None,
-      );
+      const model = await CallHierarchyModel.create(textModel, position, CancellationToken.None);
       if (!model) {
         return [];
       }
@@ -169,5 +170,4 @@ export class CallHierarchyService implements ICallHierarchyService {
 
     return model.resolveOutgoingCalls(item, CancellationToken.None);
   }
-
 }

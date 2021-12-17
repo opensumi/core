@@ -19,14 +19,9 @@ describe('Tree', () => {
       return true;
     }
   }
-  class Folder extends CompositeTreeNode {
-  }
+  class Folder extends CompositeTreeNode {}
   class File extends TreeNode {
-    constructor(
-      tree: TreeA,
-      parent: Folder | Root,
-      metadata: { [key: string]: string },
-    ) {
+    constructor(tree: TreeA, parent: Folder | Root, metadata: { [key: string]: string }) {
       super(tree, parent, undefined, metadata);
     }
   }
@@ -61,12 +56,12 @@ describe('Tree', () => {
     expect(file.name).toBe('file_1');
   });
 
-  it('add new key to Folder\'s metadata', async (done) => {
+  it("add new key to Folder's metadata", async (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);
     expect(folder.name).toBe(metadata.name);
-    root.watcher.on(TreeNodeEvent.DidChangeMetadata, (node, { type, key}) => {
+    root.watcher.on(TreeNodeEvent.DidChangeMetadata, (node, { type, key }) => {
       if (type === MetadataChangeType.Added && key === 'other') {
         done();
       }
@@ -74,12 +69,12 @@ describe('Tree', () => {
     folder.addMetadata('other', 'hello');
   });
 
-  it('add new key to File\'s metadata', async (done) => {
+  it("add new key to File's metadata", async (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);
     expect(folder.name).toBe(metadata.name);
-    root.watcher.on(TreeNodeEvent.DidChangeMetadata, (node, { type, key}) => {
+    root.watcher.on(TreeNodeEvent.DidChangeMetadata, (node, { type, key }) => {
       if (type === MetadataChangeType.Added && key === 'other') {
         done();
       }
@@ -90,10 +85,7 @@ describe('Tree', () => {
   it('ensure root was loaded', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     expect(root.branchSize).toBe(2);
   });
@@ -101,10 +93,7 @@ describe('Tree', () => {
   it('force reload root', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     expect(root.branchSize).toBe(2);
     tree.setPresetChildren([
@@ -119,10 +108,7 @@ describe('Tree', () => {
   it('expand all node and then collapse all', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     tree.setPresetChildren([
       new Folder(tree, root, undefined, { name: 'c' }),
@@ -138,24 +124,18 @@ describe('Tree', () => {
   it('mv b file to a folder', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     const a = root.getTreeNodeAtIndex(0);
     const b = root.getTreeNodeAtIndex(1);
-    (b as TreeNode).mv((a as CompositeTreeNode));
+    (b as TreeNode).mv(a as CompositeTreeNode);
     expect((b as TreeNode).parent).toEqual(a);
   });
 
   it('insert new item c to a folder', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     expect(root.branchSize).toBe(2);
     const a = root.getTreeNodeAtIndex(0);
@@ -168,24 +148,18 @@ describe('Tree', () => {
   it('unlink b file from root', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     expect(root.branchSize).toBe(2);
     const b = root.getTreeNodeAtIndex(1);
-    (root as CompositeTreeNode).unlinkItem((b as TreeNode));
+    (root as CompositeTreeNode).unlinkItem(b as TreeNode);
     expect(root.branchSize).toBe(1);
   });
 
-  it('get node\'s id at index [0]', async () => {
+  it("get node's id at index [0]", async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     expect(root.branchSize).toBe(2);
     const b = root.getTreeNodeAtIndex(1);
@@ -195,10 +169,7 @@ describe('Tree', () => {
   it('load nodes while path did not expanded', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     tree.setPresetChildren([
       new Folder(tree, root, undefined, { name: 'c' }),
@@ -214,23 +185,23 @@ describe('Tree', () => {
   it('dispath event should be work', async () => {
     const tree = new TreeA();
     const root = new Root(tree, undefined, undefined);
-    tree.setPresetChildren([
-      new Folder(tree, root, undefined, { name: 'a' }),
-      new File(tree, root, { name: 'b' }),
-    ]);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
     await root.ensureLoaded();
     const a = root.getTreeNodeAtIndex(0);
     const rootWatcher = root?.watchEvents.get(root.path);
     // mv node
-    await rootWatcher?.callback({ type: WatchEvent.Moved, oldPath: (a as TreeNode).path, newPath: (a as TreeNode).path.replace('a', 'c') });
+    await rootWatcher?.callback({
+      type: WatchEvent.Moved,
+      oldPath: (a as TreeNode).path,
+      newPath: (a as TreeNode).path.replace('a', 'c'),
+    });
     expect((a as TreeNode).name).toBe('c');
     // remove node
     expect(root.branchSize).toBe(2);
-    await rootWatcher?.callback({ type: WatchEvent.Removed, path: (a as TreeNode).path});
+    await rootWatcher?.callback({ type: WatchEvent.Removed, path: (a as TreeNode).path });
     expect(root.branchSize).toBe(1);
     // reload nodes
-    await rootWatcher?.callback({ type: WatchEvent.Changed, path: root.path});
+    await rootWatcher?.callback({ type: WatchEvent.Changed, path: root.path });
     expect(root.branchSize).toBe(2);
   });
-
 });

@@ -1,5 +1,13 @@
 import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { BrowserModule, Domain, AppConfig, ClientAppContribution, ContributionProvider, ToolBarActionContribution, IToolbarRegistry } from '@opensumi/ide-core-browser';
+import {
+  BrowserModule,
+  Domain,
+  AppConfig,
+  ClientAppContribution,
+  ContributionProvider,
+  ToolBarActionContribution,
+  IToolbarRegistry,
+} from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { ToolBar } from './toolbar.view';
 import { IToolBarViewService, ToolBarContribution } from './types';
@@ -19,8 +27,9 @@ export class ToolbarModule extends BrowserModule {
 }
 
 @Domain(ComponentContribution, ClientAppContribution, ToolBarActionContribution)
-export class ToolBarModuleContribution implements ComponentContribution, ClientAppContribution, ToolBarActionContribution {
-
+export class ToolBarModuleContribution
+  implements ComponentContribution, ClientAppContribution, ToolBarActionContribution
+{
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -38,7 +47,7 @@ export class ToolBarModuleContribution implements ComponentContribution, ClientA
   }
 
   onStart() {
-    this.contributions.getContributions().forEach((c)  => {
+    this.contributions.getContributions().forEach((c) => {
       c.registerToolBarElement(this.injector.get(IToolBarViewService));
     });
   }
@@ -48,5 +57,4 @@ export class ToolBarModuleContribution implements ComponentContribution, ClientA
     registry.addLocation('toolbar-center');
     registry.addLocation('toolbar-right');
   }
-
 }

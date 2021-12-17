@@ -1,7 +1,7 @@
 import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Injectable, Optional, Autowired} from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { Directory } from '../common/file-tree-node.define';
-import { URI, ThrottledDelayer,  Emitter, Event } from '@opensumi/ide-core-browser';
+import { URI, ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 
@@ -10,15 +10,14 @@ export interface IFileTreeMetaData extends IOptionalMetaData {
   filestat?: FileStat;
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class FileTreeModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(FileTreeModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(FileTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: Directory) {

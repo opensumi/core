@@ -6,15 +6,20 @@ import cls from 'classnames';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@opensumi/ide-components';
 import { DebugHoverModel } from './debug-hover-model';
-import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot, DebugVariable } from '../tree/debug-tree-node.define';
+import {
+  ExpressionNode,
+  ExpressionContainer,
+  DebugHoverVariableRoot,
+  DebugVariable,
+} from '../tree/debug-tree-node.define';
 import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
 import { IDisposable } from '@opensumi/ide-core-common';
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
-  const DEFAULT_LAYOUT_HEIGHT: number = 250;
+  const DEFAULT_LAYOUT_HEIGHT = 250;
 
-  const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel, variable?: DebugVariable}>({});
+  const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel; variable?: DebugVariable }>({});
   const [treeLayoutHeight, setTreeLayoutHeight] = React.useState<number>(DEFAULT_LAYOUT_HEIGHT);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -24,7 +29,7 @@ export const DebugHoverView = observer(() => {
       if (treeModel) {
         await treeModel.root.ensureLoaded();
       }
-      setModel({treeModel, variable});
+      setModel({ treeModel, variable });
     });
     ensureLoaded();
     return () => {
@@ -50,7 +55,7 @@ export const DebugHoverView = observer(() => {
   const ensureLoaded = async () => {
     if (debugHoverTreeModelService.treeModel) {
       await debugHoverTreeModelService.treeModel!.root.ensureLoaded();
-      setModel({treeModel: debugHoverTreeModelService.treeModel});
+      setModel({ treeModel: debugHoverTreeModelService.treeModel });
     }
   };
 
@@ -73,61 +78,67 @@ export const DebugHoverView = observer(() => {
     handleTwistierClick(item);
   };
 
-  const shouldRenderVariableTree = !!model.treeModel && !!(model.treeModel.root as DebugHoverVariableRoot).variablesReference;
+  const shouldRenderVariableTree =
+    !!model.treeModel && !!(model.treeModel.root as DebugHoverVariableRoot).variablesReference;
 
-  const  renderVariableTreeNode = React.useCallback((props: INodeRendererWrapProps) => {
-    const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);
-    return <DebugVariableRenderedNode
-      item={props.item}
-      itemType={props.itemType}
-      decorations={decorations}
-      onClick={handleTwistierClick}
-      onTwistierClick={handleTwistierClick}
-      defaultLeftPadding={0}
-      leftPadding={4}
-    />;
-  }, [model.treeModel]);
+  const renderVariableTreeNode = React.useCallback(
+    (props: INodeRendererWrapProps) => {
+      const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);
+      return (
+        <DebugVariableRenderedNode
+          item={props.item}
+          itemType={props.itemType}
+          decorations={decorations}
+          onClick={handleTwistierClick}
+          onTwistierClick={handleTwistierClick}
+          defaultLeftPadding={0}
+          leftPadding={4}
+        />
+      );
+    },
+    [model.treeModel],
+  );
 
   const renderVariableTree = () => {
     if (!shouldRenderVariableTree) {
       return null;
     }
-    return <div
-      className={ styles.debug_hover_content }
-      tabIndex={-1}
-      ref={wrapperRef}
-    >
-      <RecycleTree
-        height={treeLayoutHeight}
-        itemHeight={DEBUG_VARIABLE_TREE_NODE_HEIGHT}
-        onReady={handleTreeReady}
-        model={model.treeModel!}
-        placeholder={() => {
-          return <span></span>;
-        }}
-        overflow={ 'auto' }
-      >
-        {renderVariableTreeNode}
-      </RecycleTree>
-    </div>;
+    return (
+      <div className={styles.debug_hover_content} tabIndex={-1} ref={wrapperRef}>
+        <RecycleTree
+          height={treeLayoutHeight}
+          itemHeight={DEBUG_VARIABLE_TREE_NODE_HEIGHT}
+          onReady={handleTreeReady}
+          model={model.treeModel!}
+          placeholder={() => <span></span>}
+          overflow={'auto'}
+        >
+          {renderVariableTreeNode}
+        </RecycleTree>
+      </div>
+    );
   };
 
   return (
-    <div className={ styles.debug_hover }>
-      {
-        model.treeModel ?
-        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) } title={ model.treeModel.root.name }>
-          { model.treeModel.root.name }
+    <div className={styles.debug_hover}>
+      {model.treeModel ? (
+        <div
+          className={cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
+          title={model.treeModel.root.name}
+        >
+          {model.treeModel.root.name}
         </div>
-        :
-        model.variable &&
-        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) } title={ model.variable.name }>
-          { model.variable.value }
-        </div>
-      }
-      {
-        renderVariableTree()
-      }
+      ) : (
+        model.variable && (
+          <div
+            className={cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
+            title={model.variable.name}
+          >
+            {model.variable.value}
+          </div>
+        )
+      )}
+      {renderVariableTree()}
     </div>
   );
 });

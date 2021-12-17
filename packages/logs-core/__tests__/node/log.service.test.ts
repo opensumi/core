@@ -8,9 +8,13 @@ import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
-const testDir = path.join(os.homedir(), `.sumi-test`);
-const logDir = path.join(testDir, `logs_1`);
-const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
+const testDir = path.join(os.homedir(), '.sumi-test');
+const logDir = path.join(testDir, 'logs_1');
+const today = Number(
+  toLocalISOString(new Date())
+    .replace(/-/g, '')
+    .match(/^\d{8}/)![0],
+);
 
 function doAllLog(logger: ILogService) {
   logger.verbose('verbose!');
@@ -43,7 +47,9 @@ describe('LogService', () => {
     logger.error(new Error('error!'));
     await logger.flush();
 
-    const text = fs.readFileSync(path.join(logDir, String(today), `${SupportLogNamespace.Browser}.log`), { encoding: 'utf8' });
+    const text = fs.readFileSync(path.join(logDir, String(today), `${SupportLogNamespace.Browser}.log`), {
+      encoding: 'utf8',
+    });
     // tslint:disable-next-line:no-console
     console.log('text', text);
     if (text.trim().length < 1) {

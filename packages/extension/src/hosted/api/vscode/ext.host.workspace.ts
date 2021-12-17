@@ -1,7 +1,12 @@
 import type vscode from 'vscode';
 import paths from 'path';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadWorkspace,
+  IExtHostWorkspace,
+  ExtensionDocumentDataManager,
+} from '../../../common/vscode';
 import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { UriComponents } from '../../../common/vscode/models';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
@@ -25,27 +30,23 @@ export function createWorkspaceApiFactory(
   extHostTasks: IExtHostTasks,
   extension: IExtensionDescription,
 ) {
-
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
     name: extHostWorkspace.name,
-    asRelativePath: (pathOrUri: string | Uri, includeWorkspaceFolder?: boolean) => {
-      return extHostWorkspace.getRelativePath(pathOrUri, includeWorkspaceFolder);
-    },
-    updateWorkspaceFolders: (start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]) => {
-      return extHostWorkspace.updateWorkspaceFolders(start, deleteCount || 0, ...workspaceFoldersToAdd);
-    },
+    asRelativePath: (pathOrUri: string | Uri, includeWorkspaceFolder?: boolean) =>
+      extHostWorkspace.getRelativePath(pathOrUri, includeWorkspaceFolder),
+    updateWorkspaceFolders: (
+      start: number,
+      deleteCount: number | undefined | null,
+      ...workspaceFoldersToAdd: { uri: Uri; name?: string }[]
+    ) => extHostWorkspace.updateWorkspaceFolders(start, deleteCount || 0, ...workspaceFoldersToAdd),
     onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders,
-    getWorkspaceFolder: (uri, resolveParent) => {
-      return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
-    },
+    getWorkspaceFolder: (uri, resolveParent) => extHostWorkspace.getWorkspaceFolder(uri, resolveParent),
     workspaceFolders: extHostWorkspace.workspaceFolders,
-    getConfiguration: (section, resource, extensionId) => {
-      return extHostPreference.getConfiguration(section, resource, extensionId);
-    },
-    onDidChangeConfiguration: (listener, thisArgs?, disposables?) => {
-      return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);
-    },
+    getConfiguration: (section, resource, extensionId) =>
+      extHostPreference.getConfiguration(section, resource, extensionId),
+    onDidChangeConfiguration: (listener, thisArgs?, disposables?) =>
+      extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables),
     get isTrusted() {
       return true;
     },
@@ -62,9 +63,7 @@ export function createWorkspaceApiFactory(
       console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
       return extHostTasks.registerTaskProvider(type, provider, extension);
     },
-    applyEdit: (edit) => {
-      return extHostWorkspace.applyEdit(edit);
-    },
+    applyEdit: (edit) => extHostWorkspace.applyEdit(edit),
     get textDocuments() {
       return extHostDocument.getAllDocument();
     },
@@ -74,40 +73,53 @@ export function createWorkspaceApiFactory(
     get fs() {
       return extHostFileSystem.fileSystem;
     },
-    createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher => {
-      return extHostFileSystemEvent.createFileSystemWatcher(TypeConverts.fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
-    },
-    onDidCreateFiles: (listener: (e: vscode.FileCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables);
-    },
-    onDidDeleteFiles: (listener: (e: vscode.FileDeleteEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.onDidDeleteFile(listener, thisArg, disposables);
-    },
-    onDidRenameFiles: (listener: (e: vscode.FileRenameEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.onDidRenameFile(listener, thisArg, disposables);
-    },
-    onWillCreateFiles: (listener: (e: vscode.FileWillCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.getOnWillCreateFileEvent(extension)(listener, thisArg, disposables);
-    },
-    onWillDeleteFiles: (listener: (e: vscode.FileWillDeleteEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.getOnWillDeleteFileEvent(extension)(listener, thisArg, disposables);
-    },
-    onWillRenameFiles: (listener: (e: vscode.FileWillRenameEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
-      return extHostFileSystemEvent.getOnWillRenameFileEvent(extension)(listener, thisArg, disposables);
-    },
+    createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher =>
+      extHostFileSystemEvent.createFileSystemWatcher(
+        TypeConverts.fromGlobPattern(pattern),
+        ignoreCreate,
+        ignoreChange,
+        ignoreDelete,
+      ),
+    onDidCreateFiles: (
+      listener: (e: vscode.FileCreateEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables),
+    onDidDeleteFiles: (
+      listener: (e: vscode.FileDeleteEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.onDidDeleteFile(listener, thisArg, disposables),
+    onDidRenameFiles: (
+      listener: (e: vscode.FileRenameEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.onDidRenameFile(listener, thisArg, disposables),
+    onWillCreateFiles: (
+      listener: (e: vscode.FileWillCreateEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.getOnWillCreateFileEvent(extension)(listener, thisArg, disposables),
+    onWillDeleteFiles: (
+      listener: (e: vscode.FileWillDeleteEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.getOnWillDeleteFileEvent(extension)(listener, thisArg, disposables),
+    onWillRenameFiles: (
+      listener: (e: vscode.FileWillRenameEvent) => any,
+      thisArg?: any,
+      disposables?: vscode.Disposable[],
+    ) => extHostFileSystemEvent.getOnWillRenameFileEvent(extension)(listener, thisArg, disposables),
     onDidRenameFile: extHostWorkspace.onDidRenameFile,
-    saveAll: () => {
-      return extHostWorkspace.saveAll();
-    },
-    findFiles: (include, exclude, maxResults?, token?) => {
-      return extHostWorkspace.findFiles(
+    saveAll: () => extHostWorkspace.saveAll(),
+    findFiles: (include, exclude, maxResults?, token?) =>
+      extHostWorkspace.findFiles(
         TypeConverts.GlobPattern.from(include)!,
         TypeConverts.GlobPattern.from(exclude),
         maxResults,
         null,
         token,
-      );
-    },
+      ),
   };
 
   return workspace;
@@ -116,15 +128,17 @@ export function createWorkspaceApiFactory(
 export function toWorkspaceFolder(folder: WorkspaceFolder, workspaceToName: any = {}): vscode.WorkspaceFolder {
   return {
     uri: Uri.revive(folder.uri),
-    name: folder.name || (!!folder.uri.path ? workspaceToName[folder.uri.toString()] : workspaceToName[folder.uri.toString() + '/']),
+    name:
+      folder.name ||
+      (folder.uri.path ? workspaceToName[folder.uri.toString()] : workspaceToName[folder.uri.toString() + '/']),
     index: folder.index,
   };
 }
 
 export class ExtHostWorkspace implements IExtHostWorkspace {
-
   private workspaceFoldersChangedEmitter = new Emitter<vscode.WorkspaceFoldersChangeEvent>();
-  public readonly onDidChangeWorkspaceFolders: Event<vscode.WorkspaceFoldersChangeEvent> = this.workspaceFoldersChangedEmitter.event;
+  public readonly onDidChangeWorkspaceFolders: Event<vscode.WorkspaceFoldersChangeEvent> =
+    this.workspaceFoldersChangedEmitter.event;
 
   protected readonly proxy: IMainThreadWorkspace;
   protected readonly rpcProtocol: IRPCProtocol;
@@ -141,7 +155,11 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     [key: string]: string;
   } = {};
 
-  constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage, private extHostDoc: ExtensionDocumentDataManager) {
+  constructor(
+    rpcProtocol: IRPCProtocol,
+    extHostMessage: IExtHostMessage,
+    private extHostDoc: ExtensionDocumentDataManager,
+  ) {
     this.messageService = extHostMessage;
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
@@ -165,16 +183,22 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     };
   }
 
-  private deltaFolders(currentFolders: vscode.WorkspaceFolder[] = [], newFolders: vscode.WorkspaceFolder[] = []): {
-    added: vscode.WorkspaceFolder[]
-    removed: vscode.WorkspaceFolder[],
+  private deltaFolders(
+    currentFolders: vscode.WorkspaceFolder[] = [],
+    newFolders: vscode.WorkspaceFolder[] = [],
+  ): {
+    added: vscode.WorkspaceFolder[];
+    removed: vscode.WorkspaceFolder[];
   } {
     const added = this.foldersDiff(newFolders, currentFolders);
     const removed = this.foldersDiff(currentFolders, newFolders);
     return { added, removed };
   }
 
-  private foldersDiff(folder1: vscode.WorkspaceFolder[] = [], folder2: vscode.WorkspaceFolder[] = []): vscode.WorkspaceFolder[] {
+  private foldersDiff(
+    folder1: vscode.WorkspaceFolder[] = [],
+    folder2: vscode.WorkspaceFolder[] = [],
+  ): vscode.WorkspaceFolder[] {
     const map = new Map();
     folder1.forEach((folder) => map.set(folder.uri.toString(), folder));
     folder2.forEach((folder) => map.delete(folder.uri.toString()));
@@ -228,7 +252,11 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return normalize(result, true);
   }
 
-  updateWorkspaceFolders(start: number, deleteCount: number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean {
+  updateWorkspaceFolders(
+    start: number,
+    deleteCount: number,
+    ...workspaceFoldersToAdd: { uri: Uri; name?: string }[]
+  ): boolean {
     const rootsToAdd = new Set<string>();
     if (Array.isArray(workspaceFoldersToAdd)) {
       workspaceFoldersToAdd.forEach((folderToAdd) => {
@@ -257,11 +285,19 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
     // 数据层模拟执行updateWorkspaceFolders操作以验证有效性
     const newWorkspaceFolders = currentWorkspaceFolders.slice(0);
-    newWorkspaceFolders.splice(start, deleteCount, ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri), name: undefined!, index: undefined! })));
+    newWorkspaceFolders.splice(
+      start,
+      deleteCount,
+      ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri), name: undefined!, index: undefined! })),
+    );
 
     for (let i = 0; i < newWorkspaceFolders.length; i++) {
       const folder = newWorkspaceFolders[i];
-      if (newWorkspaceFolders.some((otherFolder, index) => index !== i && folder.uri.toString() === otherFolder.uri.toString())) {
+      if (
+        newWorkspaceFolders.some(
+          (otherFolder, index) => index !== i && folder.uri.toString() === otherFolder.uri.toString(),
+        )
+      ) {
         return false; // 不能重复添加相同的文件夹
       }
     }
@@ -272,9 +308,11 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     // 通知主进程更新对应目录
-    this.proxy.$updateWorkspaceFolders(start, deleteCount, this.workspaceToName, ...rootsToAdd).then(undefined, (error) =>
-      this.messageService.showMessage(MessageType.Error, `Failed to update workspace folders: ${error}`),
-    );
+    this.proxy
+      .$updateWorkspaceFolders(start, deleteCount, this.workspaceToName, ...rootsToAdd)
+      .then(undefined, (error) =>
+        this.messageService.showMessage(MessageType.Error, `Failed to update workspace folders: ${error}`),
+      );
 
     return true;
   }
@@ -317,9 +355,11 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
         return toWorkspaceFolder(folder, this.workspaceToName);
       }
 
-      if (resourcePath.startsWith(folderPath)
-        && resourcePath[folderPath.length] === '/'
-        && (!workspaceFolder || folderPath.length > workspaceFolder.uri.toString().length)) {
+      if (
+        resourcePath.startsWith(folderPath) &&
+        resourcePath[folderPath.length] === '/' &&
+        (!workspaceFolder || folderPath.length > workspaceFolder.uri.toString().length)
+      ) {
         workspaceFolder = folder;
       }
     }
@@ -396,10 +436,17 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       return Promise.resolve([]);
     }
 
-    return this.proxy.$startFileSearch(includePattern || '*', {
-      cwd: includeFolder ? includeFolder.fsPath : this.rootPath,
-      absolute: true,
-    }, excludePatternOrDisregardExcludes, maxResults, token)
+    return this.proxy
+      .$startFileSearch(
+        includePattern || '*',
+        {
+          cwd: includeFolder ? includeFolder.fsPath : this.rootPath,
+          absolute: true,
+        },
+        excludePatternOrDisregardExcludes,
+        maxResults,
+        token,
+      )
       .then((files) => files.map((file) => Uri.parse(file)));
   }
 }

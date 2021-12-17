@@ -38,7 +38,14 @@ export interface ITerminalService {
    * @param options 创建一个新终端的进程选项
    * @param shellType 终端类型
    */
-  attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options?: TerminalOptions, shellType?: string): Promise<ITerminalConnection | undefined>;
+  attach(
+    sessionId: string,
+    xterm: Terminal,
+    rows: number,
+    cols: number,
+    options?: TerminalOptions,
+    shellType?: string,
+  ): Promise<ITerminalConnection | undefined>;
   /**
    *
    * @param id 会话唯一标识

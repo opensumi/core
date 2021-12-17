@@ -132,6 +132,7 @@ export class MessageIO {
     args = args.map((arg) => {
       if (arg instanceof Error) {
         // 处理 Error 类型的参数
+        // eslint-disable-next-line prefer-rest-params
         const array = Array.prototype.slice.call(arguments) as any[];
         array[0] = arg.stack;
         return array.join('\n');
@@ -139,14 +140,22 @@ export class MessageIO {
       return arg;
     });
 
-    return `{"type": ${MessageType.Request}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
+    return `{"type": ${
+      MessageType.Request
+    }, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(
+      args,
+      ObjectTransfer.replacer,
+    )}}`;
   }
   public static serializeReplyOK(callId: string, res: any, logger?: any): string {
     if (typeof res === 'undefined') {
       return `{"type": ${MessageType.Reply}, "id": "${callId}"}`;
     } else {
       try {
-        return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
+        return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(
+          res,
+          ObjectTransfer.replacer,
+        )}}`;
       } catch (e) {
         if (logger) {
           logger.warn('res', res);
@@ -157,7 +166,10 @@ export class MessageIO {
   }
   public static serializeReplyError(callId: string, error: Error, logger?: any): string {
     try {
-      return `{"type": ${MessageType.ReplyErr}, "id": "${callId}", "res": ${JSON.stringify(transformErrorForSerialization(error), ObjectTransfer.replacer)}}`;
+      return `{"type": ${MessageType.ReplyErr}, "id": "${callId}", "res": ${JSON.stringify(
+        transformErrorForSerialization(error),
+        ObjectTransfer.replacer,
+      )}}`;
     } catch (e) {
       if (logger) {
         logger.error('error', error);
@@ -187,7 +199,6 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
-  // tslint:disable-next-line:no-unused-variable
   private logger;
 
   constructor(connection: IMessagePassingProtocol, logger?: any) {
@@ -226,9 +237,7 @@ export class RPCProtocol implements IRPCProtocol {
           return null;
         }
         if (!target[name] && name.charCodeAt(0) === 36) {
-          target[name] = (...myArgs: any[]) => {
-            return this._remoteCall(rpcId, name, myArgs);
-          };
+          target[name] = (...myArgs: any[]) => this._remoteCall(rpcId, name, myArgs);
         }
 
         return target[name];
@@ -239,7 +248,8 @@ export class RPCProtocol implements IRPCProtocol {
   }
 
   private _remoteCall(rpcId: string, methodName: string, args: any[]): Promise<any> {
-    const cancellationToken: CancellationToken | undefined = args.length && CancellationToken.isCancellationToken(args[args.length - 1]) ? args.pop() : undefined;
+    const cancellationToken: CancellationToken | undefined =
+      args.length && CancellationToken.isCancellationToken(args[args.length - 1]) ? args.pop() : undefined;
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       return Promise.reject(canceled());
     }
@@ -249,9 +259,7 @@ export class RPCProtocol implements IRPCProtocol {
 
     if (cancellationToken) {
       args.push('add.cancellation.token');
-      cancellationToken.onCancellationRequested(() =>
-        this._protocol.send(MessageIO.cancel(callId)),
-      );
+      cancellationToken.onCancellationRequested(() => this._protocol.send(MessageIO.cancel(callId)));
     }
     this._pendingRPCReplies.set(callId, result);
     const msg = MessageIO.serializeRequest(callId, rpcId, methodName, args);
@@ -311,7 +319,7 @@ export class RPCProtocol implements IRPCProtocol {
     const callId = msg.id;
     const rpcId = msg.proxyId;
     const method = msg.method;
-    const args = msg.args.map((arg) => arg === null ? undefined : arg);
+    const args = msg.args.map((arg) => (arg === null ? undefined : arg));
 
     const addToken = args.length && args[args.length - 1] === 'add.cancellation.token' ? args.pop() : false;
     if (addToken) {
@@ -321,14 +329,15 @@ export class RPCProtocol implements IRPCProtocol {
     }
 
     const promise = this._invokeHandler(rpcId, method, args);
-    promise.then((r) => {
-      this._protocol.send(MessageIO.serializeReplyOK(callId, r));
-      this._cancellationTokenSources.delete(callId);
-    }).catch((err) => {
-      this._protocol.send(MessageIO.serializeReplyError(callId, err));
-      this._cancellationTokenSources.delete(callId);
-    });
-
+    promise
+      .then((r) => {
+        this._protocol.send(MessageIO.serializeReplyOK(callId, r));
+        this._cancellationTokenSources.delete(callId);
+      })
+      .catch((err) => {
+        this._protocol.send(MessageIO.serializeReplyError(callId, err));
+        this._cancellationTokenSources.delete(callId);
+      });
   }
   private _invokeHandler(rpcId: string, methodName: string, args: any[]) {
     try {

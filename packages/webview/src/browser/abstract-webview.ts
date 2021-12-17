@@ -1,14 +1,22 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
-import { Event, URI, Disposable, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@opensumi/ide-core-browser';
+import {
+  Event,
+  URI,
+  Disposable,
+  IDisposable,
+  Emitter,
+  IEventBus,
+  MaybeNull,
+  isElectronRenderer,
+} from '@opensumi/ide-core-browser';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
 import { Autowired, Injectable } from '@opensumi/di';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export abstract class AbstractWebviewPanel extends Disposable implements IWebview {
-
-  protected _html: string = '';
+  protected _html = '';
 
   protected _options: IWebviewContentOptions;
 
@@ -34,7 +42,7 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   _onRemove: Emitter<void> = new Emitter<void>();
   onRemove: Event<void> = this._onRemove.event;
 
-  protected _isListening: boolean = true;
+  protected _isListening = true;
 
   private _focused = false;
 
@@ -82,7 +90,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   }
 
   protected initEvents() {
-
     this._onWebviewMessage('did-click-link', (data) => {
       this._onDidClickLink.fire(new URI(data));
     });
@@ -121,9 +128,7 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
       const emulatedKeyboardEvent = new KeyboardEvent('keydown', event);
       // Force override the target
       Object.defineProperty(emulatedKeyboardEvent, 'target', {
-        get: () => {
-          return this._keybindingDomTarget || this.getDomNode();
-        },
+        get: () => this._keybindingDomTarget || this.getDomNode(),
       });
       // And re-dispatch
       window.dispatchEvent(emulatedKeyboardEvent);
@@ -134,9 +139,11 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   protected updateStyle() {
     this.style(this.themeService.getCurrentThemeSync());
-    this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.style(e.payload.theme);
-    }));
+    this.addDispose(
+      this.eventBus.on(ThemeChangedEvent, (e) => {
+        this.style(e.payload.theme);
+      }),
+    );
   }
 
   getContent(): string {
@@ -151,11 +158,16 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   protected preprocessHtml(html: string): string {
     if (isElectronRenderer()) {
       // 将vscode-resource:/User/xxx 转换为 vscode-resource:///User/xxx
-      return html.replace(/(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi, (_, startQuote, slash, path, endQuote) =>
-      `${startQuote}vscode-resource://${path}${endQuote}`);
+      return html.replace(
+        /(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi,
+        (_, startQuote, slash, path, endQuote) => `${startQuote}vscode-resource://${path}${endQuote}`,
+      );
     }
-    return html.replace(/(["'])vscode-resource:([^\s'"]+?)(["'])/gi, (_, startQuote, path, endQuote) =>
-      `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`);
+    return html.replace(
+      /(["'])vscode-resource:([^\s'"]+?)(["'])/gi,
+      (_, startQuote, path, endQuote) =>
+        `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`,
+    );
   }
 
   protected doUpdateContent() {
@@ -168,7 +180,7 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   public abstract appendTo(container: HTMLElement);
 
-  protected abstract  _sendToWebview(channel: string, data: any);
+  protected abstract _sendToWebview(channel: string, data: any);
 
   protected abstract _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable;
 
@@ -212,5 +224,4 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   abstract getDomNode(): MaybeNull<HTMLElement>;
 
   abstract remove(): void;
-
 }

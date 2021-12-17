@@ -24,7 +24,6 @@ export type DebugBreakpointWidgetContext = {
 
 @Injectable({ multiple: true })
 export class DebugBreakpointZoneWidget extends ZoneWidget {
-
   static INPUT_PLACEHOLDER_AFTER = styles.input_placeholder + '::after';
 
   @Autowired(DebugBreakpointsService)
@@ -94,27 +93,33 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       const { monacoEditor } = this.input;
       this.setInputMode();
 
-      this.addDispose(monacoEditor.onDidBlurEditorWidget(() => {
-        this.inputBlurHandler();
-      })!);
-      this.addDispose(monacoEditor.onDidFocusEditorWidget(() => {
-        this.inputFocusHandler();
-      })!);
-      this.addDispose(monacoEditor.onDidChangeModelContent((textModel: monaco.editor.IModelContentChangedEvent) => {
-        if (!this.input) {
-          return;
-        }
+      this.addDispose(
+        monacoEditor.onDidBlurEditorWidget(() => {
+          this.inputBlurHandler();
+        })!,
+      );
+      this.addDispose(
+        monacoEditor.onDidFocusEditorWidget(() => {
+          this.inputFocusHandler();
+        })!,
+      );
+      this.addDispose(
+        monacoEditor.onDidChangeModelContent((textModel: monaco.editor.IModelContentChangedEvent) => {
+          if (!this.input) {
+            return;
+          }
 
-        const value = monacoEditor.getValue();
-        if (value.length === 0) {
-          this.ensureRenderPlaceholder();
-        } else {
-          this.clearPlaceholder();
-        }
+          const value = monacoEditor.getValue();
+          if (value.length === 0) {
+            this.ensureRenderPlaceholder();
+          } else {
+            this.clearPlaceholder();
+          }
 
-        const lineNum = monacoEditor.getModel()!.getLineCount();
-        this._relayout(lineNum + 1);
-      }));
+          const lineNum = monacoEditor.getModel()!.getLineCount();
+          this._relayout(lineNum + 1);
+        }),
+      );
 
       this.syncPreContent();
     });
@@ -129,18 +134,23 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       return;
     }
 
-    this.input.monacoEditor.deltaDecorations([], [{
-      range: {
-        startLineNumber: 1,
-        endLineNumber: 0,
-        startColumn: 0,
-        endColumn: 1,
-      },
-      options: {
-        description: 'debug-breakpoint-zone-widget',
-        afterContentClassName: styles.input_placeholder,
-      },
-    }]);
+    this.input.monacoEditor.deltaDecorations(
+      [],
+      [
+        {
+          range: {
+            startLineNumber: 1,
+            endLineNumber: 0,
+            startColumn: 0,
+            endColumn: 1,
+          },
+          options: {
+            description: 'debug-breakpoint-zone-widget',
+            afterContentClassName: styles.input_placeholder,
+          },
+        },
+      ],
+    );
   }
 
   protected renderOption(context: DebugBreakpointZoneWidget.Context, label: string): JSX.Element {
@@ -149,11 +159,11 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
 
   protected readonly inputFocusHandler = () => {
     this._onFocus.fire();
-  }
+  };
 
   protected readonly inputBlurHandler = () => {
     this._onBlur.fire();
-  }
+  };
 
   protected readonly selectContextHandler = (value: DebugBreakpointZoneWidget.Context) => {
     if (this.input) {
@@ -163,13 +173,15 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this.context = value;
     this.setInputMode();
     this.render();
-  }
+  };
 
   private setInputMode(): void {
     const languageIdentifier = this.editor.getModel()?.getLanguageIdentifier();
     const model = this.input!.monacoEditor.getModel();
     if (model && languageIdentifier) {
-      model.setMode(this.context === 'logMessage' ? new monacoModes.LanguageIdentifier('plaintext', 1) : languageIdentifier);
+      model.setMode(
+        this.context === 'logMessage' ? new monacoModes.LanguageIdentifier('plaintext', 1) : languageIdentifier,
+      );
     }
   }
 
@@ -214,13 +226,18 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   applyStyle() {
     this.syncPreContent();
 
-    ReactDOM.render(<Select value={this.context} selectedRenderer={() => {
-      return <span className='kt-select-option'>{this.getContextToLocalize(this.context)}</span>;
-    }} onChange={this.selectContextHandler}>
-      {this.renderOption('condition', this.getContextToLocalize('condition'))}
-      {this.renderOption('hitCondition', this.getContextToLocalize('hitCondition'))}
-      {this.renderOption('logMessage', this.getContextToLocalize('logMessage'))}
-    </Select>, this._selection);
+    ReactDOM.render(
+      <Select
+        value={this.context}
+        selectedRenderer={() => <span className='kt-select-option'>{this.getContextToLocalize(this.context)}</span>}
+        onChange={this.selectContextHandler}
+      >
+        {this.renderOption('condition', this.getContextToLocalize('condition'))}
+        {this.renderOption('hitCondition', this.getContextToLocalize('hitCondition'))}
+        {this.renderOption('logMessage', this.getContextToLocalize('logMessage'))}
+      </Select>,
+      this._selection,
+    );
   }
 
   getContextToLocalize(ctx: DebugBreakpointZoneWidget.Context) {

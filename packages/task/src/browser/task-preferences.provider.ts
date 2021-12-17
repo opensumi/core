@@ -3,7 +3,6 @@ import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/
 
 @Injectable()
 export class TaskFolderPreferenceProvider extends FolderPreferenceProvider {
-
   protected parse(content: string): any {
     const tasks = super.parse(content);
     if (tasks === undefined) {
@@ -21,5 +20,4 @@ export class TaskFolderPreferenceProvider extends FolderPreferenceProvider {
     }
     return undefined;
   }
-
 }

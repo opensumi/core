@@ -21,16 +21,21 @@ const mockClientA = {
 const rpcProtocolExt = new RPCProtocol(mockClientA);
 
 describe('MainThreadOutput Test Suites', () => {
-  const injector = createBrowserInjector([], new Injector([{
-      token: OutputPreferences,
-      useValue: {
-        'output.logWhenNoPanel': true,
+  const injector = createBrowserInjector(
+    [],
+    new Injector([
+      {
+        token: OutputPreferences,
+        useValue: {
+          'output.logWhenNoPanel': true,
+        },
       },
-    },
-    {
-      token: OutputService,
-      useClass: MockOutputService,
-    }]));
+      {
+        token: OutputService,
+        useClass: MockOutputService,
+      },
+    ]),
+  );
   let extOutput: ExtHostOutput;
   const service = injector.get(MockOutputService);
   const disposables: types.OutputChannel[] = [];

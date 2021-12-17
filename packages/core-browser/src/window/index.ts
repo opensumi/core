@@ -11,7 +11,6 @@ export interface IOpenWorkspaceOption {
 }
 
 export interface IWindowService {
-
   /**
    * 打开新的window窗口
    * @param {string} url
@@ -21,7 +20,7 @@ export interface IWindowService {
    */
   openNewWindow(url: string, options?: NewWindowOptions): Window | undefined;
 
-  openWorkspace(workspace?: URI,  options?: IOpenWorkspaceOption): void;
+  openWorkspace(workspace?: URI, options?: IOpenWorkspaceOption): void;
 
   close(): void;
 

@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -50,9 +50,9 @@ export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: numb
   let endOffset = 0;
   const endWrappedLineCount = Math.ceil(range.endColumn / bufferWidth);
   for (let y = Math.max(0, startWrappedLineCount - 1); y < endWrappedLineCount; y++) {
-    const start = (y === startWrappedLineCount - 1 ? (range.startColumn + startOffset) % bufferWidth : 0);
+    const start = y === startWrappedLineCount - 1 ? (range.startColumn + startOffset) % bufferWidth : 0;
     const lineLength = Math.min(bufferWidth, range.endColumn + startOffset - y * bufferWidth);
-    const startLineOffset = (y === startWrappedLineCount - 1 ? startOffset : 0);
+    const startLineOffset = y === startWrappedLineCount - 1 ? startOffset : 0;
     let lineOffset = 0;
     const line = lines[y];
     // Sanity check for line, apparently this can happen but it's not clear under what

@@ -13,5 +13,4 @@ export class KeymapsModule extends BrowserModule {
     },
     KeymapsContribution,
   ];
-
 }

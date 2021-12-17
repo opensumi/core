@@ -30,10 +30,9 @@
     "publish:engine": "sh ./scripts/release-cli-engine.sh",
     "update-version": "ts-node ./scripts/publish --versionOnly",
     "update-disttag": "ts-node ./scripts/dist-tag",
-    "lint": "tslint -c tslint.yml -p tsconfig.json -t stylish",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
-    "lint1": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint1:fix": "npm run lint1 -- --fix",
+    "format": "npm run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "rebuild:node": "node ./scripts/rebuild-native.js",
     "test": "jest --forceExit",
     "test:module": "NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
@@ -63,16 +62,12 @@
     "lodash": "^4.17.11",
     "node-gyp": "^8.3.0",
     "ts-node": "8.0.2",
-    "tslint": "^5.12.0",
     "typescript": "^4.4.2",
     "webpack": "4.39.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "packages/**/*.(ts|tsx)": [
-      "tslint -c tslint.staged.yml -p tsconfig.json -t stylish"
-    ]
+    "*.{js,jsx,ts,tsx}": "eslint --fix --quiet"
   },
   "config": {
     "commitizen": {
@@ -149,7 +144,6 @@
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.0",
     "ts-jest": "^27.0.3",
-    "tslint-config-prettier": "^1.18.0",
     "urllib": "^2.37.4",
     "uuid": "^8.3.2",
     "write-pkg": "^4.0.0",

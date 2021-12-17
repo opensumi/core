@@ -1,7 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle, IToolbarPopoverRegistry } from '../types';
+import {
+  IToolbarActionReactElement,
+  IToolbarActionElementProps,
+  IToolbarActionBtnProps,
+  IToolbarActionBtnDelegate,
+  IToolbarActionBtnState,
+  IToolbarPopoverStyle,
+  IToolbarPopoverRegistry,
+} from '../types';
 import { useInjectable } from '../../react-hooks';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
 import classnames from 'classnames';
@@ -24,7 +32,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
-  const { defaultButtonStyle = {} } = props.preferences || {} ;
+  const { defaultButtonStyle = {} } = props.preferences || {};
 
   const styles: IToolbarActionBtnState = {
     title: props.title,
@@ -33,7 +41,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     btnStyle: 'button',
     ...defaultButtonStyle,
     ...props.defaultStyle,
-    ...(props.styles || {})[viewState] || {},
+    ...((props.styles || {})[viewState] || {}),
   };
   if (title) {
     styles.title = title;
@@ -50,12 +58,17 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
 
   React.useEffect(() => {
     const disposer = new Disposable();
-    disposer.addDispose(preferenceService.onSpecificPreferenceChange('toolbar.buttonDisplay', () => {
-      forceUpdate();
-    }));
+    disposer.addDispose(
+      preferenceService.onSpecificPreferenceChange('toolbar.buttonDisplay', () => {
+        forceUpdate();
+      }),
+    );
     if (ref.current && props.delegate) {
       // 如果是在 dropdown 中，popover 元素将显示在 more 按钮上
-      const getPopoverParent = () => (inDropDownRef.current ? document.querySelector(`#toolbar-location-${props.location} .kt-toolbar-more`) : ref.current) as HTMLElement;
+      const getPopoverParent = () =>
+        (inDropDownRef.current
+          ? document.querySelector(`#toolbar-location-${props.location} .kt-toolbar-more`)
+          : ref.current) as HTMLElement;
       delegate.current = context.injector.get(ToolbarBtnDelegate, [
         ref.current,
         props.id,
@@ -63,9 +76,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
           setViewState(state);
           setTitle(title);
         },
-        () => {
-          return viewState;
-        },
+        () => viewState,
         context,
         getPopoverParent,
         props.popoverComponent,
@@ -82,19 +93,33 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     }
     return () => disposer.dispose();
   }, []);
-  const iconContent = !props.inDropDown ? <div className={styles.iconClass + ' kt-toolbar-action-btn-icon'} title={styles.title} style={{
-    color: styles.iconForeground,
-    backgroundColor: styles.iconBackground,
-    // 如果指定了按钮宽度，需要将padding清空，防止按钮比预期大16px
-    ...(styles.width ? { width: styles.width } : null),
-    ...(styles.height ? { height: styles.height } : null),
-    ...(styles.iconSize ? { fontSize: styles.iconSize, WebkitMaskSize: styles.iconSize } : null),
-}}></div> : null;
-  const titleContent = (styles.showTitle || props.inDropDown) ? <div className = 'kt-toolbar-action-btn-title' style={{
-    color: styles.titleForeground,
-    backgroundColor: styles.titleBackground,
-    fontSize: styles.titleSize,
-  }}>{styles.title}</div> : null;
+  const iconContent = !props.inDropDown ? (
+    <div
+      className={styles.iconClass + ' kt-toolbar-action-btn-icon'}
+      title={styles.title}
+      style={{
+        color: styles.iconForeground,
+        backgroundColor: styles.iconBackground,
+        // 如果指定了按钮宽度，需要将padding清空，防止按钮比预期大16px
+        ...(styles.width ? { width: styles.width } : null),
+        ...(styles.height ? { height: styles.height } : null),
+        ...(styles.iconSize ? { fontSize: styles.iconSize, WebkitMaskSize: styles.iconSize } : null),
+      }}
+    ></div>
+  ) : null;
+  const titleContent =
+    styles.showTitle || props.inDropDown ? (
+      <div
+        className='kt-toolbar-action-btn-title'
+        style={{
+          color: styles.titleForeground,
+          backgroundColor: styles.titleBackground,
+          fontSize: styles.titleSize,
+        }}
+      >
+        {styles.title}
+      </div>
+    ) : null;
 
   const bindings = {
     onClick: (event) => {
@@ -119,54 +144,66 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   };
   let buttonElement;
   if (props.inDropDown) {
-    buttonElement = <div className={classnames({'kt-toolbar-action-btn': true,
-    'action-btn-in-dropdown': true})} {...bindings} {...backgroundBindings} ref={ref as any}>
-      {iconContent}
-      {titleContent}
-    </div>;
+    buttonElement = (
+      <div
+        className={classnames({ 'kt-toolbar-action-btn': true, 'action-btn-in-dropdown': true })}
+        {...bindings}
+        {...backgroundBindings}
+        ref={ref as any}
+      >
+        {iconContent}
+        {titleContent}
+      </div>
+    );
   } else {
     const btnTitleStyle = styles.btnTitleStyle || preferenceService.get('toolbar.buttonTitleStyle');
     if (styles.btnStyle === 'button' && btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL) {
-      buttonElement = <Button type='default' size='small'  {...bindings} {...backgroundBindings} >
+      buttonElement = (
+        <Button type='default' size='small' {...bindings} {...backgroundBindings}>
           {iconContent}
           {titleContent}
-        </Button>;
+        </Button>
+      );
     } else {
       // BtnStyle == inline 或 btnTitleStyle === 'vertical' (类似小程序IDE工具栏） 的模式
       if (btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL) {
         backgroundBindings.style['min-width'] = '42px';
       }
-      buttonElement =  <div className={ classnames({'kt-toolbar-action-btn': true,
-      'kt-toolbar-action-btn-button': styles.btnStyle === 'button',
-      'kt-toolbar-action-btn-inline': styles.btnStyle !== 'button',
-      'kt-toolbar-action-btn-vertical': btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL,
-      'kt-toolbar-action-btn-horizontal': btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL})}
-       {...bindings}>
-         <Button type='default' size='small' {...backgroundBindings}>
-          {iconContent}
-        </Button>
-        {titleContent}
-      </div>;
+      buttonElement = (
+        <div
+          className={classnames({
+            'kt-toolbar-action-btn': true,
+            'kt-toolbar-action-btn-button': styles.btnStyle === 'button',
+            'kt-toolbar-action-btn-inline': styles.btnStyle !== 'button',
+            'kt-toolbar-action-btn-vertical': btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL,
+            'kt-toolbar-action-btn-horizontal': btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL,
+          })}
+          {...bindings}
+        >
+          <Button type='default' size='small' {...backgroundBindings}>
+            {iconContent}
+          </Button>
+          {titleContent}
+        </div>
+      );
     }
   }
 
-  return <div className={'kt-toolbar-action-btn-wrapper'} ref={ref as any}>
-    { buttonElement }
-    {
-      props.popoverComponent && <div className={'kt-toolbar-popover'} data-toolbar-no-context={true}></div>
-    }
-  </div>;
+  return (
+    <div className={'kt-toolbar-action-btn-wrapper'} ref={ref as any}>
+      {buttonElement}
+      {props.popoverComponent && <div className={'kt-toolbar-popover'} data-toolbar-no-context={true}></div>}
+    </div>
+  );
 };
 
 export function createToolbarActionBtn(props: IToolbarActionBtnProps): IToolbarActionReactElement {
-  return ( actionProps ) => {
-    return <ToolbarActionBtn {...actionProps} {...props} />;
-  };
+  return (actionProps) => <ToolbarActionBtn {...actionProps} {...props} />;
 }
 
 export class ToolbarActionBtnClickEvent extends BasicEvent<{
-  id: string,
-  event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+  id: string;
+  event: React.MouseEvent<HTMLDivElement, MouseEvent>;
 }> {}
 
 const popOverMap = new Map<string, Promise<HTMLDivElement>>();
@@ -183,20 +220,18 @@ const PopOverComponentWrapper: React.FC<{ delegate: IToolbarActionBtnDelegate }>
     };
   }, []);
 
-  const childrenWithProps = React.Children.map(
-    props.children,
-    (child) => React.isValidElement(child) ? React.cloneElement(child, {
-      context,
-    }) : null,
+  const childrenWithProps = React.Children.map(props.children, (child) =>
+    React.isValidElement(child)
+      ? React.cloneElement(child, {
+          context,
+        })
+      : null,
   );
-  return (
-    <>{childrenWithProps}</>
-  );
+  return <>{childrenWithProps}</>;
 };
 
 @Injectable({ multiple: true })
 class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
-
   _onClick = new Emitter<React.MouseEvent<HTMLDivElement>>();
   onClick = this._onClick.event;
 
@@ -206,7 +241,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   _onMouseEnter = new Emitter<React.MouseEvent<HTMLDivElement>>();
   onMouseEnter = this._onClick.event;
 
-  _onChangeState = new Emitter<{from: string, to: string}>();
+  _onChangeState = new Emitter<{ from: string; to: string }>();
   onChangeState = this._onChangeState.event;
 
   private onChangeContextEvent = new Emitter<any>();
@@ -257,8 +292,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
         this.popoverComponent = this.toolbarPopover.getComponent(this.popoverId);
         // 已经激活的状态下重新激活一次，如果没有激活过则不动
         if (this._popOverElement) {
-          this.hidePopOver()
-            .then(() => this.showPopOver());
+          this.hidePopOver().then(() => this.showPopOver());
         }
       }
     });
@@ -267,7 +301,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   setState(to, title?) {
     const from = this._getState();
     this._setState(to, title);
-    this._onChangeState.fire({from, to});
+    this._onChangeState.fire({ from, to });
   }
 
   setContext(context: any) {
@@ -290,13 +324,17 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverElement = new Promise((resolve) => {
         const div = document.createElement('div');
         const C = this.popoverComponent!;
-        ReactDOM.render(<ConfigProvider value={this.context}>
-          <PopOverComponentWrapper delegate={this}>
-            <C />
-          </PopOverComponentWrapper>
-        </ConfigProvider>, div, () => {
-          resolve(div);
-        });
+        ReactDOM.render(
+          <ConfigProvider value={this.context}>
+            <PopOverComponentWrapper delegate={this}>
+              <C />
+            </PopOverComponentWrapper>
+          </ConfigProvider>,
+          div,
+          () => {
+            resolve(div);
+          },
+        );
       });
       popOverMap.set(this.actionId, this._popOverElement);
     }
@@ -352,17 +390,24 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
             this._popOverClickOutsideDisposer = undefined;
           }
           const disposer = new Disposable();
-          disposer.addDispose(new DomListener(window, 'click', (e: MouseEvent) => {
-            if (e.target && ele.contains(e.target as Node)) {
-              return;
-            }
-            const rect = ele.getBoundingClientRect();
-            if (rect.x <= e.clientX && rect.x + rect.width >= e.clientX && rect.y <= e.clientY && rect.y + rect.height >= e.clientY) {
-              // 点击在区域内，这里防止点击 target 已经被移除导致误判
-              return;
-            }
-            this.hidePopOver();
-          }));
+          disposer.addDispose(
+            new DomListener(window, 'click', (e: MouseEvent) => {
+              if (e.target && ele.contains(e.target as Node)) {
+                return;
+              }
+              const rect = ele.getBoundingClientRect();
+              if (
+                rect.x <= e.clientX &&
+                rect.x + rect.width >= e.clientX &&
+                rect.y <= e.clientY &&
+                rect.y + rect.height >= e.clientY
+              ) {
+                // 点击在区域内，这里防止点击 target 已经被移除导致误判
+                return;
+              }
+              this.hidePopOver();
+            }),
+          );
           this._popOverClickOutsideDisposer = disposer;
         });
       }
@@ -384,5 +429,4 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
     this.popOverContainer?.classList.remove('kt-toolbar-popover-animationend');
     this._onDidChangePopoverVisibility.fire(false);
   }
-
 }

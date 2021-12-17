@@ -6,7 +6,6 @@ import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-prefere
 
 @Injectable()
 export class WorkspacePreferenceProvider extends PreferenceProvider {
-
   public name: 'workspace';
 
   @Autowired(IWorkspaceService)
@@ -79,12 +78,20 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     });
   }
 
-  doGet<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
+  doGet<T>(
+    preferenceName: string,
+    resourceUri: string | undefined = this.ensureResourceUri(),
+    language?: string,
+  ): T | undefined {
     const delegate = this.delegate;
     return delegate ? delegate.get<T>(preferenceName, resourceUri, language) : undefined;
   }
 
-  doResolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { value?: T, configUri?: URI } {
+  doResolve<T>(
+    preferenceName: string,
+    resourceUri: string | undefined = this.ensureResourceUri(),
+    language?: string,
+  ): { value?: T; configUri?: URI } {
     const delegate = this.delegate;
     return delegate ? delegate.resolve<T>(preferenceName, resourceUri, language) : {};
   }
@@ -99,7 +106,12 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     return delegate ? delegate.getLanguagePreferences(resourceUri) : undefined;
   }
 
-  async doSetPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): Promise<boolean> {
+  async doSetPreference(
+    preferenceName: string,
+    value: any,
+    resourceUri: string | undefined = this.ensureResourceUri(),
+    language?: string,
+  ): Promise<boolean> {
     const delegate = this.delegate;
     if (delegate) {
       return delegate.setPreference(preferenceName, value, resourceUri, language);
@@ -113,5 +125,4 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     }
     return undefined;
   }
-
 }

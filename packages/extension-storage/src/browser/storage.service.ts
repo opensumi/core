@@ -4,7 +4,14 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 
-import { ExtensionStorageUri, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
+import {
+  ExtensionStorageUri,
+  IExtensionStorageService,
+  KeysToAnyValues,
+  KeysToKeysToAnyValue,
+  IExtensionStorageServer,
+  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
+} from '../common';
 
 @Injectable()
 export class ExtensionStorageService implements IExtensionStorageService {
@@ -58,8 +65,8 @@ export class ExtensionStorageService implements IExtensionStorageService {
     return this.extensionStorageServer.get(key, isGlobal);
   }
 
-  getAll(isGlobal: boolean = false): Promise<KeysToKeysToAnyValue> {
-      return this.extensionStorageServer.getAll(isGlobal);
+  getAll(isGlobal = false): Promise<KeysToKeysToAnyValue> {
+    return this.extensionStorageServer.getAll(isGlobal);
   }
 
   public async reConnectInit() {

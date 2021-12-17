@@ -1,9 +1,22 @@
-import { ExtHostWebviewViews, ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
-import { MainThreadWebview, MainThreadWebviewView } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
+import {
+  ExtHostWebviewViews,
+  ExtHostWebviewService,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import {
+  MainThreadWebview,
+  MainThreadWebviewView,
+} from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
-import { Emitter, makeRandomHexString, IEventBus, Disposable, CancellationTokenSource, CommandRegistry } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  makeRandomHexString,
+  IEventBus,
+  Disposable,
+  CancellationTokenSource,
+  CommandRegistry,
+} from '@opensumi/ide-core-common';
 import { IWebviewService, IWebview } from '@opensumi/ide-webview';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
@@ -34,61 +47,65 @@ describe('Webview view tests ', () => {
   const webviews = new Map<string, IWebview>();
   const viewVisible = new Map<string, boolean>();
 
-  injector.addProviders({
-    token: ILoggerManagerClient,
-    useClass: MockLoggerManagerClient,
-  }, {
-    token: IWebviewService,
-    useValue: mockService<IWebviewService>({
-      createWebview: () => {
-        const id = makeRandomHexString(5);
-        const webview: IWebview = ({
-          id,
-          appendTo: jest.fn(),
-          onMessage: new Emitter().event,
-          postMessage: jest.fn(),
-          dispose: jest.fn(),
-          setContent: jest.fn(),
-          onDispose: new Emitter().event,
-        } as Partial<IWebview>) as any;
-        webviews.set(id, webview);
-        return webview;
-      },
-      getWebview: (id) => {
-        return webviews.get(id);
-      },
-    }),
-  }, {
-    token: WorkbenchEditorService,
-    useValue: mockService({
-      onActiveResourceChange: new Emitter().event,
-    }),
-  }, {
-    token: IIconService,
-    useValue: mockService({}),
-  }, {
-    token: StaticResourceService,
-    useValue: mockService({}),
-  }, {
-    token: IOpenerService,
-    useValue: mockService({}),
-  }, {
-    token: CommandRegistry,
-    useValue: mockService({}),
-  }, {
-    token: IMainLayoutService,
-    useValue: mockService<IMainLayoutService>({
-      isViewVisible: (viewId) => {
-        return !!viewVisible.get(viewId);
-      },
-      getTabbarHandler: () => {
-        return {
-          onActivate: new Emitter().event,
-          onInActivate: new Emitter().event,
-        } as any;
-      },
-    }),
-  });
+  injector.addProviders(
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManagerClient,
+    },
+    {
+      token: IWebviewService,
+      useValue: mockService<IWebviewService>({
+        createWebview: () => {
+          const id = makeRandomHexString(5);
+          const webview: IWebview = {
+            id,
+            appendTo: jest.fn(),
+            onMessage: new Emitter().event,
+            postMessage: jest.fn(),
+            dispose: jest.fn(),
+            setContent: jest.fn(),
+            onDispose: new Emitter().event,
+          } as Partial<IWebview> as any;
+          webviews.set(id, webview);
+          return webview;
+        },
+        getWebview: (id) => webviews.get(id),
+      }),
+    },
+    {
+      token: WorkbenchEditorService,
+      useValue: mockService({
+        onActiveResourceChange: new Emitter().event,
+      }),
+    },
+    {
+      token: IIconService,
+      useValue: mockService({}),
+    },
+    {
+      token: StaticResourceService,
+      useValue: mockService({}),
+    },
+    {
+      token: IOpenerService,
+      useValue: mockService({}),
+    },
+    {
+      token: CommandRegistry,
+      useValue: mockService({}),
+    },
+    {
+      token: IMainLayoutService,
+      useValue: mockService<IMainLayoutService>({
+        isViewVisible: (viewId) => !!viewVisible.get(viewId),
+        getTabbarHandler: () =>
+          ({
+            onActivate: new Emitter().event,
+            onInActivate: new Emitter().event,
+          } as any),
+      }),
+    },
+  );
 
   const emitterA = new Emitter<any>();
   const emitterB = new Emitter<any>();
@@ -112,8 +129,14 @@ describe('Webview view tests ', () => {
 
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWebview, extHostWebview);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWebviewView, extHostWebviewView);
-    mainThreadWebview = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
-    rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebviewView, injector.get(MainThreadWebviewView, [rpcProtocolMain, mainThreadWebview]));
+    mainThreadWebview = rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadWebview,
+      injector.get(MainThreadWebview, [rpcProtocolMain]),
+    );
+    rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadWebviewView,
+      injector.get(MainThreadWebviewView, [rpcProtocolMain, mainThreadWebview]),
+    );
 
     done();
   });
@@ -139,13 +162,15 @@ describe('Webview view tests ', () => {
 
     viewVisible.set(viewType, true);
 
-    eventBus.fire(new WebviewViewShouldShowEvent({
-      title: 'testTitle',
-      viewType,
-      container,
-      cancellationToken: new CancellationTokenSource().token,
-      disposer: new Disposable(),
-    }));
+    eventBus.fire(
+      new WebviewViewShouldShowEvent({
+        title: 'testTitle',
+        viewType,
+        container,
+        cancellationToken: new CancellationTokenSource().token,
+        disposer: new Disposable(),
+      }),
+    );
 
     await delay(100);
     expect(webviews.size).toBe(1);
@@ -161,5 +186,4 @@ describe('Webview view tests ', () => {
     injector.disposeAll();
     Array.from(webviews.entries()).forEach(([i, w]) => w.dispose());
   });
-
 });

@@ -18,7 +18,7 @@ module.exports = {
     '!packages/**/*-contribution.ts',
     '!packages/startup/**/*.ts',
     // Test 功能暂未完成
-    "!packages/testing/**/*.ts",
+    '!packages/testing/**/*.ts',
     '!packages/core-electron-main/**/*.ts',
     '!packages/*/src/electron-main/**/*.ts',
   ],

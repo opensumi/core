@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
-import { IContextKeyService, View, useInjectable  } from '@opensumi/ide-core-browser';
+import { IContextKeyService, View, useInjectable } from '@opensumi/ide-core-browser';
 import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
@@ -44,11 +44,9 @@ export const SCMResourcesView: React.FC<{
   const extraPaddingTop = 10;
   return (
     <div className={styles.view} ref={$containerRef}>
-      <div className={styles.scm} style={{paddingTop: extraPaddingTop}}>
+      <div className={styles.scm} style={{ paddingTop: extraPaddingTop }}>
         <SCMResourceInput repository={repository} />
-        <SCMResourceTree
-          width={viewState.width}
-          height={viewState.height - 38 - extraPaddingTop} />
+        <SCMResourceTree width={viewState.width} height={viewState.height - 38 - extraPaddingTop} />
       </div>
     </div>
   );
@@ -66,14 +64,11 @@ export const SCMResourcesViewWrapper: React.FC<{ viewState: ViewState }> = obser
   const hasMultiRepos = viewModel.repoList.length > 1;
   const selectedRepo = viewModel.selectedRepos[0];
 
-  if (!selectedRepo || ! selectedRepo.provider) {
+  if (!selectedRepo || !selectedRepo.provider) {
     return null;
   }
 
-  return <SCMResourcesView
-    hasMultiRepos={hasMultiRepos}
-    repository={selectedRepo}
-    viewState={props.viewState} />;
+  return <SCMResourcesView hasMultiRepos={hasMultiRepos} repository={selectedRepo} viewState={props.viewState} />;
 });
 
 SCMResourcesViewWrapper.displayName = 'SCMResourcesViewWrapper';
@@ -87,14 +82,13 @@ export const SCMProvidersView: React.FC<{ viewState: ViewState }> = observer((pr
 
   return (
     <div className={styles.view}>
-      {
-        viewModel.repoList.length > 1 && (
-          <SCMProviderList
-            viewState={props.viewState}
-            repositoryList={viewModel.repoList}
-            selectedRepository={selectedRepo} />
-        )
-      }
+      {viewModel.repoList.length > 1 && (
+        <SCMProviderList
+          viewState={props.viewState}
+          repositoryList={viewModel.repoList}
+          selectedRepository={selectedRepo}
+        />
+      )}
     </div>
   );
 });
@@ -109,13 +103,15 @@ export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((pr
   const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
 
   // title for scm panel
-  const panelTitle = React.useMemo(() => {
-    return repoList.length === 1 && selectedRepo
-      // 将当前 repo 信息写到 scm panel title 中去
-      ? `${localize('scm.title')}: ${selectedRepo.provider.label}`
-      // 使用默认 scm panel title
-      : localize('scm.title');
-  }, [ repoList, selectedRepo ]);
+  const panelTitle = React.useMemo(
+    () =>
+      repoList.length === 1 && selectedRepo
+        ? // 将当前 repo 信息写到 scm panel title 中去
+          `${localize('scm.title')}: ${selectedRepo.provider.label}`
+        : // 使用默认 scm panel title
+          localize('scm.title'),
+    [repoList, selectedRepo],
+  );
 
   // title for selected repo view
   const repoViewTitle = React.useMemo(() => {
@@ -125,13 +121,13 @@ export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((pr
       repoViewTitle = title + '-' + type;
     }
     return repoViewTitle;
-  }, [ hasMultiRepos, selectedRepo ]);
+  }, [hasMultiRepos, selectedRepo]);
 
   const titleMenu = React.useMemo(() => {
     if (selectedRepo) {
       return viewModel.menus.getRepositoryMenus(selectedRepo?.provider).titleMenu;
     }
-  }, [ selectedRepo ]);
+  }, [selectedRepo]);
 
   // control views
   const views: View[] = React.useMemo(() => {
@@ -147,28 +143,28 @@ export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((pr
       component: SCMResourcesViewWrapper,
       id: scmResourceViewId,
       name: repoViewTitle,
-      titleMenu: hasMultiRepos && titleMenu || undefined,
+      titleMenu: (hasMultiRepos && titleMenu) || undefined,
       titleMenuContext: selectedRepo && selectedRepo.provider && [selectedRepo.provider],
       priority: 1,
     };
 
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
-  }, [ hasMultiRepos, repoViewTitle, selectedRepo ]);
+  }, [hasMultiRepos, repoViewTitle, selectedRepo]);
 
   return (
     <div className={styles.view}>
-      <TitleBar title={panelTitle} menubar={
-        !hasMultiRepos && titleMenu
-          ? <InlineMenuBar
-            menus={titleMenu}
-            context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]} />
-          : null
-      } />
-      <AccordionContainer
-        views={views}
-        containerId={scmContainerId}
-        className={styles.scm_accordion}
+      <TitleBar
+        title={panelTitle}
+        menubar={
+          !hasMultiRepos && titleMenu ? (
+            <InlineMenuBar
+              menus={titleMenu}
+              context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]}
+            />
+          ) : null
+        }
       />
+      <AccordionContainer views={views} containerId={scmContainerId} className={styles.scm_accordion} />
     </div>
   );
 });

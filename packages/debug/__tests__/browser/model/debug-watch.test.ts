@@ -29,20 +29,16 @@ describe('DebugWatch Model', () => {
         onDidChangeCallStack: jest.fn(),
       } as any;
       const debugThread = new DebugThread(session);
-      debugThread.update({raw});
+      debugThread.update({ raw });
       debugManager = {
         currentSession: session,
         currentThread: debugThread,
-        onDidStopDebugSession: jest.fn(() => {
-          return {
-            dispose() {},
-          };
-        }),
-        onDidDestroyDebugSession: jest.fn(() => {
-          return {
-            dispose() {},
-          };
-        }),
+        onDidStopDebugSession: jest.fn(() => ({
+          dispose() {},
+        })),
+        onDidDestroyDebugSession: jest.fn(() => ({
+          dispose() {},
+        })),
         onDidChangeActiveDebugSession: jest.fn((fn) => {
           fn();
           return {
@@ -76,7 +72,7 @@ describe('DebugWatch Model', () => {
       debugManager.onDidChangeActiveDebugSession.mockReset();
     });
 
-    it ('Should have enough values', async (done) => {
+    it('Should have enough values', async (done) => {
       await debugWatch.whenReady;
       expect(debugManager.onDidStopDebugSession).toBeCalledTimes(1);
       expect(debugManager.onDidDestroyDebugSession).toBeCalledTimes(1);
@@ -126,6 +122,5 @@ describe('DebugWatch Model', () => {
       expect(root.presetChildren.length).toBe(0);
       done();
     });
-
   });
 });

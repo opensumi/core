@@ -3,7 +3,18 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@opensumi/ide-core-common';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { IEditor } from '@opensumi/ide-editor';
-import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorFeatureRegistry,
+  IEditorDocumentModelService,
+  getSplitActionFromDragDrop,
+  DragOverPosition,
+  EditorGroupSplitAction,
+  WorkbenchEditorService,
+  EditorSelectionChangeEvent,
+  IEditorGroup,
+  EditorGroupChangeEvent,
+  EditorGroupCloseEvent,
+} from '@opensumi/ide-editor/lib/browser';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
 import { QuickPickService, PreferenceService, IContextKeyService } from '@opensumi/ide-core-browser';
 import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
@@ -15,7 +26,6 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 Error.stackTraceLimit = 100;
 describe('editor status bar item test', () => {
-
   const injector = createBrowserInjector([]);
 
   beforeAll(() => {
@@ -27,15 +37,12 @@ describe('editor status bar item test', () => {
   });
 
   it('editor feature test basic', () => {
-
     expect(getSplitActionFromDragDrop(DragOverPosition.BOTTOM)).toBe(EditorGroupSplitAction.Bottom);
 
     const service: EditorFeatureRegistryImpl = injector.get(IEditorFeatureRegistry);
     const contributionDisposer = new Disposable();
     const contribution = {
-      contribute: jest.fn((editor: IEditor) => {
-        return contributionDisposer;
-      }),
+      contribute: jest.fn((editor: IEditor) => contributionDisposer),
     };
     const listener = jest.fn();
     service.onDidRegisterFeature(listener);
@@ -75,45 +82,45 @@ describe('editor status bar item test', () => {
     expect(accessor.addZone).toBeCalled();
   });
 
-  it('formatter select test', async ( done ) => {
+  it('formatter select test', async (done) => {
     injector.mockService(QuickPickService, {
-      show: (strings: any[]) => {
-        return  strings[0].value;
-      },
+      show: (strings: any[]) => strings[0].value,
     });
     const config = {};
     injector.mockService(PreferenceService, {
-      get: jest.fn((key) => {
-        return config[key];
-      }),
+      get: jest.fn((key) => config[key]),
       set: jest.fn((key, value) => {
         config[key] = value;
       }),
     });
     injector.mockService(IEditorDocumentModelService, {
-      getModelReference: () => {
-        return {
-          instance: {
-            languageId: 'javascript',
-          },
-          dispose: jest.fn(),
-        };
-      },
+      getModelReference: () => ({
+        instance: {
+          languageId: 'javascript',
+        },
+        dispose: jest.fn(),
+      }),
     });
 
     const selector: FormattingSelector = injector.get(FormattingSelector);
 
-    await selector.select([{
-      displayName: 'Test Formatter',
-      extensionId: 'testFormatter',
-      provideDocumentFormattingEdits: jest.fn(),
-    }, {
-      displayName: 'Test Formatter2',
-      extensionId: 'testFormatter2',
-      provideDocumentFormattingEdits: jest.fn(),
-    }], {
-      uri: new URI('file:///test/test.js').codeUri,
-    } as any);
+    await selector.select(
+      [
+        {
+          displayName: 'Test Formatter',
+          extensionId: 'testFormatter',
+          provideDocumentFormattingEdits: jest.fn(),
+        },
+        {
+          displayName: 'Test Formatter2',
+          extensionId: 'testFormatter2',
+          provideDocumentFormattingEdits: jest.fn(),
+        },
+      ],
+      {
+        uri: new URI('file:///test/test.js').codeUri,
+      } as any,
+    );
 
     expect(config['editor.preferredFormatter']['javascript']).toBe('testFormatter');
 
@@ -123,11 +130,9 @@ describe('editor status bar item test', () => {
   afterAll(() => {
     injector.disposeAll();
   });
-
 });
 
 describe('editor history test', () => {
-
   const injector = createBrowserInjector([]);
 
   let selection: ISelection | undefined;
@@ -138,9 +143,7 @@ describe('editor history test', () => {
       currentUri = uri;
     }),
     currentEditor: {
-      getSelections: () => {
-        return [selection];
-      },
+      getSelections: () => [selection],
     },
     index: 0,
   } as any;
@@ -150,7 +153,6 @@ describe('editor history test', () => {
   });
 
   it('history basic tests', () => {
-
     const historyService: EditorHistoryService = injector.get(EditorHistoryService);
     const eventBus: IEventBus = injector.get(IEventBus);
 
@@ -166,19 +168,21 @@ describe('editor history test', () => {
     const testUri3 = new URI('file:///test_uri3.ts');
 
     // 一定会先发一个这个, 此时 selection 是初始的 1，1
-    eventBus.fire(new EditorGroupChangeEvent({
-      group: testEditorGroup,
-      newOpenType: {
-        type: 'code',
-      },
-      oldOpenType: null,
-      newResource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-      oldResource: null,
-    }));
+    eventBus.fire(
+      new EditorGroupChangeEvent({
+        group: testEditorGroup,
+        newOpenType: {
+          type: 'code',
+        },
+        oldOpenType: null,
+        newResource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+        oldResource: null,
+      }),
+    );
 
     selection = {
       selectionStartColumn: 10,
@@ -192,17 +196,19 @@ describe('editor history test', () => {
     expect(historyService.currentState.position.column).toBe(1);
     expect(historyService.currentState.position.lineNumber).toBe(1);
 
-    eventBus.fire(new EditorSelectionChangeEvent({
-      group: testEditorGroup,
-      selections: [selection],
-      resource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-      editorUri: testUri1,
-      source: 'test',
-    }));
+    eventBus.fire(
+      new EditorSelectionChangeEvent({
+        group: testEditorGroup,
+        selections: [selection],
+        resource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+        editorUri: testUri1,
+        source: 'test',
+      }),
+    );
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
@@ -216,17 +222,19 @@ describe('editor history test', () => {
       positionLineNumber: 21,
     };
 
-    eventBus.fire(new EditorSelectionChangeEvent({
-      group: testEditorGroup,
-      selections: [selection],
-      resource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-      editorUri: testUri1,
-      source: 'test',
-    }));
+    eventBus.fire(
+      new EditorSelectionChangeEvent({
+        group: testEditorGroup,
+        selections: [selection],
+        resource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+        editorUri: testUri1,
+        source: 'test',
+      }),
+    );
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
@@ -240,17 +248,19 @@ describe('editor history test', () => {
       positionLineNumber: 1,
     };
 
-    eventBus.fire(new EditorSelectionChangeEvent({
-      group: testEditorGroup,
-      selections: [selection],
-      resource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-      editorUri: testUri1,
-      source: 'test',
-    }));
+    eventBus.fire(
+      new EditorSelectionChangeEvent({
+        group: testEditorGroup,
+        selections: [selection],
+        resource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+        editorUri: testUri1,
+        source: 'test',
+      }),
+    );
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
@@ -264,25 +274,27 @@ describe('editor history test', () => {
       positionLineNumber: 1,
     };
 
-    eventBus.fire(new EditorGroupChangeEvent({
-      group: testEditorGroup,
-      newOpenType: {
-        type: 'code',
-      },
-      oldOpenType: {
-        type: 'code',
-      },
-      newResource: {
-        uri: testUri2,
-        name: 'test2',
-        icon: 'test',
-      },
-      oldResource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-    }));
+    eventBus.fire(
+      new EditorGroupChangeEvent({
+        group: testEditorGroup,
+        newOpenType: {
+          type: 'code',
+        },
+        oldOpenType: {
+          type: 'code',
+        },
+        newResource: {
+          uri: testUri2,
+          name: 'test2',
+          icon: 'test',
+        },
+        oldResource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+      }),
+    );
 
     selection = {
       selectionStartColumn: 2,
@@ -291,17 +303,19 @@ describe('editor history test', () => {
       positionLineNumber: 2,
     };
 
-    eventBus.fire(new EditorSelectionChangeEvent({
-      group: testEditorGroup,
-      selections: [selection],
-      resource: {
-        uri: testUri2,
-        name: 'test2',
-        icon: 'test',
-      },
-      editorUri: testUri2,
-      source: 'test',
-    }));
+    eventBus.fire(
+      new EditorSelectionChangeEvent({
+        group: testEditorGroup,
+        selections: [selection],
+        resource: {
+          uri: testUri2,
+          name: 'test2',
+          icon: 'test',
+        },
+        editorUri: testUri2,
+        source: 'test',
+      }),
+    );
 
     selection = {
       selectionStartColumn: 1,
@@ -310,25 +324,27 @@ describe('editor history test', () => {
       positionLineNumber: 1,
     };
 
-    eventBus.fire(new EditorGroupChangeEvent({
-      group: testEditorGroup,
-      newOpenType: {
-        type: 'code',
-      },
-      oldOpenType: {
-        type: 'code',
-      },
-      newResource: {
-        uri: testUri3,
-        name: 'test3',
-        icon: 'test',
-      },
-      oldResource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-    }));
+    eventBus.fire(
+      new EditorGroupChangeEvent({
+        group: testEditorGroup,
+        newOpenType: {
+          type: 'code',
+        },
+        oldOpenType: {
+          type: 'code',
+        },
+        newResource: {
+          uri: testUri3,
+          name: 'test3',
+          icon: 'test',
+        },
+        oldResource: {
+          uri: testUri1,
+          name: 'test1',
+          icon: 'test',
+        },
+      }),
+    );
 
     // testUri3 不选中 focus, 不发送 SelectionChangeEvent
 
@@ -379,25 +395,24 @@ describe('editor history test', () => {
     expect(historyService.currentState.position.column).toBe(1);
     expect(historyService.currentState.position.lineNumber).toBe(1);
 
-    eventBus.fire(new EditorGroupCloseEvent({
-      group: testEditorGroup,
-      resource: {
-        uri: testUri3,
-        name: 'test3',
-        icon: 'test',
-      },
-    }));
+    eventBus.fire(
+      new EditorGroupCloseEvent({
+        group: testEditorGroup,
+        resource: {
+          uri: testUri3,
+          name: 'test3',
+          icon: 'test',
+        },
+      }),
+    );
 
     historyService.popClosed();
 
     expect(currentUri).toBe(testUri3);
-
   });
-
 });
 
 describe('editor menu test', () => {
-
   let injector: MockInjector;
 
   afterAll(() => {
@@ -406,36 +421,26 @@ describe('editor menu test', () => {
   beforeEach(() => {
     injector = createBrowserInjector([]);
     injector.mockService(AbstractContextMenuService, {
-      createMenu: () => {
-        return {
-          getMergedMenuNodes: jest.fn(),
-          dispose: () => null,
-        };
-      },
+      createMenu: () => ({
+        getMergedMenuNodes: jest.fn(),
+        dispose: () => null,
+      }),
     });
     injector.mockService(IContextKeyService, {
-      createKey: jest.fn(() => {
-        return {
-          set: jest.fn(),
-          get: jest.fn(),
-        };
+      createKey: jest.fn(() => ({
+        set: jest.fn(),
+        get: jest.fn(),
+      })),
+      parse: (expr) => ({
+        keys: () => [],
+        expr,
       }),
-      parse: (expr) => {
-        return {
-          keys: () => [],
-          expr,
-        };
-      },
-      createScoped: () => {
-        return {
-          createKey: jest.fn(() => {
-            return {
-              set: jest.fn(),
-            };
-          }),
-          dispose: () => null,
-        };
-      },
+      createScoped: () => ({
+        createKey: jest.fn(() => ({
+          set: jest.fn(),
+        })),
+        dispose: () => null,
+      }),
     });
     injector.mockService(ICtxMenuRenderer);
   });
@@ -445,7 +450,6 @@ describe('editor menu test', () => {
   });
 
   it.skip('editor context menu test', () => {
-
     const monacoEditor = monaco.editor.create(document.createElement('div'));
     const model = monaco.editor.createModel('test');
     monacoEditor.setModel(model);
@@ -480,20 +484,15 @@ describe('editor menu test', () => {
     const service = injector.get(TabTitleMenuService);
     service.show(0, 0, new URI('file:///test1.ts'), {
       contextKeyService: {
-        createScoped: jest.fn(() => {
-          return {
-            createKey: jest.fn(() => {
-              return {
-                set: jest.fn(),
-                get: jest.fn(),
-              };
-            }),
-            dispose: () => null,
-          };
-        }),
+        createScoped: jest.fn(() => ({
+          createKey: jest.fn(() => ({
+            set: jest.fn(),
+            get: jest.fn(),
+          })),
+          dispose: () => null,
+        })),
       },
     } as any);
     expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
   });
-
 });

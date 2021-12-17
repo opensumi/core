@@ -6,15 +6,11 @@ import { ConstructorOf } from '../declare';
 
 @Injectable()
 export class EventBusImpl implements IEventBus {
-
   private emitterMap = new Map<any, Emitter<any>>();
 
   fire<T extends BasicEvent<any>>(e: T, opts: IEventFireOpts = {}) {
     const Constructor = e && e.constructor;
-    if (
-      typeof Constructor === 'function' &&
-      BasicEvent.isPrototypeOf(Constructor)
-    ) {
+    if (typeof Constructor === 'function' && BasicEvent.isPrototypeOf(Constructor)) {
       const emitter = this.emitterMap.get(Constructor);
       if (emitter) {
         emitter.fire(e);
@@ -22,12 +18,12 @@ export class EventBusImpl implements IEventBus {
     }
   }
 
-  async fireAndAwait<T extends BasicEvent<any>, R>(e: T, opts: IAsyncEventFireOpts = { timeout: 2000 }): Promise<IAsyncResult<R>[]> {
+  async fireAndAwait<T extends BasicEvent<any>, R>(
+    e: T,
+    opts: IAsyncEventFireOpts = { timeout: 2000 },
+  ): Promise<IAsyncResult<R>[]> {
     const Constructor = e && e.constructor;
-    if (
-      typeof Constructor === 'function' &&
-      BasicEvent.isPrototypeOf(Constructor)
-    ) {
+    if (typeof Constructor === 'function' && BasicEvent.isPrototypeOf(Constructor)) {
       const emitter = this.emitterMap.get(Constructor);
       if (emitter) {
         return emitter.fireAndAwait<R>(e, opts.timeout);

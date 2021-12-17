@@ -1,12 +1,47 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations, DEFAULT_THEME_ID, colorIdPattern } from '../common/theme.service';
-import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@opensumi/ide-core-common';
+import {
+  ITheme,
+  ThemeType,
+  ColorIdentifier,
+  getBuiltinRules,
+  getThemeType,
+  ThemeContribution,
+  IColorMap,
+  ThemeInfo,
+  IThemeService,
+  ExtColorContribution,
+  getThemeId,
+  getThemeTypeSelector,
+  IColorCustomizations,
+  ITokenColorizationRule,
+  ITokenColorCustomizations,
+  DEFAULT_THEME_ID,
+  colorIdPattern,
+} from '../common/theme.service';
+import {
+  Event,
+  URI,
+  WithEventBus,
+  localize,
+  Emitter,
+  isObject,
+  DisposableCollection,
+  uuid,
+  isLinux,
+  isWindows,
+  IThemeColor,
+} from '@opensumi/ide-core-common';
 import { Autowired, Injectable } from '@opensumi/di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
-import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@opensumi/ide-core-browser';
+import {
+  Logger,
+  PreferenceService,
+  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+} from '@opensumi/ide-core-browser';
 import { ICSSStyleService } from '../common';
 
 export const CUSTOM_WORKBENCH_COLORS_SETTING = 'workbench.colorCustomizations';
@@ -25,7 +60,6 @@ const tokenGroupToScopesMap = {
 
 @Injectable()
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
-
   private colorRegistry = getColorRegistry();
 
   private colorClassNameMap = new Map<string, string>();
@@ -34,7 +68,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentTheme?: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: URI }> = new Map();
+  private themeContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
   protected extensionReady: boolean;
@@ -123,11 +157,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return;
     }
     const { defaults } = contribution;
-    this.colorRegistry.registerColor(contribution.id, {
-      light: this.parseColorValue(defaults.light, 'configuration.colors.defaults.light'),
-      dark: this.parseColorValue(defaults.dark, 'configuration.colors.defaults.dark'),
-      hc: this.parseColorValue(defaults.highContrast, 'configuration.colors.defaults.highContrast'),
-    }, contribution.description);
+    this.colorRegistry.registerColor(
+      contribution.id,
+      {
+        light: this.parseColorValue(defaults.light, 'configuration.colors.defaults.light'),
+        dark: this.parseColorValue(defaults.dark, 'configuration.colors.defaults.dark'),
+        hc: this.parseColorValue(defaults.highContrast, 'configuration.colors.defaults.highContrast'),
+      },
+      contribution.description,
+    );
   }
 
   // @deprecated 请直接使用sync方法，主题加载由时序保障
@@ -191,10 +229,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
     for (const { contribution } of this.themeContributionRegistry.values()) {
-      const {
-        label,
-        uiTheme,
-      } = contribution;
+      const { label, uiTheme } = contribution;
       themeInfos.push({
         themeId: getThemeId(contribution),
         name: label,
@@ -205,25 +240,25 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   protected doSetPreferenceSchema() {
-    this.preferenceSchemaProvider.setSchema({
-      properties: {
-        [COLOR_THEME_SETTING]: {
-          type: 'string',
-          default: 'Default Dark+',
-          enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+    this.preferenceSchemaProvider.setSchema(
+      {
+        properties: {
+          [COLOR_THEME_SETTING]: {
+            type: 'string',
+            default: 'Default Dark+',
+            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+          },
         },
       },
-    }, true);
-
-    const themeMap = this.getAvailableThemeInfos().reduce(
-      (pre: Map<string, string>, cur: ThemeInfo) => {
-        if (!pre.has(cur.themeId)) {
-          pre.set(cur.themeId, cur.name);
-        }
-        return pre;
-      },
-      new Map(),
+      true,
     );
+
+    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: ThemeInfo) => {
+      if (!pre.has(cur.themeId)) {
+        pre.set(cur.themeId, cur.name);
+      }
+      return pre;
+    }, new Map());
 
     const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
     if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId)) {
@@ -232,10 +267,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       this.applyTheme(DEFAULT_THEME_ID);
     }
 
-    this.preferenceSettings.setEnumLabels(
-      COLOR_THEME_SETTING,
-      Object.fromEntries(themeMap.entries()),
-    );
+    this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
   }
 
   private get colorCustomizations(): IColorCustomizations {
@@ -247,9 +279,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private listen() {
-    this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.themeChangeEmitter.fire(e.payload.theme);
-    }));
+    this.addDispose(
+      this.eventBus.on(ThemeChangedEvent, (e) => {
+        this.themeChangeEmitter.fire(e.payload.theme);
+      }),
+    );
 
     this.addDispose(
       Event.debounce(
@@ -277,17 +311,20 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
               );
               break;
             }
-            default: break;
+            default:
+              break;
           }
         }
       }),
     );
 
-    this.addDispose(this.colorRegistry.onDidColorChangedEvent((e) => {
-      if (this.currentTheme) {
-        this.doApplyTheme.apply(this, [this.currentTheme]);
-      }
-    }));
+    this.addDispose(
+      this.colorRegistry.onDidColorChangedEvent((e) => {
+        if (this.currentTheme) {
+          this.doApplyTheme.apply(this, [this.currentTheme]);
+        }
+      }),
+    );
   }
 
   private checkColorContribution(contribution: ExtColorContribution) {
@@ -300,12 +337,25 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return false;
     }
     if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
-      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+      this.logger.error(
+        localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"),
+      );
       return false;
     }
     const defaults = contribution.defaults;
-    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
-      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
+    if (
+      !defaults ||
+      typeof defaults !== 'object' ||
+      typeof defaults.light !== 'string' ||
+      typeof defaults.dark !== 'string' ||
+      typeof defaults.highContrast !== 'string'
+    ) {
+      this.logger.error(
+        localize(
+          'invalid.defaults',
+          "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'",
+        ),
+      );
       return false;
     }
     return true;
@@ -319,9 +369,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         return s;
       }
     }
-    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
+    this.logger.error(
+      localize(
+        'invalid.default.colorType',
+        '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.',
+        name,
+      ),
+    );
     return Color.red;
-  }
+  };
 
   private async getTheme(id: string): Promise<ThemeData> {
     const theme = this.themes.get(id);
@@ -371,9 +427,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
     if (this.currentTheme) {
-      this.eventBus.fire(new ThemeChangedEvent({
-        theme: this.currentTheme,
-      }));
+      this.eventBus.fire(
+        new ThemeChangedEvent({
+          theme: this.currentTheme,
+        }),
+      );
     }
   }
 
@@ -437,7 +495,7 @@ class Theme implements ITheme {
   readonly type: ThemeType;
   readonly themeData: ThemeData;
   private readonly colorRegistry = getColorRegistry();
-  private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
+  private readonly defaultColors: { [colorId: string]: Color | undefined } = Object.create(null);
 
   private colorMap: IColorMap;
   private customColorMap: IColorMap = {};
@@ -496,7 +554,7 @@ class Theme implements ITheme {
   private addCustomTokenColors(customTokenColors: ITokenColorCustomizations) {
     // Put the general customizations such as comments, strings, etc. first so that
     // they can be overridden by specific customizations like "string.interpolated"
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const tokenGroup in tokenGroupToScopesMap) {
       const group = tokenGroup as keyof typeof tokenGroupToScopesMap; // TS doesn't type 'tokenGroup' properly
       const value = customTokenColors[group];
@@ -520,7 +578,7 @@ class Theme implements ITheme {
   }
 
   private overwriteCustomColors(colors: IColorCustomizations) {
-    // tslint:disable-next-line: forin
+    // eslint-disable-next-line guard-for-in
     for (const id in colors) {
       const colorVal = colors[id];
       if (typeof colorVal === 'string') {
@@ -548,11 +606,14 @@ class Theme implements ITheme {
   private patchTokenColors() {
     // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
     if (this.themeData.themeSettings.filter((setting) => !setting.scope).length === 0) {
-
       this.themeData.themeSettings.unshift({
         settings: {
-          foreground: this.themeData.colors['editor.foreground'] ? this.themeData.colors['editor.foreground'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.foreground', this)!), // 这里要去掉透明度信息
-          background: this.themeData.colors['editor.background'] ? this.themeData.colors['editor.background'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
+          foreground: this.themeData.colors['editor.foreground']
+            ? this.themeData.colors['editor.foreground'].substr(0, 7)
+            : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.foreground', this)!), // 这里要去掉透明度信息
+          background: this.themeData.colors['editor.background']
+            ? this.themeData.colors['editor.background'].substr(0, 7)
+            : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
         },
       });
     }
@@ -562,8 +623,8 @@ class Theme implements ITheme {
   private getColors(): IColorMap {
     if (!this.colorMap) {
       const colorMap = Object.create(null);
-      // tslint:disable-next-line
-      for (let id in this.themeData.colorMap) {
+      // eslint-disable-next-line guard-for-in
+      for (const id in this.themeData.colorMap) {
         colorMap[id] = this.themeData.colorMap[id];
       }
       if (this.themeData.inherit) {
@@ -572,7 +633,6 @@ class Theme implements ITheme {
           if (!colorMap[id]) {
             colorMap[id] = Color.fromHex(baseData.colors[id]);
           }
-
         }
       }
       this.colorMap = colorMap;
@@ -589,5 +649,4 @@ class Theme implements ITheme {
     this.defaultColors[colorId] = color;
     return color;
   }
-
 }

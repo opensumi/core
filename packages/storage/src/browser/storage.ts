@@ -1,4 +1,12 @@
-import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
+import {
+  getDebugLogger,
+  IStorage,
+  ThrottledDelayer,
+  isUndefinedOrNull,
+  Emitter,
+  Event,
+  DisposableCollection,
+} from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -39,9 +47,11 @@ export class Storage implements IStorage {
   ) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
-    this.toDisposableCollection.push(this.workspace.onWorkspaceChanged(() => {
-      this.setup(storageName);
-    }));
+    this.toDisposableCollection.push(
+      this.workspace.onWorkspaceChanged(() => {
+        this.setup(storageName);
+      }),
+    );
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
     this.setup(storageName);
   }
@@ -208,7 +218,10 @@ export class Storage implements IStorage {
     }
 
     // 获取等待的队列数据
-    const updateRequest: IUpdateRequest = { insert: this.mapToJson(this.pendingInserts), delete: Array.from(this.pendingDeletes) };
+    const updateRequest: IUpdateRequest = {
+      insert: this.mapToJson(this.pendingInserts),
+      delete: Array.from(this.pendingDeletes),
+    };
 
     // 重置等待队列用于下次存储
     this.pendingDeletes = new Set<string>();
@@ -220,7 +233,7 @@ export class Storage implements IStorage {
 
   mapToJson(map: Map<string, string>) {
     const obj = Object.create(null);
-    for (const[k, v] of map) {
+    for (const [k, v] of map) {
       obj[k] = v;
     }
     return obj;

@@ -3,7 +3,11 @@ import { Injectable, Provider } from '@opensumi/di';
 
 import { CoreQuickOpenContribution, QuickOpenFeatureContribution } from './quick-open.contribution';
 import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quick-open.service';
-import { PrefixQuickOpenService, QuickPickService, IQuickInputService } from '@opensumi/ide-core-browser/lib/quick-open';
+import {
+  PrefixQuickOpenService,
+  QuickPickService,
+  IQuickInputService,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickPickServiceImpl } from './quick-pick.service';
 import { QuickInputService } from './quick-input-service';
 import { MonacoQuickOpenService } from './quick-open.service';

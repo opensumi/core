@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Ericsson and others.
  *
  * This program and the accompanying materials are made available under the
@@ -41,23 +41,13 @@ export interface GrammarDefinition {
 @Injectable()
 export class TextmateRegistry {
   readonly scopeToProvider = new Map<string, GrammarDefinitionProvider>();
-  readonly languageToConfig = new Map<
-    string,
-    () => TextmateGrammarConfiguration
-  >();
+  readonly languageToConfig = new Map<string, () => TextmateGrammarConfiguration>();
   readonly languageIdToScope = new Map<string, string>();
 
   // 将语法定义描述绑定到某一个Scope：source.json.comments
-  registerTextmateGrammarScope(
-    scope: string,
-    description: GrammarDefinitionProvider,
-  ) {
+  registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider) {
     if (this.scopeToProvider.has(scope)) {
-      getDebugLogger().warn(
-        new Error(
-          `a registered grammar provider for '${scope}' scope is overridden`,
-        ),
-      );
+      getDebugLogger().warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
     }
     this.scopeToProvider.set(scope, description);
 
@@ -74,9 +64,7 @@ export class TextmateRegistry {
     const existingScope = this.getScope(languageId);
     if (typeof existingScope === 'string') {
       getDebugLogger().warn(
-        new Error(
-          `'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`,
-        ),
+        new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`),
       );
     }
     this.languageIdToScope.set(languageId, scope);
@@ -99,10 +87,7 @@ export class TextmateRegistry {
     return undefined;
   }
 
-  registerGrammarConfiguration(
-    languageId: string,
-    getConfig: () => TextmateGrammarConfiguration,
-  ) {
+  registerGrammarConfiguration(languageId: string, getConfig: () => TextmateGrammarConfiguration) {
     if (this.languageToConfig.has(languageId)) {
       // console.warn(new Error(`a registered grammar configuration for '${languageId}' language is overridden`));
     }
@@ -113,9 +98,7 @@ export class TextmateRegistry {
     };
   }
 
-  getGrammarConfiguration(
-    languageId: string,
-  ): () => TextmateGrammarConfiguration {
+  getGrammarConfiguration(languageId: string): () => TextmateGrammarConfiguration {
     return this.languageToConfig.get(languageId) || (() => ({}));
   }
 }

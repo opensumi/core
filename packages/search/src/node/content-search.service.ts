@@ -34,13 +34,13 @@ function byteRangeLengthToCharacterLength(text: string, charStart: number, byteL
   let char: number = charStart;
   for (let byteIdx = 0; byteIdx < byteLength; char++) {
     const codePoint: number = text.charCodeAt(char);
-    if (codePoint < 0x7F) {
+    if (codePoint < 0x7f) {
       byteIdx++;
-    } else if (codePoint < 0x7FF) {
+    } else if (codePoint < 0x7ff) {
       byteIdx += 2;
-    } else if (codePoint < 0xFFFF) {
+    } else if (codePoint < 0xffff) {
       byteIdx += 3;
-    } else if (codePoint < 0x10FFFF) {
+    } else if (codePoint < 0x10ffff) {
       byteIdx += 4;
     } else {
       throw new Error('Invalid UTF-8 string');
@@ -56,11 +56,10 @@ interface IRPCContentSearchService {
 
 @Injectable()
 export class ContentSearchService extends RPCService<IRPCContentSearchService> implements IContentSearchServer {
-
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
 
-  private searchId: number = (new Date().getTime());
+  private searchId: number = new Date().getTime();
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)
@@ -86,11 +85,16 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.processMap.delete(searchId);
   }
 
-  async search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
+  async search(
+    what: string,
+    rootUris: string[],
+    opts?: ContentSearchOptions,
+    cb?: (data: any) => any,
+  ): Promise<number> {
     const args = this.getSearchArgs(opts);
 
     if (opts && opts.matchWholeWord && !opts.useRegExp) {
-      what = what.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
+      what = what.replace(/[-\\{}*+?|^$.[\]()#]/g, '\\$&');
       if (!/\B/.test(what.charAt(0))) {
         what = '\\b' + what;
       }
@@ -150,11 +154,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     return Promise.resolve();
   }
 
-  private parseDataBuffer(
-    searchInfo: SearchInfo,
-    opts?: ContentSearchOptions,
-    rootUris?: string[],
-  ) {
+  private parseDataBuffer(searchInfo: SearchInfo, opts?: ContentSearchOptions, rootUris?: string[]) {
     const lines = searchInfo.dataBuf.toString().split('\n');
     const result: ContentSearchResult[] = [];
     let filterFileWithGlobRelativePath: FilterFileWithGlobRelativePath;
@@ -177,7 +177,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
       let lintObj;
       try {
         lintObj = JSON.parse(line.trim());
-      } catch (e) { }
+      } catch (e) {}
       if (!lintObj) {
         return;
       }
@@ -229,15 +229,13 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.sendResultToClient(result, searchInfo.searchId);
   }
 
-  private sendResultToClient(
-    data: ContentSearchResult[],
-    id: number,
-    searchState?: SEARCH_STATE,
-    error?: string,
-  ) {
+  private sendResultToClient(data: ContentSearchResult[], id: number, searchState?: SEARCH_STATE, error?: string) {
     if (this.client) {
       this.client.onSearchResult({
-        data, id, searchState, error,
+        data,
+        id,
+        searchState,
+        error,
       } as SendClientResult);
     }
   }
@@ -267,7 +265,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
       args.push('--encoding', options.encoding);
     }
 
-    if (options && options.useRegExp || options && options.matchWholeWord) {
+    if ((options && options.useRegExp) || (options && options.matchWholeWord)) {
       args.push('--regexp');
     } else {
       args.push('--fixed-strings');

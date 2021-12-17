@@ -8,11 +8,11 @@ import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monac
 export interface IExtCommandHandler extends IDisposable {
   execute: (...args: any[]) => Promise<any>;
 }
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadCommands implements IMainThreadCommands {
   private readonly proxy: IExtHostCommands;
 
-  private readonly commands = new Map<string, IExtCommandHandler >();
+  private readonly commands = new Map<string, IExtCommandHandler>();
 
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
 
@@ -41,25 +41,27 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   private registerUriArgProcessor() {
-    this.disposable.addDispose(this.registerArgumentProcessor({
-      processArgument: (arg: any) => {
-        if (arg instanceof URI) {
-          return (arg as URI).codeUri;
-        }
+    this.disposable.addDispose(
+      this.registerArgumentProcessor({
+        processArgument: (arg: any) => {
+          if (arg instanceof URI) {
+            return (arg as URI).codeUri;
+          }
 
-        // 数组参数的处理
-        if (isNonEmptyArray(arg)) {
-          return arg.map((item) => {
-            if (item instanceof URI) {
-              return (item as URI).codeUri;
-            }
-            return item;
-          });
-        }
+          // 数组参数的处理
+          if (isNonEmptyArray(arg)) {
+            return arg.map((item) => {
+              if (item instanceof URI) {
+                return (item as URI).codeUri;
+              }
+              return item;
+            });
+          }
 
-        return arg;
-      },
-    }));
+          return arg;
+        },
+      }),
+    );
   }
 
   dispose() {
@@ -92,9 +94,7 @@ export class MainThreadCommands implements IMainThreadCommands {
 
     const extCommandHandler: IExtCommandHandler = {
       execute,
-      dispose: () => {
-        return disposer.dispose();
-      },
+      dispose: () => disposer.dispose(),
     };
 
     const command = this.commandRegistry.getCommand(id);
@@ -133,7 +133,11 @@ export class MainThreadCommands implements IMainThreadCommands {
     }
   }
 
-  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined> {
+  $executeCommandWithExtensionInfo<T>(
+    id: string,
+    extensionInfo: IExtensionInfo,
+    ...args: any[]
+  ): Promise<T | undefined> {
     const isPermitted = this.commandRegistry.isPermittedCommand(id, extensionInfo, ...args);
     if (!isPermitted) {
       throw new Error(`Extension ${extensionInfo.id} has not permit to execute ${id}`);

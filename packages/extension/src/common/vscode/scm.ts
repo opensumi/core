@@ -35,38 +35,44 @@ export interface SCMGroupFeatures {
 }
 
 export type SCMRawResource = [
-  number /*handle*/,
-  UriComponents /*resourceUri*/,
-  string[] /*icons: light, dark*/,
-  string /*tooltip*/,
-  boolean /*strike through*/,
-  boolean /*faded*/,
+  number /* handle*/,
+  UriComponents /* resourceUri*/,
+  string[] /* icons: light, dark*/,
+  string /* tooltip*/,
+  boolean /* strike through*/,
+  boolean /* faded*/,
 
-  string /*context value*/,
-  CommandDto | undefined /*command*/,
+  string /* context value*/,
+  CommandDto | undefined /* command*/,
 
   // @deprecated use FileDecoration
-  string | undefined /*source*/,
-  string | undefined /*letter*/,
-  IThemeColor | null /*color*/
+  string | undefined /* source*/,
+  string | undefined /* letter*/,
+  IThemeColor | null /* color*/,
 ];
 
-export type SCMRawResourceSplice = [
-  number /* start */,
-  number /* delete count */,
-  SCMRawResource[]
-];
+export type SCMRawResourceSplice = [number /* start */, number /* delete count */, SCMRawResource[]];
 
-export type SCMRawResourceSplices = [
-  number, /*handle*/
-  SCMRawResourceSplice[]
-];
+export type SCMRawResourceSplices = [number /* handle*/, SCMRawResourceSplice[]];
 
 export interface IExtHostSCMShape {
-  $provideOriginalResource(sourceControlHandle: number, uri: UriComponents, token: CancellationToken): Promise<UriComponents | null>;
+  $provideOriginalResource(
+    sourceControlHandle: number,
+    uri: UriComponents,
+    token: CancellationToken,
+  ): Promise<UriComponents | null>;
   $onInputBoxValueChange(sourceControlHandle: number, value: string): void;
-  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number, preserveFocus: boolean): Promise<void>;
-  $validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string, number] | undefined>;
+  $executeResourceCommand(
+    sourceControlHandle: number,
+    groupHandle: number,
+    handle: number,
+    preserveFocus: boolean,
+  ): Promise<void>;
+  $validateInput(
+    sourceControlHandle: number,
+    value: string,
+    cursorPosition: number,
+  ): Promise<[string, number] | undefined>;
   $setSelectedSourceControls(selectedSourceControlHandles: number[]): Promise<void>;
 }
 

@@ -1,7 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Domain } from '@opensumi/ide-core-browser';
-import { IBrowserRequireInterceptorArgs, IRequireInterceptorService, RequireInterceptorContribution } from '../common/require-interceptor';
+import {
+  IBrowserRequireInterceptorArgs,
+  IRequireInterceptorService,
+  RequireInterceptorContribution,
+} from '../common/require-interceptor';
 import { createBrowserApi } from './sumi-browser';
 
 @Domain(RequireInterceptorContribution)
@@ -19,9 +23,7 @@ export class BrowserRequireInterceptorContribution implements RequireInterceptor
 
     registry.registerRequireInterceptor({
       moduleName: 'kaitian-browser',
-      load: (request) => {
-        return createBrowserApi(request.injector, request.extension, request.rpcProtocol);
-      },
+      load: (request) => createBrowserApi(request.injector, request.extension, request.rpcProtocol),
     });
   }
 }

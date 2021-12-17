@@ -31,9 +31,13 @@ import classnames from 'classnames';
 //   </div>);
 // });
 
-export const ToolbarAction = observer(() => {
-  return <div className={styles.toolbarActionsWrapper}>
-      <ToolbarLocation location='menu-left'  preferences={{noDropDown: true}} className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}/>
-      <ToolbarLocation location='menu-right'  className={classnames(styles.toolbarActions, styles.toolbarActionsRight)}/>
-    </div>;
-});
+export const ToolbarAction = observer(() => (
+  <div className={styles.toolbarActionsWrapper}>
+    <ToolbarLocation
+      location='menu-left'
+      preferences={{ noDropDown: true }}
+      className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}
+    />
+    <ToolbarLocation location='menu-right' className={classnames(styles.toolbarActions, styles.toolbarActionsRight)} />
+  </div>
+));

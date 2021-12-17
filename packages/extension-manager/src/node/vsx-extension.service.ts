@@ -127,21 +127,20 @@ export class VSXExtensionService implements IVSXExtensionBackService {
               throw new Error(`invalid file path ${targetDirName}`);
             }
             const targetFileName = path.join(distPath, fileName);
-            fs.mkdirp(targetDirName)
-              .then(() => {
-                const writerStream = fs.createWriteStream(targetFileName, { mode });
-                writerStream.on('close', () => {
-                  if (originalFileName) {
-                    // rename .asar, if filename has been modified
-                    fs.renameSync(targetFileName, path.join(distPath, originalFileName));
-                  }
-                  zipFile.readEntry();
-                });
-                stream?.on('error', (err) => {
-                  throw err;
-                });
-                stream?.pipe(writerStream);
+            fs.mkdirp(targetDirName).then(() => {
+              const writerStream = fs.createWriteStream(targetFileName, { mode });
+              writerStream.on('close', () => {
+                if (originalFileName) {
+                  // rename .asar, if filename has been modified
+                  fs.renameSync(targetFileName, path.join(distPath, originalFileName));
+                }
+                zipFile.readEntry();
               });
+              stream?.on('error', (err) => {
+                throw err;
+              });
+              stream?.pipe(writerStream);
+            });
           });
         });
       } catch (err) {
@@ -156,20 +155,25 @@ export class VSXExtensionService implements IVSXExtensionBackService {
     const downloadPath = path.join(extensionDir, vsixFileName);
 
     return new Promise((resolve, reject) => {
-      requestretry(url, {
-        method: 'GET',
-        maxAttempts: 5,
-        retryDelay: 2000,
-        retryStrategy: requestretry.RetryStrategies.HTTPOrNetworkError,
-      }, (err, response) => {
-        if (err) {
-          reject(err);
-        } else if (response && response.statusCode === 404) {
-          reject();
-        } else if (response && response.statusCode !== 200) {
-          reject(new Error(response.statusMessage));
-        }
-      }).pipe(fs.createWriteStream(downloadPath))
+      requestretry(
+        url,
+        {
+          method: 'GET',
+          maxAttempts: 5,
+          retryDelay: 2000,
+          retryStrategy: requestretry.RetryStrategies.HTTPOrNetworkError,
+        },
+        (err, response) => {
+          if (err) {
+            reject(err);
+          } else if (response && response.statusCode === 404) {
+            reject();
+          } else if (response && response.statusCode !== 200) {
+            reject(new Error(response.statusMessage));
+          }
+        },
+      )
+        .pipe(fs.createWriteStream(downloadPath))
         .on('error', reject)
         .on('close', () => resolve({ downloadPath }));
     });

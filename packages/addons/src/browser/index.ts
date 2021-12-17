@@ -27,5 +27,4 @@ export class ClientAddonModule extends BrowserModule {
       servicePath: FileDropServicePath,
     },
   ];
-
 }

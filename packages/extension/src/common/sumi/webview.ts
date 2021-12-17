@@ -1,8 +1,6 @@
-
 import { Event } from '@opensumi/ide-core-common';
 
 export interface IPlainWebviewHandle {
-
   /**
    * 向webview内部发送消息
    * @param message
@@ -13,19 +11,14 @@ export interface IPlainWebviewHandle {
    *
    */
   onMessage: Event<any>;
-
 }
 
 export interface IExtHostPlainWebview extends IPlainWebviewHandle {
-
   reveal(groupIndex: number);
 
   loadUrl(url: string);
-
 }
 
 export interface ISumiExtHostWebviews {
-
   $acceptMessage(id: string, message: any): void;
-
 }

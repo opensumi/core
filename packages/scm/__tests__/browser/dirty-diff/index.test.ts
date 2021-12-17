@@ -2,10 +2,23 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@opensumi/ide-core-common';
+import {
+  DisposableCollection,
+  PreferenceScope,
+  Uri,
+  URI,
+  Emitter,
+  CommandService,
+  toDisposable,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { PreferenceChange } from '@opensumi/ide-core-browser';
-import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import {
+  IEditorFeatureRegistry,
+  IEditorFeatureContribution,
+  EmptyDocCacheImpl,
+  IEditorDocumentModelService,
+} from '@opensumi/ide-editor/src/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/src/browser/workbench-editor.service';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
@@ -31,10 +44,7 @@ class MockEditorDocumentModelService {
 
   async createModelReference(uri: URI): Promise<EditorDocumentModel> {
     if (!this.instances.has(uri.toString())) {
-      const instance = this.injector.get(EditorDocumentModel, [
-        uri,
-        'test-content',
-      ]);
+      const instance = this.injector.get(EditorDocumentModel, [uri, 'test-content']);
       this.instances.set(uri.toString(), instance);
     }
     return this.instances.get(uri.toString())!;
@@ -74,55 +84,55 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
   let editorService: WorkbenchEditorService;
 
   async function createModel(filePath: string): Promise<EditorDocumentModel> {
-    const fileTextModel = injector.get(EditorDocumentModel, [
-      URI.file(filePath),
-      'test-content',
-    ]);
+    const fileTextModel = injector.get(EditorDocumentModel, [URI.file(filePath), 'test-content']);
     return fileTextModel;
   }
 
   beforeEach(async (done) => {
-    injector = createBrowserInjector([], new Injector([
-      {
-        token: IDocPersistentCacheProvider,
-        useClass: EmptyDocCacheImpl,
-      },
-      {
-        token: IEditorDocumentModelService,
-        useClass: MockEditorDocumentModelService,
-      },
-      {
-        token: SCMPreferences,
-        useClass: MockPreferenceService,
-      },
-      {
-        token: IEditorFeatureRegistry,
-        useValue: {
-          registerEditorFeatureContribution: (contribution) => {
-            editorFeatureContributions.add(contribution);
-            return toDisposable(() => {
-              editorFeatureContributions.delete(contribution);
-            });
+    injector = createBrowserInjector(
+      [],
+      new Injector([
+        {
+          token: IDocPersistentCacheProvider,
+          useClass: EmptyDocCacheImpl,
+        },
+        {
+          token: IEditorDocumentModelService,
+          useClass: MockEditorDocumentModelService,
+        },
+        {
+          token: SCMPreferences,
+          useClass: MockPreferenceService,
+        },
+        {
+          token: IEditorFeatureRegistry,
+          useValue: {
+            registerEditorFeatureContribution: (contribution) => {
+              editorFeatureContributions.add(contribution);
+              return toDisposable(() => {
+                editorFeatureContributions.delete(contribution);
+              });
+            },
+            runContributions: jest.fn(),
+            runProvideEditorOptionsForUri: jest.fn(),
           },
-          runContributions: jest.fn(),
-          runProvideEditorOptionsForUri: jest.fn(),
         },
-      },
-      {
-        token: CommandService,
-        useValue: {
-          executeCommand: jest.fn(),
+        {
+          token: CommandService,
+          useValue: {
+            executeCommand: jest.fn(),
+          },
         },
-      },
-      {
-        token: WorkbenchEditorService,
-        useClass: WorkbenchEditorServiceImpl,
-      },
-      {
-        token: IDirtyDiffWorkbenchController,
-        useClass: DirtyDiffWorkbenchController,
-      },
-    ]));
+        {
+          token: WorkbenchEditorService,
+          useClass: WorkbenchEditorServiceImpl,
+        },
+        {
+          token: IDirtyDiffWorkbenchController,
+          useClass: DirtyDiffWorkbenchController,
+        },
+      ]),
+    );
 
     editorService = injector.get(WorkbenchEditorService);
     scmPreferences = injector.get(SCMPreferences);
@@ -242,13 +252,9 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     // disposeCollection.dispose();
     expect(disposeSpy).toBeCalledTimes(1);
 
-    [
-      mouseDownSpy,
-      didChangeModelSpy,
-      toggleWidgetSpy,
-      disposeSpy,
-      disposeSpy1,
-    ].forEach((spy) => { spy.mockReset(); });
+    [mouseDownSpy, didChangeModelSpy, toggleWidgetSpy, disposeSpy, disposeSpy1].forEach((spy) => {
+      spy.mockReset();
+    });
   });
 
   it('ok for scm.alwaysShowDiffWidget changes', () => {
@@ -316,7 +322,9 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     expect(enableSpy).toBeCalled();
 
-    [enableSpy, disableSpy].forEach((spy) => { spy.mockReset(); });
+    [enableSpy, disableSpy].forEach((spy) => {
+      spy.mockReset();
+    });
   });
 
   it('ok for enable/disable', () => {
@@ -328,10 +336,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     dirtyDiffWorkbenchController['enabled'] = false;
 
-    const docModel1 = injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/abc.ts'),
-      'test',
-    ]);
+    const docModel1 = injector.get(EditorDocumentModel, [URI.file('/test/workspace/abc.ts'), 'test']);
 
     editorService.editorGroups.push({
       currentOpenType: { type: 'code' },
@@ -353,15 +358,11 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     editorService.editorGroups.pop();
     // old models
-    dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def1.ts'),
-      'test',
-    ]));
+    dirtyDiffWorkbenchController['models'].push(
+      injector.get(EditorDocumentModel, [URI.file('/test/workspace/def1.ts'), 'test']),
+    );
 
-    const docModel2 = injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def2.ts'),
-      'test',
-    ]);
+    const docModel2 = injector.get(EditorDocumentModel, [URI.file('/test/workspace/def2.ts'), 'test']);
 
     editorService.editorGroups.push({
       currentOpenType: { type: 'diff' },
@@ -395,10 +396,9 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     expect(dirtyDiffWorkbenchController['models']).toEqual([]);
     expect(dirtyDiffWorkbenchController['items']).toEqual({});
 
-    dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def4.ts'),
-      'test',
-    ]));
+    dirtyDiffWorkbenchController['models'].push(
+      injector.get(EditorDocumentModel, [URI.file('/test/workspace/def4.ts'), 'test']),
+    );
     dirtyDiffWorkbenchController['disable']();
     expect(dirtyDiffWorkbenchController['models'].length).toBe(1);
   });

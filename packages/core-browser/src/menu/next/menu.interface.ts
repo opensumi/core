@@ -9,7 +9,7 @@ import { MenuId } from './menu-id';
 import { KeybindingRegistry } from '../../keybinding';
 import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 
-export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
+export type TupleMenuNodeResult = [MenuNode[], MenuNode[]];
 
 export interface IMenuNodeOptions {
   /**
@@ -67,8 +67,8 @@ export class MenuItemNode extends MenuNode {
 
     const shortcutDesc = this.getShortcut(item.id);
 
-    this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
-    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding || '';
+    this.keybinding = (shortcutDesc && shortcutDesc.keybinding) || '';
+    this.rawKeybinding = (shortcutDesc && shortcutDesc.rawKeybinding) || '';
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
@@ -76,11 +76,7 @@ export class MenuItemNode extends MenuNode {
   }
 
   getExecuteArgs(args: any[] = []): any[] {
-    let runArgs = [
-      ...(this._options.args || []),
-      ...(args || []),
-      ...(this.extraTailArgs || []),
-    ];
+    let runArgs = [...(this._options.args || []), ...(args || []), ...(this.extraTailArgs || [])];
     // args 为 createMenu 时提供，同一个 menu 所有的都是同一 args
     // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer
     if (this.argsTransformer) {
@@ -91,10 +87,7 @@ export class MenuItemNode extends MenuNode {
   }
 
   execute(args: any[] = []): Promise<any> {
-    return this.commandService.executeCommand(
-      this.item.id,
-      ...this.getExecuteArgs(args),
-    );
+    return this.commandService.executeCommand(this.item.id, ...this.getExecuteArgs(args));
   }
 
   private getShortcut(commandId: string) {
@@ -102,9 +95,10 @@ export class MenuItemNode extends MenuNode {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
         // 取 priority 最高的 keybinding 作展示
-        const highPriorityKeybinding = keybindings.reduce((a, b) => (a.priority || 0) > (b.priority || 0) ? a : b);
+        const highPriorityKeybinding = keybindings.reduce((a, b) => ((a.priority || 0) > (b.priority || 0) ? a : b));
 
-        const isKeyCombination = Array.isArray(highPriorityKeybinding.resolved) && highPriorityKeybinding.resolved.length > 1;
+        const isKeyCombination =
+          Array.isArray(highPriorityKeybinding.resolved) && highPriorityKeybinding.resolved.length > 1;
         let keybinding = this.keybindings.acceleratorFor(highPriorityKeybinding, isOSX ? '' : '+').join(' ');
         if (isKeyCombination) {
           keybinding = `[${keybinding}]`;
@@ -185,11 +179,7 @@ export class ComponentMenuItemNode extends MenuNode {
   }
 
   getExecuteArgs(args: any[] = []): any[] {
-    let runArgs = [
-      ...(this._options.args || []),
-      ...(args || []),
-      ...(this.extraTailArgs || []),
-    ];
+    let runArgs = [...(this._options.args || []), ...(args || []), ...(this.extraTailArgs || [])];
     // args 为 createMenu 时提供，同一个 menu 所有的都是同一 args
     // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer
     if (this.argsTransformer) {
@@ -218,7 +208,9 @@ export interface IMenu extends IDisposable {
    */
   menuId: string | MenuId;
   readonly onDidChange: Event<IMenu | undefined>;
-  getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]>;
+  getMenuNodes(
+    options?: IMenuNodeOptions,
+  ): Array<[string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]>;
   onDispose: Event<void>;
 }
 

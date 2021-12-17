@@ -230,7 +230,6 @@ export namespace OPEN_EDITORS_COMMANDS {
 }
 
 export namespace COMMON_COMMANDS {
-
   export const FIND: Command = {
     id: 'core.find',
     label: localize('common.find'),

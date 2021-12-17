@@ -11,7 +11,6 @@ export interface IProps {
 }
 
 function renderError(error: ITerminalError, eService: ITerminalErrorService, view: ITerminalGroupViewService) {
-
   const onRemoveClick = () => {
     view.removeWidget(error.id);
   };
@@ -20,24 +19,23 @@ function renderError(error: ITerminalError, eService: ITerminalErrorService, vie
     eService.fix(error.id);
   };
 
-  return (
-    error.stopped ?
-      <div className={ styles.terminalCover }>
-        <div>{ localize('terminal.disconnected') }</div>
-        <div>
-          { localize('terminal.can.not.reconnect') }
-          <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
-        </div>
+  return error.stopped ? (
+    <div className={styles.terminalCover}>
+      <div>{localize('terminal.disconnected')}</div>
+      <div>
+        {localize('terminal.can.not.reconnect')}
+        <a onClick={onRetryClick}>{localize('terminal.try.reconnect')}</a>
       </div>
-      :
-      <div className={ styles.terminalCover }>
-        <div>{ localize('terminal.disconnected') }</div>
-        <div>
-          <a onClick={ onRemoveClick }>{ localize('terminal.stop') }</a>
-          { localize('terminal.or') }
-          <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
-        </div>
+    </div>
+  ) : (
+    <div className={styles.terminalCover}>
+      <div>{localize('terminal.disconnected')}</div>
+      <div>
+        <a onClick={onRemoveClick}>{localize('terminal.stop')}</a>
+        {localize('terminal.or')}
+        <a onClick={onRetryClick}>{localize('terminal.try.reconnect')}</a>
       </div>
+    </div>
   );
 }
 
@@ -65,18 +63,15 @@ export default ({ widget, error, show }: IProps) => {
   };
 
   return (
-    <div className={ styles.terminalContainer }>
-      {
-        error ? renderError(error, errorService, view) : null
-      }
+    <div className={styles.terminalContainer}>
+      {error ? renderError(error, errorService, view) : null}
       <div
-        data-term-id={ widget.id }
-        style={ { display: error ? 'none' : 'block' } }
-        className={ styles.terminalContent }
-        onFocus={ onFocus }
-        ref={ content }
-      >
-      </div>
+        data-term-id={widget.id}
+        style={{ display: error ? 'none' : 'block' }}
+        className={styles.terminalContent}
+        onFocus={onFocus}
+        ref={content}
+      ></div>
     </div>
   );
 };

@@ -19,22 +19,20 @@ interface ILocation {
 
 @Injectable()
 export class ExternalUriService implements IExternalUriService {
-
   @Autowired(AppConfig)
-
   private readonly appConfig: AppConfig;
 
   resolveExternalUri(uri: URI): URI {
     const localhost = this.extractLocalHost(uri);
     if (localhost) {
-      return this.toRemoteUrl( uri, localhost);
+      return this.toRemoteUrl(uri, localhost);
     }
     return uri;
   }
 
   protected toRemoteUrl(uri: URI, localhost: ILocation): URI {
     const authority = this.toRemoteHost(localhost);
-    return  URI.from({
+    return URI.from({
       // scheme 默认和当前 scheme 一致
       scheme: URI.parse(window.location.href).scheme,
       authority,
@@ -53,7 +51,7 @@ export class ExternalUriService implements IExternalUriService {
   /**
    * 解析本地地址
    */
-  protected extractLocalHost(uri: URI): { address: string, port: number } | undefined {
+  protected extractLocalHost(uri: URI): { address: string; port: number } | undefined {
     if (uri.scheme !== 'http' && uri.scheme !== 'https') {
       return undefined;
     }

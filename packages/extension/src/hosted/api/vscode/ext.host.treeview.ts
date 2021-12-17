@@ -1,4 +1,10 @@
-import { IExtHostTreeView, IMainThreadTreeView, ITreeItemLabel, ITreeViewRevealOptions, MainThreadAPIIdentifier } from '../../../common/vscode';
+import {
+  IExtHostTreeView,
+  IMainThreadTreeView,
+  ITreeItemLabel,
+  ITreeViewRevealOptions,
+  MainThreadAPIIdentifier,
+} from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
 import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@opensumi/ide-core-common';
@@ -41,12 +47,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       throw new Error('Options with treeDataProvider is mandatory');
     }
 
-    const treeView = new ExtHostTreeView(
-      treeViewId,
-      options,
-      this.proxy,
-      this.extHostCommand,
-    );
+    const treeView = new ExtHostTreeView(treeViewId, options, this.proxy, this.extHostCommand);
     this.treeViews.set(treeViewId, treeView);
 
     return {
@@ -113,7 +114,11 @@ export class ExtHostTreeViews implements IExtHostTreeView {
    * @param treeViewId
    * @param treeItemId
    */
-  async $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined> {
+  async $resolveTreeItem(
+    treeViewId: string,
+    treeItemId: string,
+    token: CancellationToken,
+  ): Promise<TreeViewItem | undefined> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
       throw new Error('No tree view with id ' + treeViewId);
@@ -169,11 +174,14 @@ export class ExtHostTreeViews implements IExtHostTreeView {
 }
 
 class ExtHostTreeView<T> implements IDisposable {
-
-  private onDidExpandElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<vscode.TreeViewExpansionEvent<T>>();
+  private onDidExpandElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<
+    vscode.TreeViewExpansionEvent<T>
+  >();
   public readonly onDidExpandElement = this.onDidExpandElementEmitter.event;
 
-  private onDidCollapseElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<vscode.TreeViewExpansionEvent<T>>();
+  private onDidCollapseElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<
+    vscode.TreeViewExpansionEvent<T>
+  >();
   public readonly onDidCollapseElement = this.onDidCollapseElementEmitter.event;
 
   private readonly onDidChangeSelectionEmitter = new Emitter<vscode.TreeViewSelectionChangeEvent<T>>();
@@ -203,20 +211,15 @@ class ExtHostTreeView<T> implements IDisposable {
     private proxy: IMainThreadTreeView,
     private commands: ExtHostCommands,
   ) {
-
     this.treeDataProvider = this.options.treeDataProvider;
 
     // 将 options 直接取值，避免循环引用导致序列化异常
-    proxy.$registerTreeDataProvider(
-      treeViewId,
-      {
-        showCollapseAll: !!options.showCollapseAll,
-        canSelectMany: !!options.canSelectMany,
-      },
-    );
+    proxy.$registerTreeDataProvider(treeViewId, {
+      showCollapseAll: !!options.showCollapseAll,
+      canSelectMany: !!options.canSelectMany,
+    });
 
     if (this.treeDataProvider.onDidChangeTreeData) {
-
       const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
         proxy.$refresh<T>(treeViewId);
       });
@@ -308,7 +311,7 @@ class ExtHostTreeView<T> implements IDisposable {
       const node = this.cacheTreeItems.get(cache);
 
       if (node) {
-        const resolve = await this.treeDataProvider.resolveTreeItem(node!, cache, token) ?? node;
+        const resolve = (await this.treeDataProvider.resolveTreeItem(node!, cache, token)) ?? node;
         node.tooltip = resolve.tooltip;
         node.command = resolve.command;
         return this.toTreeViewItem(node);
@@ -326,7 +329,6 @@ class ExtHostTreeView<T> implements IDisposable {
     if (result) {
       const treeItems: TreeViewItem[] = [];
       const promises = result.map(async (value, index) => {
-
         // 遍历treeDataProvider获取的值生成节点
         const treeItem = await this.treeDataProvider.getTreeItem(value);
         this.cacheTreeItems.set(value, treeItem);
@@ -347,7 +349,8 @@ class ExtHostTreeView<T> implements IDisposable {
         }
 
         // 生成ID用于存储缓存
-        const id = treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
+        const id =
+          treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
         this.cache.set(id, value);
 
         const treeViewItem = this.toTreeViewItem(treeItem, {
@@ -431,7 +434,11 @@ class ExtHostTreeView<T> implements IDisposable {
   }
 
   private getDarkIconPath(extensionTreeItem: vscode.TreeItem): string | undefined {
-    if (extensionTreeItem.iconPath && !(extensionTreeItem.iconPath instanceof ThemeIcon) && (extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).dark) {
+    if (
+      extensionTreeItem.iconPath &&
+      !(extensionTreeItem.iconPath instanceof ThemeIcon) &&
+      (extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).dark
+    ) {
       return this.getIconPath((extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).dark);
     }
     return undefined;
@@ -439,8 +446,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private getLightIconPath(extensionTreeItem: vscode.TreeItem): string | undefined {
     if (extensionTreeItem.iconPath && !(extensionTreeItem.iconPath instanceof ThemeIcon)) {
-      if (typeof extensionTreeItem.iconPath === 'string'
-        || Uri.isUri(extensionTreeItem.iconPath)) {
+      if (typeof extensionTreeItem.iconPath === 'string' || Uri.isUri(extensionTreeItem.iconPath)) {
         return this.getIconPath(extensionTreeItem.iconPath);
       }
       return this.getIconPath((extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).light);

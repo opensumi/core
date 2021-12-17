@@ -1,4 +1,4 @@
-/********************************************************************************
+/** ******************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
  * This program and the accompanying materials are made available under the
@@ -22,28 +22,33 @@ import { FormattingOptions, SingleEditOperation, Position } from '../../../../co
 import { createToken } from './util';
 
 export class OnTypeFormattingAdapter {
+  constructor(
+    private readonly provider: vscode.OnTypeFormattingEditProvider,
+    private readonly documents: ExtensionDocumentDataManager,
+  ) {}
 
-    constructor(
-        private readonly provider: vscode.OnTypeFormattingEditProvider,
-        private readonly documents: ExtensionDocumentDataManager,
-    ) { }
-
-    provideOnTypeFormattingEdits(resource: URI, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
-        const document = this.documents.getDocumentData(resource.toString());
-        if (!document) {
-            return Promise.reject(new Error(`There are no document for ${resource}`));
-        }
-
-        const doc = document.document;
-        const pos = Converter.toPosition(position);
-
-        // tslint:disable-next-line:no-any
-        return Promise.resolve(this.provider.provideOnTypeFormattingEdits(doc, pos, ch, options as any, createToken())).then((value) => {
-            if (Array.isArray(value)) {
-                return value.map(Converter.fromTextEdit);
-            }
-            return undefined;
-        });
+  provideOnTypeFormattingEdits(
+    resource: URI,
+    position: Position,
+    ch: string,
+    options: FormattingOptions,
+  ): Promise<SingleEditOperation[] | undefined> {
+    const document = this.documents.getDocumentData(resource.toString());
+    if (!document) {
+      return Promise.reject(new Error(`There are no document for ${resource}`));
     }
 
+    const doc = document.document;
+    const pos = Converter.toPosition(position);
+
+    // tslint:disable-next-line:no-any
+    return Promise.resolve(
+      this.provider.provideOnTypeFormattingEdits(doc, pos, ch, options as any, createToken()),
+    ).then((value) => {
+      if (Array.isArray(value)) {
+        return value.map(Converter.fromTextEdit);
+      }
+      return undefined;
+    });
+  }
 }

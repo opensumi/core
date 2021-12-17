@@ -39,7 +39,7 @@ export class LogServiceManager implements ILogServiceManager {
     this.logFolderPath = this._getLogFolder();
     this.globalLogLevel = options.logLevel || LogLevel.Info;
     this.LogServiceClass = this.appConfig.LogServiceClass || LogService;
-  }
+  };
 
   getLogger = (namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService => {
     if (this.logMap.get(namespace)) {
@@ -50,27 +50,29 @@ export class LogServiceManager implements ILogServiceManager {
       return logger;
     }
     const logger = new this.LogServiceClass(
-      Object.assign({
-        namespace,
-        logLevel: this.globalLogLevel,
-        logServiceManager: this,
-      }, loggerOptions));
+      Object.assign(
+        {
+          namespace,
+          logLevel: this.globalLogLevel,
+          logServiceManager: this,
+        },
+        loggerOptions,
+      ),
+    );
     this.logMap.set(namespace, logger);
     return logger;
-  }
+  };
 
   removeLogger = (namespace: SupportLogNamespace) => {
     this.logMap.delete(namespace);
-  }
+  };
 
-  getGlobalLogLevel = () => {
-    return this.globalLogLevel;
-  }
+  getGlobalLogLevel = () => this.globalLogLevel;
 
   setGlobalLogLevel = (level: LogLevel) => {
     this.globalLogLevel = level;
     this.logLevelChangeEmitter.fire(level);
-  }
+  };
 
   get onDidChangeLogLevel() {
     return this.logLevelChangeEmitter.event;
@@ -78,26 +80,18 @@ export class LogServiceManager implements ILogServiceManager {
 
   getLogFolder = (): string => {
     if (!this.logFolderPath) {
-      throw new Error(`Please do init first!`);
+      throw new Error('Please do init first!');
     }
     return this.logFolderPath;
-  }
+  };
 
-  getRootLogFolder = (): string => {
-    return this.logRootFolderPath;
-  }
+  getRootLogFolder = (): string => this.logRootFolderPath;
 
-  cleanOldLogs = async () => {
-    return cleanOldLogs(this.getRootLogFolder());
-  }
+  cleanOldLogs = async () => cleanOldLogs(this.getRootLogFolder());
 
-  cleanAllLogs = async () => {
-    return cleanAllLogs(this.getRootLogFolder());
-  }
+  cleanAllLogs = async () => cleanAllLogs(this.getRootLogFolder());
 
-  cleanExpiredLogs = async (day: number) => {
-    return cleanExpiredLogs(day, this.getRootLogFolder());
-  }
+  cleanExpiredLogs = async (day: number) => cleanExpiredLogs(day, this.getRootLogFolder());
 
   getLogZipArchiveByDay(day: number): Promise<Archive> {
     return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));
@@ -116,7 +110,7 @@ export class LogServiceManager implements ILogServiceManager {
     this.logMap.forEach((logger) => {
       logger.dispose();
     });
-  }
+  };
 
   /**
    * 日志目录路径为 `${logRootPath}/${folderName}`
@@ -127,9 +121,9 @@ export class LogServiceManager implements ILogServiceManager {
   private _getLogFolder = (): string => {
     const logRootPath = this.getRootLogFolder();
     if (!logRootPath) {
-      throw new Error(`Please do initLogManager first!!!`);
+      throw new Error('Please do initLogManager first!!!');
     }
 
     return getLogFolder(logRootPath);
-  }
+  };
 }

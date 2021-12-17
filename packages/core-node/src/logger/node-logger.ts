@@ -1,18 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  ILogServiceManager,
-  SupportLogNamespace,
-  ILogService,
-  LogLevel,
-} from '@opensumi/ide-core-common';
+import { ILogServiceManager, SupportLogNamespace, ILogService, LogLevel } from '@opensumi/ide-core-common';
 
-// tslint:disable-next-line:no-empty-interface
-export interface INodeLogger extends ILogService {}
+export type INodeLogger = ILogService;
 export const INodeLogger = Symbol('INodeLogger');
 
 @Injectable()
 export class NodeLogger implements INodeLogger {
-
   @Autowired(ILogServiceManager)
   private loggerManger: ILogServiceManager;
 

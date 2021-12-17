@@ -1,4 +1,3 @@
-
 /**
  * 用于实现效率更高的编辑操作
  */
@@ -6,13 +5,10 @@
 import { IRange, IPosition, IEditOperation } from './types/editor';
 
 export class BasicTextLines {
-
-  constructor(protected readonly _lines: string[], protected _eol: '\n' | '\r\n') {
-
-  }
+  constructor(protected readonly _lines: string[], protected _eol: '\n' | '\r\n') {}
 
   getContent() {
-    return this._lines.join(this._eol)
+    return this._lines.join(this._eol);
   }
 
   private _setLineText(lineIndex: number, newValue: string): void {
@@ -25,7 +21,10 @@ export class BasicTextLines {
 
   public acceptChange(change: IEditOperation) {
     this._acceptDeleteRange(change.range);
-    this._acceptInsertText({lineNumber: change.range.startLineNumber, column: change.range.startColumn }, change.text || '');
+    this._acceptInsertText(
+      { lineNumber: change.range.startLineNumber, column: change.range.startColumn },
+      change.text || '',
+    );
   }
 
   private _getLineContent(index: number): string {
@@ -39,22 +38,23 @@ export class BasicTextLines {
         return;
       }
       // Delete text on the affected line
-      this._setLineText(range.startLineNumber - 1,
-        this._getLineContent(range.startLineNumber - 1).substring(0, range.startColumn - 1)
-        + this._getLineContent(range.startLineNumber - 1).substring(range.endColumn - 1),
+      this._setLineText(
+        range.startLineNumber - 1,
+        this._getLineContent(range.startLineNumber - 1).substring(0, range.startColumn - 1) +
+          this._getLineContent(range.startLineNumber - 1).substring(range.endColumn - 1),
       );
       return;
     }
 
     // Take remaining text on last line and append it to remaining text on first line
-    this._setLineText(range.startLineNumber - 1,
-      this._getLineContent(range.startLineNumber - 1).substring(0, range.startColumn - 1)
-      + this._getLineContent(range.endLineNumber - 1).substring(range.endColumn - 1),
+    this._setLineText(
+      range.startLineNumber - 1,
+      this._getLineContent(range.startLineNumber - 1).substring(0, range.startColumn - 1) +
+        this._getLineContent(range.endLineNumber - 1).substring(range.endColumn - 1),
     );
 
     // Delete middle lines
     this._lines.splice(range.startLineNumber, range.endLineNumber - range.startLineNumber);
-
   }
 
   private _acceptInsertText(position: IPosition, insertText: string): void {
@@ -65,10 +65,11 @@ export class BasicTextLines {
     const insertLines = insertText.split(/\r\n|\r|\n/);
     if (insertLines.length === 1) {
       // Inserting text on one line
-      this._setLineText(position.lineNumber - 1,
-        this._getLineContent(position.lineNumber - 1).substring(0, position.column - 1)
-        + insertLines[0]
-        + this._getLineContent(position.lineNumber - 1).substring(position.column - 1),
+      this._setLineText(
+        position.lineNumber - 1,
+        this._getLineContent(position.lineNumber - 1).substring(0, position.column - 1) +
+          insertLines[0] +
+          this._getLineContent(position.lineNumber - 1).substring(position.column - 1),
       );
       return;
     }
@@ -77,9 +78,9 @@ export class BasicTextLines {
     insertLines[insertLines.length - 1] += this._getLineContent(position.lineNumber - 1).substring(position.column - 1);
 
     // Delete overflowing text from first line and insert text on first line
-    this._setLineText(position.lineNumber - 1,
-      this._getLineContent(position.lineNumber - 1).substring(0, position.column - 1)
-      + insertLines[0],
+    this._setLineText(
+      position.lineNumber - 1,
+      this._getLineContent(position.lineNumber - 1).substring(0, position.column - 1) + insertLines[0],
     );
 
     // Insert new lines & store lengths
@@ -88,7 +89,5 @@ export class BasicTextLines {
       this._lines.splice(position.lineNumber + i - 1, 0, insertLines[i]);
       newLengths[i - 1] = insertLines[i].length + this._eol.length;
     }
-
   }
-
 }

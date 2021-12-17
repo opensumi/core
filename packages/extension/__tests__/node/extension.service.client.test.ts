@@ -1,4 +1,3 @@
-// tslint:disable no-console
 import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
@@ -33,14 +32,15 @@ describe('Extension Client Serivce', () => {
             ignoreId: [],
           },
         },
-      }, {
-      token: INodeLogger,
-      useValue: {
-        log: console.log,
-        error: console.error,
-        warn: console.warn,
       },
-    },
+      {
+        token: INodeLogger,
+        useValue: {
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+        },
+      },
       {
         token: IFileService,
         useClass: FileService,
@@ -82,7 +82,9 @@ describe('Extension Client Serivce', () => {
     });
 
     it('should get all extension and contains extraMetadata', async () => {
-      const extension = await extensionNodeClient.getAllExtensions([extensionDir], [], 'zh_CN', { readme: './README.md' });
+      const extension = await extensionNodeClient.getAllExtensions([extensionDir], [], 'zh_CN', {
+        readme: './README.md',
+      });
       const expectExtension = extension.find((e) => e.id === testExtId);
       expect(expectExtension?.extraMetadata.readme.trim()).toEqual(testExtReadme);
     });
@@ -95,7 +97,9 @@ describe('Extension Client Serivce', () => {
     });
 
     it('should get a extension and contains extraMetadata', async () => {
-      const extension = await extensionNodeClient.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', { readme: './README.md' });
+      const extension = await extensionNodeClient.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', {
+        readme: './README.md',
+      });
       const readme = fs.readFileSync(path.join(extensionDir, testExtPath, 'README.md'), 'utf8').toString();
 
       expect(extension!.extraMetadata.readme).toBe(readme);
@@ -112,7 +116,7 @@ describe('Extension Client Serivce', () => {
       // make sure the workspace-storage path is exist
       const extensionStorageServer = injector.get(IExtensionStoragePathServer);
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);
-      const storagePath = await extensionStorageServer.getLastStoragePath() || '';
+      const storagePath = (await extensionStorageServer.getLastStoragePath()) || '';
       await extensionNodeClient.updateLanguagePack('zh-CN', targetPath, storagePath);
       expect(fs.existsSync(lpPath));
       // const content = fs.readFileSync(lpPath, { encoding: 'utf8' });

@@ -10,15 +10,12 @@ export class SearchHistory {
 
   recentStorage: RecentStorage;
 
-  constructor(
-    searchServiceClient: IContentSearchClientService,
-    recentStorage: RecentStorage,
-  ) {
+  constructor(searchServiceClient: IContentSearchClientService, recentStorage: RecentStorage) {
     this.searchServiceClient = searchServiceClient;
     this.recentStorage = recentStorage;
   }
 
-  private currentIndex: number = -1;
+  private currentIndex = -1;
 
   setRecentSearchWord() {
     if (this.currentIndex === -1) {
@@ -73,9 +70,7 @@ export class SearchHistory {
   }
 
   async setSearchHistory(word: string) {
-    if (this.searchHistoryList.some((value) => {
-      return value === word;
-    })) {
+    if (this.searchHistoryList.some((value) => value === word)) {
       return;
     }
     this.searchHistoryList.push(word);
@@ -84,14 +79,14 @@ export class SearchHistory {
 
   private async getMostRecentlySearchWord() {
     const recentStorage = await this.recentStorage.getScopeStorage();
-    const list: string[] = await recentStorage.get<string[]>(SEARCH_WORD_SCOPE) || [];
+    const list: string[] = (await recentStorage.get<string[]>(SEARCH_WORD_SCOPE)) || [];
     return list;
   }
 
   private async setMostRecentlySearchWord(word) {
     const recentStorage = await this.recentStorage.getScopeStorage();
     let list: string[] = [];
-    const oldList = await this.getMostRecentlySearchWord() || [];
+    const oldList = (await this.getMostRecentlySearchWord()) || [];
 
     if (isArray(word)) {
       list = list.concat(word);

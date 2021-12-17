@@ -1,6 +1,15 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, Key, KeyboardLayoutService, KeyCode, ILinuxKeyboardLayoutInfo, isOSX } from '@opensumi/ide-core-browser';
+import {
+  ILogger,
+  GlobalBrowserStorageService,
+  KeyboardNativeLayoutService,
+  Key,
+  KeyboardLayoutService,
+  KeyCode,
+  ILinuxKeyboardLayoutInfo,
+  isOSX,
+} from '@opensumi/ide-core-browser';
 import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
 import { MockLogger } from '../../__mocks__/logger';
 
@@ -13,22 +22,23 @@ describe('KeyboardLayoutService should be work', () => {
     setData: (key, value) => {
       storage[key] = value;
     },
-    getData: (key) => {
-      return storage[key];
-    },
+    getData: (key) => storage[key],
   };
 
   beforeAll(async (done) => {
-    injector = createBrowserInjector([], new MockInjector([
-      {
-        token: GlobalBrowserStorageService,
-        useValue: mockGlobalBrowserStorageService,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
-      },
-    ]));
+    injector = createBrowserInjector(
+      [],
+      new MockInjector([
+        {
+          token: GlobalBrowserStorageService,
+          useValue: mockGlobalBrowserStorageService,
+        },
+        {
+          token: ILogger,
+          useClass: MockLogger,
+        },
+      ]),
+    );
 
     keyboardLayoutService = injector.get(KeyboardLayoutService);
 
@@ -52,7 +62,6 @@ describe('KeyboardLayoutService should be work', () => {
   });
 
   describe('#method should be work', () => {
-
     it('initialize & onKeyboardLayoutChanged', async (done) => {
       const disposable = keyboardLayoutService.onKeyboardLayoutChanged(() => {
         disposable.dispose();
@@ -64,7 +73,9 @@ describe('KeyboardLayoutService should be work', () => {
     it('resolveKeyCode & getKeyboardCharacter', async (done) => {
       require('../../src/keyboard/layouts/en.linux.ts');
       const keyboardLayoutProvider: KeyboardNativeLayoutService = injector.get(KeyboardNativeLayoutService);
-      const layout = KeyboardLayoutContribution.INSTANCE.layoutInfos.find((info) => (info.layout as ILinuxKeyboardLayoutInfo).model === 'pc105');
+      const layout = KeyboardLayoutContribution.INSTANCE.layoutInfos.find(
+        (info) => (info.layout as ILinuxKeyboardLayoutInfo).model === 'pc105',
+      );
       const disposable = keyboardLayoutService.onKeyboardLayoutChanged(() => {
         const toggleComment = keyboardLayoutService.resolveKeyCode(KeyCode.createKeyCode('Slash+M1'));
         expect(toggleComment.toString()).toBe(`${isOSX ? '⌘' : 'Ctrl'}+/`);

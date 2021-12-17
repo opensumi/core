@@ -7,7 +7,7 @@ export interface INativeCredentialService {
   getPassword(service: string, account: string): Promise<string | null>;
   deletePassword(service: string, account: string): Promise<boolean>;
   findPassword(service: string): Promise<string | null>;
-  findCredentials(service: string): Promise<Array<{ account: string, password: string }>>;
+  findCredentials(service: string): Promise<Array<{ account: string; password: string }>>;
 }
 
 export interface IChunkedPassword {
@@ -16,6 +16,6 @@ export interface IChunkedPassword {
 }
 
 export interface ICredentialsChangeEvent {
-	service: string
-	account: string;
+  service: string;
+  account: string;
 }

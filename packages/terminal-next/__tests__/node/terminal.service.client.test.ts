@@ -23,7 +23,7 @@ describe('TerminalServiceClientImpl', () => {
 
   it('Should be create pty, and other operations.', async () => {
     const mockId = '1';
-    await terminalServiceClient.create(mockId, 200, 200, { name: 'test'} );
+    await terminalServiceClient.create(mockId, 200, 200, { name: 'test' });
     const terminal: IPty = (terminalService as any).getTerminal(mockId);
     let receiveData = '';
 
@@ -51,7 +51,7 @@ describe('TerminalServiceClientImpl', () => {
   it('Should be  disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
-    await terminalServiceClient.create(mockId, 200, 200, { name: 'test'} );
+    await terminalServiceClient.create(mockId, 200, 200, { name: 'test' });
 
     terminalServiceClient.disposeById(mockId);
     terminalServiceClient.dispose();

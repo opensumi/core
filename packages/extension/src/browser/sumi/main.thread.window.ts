@@ -2,13 +2,18 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import { Disposable } from '@opensumi/ide-core-browser';
-import { IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtHostIDEWindow, IWindowInfo } from '../../common/sumi/window';
+import {
+  IMainThreadIDEWindow,
+  IIDEWindowWebviewOptions,
+  IIDEWindowWebviewEnv,
+  IExtHostIDEWindow,
+  IWindowInfo,
+} from '../../common/sumi/window';
 import { IPlainWebviewWindow, IWebviewService } from '@opensumi/ide-webview';
 
 // 与 MainThreadWindow 做一下区分，用于拓展 sumi 下的ideWindow API
 @Injectable({ multiple: true })
 export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWindow {
-
   private _proxy: IExtHostIDEWindow;
   // 当前仅支持单个浮动窗口管理及通信
   private _plainWebviewWindowMap: Map<string, IPlainWebviewWindow> = new Map();
@@ -27,34 +32,38 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
     };
   }
 
-  async $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IWindowInfo> {
-    try {
-      let window: IPlainWebviewWindow;
-      if (this._plainWebviewWindowMap.has(webviewId)) {
-        window = this._plainWebviewWindowMap.get(webviewId)!;
-      } else {
-        window = this.webviewService.createWebviewWindow(options, env);
-        if (window) {
-          this.disposables.push(window.onMessage((event) => {
+  async $createWebviewWindow(
+    webviewId: string,
+    options?: IIDEWindowWebviewOptions,
+    env?: IIDEWindowWebviewEnv,
+  ): Promise<IWindowInfo> {
+    let window: IPlainWebviewWindow;
+    if (this._plainWebviewWindowMap.has(webviewId)) {
+      window = this._plainWebviewWindowMap.get(webviewId)!;
+    } else {
+      window = this.webviewService.createWebviewWindow(options, env);
+      if (window) {
+        this.disposables.push(
+          window.onMessage((event) => {
             this._proxy.$postMessage(webviewId, event);
-          }));
-          this.disposables.push(window.onClosed((event) => {
+          }),
+        );
+        this.disposables.push(
+          window.onClosed((event) => {
             this._proxy.$dispatchClosed(webviewId);
             // 清理关闭的窗口模拟器
             this.$destroy(webviewId);
-          }));
-          this.disposables.push(window);
-          this._plainWebviewWindowMap.set(webviewId, window);
-        }
+          }),
+        );
+        this.disposables.push(window);
+        this._plainWebviewWindowMap.set(webviewId, window);
       }
-      await window.ready;
-      return {
-        windowId: window.windowId,
-        webContentsId: window.webContentsId,
-      };
-    } catch (e) {
-      throw e;
     }
+    await window.ready;
+    return {
+      windowId: window.windowId,
+      webContentsId: window.webContentsId,
+    };
   }
 
   async $show(webviewId: string) {
@@ -71,7 +80,7 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
     }
   }
 
-  async $setSize(webviewId: string, size: { width: number; height: number; }) {
+  async $setSize(webviewId: string, size: { width: number; height: number }) {
     if (this._plainWebviewWindowMap.has(webviewId)) {
       const window = this._plainWebviewWindowMap.get(webviewId);
       window?.setSize(size);
@@ -106,5 +115,4 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
       this._plainWebviewWindowMap.delete(webviewId);
     }
   }
-
 }

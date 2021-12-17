@@ -1,8 +1,21 @@
-import { ExtHostAuthentication, createAuthenticationApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.authentication';
+import {
+  ExtHostAuthentication,
+  createAuthenticationApiFactory,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.authentication';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadAuthentication, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadAuthentication,
+  ExtHostAPIIdentifier,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { Emitter, ILoggerManagerClient, StorageProvider, IAuthenticationService, CommandRegistry } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  ILoggerManagerClient,
+  StorageProvider,
+  IAuthenticationService,
+  CommandRegistry,
+} from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import type vscode from 'vscode';
 import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
@@ -69,8 +82,14 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
       displayName: 'Vim',
       isBuiltin: false,
     });
-    extHostAuthentication = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostAuthentication, new ExtHostAuthentication(rpcProtocolMain)) as ExtHostAuthentication;
-    mainThreadAuthentication = rpcProtocolExt.set(MainThreadAPIIdentifier.MainThreadAuthentication, injector.get(MainThreadAuthentication, [rpcProtocolExt]));
+    extHostAuthentication = rpcProtocolMain.set(
+      ExtHostAPIIdentifier.ExtHostAuthentication,
+      new ExtHostAuthentication(rpcProtocolMain),
+    ) as ExtHostAuthentication;
+    mainThreadAuthentication = rpcProtocolExt.set(
+      MainThreadAPIIdentifier.MainThreadAuthentication,
+      injector.get(MainThreadAuthentication, [rpcProtocolExt]),
+    );
     authenticationAPI = createAuthenticationApiFactory(extension, extHostAuthentication);
     const sessions: vscode.AuthenticationSession[] = [];
     const onDidChangeSessions = new Emitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
@@ -127,7 +146,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     // 默认会注册一个请求登录的命令
     expect(commandRegistry.getCommand(signInCommandId)).toBeTruthy();
     // 也会注册一个菜单
-    expect(menuRegistry.getMenuItems(MenuId.AccountsContext).some((menu: IMenuItem) => menu.command === signInCommandId)).toBeTruthy();
+    expect(
+      menuRegistry.getMenuItems(MenuId.AccountsContext).some((menu: IMenuItem) => menu.command === signInCommandId),
+    ).toBeTruthy();
     // 这时候获取的是 undefined
     expect(session).toBeUndefined();
   });
@@ -222,8 +243,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
         };
         return session;
       },
-      removeSession: async () => { },
+      removeSession: async () => {},
     });
   });
-
 });

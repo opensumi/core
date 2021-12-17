@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -7,44 +7,43 @@ import * as arrays from '../src/arrays';
 
 function equal(a, b) {
   expect(a).toBe(b);
-};
+}
 
 function deepEqual(a, b) {
   expect(a).toEqual(b);
-};
+}
 
 function assertOk(value) {
   expect(value).toBeTruthy();
-};
+}
 
 function assertFail(value) {
   expect(value).toThrowError();
-};
+}
 
 describe('Arrays', () => {
-
   test('findFirst', () => {
     const array = [1, 4, 5, 7, 55, 59, 60, 61, 64, 69];
 
-    let idx = arrays.findFirstInSorted(array, e => e >= 0);
+    let idx = arrays.findFirstInSorted(array, (e) => e >= 0);
     equal(array[idx], 1);
 
-    idx = arrays.findFirstInSorted(array, e => e > 1);
+    idx = arrays.findFirstInSorted(array, (e) => e > 1);
     equal(array[idx], 4);
 
-    idx = arrays.findFirstInSorted(array, e => e >= 8);
+    idx = arrays.findFirstInSorted(array, (e) => e >= 8);
     equal(array[idx], 55);
 
-    idx = arrays.findFirstInSorted(array, e => e >= 61);
+    idx = arrays.findFirstInSorted(array, (e) => e >= 61);
     equal(array[idx], 61);
 
-    idx = arrays.findFirstInSorted(array, e => e >= 69);
+    idx = arrays.findFirstInSorted(array, (e) => e >= 69);
     equal(array[idx], 69);
 
-    idx = arrays.findFirstInSorted(array, e => e >= 70);
+    idx = arrays.findFirstInSorted(array, (e) => e >= 70);
     equal(idx, array.length);
 
-    idx = arrays.findFirstInSorted([], e => e >= 0);
+    idx = arrays.findFirstInSorted([], (e) => e >= 0);
     equal(array[idx], 1);
   });
 
@@ -58,7 +57,7 @@ describe('Arrays', () => {
     }
 
     let counter = 0;
-    let data = fill(10000, () => ({ n: 1, m: counter++ }));
+    const data = fill(10000, () => ({ n: 1, m: counter++ }));
 
     arrays.mergeSort(data, (a, b) => a.n - b.n);
 
@@ -70,23 +69,21 @@ describe('Arrays', () => {
   });
 
   test('mergeSort', () => {
-    let data = arrays.mergeSort([6, 5, 3, 1, 8, 7, 2, 4], (a, b) => a - b);
+    const data = arrays.mergeSort([6, 5, 3, 1, 8, 7, 2, 4], (a, b) => a - b);
     deepEqual(data, [1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   test('mergeSort, sorted array', () => {
-    let data = arrays.mergeSort([1, 2, 3, 4, 5, 6], (a, b) => a - b);
+    const data = arrays.mergeSort([1, 2, 3, 4, 5, 6], (a, b) => a - b);
     deepEqual(data, [1, 2, 3, 4, 5, 6]);
   });
 
   test('mergeSort, is stable', () => {
-
-    let numbers = arrays.mergeSort([33, 22, 11, 4, 99, 1], (a, b) => 0);
+    const numbers = arrays.mergeSort([33, 22, 11, 4, 99, 1], (a, b) => 0);
     deepEqual(numbers, [33, 22, 11, 4, 99, 1]);
   });
 
   test('mergeSort, many random numbers', () => {
-
     function compare(a: number, b: number) {
       if (a < b) {
         return -1;
@@ -98,9 +95,9 @@ describe('Arrays', () => {
     }
 
     function assertSorted(array: number[]) {
-      let last = array[0];
+      const last = array[0];
       for (let i = 1; i < array.length; i++) {
-        let n = array[i];
+        const n = array[i];
         if (last > n) {
           assertFail(JSON.stringify(array.slice(i - 10, i + 10)));
         }
@@ -109,9 +106,9 @@ describe('Arrays', () => {
     const MAX = 101;
     const data: number[][] = [];
     for (let i = 1; i < MAX; i++) {
-      let array: number[] = [];
+      const array: number[] = [];
       for (let j = 0; j < 10 + i; j++) {
-        array.push(Math.random() * 10e8 | 0);
+        array.push((Math.random() * 10e8) | 0);
       }
       data.push(array);
     }
@@ -128,14 +125,10 @@ describe('Arrays', () => {
     }
 
     let d = arrays.sortedDiff([1, 2, 4], [], compare);
-    deepEqual(d, [
-      { start: 0, deleteCount: 3, toInsert: [] }
-    ]);
+    deepEqual(d, [{ start: 0, deleteCount: 3, toInsert: [] }]);
 
     d = arrays.sortedDiff([], [1, 2, 4], compare);
-    deepEqual(d, [
-      { start: 0, deleteCount: 0, toInsert: [1, 2, 4] }
-    ]);
+    deepEqual(d, [{ start: 0, deleteCount: 0, toInsert: [1, 2, 4] }]);
 
     d = arrays.sortedDiff([1, 2, 4], [1, 2, 4], compare);
     deepEqual(d, []);
@@ -157,13 +150,11 @@ describe('Arrays', () => {
     d = arrays.sortedDiff([1, 3, 5, 7], [5, 9, 11], compare);
     deepEqual(d, [
       { start: 0, deleteCount: 2, toInsert: [] },
-      { start: 3, deleteCount: 1, toInsert: [9, 11] }
+      { start: 3, deleteCount: 1, toInsert: [9, 11] },
     ]);
 
     d = arrays.sortedDiff([1, 3, 7], [5, 9, 11], compare);
-    deepEqual(d, [
-      { start: 0, deleteCount: 3, toInsert: [5, 9, 11] }
-    ]);
+    deepEqual(d, [{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] }]);
   });
 
   test('delta sorted arrays', () => {
@@ -213,7 +204,6 @@ describe('Arrays', () => {
     equal(arrays.binarySearch(array, 0, compare), ~0);
     equal(arrays.binarySearch(array, 6, compare), ~3);
     equal(arrays.binarySearch(array, 70, compare), ~10);
-
   });
 
   test('distinct', () => {
@@ -224,7 +214,11 @@ describe('Arrays', () => {
     deepEqual(arrays.distinct(['32', '4', '5'], compare), ['32', '4', '5']);
     deepEqual(arrays.distinct(['32', '4', '5', '4'], compare), ['32', '4', '5']);
     deepEqual(arrays.distinct(['32', 'constructor', '5', '1'], compare), ['32', 'constructor', '5', '1']);
-    deepEqual(arrays.distinct(['32', 'constructor', 'proto', 'proto', 'constructor'], compare), ['32', 'constructor', 'proto']);
+    deepEqual(arrays.distinct(['32', 'constructor', 'proto', 'proto', 'constructor'], compare), [
+      '32',
+      'constructor',
+      'proto',
+    ]);
     deepEqual(arrays.distinct(['32', '4', '5', '32', '4', '5', '32', '4', '5', '5'], compare), ['32', '4', '5']);
   });
 
@@ -287,7 +281,7 @@ describe('Arrays', () => {
   }
 
   test('coalesce', () => {
-    let a: Array<number | null> = arrays.coalesce([null, 1, null, 2, 3]);
+    const a: Array<number | null> = arrays.coalesce([null, 1, null, 2, 3]);
     equal(a.length, 3);
     equal(a[0], 1);
     equal(a[1], 2);
@@ -337,7 +331,7 @@ describe('Arrays', () => {
     equal(a[1], 2);
     equal(a[2], 3);
 
-    let b: number[] = [];
+    const b: number[] = [];
     b[10] = 1;
     b[20] = 2;
     b[30] = 3;
@@ -347,7 +341,7 @@ describe('Arrays', () => {
     equal(b[1], 2);
     equal(b[2], 3);
 
-    let sparse: number[] = [];
+    const sparse: number[] = [];
     sparse[0] = 1;
     sparse[1] = 1;
     sparse[17] = 1;

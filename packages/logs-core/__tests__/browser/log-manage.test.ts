@@ -1,18 +1,13 @@
 import { Injector, Injectable } from '@opensumi/di';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LogModule } from '../../src/browser';
-import {
-  ILoggerManagerClient,
-  SupportLogNamespace,
-  LogLevel,
-  LogServiceForClientPath,
-} from '../../src/common';
+import { ILoggerManagerClient, SupportLogNamespace, LogLevel, LogServiceForClientPath } from '../../src/common';
 
 @Injectable()
 class MockLogServiceForClient {
   private level: LogLevel;
 
-  hasDisposeAll: boolean = false;
+  hasDisposeAll = false;
 
   async setGlobalLogLevel(level) {
     this.level = level;
@@ -32,9 +27,7 @@ describe('log-manager', () => {
   let logManager: ILoggerManagerClient;
 
   beforeEach(() => {
-    injector = createBrowserInjector([
-      LogModule,
-    ]);
+    injector = createBrowserInjector([LogModule]);
     injector.addProviders({
       token: LogServiceForClientPath,
       useClass: MockLogServiceForClient,

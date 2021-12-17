@@ -5,7 +5,6 @@ import { MonacoService, ServiceNames } from '../src/common';
 
 @Injectable()
 export class MockedMonacoService implements MonacoService {
-
   private _onMonacoLoaded: Emitter<boolean> = new Emitter<boolean>();
   public onMonacoLoaded = this._onMonacoLoaded.event;
   private mockedMonaco = createMockedMonaco();
@@ -26,20 +25,12 @@ export class MockedMonacoService implements MonacoService {
   public createCodeEditor(monacoContainer: HTMLElement, options) {
     return this.mockedMonaco.editor.create(monacoContainer, options);
   }
-  public async loadMonaco(): Promise<void> {
-  }
+  public async loadMonaco(): Promise<void> {}
   public createDiffEditor(monacoContainer: HTMLElement, options) {
     return this.mockedMonaco.editor.createDiffEditor(monacoContainer, options);
   }
-  public registerOverride(serviceName: ServiceNames, service: any): void {
+  public registerOverride(serviceName: ServiceNames, service: any): void {}
+  public testTokenize(line: string, languageId: string) {}
 
-  }
-  public testTokenize(line: string, languageId: string) {
-
-  }
-
-  public getOverride(serviceName: ServiceNames) {
-
-  }
-
+  public getOverride(serviceName: ServiceNames) {}
 }

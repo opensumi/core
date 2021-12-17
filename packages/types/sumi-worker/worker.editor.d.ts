@@ -270,8 +270,7 @@ declare module 'sumi-worker' {
   /**
    * Represents rendering styles for a [text editor decoration](#TextEditorDecorationType).
    */
-  export interface DecorationRenderOptions
-    extends ThemableDecorationRenderOptions {
+  export interface DecorationRenderOptions extends ThemableDecorationRenderOptions {
     /**
      * Should the decoration be rendered also on the whitespace after the line text.
      * Defaults to `false`.
@@ -333,8 +332,7 @@ declare module 'sumi-worker' {
     after?: ThemableDecorationAttachmentRenderOptions;
   }
 
-  export interface DecorationInstanceRenderOptions
-    extends ThemableDecorationInstanceRenderOptions {
+  export interface DecorationInstanceRenderOptions extends ThemableDecorationInstanceRenderOptions {
     /**
      * Overwrite options for light themes.
      */
@@ -412,11 +410,7 @@ declare module 'sumi-worker' {
      */
     insertSnippet(
       snippet: SnippetString,
-      location?:
-        | Position
-        | Range
-        | ReadonlyArray<Position>
-        | ReadonlyArray<Range>,
+      location?: Position | Range | ReadonlyArray<Position> | ReadonlyArray<Range>,
       options?: { undoStopBefore: boolean; undoStopAfter: boolean },
     ): Thenable<boolean>;
 
@@ -429,10 +423,7 @@ declare module 'sumi-worker' {
      * @param decorationType A decoration type.
      * @param rangesOrOptions Either [ranges](#Range) or more detailed [options](#DecorationOptions).
      */
-    setDecorations(
-      decorationType: TextEditorDecorationType,
-      rangesOrOptions: Range[] | DecorationOptions[],
-    ): void;
+    setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: Range[] | DecorationOptions[]): void;
 
     /**
      * Scroll as indicated by `revealType` in order to reveal the given range.
@@ -656,9 +647,7 @@ declare module 'sumi-worker' {
      * @param options Rendering options for the decoration type.
      * @return A new decoration type instance.
      */
-    export function createTextEditorDecorationType(
-      options: DecorationRenderOptions,
-    ): TextEditorDecorationType;
+    export function createTextEditorDecorationType(options: DecorationRenderOptions): TextEditorDecorationType;
   }
 
   export class TextEdit {

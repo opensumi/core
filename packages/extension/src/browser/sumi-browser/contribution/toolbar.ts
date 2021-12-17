@@ -5,9 +5,8 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 import { IToolBarViewService, ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
-
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
@@ -52,6 +51,5 @@ export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContrib
     }
 
     return disposer;
-
   }
 }

@@ -7,14 +7,14 @@ import ReactDOM from 'react-dom';
 import cls from 'classnames';
 import { LinkDetector } from '../debug-link-detector';
 
-export class TreeWithLinkWrapper extends React.Component<{ html: HTMLElement, className?: string }> {
+export class TreeWithLinkWrapper extends React.Component<{ html: HTMLElement; className?: string }> {
   componentDidMount() {
     const container = ReactDOM.findDOMNode(this);
     container!.appendChild(this.props.html);
   }
 
   render() {
-    return <code className={ this.props.className }></code>;
+    return <code className={this.props.className}></code>;
   }
 }
 
@@ -66,8 +66,6 @@ export class AnsiConsoleNode extends TreeNode {
   }
 
   get template(): any {
-    return () => {
-      return <TreeWithLinkWrapper className={this.getColor(this.severity)} html={ this.linkDetectorHTML }/>;
-    };
+    return () => <TreeWithLinkWrapper className={this.getColor(this.severity)} html={this.linkDetectorHTML} />;
   }
 }

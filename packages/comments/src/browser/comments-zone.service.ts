@@ -16,20 +16,14 @@ export class CommentsZoneService extends Disposable {
   @memoize
   get commentThreadTitle(): IMenu {
     return this.registerDispose(
-      this.menuService.createMenu(
-        MenuId.CommentsCommentThreadTitle,
-        this.thread.contextKeyService,
-      ),
+      this.menuService.createMenu(MenuId.CommentsCommentThreadTitle, this.thread.contextKeyService),
     );
   }
 
   @memoize
   get commentThreadContext(): IMenu {
     return this.registerDispose(
-      this.menuService.createMenu(
-        MenuId.CommentsCommentThreadContext,
-        this.thread.contextKeyService,
-      ),
+      this.menuService.createMenu(MenuId.CommentsCommentThreadContext, this.thread.contextKeyService),
     );
   }
 }

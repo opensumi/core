@@ -19,22 +19,26 @@ export const PortalRoot = (props: IPortalRootProps) => {
   React.useEffect(() => {
     const disposables = new DisposableCollection();
     themeService.getCurrentTheme().then((res) => setThemeType(res.type));
-    disposables.push(themeService.onThemeChange((e) => {
-      if (e.type && e.type !== themeType) {
-        setThemeType(e.type);
-      }
-    }));
+    disposables.push(
+      themeService.onThemeChange((e) => {
+        if (e.type && e.type !== themeType) {
+          setThemeType(e.type);
+        }
+      }),
+    );
     return disposables.dispose.bind(disposables);
   }, []);
 
   const OriginalComponent = props.original;
 
-  return (<OriginalComponent
-    {...props.otherProps}
-    className={clx(props.otherProps?.className, getThemeTypeSelector(themeType!))}
-    getContainer={() => {
-      const portalRoot = extensionService.getPortalShadowRoot(props.extensionId);
-      return portalRoot;
-    }}
-  />);
+  return (
+    <OriginalComponent
+      {...props.otherProps}
+      className={clx(props.otherProps?.className, getThemeTypeSelector(themeType!))}
+      getContainer={() => {
+        const portalRoot = extensionService.getPortalShadowRoot(props.extensionId);
+        return portalRoot;
+      }}
+    />
+  );
 };

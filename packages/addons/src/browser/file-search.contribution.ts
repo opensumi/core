@@ -32,11 +32,23 @@ import {
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@opensumi/ide-quick-open';
+import {
+  QuickOpenContribution,
+  QuickOpenHandlerRegistry,
+} from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
+import {
+  QuickOpenModel,
+  QuickOpenOptions,
+  PrefixQuickOpenService,
+  QuickOpenBaseAction,
+} from '@opensumi/ide-quick-open';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { EditorGroupSplitAction, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { DocumentSymbolStore, IDummyRoot, INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import {
+  DocumentSymbolStore,
+  IDummyRoot,
+  INormalizedDocumentSymbol,
+} from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { RecentFilesManager } from '@opensumi/ide-core-browser';
@@ -62,7 +74,7 @@ export const quickGoToSymbol: Command = {
 // support /some/file.js:73:84
 export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?\)?/;
 
-function getRangeByInput(input: string = ''): monaco.Range | undefined {
+function getRangeByInput(input = ''): monaco.Range | undefined {
   const matchList = input.match(matchLineReg) || [];
 
   if (matchList.length < 2) {
@@ -74,12 +86,7 @@ function getRangeByInput(input: string = ''): monaco.Range | undefined {
     start: Number(matchList[3] || 0),
   };
 
-  return new monaco.Range(
-    lineInfo.line,
-    lineInfo.start,
-    lineInfo.line,
-    lineInfo.start,
-  );
+  return new monaco.Range(lineInfo.line, lineInfo.start, lineInfo.line, lineInfo.start);
 }
 
 export function getValidateInput(input: string) {
@@ -88,7 +95,6 @@ export function getValidateInput(input: string) {
 
 @Injectable()
 class FileSearchActionLeftRight extends QuickOpenBaseAction {
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -115,7 +121,6 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
 
 @Injectable()
 class FileSearchActionProvider implements QuickOpenActionProvider {
-
   @Autowired()
   private readonly fileSearchActionLeftRight: FileSearchActionLeftRight;
 
@@ -134,7 +139,6 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -172,10 +176,10 @@ export class FileSearchQuickCommandHandler {
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string = localize('file-search.command.fileOpen.description');
-  private prevEditorState: { uri?: URI, range?: IRange } = {};
+  private prevEditorState: { uri?: URI; range?: IRange } = {};
   private prevSelected: URI | undefined;
 
-  currentLookFor: string = '';
+  currentLookFor = '';
 
   getModel(): QuickOpenModel {
     return {
@@ -225,10 +229,11 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
-      getPlaceholderItem: (lookFor: string) => new QuickOpenItem({
-        label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
-        run: () => false,
-      }),
+      getPlaceholderItem: (lookFor: string) =>
+        new QuickOpenItem({
+          label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
+          run: () => false,
+        }),
     };
   }
 
@@ -255,12 +260,7 @@ export class FileSearchQuickCommandHandler {
       let currentRange = { startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 };
       const selections = this.workbenchEditorService.currentEditor?.getSelections();
       if (selections) {
-        const {
-          selectionStartLineNumber,
-          selectionStartColumn,
-          positionLineNumber,
-          positionColumn,
-        } = selections[0];
+        const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selections[0];
         currentRange = new monaco.Range(
           selectionStartLineNumber,
           selectionStartColumn,
@@ -297,39 +297,42 @@ export class FileSearchQuickCommandHandler {
         targetFile = this.workbenchEditorService.currentResource?.uri;
       }
       if (targetFile) {
-        const symbols = await this.documentSymbolStore.getDocumentSymbolAsync(targetFile) || [];
+        const symbols = (await this.documentSymbolStore.getDocumentSymbolAsync(targetFile)) || [];
         // 将symbol tree节点展开
         const flatSymbols: INormalizedDocumentSymbol[] = [];
         this.flattenSymbols({ children: symbols }, flatSymbols);
-        const items: QuickOpenItem[] = flatSymbols.filter((item) => {
-          // 手动匹配symbol并高亮
-          const matchRange: Highlight[] = matchesFuzzy(symbolQuery, item.name, true) || [];
-          if (matchRange) {
-            (item as any).labelHighlights = matchRange;
-          }
-          return matchRange && matchRange.length;
-        }).map((symbol, index) => {
-          return new QuickOpenItem({
-            uri: targetFile,
-            label: symbol.name,
-            iconClass: getSymbolIcon(symbol.kind),
-            description: (symbol.parent as INormalizedDocumentSymbol)?.name,
-            labelHighlights: (symbol as any).labelHighlights,
-            groupLabel: index === 0 ? formatLocalize('fileSymbolResults', flatSymbols.length) : '',
-            showBorder: false,
-            run: (mode: Mode) => {
-              if (mode === Mode.PREVIEW) {
-                this.locateSymbol(targetFile!, symbol);
-                return true;
-              }
-              if (mode === Mode.OPEN) {
-                this.locateSymbol(targetFile!, symbol);
-                return true;
-              }
-              return false;
-            },
-          });
-        });
+        const items: QuickOpenItem[] = flatSymbols
+          .filter((item) => {
+            // 手动匹配symbol并高亮
+            const matchRange: Highlight[] = matchesFuzzy(symbolQuery, item.name, true) || [];
+            if (matchRange) {
+              (item as any).labelHighlights = matchRange;
+            }
+            return matchRange && matchRange.length;
+          })
+          .map(
+            (symbol, index) =>
+              new QuickOpenItem({
+                uri: targetFile,
+                label: symbol.name,
+                iconClass: getSymbolIcon(symbol.kind),
+                description: (symbol.parent as INormalizedDocumentSymbol)?.name,
+                labelHighlights: (symbol as any).labelHighlights,
+                groupLabel: index === 0 ? formatLocalize('fileSymbolResults', flatSymbols.length) : '',
+                showBorder: false,
+                run: (mode: Mode) => {
+                  if (mode === Mode.PREVIEW) {
+                    this.locateSymbol(targetFile!, symbol);
+                    return true;
+                  }
+                  if (mode === Mode.OPEN) {
+                    this.locateSymbol(targetFile!, symbol);
+                    return true;
+                  }
+                  return false;
+                },
+              }),
+          );
         results = items;
       } else {
         return [];
@@ -338,12 +341,10 @@ export class FileSearchQuickCommandHandler {
       results = await this.getQueryFiles(lookFor, alreadyCollected, token);
       // 排序后设置第一个元素的样式
       if (results[0]) {
-        const newItems = await this.getItems(
-          [results[0].getUri()!.toString()],
-          {
-            groupLabel: localize('fileResults'),
-            showBorder: true,
-          });
+        const newItems = await this.getItems([results[0].getUri()!.toString()], {
+          groupLabel: localize('fileResults'),
+          showBorder: true,
+        });
         results[0] = newItems[0];
       }
     }
@@ -361,19 +362,21 @@ export class FileSearchQuickCommandHandler {
       this.logger.debug('file-search.contribution rootUri', uri.toString());
       return rootUris.push(uri.toString());
     });
-    const files = await this.fileSearchService.find(fileQuery, {
-      rootUris,
-      fuzzyMatch: true,
-      limit: DEFAULT_FILE_SEARCH_LIMIT,
-      useGitIgnore: true,
-      noIgnoreParent: true,
-      excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
-    }, token);
+    const files = await this.fileSearchService.find(
+      fileQuery,
+      {
+        rootUris,
+        fuzzyMatch: true,
+        limit: DEFAULT_FILE_SEARCH_LIMIT,
+        useGitIgnore: true,
+        noIgnoreParent: true,
+        excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
+      },
+      token,
+    );
     const results = await this.getItems(
       files.filter((uri: string) => {
-        if (alreadyCollected.has(uri) ||
-          token.isCancellationRequested
-        ) {
+        if (alreadyCollected.has(uri) || token.isCancellationRequested) {
           return false;
         }
         alreadyCollected.add(uri);
@@ -395,15 +398,12 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getRecentlyItems(alreadyCollected, lookFor, token) {
-    const recentlyOpenedFiles = await this.recentFilesManager.getMostRecentlyOpenedFiles(true) || [];
+    const recentlyOpenedFiles = (await this.recentFilesManager.getMostRecentlyOpenedFiles(true)) || [];
 
     return await this.getItems(
       recentlyOpenedFiles.filter((uri: string) => {
         const _uri = new URI(uri);
-        if (alreadyCollected.has(uri) ||
-          !fuzzy.test(lookFor, _uri.displayName) ||
-          token.isCancellationRequested
-        ) {
+        if (alreadyCollected.has(uri) || !fuzzy.test(lookFor, _uri.displayName) || token.isCancellationRequested) {
           return false;
         }
         alreadyCollected.add(uri);
@@ -415,10 +415,7 @@ export class FileSearchQuickCommandHandler {
     );
   }
 
-  private async getItems(
-    uriList: string[],
-    options: { [key: string]: any },
-  ) {
+  private async getItems(uriList: string[], options: { [key: string]: any }) {
     const items: QuickOpenItem[] = [];
 
     for (const [index, strUri] of uriList.entries()) {
@@ -432,7 +429,7 @@ export class FileSearchQuickCommandHandler {
         iconClass: icon,
         description,
         groupLabel: index === 0 ? options.groupLabel : '',
-        showBorder: (uriList.length > 0 && index === 0) ? options.showBorder : false,
+        showBorder: uriList.length > 0 && index === 0 ? options.showBorder : false,
         run: (mode: Mode) => {
           if (mode === Mode.PREVIEW) {
             this.prevSelected = uri;
@@ -457,7 +454,11 @@ export class FileSearchQuickCommandHandler {
       range = getRangeByInput(uri.fragment ? filePath + '#' + uri.fragment : filePath);
     }
     this.currentLookFor = '';
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri.withoutFragment(), { preview: false, range, focus: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri.withoutFragment(), {
+      preview: false,
+      range,
+      focus: true,
+    });
   }
 
   private locateSymbol(uri: URI, symbol: INormalizedDocumentSymbol) {
@@ -474,11 +475,7 @@ export class FileSearchQuickCommandHandler {
    * @param b `QuickOpenItem` for comparison.
    * @param member the `QuickOpenItem` object member for comparison.
    */
-  private compareItems(
-    a: QuickOpenItem,
-    b: QuickOpenItem,
-    member: 'getLabel' | 'getUri' = 'getLabel'): number {
-
+  private compareItems(a: QuickOpenItem, b: QuickOpenItem, member: 'getLabel' | 'getUri' = 'getLabel'): number {
     /**
      * Normalize a given string.
      *
@@ -500,7 +497,7 @@ export class FileSearchQuickCommandHandler {
      */
     function score(str: string): number {
       const match = fuzzy.match(query, str);
-      return (match === null) ? 0 : match.score;
+      return match === null ? 0 : match.score;
     }
 
     // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/file-search/src/browser/quick-file-open.ts
@@ -527,16 +524,14 @@ export class FileSearchQuickCommandHandler {
 
     // If both label scores are identical, perform additional computation.
     if (scoreA === scoreB) {
-
       // Favor the label which have the smallest substring index.
       const indexA: number = itemA.indexOf(query);
       const indexB: number = itemB.indexOf(query);
 
       if (indexA === indexB) {
-
         // Favor the result with the shortest label length.
         if (itemA.length !== itemB.length) {
-          return (itemA.length < itemB.length) ? -1 : 1;
+          return itemA.length < itemB.length ? -1 : 1;
         }
 
         // Fallback to the alphabetical order.
@@ -572,7 +567,6 @@ export class FileSearchQuickCommandHandler {
 
 @Domain(CommandContribution, KeybindingContribution, QuickOpenContribution)
 export class FileSearchContribution implements CommandContribution, KeybindingContribution, QuickOpenContribution {
-
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
 
@@ -589,14 +583,10 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickFileOpen, {
-      execute: () => {
-        return this.quickOpenService.open('...');
-      },
+      execute: () => this.quickOpenService.open('...'),
     });
     commands.registerCommand(quickGoToSymbol, {
-      execute: () => {
-        return this.quickOpenService.open('...@');
-      },
+      execute: () => this.quickOpenService.open('...@'),
     });
   }
 
@@ -606,5 +596,4 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
       keybinding: 'ctrlcmd+p',
     });
   }
-
 }

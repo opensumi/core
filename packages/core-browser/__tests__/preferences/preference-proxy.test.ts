@@ -1,6 +1,22 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createPreferenceProxy, DefaultPreferenceProvider, ILogger, PreferenceChangeEvent, PreferenceConfigurations, PreferenceContribution, PreferenceProvider, PreferenceProviderProvider, PreferenceProxy, PreferenceProxyOptions, PreferenceSchema, PreferenceSchemaProvider, PreferenceScope, PreferenceService, PreferenceServiceImpl } from '@opensumi/ide-core-browser';
+import {
+  createPreferenceProxy,
+  DefaultPreferenceProvider,
+  ILogger,
+  PreferenceChangeEvent,
+  PreferenceConfigurations,
+  PreferenceContribution,
+  PreferenceProvider,
+  PreferenceProviderProvider,
+  PreferenceProxy,
+  PreferenceProxyOptions,
+  PreferenceSchema,
+  PreferenceSchemaProvider,
+  PreferenceScope,
+  PreferenceService,
+  PreferenceServiceImpl,
+} from '@opensumi/ide-core-browser';
 import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
 import { MockLogger } from '../../__mocks__/logger';
 
@@ -13,37 +29,42 @@ describe('Preference Proxy', () => {
     injector = createBrowserInjector([]);
     injectMockPreferences(injector);
 
-    injector.overrideProviders({
-      token: PreferenceConfigurations,
-      useValue: {
-        getSectionNames: () => [],
-        isSectionName: () => false,
+    injector.overrideProviders(
+      {
+        token: PreferenceConfigurations,
+        useValue: {
+          getSectionNames: () => [],
+          isSectionName: () => false,
+        },
       },
-    }, {
-      token: PreferenceContribution,
-      useValue: {
-        getContributions: () => [],
+      {
+        token: PreferenceContribution,
+        useValue: {
+          getContributions: () => [],
+        },
       },
-    }, {
-      token: ILogger,
-      useClass: MockLogger,
-    }, {
-      token: PreferenceProviderProvider,
-      useFactory: () => {
-        return (scope: PreferenceScope) => {
+      {
+        token: ILogger,
+        useClass: MockLogger,
+      },
+      {
+        token: PreferenceProviderProvider,
+        useFactory: () => (scope: PreferenceScope) => {
           if (scope === PreferenceScope.Default) {
             return injector.get(DefaultPreferenceProvider);
           }
-          return injector.get<MockPreferenceProvider>(PreferenceProvider, {tag: scope});
-        };
+          return injector.get<MockPreferenceProvider>(PreferenceProvider, { tag: scope });
+        },
       },
-    }, {
-      token: PreferenceService,
-      useClass: PreferenceServiceImpl,
-    }, {
-      token: PreferenceSchemaProvider,
-      useClass: PreferenceSchemaProvider,
-    });
+      {
+        token: PreferenceService,
+        useClass: PreferenceServiceImpl,
+      },
+      {
+        token: PreferenceSchemaProvider,
+        useClass: PreferenceSchemaProvider,
+      },
+    );
 
     preferenceSchema = injector.get(PreferenceSchemaProvider);
 
@@ -54,7 +75,10 @@ describe('Preference Proxy', () => {
     injector.disposeAll();
   });
 
-  function getProxy(schema?: PreferenceSchema, options?: PreferenceProxyOptions): PreferenceProxy<{ [key: string]: any }> {
+  function getProxy(
+    schema?: PreferenceSchema,
+    options?: PreferenceProxyOptions,
+  ): PreferenceProxy<{ [key: string]: any }> {
     const s: PreferenceSchema = schema || {
       properties: {
         'my.pref': {
@@ -68,12 +92,11 @@ describe('Preference Proxy', () => {
   }
 
   it('by default, it should get provide access in flat style but not deep', () => {
-      const proxy = getProxy();
-      expect(proxy['my.pref']).toBe('foo');
-      expect(proxy.my).toBe(undefined);
-      expect(Object.keys(proxy).join()).toBe(['my.pref'].join());
-    },
-  );
+    const proxy = getProxy();
+    expect(proxy['my.pref']).toBe('foo');
+    expect(proxy.my).toBe(undefined);
+    expect(Object.keys(proxy).join()).toBe(['my.pref'].join());
+  });
 
   it('it should get provide access in deep style but not flat', () => {
     const proxy = getProxy(undefined, { style: 'deep' });
@@ -112,81 +135,89 @@ describe('Preference Proxy', () => {
   });
 
   it('toJSON with deep', () => {
-    const proxy = getProxy({
-      properties: {
-        'foo.baz': {
-          type: 'number',
-          default: 4,
-        },
-        'foo.bar.x': {
-          type: 'boolean',
-          default: true,
-        },
-        'foo.bar.y': {
-          type: 'boolean',
-          default: false,
-        },
-        'a': {
-          type: 'string',
-          default: 'a',
-        },
-      },
-    }, { style: 'deep' });
-    expect(JSON.stringify(proxy, undefined, 2)).toBe(JSON.stringify({
-      foo: {
-        baz: 4,
-        bar: {
-          x: true,
-          y: false,
+    const proxy = getProxy(
+      {
+        properties: {
+          'foo.baz': {
+            type: 'number',
+            default: 4,
+          },
+          'foo.bar.x': {
+            type: 'boolean',
+            default: true,
+          },
+          'foo.bar.y': {
+            type: 'boolean',
+            default: false,
+          },
+          a: {
+            type: 'string',
+            default: 'a',
+          },
         },
       },
-      a: 'a',
-    }, undefined, 2));
-  });
-
-  it('get nested default', () => {
-    const proxy = getProxy({
-      properties: {
-        'foo': {
-          'anyOf': [
-            {
-              'enum': [
-                false,
-              ],
-            },
-            {
-              'properties': {
-                'bar': {
-                  'anyOf': [
-                    {
-                      'enum': [
-                        false,
-                      ],
-                    },
-                    {
-                      'properties': {
-                        'x': {
-                          type: 'boolean',
-                        },
-                        'y': {
-                          type: 'boolean',
-                        },
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-          default: {
+      { style: 'deep' },
+    );
+    expect(JSON.stringify(proxy, undefined, 2)).toBe(
+      JSON.stringify(
+        {
+          foo: {
+            baz: 4,
             bar: {
               x: true,
               y: false,
             },
           },
+          a: 'a',
+        },
+        undefined,
+        2,
+      ),
+    );
+  });
+
+  it('get nested default', () => {
+    const proxy = getProxy(
+      {
+        properties: {
+          foo: {
+            anyOf: [
+              {
+                enum: [false],
+              },
+              {
+                properties: {
+                  bar: {
+                    anyOf: [
+                      {
+                        enum: [false],
+                      },
+                      {
+                        properties: {
+                          x: {
+                            type: 'boolean',
+                          },
+                          y: {
+                            type: 'boolean',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            default: {
+              bar: {
+                x: true,
+                y: false,
+              },
+            },
+          },
         },
       },
-    }, { style: 'both' });
+      { style: 'both' },
+    );
     expect(proxy['foo']).toEqual({
       bar: {
         x: true,
@@ -200,5 +231,4 @@ describe('Preference Proxy', () => {
     expect(proxy['foo.bar.x']).toBeTruthy();
     expect(proxy['foo.bar.y']).toBeFalsy();
   });
-
 });

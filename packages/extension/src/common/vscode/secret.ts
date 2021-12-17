@@ -5,5 +5,5 @@ export interface IMainThreadSecret {
 }
 
 export interface IExtHostSecret {
-  $onDidChangePassword(e: { extensionId: string, key: string }): Promise<void>;
+  $onDidChangePassword(e: { extensionId: string; key: string }): Promise<void>;
 }

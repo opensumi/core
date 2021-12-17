@@ -1,5 +1,3 @@
 export class BasicEvent<T> {
-  constructor(
-    public payload: T,
-  ) {}
+  constructor(public payload: T) {}
 }

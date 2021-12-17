@@ -13,7 +13,7 @@ describe('Debug Breakpoint Widget', () => {
 
   const mockDebugEditor = {
     onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
-    getLayoutInfo: jest.fn(() => ({width: 100, height: 100})),
+    getLayoutInfo: jest.fn(() => ({ width: 100, height: 100 })),
     changeViewZones: jest.fn(() => Disposable.create(() => {})),
   };
 
@@ -55,7 +55,7 @@ describe('Debug Breakpoint Widget', () => {
   });
 
   it('show method should be work', () => {
-    const position = {lineNumber: 1, column: 2} as Position;
+    const position = { lineNumber: 1, column: 2 } as Position;
     debugBreakpointWidget.show(position);
     expect(mockDebugEditor.onDidLayoutChange).toBeCalledTimes(1);
     expect(mockDebugEditor.getLayoutInfo).toBeCalledTimes(1);

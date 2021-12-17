@@ -16,9 +16,14 @@ export interface IFileTreeAPI {
   createDirectory(newUri: URI): Promise<string | void>;
   delete(uri: URI): Promise<string | void>;
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
-  mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<string | void>;
-  resolveChildren(tree: IFileTreeService, path: string | FileStat, parent?: Directory, compact?: boolean): Promise<{
-    children: (File | Directory)[],
+  mv(oldUri: URI, newUri: URI, isDirectory?: boolean): Promise<string | void>;
+  resolveChildren(
+    tree: IFileTreeService,
+    path: string | FileStat,
+    parent?: Directory,
+    compact?: boolean,
+  ): Promise<{
+    children: (File | Directory)[];
     filestat: FileStat;
   }>;
   resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
@@ -27,7 +32,7 @@ export interface IFileTreeAPI {
   resolveFileStat(path: URI): Promise<FileStat | void>;
 }
 
-export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{uri: URI, expanded: boolean}> {}
+export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{ uri: URI; expanded: boolean }> {}
 
 export interface FileStatNode extends ITreeNode {
   uri: URI;

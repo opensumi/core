@@ -32,7 +32,12 @@ import {
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry, IResourceOpenResult, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  EditorComponentRegistry,
+  IResourceOpenResult,
+  WorkbenchEditorService,
+} from '@opensumi/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
 import { PREF_SCHEME, SettingContribution } from '../common';
 import { PreferenceView } from './preferences.view';
@@ -44,7 +49,6 @@ const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
 @Injectable()
 export class PrefResourceProvider extends WithEventBus implements IResourceProvider {
-
   readonly scheme: string = PREF_SCHEME;
 
   constructor() {
@@ -102,9 +106,23 @@ export namespace PREFERENCE_COMMANDS {
   };
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution {
-
+@Domain(
+  CommandContribution,
+  KeybindingContribution,
+  ClientAppContribution,
+  BrowserEditorContribution,
+  MenuContribution,
+  JsonSchemaContribution,
+)
+export class PreferenceContribution
+  implements
+    CommandContribution,
+    KeybindingContribution,
+    ClientAppContribution,
+    BrowserEditorContribution,
+    MenuContribution,
+    JsonSchemaContribution
+{
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
 
@@ -135,7 +153,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   private settingGroupsWillRegister: ISettingGroup[] = defaultSettingGroup;
 
   private settingSectionsWillRegister: {
-    [key: string]: ISettingSection[],
+    [key: string]: ISettingSection[];
   } = defaultSettingSections;
 
   onStart() {
@@ -151,7 +169,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
     /**
      * 将收集到的 group 和 section 真正注册到 service
-    */
+     */
     this.registerSettings();
     this.registerSettingSections();
   }
@@ -220,7 +238,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
       iconClass: getIcon('open'),
       group: 'navigation',
       order: 4,
-      when: `resourceFilename =~ /settings\.json/`,
+      when: 'resourceFilename =~ /settings.json/',
     });
   }
 
@@ -233,7 +251,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     keybindings.registerKeybinding({
       command: PREFERENCE_COMMANDS.PREFERENCE_INPUT_FOCUS.id,
       keybinding: 'ctrlcmd+f',
-      when: `resourceScheme == pref`,
+      when: 'resourceScheme == pref',
     });
   }
 
@@ -255,18 +273,18 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   saveSettings() {
     for (const contrib of this.contributions.getContributions()) {
-      contrib.registerSetting && contrib.registerSetting({
-        registerSettingGroup: (settingGroup: ISettingGroup): IDisposable => {
-          return addElement(this.settingGroupsWillRegister, settingGroup);
-        },
-        registerSettingSection: (key, section): IDisposable => {
-          const has = (key: string) => Object.keys(this.settingSectionsWillRegister).includes(key);
-          if (!has(key)) {
-            this.settingSectionsWillRegister[key] = [];
-          }
-          return addElement(this.settingSectionsWillRegister[key], section);
-        },
-      });
+      contrib.registerSetting &&
+        contrib.registerSetting({
+          registerSettingGroup: (settingGroup: ISettingGroup): IDisposable =>
+            addElement(this.settingGroupsWillRegister, settingGroup),
+          registerSettingSection: (key, section): IDisposable => {
+            const has = (key: string) => Object.keys(this.settingSectionsWillRegister).includes(key);
+            if (!has(key)) {
+              this.settingSectionsWillRegister[key] = [];
+            }
+            return addElement(this.settingSectionsWillRegister[key], section);
+          },
+        });
     }
   }
 
@@ -285,7 +303,9 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   async openPreferences(search?: string, prefernceId?: string) {
-    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME), { preview: false });
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME), {
+      preview: false,
+    });
     if (isString(search)) {
       this.preferenceService.search(search);
     }
@@ -293,7 +313,10 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   async openResource(scope?: PreferenceScope, preferenceId?: string) {
     const url = await this.preferenceService.getCurrentPreferenceUrl(scope);
-    const openResult = await this.commandService.executeCommand<IResourceOpenResult>(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(url));
+    const openResult = await this.commandService.executeCommand<IResourceOpenResult>(
+      EDITOR_COMMANDS.OPEN_RESOURCE.id,
+      new URI(url),
+    );
     if (openResult && preferenceId) {
       const editor = this.workbenchEditorService.editorGroups.find((g) => g.name === openResult.groupId)?.currentEditor;
       if (editor) {
@@ -318,7 +341,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
           lines = text.split('\n');
           preferenceLine = lines[numReturns - 1];
         }
-        const regStr = `\\s+\\"${preferenceId.replace('/\./g', '\\.')}\\":\\s?\\"`;
+        const regStr = `\\s+\\"${preferenceId.replace('/./g', '\\.')}\\":\\s?\\"`;
         const match = new RegExp(regStr, 'g').exec(preferenceLine);
         if (match) {
           editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length + 1 });
@@ -335,7 +358,10 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   registerSchema(registry: IJSONSchemaRegistry) {
-    registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), ['settings.json', USER_PREFERENCE_URI.toString()]);
+    registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), [
+      'settings.json',
+      USER_PREFERENCE_URI.toString(),
+    ]);
   }
 
   registerResource(resourceService: ResourceService) {
@@ -343,7 +369,6 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
-
     editorComponentRegistry.registerEditorComponent({
       component: PreferenceView,
       uid: PREF_PREVIEW_COMPONENT_ID,
@@ -351,14 +376,12 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
 
     editorComponentRegistry.registerEditorComponentResolver(PREF_SCHEME, (_, __, resolve) => {
-
       resolve!([
         {
           type: 'component',
           componentId: PREF_PREVIEW_COMPONENT_ID,
         },
       ]);
-
     });
   }
 }

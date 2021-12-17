@@ -1,11 +1,12 @@
-@import "~@opensumi/ide-components/lib/style/mixins.less";
-@import "./variable.less";
+@import '~@opensumi/ide-components/lib/style/mixins.less';
+@import './variable.less';
 
 .overrideMenu(@n, @i: 1) when (@i =< @n) {
   @clsx: extract(@menuClx, @i);
 
   .kt-menu {
-    &.@{clsx}, .@{clsx} {
+    &.@{clsx},
+    .@{clsx} {
       padding: 2px 0px !important;
       color: var(--menu-foreground) !important;
       background-color: var(--menu-background) !important;
@@ -76,7 +77,13 @@
 .overrideMenu(length(@menuClx));
 
 .monaco-editor {
-  h1, h2, h3, h4, h5, h6, p {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
     color: var(--foreground);
   }
 }

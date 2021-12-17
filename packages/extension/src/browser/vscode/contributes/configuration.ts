@@ -1,18 +1,24 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties, IPreferenceSettingsService, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  replaceLocalizePlaceholder,
+  PreferenceSchemaProvider,
+  PreferenceSchema,
+  PreferenceSchemaProperties,
+  IPreferenceSettingsService,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {
-    title: string,
-    properties: any,
+    title: string;
+    properties: any;
   };
 }
 
 @Injectable()
 @Contributes('configuration')
 export class ConfigurationContributionPoint extends VSCodeContributePoint<PreferenceSchema[] | PreferenceSchema> {
-
   @Autowired(PreferenceSchemaProvider)
   protected preferenceSchemaProvider: PreferenceSchemaProvider;
 
@@ -33,16 +39,22 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
         for (const prop of Object.keys(configuration.properties)) {
           properties[prop] = configuration.properties[prop];
           if (configuration.properties[prop].description) {
-            properties[prop].description = replaceLocalizePlaceholder(configuration.properties[prop].description, this.extension.id);
+            properties[prop].description = replaceLocalizePlaceholder(
+              configuration.properties[prop].description,
+              this.extension.id,
+            );
           }
         }
         configuration.properties = properties;
-        configuration.title = replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
+        configuration.title =
+          replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
         this.updateConfigurationSchema(configuration);
-        this.addDispose(this.preferenceSettingsService.registerSettingSection('extension', {
-          title: configuration.title,
-          preferences: Object.keys(configuration.properties),
-        }));
+        this.addDispose(
+          this.preferenceSettingsService.registerSettingSection('extension', {
+            title: configuration.title,
+            preferences: Object.keys(configuration.properties),
+          }),
+        );
         properties = {};
       }
     }
@@ -55,7 +67,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   }
 
   protected validateConfigurationSchema(schema: PreferenceSchema): void {
-    // tslint:disable-next-line:forin
+    // eslint-disable-next-line guard-for-in
     for (const p in schema.properties) {
       const property = schema.properties[p];
       if (property.type === 'string[]') {
@@ -70,7 +82,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
       const properties = property.properties;
       if (properties) {
-        // tslint:disable-next-line:forin
         for (const key in properties) {
           if (typeof properties[key] !== 'object') {
             delete properties[key];
@@ -85,7 +96,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
     const properties = property.properties;
     if (properties) {
-      // tslint:disable-next-line:forin
       for (const key in properties) {
         if (properties[key].default) {
           property.default[key] = properties[key].default;

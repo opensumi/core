@@ -9,7 +9,6 @@ const SoftMaxStateLength = 100;
 
 @Injectable()
 export class EditorHistoryService extends WithEventBus {
-
   private currentIndex = -1;
 
   private stack: EditorHistoryState[] = [];
@@ -26,10 +25,17 @@ export class EditorHistoryService extends WithEventBus {
   @OnEvent(EditorSelectionChangeEvent)
   onEditorSelectionChangeEvent(e: EditorSelectionChangeEvent) {
     if (e.payload.selections[0]) {
-      this.onNewState(new EditorHistoryState(e.payload.editorUri, {
-        lineNumber: e.payload.selections[0]!.selectionStartLineNumber,
-        column: e.payload.selections[0]!.selectionStartColumn,
-      }, e.payload.group.index, false));
+      this.onNewState(
+        new EditorHistoryState(
+          e.payload.editorUri,
+          {
+            lineNumber: e.payload.selections[0]!.selectionStartLineNumber,
+            column: e.payload.selections[0]!.selectionStartColumn,
+          },
+          e.payload.group.index,
+          false,
+        ),
+      );
     }
   }
 
@@ -38,10 +44,17 @@ export class EditorHistoryService extends WithEventBus {
     if (e.payload.newOpenType && (e.payload.newOpenType.type === 'code' || e.payload.newOpenType.type === 'diff')) {
       const selections = e.payload.group.currentEditor!.getSelections();
       if (selections && selections.length > 0) {
-        this.onNewState(new EditorHistoryState(e.payload.newResource!.uri, {
-          lineNumber: selections[0].selectionStartLineNumber,
-          column: selections[0]!.selectionStartColumn,
-        }, e.payload.group.index, true));
+        this.onNewState(
+          new EditorHistoryState(
+            e.payload.newResource!.uri,
+            {
+              lineNumber: selections[0].selectionStartLineNumber,
+              column: selections[0]!.selectionStartColumn,
+            },
+            e.payload.group.index,
+            true,
+          ),
+        );
       }
     }
   }
@@ -83,21 +96,21 @@ export class EditorHistoryService extends WithEventBus {
 
   forward() {
     if (this.currentIndex < this.stack.length - 1) {
-      this.currentIndex ++;
+      this.currentIndex++;
       this.restoreState(this.currentState);
     }
   }
 
   back() {
     if (this.currentIndex > 0) {
-      this.currentIndex --;
+      this.currentIndex--;
       this.restoreState(this.currentState);
     }
   }
 
   restoreState(state: EditorHistoryState) {
     if (!state) {
-      return ;
+      return;
     }
     const editorGroup = this.editorService.editorGroups[state.groupIndex] || this.editorService.currentEditorGroup;
     editorGroup.open(state.uri, {
@@ -127,18 +140,22 @@ export class EditorHistoryService extends WithEventBus {
       this.closedStack = this.closedStack.filter((u) => !uri.isEqual(u));
     }
   }
-
 }
 
 export class EditorHistoryState {
-
-  constructor(public readonly uri: URI, public readonly position: IPosition, public groupIndex: number, public isTabChange: boolean) {
-
-  }
+  constructor(
+    public readonly uri: URI,
+    public readonly position: IPosition,
+    public groupIndex: number,
+    public isTabChange: boolean,
+  ) {}
 
   isRelevant(anotherState: EditorHistoryState): boolean {
     if (this.uri.isEqual(anotherState.uri)) {
-      if ((anotherState.position.lineNumber < this.position.lineNumber + HistoryPositionLineThreshold) && (anotherState.position.lineNumber > this.position.lineNumber - HistoryPositionLineThreshold)) {
+      if (
+        anotherState.position.lineNumber < this.position.lineNumber + HistoryPositionLineThreshold &&
+        anotherState.position.lineNumber > this.position.lineNumber - HistoryPositionLineThreshold
+      ) {
         return true;
       }
       if (this.isTabChange || anotherState.isTabChange) {
@@ -151,7 +168,10 @@ export class EditorHistoryState {
   }
 
   isEqual(anotherState: EditorHistoryState) {
-    return this.uri.isEqual(anotherState.uri) && this.position.lineNumber === anotherState.position.lineNumber && this.position.column === anotherState.position.column;
+    return (
+      this.uri.isEqual(anotherState.uri) &&
+      this.position.lineNumber === anotherState.position.lineNumber &&
+      this.position.column === anotherState.position.column
+    );
   }
-
 }

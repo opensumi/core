@@ -19,19 +19,27 @@ export interface IOverlayProps {
   getContainer?: string | HTMLElement | getContainerFunc | false | null;
 }
 
-export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closable = true, className, onClose, children, footer, title, getContainer, ...restProps }) => {
-  return (
-    <Modal
-      footer={footer ? footer : null}
-      maskClosable={maskClosable}
-      closable={closable}
-      onCancel={onClose}
-      title={title}
-      getContainer={getContainer}
-      className={clsx('kt-overlay', className)}
-      {...restProps}
-    >
-      {children}
-    </Modal>
-  );
-});
+export const Overlay: React.FC<IOverlayProps> = ({
+  maskClosable = false,
+  closable = true,
+  className,
+  onClose,
+  children,
+  footer,
+  title,
+  getContainer,
+  ...restProps
+}) => (
+  <Modal
+    footer={footer ? footer : null}
+    maskClosable={maskClosable}
+    closable={closable}
+    onCancel={onClose}
+    title={title}
+    getContainer={getContainer}
+    className={clsx('kt-overlay', className)}
+    {...restProps}
+  >
+    {children}
+  </Modal>
+);

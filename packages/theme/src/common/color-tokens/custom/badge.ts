@@ -9,7 +9,10 @@ export const ActivityBarBadgeBorder = registerColor(
     light: null,
     hc: contrastBorder,
   },
-  localize('activityBarBadgeBorder', 'Activity notification badge border color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'),
+  localize(
+    'activityBarBadgeBorder',
+    'Activity notification badge border color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.',
+  ),
 );
 
 export const BadgeBorder = registerColor(

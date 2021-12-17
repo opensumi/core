@@ -4,4 +4,4 @@ exports.activate = async function (context) {
     throw new Error('Test caught exception');
   }
   return {};
-}
+};

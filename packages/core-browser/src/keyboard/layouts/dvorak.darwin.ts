@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
     KeyN: ['b', 'B', '∫', 'ı', 0],
     KeyO: ['r', 'R', '®', '‰', 0],
     KeyP: ['l', 'L', '¬', 'Ò', 0],
-    KeyQ: ['\'', '"', 'æ', 'Æ', 0],
+    KeyQ: ["'", '"', 'æ', 'Æ', 0],
     KeyR: ['p', 'P', 'π', '∏', 0],
     KeyS: ['o', 'O', 'ø', 'Ø', 0],
     KeyT: ['y', 'Y', '¥', 'Á', 0],

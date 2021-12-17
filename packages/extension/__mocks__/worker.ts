@@ -28,8 +28,8 @@ function activate(context) {
 exports.activate = activate;
 `;
 
-export const mockFetch = (url: string) => {
-  return new Promise((resolve) => {
+export const mockFetch = (url: string) =>
+  new Promise((resolve) => {
     resolve({
       status: 200,
       text: async () => {
@@ -40,47 +40,44 @@ export const mockFetch = (url: string) => {
       },
     });
   });
-};
 
 export class MockWorker {
   private onmessage: (msg: any, transferList?: Array<ArrayBuffer | MessagePort>) => void;
 
   constructor() {
     const absolutePath = path.join(__dirname, '../lib/worker-host.js');
-    fs.readFile(absolutePath)
-      .then((data) => {
-        const script = data.toString();
-        const global = {
-          Promise,
-          console,
-          fetch: mockFetch,
-          MessageChannel,
-          MessagePort,
-          TextDecoder,
-          TextEncoder,
-          postMessage: (value: any, transferList?: Array<ArrayBuffer | MessagePort>) => {
-            this.onmessage({
-              data: value,
-            });
-          },
-          navigator: {
-            userAgent: 'Node.js Sandbox',
-          },
-          setTimeout,
-          attachEvent: (listener) => {
-            //
-          },
-        };
+    fs.readFile(absolutePath).then((data) => {
+      const script = data.toString();
+      const global = {
+        Promise,
+        console,
+        fetch: mockFetch,
+        MessageChannel,
+        MessagePort,
+        TextDecoder,
+        TextEncoder,
+        postMessage: (value: any, transferList?: Array<ArrayBuffer | MessagePort>) => {
+          this.onmessage({
+            data: value,
+          });
+        },
+        navigator: {
+          userAgent: 'Node.js Sandbox',
+        },
+        setTimeout,
+        attachEvent: (listener) => {
+          //
+        },
+      };
 
-        const context = vm.createContext({
-          ...global,
-          self: global,
-        });
-        vm.runInContext(script, context);
+      const context = vm.createContext({
+        ...global,
+        self: global,
       });
+      vm.runInContext(script, context);
+    });
 
-    this.onmessage = () => { };
-
+    this.onmessage = () => {};
   }
 
   postMessage(msg, transferList) {
@@ -95,8 +92,7 @@ export class MessagePort {
   otherPort: MessagePort;
   private onmessageListeners: EventListener[] = [];
 
-  constructor() {
-  }
+  constructor() {}
 
   dispatchEvent(event) {
     if (this.onmessage) {
@@ -117,8 +113,7 @@ export class MessagePort {
     if (type !== 'message') {
       return;
     }
-    if (typeof listener !== 'function' ||
-      this.onmessageListeners.indexOf(listener) !== -1) {
+    if (typeof listener !== 'function' || this.onmessageListeners.indexOf(listener) !== -1) {
       return;
     }
     this.onmessageListeners.push(listener);

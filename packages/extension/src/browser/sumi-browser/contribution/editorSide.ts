@@ -5,7 +5,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class EditorSideBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
   @Autowired(EditorComponentRegistry)
   editorComponentRegistry: EditorComponentRegistry;
@@ -30,20 +30,19 @@ export class EditorSideBrowserContributionRunner extends AbstractSumiBrowserCont
     const disposer = new Disposable();
     const { extendProtocol, extendService } = runParam.getExtensionExtendService(this.extension, viewContribution.id);
 
-    disposer.addDispose(this.editorComponentRegistry.registerEditorSideWidget({
-      id: viewContribution.id,
-      side: viewContribution.side,
-      component: viewContribution.component,
-      initialProps: {
-        kaitianExtendService: extendService,
-        kaitianExtendSet: extendProtocol,
-      },
-      displaysOnResource: () => {
-        return this.editorService.editorContextKeyService.match(viewContribution?.when);
-      },
-    }));
+    disposer.addDispose(
+      this.editorComponentRegistry.registerEditorSideWidget({
+        id: viewContribution.id,
+        side: viewContribution.side,
+        component: viewContribution.component,
+        initialProps: {
+          kaitianExtendService: extendService,
+          kaitianExtendSet: extendProtocol,
+        },
+        displaysOnResource: () => this.editorService.editorContextKeyService.match(viewContribution?.when),
+      }),
+    );
 
     return disposer;
   }
-
 }

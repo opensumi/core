@@ -5,7 +5,6 @@ import { Emitter } from '@opensumi/ide-core-common';
 import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
 
 describe('editor status bar item test', () => {
-
   const injector = createBrowserInjector([]);
   const _activeResourceChangeEvent: Emitter<void> = new Emitter<void>();
   const _cursorChangeEmitter: Emitter<CursorStatus> = new Emitter<CursorStatus>();
@@ -17,16 +16,12 @@ describe('editor status bar item test', () => {
           languageId: 'javascript',
           encoding: 'utf8',
           eol: 'lf',
-          getMonacoModel: () => {
-            return {
-              getOptions: () => {
-                return {
-                  insertSpaces: 2,
-                  tabSize: 2,
-                };
-              },
-            };
-          },
+          getMonacoModel: () => ({
+            getOptions: () => ({
+              insertSpaces: 2,
+              tabSize: 2,
+            }),
+          }),
         },
       },
       onActiveResourceChange: _activeResourceChangeEvent.event,
@@ -60,7 +55,5 @@ describe('editor status bar item test', () => {
 
     _activeResourceChangeEvent.fire();
     expect(statusBarService.removeElement).toBeCalledTimes(4);
-
   });
-
 });

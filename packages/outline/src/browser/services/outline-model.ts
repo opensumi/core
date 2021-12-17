@@ -1,14 +1,13 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { Injectable, Optional} from '@opensumi/di';
+import { Injectable, Optional } from '@opensumi/di';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { OutlineCompositeTreeNode } from '../outline-node.define';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class OutlineTreeModel extends TreeModel {
-
   static DEFAULT_FLUSH_DELAY = 100;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(OutlineTreeModel.DEFAULT_FLUSH_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(OutlineTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: OutlineCompositeTreeNode) {

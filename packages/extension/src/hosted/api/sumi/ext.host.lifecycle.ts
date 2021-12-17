@@ -5,10 +5,7 @@ import { IExtHostLifeCycle, IMainThreadLifeCycle } from '../../../common/sumi/li
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostCommands } from '../../../common/vscode';
 
-export function createLifeCycleApi(
-  extHostCommands: IExtHostCommands,
-  lifeCycle: IExtHostLifeCycle,
-) {
+export function createLifeCycleApi(extHostCommands: IExtHostCommands, lifeCycle: IExtHostLifeCycle) {
   return {
     setExtensionDir: (dir: string) => {
       lifeCycle.setExtensionDir(dir);
@@ -20,12 +17,9 @@ export function createLifeCycleApi(
 }
 
 export class ExtHostLifeCycle implements IExtHostLifeCycle {
-
   private proxy: IMainThreadLifeCycle;
 
-  constructor(
-    private rpcProtocol: IRPCProtocol,
-  ) {
+  constructor(private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadLifecycle);
   }
 

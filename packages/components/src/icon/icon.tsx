@@ -26,9 +26,7 @@ export const IconContext = React.createContext<IiconContext<any>>({
 export function IconContextProvider(props: React.PropsWithChildren<{ value: IiconContext<any> }>) {
   return (
     <IconContext.Provider value={props.value}>
-      <IconContext.Consumer>
-        {(value) => props.value === value ? props.children : null}
-      </IconContext.Consumer>
+      <IconContext.Consumer>{(value) => (props.value === value ? props.children : null)}</IconContext.Consumer>
     </IconContext.Provider>
   );
 }
@@ -63,16 +61,22 @@ export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpa
  * ```
  */
 
-// tslint:disable-next-line:only-arrow-functions
-const IconBase = function<T>(
-  props: IconProps<T>,
-  ref: React.Ref<HTMLSpanElement>,
-) {
+const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElement>) {
   const {
-    size = 'small', loading, icon,
-    iconClass, className, tooltip,
-    rotate, anim, fill, disabled,
-    onClick, children, resourceOptions, ...restProps
+    size = 'small',
+    loading,
+    icon,
+    iconClass,
+    className,
+    tooltip,
+    rotate,
+    anim,
+    fill,
+    disabled,
+    onClick,
+    children,
+    resourceOptions,
+    ...restProps
   } = props;
   const iconShapeOptions = { rotate, anim, fill };
 
@@ -104,19 +108,14 @@ const IconBase = function<T>(
       title={tooltip}
       onClick={onClick}
       ref={ref}
-      className={clx(
-        'kt-icon',
-        iconClx,
-        className,
-        {
-          'kt-icon-loading': loading,
-          'kt-icon-disabled': !!disabled,
-          [`kt-icon-${size}`]: !!size,
-          'kt-icon-clickable': !!onClick,
-          'kt-icon-resource': !!resourceOptions,
-          'expanded': !!resourceOptions && resourceOptions.isOpenedDirectory,
-        },
-      )}
+      className={clx('kt-icon', iconClx, className, {
+        'kt-icon-loading': loading,
+        'kt-icon-disabled': !!disabled,
+        [`kt-icon-${size}`]: !!size,
+        'kt-icon-clickable': !!onClick,
+        'kt-icon-resource': !!resourceOptions,
+        expanded: !!resourceOptions && resourceOptions.isOpenedDirectory,
+      })}
     >
       {children}
     </span>
@@ -126,7 +125,7 @@ const IconBase = function<T>(
 // for ts type usage for iconfont-cn.tsx
 export const _InternalIcon = React.memo(React.forwardRef<HTMLSpanElement, IconProps>(IconBase));
 
-export const Icon = React.memo(React.forwardRef<HTMLSpanElement, IconProps>(IconBase)) as <T = any> (
+export const Icon = React.memo(React.forwardRef<HTMLSpanElement, IconProps>(IconBase)) as <T = any>(
   props: IconProps<T>,
   ref: React.Ref<HTMLSpanElement>,
 ) => React.ReactElement;

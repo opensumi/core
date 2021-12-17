@@ -5,28 +5,28 @@ import { CancellationTokenSource, Emitter, Disposable } from '@opensumi/ide-core
 import { IMarkdownService } from '@opensumi/ide-markdown';
 
 describe('markdown test', () => {
-
-  const injector = createBrowserInjector([
-    MarkdownModule,
-  ]);
+  const injector = createBrowserInjector([MarkdownModule]);
 
   injector.addProviders({
     token: IWebviewService,
     useValue: {},
   });
 
-  it ('markdown service test', async (done) => {
+  it('markdown service test', async (done) => {
     const webview = new MockedWebviewElement();
-    injector.mock(IWebviewService, 'createWebview', () => {
-      return webview;
-    });
+    injector.mock(IWebviewService, 'createWebview', () => webview);
 
     const markdownService: IMarkdownService = injector.get(IMarkdownService);
 
     const element = document.createElement('div');
     const markdownString = '### h1Content \n\n* list element1\n* list element2';
     const updateEvent = new Emitter<string>();
-    await markdownService.previewMarkdownInContainer(markdownString, element, new CancellationTokenSource().token, updateEvent.event);
+    await markdownService.previewMarkdownInContainer(
+      markdownString,
+      element,
+      new CancellationTokenSource().token,
+      updateEvent.event,
+    );
 
     expect(webview.appendTo).toBeCalledWith(element);
     expect(webview.setContent).toBeCalledTimes(1);
@@ -44,16 +44,14 @@ describe('markdown test', () => {
 });
 
 class MockedWebviewElement extends Disposable implements Partial<IWebview> {
-
   appendTo = jest.fn();
 
   public content = '';
 
-  setContent = jest.fn(( content: string) => {
+  setContent = jest.fn((content: string) => {
     this.content = content;
   }) as any;
 
   _onDidClickLink = new Emitter<any>();
   onDidClickLink = jest.fn(this._onDidClickLink.event);
-
 }

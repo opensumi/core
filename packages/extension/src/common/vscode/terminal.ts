@@ -1,5 +1,12 @@
 import { Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-common';
-import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@opensumi/ide-terminal-next';
+import {
+  ITerminalInfo,
+  ITerminalDimensionsDto,
+  ITerminalLaunchError,
+  ITerminalDimensions,
+  ITerminalExitEvent,
+  ITerminalLinkDto,
+} from '@opensumi/ide-terminal-next';
 import { SerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import type vscode from 'vscode';
 
@@ -28,7 +35,11 @@ export interface IMainThreadTerminal {
   $sendProcessCwd(terminalId: string, initialCwd: string): void;
   $sendOverrideDimensions(terminalId: string, dimensions: ITerminalDimensions | undefined): void;
 
-  $setEnvironmentVariableCollection(extensionIdentifier: string, persistent: boolean, collection: SerializableEnvironmentVariableCollection | undefined): void;
+  $setEnvironmentVariableCollection(
+    extensionIdentifier: string,
+    persistent: boolean,
+    collection: SerializableEnvironmentVariableCollection | undefined,
+  ): void;
 }
 
 export interface IExtHostTerminal {
@@ -60,7 +71,10 @@ export interface IExtHostTerminal {
 
   dispose(): void;
 
-  $startExtensionTerminal(id: string, initialDimensions: ITerminalDimensionsDto | undefined): Promise<ITerminalLaunchError | undefined>;
+  $startExtensionTerminal(
+    id: string,
+    initialDimensions: ITerminalDimensionsDto | undefined,
+  ): Promise<ITerminalLaunchError | undefined>;
   $acceptProcessInput(id: string, data: string): void;
   $acceptProcessShutdown(id: string, immediate: boolean): void;
   $acceptProcessRequestInitialCwd(id: string): void;
@@ -71,7 +85,7 @@ export interface IExtHostTerminal {
   $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]>;
   $activateLink(terminalId: string, linkId: number): void;
 
-  //#region
+  // #region
   getEnviromentVariableCollection(extension: IExtensionProps): vscode.EnvironmentVariableCollection;
-  //#endregion
+  // #endregion
 }

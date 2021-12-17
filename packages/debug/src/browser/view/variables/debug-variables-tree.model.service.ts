@@ -2,11 +2,32 @@ import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { isEqual } from 'lodash';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@opensumi/ide-components';
-import { Emitter, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@opensumi/ide-core-browser';
+import {
+  TreeModel,
+  DecorationsManager,
+  Decoration,
+  IRecycleTreeHandle,
+  TreeNodeType,
+  TreeNodeEvent,
+} from '@opensumi/ide-components';
+import {
+  Emitter,
+  ThrottledDelayer,
+  Deferred,
+  Event,
+  DisposableCollection,
+  IClipboardService,
+} from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
-import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
+import {
+  ExpressionContainer,
+  ExpressionNode,
+  DebugVariableRoot,
+  DebugVariableContainer,
+  DebugVariable,
+  DebugScope,
+} from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';
 
@@ -20,7 +41,7 @@ export type DebugVariableWithRawScope = DebugScope | DebugVariableContainer;
 
 class KeepExpandedScopesModel {
   private _keepExpandedScopesMap = new Map<DebugProtocol.Scope, Array<number>>();
-  constructor() { }
+  constructor() {}
 
   private getMirrorScope(item: DebugVariableWithRawScope) {
     return Array.from(this._keepExpandedScopesMap.keys()).find((f) => isEqual(f, item.getRawScope()));
@@ -57,7 +78,6 @@ class KeepExpandedScopesModel {
   clear(): void {
     this._keepExpandedScopesMap.clear();
   }
-
 }
 
 @Injectable()
@@ -177,7 +197,7 @@ export class DebugVariablesModelService {
            * 则需要找到当前 scope 作用域的 expensive 为 false 的变量列表，并默认展开它们
            * PS: 一般的情况下有 Local
            * */
-          const scopes = this._activeTreeModel?.root.children as Array<DebugVariableWithRawScope> || [];
+          const scopes = (this._activeTreeModel?.root.children as Array<DebugVariableWithRawScope>) || [];
           if (scopes.length > 0 && scopes.every((s: DebugScope) => !s.expanded)) {
             for (const s of scopes) {
               if ((s as DebugScope).getRawScope().expensive === false && !s.expanded) {
@@ -203,7 +223,6 @@ export class DebugVariablesModelService {
               await execExpands(s.children as Array<DebugVariableWithRawScope>);
             }
           });
-
         } else {
           this._activeTreeModel = undefined;
           this.keepExpandedScopesModel.clear();
@@ -216,20 +235,26 @@ export class DebugVariablesModelService {
 
   listenTreeViewChange() {
     this.dispose();
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
-      this.loadingDecoration.addTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-      this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
-      // 更新树前更新下选中节点
-      if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-        this.selectedDecoration.addTarget(node as ExpressionNode);
-      }
-    }));
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+        this.loadingDecoration.addTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+        this.loadingDecoration.removeTarget(target);
+      }),
+    );
+    this.disposableCollection.push(
+      this.treeModel!.onWillUpdate(() => {
+        // 更新树前更新下选中节点
+        if (this.selectedNodes.length !== 0) {
+          // 仅处理一下单选情况
+          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+          this.selectedDecoration.addTarget(node as ExpressionNode);
+        }
+      }),
+    );
   }
 
   async initTreeModel(session?: DebugSession) {
@@ -254,7 +279,7 @@ export class DebugVariablesModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange: boolean = true) => {
+  activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange = true) => {
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
       this._contextMenuNode = undefined;
@@ -280,7 +305,7 @@ export class DebugVariablesModelService {
         this.treeModel?.dispatchChange();
       }
     }
-  }
+  };
 
   // 右键菜单焦点态切换
   activeNodeActivedDecoration = (target: ExpressionContainer | ExpressionNode) => {
@@ -294,7 +319,7 @@ export class DebugVariablesModelService {
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuNode = target;
     this.treeModel?.dispatchChange();
-  }
+  };
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
@@ -306,7 +331,7 @@ export class DebugVariablesModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
     this.treeModel?.dispatchChange();
-  }
+  };
 
   removeNodeDecoration() {
     if (!this.decorations) {
@@ -318,7 +343,10 @@ export class DebugVariablesModelService {
     this.decorations.removeDecoration(this.contextMenuDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, expression?: DebugScope | DebugVariableContainer | DebugVariable | undefined) => {
+  handleContextMenu = (
+    ev: React.MouseEvent,
+    expression?: DebugScope | DebugVariableContainer | DebugVariable | undefined,
+  ) => {
     ev.stopPropagation();
     ev.preventDefault();
 
@@ -334,10 +362,15 @@ export class DebugVariablesModelService {
     if (expression) {
       this.activeNodeActivedDecoration(expression);
       this.debugContextKey.contextDebugProtocolVariableMenu.set(expression.variableMenuContext);
-      this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
+      this.debugContextKey.contextVariableEvaluateNamePresent.set(
+        !!(expression as DebugVariableContainer | DebugVariable).evaluateName,
+      );
     }
 
-    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped });
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.DebugVariablesContext,
+      contextKeyService: this.debugContextKey.contextKeyScoped,
+    });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
@@ -345,7 +378,7 @@ export class DebugVariablesModelService {
       menuNodes,
       args: [expression.toDebugProtocolObject()],
     });
-  }
+  };
 
   handleTreeHandler(handle: IDebugVariablesHandle) {
     this._debugVariablesTreeHandle = {
@@ -357,21 +390,21 @@ export class DebugVariablesModelService {
   handleTreeBlur = () => {
     // 清空焦点状态
     this.enactiveNodeDecoration();
-  }
+  };
 
   handleItemClick = (item: ExpressionContainer | ExpressionNode) => {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
-  }
+  };
 
   handleTwistierClick = (item: ExpressionContainer | ExpressionNode, type: TreeNodeType) => {
     if (type === TreeNodeType.CompositeTreeNode) {
       this.activeNodeDecoration(item, false);
-      this.toggleDirectory(item as (DebugVariableWithRawScope));
+      this.toggleDirectory(item as DebugVariableWithRawScope);
     } else {
       this.activeNodeDecoration(item);
     }
-  }
+  };
 
   toggleDirectory = async (item: DebugVariableWithRawScope) => {
     if (item.expanded) {
@@ -380,7 +413,7 @@ export class DebugVariablesModelService {
       await item.setExpanded(true);
     }
     this.keepExpandedScopesModel.set(item);
-  }
+  };
 
   async copyEvaluateName(node: DebugVariableContainer | DebugVariable | undefined) {
     if (!node) {
@@ -398,7 +431,9 @@ export class DebugVariablesModelService {
     const getClipboardValue = async () => {
       if (node.session && node.session.capabilities.supportsValueFormattingOptions) {
         try {
-          const { variable: { evaluateName } } = node;
+          const {
+            variable: { evaluateName },
+          } = node;
           if (evaluateName) {
             const body = await node.session.evaluate(evaluateName, 'clipboard');
             if (body) {

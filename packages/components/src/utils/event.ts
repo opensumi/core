@@ -9,7 +9,7 @@ import { LinkedList } from './linkedList';
 export type Event<T> = (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]) => IDisposable;
 
 export namespace Event {
-  const _disposable = { dispose() { } };
+  const _disposable = { dispose() {} };
   export const None: Event<any> = () => _disposable;
 
   /**
@@ -19,18 +19,21 @@ export namespace Event {
     return (listener, thisArgs = null, disposables?) => {
       // we need this, in case the event fires during the listener call
       let didFire = false;
-      let result: IDisposable;
-      result = event((e) => {
-        if (didFire) {
-          return;
-        } else if (result) {
-          result.dispose();
-        } else {
-          didFire = true;
-        }
+      const result = event(
+        (e) => {
+          if (didFire) {
+            return;
+          } else if (result) {
+            result.dispose();
+          } else {
+            didFire = true;
+          }
 
-        return listener.call(thisArgs, e);
-      }, null, disposables);
+          return listener.call(thisArgs, e);
+        },
+        null,
+        disposables,
+      );
 
       if (didFire) {
         result.dispose();
@@ -45,7 +48,9 @@ export namespace Event {
    * throught the mapping function.
    */
   export function map<I, O>(event: Event<I>, map: (i: I) => O): Event<O> {
-    return snapshot((listener, thisArgs = null, disposables?) => event((i) => listener.call(thisArgs, map(i)), null, disposables));
+    return snapshot((listener, thisArgs = null, disposables?) =>
+      event((i) => listener.call(thisArgs, map(i)), null, disposables),
+    );
   }
 
   /**
@@ -53,7 +58,16 @@ export namespace Event {
    * the `each` function per each element.
    */
   export function forEach<I>(event: Event<I>, each: (i: I) => void): Event<I> {
-    return snapshot((listener, thisArgs = null, disposables?) => event((i) => { each(i); listener.call(thisArgs, i); }, null, disposables));
+    return snapshot((listener, thisArgs = null, disposables?) =>
+      event(
+        (i) => {
+          each(i);
+          listener.call(thisArgs, i);
+        },
+        null,
+        disposables,
+      ),
+    );
   }
 
   /**
@@ -63,7 +77,9 @@ export namespace Event {
   export function filter<T>(event: Event<T>, filter: (e: T) => boolean): Event<T>;
   export function filter<T, R>(event: Event<T | R>, filter: (e: T | R) => e is R): Event<R>;
   export function filter<T>(event: Event<T>, filter: (e: T) => boolean): Event<T> {
-    return snapshot((listener, thisArgs = null, disposables?) => event((e) => filter(e) && listener.call(thisArgs, e), null, disposables));
+    return snapshot((listener, thisArgs = null, disposables?) =>
+      event((e) => filter(e) && listener.call(thisArgs, e), null, disposables),
+    );
   }
 
   /**
@@ -114,10 +130,27 @@ export namespace Event {
    * @param leading Whether the event should fire in the leading phase of the timeout.
    * @param leakWarningThreshold The leak warning threshold override.
    */
-  export function debounce<T>(event: Event<T>, merge: (last: T | undefined, event: T) => T, delay?: number, leading?: boolean, leakWarningThreshold?: number): Event<T>;
-  export function debounce<I, O>(event: Event<I>, merge: (last: O | undefined, event: I) => O, delay?: number, leading?: boolean, leakWarningThreshold?: number): Event<O>;
-  export function debounce<I, O>(event: Event<I>, merge: (last: O | undefined, event: I) => O, delay: number = 100, leading = false, leakWarningThreshold?: number): Event<O> {
-
+  export function debounce<T>(
+    event: Event<T>,
+    merge: (last: T | undefined, event: T) => T,
+    delay?: number,
+    leading?: boolean,
+    leakWarningThreshold?: number,
+  ): Event<T>;
+  export function debounce<I, O>(
+    event: Event<I>,
+    merge: (last: O | undefined, event: I) => O,
+    delay?: number,
+    leading?: boolean,
+    leakWarningThreshold?: number,
+  ): Event<O>;
+  export function debounce<I, O>(
+    event: Event<I>,
+    merge: (last: O | undefined, event: I) => O,
+    delay = 100,
+    leading = false,
+    leakWarningThreshold?: number,
+  ): Event<O> {
     let subscription: IDisposable;
     let output: O | undefined;
     let handle: any;
@@ -261,8 +294,7 @@ export namespace Event {
   }
 
   class ChainableEvent<T> implements IChainableEvent<T> {
-
-    constructor(readonly event: Event<T>) { }
+    constructor(readonly event: Event<T>) {}
 
     map<O>(fn: (i: T) => O): IChainableEvent<O> {
       return new ChainableEvent(map(this.event, fn));
@@ -302,7 +334,11 @@ export namespace Event {
     removeListener(event: string | symbol, listener: () => void): this;
   }
 
-  export function fromNodeEventEmitter<T>(emitter: NodeEventEmitter, eventName: string, map: (...args: any[]) => T = (id) => id): Event<T> {
+  export function fromNodeEventEmitter<T>(
+    emitter: NodeEventEmitter,
+    eventName: string,
+    map: (...args: any[]) => T = (id) => id,
+  ): Event<T> {
     const fn = (...args: any[]) => result.fire(map(...args));
     const onFirstListenerAdd = () => emitter.on(eventName, fn);
     const onLastListenerRemove = () => emitter.removeListener(eventName, fn);
@@ -356,14 +392,10 @@ export function setGlobalLeakWarningThreshold(n: number): IDisposable {
 }
 
 class LeakageMonitor {
-
   private _stacks: Map<string, number> | undefined;
-  private _warnCountdown: number = 0;
+  private _warnCountdown = 0;
 
-  constructor(
-    readonly customThreshold?: number,
-    readonly name: string = Math.random().toString(18).slice(2, 5),
-  ) { }
+  constructor(readonly customThreshold?: number, readonly name: string = Math.random().toString(18).slice(2, 5)) {}
 
   dispose(): void {
     if (this._stacks) {
@@ -372,7 +404,6 @@ class LeakageMonitor {
   }
 
   check(listenerCount: number): undefined | (() => void) {
-
     let threshold = _globalLeakWarningThreshold;
     if (typeof this.customThreshold === 'number') {
       threshold = this.customThreshold;
@@ -386,7 +417,7 @@ class LeakageMonitor {
       this._stacks = new Map();
     }
     const stack = new Error().stack!.split('\n').slice(3).join('\n');
-    const count = (this._stacks.get(stack) || 0);
+    const count = this._stacks.get(stack) || 0;
     this._stacks.set(stack, count + 1);
     this._warnCountdown -= 1;
 
@@ -397,21 +428,21 @@ class LeakageMonitor {
 
       // find most frequent listener and print warning
       let topStack: string;
-      let topCount: number = 0;
+      let topCount = 0;
       this._stacks.forEach((count, stack) => {
         if (!topStack || topCount < count) {
           topStack = stack;
           topCount = count;
         }
       });
-      // tslint:disable-next-line:no-console
-      console.warn(`[${this.name}] potential listener LEAK detected, having ${listenerCount} listeners already. MOST frequent listener (${topCount}):`);
-      // tslint:disable-next-line:no-console
+      console.warn(
+        `[${this.name}] potential listener LEAK detected, having ${listenerCount} listeners already. MOST frequent listener (${topCount}):`,
+      );
       console.warn(topStack!);
     }
 
     return () => {
-      const count = (this._stacks!.get(stack) || 0);
+      const count = this._stacks!.get(stack) || 0;
       this._stacks!.set(stack, count - 1);
     };
   }
@@ -444,21 +475,21 @@ export interface IAsyncResult<T> {
   result?: T;
 }
 export class Emitter<T> {
-
-  private static readonly _noop = () => { };
+  private static readonly _noop = () => {};
 
   private readonly _options?: EmitterOptions;
   private readonly _leakageMon?: LeakageMonitor;
-  private _disposed: boolean = false;
+  private _disposed = false;
   private _event?: Event<T>;
   private _deliveryQueue?: LinkedList<[Listener<T>, T]>;
   protected _listeners?: LinkedList<Listener<T>>;
 
   constructor(options?: EmitterOptions) {
     this._options = options;
-    this._leakageMon = _globalLeakWarningThreshold > 0
-      ? new LeakageMonitor(this._options && this._options.leakWarningThreshold)
-      : undefined;
+    this._leakageMon =
+      _globalLeakWarningThreshold > 0
+        ? new LeakageMonitor(this._options && this._options.leakWarningThreshold)
+        : undefined;
   }
 
   /**
@@ -494,8 +525,7 @@ export class Emitter<T> {
           removeMonitor = this._leakageMon.check(this._listeners.size);
         }
 
-        let result: IDisposable;
-        result = {
+        const result = {
           dispose: () => {
             if (removeMonitor) {
               removeMonitor();
@@ -504,14 +534,14 @@ export class Emitter<T> {
             if (!this._disposed) {
               remove();
               if (this._options && this._options.onLastListenerRemove) {
-                const hasListeners = (this._listeners && !this._listeners.isEmpty());
+                const hasListeners = this._listeners && !this._listeners.isEmpty();
                 if (!hasListeners) {
                   this._options.onLastListenerRemove(this);
                 }
               }
             }
           },
-        };
+        } as IDisposable;
         if (Array.isArray(disposables)) {
           disposables.push(result);
         }
@@ -542,14 +572,10 @@ export class Emitter<T> {
 
       while (this._deliveryQueue.size > 0) {
         const [listener, event] = this._deliveryQueue.shift()!;
-        try {
-          if (typeof listener === 'function') {
-            listener.call(undefined, event);
-          } else {
-            listener[0].call(listener[1], event);
-          }
-        } catch (e) {
-          throw (e);
+        if (typeof listener === 'function') {
+          listener.call(undefined, event);
+        } else {
+          listener[0].call(listener[1], event);
         }
       }
     }
@@ -560,10 +586,8 @@ export class Emitter<T> {
    * @param e
    * @param timeout
    */
-  async fireAndAwait<R = any>(event: T, timeout: number = 2000): Promise<Array<IAsyncResult<R>>> {
-
+  async fireAndAwait<R = any>(event: T, timeout = 2000): Promise<Array<IAsyncResult<R>>> {
     if (this._listeners) {
-
       if (!this._deliveryQueue) {
         this._deliveryQueue = new LinkedList();
       }
@@ -583,28 +607,24 @@ export class Emitter<T> {
       });
       while (this._deliveryQueue.size > 0) {
         const [listener, event] = this._deliveryQueue.shift()!;
-        try {
-          const promise: Promise<IAsyncResult<R>> = (async () => {
-            try {
-              if (typeof listener === 'function') {
-                return {
-                  result: await listener.call(undefined, event) as any,
-                };
-              } else {
-                return {
-                  result: await listener[0].call(listener[1], event) as any,
-                };
-              }
-            } catch (e) {
+        const promise: Promise<IAsyncResult<R>> = (async () => {
+          try {
+            if (typeof listener === 'function') {
               return {
-                err: e,
+                result: (await listener.call(undefined, event)) as any,
+              };
+            } else {
+              return {
+                result: (await listener[0].call(listener[1], event)) as any,
               };
             }
-          })();
-          promises.push(Promise.race([timeoutPromise, promise]));
-        } catch (e) {
-          throw (e);
-        }
+          } catch (e) {
+            return {
+              err: e,
+            };
+          }
+        })();
+        promises.push(Promise.race([timeoutPromise, promise]));
       }
       return Promise.all(promises);
     } else {
@@ -631,7 +651,6 @@ export class Emitter<T> {
 }
 
 export class PauseableEmitter<T> extends Emitter<T> {
-
   private _isPaused = 0;
   private _eventQueue = new LinkedList<T>();
   private _mergeFn?: (input: T[]) => T;
@@ -653,7 +672,6 @@ export class PauseableEmitter<T> extends Emitter<T> {
         const events = this._eventQueue.toArray();
         this._eventQueue.clear();
         super.fire(this._mergeFn(events));
-
       } else {
         // no merging, fire each event individually and test
         // that this emitter isn't paused halfway through
@@ -697,6 +715,7 @@ export namespace WaitUntilEvent {
     emitter.fire(asyncEvent);
     // Asynchronous calls to `waitUntil` should fail.
     Object.freeze(waitables);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     delete asyncEvent['waitUntil'];
     if (!waitables.length) {

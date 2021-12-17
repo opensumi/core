@@ -1,6 +1,18 @@
 import React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable, ClientApp } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryImpl,
+  ComponentRegistry,
+  SlotLocation,
+  AppConfig,
+  IContextKeyService,
+  CommandRegistry,
+  ILoggerManagerClient,
+  ViewContainerOptions,
+  PreferenceService,
+  Disposable,
+  ClientApp,
+} from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
@@ -45,7 +57,7 @@ describe('main layout test', () => {
       // mock cancelAnimationFrame
     };
     // tslint:disable-next-line: only-arrow-functions
-    (window as any).ResizeObserver = function() {
+    (window as any).ResizeObserver = function () {
       this.observe = () => {};
       this.disconnect = () => {};
       this.unobserve = () => {};
@@ -119,41 +131,52 @@ describe('main layout test', () => {
     );
     useMockStorage(injector);
     const registry: ComponentRegistry = injector.get(ComponentRegistry);
-    registry.register(testToken, [{
-      component: MockView,
-      id: 'test-view-id',
-    }], {
-      containerId: 'containerId',
-      iconClass: 'testicon iconfont',
-      priority: 10,
-      title: 'test title',
-      expanded: false,
-      size: 300,
-      initialProps: {},
-      activateKeyBinding: 'ctrlcmd+1',
-      hidden: false,
-    });
-    registry.register(uniqueToken, [{
-      component: MockView,
-      id: 'test-view-id1',
-    }, {
-      component: MockView,
-      id: 'test-view-id2',
-    }], {
-      containerId: testContainerId,
-      iconClass: 'testicon iconfont',
-      priority: 10,
-      title: 'test title',
-      expanded: false,
-      size: 300,
-      activateKeyBinding: 'ctrlcmd+1',
-      hidden: false,
-    });
+    registry.register(
+      testToken,
+      [
+        {
+          component: MockView,
+          id: 'test-view-id',
+        },
+      ],
+      {
+        containerId: 'containerId',
+        iconClass: 'testicon iconfont',
+        priority: 10,
+        title: 'test title',
+        expanded: false,
+        size: 300,
+        initialProps: {},
+        activateKeyBinding: 'ctrlcmd+1',
+        hidden: false,
+      },
+    );
+    registry.register(
+      uniqueToken,
+      [
+        {
+          component: MockView,
+          id: 'test-view-id1',
+        },
+        {
+          component: MockView,
+          id: 'test-view-id2',
+        },
+      ],
+      {
+        containerId: testContainerId,
+        iconClass: 'testicon iconfont',
+        priority: 10,
+        title: 'test title',
+        expanded: false,
+        size: 300,
+        activateKeyBinding: 'ctrlcmd+1',
+        hidden: false,
+      },
+    );
     await act(async () => {
       const app = new ClientApp({
-        modules: [
-          MainLayoutModule,
-        ],
+        modules: [MainLayoutModule],
         injector,
         didRendered: () => rendered.resolve(),
         ...config,
@@ -188,13 +211,19 @@ describe('main layout test', () => {
   // container api test start
 
   it('should be able to collect tabbar component at any time', () => {
-    service.collectTabbarComponent([{
-      component: MockView,
-      id: 'test-view-id3',
-    }], {
-      containerId: 'container-before-render',
-      title: 'test title',
-    }, 'bottom');
+    service.collectTabbarComponent(
+      [
+        {
+          component: MockView,
+          id: 'test-view-id3',
+        },
+      ],
+      {
+        containerId: 'container-before-render',
+        title: 'test title',
+      },
+      'bottom',
+    );
     expect(service.getTabbarHandler('container-before-render')).toBeDefined();
   });
 
@@ -217,17 +246,24 @@ describe('main layout test', () => {
       expanded: false,
       size: 300,
       badge: '9',
-      initialProps: {hello: 'world'},
+      initialProps: { hello: 'world' },
       activateKeyBinding: 'ctrlcmd+1',
       hidden: false,
     };
-    const handlerId = service.collectTabbarComponent([{
-      component: MockView,
-      id: 'test-view-id4',
-    }, {
-      component: MockView,
-      id: 'test-view-id5',
-    }], options, 'left');
+    const handlerId = service.collectTabbarComponent(
+      [
+        {
+          component: MockView,
+          id: 'test-view-id4',
+        },
+        {
+          component: MockView,
+          id: 'test-view-id5',
+        },
+      ],
+      options,
+      'left',
+    );
     const handler = service.getTabbarHandler(handlerId)!;
     const tabbarService = service.getTabbarService('left');
     expect(handler).toBeDefined();
@@ -263,14 +299,18 @@ describe('main layout test', () => {
   });
 
   it('should be able to register React components as container directly', () => {
-    const handlerId = service.collectTabbarComponent([], {
-      containerId: 'container-use-react',
-      title: 'test title',
-      component: MockView,
-      initialProps: {
-        message: 'hello world',
+    const handlerId = service.collectTabbarComponent(
+      [],
+      {
+        containerId: 'container-use-react',
+        title: 'test title',
+        component: MockView,
+        initialProps: {
+          message: 'hello world',
+        },
       },
-    }, 'bottom');
+      'bottom',
+    );
     const accordionService = service.getAccordionService('container-use-react');
     expect(accordionService.views.length).toEqual(0);
     const handler = service.getTabbarHandler(handlerId);
@@ -280,16 +320,24 @@ describe('main layout test', () => {
   });
 
   it('should`t render tab view with hideTab option', () => {
-    service.collectTabbarComponent([], {
-      containerId: 'containerWithTab',
-      component: MockView,
-    }, 'left');
+    service.collectTabbarComponent(
+      [],
+      {
+        containerId: 'containerWithTab',
+        component: MockView,
+      },
+      'left',
+    );
     expect(document.getElementById('containerWithTab')).toBeDefined();
-    service.collectTabbarComponent([], {
-      containerId: 'containerWithoutTab',
-      component: MockView,
-      hideTab: true,
-    }, 'left');
+    service.collectTabbarComponent(
+      [],
+      {
+        containerId: 'containerWithoutTab',
+        component: MockView,
+        hideTab: true,
+      },
+      'left',
+    );
     expect(document.getElementById('containerWithoutTab')).toBeNull();
   });
 
@@ -298,34 +346,47 @@ describe('main layout test', () => {
   it('should be able to collect view into existing container and replace & dispose existing view', async (done) => {
     const tmpViewId = 'test-view-id5';
     const tmpDomId = 'test-dom-5';
-    service.collectViewComponent({
-      id: tmpViewId,
-      component: MockView,
-    }, testContainerId, { message: 'yes' });
-    act(() => { jest.advanceTimersByTime(10); });
+    service.collectViewComponent(
+      {
+        id: tmpViewId,
+        component: MockView,
+      },
+      testContainerId,
+      { message: 'yes' },
+    );
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     const accordionService = service.getAccordionService(testContainerId);
     expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeDefined();
-    service.replaceViewComponent({
-      id: tmpViewId,
-      component: (props) => <h1 id={tmpDomId}>{props.id || 'no props'}</h1>,
-    }, { id: 'hello world' });
-    act(() => { jest.advanceTimersByTime(10); });
+    service.replaceViewComponent(
+      {
+        id: tmpViewId,
+        component: (props) => <h1 id={tmpDomId}>{props.id || 'no props'}</h1>,
+      },
+      { id: 'hello world' },
+    );
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     // await wait(200);
     const newDom = document.getElementById(tmpDomId);
     expect(newDom).toBeDefined();
     expect(newDom!.innerHTML).toEqual('hello world');
     service.disposeViewComponent(tmpViewId);
-    act(() => { jest.advanceTimersByTime(10); });
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
     done();
   });
 
   it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {
     const emptyContainerId = 'emptyContainerId';
-    service.collectTabbarComponent([], {hideIfEmpty: true, containerId: emptyContainerId}, 'left');
+    service.collectTabbarComponent([], { hideIfEmpty: true, containerId: emptyContainerId }, 'left');
     const tabbarService = service.getTabbarService('left');
     expect(tabbarService.getContainer(emptyContainerId)).toBeUndefined();
-    service.collectViewComponent({id: 'testViewId', component: MockView}, emptyContainerId);
+    service.collectViewComponent({ id: 'testViewId', component: MockView }, emptyContainerId);
     expect(tabbarService.getContainer(emptyContainerId)).toBeDefined();
   });
 
@@ -336,10 +397,14 @@ describe('main layout test', () => {
     // currentContainerId 空字符串表示当前未选中任何tab
     expect(rightTabbarService.currentContainerId).toEqual('');
     service.toggleSlot('right');
-    act(() => { jest.advanceTimersByTime(10); });
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     // await wait(200);
     expect(rightTabbarService.currentContainerId).toBeTruthy();
-    act(() => { jest.advanceTimersByTime(10); });
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     // panel visible
     expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.zIndex).toEqual('1');
   });
@@ -347,7 +412,9 @@ describe('main layout test', () => {
   it('should be able to judge whether a tab panel is visible', () => {
     expect(service.isVisible('right')).toBeTruthy();
     service.toggleSlot('right', false);
-    act(() => { jest.advanceTimersByTime(10); });
+    act(() => {
+      jest.advanceTimersByTime(10);
+    });
     expect(service.isVisible('right')).toBeFalsy();
   });
 });

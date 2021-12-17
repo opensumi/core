@@ -1,7 +1,4 @@
-import {
-  LogLevel,
-  SupportLogNamespace,
-} from '@opensumi/ide-core-common';
+import { LogLevel, SupportLogNamespace } from '@opensumi/ide-core-common';
 
 export const ILogServiceForClient = Symbol('LogServiceForClient');
 
@@ -43,11 +40,11 @@ export function format(args: any): string {
     } else if (typeof a === 'object') {
       try {
         a = JSON.stringify(a);
-      } catch (e) { }
+      } catch (e) {}
     } else if (typeof a === 'symbol') {
       try {
         a = a.toString();
-      } catch (e) { }
+      } catch (e) {}
     }
 
     result += (i > 0 ? ' ' : '') + a;

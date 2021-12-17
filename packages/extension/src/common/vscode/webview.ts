@@ -25,14 +25,20 @@ export interface IWebviewPanelViewState {
 }
 
 export interface IMainThreadWebview {
-
   $getWebviewResourceRoots(): Promise<string[]>;
 
-  $createWebviewPanel(id: string, viewType: string, title: string, showOptions: WebviewPanelShowOptions, options: IWebviewPanelOptions & IWebviewOptions, extensionInfo: IExtensionInfo): void;
+  $createWebviewPanel(
+    id: string,
+    viewType: string,
+    title: string,
+    showOptions: WebviewPanelShowOptions,
+    options: IWebviewPanelOptions & IWebviewOptions,
+    extensionInfo: IExtensionInfo,
+  ): void;
   $disposeWebview(id: string): void;
   $reveal(id: string, showOptions: WebviewPanelShowOptions): void;
   $setTitle(id: string, value: string): void;
-  $setIconPath(id: string, value?: { light: string, dark: string, hc: string; } | string): void;
+  $setIconPath(id: string, value?: { light: string; dark: string; hc: string } | string): void;
 
   $setHtml(id: string, value: string): void;
   $setOptions(id: string, options: IWebviewOptions): void;
@@ -47,7 +53,6 @@ export interface IMainThreadWebview {
   $plainWebviewLoadUrl(id: string, uri: string): Promise<void>;
   $disposePlainWebview(id: string): Promise<void>;
   $revealPlainWebview(id: string, groupIndex: number): Promise<void>;
-
 }
 
 export interface IWebviewExtensionDescription {
@@ -57,7 +62,11 @@ export interface IWebviewExtensionDescription {
 export type WebviewHandle = string;
 
 export interface IMainThreadWebviewView {
-  $registerWebviewViewProvider(extension: IWebviewExtensionDescription, viewType: string, options?: { retainContextWhenHidden?: boolean }): void;
+  $registerWebviewViewProvider(
+    extension: IWebviewExtensionDescription,
+    viewType: string,
+    options?: { retainContextWhenHidden?: boolean },
+  ): void;
   $unregisterWebviewViewProvider(viewType: string): void;
 
   $setWebviewViewTitle(handle: WebviewHandle, value: string | undefined): void;
@@ -67,13 +76,17 @@ export interface IMainThreadWebviewView {
 }
 
 export interface IExtHostWebviewView {
-
-  $resolveWebviewView(webviewHandle: WebviewHandle, viewType: string, title: string | undefined, state: any, cancellation: CancellationToken): Promise<void>;
+  $resolveWebviewView(
+    webviewHandle: WebviewHandle,
+    viewType: string,
+    title: string | undefined,
+    state: any,
+    cancellation: CancellationToken,
+  ): Promise<void>;
 
   $onDidChangeWebviewViewVisibility(webviewHandle: WebviewHandle, visible: boolean): void;
 
   $disposeWebviewView(webviewHandle: WebviewHandle): void;
-
 }
 
 export interface IExtHostWebview {
@@ -81,7 +94,14 @@ export interface IExtHostWebview {
   $onMessage(id: string, message: any): void;
   $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): void;
   $onDidDisposeWebviewPanel(id: string): Promise<void>;
-  $deserializeWebviewPanel(newWebviewId: string, viewType: string, title: string, state: any, position: number, options: IWebviewOptions): Promise<void>;
+  $deserializeWebviewPanel(
+    newWebviewId: string,
+    viewType: string,
+    title: string,
+    state: any,
+    position: number,
+    options: IWebviewOptions,
+  ): Promise<void>;
 
   /**
    * browser主动创建了一个webview，把它交给 exthost 创建 webviewPanel
@@ -140,7 +160,6 @@ export interface Webview {
    * ```
    */
   readonly cspSource: string;
-
 }
 
 export interface WebviewPanel {
@@ -222,8 +241,8 @@ export interface WebviewPanel {
 }
 
 /**
-   * Event fired when a webview panel's view state changes.
-   */
+ * Event fired when a webview panel's view state changes.
+ */
 export interface WebviewPanelOnDidChangeViewStateEvent {
   /**
    * Webview panel whose view state changed.
@@ -366,16 +385,22 @@ export interface WebviewViewProvider {
    *
    * @return Optional thenable indicating that the view has been fully resolved.
    */
-  resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext, token: CancellationToken): Thenable<void> | void;
+  resolveWebviewView(
+    webviewView: WebviewView,
+    context: WebviewViewResolveContext,
+    token: CancellationToken,
+  ): Thenable<void> | void;
 }
 
-export interface WebviewViewOptions { retainContextWhenHidden?: boolean | undefined; }
+export interface WebviewViewOptions {
+  retainContextWhenHidden?: boolean | undefined;
+}
 
 export class WebviewViewResolverRegistrationEvent extends BasicEvent<{
-  viewType: string,
-  options: WebviewViewOptions,
-}> { }
+  viewType: string;
+  options: WebviewViewOptions;
+}> {}
 
 export class WebviewViewResolverRegistrationRemovalEvent extends BasicEvent<{
-  viewType: string,
-}> { }
+  viewType: string;
+}> {}

@@ -3,7 +3,6 @@ import { IExtensionHostService, IExtensionHost, IExtensionWorkerHost, JSONType, 
 import { VSCodeExtensionService } from '../common/vscode';
 
 export abstract class Extension<T = any, S extends IExtensionHost = any> implements vscode.Extension<T> {
-
   readonly id: string;
 
   readonly extensionPath: string;
@@ -58,7 +57,7 @@ export abstract class Extension<T = any, S extends IExtensionHost = any> impleme
         await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
       }
       return this.exports;
-    } catch (e) { }
+    } catch (e) {}
   }
 }
 

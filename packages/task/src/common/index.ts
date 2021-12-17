@@ -5,7 +5,7 @@ import { UriComponents } from '@opensumi/ide-editor';
 import { ProblemCollector } from '../browser/problem-collector';
 import { TerminalOptions } from '@opensumi/ide-terminal-next/lib/common';
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TaskMap {}
 
 interface TaskFileter {
@@ -15,9 +15,11 @@ interface TaskFileter {
 
 interface WorkspaceTaskResult {
   set: TaskSet | undefined;
-  configurations: {
-    byIdentifier: Record<string, ConfiguringTask>;
-  } | undefined;
+  configurations:
+    | {
+        byIdentifier: Record<string, ConfiguringTask>;
+      }
+    | undefined;
   hasErrors: boolean;
 }
 
@@ -28,12 +30,7 @@ export interface WorkspaceFolder {
 }
 
 // tslint:disable-next-line: no-empty-interface
-export interface IWorkspaceFolder extends WorkspaceFolder {
-  /**
-   * Given workspace folder relative path, returns the resource with the absolute path.
-   */
-  // toResource: (relativePath: string) => URI;
-}
+export type IWorkspaceFolder = WorkspaceFolder;
 
 export interface WorkspaceFolderTaskResult extends WorkspaceTaskResult {
   workspaceFolder: IWorkspaceFolder;
@@ -100,7 +97,7 @@ export const enum TerminateResponseCode {
   ProcessNotFound = 3,
 }
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ExecutorOptions {}
 
 export const ITaskExecutor = Symbol('ITaskExecutor');

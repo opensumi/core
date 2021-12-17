@@ -4,7 +4,15 @@ import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { MenuId, AbstractContextMenuService, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup, SCMService, ISCMRepositoryMenus, ISCMMenus } from '../common';
+import {
+  ISCMRepository,
+  ISCMProvider,
+  ISCMResource,
+  ISCMResourceGroup,
+  SCMService,
+  ISCMRepositoryMenus,
+  ISCMMenus,
+} from '../common';
 import { isSCMResource } from './scm-util';
 
 @Injectable({ multiple: true })
@@ -138,9 +146,7 @@ class SCMRepositoryMenus extends Disposable implements ISCMRepositoryMenus {
   // internal scoped ctx key service
   private readonly scopedContextKeyService: IContextKeyService;
 
-  constructor(
-    @Optional() provider: ISCMProvider,
-  ) {
+  constructor(@Optional() provider: ISCMProvider) {
     super();
     const globalContextKeyService: IContextKeyService = this.injector.get(IContextKeyService);
     this.scopedContextKeyService = this.registerDispose(globalContextKeyService.createScoped());
@@ -188,9 +194,7 @@ class SCMRepositoryMenus extends Disposable implements ISCMRepositoryMenus {
       const scopedContextKeyService = this.registerDispose(this.scopedContextKeyService.createScoped());
       scopedContextKeyService.createKey('scmResourceGroup', group.id);
 
-      result = this.registerDispose(
-        this.injector.get(SCMResourceMenus, [scopedContextKeyService]),
-      );
+      result = this.registerDispose(this.injector.get(SCMResourceMenus, [scopedContextKeyService]));
       this.resourceGroupMenusItems.set(group, result);
     }
 
@@ -245,7 +249,7 @@ export class SCMMenus extends Disposable implements ISCMMenus {
     this.scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
   }
 
-  private readonly menus = new Map<ISCMProvider, { menus: SCMRepositoryMenus, dispose: () => void }>();
+  private readonly menus = new Map<ISCMProvider, { menus: SCMRepositoryMenus; dispose: () => void }>();
 
   private onDidRemoveRepository(repository: ISCMRepository): void {
     const menus = this.menus.get(repository.provider);

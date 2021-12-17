@@ -9,17 +9,20 @@ import '@opensumi/ide-core-browser/lib/style/index.less';
 import { renderApp } from './app';
 import './style.less';
 
-export const modules: ConstructorOf<BrowserModule>[] = [
-  ...CommonBrowserModules,
-  ExpressFileServerModule,
-];
+export const modules: ConstructorOf<BrowserModule>[] = [...CommonBrowserModules, ExpressFileServerModule];
 
 const layoutConfig = {
   [SlotLocation.top]: {
     modules: ['@opensumi/ide-menu-bar', 'toolbar'],
   },
   [SlotLocation.left]: {
-    modules: ['@opensumi/ide-explorer', '@opensumi/ide-search', '@opensumi/ide-scm', '@opensumi/ide-extension-manager', '@opensumi/ide-debug'],
+    modules: [
+      '@opensumi/ide-explorer',
+      '@opensumi/ide-search',
+      '@opensumi/ide-scm',
+      '@opensumi/ide-extension-manager',
+      '@opensumi/ide-debug',
+    ],
   },
   [SlotLocation.action]: {
     modules: ['@opensumi/ide-toolbar-action'],

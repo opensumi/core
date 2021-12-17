@@ -8,7 +8,13 @@ declare module 'kaitian' {
 declare module 'sumi' {
   export * from 'vscode';
 
-  import { ExtensionContext as VSCodeExtensionContext, Disposable, TextEditor, TextEditorEdit, ExtensionKind } from 'vscode';
+  import {
+    ExtensionContext as VSCodeExtensionContext,
+    Disposable,
+    TextEditor,
+    TextEditorEdit,
+    ExtensionKind,
+  } from 'vscode';
 
   /**
    * Represents an extension.
@@ -16,7 +22,6 @@ declare module 'sumi' {
    * To get an instance of an `Extension` use [getExtension](#extensions.getExtension).
    */
   export interface Extension<T> {
-
     /**
      * The canonical extension identifier in the form of: `publisher.name`.
      */
@@ -59,15 +64,14 @@ declare module 'sumi' {
     readonly extendExports: T;
 
     /**
-    * Activates this extension and returns its public API.
-    *
-    * @return A promise that will resolve when this extension has been activated.
-    */
+     * Activates this extension and returns its public API.
+     *
+     * @return A promise that will resolve when this extension has been activated.
+     */
     activate(): Thenable<T>;
   }
 
   export namespace extensions {
-
     /**
      * Get an extension by its full identifier in the form of: `publisher.name`.
      *
@@ -97,7 +101,6 @@ declare module 'sumi' {
   }
 
   export namespace event {
-
     /**
      * 事件响应的返回结果
      */
@@ -226,7 +229,7 @@ declare module 'sumi' {
      * 设置webview窗口大小
      * @param size
      */
-    setSize(size: {width: number; height: number}): Promise<void>;
+    setSize(size: { width: number; height: number }): Promise<void>;
     /**
      * 设置webview窗口是否置顶
      * @param flag
@@ -258,7 +261,6 @@ declare module 'sumi' {
   }
 
   export namespace ideWindow {
-
     /**
      * 刷新当前 IDE 窗口
      */
@@ -266,7 +268,11 @@ declare module 'sumi' {
     /**
      * 打开新的窗口 仅支持 Electron 环境
      */
-    export function createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IIDEWebviewWindow>;
+    export function createWebviewWindow(
+      webviewId: string,
+      options?: IIDEWindowWebviewOptions,
+      env?: IIDEWindowWebviewEnv,
+    ): Promise<IIDEWebviewWindow>;
   }
 
   export namespace lifecycle {
@@ -294,7 +300,6 @@ declare module 'sumi' {
    * 主题相关API
    */
   export namespace theme {
-
     /**
      * 当主题被改变时的通知
      */
@@ -311,7 +316,6 @@ declare module 'sumi' {
      * ```
      */
     export function getThemeColors(): Promise<{ [key: string]: string }>;
-
   }
 
   export enum ExtensionHostKind {
@@ -325,7 +329,6 @@ declare module 'sumi' {
   }
 
   export interface IPlainWebviewHandle {
-
     /**
      * 向webview内部发送消息
      * @param message
@@ -348,7 +351,6 @@ declare module 'sumi' {
      * 加载一个url
      */
     loadUrl(url: string): Promise<void>;
-
   }
 
   export interface IDisposable {
@@ -358,18 +360,13 @@ declare module 'sumi' {
     dispose(): void;
   }
 
-  export interface Event<T> {
-    (listener: (e: T) => any, thisArgs?: any): IDisposable;
-  }
+  export type Event<T> = (listener: (e: T) => any, thisArgs?: any) => IDisposable;
 
   export interface IExtHostPlainWebview extends IPlainWebviewHandle, IDisposable {
-
     reveal(groupIndex: number): Promise<void>;
-
   }
 
   export namespace webview {
-
     /**
      * 获取一个使用<Webview id='xxx'>组件创造的plainWebview的Handle
      * @param id
@@ -382,7 +379,6 @@ declare module 'sumi' {
      * @param iconPath
      */
     export function createPlainWebview(title: string, iconPath?: string): IExtHostPlainWebview;
-
   }
 
   interface IProxy {
@@ -409,7 +405,6 @@ declare module 'sumi' {
   }
 
   export interface ITabbarHandle {
-
     setSize(size: number): void;
 
     /**
@@ -459,7 +454,6 @@ declare module 'sumi' {
     onInActivate: Event<void>;
 
     setVisible(visible: boolean): void;
-
   }
 
   interface IExtensionInfo {
@@ -473,7 +467,7 @@ declare module 'sumi' {
      */
     readonly extensionId: string;
     /**
-   * 是否为内置插件
+     * 是否为内置插件
      */
     readonly isBuiltin: boolean;
   }
@@ -482,82 +476,88 @@ declare module 'sumi' {
 
   export namespace commands {
     /**
-    * Registers a command that can be invoked via a keyboard shortcut,
-    * a menu item, an action, or directly.
-    *
-    * Registering a command with an existing command identifier twice
-    * will cause an error.
-    *
-    * @param command A unique identifier for the command.
-    * @param callback A command handler function.
-    * @param thisArg The `this` context used when invoking the handler function.
-    * @return Disposable which unregisters this command on disposal.
-    */
+     * Registers a command that can be invoked via a keyboard shortcut,
+     * a menu item, an action, or directly.
+     *
+     * Registering a command with an existing command identifier twice
+     * will cause an error.
+     *
+     * @param command A unique identifier for the command.
+     * @param callback A command handler function.
+     * @param thisArg The `this` context used when invoking the handler function.
+     * @return Disposable which unregisters this command on disposal.
+     */
     export function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
 
     /**
-    * Executes the command denoted by the given command identifier.
-    *
-    * * *Note 1:* When executing an editor command not all types are allowed to
-    * be passed as arguments. Allowed are the primitive types `string`, `boolean`,
-    * `number`, `undefined`, and `null`, as well as [`Position`](#Position), [`Range`](#Range), [`Uri`](#Uri) and [`Location`](#Location).
-    * * *Note 2:* There are no restrictions when executing commands that have been contributed
-    * by extensions.
-    *
-    * @param command Identifier of the command to execute.
-    * @param rest Parameters passed to the command function.
-    * @return A thenable that resolves to the returned value of the given command. `undefined` when
-    * the command handler function doesn't return anything.
-    */
+     * Executes the command denoted by the given command identifier.
+     *
+     * * *Note 1:* When executing an editor command not all types are allowed to
+     * be passed as arguments. Allowed are the primitive types `string`, `boolean`,
+     * `number`, `undefined`, and `null`, as well as [`Position`](#Position), [`Range`](#Range), [`Uri`](#Uri) and [`Location`](#Location).
+     * * *Note 2:* There are no restrictions when executing commands that have been contributed
+     * by extensions.
+     *
+     * @param command Identifier of the command to execute.
+     * @param rest Parameters passed to the command function.
+     * @return A thenable that resolves to the returned value of the given command. `undefined` when
+     * the command handler function doesn't return anything.
+     */
     export function executeCommand<T>(command: string, ...rest: any[]): Thenable<T | undefined>;
 
     /**
-    * Retrieve the list of all available commands. Commands starting an underscore are
-    * treated as internal commands.
-    *
-    * @param filterInternal Set `true` to not see internal commands (starting with an underscore)
-    * @return Thenable that resolves to a list of command ids.
-    */
+     * Retrieve the list of all available commands. Commands starting an underscore are
+     * treated as internal commands.
+     *
+     * @param filterInternal Set `true` to not see internal commands (starting with an underscore)
+     * @return Thenable that resolves to a list of command ids.
+     */
     export function getCommands(filterInternal?: boolean): Thenable<string[]>;
     /**
-    * Registers a text editor command that can be invoked via a keyboard shortcut,
-    * a menu item, an action, or directly.
-    *
-    * Text editor commands are different from ordinary [commands](#commands.registerCommand) as
-    * they only execute when there is an active editor when the command is called. Also, the
-    * command handler of an editor command has access to the active editor and to an
-    * [edit](#TextEditorEdit)-builder.
-    *
-    * @param command A unique identifier for the command.
-    * @param callback A command handler function with access to an [editor](#TextEditor) and an [edit](#TextEditorEdit).
-    * @param thisArg The `this` context used when invoking the handler function.
-    * @return Disposable which unregisters this command on disposal.
-    */
-    export function registerTextEditorCommand(command: string, callback: (textEditor: TextEditor, edit: TextEditorEdit, ...args: any[]) => void, thisArg?: any): Disposable;
+     * Registers a text editor command that can be invoked via a keyboard shortcut,
+     * a menu item, an action, or directly.
+     *
+     * Text editor commands are different from ordinary [commands](#commands.registerCommand) as
+     * they only execute when there is an active editor when the command is called. Also, the
+     * command handler of an editor command has access to the active editor and to an
+     * [edit](#TextEditorEdit)-builder.
+     *
+     * @param command A unique identifier for the command.
+     * @param callback A command handler function with access to an [editor](#TextEditor) and an [edit](#TextEditorEdit).
+     * @param thisArg The `this` context used when invoking the handler function.
+     * @return Disposable which unregisters this command on disposal.
+     */
+    export function registerTextEditorCommand(
+      command: string,
+      callback: (textEditor: TextEditor, edit: TextEditorEdit, ...args: any[]) => void,
+      thisArg?: any,
+    ): Disposable;
 
     /**
-    * Register a command that requires authentication
-    * This command is only registered in the extension host
-    * Does not appear in the menu and command palette
+     * Register a command that requires authentication
+     * This command is only registered in the extension host
+     * Does not appear in the menu and command palette
      *
-    * @param command A unique identifier for the command.
-    * @param callback A command handler function.
-    * @param isPermitted Check if you have permission to execute command.It first argument is extension information to help you judge.
-    * @return Disposable which unregisters this command on disposal.
-    */
-    export function registerCommandWithPermit(id: string, command: <T>(...args: any[]) => T | Promise<T>, isPermitted: PermittedHandler): Disposable;
+     * @param command A unique identifier for the command.
+     * @param callback A command handler function.
+     * @param isPermitted Check if you have permission to execute command.It first argument is extension information to help you judge.
+     * @return Disposable which unregisters this command on disposal.
+     */
+    export function registerCommandWithPermit(
+      id: string,
+      command: <T>(...args: any[]) => T | Promise<T>,
+      isPermitted: PermittedHandler,
+    ): Disposable;
   }
 
   export namespace toolbar {
-
     export interface IToolbarButtonActionHandle {
-
       /**
        * 当按钮被点击时触发
        */
       onClick: Event<void>;
 
-       /**
+      /**
        * 设置 Button 的 State
        * state 需要对应在 kaitianContributes 中配置
        * @param state
@@ -589,7 +589,7 @@ declare module 'sumi' {
       /**
        * State 改变时触发
        */
-      onStateChanged: Event<{from: string, to: string}>;
+      onStateChanged: Event<{ from: string; to: string }>;
 
       /**
        * 显示 button 元素对应的 popover 元素，需要在 kaitianContributes 中配置
@@ -600,7 +600,6 @@ declare module 'sumi' {
     }
 
     export interface IToolbarSelectActionHandle<T> {
-
       /**
        * 设置 Select 的 State
        * state 需要对应在 kaitianContributes 中配置
@@ -614,12 +613,14 @@ declare module 'sumi' {
        * 那么它会引起 onSelect 被触发
        * @param options
        */
-      setOptions(options: {
-        iconPath?: string,
-        iconMaskMode?: boolean,
-        label?: string,
-        value: T,
-      }[]): void;
+      setOptions(
+        options: {
+          iconPath?: string;
+          iconMaskMode?: boolean;
+          label?: string;
+          value: T;
+        }[],
+      ): void;
 
       /**
        * Select 值改变时触发
@@ -629,7 +630,7 @@ declare module 'sumi' {
       /**
        * State 改变时触发
        */
-      onStateChanged: Event<{from: string, to: string}>;
+      onStateChanged: Event<{ from: string; to: string }>;
 
       /**
        * 使用代码更改选择
@@ -646,12 +647,12 @@ declare module 'sumi' {
     export interface IToolbarActionBasicContribution {
       id: string;
       preferredPosition?: {
-        location?: string,
-        group?: string,
+        location?: string;
+        group?: string;
       };
       strictPosition?: {
-        location: string,
-        group: string,
+        location: string;
+        group: string;
       };
       description: string;
     }
@@ -718,7 +719,6 @@ declare module 'sumi' {
     }
 
     export interface IToolbarPopoverStyle {
-
       /**
        * 在上方还是在下方, 默认下方
        * // TODO: 暂时只支持 bottom;
@@ -759,7 +759,7 @@ declare module 'sumi' {
        */
       minHeight?: number;
     }
-    export interface IToolbarButtonContribution extends  IToolbarActionBasicContribution {
+    export interface IToolbarButtonContribution extends IToolbarActionBasicContribution {
       type: 'button';
       command?: string;
       title: string;
@@ -769,10 +769,10 @@ declare module 'sumi' {
       popoverStyle?: IToolbarPopoverStyle;
       states?: {
         [key: string]: {
-          title?: string,
-          iconPath?: string,
-          iconMaskMode?: boolean ;
-        } & IToolbarActionBtnStyle,
+          title?: string;
+          iconPath?: string;
+          iconMaskMode?: boolean;
+        } & IToolbarActionBtnStyle;
       };
       defaultState?: string;
     }
@@ -781,15 +781,15 @@ declare module 'sumi' {
       type: 'select';
       command?: string;
       options: {
-        iconPath?: string,
+        iconPath?: string;
         iconMaskMode?: boolean;
-        label?: string,
-        value: T
+        label?: string;
+        value: T;
       }[];
       defaultValue: T;
       optionEqualityKey?: string;
       states?: {
-        [key: string]: IToolbarSelectStyle,
+        [key: string]: IToolbarSelectStyle;
       };
       defaultState?: string;
     }
@@ -799,13 +799,17 @@ declare module 'sumi' {
      * @param contribution IToolbarSelectContribution
      * 返回一个用于操作和响应 toolbar 上对应 select 控件的 handle
      */
-    export function registerToolbarAction<T>(contribution: IToolbarSelectContribution<T>): Promise<IToolbarSelectActionHandle<T>>;
+    export function registerToolbarAction<T>(
+      contribution: IToolbarSelectContribution<T>,
+    ): Promise<IToolbarSelectActionHandle<T>>;
     /**
      * 注册一个 button 类型的 toolbar action
      * @param contribution IToolbarButtonContribution
      * 返回一个用于操作和响应 toolbar 上对应 button 控件的 handle
      */
-    export function registerToolbarAction(contribution: IToolbarButtonContribution): Promise<IToolbarButtonActionHandle>;
+    export function registerToolbarAction(
+      contribution: IToolbarButtonContribution,
+    ): Promise<IToolbarButtonActionHandle>;
 
     /**
      * 获得一个 toolbar action 的 handle， 用于操作和响应 toolbar 上的 button

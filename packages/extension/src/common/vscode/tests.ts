@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ import {
 export interface IExtHostTests {
   createTestController(controllerId: string, label: string): vscode.TestController;
 
-  //#region API for main thread
+  // #region API for main thread
   $runControllerTests(req: RunTestForControllerRequest, token: CancellationToken): Promise<void>;
   $cancelExtensionTestRun(runId: string | undefined): void;
   /** Handles a diff of tests, as a result of a subscribeToDiffs() call */
@@ -49,7 +49,7 @@ export interface IExtHostTests {
   ): Promise<CoverageDetails[]>;
   /** Configures a test run config. */
   $configureRunProfile(controllerId: string, configId: number): void;
-  //#endregion
+  // #endregion
 }
 
 export interface IMainThreadTesting {

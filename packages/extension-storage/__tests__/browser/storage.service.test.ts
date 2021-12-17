@@ -17,7 +17,7 @@ describe('ExtensionStorage service should be work', () => {
     injector.overrideProviders(
       {
         token: IExtensionStorageServer,
-        useValue: {} ,
+        useValue: {},
       },
       {
         token: AppConfig,
@@ -50,7 +50,7 @@ describe('ExtensionStorage service should be work', () => {
   it('02 #Set', async (done) => {
     const mockSet = jest.fn();
     const key = 'key';
-    const value =  {hello: 'world'};
+    const value = { hello: 'world' };
     const isGlobal = false;
     injector.mock(IExtensionStorageServer, 'set', mockSet);
     extensionStorageService.set(key, value, isGlobal);

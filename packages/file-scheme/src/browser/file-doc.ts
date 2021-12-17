@@ -1,15 +1,29 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, IJSONSchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  Emitter,
+  Event,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
+  ISchemaStore,
+  IDisposable,
+  Disposable,
+  IJSONSchemaRegistry,
+  replaceLocalizePlaceholder,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { BaseFileSystemEditorDocumentProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 @Injectable()
-export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProvider implements IEditorDocumentModelContentProvider {
-
+export class FileSchemeDocumentProvider
+  extends BaseFileSystemEditorDocumentProvider
+  implements IEditorDocumentModelContentProvider
+{
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 
@@ -31,30 +45,46 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
   }
 
   provideEncoding(uri: URI) {
-
     return super.provideEncoding(uri);
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false, eol: EOL = EOL.LF): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(
+    uri: URI,
+    content: string,
+    baseContent: string,
+    changes: IEditorDocumentChange[],
+    encoding: string,
+    ignoreDiff = false,
+    eol: EOL = EOL.LF,
+  ): Promise<IEditorDocumentModelSaveResult> {
     const baseMd5 = this.hashCalculateService.calculate(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
-      return await this.fileSchemeDocClient.saveByChange(uri.toString(), {
-        baseMd5,
-        changes,
-        eol,
-      }, encoding, ignoreDiff);
+      return await this.fileSchemeDocClient.saveByChange(
+        uri.toString(),
+        {
+          baseMd5,
+          changes,
+          eol,
+        },
+        encoding,
+        ignoreDiff,
+      );
     } else {
-      return await this.fileSchemeDocClient.saveByContent(uri.toString(), {
-        baseMd5,
-        content,
-      }, encoding, ignoreDiff);
+      return await this.fileSchemeDocClient.saveByContent(
+        uri.toString(),
+        {
+          baseMd5,
+          content,
+        },
+        encoding,
+        ignoreDiff,
+      );
     }
   }
 
   async provideEditorDocumentModelContentMd5(uri: URI, encoding?: string): Promise<string | undefined> {
     return this.fileSchemeDocClient.getMd5(uri.toString(), encoding);
   }
-
 }
 
 /**

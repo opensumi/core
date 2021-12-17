@@ -56,12 +56,11 @@ describe('terminal.environment.service', () => {
       {
         token: IWorkspaceStorageService,
         useValue: {
-          getData: () => {
-            return JSON.stringify(mockData);
-          },
+          getData: () => JSON.stringify(mockData),
           setData: () => {},
         },
-      }, {
+      },
+      {
         token: LayoutState,
         useValue: mockService({
           getState: () => ({}),
@@ -105,13 +104,10 @@ describe('terminal.environment.service', () => {
       type: 3,
     });
 
-    terminalEnvService.set(
-      'mock-extension',
-      {
-        persistent: false,
-        map: mockMap,
-      },
-    );
+    terminalEnvService.set('mock-extension', {
+      persistent: false,
+      map: mockMap,
+    });
 
     expect(terminalEnvService.collections.size).toBe(1);
 
@@ -156,5 +152,4 @@ describe('terminal.environment.service', () => {
       disposable.dispose();
     });
   });
-
 });

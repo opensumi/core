@@ -5,14 +5,16 @@ import { IMimeService, CorePreferences, MimeAssociation } from '@opensumi/ide-co
 
 @Injectable()
 export class MonacoMimeService implements IMimeService {
-
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
   updateMime(): void {
     for (const association of this.getPreferenceFileAssociations()) {
       const mimetype = this.getMimeForMode(association.id) || `text/x-${association.id}`;
-      mime.registerTextMime({ id: association.id, mime: mimetype, filepattern: association.filePattern, userConfigured: true }, true);
+      mime.registerTextMime(
+        { id: association.id, mime: mimetype, filepattern: association.filePattern, userConfigured: true },
+        true,
+      );
     }
   }
 

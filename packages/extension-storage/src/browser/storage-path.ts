@@ -2,7 +2,11 @@ import crypto from 'crypto';
 import { Injectable, Autowired } from '@opensumi/di';
 import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { DEFAULT_WORKSPACE_SUFFIX_NAME, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
+import {
+  DEFAULT_WORKSPACE_SUFFIX_NAME,
+  WORKSPACE_USER_STORAGE_FOLDER_NAME,
+  UNTITLED_WORKSPACE,
+} from '@opensumi/ide-workspace';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import { Path } from '@opensumi/ide-core-common/lib/path';
@@ -10,7 +14,6 @@ import { AppConfig } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
-
   private windowsDataFolders = [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR];
   // 当没有工作区被打开时，存储路径为undefined
   private cachedStoragePath: URI | undefined;
@@ -47,13 +50,17 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     }
     const extensionDirPath = parentLogsDir;
     const logFsPath = URI.file(extensionDirPath).toString();
-    if (!await this.fileSystem.access(logFsPath)) {
+    if (!(await this.fileSystem.access(logFsPath))) {
       await this.fileSystem.createFolder(logFsPath);
     }
     return new URI(parentLogsDir);
   }
 
-  async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<URI | undefined> {
+  async provideHostStoragePath(
+    workspace: FileStat | undefined,
+    roots: FileStat[],
+    extensionStorageDirName: string,
+  ): Promise<URI | undefined> {
     const parentStorageDir = await this.getWorkspaceStorageDirPath(extensionStorageDirName);
 
     if (!parentStorageDir) {
@@ -66,16 +73,16 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
         this.deferredStoragePath.resolve(undefined);
         this.storagePathInitialized = true;
       }
-      return this.cachedStoragePath = undefined;
+      return (this.cachedStoragePath = undefined);
     }
 
-    if (!await this.fileSystem.access(URI.file(parentStorageDir).toString())) {
+    if (!(await this.fileSystem.access(URI.file(parentStorageDir).toString()))) {
       await this.fileSystem.createFolder(URI.file(parentStorageDir).toString());
     }
 
     const storageDirName = await this.buildWorkspaceId(workspace, roots, extensionStorageDirName);
     const storageDirPath = new Path(parentStorageDir).join(storageDirName).toString();
-    if (!await this.fileSystem.access(URI.file(storageDirPath).toString())) {
+    if (!(await this.fileSystem.access(URI.file(storageDirPath).toString()))) {
       await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
     }
 
@@ -86,7 +93,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       this.storagePathInitialized = true;
     }
 
-    return this.cachedStoragePath = storageUri;
+    return (this.cachedStoragePath = storageUri);
   }
 
   /**
@@ -116,22 +123,27 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   async buildWorkspaceId(workspace: FileStat, roots: FileStat[], extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
-    const getTemporaryWorkspaceFileUri = (home: URI): URI => {
-      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`).withScheme('file');
-    };
+    const getTemporaryWorkspaceFileUri = (home: URI): URI =>
+      home
+        .resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
+        .resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`)
+        .withScheme('file');
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
 
     if (untitledWorkspace.toString() === workspace.uri) {
       // 当workspace为临时工作区时
       // 为每个workspace root创建一个临时存储路径
       // 服务.code-workspace, 及.sumi-workspace这种多工作区模式
-      const rootsStr = roots.map((root) => root.uri).sort().join(',');
+      const rootsStr = roots
+        .map((root) => root.uri)
+        .sort()
+        .join(',');
       return crypto.createHash('md5').update(rootsStr).digest('hex');
     } else {
       const uri = new URI(workspace.uri);
       let displayName = uri.displayName;
 
-      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${this.workspaceSuffixName}`))) {
+      if ((!workspace || !workspace.isDirectory) && displayName.endsWith(`.${this.workspaceSuffixName}`)) {
         displayName = displayName.slice(0, displayName.lastIndexOf('.'));
       }
 
@@ -182,5 +194,4 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     const homeDirPath = await this.fileSystem.getFsPath(homeDirStat.uri);
     return homeDirPath!;
   }
-
 }

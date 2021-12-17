@@ -1,14 +1,13 @@
-
 .preferences {
-  height:100%;
+  height: 100%;
   font-size: 13px;
   overflow: hidden;
   padding: 16px 32px 0 32px;
   box-sizing: border-box;
   min-width: 500px;
-  .preference_noResults{
-    font-size:13px;
-    padding:20px;
+  .preference_noResults {
+    font-size: 13px;
+    padding: 20px;
     color: var(--foreground);
   }
   .preferences_header {
@@ -23,27 +22,27 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-grow:1;
+      flex-grow: 1;
       align-self: flex-end;
       max-width: 400px;
       input {
-        width:100%;
+        width: 100%;
       }
     }
     &:after {
       content: '';
       position: absolute;
-      bottom:0;
-      left:0;
-      height:1px;
-      width:100%;
+      bottom: 0;
+      left: 0;
+      height: 1px;
+      width: 100%;
       z-index: 0;
       background: var(--editorGroup-border);
     }
   }
 
   .preferences_body {
-    height:calc(100% - 40px);
+    height: calc(100% - 40px);
     position: relative;
     padding-left: 155px;
     .preferences_indexes {
@@ -64,8 +63,8 @@
         white-space: nowrap;
 
         > span {
-          margin-right:5px;
-          display:inline-block;
+          margin-right: 5px;
+          display: inline-block;
           font-size: 1em;
         }
         &:hover {
@@ -94,12 +93,12 @@
         }
       }
     }
-    .preferences_items{
-      height:100%;
+    .preferences_items {
+      height: 100%;
       user-select: text;
       padding: 16px 0 0 10px;
     }
-    .preference_section{
+    .preference_section {
       :global(.kt-checkbox-icon) {
         height: 16px;
         width: 16px;
@@ -107,20 +106,20 @@
       :global(.kt-checkbox) {
         font-size: 13px;
       }
-      .section_title{
-        font-size:14px;
-        font-weight:bold;
-        padding:10px 15px;
+      .section_title {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 10px 15px;
         &:hover {
           color: var(--kt-tree-hoverForeground);
           background: var(--kt-tree-hoverBackground);
         }
       }
-      .preference_item{
+      .preference_item {
         padding: 15px 0px 15px 15px;
         border-left: 3px solid transparent;
         &.modified {
-          border-left:3px solid var(--settings-modifiedItemIndicator);
+          border-left: 3px solid var(--settings-modifiedItemIndicator);
         }
         &:hover {
           color: var(--kt-tree-hoverForeground);
@@ -133,13 +132,13 @@
         &.focused {
           outline: 1px solid var(--list-focusOutline);
           outline-offset: -1px;
-          color: var(--kt-tree-activeSelectionForeground) !important;;
+          color: var(--kt-tree-activeSelectionForeground) !important;
           background: var(--kt-tree-activeSelectionBackground);
         }
       }
       .key {
-        margin-bottom:5px;
-        font-size:13px;
+        margin-bottom: 5px;
+        font-size: 13px;
       }
       .check {
         display: flex;
@@ -157,10 +156,10 @@
         margin-bottom: 5px;
       }
       .control_wrap {
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        input[type='number']::-webkit-outer-spin-button,
+        input[type='number']::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
         }
         .text_control {
           width: 80%;
@@ -168,7 +167,7 @@
       }
       .add_button {
         margin-left: 10px;
-        padding: 0 8px!important;
+        padding: 0 8px !important;
       }
       .array_items_wrapper {
         width: 550px;
@@ -188,7 +187,7 @@
         .array_edit_input_tip {
           height: 24px;
           line-height: 24px;
-          opacity: .3;
+          opacity: 0.3;
         }
       }
       .array_items {
@@ -259,13 +258,13 @@
 .preference_status {
   margin-left: 5px;
   .preference_overwritten {
-    font-size:12px;
+    font-size: 12px;
     opacity: 0.75;
   }
   .preference_reset {
     font-size: 13px;
     cursor: pointer;
-    display:inline-block;
+    display: inline-block;
     &:hover {
       transform: scale(1.1);
     }

@@ -28,7 +28,6 @@ import { TerminalEnvironmentService } from '../terminal.environment.service';
 
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {
-
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
 
@@ -74,35 +73,44 @@ export class TerminalCommandContribution implements CommandContribution {
 
   registerCommands(registry: CommandRegistry) {
     // 搜索
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.OPEN_SEARCH,
-      iconClass: getIcon('search'),
-    }, {
-      execute: () => {
-        this.search.open();
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.OPEN_SEARCH,
+        iconClass: getIcon('search'),
       },
-    });
+      {
+        execute: () => {
+          this.search.open();
+        },
+      },
+    );
 
     // 分屏
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.SPLIT,
-      iconClass: getIcon('embed'),
-    }, {
-      execute: () => {
-        const group = this.view.currentGroup;
-        const widget = this.view.createWidget(group);
-        this.view.selectWidget(widget.id);
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.SPLIT,
+        iconClass: getIcon('embed'),
       },
-    });
+      {
+        execute: () => {
+          const group = this.view.currentGroup;
+          const widget = this.view.createWidget(group);
+          this.view.selectWidget(widget.id);
+        },
+      },
+    );
 
     // 删除所有终端
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.CLEAR,
-    }, {
-      execute: () => {
-        this.view.clear();
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.CLEAR,
       },
-    });
+      {
+        execute: () => {
+          this.view.clear();
+        },
+      },
+    );
 
     registry.registerCommand(TERMINAL_COMMANDS.SEARCH_NEXT, {
       execute: () => {
@@ -114,17 +122,20 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.REMOVE,
-      iconClass: getIcon('delete'),
-    }, {
-      execute: async () => {
-        const widgetId = this.view.currentWidgetId;
-        if (widgetId) {
-          this.view.removeWidget(widgetId);
-        }
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.REMOVE,
+        iconClass: getIcon('delete'),
       },
-    });
+      {
+        execute: async () => {
+          const widgetId = this.view.currentWidgetId;
+          if (widgetId) {
+            this.view.removeWidget(widgetId);
+          }
+        },
+      },
+    );
 
     registry.registerCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH, {
       execute: async (uri: URI) => {
@@ -144,38 +155,47 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.SELECT_ALL_CONTENT,
-    }, {
-      execute: () => {
-        const widgetId = this.view.currentWidgetId;
-        const client = this.terminalController.findClientFromWidgetId(widgetId);
-        if (client) {
-          client.selectAll();
-        }
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.SELECT_ALL_CONTENT,
       },
-    });
+      {
+        execute: () => {
+          const widgetId = this.view.currentWidgetId;
+          const client = this.terminalController.findClientFromWidgetId(widgetId);
+          if (client) {
+            client.selectAll();
+          }
+        },
+      },
+    );
 
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.CLEAR_CONTENT,
-      iconClass: getIcon('clear'),
-    }, {
-      execute: () => {
-        const current = this.view.currentWidgetId;
-        const client = this.terminalController.findClientFromWidgetId(current);
-        if (client) {
-          client.clear();
-        }
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.CLEAR_CONTENT,
+        iconClass: getIcon('clear'),
       },
-    });
+      {
+        execute: () => {
+          const current = this.view.currentWidgetId;
+          const client = this.terminalController.findClientFromWidgetId(current);
+          if (client) {
+            client.clear();
+          }
+        },
+      },
+    );
 
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
-    }, {
-      execute: () => {
-        this.terminalController.clearAllGroups();
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
       },
-    });
+      {
+        execute: () => {
+          this.terminalController.clearAllGroups();
+        },
+      },
+    );
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_ZSH, {
       execute: async () => {

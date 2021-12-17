@@ -1,4 +1,3 @@
-
 /**
  * 获取 icon class name
  * @param text status-bar 传过来的文字

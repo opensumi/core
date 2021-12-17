@@ -12,7 +12,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   constructor(public dom: any, public options: any, public override: any) {
     super();
-    this.id = (++MockedCodeEditor.ID);
+    this.id = ++MockedCodeEditor.ID;
   }
   onMouseDropCanceled(listener: () => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
@@ -51,8 +51,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   onWillType(listener: (text: string) => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
   }
-  getConfiguration(): any {
-  }
+  getConfiguration(): any {}
   onDidType(listener: (text: string) => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
   }
@@ -92,7 +91,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   setAriaOptions(options: monaco.editor.IEditorAriaOptions): void {
     throw new Error('Method not implemented.');
   }
-  getTelemetryData(): { [key: string]: any; } | undefined {
+  getTelemetryData(): { [key: string]: any } | undefined {
     throw new Error('Method not implemented.');
   }
   hasModel(): this is monaco.editor.IActiveCodeEditor {
@@ -145,7 +144,8 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   onDidChangeModelLanguage: Event<monaco.editor.IModelLanguageChangedEvent> = this._onDidChangeModelLanguage.event;
 
   _onDidChangeModelLanguageConfiguration = new Emitter<monaco.editor.IModelLanguageConfigurationChangedEvent>();
-  onDidChangeModelLanguageConfiguration: Event<monaco.editor.IModelLanguageConfigurationChangedEvent> = this._onDidChangeModelLanguageConfiguration.event;
+  onDidChangeModelLanguageConfiguration: Event<monaco.editor.IModelLanguageConfigurationChangedEvent> =
+    this._onDidChangeModelLanguageConfiguration.event;
 
   _onDidChangeModelOptions = new Emitter<monaco.editor.IModelOptionsChangedEvent>();
   onDidChangeModelOptions = this._onDidChangeModelOptions.event;
@@ -234,7 +234,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
       renderLineNumbers: 1,
     } as any;
   }
-  getValue(options?: { preserveBOM: boolean; lineEnding: string; } | undefined): string {
+  getValue(options?: { preserveBOM: boolean; lineEnding: string } | undefined): string {
     return this.model?.getValue() || '';
   }
   setValue(newValue: string): void {
@@ -270,7 +270,11 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   pushUndoStop(): boolean {
     return true;
   }
-  executeEdits(source: string, edits: monaco.editor.IIdentifiedSingleEditOperation[], endCursorState?: monaco.Selection[] | undefined): boolean {
+  executeEdits(
+    source: string,
+    edits: monaco.editor.IIdentifiedSingleEditOperation[],
+    endCursorState?: monaco.Selection[] | undefined,
+  ): boolean {
     switch (source) {
       case 'MainThreadTextEditor':
         this.model?.applyEdits(edits);
@@ -286,9 +290,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getLineDecorations(lineNumber: number): monaco.editor.IModelDecoration[] | null {
     return null;
   }
-  deltaDecorations = jest.fn((oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]) => {
-    return [];
-  });
+  deltaDecorations = jest.fn((oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]) => []);
 
   getLayoutInfo(): monaco.editor.EditorLayoutInfo {
     return {
@@ -371,7 +373,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getTargetAtClientPoint(clientX: number, clientY: number): monaco.editor.IMouseTarget | null {
     return null;
   }
-  getScrolledVisiblePosition(position: monaco.IPosition): { top: number; left: number; height: number; } | null {
+  getScrolledVisiblePosition(position: monaco.IPosition): { top: number; left: number; height: number } | null {
     return null;
   }
   applyFontInfo(target: HTMLElement): void {
@@ -433,16 +435,15 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   revealPositionInCenter(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }
-  revealPositionInCenterIfOutsideViewport(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealPositionInCenterIfOutsideViewport(
+    position: monaco.IPosition,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     return;
   }
-  getSelection = jest.fn(() => {
-    return this.selections[0];
-  });
+  getSelection = jest.fn(() => this.selections[0]);
 
-  getSelections = jest.fn(() => {
-    return this.selections;
-  });
+  getSelections = jest.fn(() => this.selections);
 
   setSelection = jest.fn((selection: any) => {
     this.selections = [selection];
@@ -463,10 +464,18 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   revealLines(startLineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }
-  revealLinesInCenter(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealLinesInCenter(
+    lineNumber: number,
+    endLineNumber: number,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     return;
   }
-  revealLinesInCenterIfOutsideViewport(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
+  revealLinesInCenterIfOutsideViewport(
+    lineNumber: number,
+    endLineNumber: number,
+    scrollType?: monaco.editor.ScrollType | undefined,
+  ): void {
     return;
   }
   revealRange(range: monaco.IRange, scrollType?: monaco.editor.ScrollType | undefined): void {
@@ -484,11 +493,9 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   trigger(source: string, handlerId: string, payload: any): void {
     return;
   }
-
 }
 
 export class MockedStandaloneCodeEditor extends MockedCodeEditor {
-
   constructor(public dom, public options, public override) {
     super(dom, options, override);
   }
@@ -509,10 +516,8 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
     throw new Error('Method not implemented.');
   }
-  revealLineInCenter(line: number) {
-  }
-  setPosition(position: monaco.Position) {
-  }
+  revealLineInCenter(line: number) {}
+  setPosition(position: monaco.Position) {}
   onDidCompositionStart(): IDisposable {
     return new Disposable();
   }
@@ -525,5 +530,4 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
   onDidContentSizeChange(): IDisposable {
     return new Disposable();
   }
-
 }

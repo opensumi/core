@@ -8,11 +8,17 @@ import { spawn } from 'child_process';
 import semver from 'semver';
 import qs from 'querystring';
 import { WindowCreatedEvent } from './events';
-import { IElectronMainUIService, IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@opensumi/ide-core-common/lib/electron';
+import {
+  IElectronMainUIService,
+  IElectronMainUIServiceShape,
+  IElectronPlainWebviewWindowOptions,
+} from '@opensumi/ide-core-common/lib/electron';
 
 @Injectable()
-export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> implements IElectronMainUIServiceShape {
-
+export class ElectronMainUIService
+  extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'>
+  implements IElectronMainUIServiceShape
+{
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -73,7 +79,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
 
   async moveToTrash(path: string) {
     if (semver.lt(process.versions.electron, '13.0.0')) {
-      // Removed: shell.moveItemToTrash()​
+      // Removed: shell.moveItemToTrash()
       // https://www.electronjs.org/docs/latest/breaking-changes#removed-shellmoveitemtotrash
       await (shell as any).moveItemToTrash(path);
     } else {
@@ -94,7 +100,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     openInTerminal(targetPath);
   }
 
-  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; } = {}) {
+  setZoomFactor(webContentsId: number, options: { value?: number; delta?: number } = {}) {
     const contents = webContents.fromId(webContentsId);
     if (contents) {
       if (options.value) {
@@ -177,7 +183,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     if (!window) {
       throw new Error('window with windowId ' + windowId + ' does not exist!');
     }
-    const formattedURL = (new URL(url)).toString();
+    const formattedURL = new URL(url).toString();
     const urlParsed = URI.parse(formattedURL);
     const queryString = qs.stringify({
       ...qs.parse(urlParsed.query),
@@ -245,7 +251,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     window.hide();
   }
 
-  async setSize(windowId: number, size: { width: number; height: number; }): Promise<void> {
+  async setSize(windowId: number, size: { width: number; height: number }): Promise<void> {
     const window = BrowserWindow.fromId(windowId);
     if (!window) {
       throw new Error('window with windowId ' + windowId + ' does not exist!');
@@ -264,14 +270,12 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
 
 @Domain(ElectronMainContribution)
 export class UIElectronMainContribution implements ElectronMainContribution {
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
   registerMainApi(registry: ElectronMainApiRegistry) {
     registry.registerMainApi(IElectronMainUIService, this.injector.get(ElectronMainUIService));
   }
-
 }
 
 export async function openInTerminal(dir: string) {

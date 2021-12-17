@@ -1,5 +1,8 @@
 import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ResourceFileEdit, ResourceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type {
+  ResourceFileEdit,
+  ResourceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { isObject } from '@opensumi/ide-core-common';
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {

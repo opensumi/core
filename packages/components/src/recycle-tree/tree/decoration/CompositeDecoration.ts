@@ -13,7 +13,7 @@ export class ClasslistComposite {
      * 注销样式变化监听函数
      */
     public readonly removeChangeListener: (namedCallback: () => void) => void,
-  ) { }
+  ) {}
 }
 
 export enum CompositeDecorationType {
@@ -48,7 +48,8 @@ export class CompositeDecoration {
 
     this.compositeCssClasslist = new ClasslistComposite(
       this.classlistChangeCallbacks.add.bind(this.classlistChangeCallbacks),
-      this.classlistChangeCallbacks.delete.bind(this.classlistChangeCallbacks));
+      this.classlistChangeCallbacks.delete.bind(this.classlistChangeCallbacks),
+    );
 
     if (parent) {
       this.selfOwned = false;
@@ -67,7 +68,7 @@ export class CompositeDecoration {
 
   public changeParent(newParent?: CompositeDecoration) {
     if (!newParent) {
-      return ;
+      return;
     }
     if (!this.selfOwned) {
       return this.parentOwn(newParent);
@@ -92,18 +93,28 @@ export class CompositeDecoration {
   public add(decoration: Decoration): void {
     const applicationMode = decoration.appliedTargets.get(this.target);
 
-    const applicableToSelf = applicationMode && (applicationMode === TargetMatchMode.Self || applicationMode === TargetMatchMode.SelfAndChildren);
-    const applicableToChildren = applicationMode && (applicationMode === TargetMatchMode.Children || applicationMode === TargetMatchMode.SelfAndChildren);
+    const applicableToSelf =
+      applicationMode &&
+      (applicationMode === TargetMatchMode.Self || applicationMode === TargetMatchMode.SelfAndChildren);
+    const applicableToChildren =
+      applicationMode &&
+      (applicationMode === TargetMatchMode.Children || applicationMode === TargetMatchMode.SelfAndChildren);
 
-    if (this.type === CompositeDecorationType.Applicable && !applicableToSelf) { return; }
-    if (this.type === CompositeDecorationType.Inheritable && !applicableToChildren) { return; }
+    if (this.type === CompositeDecorationType.Applicable && !applicableToSelf) {
+      return;
+    }
+    if (this.type === CompositeDecorationType.Inheritable && !applicableToChildren) {
+      return;
+    }
 
     if (!this.selfOwned) {
       this.selfOwn(ChangeReason.TargetDecoration, decoration);
       this.targetedDecorations.add(decoration);
       return;
     }
-    if (this.targetedDecorations.has(decoration)) { return; }
+    if (this.targetedDecorations.has(decoration)) {
+      return;
+    }
     this.targetedDecorations.add(decoration);
     this.recursiveRefresh(this, false, ChangeReason.TargetDecoration, decoration);
   }
@@ -123,18 +134,26 @@ export class CompositeDecoration {
   public negate(decoration: Decoration): void {
     const negationMode = decoration.negatedTargets.get(this.target);
 
-    const negatedOnSelf = negationMode && (negationMode === TargetMatchMode.Self || negationMode === TargetMatchMode.SelfAndChildren);
-    const negatedOnChildren = negationMode && (negationMode === TargetMatchMode.Children || negationMode === TargetMatchMode.SelfAndChildren);
+    const negatedOnSelf =
+      negationMode && (negationMode === TargetMatchMode.Self || negationMode === TargetMatchMode.SelfAndChildren);
+    const negatedOnChildren =
+      negationMode && (negationMode === TargetMatchMode.Children || negationMode === TargetMatchMode.SelfAndChildren);
 
-    if (this.type === CompositeDecorationType.Applicable && !negatedOnSelf) { return; }
-    if (this.type === CompositeDecorationType.Inheritable && !negatedOnChildren) { return; }
+    if (this.type === CompositeDecorationType.Applicable && !negatedOnSelf) {
+      return;
+    }
+    if (this.type === CompositeDecorationType.Inheritable && !negatedOnChildren) {
+      return;
+    }
 
     if (!this.selfOwned) {
       this.selfOwn(ChangeReason.UnTargetDecoration, decoration);
       this.negatedDecorations.add(decoration);
       return;
     }
-    if (this.negatedDecorations.has(decoration)) { return; }
+    if (this.negatedDecorations.has(decoration)) {
+      return;
+    }
     this.negatedDecorations.add(decoration);
     if (this.renderedDecorations.has(decoration)) {
       this.removeDecorationClasslist(decoration);
@@ -150,8 +169,10 @@ export class CompositeDecoration {
         return this.parentOwn();
       }
       // 当前非父节点并且其父节点和其本身均不含有该装饰器
-      if (!this.renderedDecorations.has(decoration) &&
-        (this.parent.renderedDecorations.has(decoration) || decoration.appliedTargets.has(this.target))) {
+      if (
+        !this.renderedDecorations.has(decoration) &&
+        (this.parent.renderedDecorations.has(decoration) || decoration.appliedTargets.has(this.target))
+      ) {
         this.recursiveRefresh(this, false, ChangeReason.TargetDecoration, decoration);
       }
     }
@@ -159,7 +180,7 @@ export class CompositeDecoration {
 
   private selfOwn(reason: ChangeReason, decoration: Decoration) {
     if (this.selfOwned) {
-      throw new Error(`CompositeDecoration is already self owned`);
+      throw new Error('CompositeDecoration is already self owned');
     }
     const parent = this.parent;
     this.selfOwned = true;
@@ -176,11 +197,13 @@ export class CompositeDecoration {
     }
 
     // 当触发的为:not类型装饰器变化
-    if (reason === ChangeReason.UnTargetDecoration &&
+    if (
+      reason === ChangeReason.UnTargetDecoration &&
       // 父节点装饰器拥有此装饰器
       this.parent.renderedDecorations.has(decoration) &&
       // 本身不包含此装饰器
-      !this.renderedDecorations.has(decoration)) {
+      !this.renderedDecorations.has(decoration)
+    ) {
       // 通知ClassList变化
       this.notifyClasslistChange(false);
     }
@@ -205,19 +228,27 @@ export class CompositeDecoration {
 
   private processCompositeAlteration(reason: ChangeReason, decoration: Decoration): boolean {
     if (!this.selfOwned) {
-      throw new Error(`CompositeDecoration is not self owned`);
+      throw new Error('CompositeDecoration is not self owned');
     }
     if (reason === ChangeReason.UnTargetDecoration) {
       const disposable = this.renderedDecorations.get(decoration);
       if (disposable) {
         const applicationMode = decoration.appliedTargets.get(this.target);
 
-        const applicableToSelf = applicationMode && (applicationMode === TargetMatchMode.Self || applicationMode === TargetMatchMode.SelfAndChildren);
-        const applicableToChildren = applicationMode && (applicationMode === TargetMatchMode.Children || applicationMode === TargetMatchMode.SelfAndChildren);
+        const applicableToSelf =
+          applicationMode &&
+          (applicationMode === TargetMatchMode.Self || applicationMode === TargetMatchMode.SelfAndChildren);
+        const applicableToChildren =
+          applicationMode &&
+          (applicationMode === TargetMatchMode.Children || applicationMode === TargetMatchMode.SelfAndChildren);
 
-        if (applicableToSelf && this.type === CompositeDecorationType.Applicable) { return false; }
+        if (applicableToSelf && this.type === CompositeDecorationType.Applicable) {
+          return false;
+        }
 
-        if (applicableToChildren && this.type === CompositeDecorationType.Inheritable) { return false; }
+        if (applicableToChildren && this.type === CompositeDecorationType.Inheritable) {
+          return false;
+        }
 
         this.removeDecorationClasslist(decoration, false);
 
@@ -232,12 +263,18 @@ export class CompositeDecoration {
     if (reason === ChangeReason.TargetDecoration) {
       const negationMode = decoration.negatedTargets.get(this.target);
 
-      const negatedOnSelf = negationMode && (negationMode === TargetMatchMode.Self || negationMode === TargetMatchMode.SelfAndChildren);
-      const negatedOnChildren = negationMode && (negationMode === TargetMatchMode.Children || negationMode === TargetMatchMode.SelfAndChildren);
+      const negatedOnSelf =
+        negationMode && (negationMode === TargetMatchMode.Self || negationMode === TargetMatchMode.SelfAndChildren);
+      const negatedOnChildren =
+        negationMode && (negationMode === TargetMatchMode.Children || negationMode === TargetMatchMode.SelfAndChildren);
 
-      if (negatedOnSelf && this.type === CompositeDecorationType.Applicable) { return false; }
+      if (negatedOnSelf && this.type === CompositeDecorationType.Applicable) {
+        return false;
+      }
 
-      if (negatedOnChildren && this.type === CompositeDecorationType.Inheritable) { return false; }
+      if (negatedOnChildren && this.type === CompositeDecorationType.Inheritable) {
+        return false;
+      }
 
       if (!this.renderedDecorations.has(decoration)) {
         const disposables = new DisposableCollection();
@@ -257,7 +294,13 @@ export class CompositeDecoration {
     return false;
   }
 
-  private recursiveRefresh(origin: CompositeDecoration, updateReferences: boolean, reason?: ChangeReason, decoration?: Decoration, notifyListeners = true) {
+  private recursiveRefresh(
+    origin: CompositeDecoration,
+    updateReferences: boolean,
+    reason?: ChangeReason,
+    decoration?: Decoration,
+    notifyListeners = true,
+  ) {
     // 更改当前manager引用的renderedDecorations及compositeCssClasslist.classlist
     if (!this.selfOwned && updateReferences) {
       this.renderedDecorations = this.parent.renderedDecorations;
@@ -278,12 +321,23 @@ export class CompositeDecoration {
       if (notifyListeners) {
         this.notifyClasslistChange(false);
       }
-    } else if (this.selfOwned && reason === ChangeReason.UnTargetDecoration && decoration && this.renderedDecorations.has(decoration)) {
+    } else if (
+      this.selfOwned &&
+      reason === ChangeReason.UnTargetDecoration &&
+      decoration &&
+      this.renderedDecorations.has(decoration)
+    ) {
       this.processCompositeAlteration(reason, decoration);
       if (notifyListeners) {
         this.notifyClasslistChange(false);
       }
-    } else if (this.selfOwned && reason === ChangeReason.TargetDecoration && decoration && this.processCompositeAlteration(reason, decoration) && notifyListeners) {
+    } else if (
+      this.selfOwned &&
+      reason === ChangeReason.TargetDecoration &&
+      decoration &&
+      this.processCompositeAlteration(reason, decoration) &&
+      notifyListeners
+    ) {
       this.notifyClasslistChange(false);
     } else if (!this.selfOwned && notifyListeners) {
       this.notifyClasslistChange(false);
@@ -298,41 +352,41 @@ export class CompositeDecoration {
     const { classname } = event;
 
     if (!this.selfOwned || !classname) {
-      return ;
-     }
+      return;
+    }
     (this.compositeCssClasslist.classlist as string[]).push(classname);
     this.notifyClasslistChange();
-  }
+  };
 
   private handleDecorationDidRemoveClassname = (event: IDecorationEventData) => {
     const { classname } = event;
     if (!this.selfOwned || !classname) {
-      return ;
-     }
+      return;
+    }
     const idx = this.compositeCssClasslist.classlist.indexOf(classname);
     if (idx > -1) {
       (this.compositeCssClasslist.classlist as string[]).splice(idx, 1);
       this.notifyClasslistChange();
     }
-  }
+  };
 
   private mergeDecorationClasslist = (event: IDecorationEventData) => {
     const { decoration } = event;
     if (!this.selfOwned) {
-      return ;
-     }
+      return;
+    }
     (this.compositeCssClasslist.classlist as string[]).push(...decoration.cssClassList);
     this.notifyClasslistChange();
-  }
+  };
 
   private handleDecorationDisable = (event: IDecorationEventData) => {
     const { decoration } = event;
     this.removeDecorationClasslist(decoration);
-  }
+  };
   private removeDecorationClasslist(decoration: Decoration, notifyAll = true) {
     if (!this.selfOwned) {
-      return ;
-     }
+      return;
+    }
     for (const classname of decoration.cssClassList) {
       const idx = this.compositeCssClasslist.classlist.indexOf(classname);
       if (idx > -1) {

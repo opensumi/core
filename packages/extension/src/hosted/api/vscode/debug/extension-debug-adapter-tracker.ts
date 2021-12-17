@@ -1,12 +1,17 @@
 import type vscode from 'vscode';
 
 export class ExtensionDebugAdapterTracker implements vscode.DebugAdapterTracker {
-  constructor(protected readonly trackers: vscode.DebugAdapterTracker[]) { }
+  constructor(protected readonly trackers: vscode.DebugAdapterTracker[]) {}
 
-  static async create(session: vscode.DebugSession, trackerFactories: [string, vscode.DebugAdapterTrackerFactory][]): Promise<ExtensionDebugAdapterTracker> {
+  static async create(
+    session: vscode.DebugSession,
+    trackerFactories: [string, vscode.DebugAdapterTrackerFactory][],
+  ): Promise<ExtensionDebugAdapterTracker> {
     const trackers: vscode.DebugAdapterTracker[] = [];
 
-    const factories = trackerFactories.filter((tuple) => tuple[0] === '*' || tuple[0] === session.type).map((tuple) => tuple[1]);
+    const factories = trackerFactories
+      .filter((tuple) => tuple[0] === '*' || tuple[0] === session.type)
+      .map((tuple) => tuple[1]);
     for (const factory of factories) {
       const tracker = await factory.createDebugAdapterTracker(session);
       if (tracker) {

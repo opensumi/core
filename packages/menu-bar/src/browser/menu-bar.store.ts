@@ -53,7 +53,11 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   }
 
   @action.bound
-  public handleMenubarClick: (menuId: string) => void = debounce((menuId: string) => {
-    this.updateMenuNodes(menuId);
-  }, 500, { leading: true, trailing: true });
+  public handleMenubarClick: (menuId: string) => void = debounce(
+    (menuId: string) => {
+      this.updateMenuNodes(menuId);
+    },
+    500,
+    { leading: true, trailing: true },
+  );
 }
