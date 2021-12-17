@@ -59,7 +59,8 @@ export class SCMContribution
     ComponentContribution,
     PreferenceContribution,
     MainLayoutContribution,
-    MenuContribution {
+    MenuContribution
+{
   @Autowired(SCMBadgeController)
   private readonly statusUpdater: SCMBadgeController;
 

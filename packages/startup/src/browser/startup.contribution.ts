@@ -38,7 +38,8 @@ export class StartupContribution
     ComponentContribution,
     ToolBarActionContribution,
     MenuContribution,
-    BrowserEditorContribution {
+    BrowserEditorContribution
+{
   @Autowired(IEventBus)
   eventBus: IEventBus;
 

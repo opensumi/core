@@ -121,7 +121,8 @@ export class PreferenceContribution
     ClientAppContribution,
     BrowserEditorContribution,
     MenuContribution,
-    JsonSchemaContribution {
+    JsonSchemaContribution
+{
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
 

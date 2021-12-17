@@ -23,7 +23,8 @@ export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
 @Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution)
 export class OpenedEditorContribution
-  implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution {
+  implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution
+{
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
 

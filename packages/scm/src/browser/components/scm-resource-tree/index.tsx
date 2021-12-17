@@ -19,9 +19,7 @@ export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 export const SCMResourceTree: React.FC<{
   width: number;
   height: number;
-}> = observer(({
-  height,
-}) => {
+}> = observer(({ height }) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [model, setModel] = React.useState<TreeModel>();
 
@@ -131,34 +129,41 @@ export const SCMResourceTree: React.FC<{
       // 阻止点击事件冒泡
       event.stopPropagation();
 
-    if (!item) {
-      return;
-    }
-    scmTreeModelService.handleItemDoubleClick(item, type);
-  }, []);
+      if (!item) {
+        return;
+      }
+      scmTreeModelService.handleItemDoubleClick(item, type);
+    },
+    [],
+  );
 
-  const handleContextMenu = React.useCallback((event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType) => {
-    event.preventDefault();
-    scmTreeModelService.handleContextMenu(event, item, type);
-  }, []);
+  const handleContextMenu = React.useCallback(
+    (event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType) => {
+      event.preventDefault();
+      scmTreeModelService.handleContextMenu(event, item, type);
+    },
+    [],
+  );
 
-  return <div
-    className={clx(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
-    tabIndex={-1}
-    ref={wrapperRef}
-    data-name={TREE_FIELD_NAME}
-  >
-    <TreeView
-      isReady={isReady}
-      model={model}
-      height={height}
-      onTreeReady={handleTreeReady}
-      onItemClick={handleItemClick}
-      onItemDoubleClick={handleItemDoubleClick}
-      onTwistierClick={handleTwistierClick}
-      onContextMenu={handleContextMenu}
-    />
-  </div>;
+  return (
+    <div
+      className={clx(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
+      tabIndex={-1}
+      ref={wrapperRef}
+      data-name={TREE_FIELD_NAME}
+    >
+      <TreeView
+        isReady={isReady}
+        model={model}
+        height={height}
+        onTreeReady={handleTreeReady}
+        onItemClick={handleItemClick}
+        onItemDoubleClick={handleItemDoubleClick}
+        onTwistierClick={handleTwistierClick}
+        onContextMenu={handleContextMenu}
+      />
+    </div>
+  );
 });
 
 SCMResourceTree.displayName = 'SCMResourceTree';
@@ -175,56 +180,66 @@ interface TreeViewProps {
 }
 
 function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps) {
-  return prevProps.isReady === nextProps.isReady
-  && prevProps.model === nextProps.model
-  && prevProps.height === nextProps.height;
+  return (
+    prevProps.isReady === nextProps.isReady &&
+    prevProps.model === nextProps.model &&
+    prevProps.height === nextProps.height
+  );
 }
 
-const TreeView = React.memo(({
-  isReady,
-  model,
-  height,
-  onTreeReady,
-  onItemClick,
-  onItemDoubleClick,
-  onTwistierClick,
-  onContextMenu,
-}: TreeViewProps) => {
-  const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
-  const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
-  const { iconThemeDesc, decorationService, labelService, commandService } = scmTreeModelService;
+const TreeView = React.memo(
+  ({
+    isReady,
+    model,
+    height,
+    onTreeReady,
+    onItemClick,
+    onItemDoubleClick,
+    onTwistierClick,
+    onContextMenu,
+  }: TreeViewProps) => {
+    const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
+    const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
+    const { iconThemeDesc, decorationService, labelService, commandService } = scmTreeModelService;
 
-  const renderSCMTreeNode = React.useCallback((props: ISCMTreeNodeProps) => (
-    <SCMTreeNode
-      item={props.item}
-      itemType={props.itemType}
-      decorationService={decorationService}
-      labelService={labelService}
-      commandService={commandService}
-      decorations={scmTreeModelService.decorations.getDecorations(props.item)}
-      onClick={onItemClick}
-      onDoubleClick={onItemDoubleClick}
-      onTwistierClick={onTwistierClick}
-      onContextMenu={onContextMenu}
-      defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
-      leftPadding={scmTreeService.isTreeMode ? 8 : 0}
-      iconTheme={iconThemeDesc}
-    />
-  ), [model]);
+    const renderSCMTreeNode = React.useCallback(
+      (props: ISCMTreeNodeProps) => (
+        <SCMTreeNode
+          item={props.item}
+          itemType={props.itemType}
+          decorationService={decorationService}
+          labelService={labelService}
+          commandService={commandService}
+          decorations={scmTreeModelService.decorations.getDecorations(props.item)}
+          onClick={onItemClick}
+          onDoubleClick={onItemDoubleClick}
+          onTwistierClick={onTwistierClick}
+          onContextMenu={onContextMenu}
+          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
+          leftPadding={scmTreeService.isTreeMode ? 8 : 0}
+          iconTheme={iconThemeDesc}
+        />
+      ),
+      [model],
+    );
 
-  if (isReady && !!model) {
-    return (<RecycleTree
-      height={height}
-      itemHeight={SCM_TREE_NODE_HEIGHT}
-      onReady={onTreeReady}
-      model={model}
-      getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
-      overScanCount={100}
-    >
-      {renderSCMTreeNode}
-    </RecycleTree>);
-  }
-  return <span className={styles.scm_tree_empty_text} />;
-}, isTreeViewPropsEqual);
+    if (isReady && !!model) {
+      return (
+        <RecycleTree
+          height={height}
+          itemHeight={SCM_TREE_NODE_HEIGHT}
+          onReady={onTreeReady}
+          model={model}
+          getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
+          overScanCount={100}
+        >
+          {renderSCMTreeNode}
+        </RecycleTree>
+      );
+    }
+    return <span className={styles.scm_tree_empty_text} />;
+  },
+  isTreeViewPropsEqual,
+);
 
 TreeView.displayName = 'SCMResourceTreeView';

@@ -43,7 +43,8 @@ export class SearchContribution
     PreferenceContribution,
     MainLayoutContribution,
     MenuContribution,
-    ClientAppContribution {
+    ClientAppContribution
+{
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 

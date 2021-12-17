@@ -15,7 +15,8 @@ import { startInsideIframe } from './workerHostIframe';
 @Injectable()
 export class WorkerExtProcessService
   extends Disposable
-  implements AbstractWorkerExtProcessService<IExtensionWorkerHost> {
+  implements AbstractWorkerExtProcessService<IExtensionWorkerHost>
+{
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 

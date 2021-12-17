@@ -76,7 +76,8 @@ export class KeymapsContribution
     KeybindingContribution,
     ClientAppContribution,
     BrowserEditorContribution,
-    MenuContribution {
+    MenuContribution
+{
   @Autowired(QuickPickService)
   private readonly quickPickService: QuickPickService;
 

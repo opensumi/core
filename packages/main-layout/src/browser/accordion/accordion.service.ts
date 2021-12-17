@@ -203,7 +203,7 @@ export class AccordionService extends WithEventBus {
     const scopedCtxKey = this.registerContextService(viewId);
     const menu = this.menuService.createMenu(MenuId.ViewTitle, scopedCtxKey);
     const existingView = this.views.find((view) => view.id === viewId);
-    if (existingView){
+    if (existingView) {
       existingView.titleMenu = menu;
     }
     return menu;

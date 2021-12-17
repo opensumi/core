@@ -78,88 +78,90 @@ function noop() {}
  * <Button<'icon1' | 'icon2'> iconClass=`${customPrefix} icon1` type='icon' />
  * ```
  */
-export const Button = React.memo(<T extends string>({
-  children,
-  loading,
-  className,
-  type = 'primary',
-  htmlType,
-  size,
-  ghost = false,
-  onClick,
-  disabled,
-  block,
-  iconClass,
-  icon,
-  more,
-  moreIconClass,
-  menu,
-  title,
-  onVisibleChange,
-  ...otherProps
-}: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
-  const classes = classNames('kt-button', className, {
-    [`kt-${type}-button-loading`]: loading,
-    [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
-    [`${type}-button`]: type,
-    [`${size}-button-size`]: size,
-    ['ghost-button']: ghost && type !== 'link',
-    ['block-button']: block,
-  });
-  const iconClesses = classNames(className, {
-    ['kt-clickable-icon']: !!onClick,
-  });
+export const Button = React.memo(
+  <T extends string>({
+    children,
+    loading,
+    className,
+    type = 'primary',
+    htmlType,
+    size,
+    ghost = false,
+    onClick,
+    disabled,
+    block,
+    iconClass,
+    icon,
+    more,
+    moreIconClass,
+    menu,
+    title,
+    onVisibleChange,
+    ...otherProps
+  }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
+    const classes = classNames('kt-button', className, {
+      [`kt-${type}-button-loading`]: loading,
+      [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
+      [`${type}-button`]: type,
+      [`${size}-button-size`]: size,
+      ['ghost-button']: ghost && type !== 'link',
+      ['block-button']: block,
+    });
+    const iconClesses = classNames(className, {
+      ['kt-clickable-icon']: !!onClick,
+    });
 
-  if (type === 'icon') {
-    return (
-      <Icon
-        tooltip={title}
-        disabled={disabled}
-        icon={icon}
-        onClick={loading || disabled ? noop : onClick}
-        className={iconClesses}
-        iconClass={iconClass}
-        {...otherProps}
-      />
-    );
-  }
-
-  const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
-
-  if (more) {
-    return (
-      <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']} onVisibleChange={onVisibleChange}>
-        <button
-          {...otherProps}
+    if (type === 'icon') {
+      return (
+        <Icon
+          tooltip={title}
           disabled={disabled}
-          className={classes}
-          type={htmlType}
+          icon={icon}
           onClick={loading || disabled ? noop : onClick}
-        >
-          {loading && type !== 'link' && <LoadingCircle />}
-          {iconNode && iconNode}
-          {children}
-          {more && (
-            <Icon
-              iconClass={moreIconClass ? moreIconClass : getKaitianIcon('down')}
-              className='kt-button-secondary-more'
-            />
-          )}
-        </button>
-      </Dropdown>
+          className={iconClesses}
+          iconClass={iconClass}
+          {...otherProps}
+        />
+      );
+    }
+
+    const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
+
+    if (more) {
+      return (
+        <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']} onVisibleChange={onVisibleChange}>
+          <button
+            {...otherProps}
+            disabled={disabled}
+            className={classes}
+            type={htmlType}
+            onClick={loading || disabled ? noop : onClick}
+          >
+            {loading && type !== 'link' && <LoadingCircle />}
+            {iconNode && iconNode}
+            {children}
+            {more && (
+              <Icon
+                iconClass={moreIconClass ? moreIconClass : getKaitianIcon('down')}
+                className='kt-button-secondary-more'
+              />
+            )}
+          </button>
+        </Dropdown>
+      );
+    }
+    return (
+      <button
+        {...otherProps}
+        disabled={disabled}
+        className={classes}
+        type={htmlType}
+        onClick={loading || disabled ? noop : onClick}
+      >
+        {loading && type !== 'link' && <LoadingCircle />}
+        {iconNode && iconNode}
+        {children}
+      </button>
     );
-  }
-  return (
-    <button
-      {...otherProps}
-      disabled={disabled}
-      className={classes}
-      type={htmlType}
-      onClick={loading || disabled ? noop : onClick}
-    >
-      {loading && type !== 'link' && <LoadingCircle />}
-      {iconNode && iconNode}
-      {children}
-    </button>
-  );
-});
+  },
+);

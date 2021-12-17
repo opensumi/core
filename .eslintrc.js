@@ -72,7 +72,6 @@ module.exports = {
     '@typescript-eslint/unified-signatures': 'error',
     'arrow-body-style': 'error',
     'arrow-parens': ['error', 'always'],
-    'brace-style': ['error', '1tbs'],
     'comma-dangle': ['error', 'always-multiline'],
     complexity: 'off',
     'constructor-super': 'error',

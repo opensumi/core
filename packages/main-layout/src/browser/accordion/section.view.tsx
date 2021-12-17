@@ -40,22 +40,21 @@ const attrs = {
 };
 
 export const AccordionSection = ({
-    header,
-    headerClass,
-    onItemClick,
-    noHeader,
-    children,
-    expanded,
-    onResize,
-    size,
-    headerSize,
-    viewId,
-    initialProps,
-    titleMenu,
-    titleMenuContext,
-    onContextMenuHandler,
-  }: CollapsePanelProps,
-) => {
+  header,
+  headerClass,
+  onItemClick,
+  noHeader,
+  children,
+  expanded,
+  onResize,
+  size,
+  headerSize,
+  viewId,
+  initialProps,
+  titleMenu,
+  titleMenuContext,
+  onContextMenuHandler,
+}: CollapsePanelProps) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
@@ -67,9 +66,12 @@ export const AccordionSection = ({
     onItemClick((targetSize) => setSize(targetSize, false), currentSize);
   }, [getSize, setSize]);
 
-  const bodyStyle = React.useMemo<React.CSSProperties>(() => ({
-    overflow : expanded ? 'auto' : 'hidden',
-  }), [expanded]);
+  const bodyStyle = React.useMemo<React.CSSProperties>(
+    () => ({
+      overflow: expanded ? 'auto' : 'hidden',
+    }),
+    [expanded],
+  );
 
   React.useEffect(() => {
     if (onResize) {

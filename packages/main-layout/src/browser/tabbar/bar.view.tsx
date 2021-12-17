@@ -225,19 +225,22 @@ export const LeftTabbarRenderer: React.FC = () => {
 
   const leftBarInlineMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
 
-  return (<div className={styles.left_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
-    <TabbarViewBase
-      tabSize={48}
-      MoreTabView={IconElipses}
-      className={styles.left_tab_content}
-      tabClassName={styles.kt_left_tab}
-      TabView={IconTabView}
-      barSize={48}
-      // FIXME
-      margin={90}
-      panelBorderSize={1}/>
-    <InlineMenuBar className={styles.vertical_icons} menus={leftBarInlineMenus} />
-  </div>);
+  return (
+    <div className={styles.left_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
+      <TabbarViewBase
+        tabSize={48}
+        MoreTabView={IconElipses}
+        className={styles.left_tab_content}
+        tabClassName={styles.kt_left_tab}
+        TabView={IconTabView}
+        barSize={48}
+        // FIXME
+        margin={90}
+        panelBorderSize={1}
+      />
+      <InlineMenuBar className={styles.vertical_icons} menus={leftBarInlineMenus} />
+    </div>
+  );
 };
 
 // @deprecated

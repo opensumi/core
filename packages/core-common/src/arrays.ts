@@ -616,13 +616,13 @@ export function asArray<T>(x: T | T[]): T[] {
 /**
  * Returns the first mapped value of the array which is not undefined.
  */
- export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undefined): R | undefined {
-	for (const value of array) {
-		const mapped = mapFn(value);
-		if (mapped !== undefined) {
-			return mapped;
-		}
-	}
+export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undefined): R | undefined {
+  for (const value of array) {
+    const mapped = mapFn(value);
+    if (mapped !== undefined) {
+      return mapped;
+    }
+  }
 
-	return undefined;
+  return undefined;
 }

@@ -30,7 +30,8 @@ export class ClientCommonContribution
     PreferenceContribution,
     ClientAppContribution,
     MenuContribution,
-    KeybindingContribution {
+    KeybindingContribution
+{
   @Autowired(CommandService)
   protected commandService: CommandService;
 

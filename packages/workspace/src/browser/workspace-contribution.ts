@@ -21,7 +21,8 @@ import { WorkspaceContextKey } from './workspace-contextkey';
 
 @Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)
 export class WorkspaceContribution
-  implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution {
+  implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution
+{
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 

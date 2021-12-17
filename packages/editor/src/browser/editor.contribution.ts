@@ -91,7 +91,8 @@ export class EditorContribution
     ComponentContribution,
     MenuContribution,
     OpenerContribution,
-    QuickOpenContribution {
+    QuickOpenContribution
+{
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 

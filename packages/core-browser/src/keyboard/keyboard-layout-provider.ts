@@ -24,7 +24,8 @@ export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'press
 
 @Injectable()
 export class BrowserKeyboardLayoutImpl
-  implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator {
+  implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator
+{
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 

@@ -29,7 +29,8 @@ const toggledCtx = 'test.ctx.toggled';
 @Domain(CommandContribution, NextMenuContribution, ClientAppContribution)
 export class EditorTitleMenuContribution
   extends Disposable
-  implements CommandContribution, NextMenuContribution, ClientAppContribution {
+  implements CommandContribution, NextMenuContribution, ClientAppContribution
+{
   @Autowired(IContextKeyService)
   private readonly globalCtxKeyService: IContextKeyService;
 

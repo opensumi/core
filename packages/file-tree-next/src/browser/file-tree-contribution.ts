@@ -67,7 +67,8 @@ export class FileTreeContribution
     KeybindingContribution,
     TabBarToolbarContribution,
     ClientAppContribution,
-    MainLayoutContribution {
+    MainLayoutContribution
+{
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 

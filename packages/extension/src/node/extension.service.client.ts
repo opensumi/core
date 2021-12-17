@@ -26,7 +26,8 @@ interface IRPCExtensionService {
 @Injectable()
 export class ExtensionServiceClientImpl
   extends RPCService<IRPCExtensionService>
-  implements IExtensionNodeClientService {
+  implements IExtensionNodeClientService
+{
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
 

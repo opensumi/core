@@ -24,7 +24,13 @@ import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
-import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractMenuService,
+  generateCtxMenu,
+  IMenuRegistry,
+  MenuId,
+  MenuNode,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 @Injectable({ multiple: true })
@@ -230,7 +236,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 }
 
 export class TreeViewDataProvider extends Tree {
-
   private cachedMenu: Map<string, MenuNode[]> = new Map();
 
   private onTreeDataChangedEmitter = new Emitter<any>();

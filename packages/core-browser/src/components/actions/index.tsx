@@ -150,12 +150,14 @@ const EllipsisWidget: React.FC<{
 
 EllipsisWidget.displayName = 'EllipsisWidget';
 
-const InlineActionWidget: React.FC<{
-  data: MenuNode;
-  context?: any[];
-  type?: ActionListType;
-  afterClick?: () => void;
-} & React.HTMLAttributes<HTMLElement>> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+const InlineActionWidget: React.FC<
+  {
+    data: MenuNode;
+    context?: any[];
+    type?: ActionListType;
+    afterClick?: () => void;
+  } & React.HTMLAttributes<HTMLElement>
+> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const handleClick = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
       if (event) {
@@ -301,86 +303,88 @@ export const TitleActionList: React.FC<
     more?: MenuNode[];
     className?: string;
   } & BaseActionListProps
-> = React.memo(({
-  /**
-   * ActionListType 默认为 icon 类型
-   * 所有没有增加 type 的 menu 都是 icon 类型
-   */
-  type = 'icon',
-  nav = [],
-  more = [],
-  context = [],
-  extraNavActions = [],
-  moreAtFirst = false,
-  className,
-  afterClick,
-  menuId,
-  regroup = (...args: [MenuNode[], MenuNode[]]) => args,
-}) => {
-  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const [primary, secondary] = regroup(nav, more);
+> = React.memo(
+  ({
+    /**
+     * ActionListType 默认为 icon 类型
+     * 所有没有增加 type 的 menu 都是 icon 类型
+     */
+    type = 'icon',
+    nav = [],
+    more = [],
+    context = [],
+    extraNavActions = [],
+    moreAtFirst = false,
+    className,
+    afterClick,
+    menuId,
+    regroup = (...args: [MenuNode[], MenuNode[]]) => args,
+  }) => {
+    const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+    const [primary, secondary] = regroup(nav, more);
 
-  const handleShowMore = React.useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (secondary) {
-        ctxMenuRenderer.show({
-          anchor: { x: e.clientX, y: e.clientY },
-          // 合并结果
-          menuNodes: secondary,
-          args: context,
-          onHide: afterClick,
-        });
-      }
-    },
-    [secondary, context],
-  );
+    const handleShowMore = React.useCallback(
+      (e: React.MouseEvent<HTMLElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (secondary) {
+          ctxMenuRenderer.show({
+            anchor: { x: e.clientX, y: e.clientY },
+            // 合并结果
+            menuNodes: secondary,
+            args: context,
+            onHide: afterClick,
+          });
+        }
+      },
+      [secondary, context],
+    );
 
-  if (primary.length === 0 && secondary.length === 0 && extraNavActions.length === 0) {
-    return null;
-  }
+    if (primary.length === 0 && secondary.length === 0 && extraNavActions.length === 0) {
+      return null;
+    }
 
-  const moreAction = secondary.length > 0 ? <EllipsisWidget type={type} onClick={handleShowMore} /> : null;
+    const moreAction = secondary.length > 0 ? <EllipsisWidget type={type} onClick={handleShowMore} /> : null;
 
-  return (
-    <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
-      {moreAtFirst && moreAction}
-      {primary.map((item) => {
-        if (item.id === ComponentMenuItemNode.ID) {
+    return (
+      <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
+        {moreAtFirst && moreAction}
+        {primary.map((item) => {
+          if (item.id === ComponentMenuItemNode.ID) {
+            return (
+              <CustomActionWidget
+                context={context}
+                data={item as ComponentMenuItemNode}
+                key={(item as ComponentMenuItemNode).nodeId}
+              />
+            );
+          }
+
+          // submenu 使用 submenu-id 作为 id 唯一值
+          const id = item.id === SubmenuItemNode.ID ? (item as SubmenuItemNode).submenuId : item.id;
           return (
-            <CustomActionWidget
+            <InlineActionWidget
+              id={id}
+              key={id}
+              className={clsx({ [styles.selected]: item.checked })}
+              type={type}
+              data={item}
+              afterClick={afterClick}
               context={context}
-              data={item as ComponentMenuItemNode}
-              key={(item as ComponentMenuItemNode).nodeId}
             />
           );
-        }
-
-        // submenu 使用 submenu-id 作为 id 唯一值
-        const id = item.id === SubmenuItemNode.ID ? (item as SubmenuItemNode).submenuId : item.id;
-        return (
-          <InlineActionWidget
-            id={id}
-            key={id}
-            className={clsx({ [styles.selected]: item.checked })}
-            type={type}
-            data={item}
-            afterClick={afterClick}
-            context={context}
-          />
-        );
-      })}
-      {Array.isArray(extraNavActions) && extraNavActions.length ? (
-        <>
-          {primary.length && <span className={styles.divider} />}
-          {extraNavActions}
-        </>
-      ) : null}
-      {!moreAtFirst && moreAction}
-    </div>
-  );
-});
+        })}
+        {Array.isArray(extraNavActions) && extraNavActions.length ? (
+          <>
+            {primary.length && <span className={styles.divider} />}
+            {extraNavActions}
+          </>
+        ) : null}
+        {!moreAtFirst && moreAction}
+      </div>
+    );
+  },
+);
 
 TitleActionList.displayName = 'TitleActionList';
 

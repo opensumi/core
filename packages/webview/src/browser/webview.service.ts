@@ -299,7 +299,8 @@ namespace ApiThemeClassName {
 @Injectable({ multiple: true })
 export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
   extends Disposable
-  implements IEditorWebviewComponent<T> {
+  implements IEditorWebviewComponent<T>
+{
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;
 

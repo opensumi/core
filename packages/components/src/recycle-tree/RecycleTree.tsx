@@ -935,18 +935,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       addonProps.innerElementType = InnerElementType;
     }
 
-    return (
-      supportDynamicHeights
-      ? (<VariableSizeList
-          ref={this.listRef as React.RefObject<VariableSizeList>}
-          itemSize={this.getItemSize.bind(this)} {...addonProps}
-        >
+    return supportDynamicHeights ? (
+      <VariableSizeList
+        ref={this.listRef as React.RefObject<VariableSizeList>}
+        itemSize={this.getItemSize.bind(this)}
+        {...addonProps}
+      >
         {this.renderItem}
       </VariableSizeList>
     ) : (
       <FixedSizeList ref={this.listRef as React.RefObject<FixedSizeList>} itemSize={itemHeight} {...addonProps}>
         {this.renderItem}
       </FixedSizeList>
-    ));
+    );
   }
 }
