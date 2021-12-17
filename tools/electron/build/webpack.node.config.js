@@ -19,6 +19,7 @@ module.exports = {
   node: false,
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+    mainFields: ['loader', 'main'],
     plugins: [
       new TsconfigPathsPlugin({
         configFile: tsConfigPath,

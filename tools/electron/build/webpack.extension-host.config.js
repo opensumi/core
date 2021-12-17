@@ -35,6 +35,8 @@ const nodeTarget = {
           configFile: tsConfigPath,
         },
       },
+      { test: /\.css$/, loader: require.resolve('null-loader') },
+      { test: /\.less$/, loader: require.resolve('null-loader') },
     ],
   },
   externals: [
@@ -84,6 +86,8 @@ const workerTarget = {
           configFile: tsConfigPath,
         },
       },
+      { test: /\.css$/, loader: require.resolve('null-loader') },
+      { test: /\.less$/, loader: require.resolve('null-loader') },
     ],
   },
   externals: [
