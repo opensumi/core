@@ -19,10 +19,10 @@ import type {
   TestRunResult,
 } from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common/lib/cancellation';
 import { hash } from '@opensumi/ide-core-common/lib/utils/hash';
-import { Emitter, Event } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 import { uuid } from '@opensumi/ide-core-common/lib/uuid';
 import { TestId, TestIdPathParts, TestPosition } from '@opensumi/ide-testing/lib/common/testId';
 import {
