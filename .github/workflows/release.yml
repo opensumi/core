@@ -14,32 +14,40 @@ jobs:
         node_version: [12.x]
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - run: npm install
-      - run: npm run init
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
 
-      - run: |
-          cd tools/electron
-          npm i
-          npm run rebuild-native
-          npm run link-local
-          npm run pack
+    - name: Build
+      run: |
+        npm i
+        npm run init
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          files: |
-            LICENSE
-            tools/electron/dist/*.dmg
+    - name: Package Electron
+      run: |
+        cd tools/electron
+        npm i
+        npm run rebuild-native
+        npm run link-local
+        npm run pack
 
-      - name: Release ✅
-        if: ${{ success() }}
-        run: |
-          echo 执行成功
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        files: |
+          LICENSE
+          tools/electron/dist/*.dmg
 
-      - name: Release 🚨
-        if: ${{ failure() }}
-        run: |
-          echo 执行失败
+    - name: Release ✅
+      if: ${{ success() }}
+      run: |
+        echo 执行成功
+
+    - name: Release 🚨
+      if: ${{ failure() }}
+      run: |
+        echo 执行失败
