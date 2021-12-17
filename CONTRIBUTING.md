@@ -20,10 +20,10 @@ You may need the following development tools:
 - [Python](https://www.python.org/downloads/) (pre-dependency of node-gyp library; view [node-gyp readme](https://github.com/nodejs/node-gyp# installation) Find a suitable version currently supported)
   - **Note:** Windows users will install Python automatically by installing the npm module of `windows-build-tools`, which can be quickly installed in this way. (See below)
 - A C/C++ compilation tool suitable for your system:
-  -**macOS**
+  - **macOS**
     - Installing [Xcode](https://developer.apple.com/xcode/downloads/) and its command line tools will automatically install `gcc`, the installation process relies on the `make` tool chain
       - Run `xcode-select --install` to install command line tools
-  -**Windows 10/11**
+  - **Windows 10/11**
     - Install Windows Build Tools:
       - If you install it through the Node installer provided by [Node.JS](https://nodejs.org/en/download/) and make sure you install the native module tools, the environment will be able to be used normally.
       - If you manage scripts through Node version, such as [nvm](https://github.com/coreybutler/nvm-windows) or [nvs](https://github.com/jasongin/nvs)
