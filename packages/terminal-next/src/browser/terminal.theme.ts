@@ -14,7 +14,7 @@ export class TerminalTheme extends Themable implements ITerminalTheme {
     const termCursorColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_CURSOR_FOREGROUND_COLOR) || termFgColor;
     const termCursorAccentColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_CURSOR_BACKGROUND_COLOR) || termBgColor;
 
-    const ansiColorMap = TERMINAL_COLOR.ansiColorMap;
+    const ansiColorIdentifiers = TERMINAL_COLOR.ansiColorIdentifiers;
 
     if (!(termBgColor && termFgColor && termSelectionColor && termCursorColor && termCursorAccentColor)) {
       // 因为有 fallback，这段逻辑应该不会被执行
@@ -27,22 +27,22 @@ export class TerminalTheme extends Themable implements ITerminalTheme {
       cursor: Color.Format.CSS.formatHexA(termCursorColor),
       cursorAccent: Color.Format.CSS.formatHexA(termCursorAccentColor),
       selection: Color.Format.CSS.formatHexA(termSelectionColor),
-      black: ansiColorMap['terminal.ansiBlack'].defaults[this.theme.type] as string,
-      red: ansiColorMap['terminal.ansiRed'].defaults[this.theme.type] as string,
-      green: ansiColorMap['terminal.ansiGreen'].defaults[this.theme.type] as string,
-      yellow: ansiColorMap['terminal.ansiYellow'].defaults[this.theme.type] as string,
-      blue: ansiColorMap['terminal.ansiBlue'].defaults[this.theme.type] as string,
-      magenta: ansiColorMap['terminal.ansiMagenta'].defaults[this.theme.type] as string,
-      cyan: ansiColorMap['terminal.ansiCyan'].defaults[this.theme.type] as string,
-      white: ansiColorMap['terminal.ansiWhite'].defaults[this.theme.type] as string,
-      brightBlack: ansiColorMap['terminal.ansiBrightBlack'].defaults[this.theme.type] as string,
-      brightRed: ansiColorMap['terminal.ansiBrightRed'].defaults[this.theme.type] as string,
-      brightGreen: ansiColorMap['terminal.ansiBrightGreen'].defaults[this.theme.type] as string,
-      brightYellow: ansiColorMap['terminal.ansiBrightYellow'].defaults[this.theme.type] as string,
-      brightBlue: ansiColorMap['terminal.ansiBrightBlue'].defaults[this.theme.type] as string,
-      brightMagenta: ansiColorMap['terminal.ansiBrightMagenta'].defaults[this.theme.type] as string,
-      brightCyan: ansiColorMap['terminal.ansiBrightCyan'].defaults[this.theme.type] as string,
-      brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type] as string,
+      black: this.getColorSync(ansiColorIdentifiers[0])?.toString(),
+      red: this.getColorSync(ansiColorIdentifiers[1])?.toString(),
+      green: this.getColorSync(ansiColorIdentifiers[2])?.toString(),
+      yellow: this.getColorSync(ansiColorIdentifiers[3])?.toString(),
+      blue: this.getColorSync(ansiColorIdentifiers[4])?.toString(),
+      magenta: this.getColorSync(ansiColorIdentifiers[5])?.toString(),
+      cyan: this.getColorSync(ansiColorIdentifiers[6])?.toString(),
+      white: this.getColorSync(ansiColorIdentifiers[7])?.toString(),
+      brightBlack: this.getColorSync(ansiColorIdentifiers[8])?.toString(),
+      brightRed: this.getColorSync(ansiColorIdentifiers[9])?.toString(),
+      brightGreen: this.getColorSync(ansiColorIdentifiers[10])?.toString(),
+      brightYellow: this.getColorSync(ansiColorIdentifiers[11])?.toString(),
+      brightBlue: this.getColorSync(ansiColorIdentifiers[12])?.toString(),
+      brightMagenta: this.getColorSync(ansiColorIdentifiers[13])?.toString(),
+      brightCyan: this.getColorSync(ansiColorIdentifiers[14])?.toString(),
+      brightWhite: this.getColorSync(ansiColorIdentifiers[15])?.toString(),
     };
   }
 }

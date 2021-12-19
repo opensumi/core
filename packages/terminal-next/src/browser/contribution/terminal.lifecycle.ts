@@ -3,6 +3,7 @@ import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../../common';
 import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
+import { registerTerminalColors } from '../terminal.color';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
 @Domain(ClientAppContribution, MainLayoutContribution)
@@ -18,6 +19,10 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
 
   @Autowired(EnvironmentVariableServiceToken)
   protected readonly environmentService: IEnvironmentVariableService;
+
+  initialize() {
+    registerTerminalColors();
+  }
 
   onStart() {
     this.terminalInput.listen();
