@@ -181,6 +181,7 @@
       border-bottom: 1px solid var(--tab-border);
       box-sizing: border-box;
       z-index: 1;
+
       .tab_loading {
         display: block;
         position: absolute;
@@ -188,6 +189,7 @@
         left: 13.5px;
       }
       :global(.icon-label::before) {
+        font-size: calc(1.5*14px) !important;
         transition: transform 0.2s ease-in;
       }
       .small::before {
@@ -204,7 +206,6 @@
         &::before {
           background-size: 14px;
           background-position: 2px;
-          font-size: 12px;
         }
       }
       .kt_editor_close_icon {
