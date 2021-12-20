@@ -55,16 +55,12 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
   };
 }
 
-/**
- * 弃用 unpkg.alibaba-inc.ocm 是因为其没有达到生产环境的可用性
- * https://gw.alipayobjects.com/os/lib/ali/ide-components/1.12.2/dist/index.css
- */
-const componentCdnBase = 'https://gw.alipayobjects.com/os/lib';
+const componentCdnBase = 'https://unpkg.com/browse';
+const packageName = '@opensumi/ide-components';
 
 function getStyleSheet(filePath: string, version: string) {
   const link = document.createElement('link');
-  // basement 三方库不需要 @ 符
-  link.setAttribute('href', `${componentCdnBase}/ali/ide-components/${version}/${filePath}`);
+  link.setAttribute('href', `${componentCdnBase}/${packageName}@${version}/${filePath}`);
   link.setAttribute('rel', 'stylesheet');
   return link;
 }
