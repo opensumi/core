@@ -2,9 +2,9 @@ name: CHECK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, v*.*.* ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, v*.*.* ]
 
 jobs:
   build:
@@ -29,4 +29,4 @@ jobs:
 
     - name: Lint
       run: |
-        npm run lint
+        npm run lint -- --quiet

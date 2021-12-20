@@ -235,7 +235,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
           }
           if (this.appConfig.useExperimentalShadowDom) {
             const shadowComponent = (props) =>
-              getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead);
+              getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead, this.appConfig.componentCDNType);
             this.toolbarPopoverRegistry.registerComponent(
               `${extension.id}:${action.popoverComponent}`,
               shadowComponent,
@@ -420,7 +420,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       return () => ExtensionNoExportsView(extension.id, id);
     }
     if (this.appConfig.useExperimentalShadowDom) {
-      return (props) => getShadowRoot(moduleExports[id], extension, props, id, proxiedHead);
+      return (props) => getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
     }
     return moduleExports[id];
   }
@@ -507,7 +507,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
               ...other,
               id,
-              component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
+              component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
             })),
           };
           return pre;
