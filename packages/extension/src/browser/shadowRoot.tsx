@@ -75,7 +75,7 @@ function getStyleSheet(filePath: string, version: string, cdnType: CDNType = 'al
   const link = document.createElement('link');
   let href = '';
   if (cdnType === 'alipay') {
-    href = `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/@{version}/${filePath}`;
+    href = `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/${version}/${filePath}`;
   } else {
     href = `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
   }
