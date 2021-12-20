@@ -24,7 +24,7 @@ const CDN_TYPE_MAP: CDNTypeMap = {
   jsdelivr: 'https://cdn.jsdelivr.net/npm',
 };
 
-type CDNTypeMap = {
+interface CDNTypeMap {
   alipay: string;
   unpkg: string;
   jsdelivr: string;
@@ -73,12 +73,11 @@ const packageName = '@opensumi/ide-components';
 
 function getStyleSheet(filePath: string, version: string, cdnType: CDNType = 'alipay') {
   const link = document.createElement('link');
-
-  let href: string = '';
+  let href = '';
   if (cdnType === 'alipay') {
     href = `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/@{version}/${filePath}`;
   } else {
-    href = `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`
+    href = `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
   }
   link.setAttribute('href', href);
   link.setAttribute('rel', 'stylesheet');
@@ -96,7 +95,7 @@ const ShadowRoot = ({
   extensionId: string;
   children: any;
   proxiedHead: HTMLHeadElement;
-  cdnType?: CDNType,
+  cdnType?: CDNType;
 }) => {
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);

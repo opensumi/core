@@ -1,8 +1,9 @@
 node_modules
 
-**/tools/workspaces/**
+**/tools/workspace/**
 **/tools/extensions/**
 **/tools/**/vendor/
+**/tools/electron/app/dist/**
 tools/cli-engine/src/browser/worker-host.js
 
 **/typings/**
