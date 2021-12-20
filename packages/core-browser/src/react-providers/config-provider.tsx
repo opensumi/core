@@ -181,6 +181,11 @@ export interface AppConfig {
    * 工作区文件后缀，默认后缀为 `sumi-workspace`
    */
   workspaceSuffixName?: string;
+  /**
+   * 视图组件内默认的组件样式资源 CDN 来源
+   * 默认值为 'alipay'
+   */
+  componentCDNType?: 'unpkg' | 'jsdelivr' | 'alipay';
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
