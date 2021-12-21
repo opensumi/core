@@ -6,7 +6,6 @@
 
 在你克隆并构建完我们的仓库代码后，检查 [Issues](https://github.com/opensumi/core/issues)，对于标注了 `PR Welcome` 的问题是提交你第一个 PR 最佳的实践案例，如果你在过程中有任何疑问，也可以随时在评论区 @ 任何一位项目成员进行咨询。
 
-
 ## 开发环境准备
 
 > 这里的系统工具安装方式参考了 VS Code 的 [How-to-Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute) 文档进行翻译，可以直接查看该文档。
@@ -29,13 +28,13 @@ $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/node-can
 
 - [Git](https://git-scm.com)
 - [Node.JS](https://nodejs.org/en/), **x64**, 版本号 `>= 12.x`, `<= 14.x`
-- [Python](https://www.python.org/downloads/) (node-gyp 库的前置依赖; 查看 [node-gyp readme](https://github.com/nodejs/node-gyp#installation) 找到当前支持的合适版本) 
+- [Python](https://www.python.org/downloads/) (node-gyp 库的前置依赖; 查看 [node-gyp readme](https://github.com/nodejs/node-gyp#installation) 找到当前支持的合适版本)
   - **注意:** Windows 用户通过安装 `windows-build-tools` 的 npm 模块将会自动安装 Python，可以通过这种方式进行快速安装。（见下方）
-- 一个适合你系统的 C/C++ 编译工具: 
-  - **macOS** 
-    - 安装 [Xcode](https://developer.apple.com/xcode/downloads/) 及其命令行工具将会自动安装 `gcc`，该安装过程依赖 `make` 工具链 
+- 一个适合你系统的 C/C++ 编译工具:
+  - **macOS**
+    - 安装 [Xcode](https://developer.apple.com/xcode/downloads/) 及其命令行工具将会自动安装 `gcc`，该安装过程依赖 `make` 工具链
       - 运行 `xcode-select --install` 安装命令行工具
-  - **Windows 10/11** 
+  - **Windows 10/11**
     - 安装 Windows Build Tools:
       - 如果你是通过 [Node.JS](https://nodejs.org/en/download/) 提供的 Node 安装器安装的并确保你安装了原生模块工具，环境将会是可以正常使用的。
       - 如果你是通过 Node 版本管理脚本，如 [nvm](https://github.com/coreybutler/nvm-windows) 或者 [nvs](https://github.com/jasongin/nvs)
@@ -70,7 +69,7 @@ $ git pull https://github.com/opensumi/core.git main
 
 处理完代码冲突，提交代码到你的仓库下，然后就可以随时到 [opensumi/core](https://github.com/opensumi/core/pulls) 提交你的 PR。
 
-注意：默认 `opensumi/core` 下还包含了不少 GitHub Actions，如果你不想执行这些 Actions，你可以在 `https://github.com/<<Your Username>>/core/settings/actions`  下关闭掉对应 Actions。
+注意：默认 `opensumi/core` 下还包含了不少 GitHub Actions，如果你不想执行这些 Actions，你可以在 `https://github.com/<<Your Username>>/core/settings/actions` 下关闭掉对应 Actions。
 
 ### 构建
 
@@ -98,9 +97,8 @@ $ npm start
 
 默认情况下，框架会将项目下的 `tools/workspace` 目录作为工作区目录展现，你也可以通过 `MY_WORKSPACE=` 指定路径的方式打开 OpenSumi，如下所示：
 
-
 ```bash
-$ MY_WORKSPACE={workspace_path} tnpm start
+$ MY_WORKSPACE={workspace_path} npm start
 ```
 
 ![perview](https://img.alicdn.com/imgextra/i1/O1CN01eP6aZU1al34XVd38l_!!6000000003369-2-tps-2842-1714.png)
@@ -117,7 +115,7 @@ OpenSumi 运行时存在多个进程，你需要确定你要调试的具体进�
 
 ### Node 进程
 
-对于 `Node 进程`，在你通过 `tnpm start` 运行起框架后，你可以通过使用 `VSCode` 或基于 OpenSumi 搭建的 IDE 调试面板中的 `Attach to BackEnd` 的方式进行 `Node 进程` 的断点调试。
+对于 `Node 进程`，在你通过 `npm start` 运行起框架后，你可以通过使用 `VSCode` 或基于 OpenSumi 搭建的 IDE 调试面板中的 `Attach to BackEnd` 的方式进行 `Node 进程` 的断点调试。
 
 ![](https://img.alicdn.com/imgextra/i3/O1CN014Or5e01CFOtP5rM44_!!6000000000051-2-tps-2828-1760.png#id=fYIYf&originHeight=1760&originWidth=2828&originalType=binary&ratio=1&status=done&style=none)
 
@@ -143,7 +141,7 @@ $ npm run test:module -- --module=debug
 
 ## 代码规范
 
-直接运行 `tnpm run lint` 可对整体代码进行规范检索，同时代码提交时也会触发相应的代码格式校验。
+直接运行 `npm run lint` 可对整体代码进行规范检索，同时代码提交时也会触发相应的代码格式校验。
 
 ## 提交规范
 
@@ -167,11 +165,9 @@ $ ln -s {local_path}/{extension_name} {ide-framework}/tools/extensions/{extensio
 
 通过刷新页面便可以快速进行插件功能的效果预览。
 
-
 ## 英文拼写
 
 对于常见的拼写问题，我们建议你在 `VSCode` 或基于 OpenSumi 搭建的 IDE 下安装 [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) 插件来避免常见的一些英文拼写问题。
-
 
 ## 建议及反馈
 
