@@ -216,7 +216,7 @@ export function createApiFactory(
     tasks: createTaskApiFactory(extHostTasks, extension),
     scm: {
       get inputBox() {
-        return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+        return extHostSCM.getLastInputBox(extension); // Strict null override - Deprecated api
       },
       createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
         return extHostSCM.createSourceControl(extension, id, label, rootUri);

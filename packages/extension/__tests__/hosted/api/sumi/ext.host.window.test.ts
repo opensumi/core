@@ -65,6 +65,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.window.test.ts',
     let window: ExtIDEWebviewWindow;
 
     beforeAll(async (done) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       window = (await windowAPI.createWebviewWindow(webviewId, {}, {}))!;
       done();
     });

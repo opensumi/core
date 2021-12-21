@@ -243,7 +243,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   private registerExtendModuleService(exportsData, extension: IExtensionProps) {
     const service = {};
     for (const key in exportsData) {
-      if (exportsData.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(exportsData, key)) {
         if (typeof exportsData[key] === 'function') {
           service[`$${key}`] = exportsData[key];
         }

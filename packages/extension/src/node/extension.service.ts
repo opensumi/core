@@ -152,6 +152,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.extServerListenOptions.set(clientId, options);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.extServerListenOptions.get(clientId)!;
   }
 
@@ -159,7 +160,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (!this.electronMainThreadListenPaths.has(clientId)) {
       this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath('main_thread'));
     }
-    return this.electronMainThreadListenPaths.get(clientId)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.electronMainThreadListenPaths.get(clientId);
   }
 
   public getElectronMainThreadListenPath2(clientId: string): string {
@@ -384,7 +386,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         if (msg === 'ready') {
           const duration = forkTimer.timeEnd();
           this.logger.log(`extension,fork,${clientId},${duration}ms`);
-          extProcessInitDeferred!.resolve();
+          extProcessInitDeferred?.resolve();
           this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
         } else if (msg === 'finish') {
@@ -423,6 +425,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       try {
         // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
         console.log(`do open inspect port, pid: ${extHostProcessId}`);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         (process as ProcessExt)._debugProcess!(extHostProcessId);
       } catch (err) {
         this.logger.error(`enable inspect port error \n ${err.message}`);
@@ -520,9 +523,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             this.closeExtProcessWhenConnectionClose(connectionClientId);
           });
         },
-        dispose: (connection, connectionClientId) => {
+        dispose: () => {
           // Web 场景断连后不杀死插件进程
-          // https://yuque.antfin.com/ide-framework/topiclist/enpip1
         },
       });
     }
@@ -581,7 +583,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       // extServer 关闭
       if (this.clientExtProcessExtConnectionServer.has(clientId)) {
-        this.clientExtProcessExtConnectionServer.get(clientId)!.close();
+        this.clientExtProcessExtConnectionServer.get(clientId)?.close();
       }
       // connect 关闭
       if (this.clientExtProcessExtConnection.has(clientId)) {

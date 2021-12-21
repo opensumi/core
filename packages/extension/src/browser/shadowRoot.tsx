@@ -152,7 +152,7 @@ const ShadowRoot = ({
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
           <div
-            className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')}
+            className={clx(getThemeTypeSelector(themeType), 'shadow-context-wrapper', 'show-file-icons')}
             style={{ width: '100%', height: '100%' }}
           >
             {children}

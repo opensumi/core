@@ -417,7 +417,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     const debugAdapterSession = new ExtensionDebugAdapterSession(communicationProvider, tracker, debugSession);
     this.sessions.set(sessionId, debugAdapterSession);
 
-    const connection = await this.extHostConnectionService!.ensureConnection(sessionId);
+    const connection = await this.extHostConnectionService?.ensureConnection(sessionId);
     debugAdapterSession.start(new ExtensionWSChannel(connection));
 
     return sessionId;
@@ -453,6 +453,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     return this.doGetTerminalCreationOptions(debugType);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async doGetTerminalCreationOptions(debugType: string): Promise<undefined> {
     return undefined;
   }
@@ -488,6 +489,7 @@ export class ExtHostDebug implements IExtHostDebugService {
         if (provider.resolveDebugConfiguration) {
           const next = await provider.resolveDebugConfiguration(
             this.toWorkspaceFolder(workspaceFolderUri),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             current!,
             token,
           );

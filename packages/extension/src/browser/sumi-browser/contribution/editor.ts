@@ -104,7 +104,7 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
         uri,
         name: viewContribution.tabTitle || viewContribution.id,
         icon: viewContribution.tabIconPath
-          ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)!
+          ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)
           : '',
       }),
     });

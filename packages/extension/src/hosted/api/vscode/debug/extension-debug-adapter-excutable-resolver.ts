@@ -4,6 +4,8 @@ import { isWindows, isOSX } from '@opensumi/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@opensumi/ide-debug';
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 
+const PROCESSOR_ARCHITEW6432 = 'PROCESSOR_ARCHITEW6432';
+
 export async function resolveDebugAdapterExecutable(
   pluginPath: string,
   debuggerContribution: IDebuggerContribution,
@@ -26,7 +28,7 @@ export async function resolveDebugAdapterExecutable(
 }
 
 function toPlatformInfo(executable: IDebuggerContribution): IPlatformSpecificAdapterContribution | undefined {
-  if (isWindows && !process.env.hasOwnProperty('PROCESSOR_ARCHITEW6432')) {
+  if (isWindows && !Object.prototype.hasOwnProperty.call(process.env, PROCESSOR_ARCHITEW6432)) {
     return executable.winx86 || executable.win || executable.windows;
   }
   if (isWindows) {

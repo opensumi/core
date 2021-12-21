@@ -119,6 +119,7 @@ export class MainThreadFileSystemEvent extends Disposable {
 
   private _initShowPreview() {
     // additional edits for file-participants
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._showPreview = this.preferenceService.get<string>('workbench.refactoringChanges.showPreviewStrategy')!;
     this.addDispose(
       this.preferenceService.onPreferenceChanged((e) => {
@@ -130,6 +131,7 @@ export class MainThreadFileSystemEvent extends Disposable {
   }
 
   private async fileOperationParticipant(...args: Parameters<IWorkspaceFileOperationParticipant['participate']>) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [files, operation, _, timeout, token] = args;
 
     const cts = new CancellationTokenSource(token);

@@ -78,12 +78,12 @@ export class ActivationEventServiceImpl implements IActivationEventService {
       if (!this.eventListeners.has(topic)) {
         this.eventListeners.set(topic, []);
       }
-      this.eventListeners.get(topic)!.push(listener);
+      this.eventListeners.get(topic)?.push(listener);
       return {
         dispose: () => {
-          const index = this.eventListeners.get(topic)!.indexOf(listener);
-          if (index !== -1) {
-            this.eventListeners.get(topic)!.splice(index, 1);
+          const index = this.eventListeners.get(topic)?.indexOf(listener);
+          if (index && index !== -1) {
+            this.eventListeners.get(topic)?.splice(index, 1);
           }
         },
       };
@@ -92,12 +92,12 @@ export class ActivationEventServiceImpl implements IActivationEventService {
       if (!this.eventListeners.has(event)) {
         this.eventListeners.set(event, []);
       }
-      this.eventListeners.get(event)!.push(listener);
+      this.eventListeners.get(event)?.push(listener);
       return {
         dispose: () => {
-          const index = this.eventListeners.get(event)!.indexOf(listener);
-          if (index !== -1) {
-            this.eventListeners.get(event)!.splice(index, 1);
+          const index = this.eventListeners.get(event)?.indexOf(listener);
+          if (index && index !== -1) {
+            this.eventListeners.get(event)?.splice(index, 1);
           }
         },
       };

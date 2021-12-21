@@ -35,7 +35,7 @@ export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContrib
         const disposable = this.toolBarViewService.registerToolBarElement({
           type: 'component',
           component: view.component as React.ComponentType,
-          position: view.position || this.contribution.toolBar!.position || ToolBarPosition.LEFT,
+          position: view.position || this.contribution.toolBar?.position || ToolBarPosition.LEFT,
           initialProps: {
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,

@@ -175,6 +175,7 @@ describe('Webview view tests ', () => {
     await delay(100);
     expect(webviews.size).toBe(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const webview = webviews.get(Array.from(webviews.keys())[0])!;
     expect(webview.appendTo).toBeCalledWith(container);
     expect(webview.setContent).toBeCalledWith('testHtmlContent');
@@ -184,6 +185,7 @@ describe('Webview view tests ', () => {
 
   afterAll(() => {
     injector.disposeAll();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Array.from(webviews.entries()).forEach(([i, w]) => w.dispose());
   });
 });

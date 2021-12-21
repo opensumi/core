@@ -18,9 +18,13 @@ export class InlineValuesAdapter {
     token: CancellationToken,
   ): Promise<InlineValue[] | undefined> {
     const doc = this._documents.getDocument(resource);
+    if (!doc) {
+      return Promise.resolve(undefined);
+    }
+
     return asPromise(() =>
       this._provider.provideInlineValues(
-        doc!,
+        doc,
         Converter.toRange(viewPort),
         Converter.InlineValueContext.to(context),
         token,

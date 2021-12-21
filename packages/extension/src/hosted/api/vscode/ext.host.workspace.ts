@@ -59,7 +59,6 @@ export function createWorkspaceApiFactory(
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
     registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: (type, provider) => {
-      // tslint:disable-next-line:no-console
       console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
       return extHostTasks.registerTaskProvider(type, provider, extension);
     },
@@ -114,7 +113,7 @@ export function createWorkspaceApiFactory(
     saveAll: () => extHostWorkspace.saveAll(),
     findFiles: (include, exclude, maxResults?, token?) =>
       extHostWorkspace.findFiles(
-        TypeConverts.GlobPattern.from(include)!,
+        TypeConverts.GlobPattern.from(include),
         TypeConverts.GlobPattern.from(exclude),
         maxResults,
         null,
@@ -143,7 +142,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   protected readonly proxy: IMainThreadWorkspace;
   protected readonly rpcProtocol: IRPCProtocol;
 
-  private folders: vscode.WorkspaceFolder[] | undefined;
+  private folders: vscode.WorkspaceFolder[] = [];
   protected _workspaceFolder: vscode.WorkspaceFolder[] = [];
 
   private messageService: IExtHostMessage;
@@ -242,7 +241,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     if (typeof includeWorkspaceFolder === 'undefined') {
-      includeWorkspaceFolder = this.folders!.length > 1;
+      includeWorkspaceFolder = this.folders?.length > 1;
     }
 
     let result = relative(folder.uri.fsPath, path);
@@ -288,6 +287,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     newWorkspaceFolders.splice(
       start,
       deleteCount,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri), name: undefined!, index: undefined! })),
     );
 

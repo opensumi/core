@@ -44,12 +44,16 @@ export class DocumentSemanticTokensAdapter {
     token: CancellationToken,
   ): Promise<Uint8Array | null> {
     const doc = this._documents.getDocument(resource);
+    if (!doc) {
+      return null;
+    }
+
     const previousResult = previousResultId !== 0 ? this._previousResults.get(previousResultId) : null;
     let value =
       typeof previousResult?.resultId === 'string' &&
       typeof this._provider.provideDocumentSemanticTokensEdits === 'function'
-        ? await this._provider.provideDocumentSemanticTokensEdits(doc!, previousResult.resultId, token)
-        : await this._provider.provideDocumentSemanticTokens(doc!, token);
+        ? await this._provider.provideDocumentSemanticTokensEdits(doc, previousResult.resultId, token)
+        : await this._provider.provideDocumentSemanticTokens(doc, token);
 
     if (previousResult) {
       this._previousResults.delete(previousResultId);
@@ -212,7 +216,11 @@ export class DocumentRangeSemanticTokensAdapter {
     token: CancellationToken,
   ): Promise<Uint8Array | null> {
     const doc = this._documents.getDocument(resource);
-    const value = await this._provider.provideDocumentRangeSemanticTokens(doc!, TypeConverts.Range.to(range), token);
+    if(!doc) {
+      return Promise.resolve(null);
+    }
+
+    const value = await this._provider.provideDocumentRangeSemanticTokens(doc, TypeConverts.Range.to(range), token);
     if (!value) {
       return null;
     }

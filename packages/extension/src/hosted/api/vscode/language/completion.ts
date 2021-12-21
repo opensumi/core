@@ -69,8 +69,8 @@ export class CompletionAdapter {
       x: pid,
       [ISuggestResultDtoField.completions]: completions,
       [ISuggestResultDtoField.defaultRanges]: {
-        replace: Converter.Range.from(replacing)!,
-        insert: Converter.Range.from(inserting)!,
+        replace: Converter.Range.from(replacing),
+        insert: Converter.Range.from(inserting),
       },
       [ISuggestResultDtoField.isIncomplete]: isIncomplete || undefined,
       [ISuggestResultDtoField.duration]: duration,

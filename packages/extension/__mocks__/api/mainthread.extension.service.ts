@@ -7,7 +7,7 @@ export class MainThreadExtensionService implements VSCodeExtensionService {
     return Promise.resolve([mockExtensionProps, mockExtensionProps2]);
   }
 
-  $activateExtension(extensionPath: string) {
+  $activateExtension() {
     return Promise.resolve();
   }
 

@@ -89,6 +89,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   $clipboardWriteText(text): Thenable<void> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve) => {
       try {
         await this.clipboardService.writeText(text);

@@ -79,6 +79,7 @@ export class Extension extends WithEventBus implements IExtension {
     // 如果用 path, window 下路径为 C:\a，此时直接 parse 会变成 scheme 为 C 的 uri，转换不太对
     // 对于 node 层 extension.scanner 标准下 uri 为 file，纯前端下为自定义实现的 kt-ext，因此可直接使用
     // 不太确定为啥这里的 uri 类型为可选
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.extensionLocation = this.staticResourceService.resolveStaticResource(URI.from(this.uri!)).codeUri;
   }
 
@@ -88,6 +89,7 @@ export class Extension extends WithEventBus implements IExtension {
     // 对于无效内容要重新获取
     if (!this.pkgLocalizedField.get(key)) {
       const nlsValue = replaceNlsField(this.packageJSON[key], this.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.pkgLocalizedField.set(key, nlsValue!);
       return nlsValue || this.packageJSON[key];
     }

@@ -1,4 +1,4 @@
-import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
+import { IExtHostCommands } from '../../../common/vscode';
 import { Emitter, IDisposable } from '@opensumi/ide-core-common';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -19,6 +19,7 @@ export class ExtHostCommon implements IExtHostCommon {
     if (!this.emitters.has(eventName)) {
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const res = await this.emitters.get(eventName)!.fireAndAwait(eventArgs);
     return res;
   }
@@ -29,10 +30,12 @@ export class ExtHostCommon implements IExtHostCommon {
     }
 
     this.proxy.$subscribeEvent(eventName);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const disposer = this.emitters.get(eventName)!.event((eventArgs: any[]) => listener(...eventArgs));
     return {
       dispose: () => {
         disposer.dispose();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (this.emitters.get(eventName)!.listenerSize === 0) {
           this.proxy.$unSubscribeEvent(eventName);
         }
@@ -44,7 +47,6 @@ export class ExtHostCommon implements IExtHostCommon {
 export function createEventAPIFactory(
   extHostCommands: IExtHostCommands,
   kaitianCommon: ExtHostCommon,
-  extension: IExtensionDescription,
 ) {
   return {
     fire: async (eventName: string, ...eventArgs: any[]) =>

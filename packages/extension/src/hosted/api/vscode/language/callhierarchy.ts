@@ -90,6 +90,7 @@ export class CallHierarchyAdapter {
   }
 
   private _cacheAndConvertItem(sessionId: string, item: vscode.CallHierarchyItem): ICallHierarchyItemDto {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const map = this._cache.get(sessionId)!;
     const dto: ICallHierarchyItemDto = {
       _sessionId: sessionId,

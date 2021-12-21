@@ -31,38 +31,40 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
   }
 
   $setTitle(id: string, title: string): void {
-    this.getHandler(id).updateTitle(title);
+    this.getHandler(id)?.updateTitle(title);
   }
 
   $setIcon(id: string, iconPath: string): void {
     const iconClass = this.iconService.fromIcon('', iconPath, IconType.Background, IconShape.Square);
-    this.getHandler(id).setIconClass(iconClass!);
+    if (iconClass) {
+      this.getHandler(id)?.setIconClass(iconClass);
+    }
   }
 
   $setSize(id: string, size: number): void {
-    this.getHandler(id).setSize(size);
+    this.getHandler(id)?.setSize(size);
   }
 
   $activate(id: string): void {
-    this.getHandler(id).activate();
+    this.getHandler(id)?.activate();
   }
 
   $deactivate(id: string): void {
-    this.getHandler(id).deactivate();
+    this.getHandler(id)?.deactivate();
   }
 
   $setBadge(id: string, badge: string): void {
-    this.getHandler(id).setBadge(badge);
+    this.getHandler(id)?.setBadge(badge);
   }
 
   async $setVisible(id: string, visible: boolean) {
     if (visible) {
-      this.getHandler(id).show();
+      this.getHandler(id)?.show();
     } else {
-      if (this.getHandler(id).isActivated()) {
-        this.getHandler(id).deactivate();
+      if (this.getHandler(id)?.isActivated()) {
+        this.getHandler(id)?.deactivate();
       }
-      this.getHandler(id).hide();
+      this.getHandler(id)?.hide();
     }
   }
 
@@ -75,7 +77,9 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
         const disposer = this.eventBus.on(TabBarRegistrationEvent, (e) => {
           if (e.payload.tabBarId === id) {
             const handle = this.layoutService.getTabbarHandler(id);
-            this.bindHandleEvents(handle!);
+            if (handle) {
+              this.bindHandleEvents(handle);
+            }
             disposer.dispose();
           }
         });
@@ -103,7 +107,8 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     const handler = this.layoutService.getTabbarHandler(id);
     if (!handler) {
       this.logger.warn(`MainThreaLayout:没有找到${id}对应的handler`);
+      return;
     }
-    return handler!;
+    return handler;
   }
 }

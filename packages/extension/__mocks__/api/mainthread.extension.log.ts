@@ -11,27 +11,27 @@ export class MainThreadExtensionLog implements IMainThreadExtensionLog {
     this.level = level;
   }
 
-  $verbose(...args: any[]) {
+  $verbose() {
     return Promise.resolve();
   }
 
-  $debug(...args: any[]) {
+  $debug() {
     return Promise.resolve();
   }
 
-  $log(...args: any[]) {
+  $log() {
     return Promise.resolve();
   }
 
-  $warn(...args: any[]) {
+  $warn() {
     return Promise.resolve();
   }
 
-  $error(...args: any[]) {
+  $error() {
     return Promise.resolve();
   }
 
-  $critical(...args: any[]) {
+  $critical() {
     return Promise.resolve();
   }
 

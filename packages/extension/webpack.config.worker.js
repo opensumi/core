@@ -1,9 +1,6 @@
 const path = require('path');
-const fs = require('fs');
 
 const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');
-
-const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'));
 
 module.exports = {
   entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
@@ -13,8 +10,6 @@ module.exports = {
   output: {
     filename: 'worker-host.js',
     path: path.resolve(__dirname, 'lib/'),
-    // library: `extend-browser-worker-${pkg.name}`,
-    // libraryTarget: 'umd'
   },
   target: 'webworker',
   devtool: 'none',

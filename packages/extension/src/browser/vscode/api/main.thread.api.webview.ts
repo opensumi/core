@@ -218,7 +218,8 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
       if (hasChange) {
         this.proxy.$onDidChangeWebviewPanelViewState(id, state);
-        if (state.position !== this.getWebivewPanel(id)!.viewColumn) {
+        if (state.position !== this.getWebivewPanel(id)?.viewColumn) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.getWebivewPanel(id)!.viewColumn = state.position;
           this._persistWebviewPanelMeta(id);
         }
@@ -364,6 +365,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!this.webivewPanels.has(id)) {
       throw new Error('拥有ID ' + id + ' 的 webview 不存在在browser进程中！');
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.webivewPanels.get(id)!;
   }
 
@@ -403,7 +405,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       webviewPanel.editorWebview.icon = '';
     } else {
       webviewPanel.editorWebview.icon =
-        this.iconService.fromIcon('', value, IconType.Background)! + ' background-tab-icon';
+        this.iconService.fromIcon('', value, IconType.Background) + ' background-tab-icon';
     }
   }
 
@@ -462,6 +464,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   private _persistWebviewPanelMeta(id: string) {
     return this.extWebviewStorage.then((storage) => {
       if (this.webivewPanels.has(id)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         storage.set(id, this.getWebivewPanel(id)!.toJSON());
       } else {
         storage.delete(id);
@@ -481,6 +484,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
         }),
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     (await this.statePersister.get(viewType)!)(state);
   }
 
@@ -508,7 +512,8 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   async $postMessageToPlainWebview(id: string, value: any): Promise<boolean> {
     if (this.plainWebviews.has(id)) {
       try {
-        await this.plainWebviews.get(id)!.webview.postMessage(value);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.plainWebviews.get(id)!.webview.postMessage(value);
         return true;
       } catch (e) {
         this.logger.error(e);
@@ -529,7 +534,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!this.plainWebviews.has(id)) {
       throw new Error('No Plain Webview With id ' + id);
     }
-    await this.plainWebviews.get(id)!.webview.loadURL(uri);
+    await this.plainWebviews.get(id)?.webview.loadURL(uri);
   }
 
   async $disposePlainWebview(id: string): Promise<void> {
@@ -661,6 +666,7 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $setWebviewViewDescription(handle: string, value: string | undefined): void {
     const webviewView = this._webviewViews.get(handle);
     if (webviewView) {
@@ -695,8 +701,10 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     cancellationToken: CancellationToken,
   ): IDisposable {
     const disposer = new Disposable();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const webview = this.webviewService.createWebview()!;
     const options = this._resolvers.get(viewType)?.options;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const extension = this._resolvers.get(viewType)!.extension;
     const id = webview.id;
     const webviewView = new WebviewView(id, viewType, extension, webview);
@@ -746,6 +754,7 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $show(handle: string, preserveFocus: boolean): void {
     const webviewView = this._webviewViews.get(handle);
     if (webviewView) {

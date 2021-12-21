@@ -134,7 +134,7 @@ export class ExtHostPreference implements IExtHostPreference {
 
   private toConfigurationChangeEvent(eventData: PreferenceChangeExt[]): ConfigurationChangeEvent {
     return Object.freeze({
-      affectsConfiguration: (section: string, uri?: Uri): boolean => {
+      affectsConfiguration: (section: string): boolean => {
         for (const change of eventData) {
           const tree = change.preferenceName
             .split('.')
@@ -147,7 +147,7 @@ export class ExtHostPreference implements IExtHostPreference {
     });
   }
 
-  getConfiguration(section?: string, resource?: Uri | null, extensionId?: string): WorkspaceConfiguration {
+  getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration {
     resource = resource === null ? undefined : resource;
     const preferences = this.toReadonlyValue(
       section
@@ -260,7 +260,7 @@ export class ExtHostPreference implements IExtHostPreference {
       isObject(target)
         ? new Proxy(target, {
             get: (targ: any, prop: string) => readonlyProxy(targ[prop]),
-            set: (targ: any, prop: string, val: any) => {
+            set: (targ: any, prop: string) => {
               throw new Error(`TypeError: Cannot assign to read only property '${prop}' of object`);
             },
             deleteProperty: (targ: any, prop: string) => {
@@ -269,7 +269,7 @@ export class ExtHostPreference implements IExtHostPreference {
             defineProperty: (targ: any, prop: string) => {
               throw new Error(`TypeError: Cannot define property '${prop}' of a readonly object`);
             },
-            setPrototypeOf: (targ: any) => {
+            setPrototypeOf: () => {
               throw new Error('TypeError: Cannot set prototype for a readonly object');
             },
             isExtensible: () => false,

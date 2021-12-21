@@ -310,6 +310,7 @@ export function fromLanguageSelector(selector: vscode.DocumentSelector): model.L
     return {
       language: (selector as vscode.DocumentFilter).language,
       scheme: (selector as vscode.DocumentFilter).scheme,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pattern: fromGlobPattern((selector as vscode.DocumentFilter).pattern!),
     } as model.LanguageFilter;
   }
@@ -393,6 +394,7 @@ export namespace TextEdit {
 
   export function to(edit: model.TextEdit): types.TextEdit {
     const result = new types.TextEdit(Range.to(edit.range), edit.text);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     result.newEol = (
       typeof edit.eol === 'undefined' ? undefined : EndOfLine.to(edit.eol as unknown as EndOfLineSequence)
     )!;
@@ -830,7 +832,9 @@ export namespace WorkspaceEdit {
         );
       } else {
         result.renameFile(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           URI.revive((edit as model.ResourceFileEditDto).oldUri!),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           URI.revive((edit as model.ResourceFileEditDto).newUri!),
           (edit as model.ResourceFileEditDto).options,
         );
@@ -861,7 +865,6 @@ export namespace DecorationRangeBehavior {
 export namespace GlobPattern {
   export function from(pattern: vscode.GlobPattern): string | types.RelativePattern;
   export function from(pattern: undefined): undefined;
-  export function from(pattern: null): null;
   export function from(
     pattern: vscode.GlobPattern | undefined | null,
   ): string | types.RelativePattern | undefined | null;
@@ -965,7 +968,9 @@ export function fromDocumentSymbol(info: vscode.DocumentSymbol): model.DocumentS
   const result: model.DocumentSymbol = {
     name: info.name,
     detail: info.detail,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     range: fromRange(info.range)!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     selectionRange: fromRange(info.selectionRange)!,
     kind: SymbolKind.fromSymbolKind(info.kind),
     tags: info.tags?.map(SymbolTag.from) ?? [],
@@ -1616,6 +1621,7 @@ export namespace TestItem {
       node = next;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return node!;
   }
 }

@@ -364,6 +364,7 @@ describe('MainThreadEditor Test Suites', () => {
         group: workbenchEditorService.currentEditorGroup,
         resource: (workbenchEditorService.currentResource as IResource) || resource,
         visibleRanges: [new monaco.Range(1, 12, 1, 12)],
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         editorUri: workbenchEditorService.currentResource!.uri!,
       }),
     );

@@ -63,6 +63,8 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     options: { cwd?: string; absolute: boolean },
     excludePatternOrDisregardExcludes: string | false | undefined,
     maxResult: number | undefined,
+    // FIXME handle cancellation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     token: CancellationToken,
   ): Promise<string[]> {
     const fileSearchOptions: IFileSearchService.Options = {

@@ -115,12 +115,20 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     }
   }
 
+  // FIXME implement updateTestRunConfig
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $updateTestRunConfig(controllerId: string, configId: number, update: Partial<ITestRunProfile>): void {
     console.log('Method not implemented.');
   }
+
+  // FIXME implement removeTestProfile
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $removeTestProfile(controllerId: string, configId: number): void {
     console.log('Method not implemented.');
   }
+
+  // FIXME implement runTests
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
     console.log('Method not implemented.');
     return Promise.resolve('');
@@ -151,7 +159,7 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     console.log('$appendTestMessagesInRun', runId, taskId, testId, messages);
   }
 
-  $appendOutputToRun(runId: string, taskId: string, output: string, location?: ILocationDto, testId?: string): void {
+  $appendOutputToRun(runId: string, taskId: string, output: string, location?: ILocationDto): void {
     console.log('$appendOutputToRun', runId, taskId, output, location);
   }
 
@@ -167,10 +175,14 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     console.log('$finishedTestRunTask', runId, taskId);
   }
 
+  // FIXME implement startedExtensionTestRun
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $startedExtensionTestRun(req: ExtensionRunTestsRequest): void {
     console.log('Method not implemented.');
   }
 
+  // FIXME implement finishedExtensionTestRun
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $finishedExtensionTestRun(runId: string): void {
     console.log('Method not implemented.');
   }

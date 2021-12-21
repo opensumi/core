@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { URI } from '@opensumi/ide-core-common';
-import { FileChangeType, FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
+import { FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
 import {
   convertToVSCFileStat,
   ExtHostFileSystem,
@@ -52,63 +53,16 @@ describe('VSCFileSystem', () => {
   });
 });
 
-describe('FileSystemWatcher', () => {
-  const mockId = 100;
-  const calledMap: Map<string, any[]> = new Map();
-  const mocExtHostFs = new Proxy(
-    {
-      onDidChangeCallback: (args: any) => {},
-      onDidChange(onDidChangeCallback) {
-        this.onDidChangeCallback = onDidChangeCallback;
-        return {
-          dispose() {},
-        };
-      },
-    },
-    {
-      get: (target, propKey, receiver) => {
-        if (propKey === 'onDidChangeCallback' || propKey === 'onDidChange') {
-          return target[propKey];
-        }
-
-        if (propKey === 'subscribeWatcher' || propKey === 'unsubscribeWatcher') {
-          return (...args) => {
-            calledMap.set(String(propKey), args);
-
-            return {
-              then(callback) {
-                callback && callback(mockId);
-              },
-            };
-          };
-        }
-
-        return (...args) => {
-          calledMap.set(String(propKey), args);
-        };
-      },
-    },
-  );
-
-  it.skip('Addition, deletion and modification events should be normal.', () => {
-    const uri = URI.file('/root/test.txt');
-  });
-
-  it.skip('Dispose should receive id.', () => {});
-});
-
 describe('ExtHostFileSystem', () => {
   const calledMap: Map<string, any[]> = new Map();
-  const mockId = 100;
   const uri = URI.file('/root/test/');
-  const mockOptions: any = { mockOptions: 'mockOptions' };
   const mockRpcProtocol = {
     getProxy() {
       return new Proxy(
         {},
         {
           get:
-            (target, propKey, receiver) =>
+            (target, propKey) =>
             (...args) => {
               calledMap.set(String(propKey), args);
             },
@@ -133,7 +87,7 @@ describe('ExtHostFileSystem', () => {
   const extHostFs = new ExtHostFileSystem(
     mockRpcProtocol as any,
     {
-      $acceptProviderInfos: jest.fn((scheme: string, capabilities: number | null) => {}),
+      $acceptProviderInfos: jest.fn(() => {}),
     } as any,
   );
 
@@ -164,6 +118,7 @@ describe('ExtHostFileSystem', () => {
 
   it.skip('getStat needs to convert VSCode format stat to kt format.', async () => {
     extHostFs.registerFileSystemProvider('testStat', mockFsProvider);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const expected: FileStat = {
       uri: uri.toString(),
       lastModification: 1,

@@ -34,14 +34,7 @@ import {
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
-import {
-  SCMRawResourceSplices,
-  SCMRawResource,
-  SCMRawResourceSplice,
-  IMainThreadSCMShape,
-  IExtHostSCMShape,
-  CommandDto,
-} from '../../../common/vscode/scm';
+import { SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice, IMainThreadSCMShape, IExtHostSCMShape, CommandDto } from '../../../common/vscode/scm';
 import { ExtHostCommands } from './ext.host.command';
 
 export type IMainContext = IRPCProtocol;
@@ -61,10 +54,7 @@ function getIconPath(decorations?: vscode.SourceControlResourceThemableDecoratio
   return undefined;
 }
 
-function compareResourceThemableDecorations(
-  a: vscode.SourceControlResourceThemableDecorations,
-  b: vscode.SourceControlResourceThemableDecorations,
-): number {
+function compareResourceThemableDecorations(a: vscode.SourceControlResourceThemableDecorations, b: vscode.SourceControlResourceThemableDecorations): number {
   if (!a.iconPath && !b.iconPath) {
     return 0;
   } else if (!a.iconPath) {
@@ -78,10 +68,7 @@ function compareResourceThemableDecorations(
   return comparePaths(aPath, bPath);
 }
 
-function compareResourceStatesDecorations(
-  a: vscode.SourceControlResourceDecorations,
-  b: vscode.SourceControlResourceDecorations,
-): number {
+function compareResourceStatesDecorations(a: vscode.SourceControlResourceDecorations, b: vscode.SourceControlResourceDecorations): number {
   let result = 0;
 
   if (a.strikeThrough !== b.strikeThrough) {
@@ -155,10 +142,7 @@ function compareArgs(a: any[], b: any[]): boolean {
 
 function commandEquals(a: vscode.Command, b: vscode.Command): boolean {
   return (
-    a.command === b.command &&
-    a.title === b.title &&
-    a.tooltip === b.tooltip &&
-    (a.arguments && b.arguments ? compareArgs(a.arguments, b.arguments) : a.arguments === b.arguments)
+    a.command === b.command && a.title === b.title && a.tooltip === b.tooltip && (a.arguments && b.arguments ? compareArgs(a.arguments, b.arguments) : a.arguments === b.arguments)
   );
 }
 
@@ -176,10 +160,7 @@ function commandListEquals(a: vscode.Command[], b: vscode.Command[]): boolean {
   return true;
 }
 
-export type IValidateInput = (
-  value: string,
-  cursorPosition: number,
-) => vscode.ProviderResult<vscode.SourceControlInputBoxValidation | undefined | null>;
+export type IValidateInput = (value: string, cursorPosition: number) => vscode.ProviderResult<vscode.SourceControlInputBoxValidation | undefined | null>;
 
 export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
   private _value = '';
@@ -250,11 +231,7 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
     this._proxy.$setInputBoxVisibility(this._sourceControlHandle, visible);
   }
 
-  constructor(
-    private _extension: IExtensionDescription,
-    private _proxy: IMainThreadSCMShape,
-    private _sourceControlHandle: number,
-  ) {
+  constructor(private _extension: IExtensionDescription, private _proxy: IMainThreadSCMShape, private _sourceControlHandle: number) {
     // noop
   }
 
@@ -273,14 +250,8 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
   private _resourceHandlePool = 0;
   private _resourceStates: vscode.SourceControlResourceState[] = [];
 
-  private _resourceStatesMap: Map<ResourceStateHandle, vscode.SourceControlResourceState> = new Map<
-    ResourceStateHandle,
-    vscode.SourceControlResourceState
-  >();
-  private _resourceStatesCommandsMap: Map<ResourceStateHandle, vscode.Command> = new Map<
-    ResourceStateHandle,
-    vscode.Command
-  >();
+  private _resourceStatesMap: Map<ResourceStateHandle, vscode.SourceControlResourceState> = new Map<ResourceStateHandle, vscode.SourceControlResourceState>();
+  private _resourceStatesCommandsMap: Map<ResourceStateHandle, vscode.Command> = new Map<ResourceStateHandle, vscode.Command>();
   private _resourceStatesDisposablesMap = new Map<ResourceStateHandle, IDisposable>();
 
   private _onDidUpdateResourceStates = new Emitter<void>();
@@ -322,13 +293,7 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
 
   readonly handle = ExtHostSourceControlResourceGroup._handlePool++;
 
-  constructor(
-    private _proxy: IMainThreadSCMShape,
-    private _commands: ExtHostCommands,
-    private _sourceControlHandle: number,
-    private _id: string,
-    private _label: string,
-  ) {
+  constructor(private _proxy: IMainThreadSCMShape, private _commands: ExtHostCommands, private _sourceControlHandle: number, private _id: string, private _label: string) {
     this._proxy.$registerGroup(_sourceControlHandle, this.handle, _id, _label);
   }
 
@@ -409,10 +374,7 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
       return { start: diff.start, deleteCount: diff.deleteCount, toInsert };
     });
 
-    const rawResourceSplices = splices.map(
-      ({ start, deleteCount, toInsert }) =>
-        [start, deleteCount, toInsert.map((i) => i.rawResource)] as SCMRawResourceSplice,
-    );
+    const rawResourceSplices = splices.map(({ start, deleteCount, toInsert }) => [start, deleteCount, toInsert.map((i) => i.rawResource)] as SCMRawResourceSplice);
 
     const reverseSplices = splices.reverse();
 
@@ -438,10 +400,7 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
 
 class ExtHostSourceControl implements vscode.SourceControl {
   private static _handlePool = 0;
-  private _groups: Map<GroupHandle, ExtHostSourceControlResourceGroup> = new Map<
-    GroupHandle,
-    ExtHostSourceControlResourceGroup
-  >();
+  private _groups: Map<GroupHandle, ExtHostSourceControlResourceGroup> = new Map<GroupHandle, ExtHostSourceControlResourceGroup>();
 
   get id(): string {
     return this._id;
@@ -529,9 +488,8 @@ class ExtHostSourceControl implements vscode.SourceControl {
 
     this._statusBarCommands = statusBarCommands;
 
-    const internal = (statusBarCommands || []).map((c) =>
-      this._commands.converter.toInternal(c, this._statusBarDisposables.value!),
-    ) as CommandDto[];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const internal = (statusBarCommands || []).map((c) => this._commands.converter.toInternal(c, this._statusBarDisposables.value!)) as CommandDto[];
     this._proxy.$updateSourceControl(this.handle, { statusBarCommands: internal });
   }
 
@@ -675,12 +633,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
     });
   }
 
-  createSourceControl(
-    extension: IExtensionDescription,
-    id: string,
-    label: string,
-    rootUri: vscode.Uri | undefined,
-  ): vscode.SourceControl {
+  createSourceControl(extension: IExtensionDescription, id: string, label: string, rootUri: vscode.Uri | undefined): vscode.SourceControl {
     this.logger.log('ExtHostSCM#createSourceControl', extension.id, id, label, rootUri);
 
     const handle = ExtHostSCM._handlePool++;
@@ -703,27 +656,17 @@ export class ExtHostSCM implements IExtHostSCMShape {
     return sourceControl && sourceControl.inputBox;
   }
 
-  $provideOriginalResource(
-    sourceControlHandle: number,
-    uriComponents: UriComponents,
-    token: CancellationToken,
-  ): Promise<UriComponents | null> {
+  $provideOriginalResource(sourceControlHandle: number, uriComponents: UriComponents, token: CancellationToken): Promise<UriComponents | null> {
     const uri = URI.revive(uriComponents);
     this.logger.log('ExtHostSCM#$provideOriginalResource', sourceControlHandle, uri.toString());
 
     const sourceControl = this._sourceControls.get(sourceControlHandle);
 
-    if (
-      !sourceControl ||
-      !sourceControl.quickDiffProvider ||
-      !sourceControl.quickDiffProvider.provideOriginalResource
-    ) {
+    if (!sourceControl || !sourceControl.quickDiffProvider || !sourceControl.quickDiffProvider.provideOriginalResource) {
       return Promise.resolve(null);
     }
 
-    return asPromise(() =>
-      sourceControl.quickDiffProvider!.provideOriginalResource!(uri, token),
-    ).then<UriComponents | null>((r) => r || null);
+    return asPromise(() => sourceControl.quickDiffProvider?.provideOriginalResource?.(uri, token)).then<UriComponents | null>((r) => r || null);
   }
 
   $onInputBoxValueChange(sourceControlHandle: number, value: string): Promise<void> {
@@ -739,12 +682,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
     return Promise.resolve(undefined);
   }
 
-  $executeResourceCommand(
-    sourceControlHandle: number,
-    groupHandle: number,
-    handle: number,
-    preserveFocus: boolean,
-  ): Promise<void> {
+  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number, preserveFocus: boolean): Promise<void> {
     this.logger.log('ExtHostSCM#$executeResourceCommand', sourceControlHandle, groupHandle, handle);
 
     const sourceControl = this._sourceControls.get(sourceControlHandle);
@@ -762,11 +700,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
     return group.$executeResourceCommand(handle, preserveFocus);
   }
 
-  $validateInput(
-    sourceControlHandle: number,
-    value: string,
-    cursorPosition: number,
-  ): Promise<[string, number] | undefined> {
+  $validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string, number] | undefined> {
     this.logger.log('ExtHostSCM#$validateInput', sourceControlHandle);
 
     const sourceControl = this._sourceControls.get(sourceControlHandle);

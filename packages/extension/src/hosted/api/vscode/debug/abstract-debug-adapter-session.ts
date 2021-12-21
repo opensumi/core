@@ -19,6 +19,7 @@ export class DirectDebugAdapter extends AbstractDebugAdapter {
   }
 
   start(channel: NodeJS.ReadableStream, outStream: NodeJS.WritableStream): void {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.implementation.start(channel, outStream);
   }
@@ -66,12 +67,12 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     this.channel.onClose(() => (this.channel = undefined));
 
     this.debugStreamConnection.output.on('data', (data: Buffer) => this.handleData(data));
-    this.debugStreamConnection.output.on('close', () => this.onDebugAdapterExit(1, undefined));
+    this.debugStreamConnection.output.on('close', () => this.onDebugAdapterExit(1));
     this.debugStreamConnection.output.on('error', (error) => this.onDebugAdapterError(error));
     this.debugStreamConnection.input.on('error', (error) => this.onDebugAdapterError(error));
   }
 
-  protected onDebugAdapterExit(exitCode: number, signal: string | undefined): void {
+  protected onDebugAdapterExit(exitCode: number): void {
     const event: DebugProtocol.ExitedEvent = {
       type: 'event',
       event: 'exited',

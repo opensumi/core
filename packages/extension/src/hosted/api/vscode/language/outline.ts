@@ -85,7 +85,7 @@ export class OutlineAdapter {
           OutlineAdapter.containsRange(parent.range, element.range) &&
           !OutlineAdapter.equalsRange(parent.range, element.range)
         ) {
-          parent.children!.push(element);
+          parent.children?.push(element);
           parentStack.push(element);
           break;
         }

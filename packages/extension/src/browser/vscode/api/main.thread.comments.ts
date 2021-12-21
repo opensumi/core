@@ -78,7 +78,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
           if (isUndefined(handle)) {
             return;
           }
-          const commentController = this._commentControllers.get(handle!);
+          const commentController = this._commentControllers.get(handle);
           if (!commentController) {
             throw new Error('unknown controller');
           }
@@ -412,6 +412,7 @@ export class MainThreadCommentThread implements CommentThread {
       Object.prototype.hasOwnProperty.call(changes, value);
 
     if (modified('range')) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.range = changes.range!;
     }
     if (modified('label')) {
@@ -427,6 +428,7 @@ export class MainThreadCommentThread implements CommentThread {
       this.collapsibleState = changes.collapseState;
     }
     if (modified('canReply')) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.canReply = changes.canReply!;
     }
   }

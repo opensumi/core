@@ -161,9 +161,11 @@ export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined)
       } else {
         const resourceFileEdit = edit as unknown as IResourceFileEdit;
         resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newUri
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ? URI.from((edit as model.ResourceFileEditDto).newUri!)
           : undefined;
         resourceFileEdit.oldResource = (edit as model.ResourceFileEditDto).oldUri
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ? URI.from((edit as model.ResourceFileEditDto).oldUri!)
           : undefined;
         // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件

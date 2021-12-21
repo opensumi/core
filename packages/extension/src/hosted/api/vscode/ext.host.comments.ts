@@ -220,7 +220,11 @@ export class ExtHostComments implements IExtHostComments {
     }
 
     const document = this._documents.getDocument(URI.revive(uriComponents));
-    return asPromise(() => commentController.commentingRangeProvider!.provideCommentingRanges(document!, token)).then(
+    if(!document) {
+      return Promise.resolve(undefined);
+    }
+
+    return asPromise(() => commentController.commentingRangeProvider?.provideCommentingRanges(document, token)).then(
       (ranges) => (ranges ? ranges.map((x) => extHostTypeConverter.fromRange(x)) : undefined),
     );
   }
@@ -396,10 +400,12 @@ export class ExtHostCommentThread implements vscode.CommentThread {
   }
 
   get threadId(): string {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this._id!;
   }
 
   get id(): string {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this._id!;
   }
 
@@ -477,6 +483,7 @@ export class ExtHostCommentThread implements vscode.CommentThread {
   private _collapseState?: vscode.CommentThreadCollapsibleState;
 
   get collapsibleState(): vscode.CommentThreadCollapsibleState {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this._collapseState!;
   }
 
@@ -576,6 +583,7 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     this._proxy.$updateCommentThread(
       this._commentController.handle,
       this.handle,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this._id!,
       this._uri,
       formattedModifications,
@@ -608,6 +616,7 @@ function convertToModeComment(
   vscodeComment: vscode.Comment,
   commentsMap: Map<vscode.Comment, number>,
 ): models.Comment {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   let commentUniqueId = commentsMap.get(vscodeComment)!;
   if (!commentUniqueId) {
     commentUniqueId = ++thread.commentHandle;

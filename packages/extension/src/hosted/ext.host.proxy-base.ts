@@ -158,12 +158,11 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.reconnectingTimer = global.setTimeout(() => {
       console.warn('reconnecting ext host server');
       this.createSocket();
-    }, this.options.retryTime!);
+    }, this.options.retryTime || 1000);
   };
 
   private connectOnEvent = () => {
     console.info('connect success');
-    // this.previouslyConnected = true;
     global.clearTimeout(this.reconnectingTimer);
     this.setConnection();
     this.setRPCMethods();
@@ -202,6 +201,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private connect = (): IDisposable => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.socket.connect(this.options.socketConnectOpts!);
     return {
       dispose: () => {

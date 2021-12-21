@@ -35,14 +35,14 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       id: 'test:builtinCommand:unpermitted',
       handler: {
         handler: () => 'You shall not pass!',
-        isPermitted: (extensionInfo: IExtensionInfo) => false,
+        isPermitted: () => false,
       },
     },
     {
       id: 'test:builtinCommand:permitted',
       handler: {
         handler: () => 'permitted!',
-        isPermitted: (extensionInfo: IExtensionInfo) => true,
+        isPermitted: () => true,
       },
     },
   ];

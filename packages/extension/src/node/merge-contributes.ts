@@ -19,7 +19,7 @@ export function mergeContributes(
     return contributes || {};
   }
 
-  return mergeWith(sumiContributes, contributes, (value, srcValue, key, object, source) => {
+  return mergeWith(sumiContributes, contributes, (value, srcValue, key) => {
     if (value === undefined || srcValue === undefined) {
       return value || srcValue;
     }

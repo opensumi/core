@@ -54,7 +54,7 @@ export class KaitianExtensionToolbarService {
       {
         execute: (id: string, state: string, title?: string) => {
           if (this.btnDelegates.has(id)) {
-            this.btnDelegates.get(id)!.setState(state, title);
+            this.btnDelegates.get(id)?.setState(state, title);
           }
         },
       },
@@ -97,7 +97,7 @@ export class KaitianExtensionToolbarService {
       {
         execute: (id: string, state: string) => {
           if (this.selectDelegates.has(id)) {
-            this.selectDelegates.get(id)!.setState(state);
+            this.selectDelegates.get(id)?.setState(state);
           }
         },
       },
@@ -116,10 +116,10 @@ export class KaitianExtensionToolbarService {
                   extensionBasePath,
                   o.iconPath,
                   o.iconMaskMode ? IconType.Mask : IconType.Background,
-                )!;
+                );
               }
             });
-            this.selectDelegates.get(id)!.setOptions(options);
+            this.selectDelegates.get(id)?.setOptions(options);
           }
         },
       },
@@ -132,7 +132,7 @@ export class KaitianExtensionToolbarService {
       {
         execute: (id: string, value: any) => {
           if (this.selectDelegates.has(id)) {
-            this.selectDelegates.get(id)!.setSelect(value);
+            this.selectDelegates.get(id)?.setSelect(value);
           }
         },
       },
@@ -149,7 +149,7 @@ export class KaitianExtensionToolbarService {
             this.connected.add(id);
           }
           if (this.selectDelegates.get(id)) {
-            return this.selectDelegates.get(id)!.getValue();
+            return this.selectDelegates.get(id)?.getValue();
           }
         },
       },
@@ -162,7 +162,7 @@ export class KaitianExtensionToolbarService {
       {
         execute: (id: string, style) => {
           if (this.btnDelegates.has(id)) {
-            this.btnDelegates.get(id)!.showPopOver(style);
+            this.btnDelegates.get(id)?.showPopOver(style);
           }
         },
       },
@@ -175,7 +175,7 @@ export class KaitianExtensionToolbarService {
       {
         execute: (id: string) => {
           if (this.btnDelegates.has(id)) {
-            this.btnDelegates.get(id)!.hidePopOver();
+            this.btnDelegates.get(id)?.hidePopOver();
           }
         },
       },
@@ -202,6 +202,7 @@ export class KaitianExtensionToolbarService {
     const styles: { [key: string]: IToolbarActionBtnState } = {};
     if (contribution.states) {
       Object.keys(contribution.states).forEach((state) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const o = contribution.states![state];
         styles[state] = {
           ...o,
@@ -211,7 +212,7 @@ export class KaitianExtensionToolbarService {
             extensionBasePath,
             o.iconPath,
             o.iconMaskMode ? IconType.Mask : IconType.Background,
-          )!;
+          );
         }
       });
     }
@@ -232,7 +233,7 @@ export class KaitianExtensionToolbarService {
           extensionBasePath,
           contribution.iconPath,
           contribution.iconMaskMode ? IconType.Mask : IconType.Background,
-        )!,
+        ) || '',
         // 这里放一个 LoadingView 用于占位，因为 contributes 执行时插件还没有激活完成
         popoverComponent: contribution.popoverComponent
           ? this.getPopoverComponent(`${extensionId}:${contribution.popoverComponent}`, contribution)
@@ -249,6 +250,7 @@ export class KaitianExtensionToolbarService {
                 await this.eventBus.fireAndAwait(
                   new ExtensionActivateEvent({ topic: 'onAction', data: contribution.id }),
                 );
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.commandService.executeCommand(contribution.command!);
               });
             }
@@ -287,7 +289,7 @@ export class KaitianExtensionToolbarService {
           extensionBasePath,
           o.iconPath,
           o.iconMaskMode ? IconType.Mask : IconType.Background,
-        )!;
+        );
       }
     });
     return this.toolbarRegistry.registerToolbarAction({
@@ -302,6 +304,7 @@ export class KaitianExtensionToolbarService {
         defaultValue: contribution.defaultValue,
         equals: contribution.optionEqualityKey
           ? (v1, v2) => {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const key = contribution.optionEqualityKey!;
               if (!v1 || !v2) {
                 return v1 === v2;
@@ -315,6 +318,7 @@ export class KaitianExtensionToolbarService {
             this.selectDelegates.set(id, delegate);
             if (contribution.command) {
               delegate.onSelect((v) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.commandService.executeCommand(contribution.command!, v);
               });
             }

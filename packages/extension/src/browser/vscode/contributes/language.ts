@@ -14,6 +14,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   private readonly textMateService: ITextmateTokenizerService;
 
   async contribute() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await this.textMateService.registerLanguages(this.json, URI.from(this.extension.uri!));
   }
 

@@ -68,7 +68,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
         this._onEditorCreated.fire(created.id);
         if (!change.actived && created.id === this._activeEditorId) {
           if (this.activeEditor) {
-            this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
+            this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor?.textEditor : undefined);
           }
         }
       });
@@ -87,7 +87,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       } else {
         this._activeEditorId = change.actived;
         if (this.activeEditor) {
-          this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
+          this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor?.textEditor : undefined);
         }
       }
     }
@@ -100,12 +100,14 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
   async openResource(uri: Uri, options: IResourceOpenOptions): Promise<vscode.TextEditor> {
     const id = await this._proxy.$openResource(uri.toString(), options);
     if (this.getEditor(id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.getEditor(id)!.textEditor;
     } else {
       return new Promise((resolve, reject) => {
         let resolved = false;
         const disposer = this.onEditorCreated((created) => {
           if (created === id && this.getEditor(id)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             resolve(this.getEditor(id)!.textEditor);
             resolved = true;
             disposer.dispose();
@@ -157,7 +159,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   $acceptPropertiesChange(change: IEditorStatusChangeDTO) {
     if (this._editors.get(change.id)) {
-      this._editors.get(change.id)!.acceptStatusChange(change);
+      this._editors.get(change.id)?.acceptStatusChange(change);
     }
   }
 
@@ -328,11 +330,13 @@ export class TextEditorData {
           { startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: column },
         ];
       } else if (location instanceof Range) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         _location = [TypeConverts.Range.from(location)!];
       } else {
         _location = [];
         for (const posOrRange of location) {
           if (posOrRange instanceof Range) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             _location.push(TypeConverts.Range.from(posOrRange)!);
           } else {
             const { lineNumber, column } = TypeConverts.fromPosition(posOrRange);
@@ -366,6 +370,7 @@ export class TextEditorData {
         resolved = (rangesOrOptions as vscode.Range[]).map((r) => ({
           range: TypeConverts.Range.from(r),
         }));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
         resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => ({
           range: TypeConverts.Range.from(r.range),
@@ -379,7 +384,7 @@ export class TextEditorData {
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType | undefined): void {
     this.editorService._proxy.$revealRange(this.id, TypeConverts.Range.from(range), revealType);
   }
-  show(column?: vscode.ViewColumn | undefined): void {
+  show(): void {
     getDebugLogger().warn('TextEditor.show is Deprecated');
   }
   hide(): void {
@@ -429,6 +434,7 @@ export class TextEditorData {
       this._acceptViewColumn(change.viewColumn);
       this.editorService._onDidChangeTextEditorViewColumn.fire({
         textEditor: this.textEditor,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         viewColumn: this.viewColumn!,
       });
     }
@@ -447,6 +453,7 @@ export class TextEditorData {
 
   get textEditor(): vscode.TextEditor {
     if (!this._textEditor) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const data = this;
       this._textEditor = {
         // vscode 有这个属性，但是接口未定义
@@ -454,6 +461,7 @@ export class TextEditorData {
           return data.id;
         },
         get document() {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           return data.documents.getDocument(data.uri)!;
         },
         set selection(val) {

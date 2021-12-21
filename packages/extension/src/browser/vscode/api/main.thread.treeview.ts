@@ -200,10 +200,14 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     }
   }
 
+  // FIXME implement setDescription
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $setDescription(treeViewId: string, description: string) {
     // TODO: 框架的 Panel 暂无存储 descrition 信息，暂时为空实现
   }
 
+  // FIXME implement setMessage
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $setMessage(treeViewId: string, description: string) {
     // TODO: 框架的 Panel 暂无存储 message 信息，暂时为空实现
   }
@@ -387,6 +391,7 @@ export class TreeViewDataProvider extends Tree {
 
   private getInlineMenuNodes(viewItemValue: string) {
     if (this.cachedMenu.has(viewItemValue)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.cachedMenu.get(viewItemValue)!;
     }
 

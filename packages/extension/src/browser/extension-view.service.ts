@@ -96,6 +96,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     return;
   }
   // noop
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async $activateExtension(extensionPath: string): Promise<void> {
     return;
   }
@@ -169,7 +170,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     return ViewExtProcessService.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
 
-  public async activeExtension(extension: IExtension, protocol: IRPCProtocol) {
+  public async activeExtension(extension: IExtension) {
     const { extendConfig, packageJSON, contributes } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
@@ -194,6 +195,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
     const browserModuleUri = new URI(
       extension.extensionLocation.with({
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         path: posix.join(extension.extensionLocation.path, contributes.browserMain!),
       }),
     );
@@ -273,6 +275,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
         );
         this.registerBrowserComponent(
           this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           rawExtension!,
         );
       } else {
@@ -281,6 +284,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
           extension,
           true /** use export default ... */,
         );
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension), rawExtension!);
       }
     } catch (err) {
@@ -373,7 +377,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
           return (componentService) => {
             const service = {};
             for (const key in componentService) {
-              if (componentService.hasOwnProperty(key)) {
+              if (Object.prototype.hasOwnProperty.call(componentService, key)) {
                 service[`$${key}`] = componentService[key];
               }
             }

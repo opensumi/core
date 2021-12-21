@@ -34,7 +34,7 @@ export const ExtensionWebviewView: React.FC<{ viewId: string }> = ({ viewId }) =
         eventBus.fire(
           new WebviewViewShouldShowEvent({
             viewType: viewId,
-            container: containerRef.current!,
+            container: containerRef.current,
             title: '', // mainLayoutService.getTabbarHandler(viewId).titl
             cancellationToken: cancellationTokenSource.token,
             disposer,

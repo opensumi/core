@@ -4,18 +4,13 @@ import { mockExtensions, mockExtensionProps } from './extensions';
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
-  getElectronMainThreadListenPath(clientId: string): Promise<string> {
+  getElectronMainThreadListenPath(): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(
-    scan: string[],
-    extensionCandidate: string[],
-    localization: string,
-    extraMetaData: IExtraMetaData,
-  ): Promise<IExtensionMetaData[]> {
+  getAllExtensions(): Promise<IExtensionMetaData[]> {
     return Promise.resolve(mockExtensions);
   }
-  createProcess(clientId: string): Promise<void> {
+  createProcess(): Promise<void> {
     return Promise.resolve();
   }
   getExtension(
@@ -34,10 +29,10 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   infoProcessCrash(): void {
     throw new Error('Method not implemented.');
   }
-  disposeClientExtProcess(clientId: string, info: boolean): Promise<void> {
+  disposeClientExtProcess(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void> {
+  updateLanguagePack(): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

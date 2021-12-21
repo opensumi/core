@@ -18,9 +18,12 @@ export class EvaluatableExpressionAdapter {
     token: CancellationToken,
   ): Promise<IEvaluatableExpression | undefined> {
     const doc = this._documents.getDocument(resource);
+    if (!doc) {
+      return Promise.resolve(undefined);
+    }
     const pos = Converter.toPosition(position);
 
-    return asPromise(() => this._provider.provideEvaluatableExpression(doc!, pos, token)).then((value) => {
+    return asPromise(() => this._provider.provideEvaluatableExpression(doc, pos, token)).then((value) => {
       if (value) {
         return Converter.EvaluatableExpression.from(value);
       }

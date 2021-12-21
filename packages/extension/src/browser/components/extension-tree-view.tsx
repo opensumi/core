@@ -108,7 +108,7 @@ export const ExtensionTabBarTreeView = observer(
       handleContextMenu(ev);
     };
 
-    const handleOuterClick = (ev: React.MouseEvent) => {
+    const handleOuterClick = () => {
       // 空白区域点击，取消焦点状态
       const { enactiveNodeDecoration } = model;
       enactiveNodeDecoration();

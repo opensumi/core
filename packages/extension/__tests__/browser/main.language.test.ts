@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
@@ -689,10 +690,7 @@ describe('ExtHostLanguageFeatures', () => {
           provideDocumentColors(): vscode.ColorInformation[] {
             return [new types.ColorInformation(new types.Range(0, 0, 0, 20), new types.Color(0.1, 0.2, 0.3, 0.4))];
           }
-          provideColorPresentations(
-            color: vscode.Color,
-            context: { range: vscode.Range; document: vscode.TextDocument },
-          ): vscode.ColorPresentation[] {
+          provideColorPresentations(): vscode.ColorPresentation[] {
             return [];
           }
         })(),
@@ -816,7 +814,7 @@ An error case:
   tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
   tokenModifiersLegend.forEach((tokenModifier, index) => tokenModifiers.set(tokenModifier, index));
   class TestSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
-    async provideDocumentSemanticTokens(document) {
+    async provideDocumentSemanticTokens() {
       const allTokens = this._parseText(textDocument);
       const builder = new types.SemanticTokensBuilder();
       allTokens.forEach((token) => {
@@ -941,7 +939,7 @@ An error case:
         token: IEditorDocumentModelService,
         useValue: {
           getModelReference: () => {},
-          createModelReference: (uri) =>
+          createModelReference: () =>
             Promise.resolve({
               instance: {
                 uri: model.uri,
@@ -966,8 +964,6 @@ An error case:
       class TestCallHierarchyProvider implements vscode.CallHierarchyProvider {
         prepareCallHierarchy(
           document: vscode.TextDocument,
-          position: vscode.Position,
-          token: vscode.CancellationToken,
         ): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
           const range = new types.Range(0, 0, 0, 0);
           return new types.CallHierarchyItem(
@@ -981,14 +977,12 @@ An error case:
         }
         provideCallHierarchyIncomingCalls(
           item: vscode.CallHierarchyItem,
-          token: vscode.CancellationToken,
         ): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
           const range = new types.Range(0, 0, 0, 0);
           return [new types.CallHierarchyIncomingCall(item, [range])];
         }
         provideCallHierarchyOutgoingCalls(
           item: vscode.CallHierarchyItem,
-          token: vscode.CancellationToken,
         ): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
           const range = new types.Range(0, 0, 0, 0);
           return [
@@ -1086,11 +1080,7 @@ An error case:
   // #region registerLinkedEditingRangeProvider
   it('registerLinkedEditingRangeProvider', async () => {
     class TestLinkedEditingRangeProvider implements vscode.LinkedEditingRangeProvider {
-      provideLinkedEditingRanges(
-        document: vscode.TextDocument,
-        position: vscode.Position,
-        token: vscode.CancellationToken,
-      ): vscode.ProviderResult<vscode.LinkedEditingRanges> {
+      provideLinkedEditingRanges(): vscode.ProviderResult<vscode.LinkedEditingRanges> {
         return {
           ranges: [new types.Range(0, 0, 0, 1)],
           wordPattern: /[a-eA-E]+/,

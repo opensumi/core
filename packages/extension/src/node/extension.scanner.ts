@@ -148,6 +148,7 @@ export class ExtensionScanner {
   static getExtensionIdByExtensionPath(extensionPath: string, version?: string) {
     const regExp = version ? new RegExp(`^(.+?)\\.(.+?)-(${version})$`) : /^(.+?)\.(.+?)-(\d+\.\d+\.\d+)$/;
     const baseName = path.basename(extensionPath);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const nameStr = baseName.endsWith('.asar') ? baseName.split('.asar').shift()! : baseName;
     const match = regExp.exec(nameStr);
 
@@ -229,6 +230,7 @@ export class ExtensionScanner {
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
     if (this.availableExtensions.has(extension.id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const existedExtension = this.availableExtensions.get(extension.id)!;
       if (!existedExtension.packageJSON) {
         return true;
