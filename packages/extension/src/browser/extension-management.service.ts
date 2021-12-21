@@ -78,6 +78,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
       typeof _upgrade === 'boolean'
         ? {
             upgrade: _upgrade,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             extensionPath: path!,
             oldExtensionPath: _oldExtensionPath,
             isBuiltin: false,
@@ -97,6 +98,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
     );
     if (extensionInstance) {
       if (upgrade) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.disableExtension(oldExtensionPath!);
       }
 

@@ -93,6 +93,7 @@ describe('Extension Client Serivce', () => {
   describe('get extension', () => {
     it('should get first extension', async () => {
       const extension = await extensionNodeClient.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', {});
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(path.basename(extension!.realPath)).toBe(testExtPath);
     });
 
@@ -102,7 +103,7 @@ describe('Extension Client Serivce', () => {
       });
       const readme = fs.readFileSync(path.join(extensionDir, testExtPath, 'README.md'), 'utf8').toString();
 
-      expect(extension!.extraMetadata.readme).toBe(readme);
+      expect(extension?.extraMetadata.readme).toBe(readme);
     });
   });
 
@@ -122,7 +123,7 @@ describe('Extension Client Serivce', () => {
       // const content = fs.readFileSync(lpPath, { encoding: 'utf8' });
 
       expect(!!process.env['VSCODE_NLS_CONFIG']);
-      const nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG']!);
+      const nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG'] || '');
       expect(nlsConfig.locale).toBe('zh-cn');
       done();
     });

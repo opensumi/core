@@ -39,7 +39,7 @@ export class ColorProviderAdapter {
 
       const colorInfos: RawColorInfo[] = colors.map((colorInfo) => ({
         color: Converter.fromColor(colorInfo.color),
-        range: Converter.fromRange(colorInfo.range)!,
+        range: Converter.fromRange(colorInfo.range),
       }));
 
       return colorInfos;

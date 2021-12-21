@@ -160,7 +160,9 @@ export function createCustomEditorComponent(
           const mounter = new WebviewMounter(
             webview,
             container,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             document.getElementById('workbench-editor')!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             document.getElementById('workbench-editor')!,
           );
           webview.onRemove(() => {

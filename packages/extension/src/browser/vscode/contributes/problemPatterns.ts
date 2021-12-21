@@ -108,6 +108,7 @@ export namespace PatternSchemas {
 
   export const NamedProblemPattern: IJSONSchema = deepClone(ProblemPattern);
   NamedProblemPattern.properties = deepClone(NamedProblemPattern.properties) || {};
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   NamedProblemPattern!.properties['name'] = {
     type: 'string',
     description: localize('NamedProblemPatternSchema.name', 'The name of the problem pattern.'),

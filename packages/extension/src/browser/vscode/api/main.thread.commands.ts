@@ -126,6 +126,7 @@ export class MainThreadCommands implements IMainThreadCommands {
    */
   $executeExtensionCommand(id: string, ...args: any[]): Promise<any> {
     if (this.commands.has(id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.commands.get(id)!.execute(...args);
     } else {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));

@@ -183,11 +183,11 @@ class MainThreadSCMProvider implements ISCMProvider {
     this._onDidChange.fire();
 
     if (typeof features.commitTemplate !== 'undefined') {
-      this._onDidChangeCommitTemplate.fire(this.commitTemplate!);
+      this._onDidChangeCommitTemplate.fire(features.commitTemplate);
     }
 
     if (typeof features.statusBarCommands !== 'undefined') {
-      this._onDidChangeStatusBarCommands.fire(this.statusBarCommands!);
+      this._onDidChangeStatusBarCommands.fire(features.statusBarCommands);
     }
   }
 
@@ -372,7 +372,7 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
       return;
     }
 
-    this._inputDisposables.get(handle)!.dispose();
+    this._inputDisposables.get(handle)?.dispose();
     this._inputDisposables.delete(handle);
 
     repository.dispose();

@@ -69,6 +69,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
   get document(): vscode.TextDocument {
     if (!this._document) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const data = this;
       this._document = {
         get uri() {
@@ -182,6 +183,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     let result = this._textLines[line];
     if (!result || result.lineNumber !== line || result.text !== this._lines[line]) {
       const text = this._lines[line];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(text)![1].length;
       const range = new Range(line, 0, line, text.length);
       const rangeIncludingLineBreak = line < this._lines.length - 1 ? new Range(line, 0, line + 1, 0) : range;
@@ -204,6 +206,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
   private _offsetAt(position: vscode.Position): number {
     position = this._validatePosition(position);
     this._ensureLineStarts();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this._lineStarts!.getAccumulatedValue(position.line - 1) + position.character;
   }
 
@@ -212,6 +215,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     offset = Math.max(0, offset);
 
     this._ensureLineStarts();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const out = this._lineStarts!.getIndexOf(offset);
 
     const lineLength = this._lines[out.index].length;

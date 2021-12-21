@@ -105,7 +105,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     const controller = vscodeComments.createCommentController(id, label);
 
     controller.commentingRangeProvider = {
-      provideCommentingRanges(document) {
+      provideCommentingRanges() {
         return [];
       },
     };
@@ -293,7 +293,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     const controller = vscodeComments.createCommentController(id, label);
 
     controller.commentingRangeProvider = {
-      provideCommentingRanges(document) {
+      provideCommentingRanges() {
         return [];
       },
     };

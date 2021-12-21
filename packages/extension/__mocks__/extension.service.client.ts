@@ -15,13 +15,13 @@ const mockExtensions: IExtension[] = [
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
-  getElectronMainThreadListenPath(clientId: string): Promise<string> {
+  getElectronMainThreadListenPath(): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string): Promise<IExtensionMetaData[]> {
+  getAllExtensions(): Promise<IExtensionMetaData[]> {
     return Promise.resolve(mockExtensions);
   }
-  createProcess(clientId: string): Promise<void> {
+  createProcess(): Promise<void> {
     return Promise.resolve();
   }
   getExtension(
@@ -40,10 +40,10 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   infoProcessCrash(): void {
     throw new Error('Method not implemented.');
   }
-  disposeClientExtProcess(clientId: string, info: boolean): Promise<void> {
+  disposeClientExtProcess(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void> {
+  updateLanguagePack(languageId: string): Promise<void> {
     process.env['TEST_KAITIAN_LANGUAGE_ID'] = languageId;
     return Promise.resolve();
   }

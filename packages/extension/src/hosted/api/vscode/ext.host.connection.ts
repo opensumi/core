@@ -23,7 +23,7 @@ export class ExtHostConnection implements IExtHostConnectionService {
    */
   async $sendMessage(id: string, message: string): Promise<void> {
     if (this.connections.has(id)) {
-      this.connections.get(id)!.reader.readMessage(message);
+      this.connections.get(id)?.reader.readMessage(message);
     } else {
       console.warn(`链接 ${id} 不存在`);
     }

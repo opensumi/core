@@ -48,7 +48,9 @@ export class MainThreadOutput implements IMainThreadOutput {
     return Promise.resolve();
   }
 
-  async $reveal(channelName: string, preserveFocus: boolean): Promise<void> {
+  // FIXME implement preserveFocus
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async $reveal(channelName: string, preserveFocus): Promise<void> {
     const outputChannel = this.getChannel(channelName);
     if (outputChannel) {
       outputChannel.setVisibility(true);

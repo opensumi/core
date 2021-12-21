@@ -74,7 +74,9 @@ export function reviveIndentationRule(indentationRule?: SerializedIndentationRul
     return undefined;
   }
   return {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     increaseIndentPattern: reviveRegExp(indentationRule.increaseIndentPattern)!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     decreaseIndentPattern: reviveRegExp(indentationRule.decreaseIndentPattern)!,
     indentNextLinePattern: reviveRegExp(indentationRule.indentNextLinePattern),
     unIndentedLinePattern: reviveRegExp(indentationRule.unIndentedLinePattern),
@@ -83,6 +85,7 @@ export function reviveIndentationRule(indentationRule?: SerializedIndentationRul
 
 export function reviveOnEnterRule(onEnterRule: SerializedOnEnterRule): OnEnterRule {
   return {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     beforeText: reviveRegExp(onEnterRule.beforeText)!,
     afterText: reviveRegExp(onEnterRule.afterText),
     action: onEnterRule.action,

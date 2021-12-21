@@ -14,8 +14,7 @@ export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
-  service.on('onMessage', (msg) => {
-    // console.log('service onmessage', msg);
+  service.on('onMessage', () => {
   });
   const extProtocol = new RPCProtocol({
     onMessage: client.onMessage,

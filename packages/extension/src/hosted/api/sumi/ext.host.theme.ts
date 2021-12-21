@@ -6,7 +6,7 @@ import { IExtHostTheme, IMainThreadTheme } from '../../../common/sumi/theme';
 
 export function createThemeApi(theme: ExtHostTheme) {
   return {
-    getThemeColors: async (dir: string) => theme.getThemeColors(),
+    getThemeColors: async () => theme.getThemeColors(),
     onThemeChanged: theme.onThemeChanged,
   };
 }

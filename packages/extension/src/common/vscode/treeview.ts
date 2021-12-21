@@ -12,7 +12,7 @@ export interface ITreeViewRevealOptions {
 }
 export interface IMainThreadTreeView {
   $unregisterTreeDataProvider(treeViewId: string): void;
-  $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): void;
+  $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void;
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
   $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions): Promise<any>;

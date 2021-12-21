@@ -131,7 +131,7 @@ function findReactComponent(item) {
 
 function findReactProperty(item, propertyPrefix) {
   for (const key in item) {
-    if (item.hasOwnProperty(key) && key.indexOf(propertyPrefix) !== -1) {
+    if (Object.prototype.hasOwnProperty.call(item, key) && key.indexOf(propertyPrefix) !== -1) {
       return item[key];
     }
   }
@@ -175,6 +175,7 @@ function composedPath(el: HTMLElement) {
       path.push(window);
       return path;
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     el = el.parentElement!;
   }
 }

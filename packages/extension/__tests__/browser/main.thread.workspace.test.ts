@@ -403,7 +403,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const testuri = vscodeUri.file('/path/to/content').with({ scheme: 'test1' });
     const disposeable = extHostWorkspaceAPI.registerTextDocumentContentProvider('test1', {
       onDidChange: emitter.event,
-      provideTextDocumentContent: (uri, token) => testcase,
+      provideTextDocumentContent: () => testcase,
     });
     const content = await extHostDocs.openTextDocument(testuri);
     expect(content.getText()).toBe(testcase);

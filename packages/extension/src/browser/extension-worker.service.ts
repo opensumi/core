@@ -129,6 +129,7 @@ export class WorkerExtProcessService
   }
 
   private async createExtProcess(ignoreCors?: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const workerSrc = getWorkerBootstrapUrl(this.appConfig.extWorkerHost!, 'ExtensionWorkerHost', ignoreCors);
     return await this.initWorkerProtocol(workerSrc);
   }

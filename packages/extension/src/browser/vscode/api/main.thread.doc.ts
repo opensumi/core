@@ -61,6 +61,7 @@ class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProv
     return this.proxy.$provideTextDocumentContent(uri.toString(), encoding);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isReadonly(uri: URI): boolean {
     return true;
   }
@@ -117,6 +118,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
         docRef.dispose();
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.docSyncEnabled.get(uriString)!;
   }
 
@@ -255,7 +257,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   $unregisterDocumentProviderWithScheme(scheme: string) {
     if (this.editorDisposers.has(scheme)) {
-      this.editorDisposers.get(scheme)!.dispose();
+      this.editorDisposers.get(scheme)?.dispose();
       this.editorDisposers.delete(scheme);
     }
   }
@@ -330,7 +332,7 @@ class LimitedMainThreadDocumentCollection {
         if (index !== 0) {
           this.length -= length;
           docRef.dispose();
-          clearTimeout(maxTimeout!);
+          clearTimeout(maxTimeout);
           this.refs.splice(index, 1);
         }
       },

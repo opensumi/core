@@ -61,10 +61,12 @@ export class ExtHostLayout implements IExtHostLayout {
       this.proxy.$connectTabbar(id);
       this.handles.set(id, new TabbarHandler(id, this.proxy));
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.handles.get(id)!;
   }
 
   $acceptMessage(id: string, type: 'activate' | 'deactivate') {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const handle = this.handles.get(id)!;
     if (type === 'activate') {
       handle.onActivateEmitter.fire();

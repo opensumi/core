@@ -238,9 +238,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const sumiExtAPIImpl = this.sumiAPIImpl;
     const sumiAPIFactory = this.sumiAPIFactory.bind(this);
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    module._load = function load(request: string, parent: any, isMain: any) {
+    module._load = function load(request: string, parent: any) {
       if (request !== 'vscode' && request !== 'kaitian' && request !== 'sumi') {
+        // eslint-disable-next-line prefer-rest-params
         return originalLoad.apply(this, arguments);
       }
 
@@ -486,7 +488,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private registerExtendModuleService(exportsData, extension: IExtensionDescription) {
     const service = {};
     for (const key in exportsData) {
-      if (exportsData.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(exportsData, key)) {
         if (typeof exportsData[key] === 'function') {
           service[`$${key}`] = exportsData[key];
         }

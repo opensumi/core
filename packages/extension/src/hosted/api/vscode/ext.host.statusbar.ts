@@ -209,6 +209,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
           id = this._extension.identifier.value;
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         id = this._id!;
       }
 
@@ -223,7 +224,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
       // If a background color is set, the foreground is determined
       let color = this._color;
       if (this._backgroundColor) {
-        color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id)!;
+        color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id);
       }
 
       // Set to status bar

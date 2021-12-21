@@ -48,7 +48,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
       await ready.promise;
     }
     if (this.connections.has(id)) {
-      this.connections.get(id)!.reader.readMessage(message);
+      this.connections.get(id)?.reader.readMessage(message);
     } else {
       this.logger.warn(`Do not found connection ${id}`);
     }

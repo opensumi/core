@@ -54,6 +54,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle> {
     const compositeKey = extensionId + '.' + id;
     if (!this.btnHandles.has(compositeKey)) {
+      // eslint-disable-next-line no-async-promise-executor
       const promise = new Promise<ToolbarBtnActionHandleController>(async (resolve, reject) => {
         const h = new ToolbarBtnActionHandleController(compositeKey, this.extHostCommands, this.kaitianCommon);
         try {
@@ -65,12 +66,14 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
       });
       this.btnHandles.set(compositeKey, promise);
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.btnHandles.get(compositeKey)!.then((h) => h.handle);
   }
 
   getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>> {
     const compositeKey = extensionId + '.' + id;
     if (!this.selectHandles.has(compositeKey)) {
+      // eslint-disable-next-line no-async-promise-executor
       const promise = new Promise<ToolbarSelectActionHandleController<T>>(async (resolve, reject) => {
         const h = new ToolbarSelectActionHandleController<T>(compositeKey, this.extHostCommands, this.kaitianCommon);
         try {
@@ -82,6 +85,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
       });
       this.selectHandles.set(compositeKey, promise);
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.selectHandles.get(compositeKey)!.then((h) => h.handle);
   }
 }

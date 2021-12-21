@@ -60,7 +60,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     // handle selection changes
     if (options && typeof options.onDidSelectItem === 'function') {
       this._onDidSelectItem = (handle) => {
-        options.onDidSelectItem!(items[handle]);
+        options?.onDidSelectItem?.(items[handle]);
       };
     }
 

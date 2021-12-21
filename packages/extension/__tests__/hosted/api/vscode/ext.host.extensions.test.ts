@@ -37,8 +37,8 @@ describe(`test ${__filename}`, () => {
 
   const injector = new Injector();
   const mockClient = {
-    send: async (msg) => {},
-    onMessage: (fn) => {},
+    send: async () => {},
+    onMessage: () => {},
   };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);

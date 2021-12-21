@@ -22,6 +22,7 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
     this._proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostSecret);
     this.addDispose(
       this.credentialsService.onDidChangePassword((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const extensionId = e.service.substring(this.appConfig.uriScheme!.length);
         this._proxy.$onDidChangePassword({ extensionId, key: e.account });
       }),

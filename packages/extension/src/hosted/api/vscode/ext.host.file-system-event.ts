@@ -188,7 +188,7 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
     switch (operation) {
       case FileOperation.MOVE:
         this._onDidRenameFile.fire(
-          Object.freeze({ files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }),
+          Object.freeze({ files: files.map((f) => ({ oldUri: URI.revive(f.source), newUri: URI.revive(f.target) })) }),
         );
         break;
       case FileOperation.DELETE:
@@ -237,7 +237,7 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       case FileOperation.MOVE:
         return await this._fireWillEvent(
           this._onWillRenameFile,
-          { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) },
+          { files: files.map((f) => ({ oldUri: URI.revive(f.source), newUri: URI.revive(f.target) })) },
           timeout,
           token,
         );

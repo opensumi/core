@@ -27,9 +27,10 @@ export function fromTask(task: types.Task): TaskDto | undefined {
   }
 
   taskDto.type = taskDefinition.type;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { type, ...properties } = taskDefinition;
   for (const key in properties) {
-    if (properties.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
       taskDto[key] = properties[key];
     }
   }
@@ -55,12 +56,15 @@ export function toTask(taskDto: TaskDto): types.Task {
     throw new Error('Task should be provided for converting');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { type, label, source, scope, command, args, options, windows, ...properties } = taskDto;
   const result = {} as types.Task;
   result.name = label;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   result.source = source!;
   if (scope) {
     const uri = Uri.parse(scope);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     result.scope = {
       uri,
@@ -90,7 +94,7 @@ export function toTask(taskDto: TaskDto): types.Task {
   }
 
   for (const key in properties) {
-    if (properties.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
       taskDefinition[key] = properties[key];
     }
   }

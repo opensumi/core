@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -89,9 +90,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             return undefined;
           }
           return {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             id: getTextEditorId(group, group.currentResource!.uri),
             uri: editor.currentDocumentModel.uri.toString(),
-            selections: editor!.getSelections() || [],
+            selections: editor?.getSelections() || [],
             options: getEditorOption(editor.monacoEditor),
             viewColumn: getViewColumn(group),
             visibleRanges: editor.monacoEditor.getVisibleRanges(),
@@ -101,6 +103,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       .filter((c) => !!c);
     const activedEditor =
       this.editorService.currentResource &&
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
     return {
       created: editors,
@@ -111,7 +114,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   async $closeEditor(id: string) {
     const editor = this.getEditor(id);
     if (editor) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const group = this.getGroup(id)!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       group.close(group.currentResource!.uri);
     }
   }
@@ -199,6 +204,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
       if (
         group.currentOpenType?.type === 'diff' &&
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, true)
       ) {
         return group.diffEditor.originalEditor;
@@ -291,6 +297,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             this.proxy.$acceptChange({
               actived: getTextEditorId(
                 this.editorService.currentEditorGroup,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
                 this.editorService.currentEditorGroup.currentResource?.uri!,
               ),
             });

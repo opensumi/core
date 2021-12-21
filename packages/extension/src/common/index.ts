@@ -257,6 +257,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   abstract contribute();
 
   protected getLocalizeFromNlsJSON(title: string): string {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return replaceNlsField(title, this.extension.id)!;
   }
 }

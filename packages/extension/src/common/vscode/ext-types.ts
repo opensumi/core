@@ -219,7 +219,7 @@ export class Position {
     let result = positions[0];
     for (let i = 1; i < positions.length; i++) {
       const p = positions[i];
-      if (p.isBefore(result!)) {
+      if (p.isBefore(result)) {
         result = p;
       }
     }
@@ -233,7 +233,7 @@ export class Position {
     let result = positions[0];
     for (let i = 1; i < positions.length; i++) {
       const p = positions[i];
-      if (p.isAfter(result!)) {
+      if (p.isAfter(result)) {
         result = p;
       }
     }
@@ -423,8 +423,9 @@ export class RelativePattern {
     this.base = typeof base === 'string' ? base : base.uri.fsPath;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pathToRelative(from: string, to: string): string {
-    // return relative(from, to);
+    // FIXME need implement!
     return 'not implement!';
   }
 }
@@ -521,7 +522,7 @@ export class Hover {
     range?: Range,
   ) {
     if (!contents) {
-      throw new Error('illegalArgument：contents must be defined');
+      throw new Error('illegalArgument: contents must be defined');
     }
     if (Array.isArray(contents)) {
       this.contents = contents as MarkdownString[] | vscode.MarkedString[];
@@ -664,7 +665,9 @@ export class TextEdit {
   }
 
   constructor(range: Range | undefined, newText: string | undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.range = range!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.newText = newText!;
   }
 
@@ -1224,6 +1227,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
       for (let i = 0; i < this._edits.length; i++) {
         const element = this._edits[i];
         if (element && element._type === WorkspaceEditType.Text && element.uri.toString() === uri.toString()) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this._edits[i] = undefined!;
         }
       }
@@ -1246,7 +1250,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
       }
     }
     if (res.length === 0) {
-      return undefined!;
+      return [];
     }
     return res;
   }
@@ -1400,6 +1404,7 @@ export class SymbolInformation {
     if (locationOrUri instanceof Location) {
       this.location = locationOrUri;
     } else if (rangeOrContainer instanceof Range) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.location = new Location(locationOrUri!, rangeOrContainer);
     }
 
@@ -2750,6 +2755,7 @@ export class SemanticTokensBuilder {
     const line = range.start.line;
     const char = range.start.character;
     const length = range.end.character - range.start.character;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const nTokenType = this._tokenTypeStrToInt.get(tokenType)!;
     let nTokenModifiers = 0;
     if (tokenModifiers) {
@@ -2757,6 +2763,7 @@ export class SemanticTokensBuilder {
         if (!this._tokenModifierStrToInt.has(tokenModifier)) {
           throw new Error('`tokenModifier` is not in the provided legend');
         }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const nTokenModifier = this._tokenModifierStrToInt.get(tokenModifier)!;
         nTokenModifiers |= (1 << nTokenModifier) >>> 0;
       }

@@ -365,7 +365,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     });
   }
 
-  private addNewAdapter(adapter: Adapter, extension?: IExtensionDescription): number {
+  private addNewAdapter(adapter: Adapter): number {
     const callId = this.nextCallId();
     this.adaptersMap.set(callId, adapter);
     return callId;
@@ -399,9 +399,11 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   private transformDocumentSelector(selector: DocumentSelector): SerializedDocumentFilter[] {
     if (Array.isArray(selector)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return selector.map((sel) => this.doTransformDocumentSelector(sel)!);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return [this.doTransformDocumentSelector(selector as DocumentFilter)!];
   }
 
@@ -562,6 +564,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     let result = this.createDisposable(callId);
 
     if (eventHandle !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const subscription = provider.onDidChangeFoldingRanges!(() => this.proxy.$emitFoldingRangeEvent(eventHandle));
       result = Disposable.from(result, subscription);
     }
@@ -709,7 +712,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     let result = this.createDisposable(callId);
 
     if (eventHandle !== undefined && provider.onDidChangeCodeLenses) {
-      const subscription = provider.onDidChangeCodeLenses((e) => this.proxy.$emitCodeLensEvent(eventHandle));
+      const subscription = provider.onDidChangeCodeLenses(() => this.proxy.$emitCodeLensEvent(eventHandle));
       result = Disposable.from(result, subscription);
     }
 
@@ -746,6 +749,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
         providedKinds: metadata?.providedCodeActionKinds?.map((kind) => kind.value),
         documentation: metadata?.documentation?.map((doc) => ({
           kind: doc.kind.value,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           command: this.commands.converter.toInternal(doc.command, store)!,
         })),
       },
@@ -806,6 +810,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   getDiagnostics(resource?: Uri): Diagnostic[] | [Uri, Diagnostic[]][] {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.diagnostics.getDiagnostics(resource!);
   }
 
@@ -1091,7 +1096,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     provider: DocumentRangeSemanticTokensProvider,
     legend: SemanticTokensLegend,
   ): Disposable {
-    const callId = this.addNewAdapter(new DocumentRangeSemanticTokensAdapter(this.documents, provider), extension);
+    const callId = this.addNewAdapter(new DocumentRangeSemanticTokensAdapter(this.documents, provider));
     this.proxy.$registerDocumentRangeSemanticTokensProvider(callId, this.transformDocumentSelector(selector), legend);
     return this.createDisposable(callId);
   }
@@ -1115,7 +1120,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: EvaluatableExpressionProvider,
   ): Disposable {
-    const callId = this.addNewAdapter(new EvaluatableExpressionAdapter(this.documents, provider), extension);
+    const callId = this.addNewAdapter(new EvaluatableExpressionAdapter(this.documents, provider));
     this.proxy.$registerEvaluatableExpressionProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1134,13 +1139,14 @@ export class ExtHostLanguages implements IExtHostLanguages {
     provider: InlineValuesProvider,
   ): Disposable {
     const eventHandle = typeof provider.onDidChangeInlineValues === 'function' ? this.nextCallId() : undefined;
-    const handle = this.addNewAdapter(new InlineValuesAdapter(this.documents, provider), extension);
+    const handle = this.addNewAdapter(new InlineValuesAdapter(this.documents, provider));
 
     this.proxy.$registerInlineValuesProvider(handle, this.transformDocumentSelector(selector), eventHandle);
     let result = this.createDisposable(handle);
 
     if (eventHandle !== undefined) {
-      const subscription = provider.onDidChangeInlineValues!((_) => this.proxy.$emitInlineValuesEvent(eventHandle));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const subscription = provider.onDidChangeInlineValues!(() => this.proxy.$emitInlineValuesEvent(eventHandle));
       result = Disposable.from(result, subscription);
     }
     return result;
@@ -1168,7 +1174,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: LinkedEditingRangeProvider,
   ): Disposable {
-    const handle = this.addNewAdapter(new LinkedEditingRangeAdapter(this.documents, provider), extension);
+    const handle = this.addNewAdapter(new LinkedEditingRangeAdapter(this.documents, provider));
     this.proxy.$registerLinkedEditingRangeProvider(handle, this.transformDocumentSelector(selector));
     return this.createDisposable(handle);
   }
@@ -1206,12 +1212,13 @@ export class ExtHostLanguages implements IExtHostLanguages {
     provider: vscode.InlayHintsProvider,
   ): Disposable {
     const eventHandle = typeof provider.onDidChangeInlayHints === 'function' ? this.nextCallId() : undefined;
-    const handle = this.addNewAdapter(new InlayHintsAdapter(this.documents, provider), extension);
+    const handle = this.addNewAdapter(new InlayHintsAdapter(this.documents, provider));
 
     this.proxy.$registerInlayHintsProvider(handle, this.transformDocumentSelector(selector), eventHandle);
     let result = this.createDisposable(handle);
 
     if (eventHandle !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const subscription = provider.onDidChangeInlayHints!(() => this.proxy.$emitInlayHintsEvent(eventHandle));
       result = Disposable.from(result, subscription);
     }

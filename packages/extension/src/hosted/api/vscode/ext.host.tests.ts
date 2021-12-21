@@ -354,7 +354,7 @@ class TestRunCoverageBearer {
     }
 
     if (!this.fileCoverage) {
-      this.fileCoverage = (async () => this._coverageProvider!.provideFileCoverage(token))();
+      this.fileCoverage = (async () => this._coverageProvider?.provideFileCoverage(token))();
     }
 
     try {

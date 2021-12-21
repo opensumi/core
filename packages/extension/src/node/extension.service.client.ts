@@ -153,7 +153,7 @@ export class ExtensionServiceClientImpl
   public async updateLanguagePack(languageId: string, languagePack: string, storagePath: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
     storagePath = storagePath || DEFAULT_NLS_CONFIG_DIR;
-    this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
+    this.logger.log(`find ${languageId}， storagePath: ${storagePath}`);
     const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
     if (await this.fileService.access(languagePath)) {
       const rawLanguagePacks = await this.fileService.resolveContent(languagePath);
@@ -184,7 +184,9 @@ export class ExtensionServiceClientImpl
     }
 
     const languagePackJson = await this.fileService.getFileStat(languagePath);
-    await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
+    if (languagePackJson) {
+      await this.fileService.setContent(languagePackJson, JSON.stringify(languagePacks));
+    }
 
     const nlsConfig = await lp.getNLSConfiguration(
       'f06011ac164ae4dc8e753a3fe7f9549844d15e35',

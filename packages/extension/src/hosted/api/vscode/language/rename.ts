@@ -43,7 +43,7 @@ export class RenameAdapter {
         if (rejectReason) {
           return {
             rejectReason,
-            edits: undefined!,
+            edits: [],
           } as model.WorkspaceEditDto;
         } else {
           return Promise.reject<model.WorkspaceEditDto>(error);
@@ -85,12 +85,12 @@ export class RenameAdapter {
           return undefined;
         }
         if (range.start.line > pos.line || range.end.line < pos.line) {
-          // tslint:disable-next-line:no-console
           console.warn('INVALID rename location: position line must be within range start/end lines');
           return undefined;
         }
         return {
-          range: Converter.fromRange(range)!,
+          range: Converter.fromRange(range),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           text: text!,
         };
       },
@@ -99,8 +99,6 @@ export class RenameAdapter {
         if (rejectReason) {
           return Promise.resolve({
             rejectReason,
-            range: undefined!,
-            text: undefined!,
           } as model.RenameLocation & model.Rejection);
         } else {
           return Promise.reject(error);
@@ -109,7 +107,6 @@ export class RenameAdapter {
     );
   }
 
-  /* tslint:disable-next-line:no-any */
   private static asMessage(err: any): string | undefined {
     if (typeof err === 'string') {
       return err;

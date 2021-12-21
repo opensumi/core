@@ -146,18 +146,18 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
       }
     });
 
-    logger!.log('preload.init start');
+    logger?.log('preload.init start');
     await preload.init();
-    logger!.log('preload.init end');
+    logger?.log('preload.init end');
 
     if (process && process.send) {
       process.send('ready');
 
       process.on('message', async (msg) => {
         if (msg === 'close') {
-          logger!.log('preload.close start');
+          logger?.log('preload.close start');
           await preload.close();
-          logger!.log('preload.close end');
+          logger?.log('preload.close end');
           if (process && process.send) {
             process.send('finish');
           }
@@ -165,7 +165,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
       });
     }
   } catch (e) {
-    logger!.error(e);
+    logger?.error(e);
   }
 }
 

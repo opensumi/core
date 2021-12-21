@@ -5,7 +5,6 @@ import {
   URI,
   Emitter,
   CancellationTokenSource,
-  CancellationToken,
 } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 import { ExtHostDecorations } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.decoration';
@@ -28,7 +27,7 @@ describe('ExtHostFileSystem', () => {
   const mockRpcProtocol = {
     getProxy() {
       return {
-        $registerDecorationProvider(handle: number, extId: string) {
+        $registerDecorationProvider(handle: number) {
           $decoProviders.add(handle);
         },
         $unregisterDecorationProvider(handle: number) {
@@ -79,7 +78,7 @@ describe('ExtHostFileSystem', () => {
     const extDecoProvider = new (class implements vscode.DecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         callCounter += 1;
         return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() =>
@@ -133,7 +132,7 @@ describe('ExtHostFileSystem', () => {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
 
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         callCounter += 1;
         return {
           letter: 'S',
@@ -178,7 +177,7 @@ describe('ExtHostFileSystem', () => {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
 
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return {
           letter: 'S',
           title: 'Modified changes',
@@ -193,7 +192,7 @@ describe('ExtHostFileSystem', () => {
     const extDecoProvider2 = new (class implements vscode.DecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() =>
             resolve({
@@ -255,7 +254,7 @@ describe('ExtHostFileSystem', () => {
   it('decoration letter length !== 1', async () => {
     const extDecoProvider = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return {
           letter: 'TWO',
           title: 'Modified changes',
@@ -289,7 +288,7 @@ describe('ExtHostFileSystem', () => {
   it('provideDecoration rejection', async () => {
     const extDecoProvider = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return Promise.reject('provideDecoration throws');
       }
     })();
@@ -314,7 +313,7 @@ describe('ExtHostFileSystem', () => {
       onDidChangeEmitter = new Emitter<Uri[]>();
       onDidChange = this.onDidChangeEmitter.event;
 
-      provideFileDecoration(uri: Uri, token: CancellationToken) {
+      provideFileDecoration() {
         return {
           letter: 'S',
           title: 'Modified changes',

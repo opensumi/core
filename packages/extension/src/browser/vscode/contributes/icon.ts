@@ -16,6 +16,7 @@ export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSch
       ...t,
       label: this.getLocalizeFromNlsJSON(t.label),
     }));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.iconService.registerIconThemes(themes, URI.from(this.extension.uri!));
   }
 }

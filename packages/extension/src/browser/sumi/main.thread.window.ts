@@ -39,6 +39,7 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
   ): Promise<IWindowInfo> {
     let window: IPlainWebviewWindow;
     if (this._plainWebviewWindowMap.has(webviewId)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       window = this._plainWebviewWindowMap.get(webviewId)!;
     } else {
       window = this.webviewService.createWebviewWindow(options, env);
@@ -49,7 +50,7 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
           }),
         );
         this.disposables.push(
-          window.onClosed((event) => {
+          window.onClosed(() => {
             this._proxy.$dispatchClosed(webviewId);
             // 清理关闭的窗口模拟器
             this.$destroy(webviewId);

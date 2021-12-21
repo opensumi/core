@@ -63,7 +63,7 @@ export function createAPIFactory(
       webview: createWebviewApi(extension, extHostWebview),
       lifecycle: createLifeCycleApi(extHostCommands, extHostLifeCycle),
       theme: createThemeApi(extHostTheme),
-      event: createEventAPIFactory(extHostCommands, extHostCommon, extension),
+      event: createEventAPIFactory(extHostCommands, extHostCommon),
       reporter,
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       toolbar: createToolbarAPIFactory(extension, extHostToolbar),

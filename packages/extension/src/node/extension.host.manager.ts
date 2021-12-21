@@ -28,7 +28,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
     return new Promise<void>((resolve, reject) => {
       const extProcess = this.processMap.get(pid);
       assert(extProcess);
-      extProcess!.send(message, (err) => {
+      extProcess?.send(message, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -54,7 +54,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
   kill(pid: number, signal?: NodeJS.Signals) {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
-    extProcess!.kill(signal);
+    extProcess?.kill(signal);
   }
   isKilled(pid: number) {
     const extProcess = this.processMap.get(pid);
@@ -71,10 +71,10 @@ export class ExtensionHostManager implements IExtensionHostManager {
   onOutput(pid: number, listener: (output: Output) => void) {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
-    extProcess!.stdout!.setEncoding('utf8');
-    extProcess!.stderr!.setEncoding('utf8');
-    const onStdout = Event.fromNodeEventEmitter<string>(extProcess!.stdout!, 'data');
-    const onStderr = Event.fromNodeEventEmitter<string>(extProcess!.stderr!, 'data');
+    extProcess?.stdout?.setEncoding('utf8');
+    extProcess?.stderr?.setEncoding('utf8');
+    const onStdout = Event.fromNodeEventEmitter<string>(extProcess?.stdout, 'data');
+    const onStderr = Event.fromNodeEventEmitter<string>(extProcess?.stderr, 'data');
     const onOutput = Event.any(
       Event.map(onStdout, (o) => ({ type: OutputType.STDOUT, data: `%c${o}`, format: [''] })),
       Event.map(onStderr, (o) => ({ type: OutputType.STDERR, data: `%c${o}`, format: ['color: red'] })),
@@ -100,13 +100,13 @@ export class ExtensionHostManager implements IExtensionHostManager {
   onExit(pid: number, listener: (code: number, signal: string) => void) {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
-    extProcess!.once('exit', listener);
+    extProcess?.once('exit', listener);
   }
 
   onMessage(pid: number, listener: (msg: any) => void): MaybePromise<void> {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
-    extProcess!.on('message', listener);
+    extProcess?.on('message', listener);
   }
 
   disposeProcess(pid: number) {

@@ -105,6 +105,8 @@ describe('Extension Serivce', () => {
   describe('get extension', () => {
     it('should return extension', async () => {
       const extension = await extensionService.getExtension(path.join(extensionDir, testExtPath), 'zh_CN', {});
+      expect(extension).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(path.basename(extension!.realPath)).toBe(testExtPath);
     });
 

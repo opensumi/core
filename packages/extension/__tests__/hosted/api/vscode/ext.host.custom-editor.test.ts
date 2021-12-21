@@ -53,7 +53,7 @@ describe('vscode extHost CustomEditor Test', () => {
     const viewType = 'test CustomTextEditor';
 
     const customTextEditorProvider: CustomTextEditorProvider = {
-      resolveCustomTextEditor: jest.fn((document, webviewPanel, token) => {}),
+      resolveCustomTextEditor: jest.fn(() => {}),
     };
 
     extHost.registerCustomEditorProvider(
@@ -234,6 +234,7 @@ describe('vscode extHost CustomEditor Test', () => {
     // 产生一次变更
 
     const edit: CustomDocumentEditEvent<TestCustomEditorDocument> = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       document: doc!,
       undo: jest.fn(),
       redo: jest.fn(),

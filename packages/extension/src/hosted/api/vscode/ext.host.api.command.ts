@@ -161,7 +161,7 @@ export const newCommands: ApiCommand[] = [
       new ApiCommandArgument(
         'options',
         'Formatting options',
-        (_) => true,
+        () => true,
         (v) => v,
       ),
     ],
@@ -180,7 +180,7 @@ export const newCommands: ApiCommand[] = [
       new ApiCommandArgument(
         'options',
         'Formatting options',
-        (_) => true,
+        () => true,
         (v) => v,
       ),
     ],
@@ -205,7 +205,7 @@ export const newCommands: ApiCommand[] = [
       new ApiCommandArgument(
         'options',
         'Formatting options',
-        (_) => true,
+        () => true,
         (v) => v,
       ),
     ],
@@ -298,6 +298,7 @@ export const newCommands: ApiCommand[] = [
           for (const range of ranges.reverse()) {
             node = new types.SelectionRange(typeConverters.Range.to(range), node);
           }
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           return node!;
         }),
     ),
@@ -544,7 +545,7 @@ export const newCommands: ApiCommand[] = [
       new ApiCommandArgument<{ uri: URI; range: types.Range }, { uri: URI; range: IRange }>(
         'context',
         'Context object with uri and range',
-        (_v) => true,
+        () => true,
         (v) => ({ uri: v.uri, range: typeConverters.Range.from(v.range) }),
       ),
     ],

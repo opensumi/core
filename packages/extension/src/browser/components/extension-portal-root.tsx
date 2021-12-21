@@ -1,7 +1,7 @@
 import React from 'react';
 import clx from 'classnames';
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { getThemeTypeSelector, IThemeService, ThemeType } from '@opensumi/ide-theme/lib/common';
+import { DARK, getThemeTypeSelector, IThemeService, ThemeType } from '@opensumi/ide-theme/lib/common';
 import { DisposableCollection } from '@opensumi/ide-components/lib/utils/disposable';
 import { AbstractViewExtProcessService } from '../../common/extension.service';
 
@@ -12,7 +12,7 @@ interface IPortalRootProps {
 }
 
 export const PortalRoot = (props: IPortalRootProps) => {
-  const [themeType, setThemeType] = React.useState<null | ThemeType>(null);
+  const [themeType, setThemeType] = React.useState<ThemeType>(DARK);
   const extensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
 
@@ -34,7 +34,7 @@ export const PortalRoot = (props: IPortalRootProps) => {
   return (
     <OriginalComponent
       {...props.otherProps}
-      className={clx(props.otherProps?.className, getThemeTypeSelector(themeType!))}
+      className={clx(props.otherProps?.className, getThemeTypeSelector(themeType))}
       getContainer={() => {
         const portalRoot = extensionService.getPortalShadowRoot(props.extensionId);
         return portalRoot;
