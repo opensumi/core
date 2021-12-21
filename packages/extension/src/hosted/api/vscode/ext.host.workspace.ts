@@ -43,8 +43,7 @@ export function createWorkspaceApiFactory(
     onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders,
     getWorkspaceFolder: (uri, resolveParent) => extHostWorkspace.getWorkspaceFolder(uri, resolveParent),
     workspaceFolders: extHostWorkspace.workspaceFolders,
-    getConfiguration: (section, resource, extensionId) =>
-      extHostPreference.getConfiguration(section, resource, extensionId),
+    getConfiguration: (section, resource) => extHostPreference.getConfiguration(section, resource),
     onDidChangeConfiguration: (listener, thisArgs?, disposables?) =>
       extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables),
     get isTrusted() {

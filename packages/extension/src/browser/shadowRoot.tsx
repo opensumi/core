@@ -1,7 +1,7 @@
 import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@opensumi/ide-components';
 import { DisposableCollection, LabelService, useInjectable } from '@opensumi/ide-core-browser';
 import { localize, URI } from '@opensumi/ide-core-common';
-import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
+import { DARK, getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
 import clx from 'classnames';
 import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -102,7 +102,7 @@ const ShadowRoot = ({
   const viewExtensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
   const iconService = useInjectable<IIconService>(IIconService);
-  const [themeType, setThemeType] = useState<null | ThemeType>(null);
+  const [themeType, setThemeType] = useState<ThemeType>(DARK);
 
   useEffect(() => {
     const disposables = new DisposableCollection();

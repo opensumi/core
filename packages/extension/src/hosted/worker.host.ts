@@ -73,7 +73,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   constructor(private rpcProtocol: RPCProtocol, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
 
-    this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this, 'worker');
+    this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this);
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(
       MainThreadAPIIdentifier.MainThreadExtensionService,
     );
