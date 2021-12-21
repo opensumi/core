@@ -249,10 +249,10 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     let isDirectory: boolean;
     if (isPrompt && node instanceof PromptHandle) {
       if (node instanceof RenamePromptHandle) {
-        nodeUri = ((node as RenamePromptHandle).target! as File | Directory).uri.resolve(node.$.value);
+        nodeUri = ((node as RenamePromptHandle).target as File | Directory).uri.resolve(node.$.value);
         isDirectory = Directory.is((node as RenamePromptHandle).target);
       } else {
-        nodeUri = (node.parent! as Directory).uri.resolve(node.$.value);
+        nodeUri = (node.parent as Directory).uri.resolve(node.$.value);
         isDirectory = node.type === TreeNodeType.CompositeTreeNode;
       }
     } else {
@@ -295,13 +295,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           event.stopPropagation();
           setActiveIndex(index);
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
-          onClick(event, item as File, itemType, activeUri!);
+          onClick(event, item as File, itemType, activeUri);
         };
         const contextMenuHandler = (event: React.MouseEvent) => {
           event.stopPropagation();
           setActiveIndex(index);
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
-          onContextMenu(event, item as File, itemType, activeUri!);
+          onContextMenu(event, item as File, itemType, activeUri);
         };
         const dragOverHandler = (event: React.DragEvent) => {
           event.stopPropagation();
@@ -324,13 +324,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
             setActiveIndex(index);
           }
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
-          dndService.handleDragStart(event, item as File, activeUri!);
+          dndService.handleDragStart(event, item as File, activeUri);
         };
 
         const dropHandler = (event: React.DragEvent) => {
           event.stopPropagation();
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
-          dndService.handleDrop(event, item as File, activeUri!);
+          dndService.handleDrop(event, item as File, activeUri);
         };
         const pathClassName = cls(activeIndex === index && styles.active, styles.compact_name);
         return (

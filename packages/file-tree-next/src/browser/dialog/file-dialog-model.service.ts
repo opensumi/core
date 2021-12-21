@@ -153,7 +153,7 @@ export class FileTreeDialogModel implements IFileDialogModel {
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.focusedFile) {
           const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);

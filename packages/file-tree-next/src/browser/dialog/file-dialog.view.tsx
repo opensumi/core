@@ -44,9 +44,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
   }, [model]);
 
   React.useEffect(() => {
-    if ((options as ISaveDialogOptions).defaultFileName) {
-      setFileName((options as ISaveDialogOptions).defaultFileName!);
-    }
+    setFileName((options as ISaveDialogOptions).defaultFileName || '');
   }, [options]);
 
   React.useEffect(() => {
@@ -60,13 +58,13 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     const value: string[] = model.selectedFiles.map((file) => file.uri.path.toString());
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
-      const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
-      dialogService.hide([path.resolve(filePath!, fileName)]);
+      const filePath = value?.length === 1 ? value[0] : options.defaultUri?.path.toString() || '';
+      dialogService.hide([path.resolve(filePath, fileName)]);
     } else {
       if (value.length > 0) {
         dialogService.hide(value);
       } else if (options.defaultUri) {
-        dialogService.hide([options.defaultUri!.path.toString()]);
+        dialogService.hide([options.defaultUri?.path.toString()]);
       } else if (model.treeModel && model.treeModel.root) {
         dialogService.hide([(model.treeModel.root as Directory).uri.path.toString()]);
       } else {

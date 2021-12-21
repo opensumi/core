@@ -122,10 +122,10 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
     let isDirectory: boolean;
     if (isPrompt && node instanceof PromptHandle) {
       if (node instanceof RenamePromptHandle) {
-        nodeUri = ((node as RenamePromptHandle).target! as File | Directory).uri.resolve(node.$.value);
+        nodeUri = ((node as RenamePromptHandle).target as File | Directory).uri.resolve(node.$.value);
         isDirectory = Directory.is((node as RenamePromptHandle).target);
       } else {
-        nodeUri = (node.parent! as Directory).uri.resolve(node.$.value);
+        nodeUri = (node.parent as Directory).uri.resolve(node.$.value);
         isDirectory = node.type === TreeNodeType.CompositeTreeNode;
       }
     } else {

@@ -403,7 +403,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (this._cacheIgnoreFileEventOnce) {
       let filtered = false;
       changes = changes.filter((change) => {
-        if (this._cacheIgnoreFileEventOnce!.isEqualOrParent(new URI(change.uri))) {
+        if (this._cacheIgnoreFileEventOnce?.isEqualOrParent(new URI(change.uri))) {
           filtered = true;
           return false;
         }
@@ -447,7 +447,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(uri)) {
-          return new Path(this.root?.path || '').join(rootUri.relative(uri)!.toString()).toString();
+          return new Path(this.root?.path || '').join(rootUri.relative(uri)?.toString() || '').toString();
         }
       }
     } else {
@@ -461,7 +461,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
           // 多工作区模式下，路径需要拼接项目名称
           return new Path(this.root?.path || '/')
             .join(rootUri.displayName)
-            .join(rootUri.relative(uri)!.toString())
+            .join(rootUri.relative(uri)?.toString() || '')
             .toString();
         }
       }
@@ -491,7 +491,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
           FileChangeType.ADDED,
         );
       }
-      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
+      this.dispatchWatchEvent(node.path, { type: WatchEvent.Moved, oldPath, newPath });
       // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
       if (this.isCompactMode) {
         const oldParentPath = new Path(oldPath).dir.toString();
@@ -514,7 +514,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
-    let tempFileStat: FileStat;
     let tempName: string;
     const namePaths = Path.splitPath(newName);
     // 处理a/b/c/d这类目录
@@ -545,7 +544,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
       this._cacheIgnoreFileEvent.set(node.uri.resolve(newName).toString(), FileChangeType.ADDED);
     }
-    tempFileStat = {
+    const tempFileStat: FileStat = {
       uri: node.uri.resolve(tempName).toString(),
       isDirectory: type === TreeNodeType.CompositeTreeNode || namePaths.length > 1,
       isSymbolicLink: false,
@@ -639,8 +638,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   reCacheNode(node: File | Directory, prePath: string) {
-    if (this.root?.watchEvents.has(prePath)) {
-      this.root?.watchEvents.set(node.path, this.root?.watchEvents.get(prePath)!);
+    const watcher = this.root?.watchEvents.get(prePath);
+    if (watcher) {
+      this.root?.watchEvents.set(node.path, watcher);
     }
     this._cacheNodesMap.set(node.path, node);
   }
@@ -678,12 +678,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (!this.isMultipleWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
       } else if (this._roots) {
-        rootStr = this._roots.find((root) => new URI(root.uri).isEqualOrParent(pathURI!))?.uri;
+        rootStr = this._roots.find((root) => pathURI && new URI(root.uri).isEqualOrParent(pathURI))?.uri;
       }
       if (this.root && rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(pathURI)) {
-          path = new Path(this.root.path).join(rootUri.relative(pathURI)!.toString()).toString();
+          path = new Path(this.root.path).join(rootUri.relative(pathURI)?.toString() || '').toString();
         }
       }
     }
@@ -694,7 +694,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
       // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
       // 此时应该重载/root下的文件，将test_folder目录折叠并清理缓存
       if (this.isCompactMode && !this._cacheNodesMap.has(path)) {
-        const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter((cache) => cache.indexOf(path!) >= 0);
+        const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter(
+          (cache) => path && cache.indexOf(path) >= 0,
+        );
         let nearestPath;
         for (const nextPath of allNearestPath) {
           const depth = Path.pathDepth(nextPath);
@@ -755,7 +757,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: Directory = this.root as Directory, needReload = true) {
+  async refresh(node: Directory = this.root as Directory) {
     this.willRefreshDeferred = new Deferred();
     if (!node) {
       return;
@@ -796,7 +798,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
@@ -814,7 +815,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    const promise = pSeries(
       roots.map((path) => async () => {
         const watcher = this.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {

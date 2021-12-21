@@ -207,7 +207,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.activeFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('activeFileActivedDecoration method should be work', () => {
@@ -226,7 +226,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.activeFileActivedDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_actived]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_actived]);
   });
 
   it('selectFileDecoration method should be work', () => {
@@ -245,7 +245,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.selectFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('enactiveFileDecoration method should be work', () => {
@@ -264,11 +264,11 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.activeFileDecoration(node);
     let decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     fileTreeModelService.enactiveFileDecoration();
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeFileDecoration method should be work', () => {
@@ -289,7 +289,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.removeFileDecoration();
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
@@ -316,11 +316,11 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.activeFileDecoration(node);
     let decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     fileTreeModelService.handleTreeBlur();
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('clearFileSelectedDecoration method should be work', () => {
@@ -339,9 +339,9 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.selectFileDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
     fileTreeModelService.clearFileSelectedDecoration();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('toggleDirectory method should be work', async (done) => {
