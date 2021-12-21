@@ -92,7 +92,7 @@ export class IconService implements IIconService {
 
   private styleSheetCollection = '';
 
-  private appendStylesTimer: NodeJS.Timeout | undefined;
+  private appendStylesTimer: number | undefined;
   private appendStyleCounter = 0;
 
   private doAppend(targetElement: HTMLElement | null) {
@@ -122,7 +122,7 @@ export class IconService implements IIconService {
 
     if (!this.appendStylesTimer) {
       // 超过 100 毫秒
-      this.appendStylesTimer = setTimeout(() => {
+      this.appendStylesTimer = window.setTimeout(() => {
         this.doAppend(iconStyleNode);
       }, 100);
     }
