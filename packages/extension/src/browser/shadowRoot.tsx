@@ -18,6 +18,20 @@ function cloneNode<T>(head): T {
   return head.cloneNode(true);
 }
 
+const CDN_TYPE_MAP: CDNTypeMap = {
+  alipay: 'https://gw.alipayobjects.com/os/lib',
+  unpkg: 'https://unpkg.com/browse',
+  jsdelivr: 'https://cdn.jsdelivr.net/npm',
+};
+
+interface CDNTypeMap {
+  alipay: string;
+  unpkg: string;
+  jsdelivr: string;
+}
+
+type CDNType = keyof CDNTypeMap;
+
 /**
  * 由于经过 clone 以后，实际 Shadow DOM 中 head 与原始 proxiedHead 不是同一份引用
  * 插件中可能存在后置动态插入 style 的行为，此时只会获取到 proxiedHead
@@ -55,12 +69,17 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
   };
 }
 
-const componentCdnBase = 'https://unpkg.com/browse';
 const packageName = '@opensumi/ide-components';
 
-function getStyleSheet(filePath: string, version: string) {
+function getStyleSheet(filePath: string, version: string, cdnType: CDNType = 'alipay') {
   const link = document.createElement('link');
-  link.setAttribute('href', `${componentCdnBase}/${packageName}@${version}/${filePath}`);
+  let href = '';
+  if (cdnType === 'alipay') {
+    href = `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/${version}/${filePath}`;
+  } else {
+    href = `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
+  }
+  link.setAttribute('href', href);
   link.setAttribute('rel', 'stylesheet');
   return link;
 }
@@ -70,11 +89,13 @@ const ShadowRoot = ({
   extensionId,
   children,
   proxiedHead,
+  cdnType,
 }: {
   id: string;
   extensionId: string;
   children: any;
   proxiedHead: HTMLHeadElement;
+  cdnType?: CDNType;
 }) => {
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
@@ -88,8 +109,8 @@ const ShadowRoot = ({
     if (shadowRootRef.current) {
       const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
       if (proxiedHead) {
-        proxiedHead.appendChild(getStyleSheet('dist/index.css', pkgJson.version));
-        proxiedHead.appendChild(getStyleSheet('lib/icon/iconfont/iconfont.css', pkgJson.version));
+        proxiedHead.appendChild(getStyleSheet('dist/index.css', pkgJson.version, cdnType));
+        proxiedHead.appendChild(getStyleSheet('lib/icon/iconfont/iconfont.css', pkgJson.version, cdnType));
 
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
         const newHead = cloneNode<HTMLHeadElement>(proxiedHead);
@@ -142,7 +163,7 @@ const ShadowRoot = ({
   );
 };
 
-export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHead) {
+export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHead, type?: CDNType) {
   const Component = panel;
   const { getIcon } = React.useContext(IconContext);
   const labelService = useInjectable<LabelService>(LabelService);
@@ -153,7 +174,7 @@ export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHe
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
-      <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead}>
+      <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead} cdnType={type}>
         <Component {...props} />
       </ShadowRoot>
     </ComponentContextProvider>

@@ -76,8 +76,10 @@ function doPublishPackages(packages, version, distTag) {
   let i = 1;
 
   packages.forEach((p) => {
-    process.stdout.write(`[Progress: ${i}/${packages.length}]`);
-    p.publish(version, packages, distTag, subscriptions);
+    if (semver.gt(version, p.version)) {
+      process.stdout.write(`[Progress: ${i}/${packages.length}]`);
+      p.publish(version, packages, distTag, subscriptions);
+    }
     i++;
   });
 

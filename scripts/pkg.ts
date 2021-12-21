@@ -12,10 +12,14 @@ export default class Package {
 
   packageJsonFile: string;
 
+  version: string;
+
   constructor(path: string) {
     this.path = path;
     this.packageJsonFile = join(this.path, 'package.json');
-    this.name = readJSONSync(this.packageJsonFile).name;
+    const pkg = readJSONSync(this.packageJsonFile);
+    this.name = pkg.name;
+    this.version = pkg.version;
   }
 
   modifyPackageJson(version: string, packages: Package[], subscriptions) {
