@@ -90,6 +90,19 @@ export class IconService implements IIconService {
     });
   }
 
+  private styleSheetCollection = '';
+
+  private appendStylesTimer: NodeJS.Timeout | undefined;
+  private appendStyleCounter = 0;
+
+  private doAppend(targetElement: HTMLElement | null) {
+    targetElement?.append(this.styleSheetCollection);
+    this.styleSheetCollection = '';
+    this.appendStylesTimer = undefined;
+    this.appendStyleCounter = 0;
+    clearTimeout(this.appendStylesTimer);
+  }
+
   protected appendStyleSheet(styleSheet: string) {
     let iconStyleNode = document.getElementById('plugin-icons');
     if (!iconStyleNode) {
@@ -97,7 +110,22 @@ export class IconService implements IIconService {
       iconStyleNode.id = 'plugin-icons';
       document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
     }
-    iconStyleNode.append(styleSheet);
+
+    this.styleSheetCollection += '\r\n' + styleSheet;
+    this.appendStyleCounter += 1;
+
+    // 超过 100 个样式
+    if (this.appendStyleCounter >= 100 && this.appendStylesTimer) {
+      clearTimeout(this.appendStylesTimer);
+      this.doAppend(iconStyleNode);
+    }
+
+    if (!this.appendStylesTimer) {
+      // 超过 100 毫秒
+      this.appendStylesTimer = setTimeout(() => {
+        this.doAppend(iconStyleNode);
+      }, 100);
+    }
   }
 
   protected getRandomIconClass() {
