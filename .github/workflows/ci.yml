@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -19,7 +20,7 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x, 14.x]
-    
+
     steps:
     - uses: actions/checkout@v2
 
