@@ -30,26 +30,6 @@ async function getPrDesc(
   return ret;
 }
 
-// Get github login name through primary email
-async function getAuthor(
-  email: string,
-) {
-  const res = await fetch(
-    `https://api.github.com/search/users?q=${email}`,
-    {
-      method: 'GET',
-      headers: {
-        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      }
-    }
-  );
-  const ret = await res.json();
-  if (ret.items && ret.items.length > 0) {
-    return ret.items[0].login;
-  }
-}
-
 /**
  * 从 commit log 按照 github 的特性分离 changelog
  */
@@ -70,10 +50,9 @@ export async function extractChangelog(
       // fetch pr desc from github service and insert it to `body` field
       const prIid = ret[1];
       const prDetail = await getPrDesc(prIid);
-      const loginName = await getAuthor(log.author_email);
       result.push({
         ...log,
-        loginName,
+        loginName: prDetail.user.login,
         pullRequestDescription: prDetail.body || '',
         pullRequestId: prIid,
       });
