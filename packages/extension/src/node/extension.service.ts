@@ -161,7 +161,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath('main_thread'));
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.electronMainThreadListenPaths.get(clientId);
+    return this.electronMainThreadListenPaths.get(clientId)!;
   }
 
   public getElectronMainThreadListenPath2(clientId: string): string {
