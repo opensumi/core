@@ -170,7 +170,6 @@ describe('OpenedEditorModelService should be work', () => {
       expect(typeof openedEditorModelService.handleTreeBlur).toBe('function');
       expect(typeof openedEditorModelService.handleItemClick).toBe('function');
       expect(typeof openedEditorModelService.refresh).toBe('function');
-      expect(typeof openedEditorModelService.flushEventQueue).toBe('function');
       expect(typeof openedEditorModelService.location).toBe('function');
       expect(typeof openedEditorModelService.openFile).toBe('function');
       expect(typeof openedEditorModelService.closeFile).toBe('function');

@@ -87,7 +87,7 @@ export class DebugSource extends DebugSourceData {
 
   async load(): Promise<string> {
     const source = this.raw;
-    const sourceReference = source.sourceReference!;
+    const sourceReference = source.sourceReference || -1;
     const response = await this.session.sendRequest('source', {
       sourceReference,
       source,
@@ -118,10 +118,10 @@ export class DebugSource extends DebugSourceData {
   }
 
   static SCHEME = 'debug';
-  static SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9\+\-\.]+:/;
+  static SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+\-.]+:/;
   static toUri(raw: DebugProtocol.Source): URI {
-    if (raw.sourceReference && raw.sourceReference > 0) {
-      return new URI().withScheme(DebugSource.SCHEME).withPath(raw.name!).withQuery(String(raw.sourceReference));
+    if (raw.sourceReference && raw.sourceReference > 0 && raw.name) {
+      return new URI().withScheme(DebugSource.SCHEME).withPath(raw.name).withQuery(String(raw.sourceReference));
     }
     if (!raw.path) {
       throw new Error('Unrecognized source type: ' + JSON.stringify(raw));

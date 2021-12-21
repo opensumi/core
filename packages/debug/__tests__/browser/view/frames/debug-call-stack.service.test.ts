@@ -1,5 +1,3 @@
-import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { URI } from '@opensumi/ide-core-common';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -18,7 +16,7 @@ describe('Debug Call Frames Service', () => {
   } as any;
 
   const mockContextKeyService = {
-    createScoped: jest.fn((target?: IContextKeyServiceTarget | ContextKeyService | undefined) => mockContextKeyService),
+    createScoped: jest.fn(() => mockContextKeyService),
     createKey: jest.fn(() => ({
       set: jest.fn(),
       reset: jest.fn(),

@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, WatchEvent } from '@opensumi/ide-components';
 import {
   URI,
   DisposableCollection,
@@ -105,10 +105,6 @@ export class OutlineModelService {
     return this._whenReady;
   }
 
-  get flushEventQueuePromise() {
-    return this.refreshDeferred && this.refreshDeferred.promise;
-  }
-
   get outlineTreeHandle() {
     return this._outlineTreeHandle;
   }
@@ -157,10 +153,12 @@ export class OutlineModelService {
     this.outlineTreeService.currentUri = uri;
     if (!!uri && this._allTreeModels.has(uri.toString())) {
       const treeModelStore = this._allTreeModels.get(uri.toString());
-      // 初始化节点装饰器
-      this._activeTreeModel = treeModelStore!.treeModel;
-      this._decorations = treeModelStore!.decoration;
-      this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
+      if (treeModelStore) {
+        // 初始化节点装饰器
+        this._activeTreeModel = treeModelStore.treeModel;
+        this._decorations = treeModelStore.decoration;
+        this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
+      }
     } else if (uri) {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.outlineTreeService.resolveChildren())[0];
@@ -206,7 +204,7 @@ export class OutlineModelService {
       this.markerManager.onMarkerChanged((resources) => {
         if (
           this.outlineTreeService.currentUri &&
-          resources.find((resource) => resource === this.outlineTreeService.currentUri!.toString())
+          resources.find((resource) => resource === this.outlineTreeService.currentUri?.toString())
         ) {
           this.refresh();
         }
@@ -246,7 +244,7 @@ export class OutlineModelService {
     );
 
     this.disposableCollection.push(
-      this.outlineEventService.onDidChange((url: URI | null) => {
+      this.outlineEventService.onDidChange(() => {
         this.outlineTreeService.currentUri = this.editorService.currentEditor?.currentUri;
         this.refresh();
       }),
@@ -277,7 +275,7 @@ export class OutlineModelService {
     if (!this.outlineTreeService.currentUri) {
       return;
     }
-    const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri!);
+    const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri);
     if (symbols) {
       const activeSymbols = this.findCurrentDocumentSymbol(
         symbols,
@@ -352,7 +350,7 @@ export class OutlineModelService {
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
-        this.selectedNodes.forEach((file) => {
+        this.selectedNodes.forEach(() => {
           // 因为选择装饰器可能通过其他方式添加而不能及时在selectedNodes上更新
           // 故这里遍历所有选中装饰器的节点进行一次统一清理
           for (const target of this.selectedDecoration.appliedTargets.keys()) {
@@ -469,7 +467,7 @@ export class OutlineModelService {
     this.enactiveNodeDecoration();
   };
 
-  handleItemClick = (item: OutlineCompositeTreeNode | OutlineTreeNode, type: TreeNodeType) => {
+  handleItemClick = (item: OutlineCompositeTreeNode | OutlineTreeNode) => {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
 
@@ -524,7 +522,7 @@ export class OutlineModelService {
         this.outlineTreeService.currentUri.isEqual(node.currentUri)
       ) {
         // 刷新前需要更新诊断信息数据
-        this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri!);
+        this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri);
         // 因为Outline模块的节点是自展开的，不需要遍历
         await node.refresh([node.path]);
         this.onDidRefreshedEmitter.fire();
@@ -535,7 +533,6 @@ export class OutlineModelService {
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
@@ -552,7 +549,7 @@ export class OutlineModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    const promise = pSeries(
       roots.map((path) => async () => {
         const watcher = this.treeModel.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {

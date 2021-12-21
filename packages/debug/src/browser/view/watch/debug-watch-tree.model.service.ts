@@ -33,9 +33,8 @@ import { Path } from '@opensumi/ide-core-common/lib/path';
 import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugWatch } from '../../model';
-import pSeries from 'p-series';
-import styles from './debug-watch.module.less';
 import { DebugSessionManager } from '../../debug-session-manager';
+import styles from './debug-watch.module.less';
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -45,7 +44,6 @@ export type IWatchNode = DebugVariable | DebugVariableContainer | DebugWatchNode
 
 @Injectable()
 export class DebugWatchModelService {
-  private static DEFAULT_REFRESH_DELAY = 100;
   private static DEFAULT_TRIGGER_DELAY = 200;
 
   private static DEBUG_WATCHER_EXPRESSIONS_STORAGE_KEY = 'watchers';
@@ -83,10 +81,6 @@ export class DebugWatchModelService {
   private _debugWatchTreeHandle: IDebugWatchHandle;
   private debugWatch: DebugWatch;
 
-  public flushEventQueueDeferred: Deferred<void> | null;
-  private _eventFlushTimeout: number;
-  private _changeEventDispatchQueue: string[] = [];
-
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
@@ -117,10 +111,6 @@ export class DebugWatchModelService {
 
     this.init();
     this.watchItemType = CONTEXT_WATCH_ITEM_TYPE.bind(this.contextKeyService);
-  }
-
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
   }
 
   get contextMenuContextKeyService() {
@@ -206,18 +196,21 @@ export class DebugWatchModelService {
 
   listenTreeViewChange() {
     this.dispose();
+    if (!this.treeModel) {
+      return;
+    }
     this.disposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
         this.loadingDecoration.addTarget(target);
       }),
     );
     this.disposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
         this.loadingDecoration.removeTarget(target);
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.selectedNodes.length !== 0) {
           // 仅处理一下单选情况
@@ -414,8 +407,8 @@ export class DebugWatchModelService {
     this.debugWatch.removeWatchExpression(node.name);
     if (node.session) {
       this.initTreeModel();
-    } else {
-      this.dispatchWatchEvent(node.parent!.path, { type: WatchEvent.Removed, path: node.path });
+    } else if (node.parent) {
+      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
     }
   }
 
@@ -503,59 +496,6 @@ export class DebugWatchModelService {
     if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
       node = (node as ExpressionContainer).parent as ExpressionContainer;
     }
-    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
-    // 队列化刷新动作减少更新成本
-    this.queueChangeEvent(node.path, () => {
-      this.onDidRefreshedEmitter.fire();
-    });
+    await node.refresh();
   }
-
-  // 队列化Changed事件
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueueDeferred) {
-      this.flushEventQueueDeferred = new Deferred<void>();
-      clearTimeout(this._eventFlushTimeout);
-      this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
-        callback();
-      }, DebugWatchModelService.DEFAULT_REFRESH_DELAY) as any;
-    }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
-    }
-  }
-
-  public flushEventQueue = () => {
-    let promise: Promise<any>;
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
-      return;
-    }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
-        continue;
-      } else {
-        roots.push(path);
-      }
-    }
-    promise = pSeries(
-      roots.map((path) => async () => {
-        const watcher = this.treeModel?.root?.watchEvents.get(path);
-        if (watcher && typeof watcher.callback === 'function') {
-          await watcher.callback({ type: WatchEvent.Changed, path });
-        }
-        return null;
-      }),
-    );
-    // 重置更新队列
-    this._changeEventDispatchQueue = [];
-    return promise;
-  };
 }

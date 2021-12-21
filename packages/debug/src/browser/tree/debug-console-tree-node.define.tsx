@@ -10,7 +10,7 @@ import { LinkDetector } from '../debug-link-detector';
 export class TreeWithLinkWrapper extends React.Component<{ html: HTMLElement; className?: string }> {
   componentDidMount() {
     const container = ReactDOM.findDOMNode(this);
-    container!.appendChild(this.props.html);
+    container?.appendChild(this.props.html);
   }
 
   render() {

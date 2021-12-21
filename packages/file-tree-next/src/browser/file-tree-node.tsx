@@ -136,7 +136,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       const { handleDragLeave } = dndService;
 
       if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-        handleDragLeave(ev, item);
+        handleDragLeave(ev);
       }
     },
     [dndService, item],
@@ -146,7 +146,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     (ev: React.DragEvent) => {
       const { handleDragEnter } = dndService;
       if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-        handleDragEnter(ev, item);
+        handleDragEnter(ev);
       }
     },
     [dndService, item],

@@ -146,7 +146,7 @@ export class DebugBreakpointsService extends WithEventBus {
         nodes.push({
           id: item.id,
           name: uri.displayName,
-          description: parent && parent.relative(uri)!.toString(),
+          description: (parent && parent.relative(uri)?.toString()) || '',
           breakpoint: item,
         });
       }
@@ -192,7 +192,7 @@ export class DebugBreakpointsService extends WithEventBus {
   }
 
   public async createBreakpointInput(container: HTMLElement): Promise<ICodeEditor> {
-    this._inputEditor = await this.editorService.createCodeEditor(container!, {
+    this._inputEditor = await this.editorService.createCodeEditor(container, {
       ...getSimpleEditorOptions(),
       scrollbar: {
         horizontal: 'hidden',

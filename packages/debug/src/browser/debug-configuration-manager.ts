@@ -291,7 +291,7 @@ export class DebugConfigurationManager {
       },
       onArrayBegin: (offset) => {
         if (lastProperty === 'configurations' && depthInArray === 0) {
-          position = editor.getModel()!.getPositionAt(offset + 1);
+          position = editor.getModel()?.getPositionAt(offset + 1);
         }
         depthInArray++;
       },
@@ -303,12 +303,13 @@ export class DebugConfigurationManager {
       return;
     }
     // 判断在"configurations": [后是否有字符，如果有则新建一行
-    if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber) > position.column) {
+    const column = editor.getModel()?.getLineLastNonWhitespaceColumn(position.lineNumber);
+    if (column && column > position.column) {
       editor.setPosition(position);
       editor.trigger(launchSchemaUri, 'lineBreakInsert', undefined);
     }
     // 判断是否已有空行可用于插入建议，如果有，直接替换对应的光标位置
-    if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
+    if (editor.getModel()?.getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
       editor.setPosition({ lineNumber: position.lineNumber + 1, column: 1 << 30 });
       editor.trigger(null, 'editor.action.deleteLines', []);
     }

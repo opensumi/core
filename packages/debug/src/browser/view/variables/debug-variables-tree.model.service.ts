@@ -10,14 +10,7 @@ import {
   TreeNodeType,
   TreeNodeEvent,
 } from '@opensumi/ide-components';
-import {
-  Emitter,
-  ThrottledDelayer,
-  Deferred,
-  Event,
-  DisposableCollection,
-  IClipboardService,
-} from '@opensumi/ide-core-browser';
+import { Emitter, ThrottledDelayer, Event, DisposableCollection, IClipboardService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
 import {
@@ -52,7 +45,7 @@ class KeepExpandedScopesModel {
     if (scope) {
       const keepScope = this.getMirrorScope(item);
       if (keepScope) {
-        const kScopeVars = this._keepExpandedScopesMap.get(keepScope)!;
+        const kScopeVars = this._keepExpandedScopesMap.get(keepScope) || [];
         let nScopeVars: number[];
         if (item.expanded) {
           nScopeVars = Array.from(new Set([...kScopeVars, item.variablesReference]));
@@ -108,8 +101,6 @@ export class DebugVariablesModelService {
   private _debugVariablesTreeHandle: IDebugVariablesHandle;
   private _currentVariableInternalContext: DebugVariable | DebugVariableContainer | undefined;
 
-  public flushEventQueueDeferred: Deferred<void> | null;
-
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
@@ -133,10 +124,6 @@ export class DebugVariablesModelService {
 
   constructor() {
     this.listenViewModelChange();
-  }
-
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
   }
 
   get treeHandle() {
@@ -235,18 +222,21 @@ export class DebugVariablesModelService {
 
   listenTreeViewChange() {
     this.dispose();
+    if (!this.treeModel) {
+      return;
+    }
     this.disposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
         this.loadingDecoration.addTarget(target);
       }),
     );
     this.disposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
         this.loadingDecoration.removeTarget(target);
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.selectedNodes.length !== 0) {
           // 仅处理一下单选情况
@@ -383,7 +373,7 @@ export class DebugVariablesModelService {
   handleTreeHandler(handle: IDebugVariablesHandle) {
     this._debugVariablesTreeHandle = {
       ...handle,
-      getModel: () => this.treeModel!,
+      getModel: () => this.treeModel,
     };
   }
 

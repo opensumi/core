@@ -428,7 +428,7 @@ export class DebugContribution
         this.openDebugView();
       }
     });
-    this.sessionManager.onDidDestroyDebugSession((session) => {
+    this.sessionManager.onDidDestroyDebugSession(() => {
       if (this.sessionManager.sessions.length === 0) {
         this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
         this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
@@ -460,7 +460,7 @@ export class DebugContribution
   onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler) {
-      handler!.setTitleComponent(DebugConfigurationView);
+      handler.setTitleComponent(DebugConfigurationView);
     }
   }
 
@@ -606,7 +606,7 @@ export class DebugContribution
         if (selectedBreakpoint) {
           const { uri, openBreakpointView, toggleBreakpoint } = selectedBreakpoint.model;
           toggleBreakpoint(position);
-          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position.lineNumber);
           // 更新当前右键选中的断点
           if (breakpoint) {
             this.breakpointManager.selectedBreakpoint = {
@@ -626,7 +626,7 @@ export class DebugContribution
         if (selectedBreakpoint) {
           const { openBreakpointView, toggleBreakpoint, uri } = selectedBreakpoint.model;
           toggleBreakpoint(position);
-          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position.lineNumber);
           // 更新当前右键选中的断点
           if (breakpoint) {
             this.breakpointManager.selectedBreakpoint = {

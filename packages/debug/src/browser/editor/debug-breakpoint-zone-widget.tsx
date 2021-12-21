@@ -96,15 +96,15 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       this.addDispose(
         monacoEditor.onDidBlurEditorWidget(() => {
           this.inputBlurHandler();
-        })!,
+        }),
       );
       this.addDispose(
         monacoEditor.onDidFocusEditorWidget(() => {
           this.inputFocusHandler();
-        })!,
+        }),
       );
       this.addDispose(
-        monacoEditor.onDidChangeModelContent((textModel: monaco.editor.IModelContentChangedEvent) => {
+        monacoEditor.onDidChangeModelContent(() => {
           if (!this.input) {
             return;
           }
@@ -116,7 +116,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
             this.clearPlaceholder();
           }
 
-          const lineNum = monacoEditor.getModel()!.getLineCount();
+          const lineNum = monacoEditor.getModel()?.getLineCount() || 0;
           this._relayout(lineNum + 1);
         }),
       );
@@ -177,7 +177,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
 
   private setInputMode(): void {
     const languageIdentifier = this.editor.getModel()?.getLanguageIdentifier();
-    const model = this.input!.monacoEditor.getModel();
+    const model = this.input?.monacoEditor.getModel();
     if (model && languageIdentifier) {
       model.setMode(
         this.context === 'logMessage' ? new monacoModes.LanguageIdentifier('plaintext', 1) : languageIdentifier,

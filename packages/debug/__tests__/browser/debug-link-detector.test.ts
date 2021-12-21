@@ -27,7 +27,7 @@ describe('Debug - Link Detector', () => {
       {
         token: IFileServiceClient,
         useValue: {
-          getFileStat: jest.fn((uri: string) => Promise.resolve(undefined)),
+          getFileStat: jest.fn(() => Promise.resolve(undefined)),
         },
       },
       {
@@ -92,12 +92,14 @@ describe('Debug - Link Detector', () => {
 
     assert.strictEqual(1, output.children.length);
     assert.strictEqual('SPAN', output.tagName);
-    assert.strictEqual('A', output.firstElementChild!.tagName);
+    assert.strictEqual('A', output.firstElementChild?.tagName);
     assert.strictEqual(expectedOutput, output.outerHTML);
-    assertElementIsLink(output.firstElementChild!);
+    if (output.firstElementChild) {
+      assertElementIsLink(output.firstElementChild);
+    }
     assert.strictEqual(
       isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34',
-      output.firstElementChild!.textContent,
+      output.firstElementChild?.textContent,
     );
   });
 

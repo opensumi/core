@@ -94,14 +94,17 @@ export class CharWidthReader {
   public getCharWidth(char: string, font: string): number {
     const cacheKey = char + font;
     if (this._cache.has(cacheKey)) {
-      return this._cache.get(cacheKey)!;
+      return this._cache.get(cacheKey) || 0;
     }
 
-    const context = this._canvas.getContext('2d')!;
-    context.font = font;
-    const metrics = context.measureText(char);
-    const width = metrics.width;
-    this._cache.set(cacheKey, width);
-    return width;
+    const context = this._canvas.getContext('2d');
+    if (context) {
+      context.font = font;
+      const metrics = context.measureText(char);
+      const width = metrics.width;
+      this._cache.set(cacheKey, width);
+      return width;
+    }
+    return 0;
   }
 }

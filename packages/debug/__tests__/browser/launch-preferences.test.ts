@@ -373,14 +373,12 @@ describe('Launch Preferences', () => {
     inspectExpectation,
     settings,
     launch,
-    only,
   }: {
     configMode: ConfigMode;
     expectation: any;
     inspectExpectation?: any;
     launch?: any;
     settings?: any;
-    only?: boolean;
   }): void {
     describe(JSON.stringify(configMode, undefined, 2), () => {
       const configPaths = Array.isArray(configMode) ? configMode : [configMode];

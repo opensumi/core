@@ -195,7 +195,7 @@ describe('Debug Configuration Manager', () => {
   it('find method should be work', () => {
     const configuration = debugConfigurationManager.find('Attach to BackEnd', root.toString());
     expect(configuration).toBeDefined();
-    expect(configuration!.workspaceFolderUri).toBe(root.toString());
+    expect(configuration && configuration.workspaceFolderUri).toBe(root.toString());
   });
 
   it('getSupported method should be work', async (done) => {

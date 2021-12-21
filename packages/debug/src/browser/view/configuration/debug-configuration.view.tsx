@@ -106,13 +106,13 @@ const ConfigurationSelector = React.memo(
         });
         const disabledOption = isElectronRenderer()
           ? [
-              <option disabled key={'--'} value={longName!.replace(/./g, '-')}>
-                {longName!.replace(/./g, '-')}
+              <option disabled key={'--'} value={longName.replace(/./g, '-')}>
+                {longName.replace(/./g, '-')}
               </option>,
             ]
           : [
-              <Option disabled key={'--'} value={longName!.replace(/./g, '-')}>
-                {longName!.replace(/./g, '-')}
+              <Option disabled key={'--'} value={longName.replace(/./g, '-')}>
+                {longName.replace(/./g, '-')}
               </Option>,
             ];
         return disabledOption.concat(addonOptions);
@@ -120,16 +120,16 @@ const ConfigurationSelector = React.memo(
         const label = addConfigurationLabel;
         return isElectronRenderer()
           ? [
-              <option disabled key={'--'} value={label!.replace(/./g, '-')}>
-                {label!.replace(/./g, '-')}
+              <option disabled key={'--'} value={label.replace(/./g, '-')}>
+                {label.replace(/./g, '-')}
               </option>,
               <option value={DEFAULT_ADD_CONFIGURATION_KEY} key={DEFAULT_ADD_CONFIGURATION_KEY} label={label}>
                 {label}
               </option>,
             ]
           : [
-              <Option disabled key={'--'} value={label!.replace(/./g, '-')}>
-                {label!.replace(/./g, '-')}
+              <Option disabled key={'--'} value={label.replace(/./g, '-')}>
+                {label.replace(/./g, '-')}
               </Option>,
               <Option value={DEFAULT_ADD_CONFIGURATION_KEY} key={DEFAULT_ADD_CONFIGURATION_KEY} label={label}>
                 {label}
@@ -193,7 +193,7 @@ export const DebugActionBar = React.memo(({ runDebug, openConfiguration, openDeb
   </div>
 ));
 
-export const DebugConfigurationView = observer((props) => {
+export const DebugConfigurationView = observer(() => {
   const {
     configurationOptions,
     toValue,

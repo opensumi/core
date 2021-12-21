@@ -27,11 +27,7 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     });
   };
 
-  const handleItemClicked = (
-    ev: React.MouseEvent,
-    item: OutlineTreeNode | OutlineCompositeTreeNode,
-    type: TreeNodeType,
-  ) => {
+  const handleItemClicked = (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -39,14 +35,10 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     if (!item) {
       return;
     }
-    handleItemClick(item, type);
+    handleItemClick(item);
   };
 
-  const handleTwistierClicked = (
-    ev: React.MouseEvent,
-    item: OutlineTreeNode | OutlineCompositeTreeNode,
-    type: TreeNodeType,
-  ) => {
+  const handleTwistierClicked = (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 

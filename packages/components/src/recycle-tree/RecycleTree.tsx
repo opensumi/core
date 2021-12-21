@@ -189,7 +189,7 @@ export interface IRecycleTreeHandle {
    *
    * @param pathOrTreeNode 节点或者节点路径
    */
-  getModel(): TreeModel;
+  getModel(): TreeModel | undefined;
   /**
    * TreeModel变更事件
    *

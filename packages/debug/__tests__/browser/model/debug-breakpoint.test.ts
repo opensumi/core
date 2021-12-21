@@ -89,7 +89,10 @@ describe('Debug Breakpoints', () => {
         done();
       });
 
-      const breakpoint = manager.getBreakpoint(fileUri, customBreakpointSource.line)!;
+      const breakpoint = manager.getBreakpoint(fileUri, customBreakpointSource.line);
+      if (!breakpoint) {
+        return;
+      }
       breakpoint.raw.line = nextLine;
       manager.updateBreakpoint(breakpoint);
     });
@@ -104,8 +107,8 @@ describe('Debug Breakpoints', () => {
         done();
       });
 
-      const breakpoint = manager.getBreakpoint(fileUri, nextLine)!;
-      manager.delBreakpoint(breakpoint);
+      const breakpoint = manager.getBreakpoint(fileUri, nextLine);
+      breakpoint && manager.delBreakpoint(breakpoint);
     });
 
     it('Set Mutiple Breakpoints', () => {
