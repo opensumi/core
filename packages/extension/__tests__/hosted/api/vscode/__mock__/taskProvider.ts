@@ -19,7 +19,7 @@ class CustomBuildTaskTerminal {
     private setSharedState: (state: string) => void,
   ) {}
 
-  open(initialDimensions): void {
+  open(): void {
     this.doBuild();
   }
 
@@ -98,7 +98,7 @@ export class CustomBuildTaskProvider implements TaskProvider {
     this.tasks = [];
     flavors.forEach((flavor) => {
       flags.forEach((flagGroup) => {
-        this.tasks!.push(this.getTask(flavor, flagGroup));
+        this.tasks?.push(this.getTask(flavor, flagGroup));
       });
     });
     return this.tasks;

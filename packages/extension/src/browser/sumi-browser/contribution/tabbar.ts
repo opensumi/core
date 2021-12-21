@@ -81,6 +81,7 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
             initialProps,
             fromExtension: true,
           },
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           position!,
         );
       } else {

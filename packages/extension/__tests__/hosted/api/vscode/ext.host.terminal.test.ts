@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { ITerminalApiService, ITerminalController } from '@opensumi/ide-terminal-next';
@@ -193,7 +194,7 @@ describe(__filename, () => {
     });
 
     setTimeout(async () => {
-      extHost.onDidOpenTerminal((term) => {
+      extHost.onDidOpenTerminal(() => {
         expect(terminal.name).toBe(terminalName);
       });
 
@@ -210,6 +211,7 @@ describe(__filename, () => {
     id: 'test-terminal-env',
   };
   const collection = extHost.getEnviromentVariableCollection(mockExtension as unknown as IExtension);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const mocksyncEnvironmentVariableCollection = jest.spyOn(extHost, 'syncEnvironmentVariableCollection');
 
@@ -261,6 +263,7 @@ describe(__filename, () => {
 
     collection.forEach((variable) => {
       variableSet.push(variable);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       valueSet.push(collection.get(variable)?.value!);
     });
 

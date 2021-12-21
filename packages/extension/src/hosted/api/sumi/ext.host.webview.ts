@@ -21,6 +21,7 @@ export class ExtHostWebview {
       this.handles.set(id, new PlainWebviewHandle(id, this._proxy));
       this._proxy.$connectPlainWebview(id);
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.handles.get(id)!;
   }
 
@@ -38,7 +39,7 @@ export class ExtHostWebview {
 
   $acceptMessage(id: string, message: any) {
     if (this.handles.has(id)) {
-      this.handles.get(id)!.onMessageEmitter.fire(message);
+      this.handles.get(id)?.onMessageEmitter.fire(message);
     }
   }
 }

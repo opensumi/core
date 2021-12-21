@@ -72,10 +72,10 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
     super.write(message);
   }
 
-  protected onDebugAdapterExit(exitCode: number, signal: string | undefined): void {
+  protected onDebugAdapterExit(exitCode: number): void {
     if (this.tracker.onExit) {
-      this.tracker.onExit(exitCode, signal);
+      this.tracker.onExit(exitCode, undefined);
     }
-    super.onDebugAdapterExit(exitCode, signal);
+    super.onDebugAdapterExit(exitCode);
   }
 }

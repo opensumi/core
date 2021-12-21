@@ -89,8 +89,8 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
               );
               this.disposableCollection.push({
                 dispose: () => {
-                  const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
-                  handler.disposeView(id);
+                  const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+                  handler?.disposeView(id);
                 },
               });
             }
@@ -111,7 +111,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
               },
             ],
             {
-              iconClass: iconPath ? this.iconService.fromIcon(this.extension.path, iconPath) : getIcon(icon!),
+              iconClass: iconPath ? this.iconService.fromIcon(this.extension.path, iconPath) : getIcon(icon),
               title: title && this.getLocalizeFromNlsJSON(title),
               priority,
               expanded,
@@ -124,8 +124,8 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
           );
           this.disposableCollection.push({
             dispose: () => {
-              const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
-              handler.dispose();
+              const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+              handler?.dispose();
             },
           });
         }

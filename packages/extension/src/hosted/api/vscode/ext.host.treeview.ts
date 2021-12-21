@@ -220,7 +220,7 @@ class ExtHostTreeView<T> implements IDisposable {
     });
 
     if (this.treeDataProvider.onDidChangeTreeData) {
-      const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
+      const dispose = this.treeDataProvider.onDidChangeTreeData(() => {
         proxy.$refresh<T>(treeViewId);
       });
       if (dispose) {
@@ -311,7 +311,7 @@ class ExtHostTreeView<T> implements IDisposable {
       const node = this.cacheTreeItems.get(cache);
 
       if (node) {
-        const resolve = (await this.treeDataProvider.resolveTreeItem(node!, cache, token)) ?? node;
+        const resolve = (await this.treeDataProvider.resolveTreeItem(node, cache, token)) ?? node;
         node.tooltip = resolve.tooltip;
         node.command = resolve.command;
         return this.toTreeViewItem(node);

@@ -269,18 +269,13 @@ export const MOCK_EXTENSIONS: IExtension[] = [mockExtension];
 
 @Injectable()
 class MockExtNodeClientService implements IExtensionNodeClientService {
-  getElectronMainThreadListenPath(clientId: string): Promise<string> {
+  getElectronMainThreadListenPath(): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(
-    scan: string[],
-    extensionCandidate: string[],
-    localization: string,
-    extraMetaData: IExtraMetaData,
-  ): Promise<IExtensionMetaData[]> {
+  getAllExtensions(): Promise<IExtensionMetaData[]> {
     return Promise.resolve(MOCK_EXTENSIONS);
   }
-  createProcess(clientId: string): Promise<void> {
+  createProcess(): Promise<void> {
     return Promise.resolve();
   }
   getExtension(
@@ -299,10 +294,10 @@ class MockExtNodeClientService implements IExtensionNodeClientService {
   infoProcessCrash(): void {
     throw new Error('Method not implemented.');
   }
-  disposeClientExtProcess(clientId: string, info: boolean): Promise<void> {
+  disposeClientExtProcess(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void> {
+  updateLanguagePack(): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }
@@ -430,7 +425,7 @@ export function setupExtensionServiceInjector() {
     {
       token: IWorkspaceStorageServer,
       useValue: {
-        getItems(key) {
+        getItems() {
           return JSON.stringify({ language: 'zh_CN' });
         },
         init() {
@@ -452,7 +447,7 @@ export function setupExtensionServiceInjector() {
     {
       token: IGlobalStorageServer,
       useValue: {
-        getItems(key) {
+        getItems() {
           return JSON.stringify({ language: 'zh_CN' });
         },
         init() {
@@ -524,7 +519,7 @@ export function setupExtensionServiceInjector() {
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel() {
-          const channelSend = (content) => {
+          const channelSend = () => {
             //
           };
           return new WSChannel(channelSend, 'mock_wschannel');

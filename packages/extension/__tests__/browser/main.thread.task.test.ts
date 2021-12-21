@@ -64,10 +64,10 @@ const extension = Object.assign({}, mockExtensions[0], {
 });
 
 class TestTaskProvider {
-  provideTasks(token) {
+  provideTasks() {
     return [new Task({ type: 'test-taskprovider' }, 2, 'Echo Task', 'echo', new ShellExecution('echo'))];
   }
-  resolveTask(task, token) {
+  resolveTask() {
     return undefined;
   }
 }
@@ -260,7 +260,7 @@ describe('MainThreadTask Test Suite', () => {
       done();
     });
 
-    it.skip('executeTask should be work', async (done) => {
+    it.skip('executeTask should be work', async () => {
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       const execution = await extHostTaskApi.executeTask(tasks[0]);
       expect(execution.task.name).toBe('Echo Task');

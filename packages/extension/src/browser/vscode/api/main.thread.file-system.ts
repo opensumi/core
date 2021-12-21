@@ -92,6 +92,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   $stat(uri: UriComponents): Promise<FileStat> {
     return this._fileService
       .getFileStat(URI.revive(uri).toString())
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .then((stat) => toFileStat(stat!))
       .catch(MainThreadFileSystem._handleError);
   }
@@ -154,6 +155,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
         .catch(MainThreadFileSystem._handleError);
     } else {
       return this._fileService
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         .setContent(stat!, content)
         .then(() => undefined)
         .catch(MainThreadFileSystem._handleError);

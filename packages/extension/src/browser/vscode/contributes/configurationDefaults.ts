@@ -33,6 +33,7 @@ export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoin
     for (const key in configurationDefaults) {
       const defaultValue = configurationDefaults[key];
       if (OVERRIDE_PROPERTY_PATTERN.test(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const language = key.match(OVERRIDE_PROPERTY_PATTERN)![1];
         Object.keys(defaultValue).forEach((preferenceName) => {
           this.defaultPreferenceProvider.setPreference(

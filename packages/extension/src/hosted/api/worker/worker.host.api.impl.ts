@@ -41,7 +41,6 @@ import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
-  type: string,
 ) {
   rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
 

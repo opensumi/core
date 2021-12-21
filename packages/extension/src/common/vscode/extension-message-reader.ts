@@ -18,10 +18,10 @@ export class ExtensionMessageReader extends AbstractMessageReader {
       this.state = 'listening';
       this.callback = callback;
       while (this.events.length !== 0) {
-        const event = this.events.pop()!;
-        if (event.message) {
+        const event = this.events.pop();
+        if (event?.message) {
           this.readMessage(event.message);
-        } else if (event.error) {
+        } else if (event?.error) {
           this.fireError(event.error);
         } else {
           this.fireClose();
@@ -41,7 +41,7 @@ export class ExtensionMessageReader extends AbstractMessageReader {
       this.events.splice(0, 0, { message });
     } else if (this.state === 'listening') {
       const data = JSON.parse(message);
-      this.callback!(data);
+      this.callback && this.callback(data);
     }
   }
 

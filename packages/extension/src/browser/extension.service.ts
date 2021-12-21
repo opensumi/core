@@ -507,7 +507,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
      */
     if (typeof packageJSON.contributes !== 'undefined') {
       for (const id of ['debuggers', 'terminal', 'typescriptServerPlugins']) {
-        if (packageJSON.contributes.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(packageJSON.contributes, id)) {
           return false;
         }
       }
@@ -534,7 +534,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.workerExtensionService.activeExtension(extension, isWebExtension),
     ]);
 
-    await this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol);
+    await this.viewExtensionService.activeExtension(extension);
   }
 
   private resetExtensionInstances() {

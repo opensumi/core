@@ -26,7 +26,7 @@ import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import * as types from '../../../common/vscode/ext-types';
-import { Uri, Disposable } from '../../../common/vscode/ext-types';
+import { Uri } from '../../../common/vscode/ext-types';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError, IExtensionDescription } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -62,15 +62,12 @@ export function createWindowApiFactory(
   return {
     // @deprecated
     withScmProgress<R>(task: (progress: vscode.Progress<number>) => Thenable<R>) {
-      return extHostProgress.withProgress(
-        extension,
-        { location: types.ProgressLocation.SourceControl },
-        (progress, token) =>
-          task({
-            report(n: number) {
-              /* noop*/
-            },
-          }),
+      return extHostProgress.withProgress(extension, { location: types.ProgressLocation.SourceControl }, () =>
+        task({
+          report() {
+            /* noop*/
+          },
+        }),
       );
     },
     withProgress<R>(
@@ -312,7 +309,7 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   openDialog(options: IExtOpenDialogOptions): Promise<types.Uri[] | undefined> {
-    return new Promise<types.Uri[] | undefined>((resolve, reject) => {
+    return new Promise<types.Uri[] | undefined>((resolve) => {
       const id = (this.id++).toString();
       this.proxy.$showOpenDialog(id, options);
       const disposer = this._onOpenedResult.event((res) => {
@@ -325,7 +322,7 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   showSaveDialog(options: IExtSaveDialogOptions): Promise<types.Uri | undefined> {
-    return new Promise<types.Uri | undefined>((resolve, reject) => {
+    return new Promise<types.Uri | undefined>((resolve) => {
       const id = (this.id++).toString();
       this.proxy.$showSaveDialog(id, options);
       const disposer = this._onSavedResult.event((res) => {

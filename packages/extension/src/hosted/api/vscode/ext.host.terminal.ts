@@ -1,15 +1,5 @@
 import type vscode from 'vscode';
-import {
-  Event,
-  Emitter,
-  getDebugLogger,
-  isUndefined,
-  DisposableStore,
-  IDisposable,
-  Deferred,
-  Disposable,
-  CancellationTokenSource,
-} from '@opensumi/ide-core-common';
+import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred, Disposable, CancellationTokenSource } from '@opensumi/ide-core-common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   ITerminalInfo,
@@ -24,10 +14,7 @@ import {
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 import { userInfo } from 'os';
 import { IExtension } from '../../../common';
-import {
-  EnvironmentVariableMutatorType,
-  ISerializableEnvironmentVariableCollection,
-} from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { EnvironmentVariableMutatorType, ISerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 const debugLog = getDebugLogger();
 
@@ -74,7 +61,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   $onDidChangeActiveTerminal(id: string) {
     const terminal = this.terminalsMap.get(id);
-    this.activeTerminal = terminal!;
+    this.activeTerminal = terminal;
     this.changeActiveTerminalEvent.fire(terminal);
   }
 
@@ -224,11 +211,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
     const result: ITerminalLinkDto[] = [];
     const context: vscode.TerminalLinkContext = { terminal, line };
-    const promises: vscode.ProviderResult<{ provider: vscode.TerminalLinkProvider; links: vscode.TerminalLink[] }>[] =
-      [];
+    const promises: vscode.ProviderResult<{ provider: vscode.TerminalLinkProvider; links: vscode.TerminalLink[] }>[] = [];
 
     for (const provider of this._linkProviders) {
       promises.push(
+        // eslint-disable-next-line no-async-promise-executor
         new Promise(async (r) => {
           cancellationSource.token.onCancellationRequested(() => r({ provider, links: [] }));
           const links = (await provider.provideTerminalLinks(context, cancellationSource.token)) || [];
@@ -300,10 +287,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return terminal;
   }
 
-  public async $startExtensionTerminal(
-    id: string,
-    initialDimensions: ITerminalDimensionsDto | undefined,
-  ): Promise<ITerminalLaunchError | undefined> {
+  public async $startExtensionTerminal(id: string, initialDimensions: ITerminalDimensionsDto | undefined): Promise<ITerminalLaunchError | undefined> {
     // Make sure the ExtHostTerminal exists so onDidOpenTerminal has fired before we call
     // Pseudoterminal.start
     const terminal = await this._getTerminalByIdEventually(id);
@@ -326,9 +310,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   protected _setupExtHostProcessListeners(id: string, p: ITerminalChildProcess): IDisposable {
     const disposables = new DisposableStore();
 
-    disposables.add(
-      p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)),
-    );
+    disposables.add(p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)));
     disposables.add(p.onProcessTitleChanged((title) => this.proxy.$sendProcessTitle(id, title)));
 
     // Buffer data events to reduce the amount of messages going to the renderer
@@ -406,28 +388,19 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return collection;
   }
 
-  private syncEnvironmentVariableCollection(
-    extensionIdentifier: string,
-    collection: EnvironmentVariableCollection,
-  ): void {
+  private syncEnvironmentVariableCollection(extensionIdentifier: string, collection: EnvironmentVariableCollection): void {
     const serialized = [...collection.map.entries()];
-    this.proxy.$setEnvironmentVariableCollection(
-      extensionIdentifier,
-      collection.persistent,
-      serialized.length === 0 ? undefined : serialized,
-    );
+    this.proxy.$setEnvironmentVariableCollection(extensionIdentifier, collection.persistent, serialized.length === 0 ? undefined : serialized);
   }
 
-  private _setEnvironmentVariableCollection(
-    extensionIdentifier: string,
-    collection: EnvironmentVariableCollection,
-  ): void {
+  private _setEnvironmentVariableCollection(extensionIdentifier: string, collection: EnvironmentVariableCollection): void {
     this.environmentVariableCollections.set(extensionIdentifier, collection);
     collection.onDidChangeCollection(() => {
       // When any collection value changes send this immediately, this is done to ensure
       // following calls to createTerminal will be created with the new environment. It will
       // result in more noise by sending multiple updates when called but collections are
       // expected to be small.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.syncEnvironmentVariableCollection(extensionIdentifier, collection!);
     });
   }
@@ -485,14 +458,7 @@ export class EnvironmentVariableCollection implements vscode.EnvironmentVariable
     return this.map.get(variable);
   }
 
-  forEach(
-    callback: (
-      variable: string,
-      mutator: vscode.EnvironmentVariableMutator,
-      collection: vscode.EnvironmentVariableCollection,
-    ) => any,
-    thisArg?: any,
-  ): void {
+  forEach(callback: (variable: string, mutator: vscode.EnvironmentVariableMutator, collection: vscode.EnvironmentVariableCollection) => any, thisArg?: any): void {
     this.map.forEach((value, key) => callback.call(thisArg, key, value, this));
   }
 
@@ -665,9 +631,7 @@ export class ExtHostPseudoterminal implements ITerminalChildProcess {
       });
     }
     if (this._pty.onDidOverrideDimensions) {
-      this._pty.onDidOverrideDimensions((e) =>
-        this._onProcessOverrideDimensions.fire(e ? { cols: e.columns, rows: e.rows } : e),
-      );
+      this._pty.onDidOverrideDimensions((e) => this._onProcessOverrideDimensions.fire(e ? { cols: e.columns, rows: e.rows } : e));
     }
 
     if (this._pty.onDidChangeName) {

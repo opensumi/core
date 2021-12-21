@@ -72,6 +72,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     this.toDispose.pushAll([
       Disposable.create(() => {
         for (const sessionId of this.sessionId2contrib.keys()) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const contrib = this.sessionId2contrib.get(sessionId)!;
           contrib.terminateDebugSession(sessionId);
         }

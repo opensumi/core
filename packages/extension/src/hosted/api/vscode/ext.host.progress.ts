@@ -79,8 +79,8 @@ export class ExtHostProgress implements IExtHostProgress {
     }
 
     p.then(
-      (result) => progressEnd(handle),
-      (err) => progressEnd(handle),
+      () => progressEnd(handle),
+      () => progressEnd(handle),
     );
     return p;
   }

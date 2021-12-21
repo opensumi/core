@@ -111,7 +111,7 @@ describe('VSCodeContributeRunner', () => {
         {
           token: IFileServiceClient,
           useValue: {
-            resolveContent: (uri) => ({
+            resolveContent: () => ({
               content: '',
             }),
           },

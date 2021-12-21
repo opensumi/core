@@ -5,7 +5,6 @@ import { LanguageSelector } from '../../../../common/vscode/model.api';
 import { Uri } from '@opensumi/ide-core-common';
 import { match as matchGlobPattern } from '../../../../common/vscode/glob';
 
-// tslint:disable-next-line:no-any
 export function createToken(): any {
   return Object.freeze({
     isCancellationRequested: false,
@@ -25,24 +24,21 @@ export namespace ObjectIdentifier {
     return obj as T & ObjectIdentifier;
   }
 
-  // tslint:disable-next-line:no-any
   export function of(obj: any): number {
     return obj[name];
   }
 }
 
-/* tslint:disable-next-line:no-any */
 export function isLocationArray(array: any): array is types.Location[] {
   return Array.isArray(array) && array.length > 0 && array[0] instanceof types.Location;
 }
 
-/* tslint:disable-next-line:no-any */
 export function isDefinitionLinkArray(array: any): array is vscode.DefinitionLink[] {
   return (
     Array.isArray(array) &&
     array.length > 0 &&
-    array[0].hasOwnProperty('targetUri') &&
-    array[0].hasOwnProperty('targetRange')
+    Object.prototype.hasOwnProperty.call(array[0], 'targetUri') &&
+    Object.prototype.hasOwnProperty.call(array[0], 'targetRange')
   );
 }
 

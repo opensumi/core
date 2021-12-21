@@ -56,7 +56,7 @@ export class MockWorker {
         MessagePort,
         TextDecoder,
         TextEncoder,
-        postMessage: (value: any, transferList?: Array<ArrayBuffer | MessagePort>) => {
+        postMessage: (value: any) => {
           this.onmessage({
             data: value,
           });
@@ -65,7 +65,7 @@ export class MockWorker {
           userAgent: 'Node.js Sandbox',
         },
         setTimeout,
-        attachEvent: (listener) => {
+        attachEvent: () => {
           //
         },
       };

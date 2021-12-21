@@ -65,6 +65,7 @@ export const createPrivateApiFor = (impl: TestItemImpl, controllerId: string) =>
  * is a managed object, but we keep a weakmap to avoid exposing any of the
  * internals to extensions.
  */
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 export const getPrivateApiFor = (impl: TestItemImpl) => eventPrivateApis.get(impl)!;
 
 const testItemPropAccessor = <K extends keyof vscode.TestItem>(

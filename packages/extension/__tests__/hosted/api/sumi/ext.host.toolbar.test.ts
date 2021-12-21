@@ -25,8 +25,8 @@ const mockMainThreadToolbarProxy = {
 };
 
 const mockMainthreadCommon = {
-  $subscribeEvent(eventName: string) {},
-  $unSubscribeEvent(eventName: string) {},
+  $subscribeEvent() {},
+  $unSubscribeEvent() {},
 };
 
 const emitter = new Emitter();

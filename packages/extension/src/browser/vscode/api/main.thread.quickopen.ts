@@ -25,8 +25,9 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
 
     this.addDispose(
       this.quickTitleBarService.onDidTriggerButton(async (button) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        await this.proxy.$onDidTriggerButton(button.handler);
+        this.proxy.$onDidTriggerButton(button.handler);
       }),
     );
   }

@@ -20,6 +20,7 @@ describe(__filename, () => {
 
   it('set activate extension', () => {
     extensionsActivator.set('test', mockActivatedExtension);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const extension = extensionsActivator.get('test')!;
     expect(extension).not.toBeUndefined();
     expect(extension.id).toBe('test');

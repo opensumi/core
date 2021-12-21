@@ -213,6 +213,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
         configuration: debugConfiguration,
         customRequest: (command: string, args?: any) => mockMainThreadDebug.$customRequest('sessionId', command, args),
       };
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const executable = await (extHostDebug as any).resolveDebugAdapterExecutable(debugConfiguration);
       const descriptor = await (extHostDebug as any).getDebugAdapterDescriptor(debugSession, executable);
@@ -231,7 +232,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     const descriptorI = await execDADescriptor(
       'mockI',
       new DebugAdapterInlineImplementation({
-        start: (input, output) => {},
+        start: () => {},
       } as any),
     );
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorI);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import path from 'path';
 import type vscode from 'vscode';
 import { Uri } from '@opensumi/ide-core-common/lib/uri';
@@ -127,6 +128,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   get environmentVariableCollection() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     return this.exthostTerminalService?.getEnviromentVariableCollection(this.extensionDescription)!;
   }
 

@@ -16,6 +16,7 @@ export class ThemesContributionPoint extends VSCodeContributePoint<ThemesSchema>
       ...t,
       label: this.getLocalizeFromNlsJSON(t.label),
     }));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.addDispose(this.themeService.registerThemes(themes, URI.from(this.extension.uri!)));
   }
 }

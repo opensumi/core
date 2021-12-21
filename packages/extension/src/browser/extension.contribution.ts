@@ -97,6 +97,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   async initialize() {
     await this.extensionService.activate();
     const disposer = this.webviewService.registerWebviewReviver({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       handles: (_: string) => 0,
       revive: async (id: string) =>
         new Promise<void>((resolve) => {
@@ -234,7 +235,7 @@ export class ExtensionCommandContribution implements CommandContribution {
           if (r.err) {
             mergedResults.push(r);
           } else {
-            mergedResults.push(...(r.result! || []));
+            mergedResults.push(...(r.result || []));
           }
         });
         return mergedResults;
@@ -286,7 +287,7 @@ export class ExtensionCommandContribution implements CommandContribution {
           const saveUri = await this.dialogService.showSaveDialog({
             saveLabel: formatLocalize('extension.profile.save', 'Save Extension Host Profile'),
             showNameInput: true,
-            defaultFileName: `CPU-${new Date().toISOString().replace(/[\-:]/g, '')}.cpuprofile`,
+            defaultFileName: `CPU-${new Date().toISOString().replace(/[-:]/g, '')}.cpuprofile`,
           });
           if (saveUri?.codeUri) {
             await this.extensionProfiler.$saveLastProfile(saveUri?.codeUri.fsPath);

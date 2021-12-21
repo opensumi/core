@@ -11,7 +11,11 @@ export class InlayHintsAdapter {
 
   async provideInlayHints(resource: Uri, range: IRange, token: CancellationToken) {
     const doc = this._documents.getDocument(resource);
-    const value = await this._provider.provideInlayHints(doc!, typeConvert.Range.to(range), token);
+    if(!doc) {
+      return Promise.resolve(undefined);
+    }
+
+    const value = await this._provider.provideInlayHints(doc, typeConvert.Range.to(range), token);
     return value ? { hints: value.map(typeConvert.InlayHint.from) } : undefined;
   }
 }

@@ -43,6 +43,7 @@ export class ActionsContributionPoint extends VSCodeContributePoint<ActionContri
   }
 
   register(items: ActionContributionSchema) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
     const actions: IToolbarActionGroup = [];
     for (const item of items) {

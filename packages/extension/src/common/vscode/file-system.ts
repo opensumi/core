@@ -193,7 +193,7 @@ export class FileSystemError extends Error {
   constructor(
     uriOrMessage?: string | URI,
     code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown,
-    terminator?: Function,
+    terminator?: () => void,
   ) {
     super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);
     this.code = terminator?.name ?? 'Unknown';

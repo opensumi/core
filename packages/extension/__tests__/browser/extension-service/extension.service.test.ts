@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import ReactDom from 'react-dom';
 import {
   ExtensionService,
@@ -127,8 +128,9 @@ describe('Extension service', () => {
       const toolbarRegistry: IToolbarRegistry = injector.get(IToolbarRegistry);
       (toolbarRegistry as NextToolbarRegistryImpl).init();
       const groups = toolbarRegistry.getActionGroups('default');
-      expect(groups!.length).toBe(1);
-      expect(toolbarRegistry.getToolbarActions({ location: 'default', group: groups![0].id })!.actions!.length).toBe(1);
+      expect(groups?.length).toBe(1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(toolbarRegistry.getToolbarActions({ location: 'default', group: groups![0].id })?.actions?.length).toBe(1);
     });
 
     it('should register shadow command via command contribution point', () => {
@@ -140,7 +142,7 @@ describe('Extension service', () => {
       const newMenuRegistry: MenuRegistryImpl = injector.get(IMenuRegistry);
       const contextMenu = newMenuRegistry.getMenuItems('editor/context');
       expect(contextMenu.length).toBe(1);
-      expect((contextMenu[0] as IMenuItem).command!).toBe('HelloKaitian');
+      expect((contextMenu[0] as IMenuItem).command).toBe('HelloKaitian');
       const actionMenu = newMenuRegistry.getMenuItems('editor/title');
       expect(actionMenu.length).toBe(1);
       expect(actionMenu.findIndex((item) => (item as IMenuItem).command === 'HelloKaitian')).toBeGreaterThan(-1);

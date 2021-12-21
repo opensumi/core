@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
@@ -554,6 +556,8 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
     return Promise.resolve();
   }
 
+  // FIXME implement unregisterTaskProvider
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   $unregisterTaskProvider(type: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
@@ -587,7 +591,7 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
               };
               resolve(result);
             },
-            (_error) => {
+            () => {
               reject(new Error('Task not found'));
             },
           );

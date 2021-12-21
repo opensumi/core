@@ -134,7 +134,6 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
     this.proxy.$clearDiagnostics(this.name);
   }
 
-  // tslint:disable-next-line:no-any
   forEach(
     callback: (uri: URI, diagnostics: vscode.Diagnostic[], collection: vscode.DiagnosticCollection) => any,
     thisArg?: any,
@@ -305,6 +304,7 @@ export class Diagnostics {
       this.diagnosticsChangedEmitter,
     );
     diagnosticCollection.setOnDisposeCallback(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.diagnosticCollections.delete(name!);
     });
     this.diagnosticCollections.set(name, diagnosticCollection);

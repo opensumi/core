@@ -239,7 +239,7 @@ export class ExtensionTreeViewModel {
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel?.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.selectedNodes.length !== 0) {
           // 仅处理一下单选情况

@@ -15,6 +15,7 @@ export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSche
 
   contribute() {
     for (const grammar of this.json) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.textMateService.registerGrammar(grammar, URI.from(this.extension.uri!));
 
       this.addDispose(

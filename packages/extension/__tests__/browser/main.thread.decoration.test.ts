@@ -10,7 +10,7 @@ import {
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import type vscode from 'vscode';
-import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
+import { Event, Uri, Emitter, DisposableCollection } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
@@ -102,7 +102,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
     const extDecoProvider = new (class implements vscode.DecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return {
           letter: 'S',
           title: 'ZZ',
@@ -131,7 +131,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
   it('multi decorations', async () => {
     const extDecoProvider1 = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return {
           letter: 'S',
           title: 'ZZ',
@@ -145,7 +145,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
 
     const extDecoProvider2 = new (class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideDecoration() {
         return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() =>
             resolve({
