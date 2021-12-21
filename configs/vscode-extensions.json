@@ -270,6 +270,16 @@
         "name": "yaml",
         "version": "1.55.2"
       }
+    ],
+    "vscode-icons-team": [
+      {
+        "name": "vscode-icons"
+      }
+    ],
+    "opensumi": [
+      {
+        "name": "opensumi-default-themes"
+      }
     ]
   }
 }
