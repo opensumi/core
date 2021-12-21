@@ -366,7 +366,7 @@ export class TreeViewDataProvider extends Tree {
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
     if (item.iconUrl || item.icon) {
-      return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
+      return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background, undefined, true);
     } else if (item.themeIcon) {
       let themeIconClass = getExternalIcon(item.themeIcon.id);
       if (item.resourceUri) {

@@ -7,6 +7,7 @@ import {
   Event,
   ILogger,
   CODICON_OWNER,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
@@ -103,7 +104,7 @@ export class IconService implements IIconService {
     clearTimeout(this.appendStylesTimer);
   }
 
-  protected appendStyleSheet(styleSheet: string) {
+  protected appendStyleSheet(styleSheet: string, fromExtension = false) {
     let iconStyleNode = document.getElementById('plugin-icons');
     if (!iconStyleNode) {
       iconStyleNode = document.createElement('style');
@@ -111,11 +112,20 @@ export class IconService implements IIconService {
       document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
     }
 
+    // 非插件进程注册的 icon 正常 append
+    if (!fromExtension) {
+      iconStyleNode.append(styleSheet);
+      return;
+    }
+
+    // 针对插件进程注册的 icon 进行 append 分段处理
+    // 避免因为过多 icon 导致页面卡顿
+    // 例如 GitLens 插件会注册超过 800 个 icon
     this.styleSheetCollection += '\r\n' + styleSheet;
     this.appendStyleCounter += 1;
 
     // 超过 100 个样式
-    if (this.appendStyleCounter >= 100 && this.appendStylesTimer) {
+    if (this.appendStyleCounter >= 150 && this.appendStylesTimer) {
       clearTimeout(this.appendStylesTimer);
       this.doAppend(iconStyleNode);
     }
@@ -178,6 +188,7 @@ export class IconService implements IIconService {
     icon?: { [index in ThemeType]: string } | string,
     type: IconType = IconType.Mask,
     shape: IconShape = IconShape.Square,
+    fromExtension = false,
   ): string | undefined {
     if (!icon) {
       return;
@@ -195,13 +206,13 @@ export class IconService implements IIconService {
        * 此时无需 static service
        */
       if (type === IconType.Base64) {
-        this.appendStyleSheet(this.getBackgroundStyleSheet(icon, randomClass));
+        this.appendStyleSheet(this.getBackgroundStyleSheet(icon, randomClass), fromExtension);
       } else {
         const targetPath = this.getPath(basePath, icon);
         if (type === IconType.Mask) {
-          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass), fromExtension);
         } else {
-          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass), fromExtension);
         }
       }
     } else {
@@ -210,10 +221,14 @@ export class IconService implements IIconService {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
         const targetPath = this.getPath(basePath, icon[themeType]);
         if (type === IconType.Mask) {
-          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
+          this.appendStyleSheet(
+            this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`),
+            fromExtension,
+          );
         } else {
           this.appendStyleSheet(
             this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`),
+            fromExtension,
           );
         }
       }
