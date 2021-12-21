@@ -21,8 +21,12 @@ export function prettyDate(str: string | undefined) {
   return `${day} ${month} ${year}`;
 }
 
-export function getNickNameDesc(author: string) {
-  return `[@${author}](https://github.com/${author})`;
+export function getNickNameDesc(author: string, loginName?: string) {
+  if (loginName) {
+    return `[@${loginName}](https://github.com/${loginName})`;
+  } else {
+    return `@${author}`;
+  }
 }
 
 // 从 PR 描述中提取 type
@@ -39,7 +43,7 @@ export function getChangelog(message) {
 }
 
 function cleanupUselessContent(msg) {
-  msg = msg.replace('- -', '-');
+  msg = msg.replace('- ', '');
   return msg.replace(/(feat|fix|chore|refactor):?/g, '').trim();
 }
 

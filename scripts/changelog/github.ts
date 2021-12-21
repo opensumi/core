@@ -45,7 +45,9 @@ async function getAuthor(
     }
   );
   const ret = await res.json();
-  return ret.items[0].login;
+  if (ret.items && ret.items.length > 0) {
+    return ret.items[0].login;
+  }
 }
 
 /**
@@ -68,9 +70,10 @@ export async function extractChangelog(
       // fetch pr desc from github service and insert it to `body` field
       const prIid = ret[1];
       const prDetail = await getPrDesc(prIid);
-      log.author_name = await getAuthor(log.author_email);
+      const loginName = await getAuthor(log.author_email);
       result.push({
         ...log,
+        loginName,
         pullRequestDescription: prDetail.body || '',
         pullRequestId: prIid,
       });

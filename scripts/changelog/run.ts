@@ -38,7 +38,7 @@ function convertToMarkdown(logs: ICommitLogFields[]) {
       changelog: getChangelog(log.pullRequestDescription),
       type: getType(log.pullRequestDescription),
       href: Github.getPullRequestLink(log.pullRequestId),
-      nickNameDesc: getNickNameDesc(log.author_name),
+      nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
     };
   });
 
