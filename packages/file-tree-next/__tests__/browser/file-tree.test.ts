@@ -546,30 +546,24 @@ describe('FileTree should be work while on single workspace model', () => {
     });
 
     it('Dragging Enter should be work', async (done) => {
-      const treeModel = fileTreeModelService.treeModel;
-      const rootNode = treeModel.root;
       const { dndService } = fileTreeModelService;
-      const fileNode = rootNode.getTreeNodeAtIndex(2) as File;
       const mockEvent = {
         preventDefault: jest.fn(),
         stopPropagation: jest.fn(),
       };
-      dndService.handleDragEnter(mockEvent as any, fileNode);
+      dndService.handleDragEnter(mockEvent as any);
       expect(mockEvent.preventDefault).toBeCalled();
       expect(mockEvent.stopPropagation).toBeCalled();
       done();
     });
 
     it('Dragging Leave should be work', async (done) => {
-      const treeModel = fileTreeModelService.treeModel;
-      const rootNode = treeModel.root;
       const { dndService } = fileTreeModelService;
-      const fileNode = rootNode.getTreeNodeAtIndex(2) as File;
       const mockEvent = {
         preventDefault: jest.fn(),
         stopPropagation: jest.fn(),
       };
-      dndService.handleDragLeave(mockEvent as any, fileNode);
+      dndService.handleDragLeave(mockEvent as any);
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.preventDefault).toBeCalled();
       done();
