@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg)](https://github.com/opensumi/core/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
 
-![perview](https://img.alicdn.com/imgextra/i1/O1CN01eP6aZU1al34XVd38l_!!6000000003369-2-tps-2842-1714.png)
+![perview](https://img.alicdn.com/imgextra/i1/O1CN01n6girT1wJ2OmjQ15K_!!6000000006286-2-tps-2844-1830.png)
 
 [English](./README.md) | 简体中文
 
