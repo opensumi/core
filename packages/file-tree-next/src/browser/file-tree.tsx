@@ -94,7 +94,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
   );
 
   const handleItemDoubleClicked = React.useCallback(
-    (event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+    (event: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {
       // 阻止点击事件冒泡
       event.stopPropagation();
 
@@ -102,7 +102,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
       if (!item) {
         return;
       }
-      handleItemDoubleClick(item, type, activeUri);
+      handleItemDoubleClick(item, type);
     },
     [],
   );

@@ -24,11 +24,11 @@ const WEB_LINK_REGEX = new RegExp(
   'ug',
 );
 
-const WIN_ABSOLUTE_PATH = /(?:[a-zA-Z]:(?:(?:\\|\/)[\w\.-]*)+)/;
-const WIN_RELATIVE_PATH = /(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
+const WIN_ABSOLUTE_PATH = /(?:[a-zA-Z]:(?:(?:\\|\/)[\w.-]*)+)/;
+const WIN_RELATIVE_PATH = /(?:(?:~|\.)(?:(?:\\|\/)[\w.-]*)+)/;
 const WIN_PATH = new RegExp(`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`);
-const POSIX_PATH = /((?:\~|\.)?(?:\/[\w\.-]*)+)/;
-const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
+const POSIX_PATH = /((?:~|\.)?(?:\/[\w.-]*)+)/;
+const LINE_COLUMN = /(?::([\d]+))?(?::([\d]+))?/;
 const PATH_LINK_REGEX = new RegExp(
   `${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`,
   'g',

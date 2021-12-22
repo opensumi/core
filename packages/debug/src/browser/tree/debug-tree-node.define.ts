@@ -89,7 +89,10 @@ export class ExpressionTreeService {
     count?: number,
   ): Promise<void> {
     try {
-      const response = await this.session!.sendRequest('variables', { variablesReference, filter, start, count });
+      const response = await this.session?.sendRequest('variables', { variablesReference, filter, start, count });
+      if (!response) {
+        return;
+      }
       const { variables } = response.body;
       for (const variable of variables) {
         if (variable.variablesReference) {
@@ -319,16 +322,12 @@ export class DebugVariable extends ExpressionNode {
     }
     const { name, parent } = this;
     const variablesReference = (parent as DebugScope).variablesReference;
-    try {
-      const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
-      this._value = response.body.value;
-      this._type = response.body.type;
-      this.variablesReference = response.body.variablesReference || 0;
-      this.namedVariables = response.body.namedVariables;
-      this.indexedVariables = response.body.indexedVariables;
-    } catch (error) {
-      throw error;
-    }
+    const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
+    this._value = response.body.value;
+    this._type = response.body.type;
+    this.variablesReference = response.body.variablesReference || 0;
+    this.namedVariables = response.body.namedVariables;
+    this.indexedVariables = response.body.indexedVariables;
   }
 
   public getRawScope(): DebugProtocol.Scope | undefined {
@@ -336,13 +335,14 @@ export class DebugVariable extends ExpressionNode {
     while (parent !== undefined && !(parent instanceof DebugScope)) {
       parent = parent?.parent;
     }
-    return parent!.getRawScope();
+    return parent?.getRawScope();
   }
 }
 
 export class DebugVariableContainer extends ExpressionContainer {
   static BOOLEAN_REGEX = /^true|false$/i;
   static STRING_REGEX = /^(['"]).*\1$/;
+  static NAME_REGEX = /\["(.+)"]/;
 
   constructor(
     public readonly session: DebugSession | undefined,
@@ -364,9 +364,10 @@ export class DebugVariableContainer extends ExpressionContainer {
       undefined,
       variable?.name ||
         (variable.evaluateName
-          ? /\["(.+)"]/.exec(variable.evaluateName)
-            ? /\["(.+)"]/.exec(variable.evaluateName)![1]
-            : variable.evaluateName.split('.')[variable.evaluateName.split('.').length - 1]
+          ? (DebugVariableContainer.NAME_REGEX.exec(variable.evaluateName) &&
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              DebugVariableContainer.NAME_REGEX.exec(variable.evaluateName)![1]) ||
+            variable.evaluateName.split('.')[variable.evaluateName.split('.').length - 1]
           : ''),
     );
     TreeNode.setTreeNode(this._uid, this.path, this);
@@ -437,16 +438,12 @@ export class DebugVariableContainer extends ExpressionContainer {
       return;
     }
     const variablesReference = (parent as DebugScope).variablesReference;
-    try {
-      const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
-      this._value = response.body.value;
-      this._variableType = response.body.type;
-      this.variablesReference = response.body.variablesReference || 0;
-      this.namedVariables = response.body.namedVariables;
-      this.indexedVariables = response.body.indexedVariables;
-    } catch (error) {
-      throw error;
-    }
+    const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
+    this._value = response.body.value;
+    this._variableType = response.body.type;
+    this.variablesReference = response.body.variablesReference || 0;
+    this.namedVariables = response.body.namedVariables;
+    this.indexedVariables = response.body.indexedVariables;
   }
 
   public getRawScope(): DebugProtocol.Scope | undefined {
@@ -454,7 +451,7 @@ export class DebugVariableContainer extends ExpressionContainer {
     while (parent !== undefined && !(parent instanceof DebugScope)) {
       parent = parent?.parent;
     }
-    return parent!.getRawScope();
+    return parent?.getRawScope();
   }
 }
 

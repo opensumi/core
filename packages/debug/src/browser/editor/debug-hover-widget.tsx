@@ -99,7 +99,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   getPosition(): monaco.editor.IContentWidgetPosition {
     const position = this.options && this.options.selection.getStartPosition();
-    const word = position && this.editor.getModel()!.getWordAtPosition(position);
+    const word = position && this.editor.getModel()?.getWordAtPosition(position);
     return position && word
       ? {
           position: new monaco.Position(position.lineNumber, word.startColumn),
@@ -108,7 +108,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
             monaco.editor.ContentWidgetPositionPreference.ABOVE,
           ],
         }
-      : undefined!;
+      : { position: null, preference: [] };
   }
 
   dispose(): void {
@@ -141,7 +141,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       !!currentFrame &&
       !!currentFrame.source &&
       !!this.editor.getModel() &&
-      this.editor.getModel()!.uri.toString() === currentFrame.source.uri.toString()
+      this.editor.getModel()?.uri.toString() === currentFrame.source.uri.toString()
     );
   }
 
@@ -187,7 +187,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
     this.options = options;
     const expression = await this.expressionProvider.get(
-      this.editor.getModel()! as unknown as ITextModel,
+      this.editor.getModel() as unknown as ITextModel,
       options.selection,
     );
     if (!expression) {

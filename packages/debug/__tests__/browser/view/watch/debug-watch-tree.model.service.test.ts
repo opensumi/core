@@ -104,12 +104,10 @@ describe('Debug Watch Tree Model', () => {
     expect(typeof debugWatchModelService.handleTwistierClick).toBe('function');
     expect(typeof debugWatchModelService.toggleDirectory).toBe('function');
     expect(typeof debugWatchModelService.refresh).toBe('function');
-    expect(typeof debugWatchModelService.flushEventQueue).toBe('function');
     expect(typeof debugWatchModelService.load).toBe('function');
     expect(typeof debugWatchModelService.save).toBe('function');
     expect(debugWatchModelService.decorations).toBeDefined();
     expect(debugWatchModelService.treeModel).toBeDefined();
-    expect(debugWatchModelService.flushEventQueuePromise).toBeUndefined();
     expect(debugWatchModelService.treeHandle).toBeUndefined();
     expect(debugWatchModelService.focusedNode).toBeUndefined();
     expect(Array.isArray(debugWatchModelService.selectedNodes)).toBeTruthy();
@@ -131,7 +129,7 @@ describe('Debug Watch Tree Model', () => {
     debugWatchModelService.activeNodeDecoration(node);
     const decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('enactiveNodeDecoration method should be work', () => {
@@ -143,11 +141,11 @@ describe('Debug Watch Tree Model', () => {
     debugWatchModelService.activeNodeDecoration(node);
     let decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugWatchModelService.enactiveNodeDecoration();
     decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeNodeDecoration method should be work', () => {
@@ -161,7 +159,7 @@ describe('Debug Watch Tree Model', () => {
     debugWatchModelService.removeNodeDecoration();
     decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
@@ -180,11 +178,11 @@ describe('Debug Watch Tree Model', () => {
     debugWatchModelService.activeNodeDecoration(node);
     let decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugWatchModelService.handleTreeBlur();
     decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('handleTwistierClick method should be work', () => {

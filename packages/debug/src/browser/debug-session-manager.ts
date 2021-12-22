@@ -313,19 +313,21 @@ export class DebugSessionManager implements IDebugSessionManager {
         return;
       } else if (resolved.configuration.preLaunchTask) {
         this.debugProgressService.onDebugServiceStateChange(DebugState.Initializing);
-        const workspaceFolderUri = Uri.parse(resolved.workspaceFolderUri!);
-        const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
-        if (task) {
-          const timeTask = this.reportTime(DEBUG_REPORT_NAME.DEBUG_PRE_LAUNCH_TASK_TIME, extra);
-          const result = await this.taskService.run(task);
-          if (result.exitCode !== 0) {
-            this.messageService.error(
-              `The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`,
-            );
+        const workspaceFolderUri = resolved.workspaceFolderUri && Uri.parse(resolved.workspaceFolderUri);
+        if (workspaceFolderUri) {
+          const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
+          if (task) {
+            const timeTask = this.reportTime(DEBUG_REPORT_NAME.DEBUG_PRE_LAUNCH_TASK_TIME, extra);
+            const result = await this.taskService.run(task);
+            if (result.exitCode !== 0) {
+              this.messageService.error(
+                `The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`,
+              );
+            }
+            timeTask(workspaceFolderUri.toString(), {
+              exitCode: result.exitCode,
+            });
           }
-          timeTask(workspaceFolderUri.toString(), {
-            exitCode: result.exitCode,
-          });
         }
         this.debugProgressService.onDebugServiceStateChange(DebugState.Running);
       }
@@ -381,7 +383,8 @@ export class DebugSessionManager implements IDebugSessionManager {
       return;
     }
     const key = configuration.name + workspaceFolderUri;
-    const id = this.configurationIds.has(key) ? this.configurationIds.get(key)! + 1 : 0;
+    const cacheId = this.configurationIds.get(key);
+    const id = cacheId ? cacheId + 1 : 0;
     this.configurationIds.set(key, id);
     return {
       id,

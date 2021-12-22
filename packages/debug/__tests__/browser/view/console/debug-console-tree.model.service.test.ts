@@ -63,7 +63,7 @@ describe('Debug Console Tree Model', () => {
     onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
     onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
     currentSession: IDebugSession,
-    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
+    updateCurrentSession: jest.fn(() => {}),
   };
   // let mockDebugSessionManager: DebugSessionManager;
 
@@ -207,8 +207,6 @@ describe('Debug Console Tree Model', () => {
     expect(typeof debugConsoleModelService.handleTwistierClick).toBe('function');
     expect(typeof debugConsoleModelService.toggleDirectory).toBe('function');
     expect(typeof debugConsoleModelService.refresh).toBe('function');
-    expect(typeof debugConsoleModelService.flushEventQueue).toBe('function');
-    expect(debugConsoleModelService.flushEventQueuePromise).toBeUndefined();
     expect(debugConsoleModelService.treeHandle).toBeUndefined();
     expect(debugConsoleModelService.decorations).toBeUndefined();
     expect(debugConsoleModelService.treeModel).toBeUndefined();
@@ -266,7 +264,7 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.enactiveNodeDecoration();
     decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeNodeDecoration method should be work', () => {
@@ -280,7 +278,7 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.removeNodeDecoration();
     decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
@@ -302,7 +300,7 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.handleTreeBlur();
     decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('handleTwistierClick method should be work', () => {

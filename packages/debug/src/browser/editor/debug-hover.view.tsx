@@ -42,8 +42,8 @@ export const DebugHoverView = observer(() => {
     setTreeLayoutHeight(DEFAULT_LAYOUT_HEIGHT);
 
     if (model.treeModel) {
-      disposable = model.treeModel.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (data) => {
-        const treeHeight = Math.max(DEFAULT_LAYOUT_HEIGHT, ~~model.treeModel?.root.branchSize! * 22);
+      disposable = model.treeModel.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, () => {
+        const treeHeight = Math.max(DEFAULT_LAYOUT_HEIGHT, ~~(model.treeModel?.root.branchSize || 0) * 22);
         setTreeLayoutHeight(Math.min(500, treeHeight));
       });
     }
@@ -54,7 +54,7 @@ export const DebugHoverView = observer(() => {
 
   const ensureLoaded = async () => {
     if (debugHoverTreeModelService.treeModel) {
-      await debugHoverTreeModelService.treeModel!.root.ensureLoaded();
+      await debugHoverTreeModelService.treeModel?.root.ensureLoaded();
       setModel({ treeModel: debugHoverTreeModelService.treeModel });
     }
   };
@@ -62,7 +62,7 @@ export const DebugHoverView = observer(() => {
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     debugHoverTreeModelService.handleTreeHandler({
       ...handle,
-      getModel: () => model?.treeModel!,
+      getModel: () => model?.treeModel,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
   };
@@ -100,7 +100,7 @@ export const DebugHoverView = observer(() => {
   );
 
   const renderVariableTree = () => {
-    if (!shouldRenderVariableTree) {
+    if (!shouldRenderVariableTree || !model.treeModel) {
       return null;
     }
     return (
@@ -109,7 +109,7 @@ export const DebugHoverView = observer(() => {
           height={treeLayoutHeight}
           itemHeight={DEBUG_VARIABLE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
-          model={model.treeModel!}
+          model={model.treeModel}
           placeholder={() => <span></span>}
           overflow={'auto'}
         >

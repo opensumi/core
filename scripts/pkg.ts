@@ -53,7 +53,7 @@ export default class Package {
   }
 
   distTag(version: string, tag: string) {
-    execSync(`tnpm dist-tag add ${this.name}@${version} ${tag}`, {
+    execSync(`npm dist-tag add ${this.name}@${version} ${tag}`, {
       cwd: this.path,
       env: process.env,
       stdio: ['pipe', 'ignore', 'pipe'],

@@ -123,7 +123,7 @@ describe('FileDialogModel should be work', () => {
     fileTreeDialogModel.activeFileDecoration(node);
     const decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('selectFileDecoration method should be work', () => {
@@ -142,7 +142,7 @@ describe('FileDialogModel should be work', () => {
     fileTreeDialogModel.selectFileDecoration(node);
     const decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('enactiveFileDecoration method should be work', () => {
@@ -161,11 +161,11 @@ describe('FileDialogModel should be work', () => {
     fileTreeDialogModel.activeFileDecoration(node);
     let decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     fileTreeDialogModel.enactiveFileDecoration();
     decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeFileDecoration method should be work', () => {
@@ -186,7 +186,7 @@ describe('FileDialogModel should be work', () => {
     fileTreeDialogModel.removeFileDecoration();
     decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
@@ -212,11 +212,11 @@ describe('FileDialogModel should be work', () => {
     fileTreeDialogModel.activeFileDecoration(node);
     let decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     fileTreeDialogModel.handleTreeBlur();
     decoration = fileTreeDialogModel.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('handleTwistierClick method should be work', () => {

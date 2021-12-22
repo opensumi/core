@@ -89,7 +89,7 @@ export class MarkerCollection<T> {
       return [];
     }
     if (filter.dataFilter) {
-      return toFilter.filter((d) => filter.dataFilter!(d.data));
+      return toFilter.filter((d) => filter.dataFilter && filter.dataFilter(d.data));
     } else {
       return toFilter;
     }
@@ -171,7 +171,10 @@ export abstract class MarkerManager<D extends object> {
     }
     const result: Marker<D>[] = [];
     for (const uri of this.getUris()) {
-      result.push(...this.uri2MarkerCollection.get(uri)!.findMarkers(filter));
+      const filters = this.uri2MarkerCollection.get(uri)?.findMarkers(filter);
+      if (filters) {
+        result.push(...filters);
+      }
     }
     return result;
   }

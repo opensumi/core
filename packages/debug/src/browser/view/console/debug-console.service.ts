@@ -156,7 +156,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     this.history = new HistoryNavigator(storage.get(HISTORY_STORAGE_KEY, []), 50);
 
     this._consoleInputElement = e;
-    this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, {
+    this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement, {
       ...consoleInputMonacoOptions,
     });
 
@@ -240,7 +240,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       this.updateInputDecoration();
     });
     monacoEditor.onDidChangeModelContent(() => {
-      const lineNum = monacoEditor.getModel()!.getLineCount();
+      const lineNum = monacoEditor.getModel()?.getLineCount() || 0;
       this.layoutBody(lineNum * 18);
     });
 
@@ -262,7 +262,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const h = Math.max(height || 26, monacoEditor.getContentHeight());
 
     monacoEditor.layout({
-      width: width || this._consoleInputElement?.offsetWidth!,
+      width: width || this._consoleInputElement?.offsetWidth || 0,
       height: h,
     });
 
@@ -315,7 +315,10 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const model = session.currentEditor();
 
     if (model) {
-      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageIdentifier()!);
+      const textModel = model.getModel();
+      if (textModel) {
+        this.inputEditor.monacoEditor.getModel()?.setMode(textModel.getLanguageIdentifier());
+      }
     }
   }
 
@@ -341,85 +344,89 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     if (!model) {
       return;
     }
-
-    this._updateDisposable = monaco.languages.registerCompletionItemProvider(
-      model.getModel()?.getLanguageIdentifier().language!,
-      {
-        triggerCharacters: ['.'],
-        provideCompletionItems: async (model, position, ctx) => {
-          //  仅在支持自动补全查询的调试器中启用补全逻辑
-          if (!this.manager.currentSession?.capabilities.supportsCompletionsRequest) {
-            return;
-          }
-          if (model.uri.toString() !== this.consoleInputUri.toString()) {
-            return null;
-          }
-
-          const session = this.manager.currentSession;
-          const { triggerCharacter } = ctx;
-
-          /**
-           * 代码字符串处理
-           */
-          let value = model.getWordAtPosition(position);
-          if (value && session) {
-            const { word, startColumn, endColumn } = value;
-            const res = await session.sendRequest('completions', {
-              text: word,
-              column: endColumn,
-              frameId: session.currentFrame && session.currentFrame.raw.id,
-            });
-            return {
-              suggestions: res.body.targets.map((item) => ({
-                label: item.label,
-                insertText: item.text || item.label,
-                sortText: item.sortText,
-                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
-                range: {
-                  startLineNumber: position.lineNumber,
-                  endLineNumber: position.lineNumber,
-                  startColumn,
-                  endColumn,
-                },
-              })),
-            } as monaco.languages.CompletionList;
-          }
-
-          /**
-           * 特殊字符处理
-           */
-          value = model.getWordAtPosition({
-            lineNumber: position.lineNumber,
-            column: position.column - 1,
-          });
-          if (value && session && triggerCharacter) {
-            const { word, endColumn } = value;
-
-            const res = await session.sendRequest('completions', {
-              text: word + triggerCharacter,
-              column: endColumn + 1,
-              frameId: session.currentFrame && session.currentFrame.raw.id,
-            });
-            return {
-              suggestions: res.body.targets.map((item) => ({
-                label: item.label,
-                insertText: item.text || item.label,
-                sortText: item.sortText,
-                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
-                range: {
-                  startLineNumber: position.lineNumber,
-                  endLineNumber: position.lineNumber,
-                  startColumn: endColumn + 1,
-                  endColumn: endColumn + 1,
-                },
-              })),
-            } as monaco.languages.CompletionList;
-          }
-
+    const textModel = model.getModel();
+    if (!textModel) {
+      return;
+    }
+    const language = textModel.getLanguageIdentifier().language;
+    if (!language) {
+      return;
+    }
+    this._updateDisposable = monaco.languages.registerCompletionItemProvider(language, {
+      triggerCharacters: ['.'],
+      provideCompletionItems: async (model, position, ctx) => {
+        //  仅在支持自动补全查询的调试器中启用补全逻辑
+        if (!this.manager.currentSession?.capabilities.supportsCompletionsRequest) {
+          return;
+        }
+        if (model.uri.toString() !== this.consoleInputUri.toString()) {
           return null;
-        },
+        }
+
+        const session = this.manager.currentSession;
+        const { triggerCharacter } = ctx;
+
+        /**
+         * 代码字符串处理
+         */
+        let value = model.getWordAtPosition(position);
+        if (value && session) {
+          const { word, startColumn, endColumn } = value;
+          const res = await session.sendRequest('completions', {
+            text: word,
+            column: endColumn,
+            frameId: session.currentFrame && session.currentFrame.raw.id,
+          });
+          return {
+            suggestions: res.body.targets.map((item) => ({
+              label: item.label,
+              insertText: item.text || item.label,
+              sortText: item.sortText,
+              kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
+              range: {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn,
+                endColumn,
+              },
+            })),
+          } as monaco.languages.CompletionList;
+        }
+
+        /**
+         * 特殊字符处理
+         */
+        value = model.getWordAtPosition({
+          lineNumber: position.lineNumber,
+          column: position.column - 1,
+        });
+        if (value && session && triggerCharacter) {
+          const { word, endColumn } = value;
+
+          const res = await session.sendRequest('completions', {
+            text: word + triggerCharacter,
+            column: endColumn + 1,
+            frameId: session.currentFrame && session.currentFrame.raw.id,
+          });
+          return {
+            suggestions: res.body.targets.map((item) => ({
+              label: item.label,
+              insertText: item.text || item.label,
+              sortText: item.sortText,
+              kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
+              range: {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: endColumn + 1,
+                endColumn: endColumn + 1,
+              },
+            })),
+          } as monaco.languages.CompletionList;
+        }
+
+        return null;
       },
-    );
+    });
   }
 
   disable() {

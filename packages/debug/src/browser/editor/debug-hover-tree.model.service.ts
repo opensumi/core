@@ -1,15 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  DecorationsManager,
-  Decoration,
-  IRecycleTreeHandle,
-  WatchEvent,
-  TreeNodeEvent,
-} from '@opensumi/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection } from '@opensumi/ide-core-browser';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
+import { Emitter, Event, DisposableCollection } from '@opensumi/ide-core-browser';
 import { DebugHoverModel } from './debug-hover-model';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import pSeries = require('p-series');
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
 import styles from '../view/variables/debug-variables.module.less';
@@ -25,8 +17,6 @@ export interface IDebugHoverUpdateData {
 
 @Injectable()
 export class DebugHoverTreeModelService {
-  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 100;
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -38,10 +28,6 @@ export class DebugHoverTreeModelService {
 
   private _decorations: DecorationsManager;
   private _debugHoverTreeHandle: IDebugVariablesHandle;
-
-  public flushEventQueueDeferred: Deferred<void> | null;
-  private _eventFlushTimeout: number;
-  private _changeEventDispatchQueue: string[] = [];
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -83,10 +69,6 @@ export class DebugHoverTreeModelService {
 
   get onDidUpdateTreeModelOrVariable(): Event<IDebugHoverUpdateData | void> {
     return this.onDidUpdateTreeModelOrVariableEmitter.event;
-  }
-
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
   }
 
   get treeHandle() {
@@ -133,7 +115,7 @@ export class DebugHoverTreeModelService {
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.selectedNodes.length !== 0) {
           // 仅处理一下单选情况
@@ -272,59 +254,6 @@ export class DebugHoverTreeModelService {
     if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
       node = (node as ExpressionContainer).parent as ExpressionContainer;
     }
-    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
-    // 队列化刷新动作减少更新成本
-    this.queueChangeEvent(node.path, () => {
-      this.onDidRefreshedEmitter.fire();
-    });
+    await node.refresh();
   }
-
-  // 队列化Changed事件
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueueDeferred) {
-      this.flushEventQueueDeferred = new Deferred<void>();
-      clearTimeout(this._eventFlushTimeout);
-      this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
-        callback();
-      }, DebugHoverTreeModelService.DEFAULT_FLUSH_FILE_EVENT_DELAY) as any;
-    }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
-    }
-  }
-
-  public flushEventQueue = () => {
-    let promise: Promise<any>;
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
-      return;
-    }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
-        continue;
-      } else {
-        roots.push(path);
-      }
-    }
-    promise = pSeries(
-      roots.map((path) => async () => {
-        const watcher = this.treeModel.root?.watchEvents.get(path);
-        if (watcher && typeof watcher.callback === 'function') {
-          await watcher.callback({ type: WatchEvent.Changed, path });
-        }
-        return null;
-      }),
-    );
-    // 重置更新队列
-    this._changeEventDispatchQueue = [];
-    return promise;
-  };
 }

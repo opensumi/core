@@ -60,7 +60,9 @@ export class DebugToolbarService {
         contextKeyService: this.contextKeyService.createScoped(),
       });
       this.currentSession.on('terminated', () => {
-        this.toolBarMenuMap.delete(this.currentSession?.id!);
+        if (this.currentSession?.id) {
+          this.toolBarMenuMap.delete(this.currentSession?.id);
+        }
       });
 
       this.toolBarMenuMap.set(this.currentSession.id, contextMenu);
@@ -68,18 +70,21 @@ export class DebugToolbarService {
   }
 
   private instrumentReporter(name: string): () => void {
-    const session = this.model.currentSession!;
-    const languageType = session.configuration?.type;
-    const currentThread = this.model.currentThread;
-    const threadId = currentThread?.raw?.id;
-    this.model.reportAction(session.id, threadId, name);
-    const extra = {
-      type: languageType,
-      request: this.currentSession?.configuration.request,
-      sessionId: session.id,
-      threadId,
-    };
-    this.model.report(DEBUG_REPORT_NAME.DEBUG_TOOLBAR_OPERATION, name, extra);
+    let extra;
+    const session = this.model.currentSession;
+    if (session) {
+      const languageType = session.configuration?.type;
+      const currentThread = this.model.currentThread;
+      const threadId = currentThread?.raw?.id;
+      this.model.reportAction(session.id, threadId, name);
+      extra = {
+        type: languageType,
+        request: this.currentSession?.configuration.request,
+        sessionId: session.id,
+        threadId,
+      };
+      this.model.report(DEBUG_REPORT_NAME.DEBUG_TOOLBAR_OPERATION, name, extra);
+    }
     const reportTime = this.model.reportTime(DEBUG_REPORT_NAME.DEBUG_TOOLBAR_OPERATION_TIME, extra);
     return () => {
       reportTime(name);

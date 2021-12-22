@@ -96,13 +96,28 @@ export class DebugStackFrame extends DebugStackFrameData {
     }
 
     const scopesContainingRange = nonExpensiveScopes
-      .filter((scope) => scope.range() && Range.containsRange(scope.range()!, range))
-      .sort(
-        (first, second) =>
-          first.range()!.endLineNumber -
-          first.range()!.startLineNumber -
-          (second.range()!.endLineNumber - second.range()!.startLineNumber),
-      );
+      .filter((scope) => {
+        const scopeRange = scope.range();
+        scopeRange && Range.containsRange(scopeRange, range);
+      })
+      .sort((first, second) => {
+        const fisrtScope = first.range();
+        const secondScope = second.range();
+        if (!fisrtScope && secondScope) {
+          return -1;
+        } else if (fisrtScope && !secondScope) {
+          return 1;
+        } else if (!fisrtScope && !secondScope) {
+          return 0;
+        } else if (fisrtScope && secondScope) {
+          return (
+            fisrtScope.endLineNumber -
+            fisrtScope.startLineNumber -
+            (secondScope.endLineNumber - secondScope.startLineNumber)
+          );
+        }
+        return 0;
+      });
     return scopesContainingRange.length ? scopesContainingRange : nonExpensiveScopes;
   }
 }

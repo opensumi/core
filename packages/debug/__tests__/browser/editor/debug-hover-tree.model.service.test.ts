@@ -67,8 +67,6 @@ describe('Debug Hover Model', () => {
     expect(typeof debugHoverTreeModelService.handleTwistierClick).toBe('function');
     expect(typeof debugHoverTreeModelService.toggleDirectory).toBe('function');
     expect(typeof debugHoverTreeModelService.refresh).toBe('function');
-    expect(typeof debugHoverTreeModelService.flushEventQueue).toBe('function');
-    expect(debugHoverTreeModelService.flushEventQueuePromise).toBeUndefined();
     expect(debugHoverTreeModelService.treeHandle).toBeUndefined();
     expect(debugHoverTreeModelService.decorations).toBeUndefined();
     expect(debugHoverTreeModelService.treeModel).toBeUndefined();
@@ -88,7 +86,7 @@ describe('Debug Hover Model', () => {
     debugHoverTreeModelService.activeNodeDecoration(node);
     const decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('enactiveNodeDecoration method should be work', () => {
@@ -97,11 +95,11 @@ describe('Debug Hover Model', () => {
     debugHoverTreeModelService.activeNodeDecoration(node);
     let decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugHoverTreeModelService.enactiveNodeDecoration();
     decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeNodeDecoration method should be work', () => {
@@ -112,7 +110,7 @@ describe('Debug Hover Model', () => {
     debugHoverTreeModelService.removeNodeDecoration();
     decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
@@ -128,11 +126,11 @@ describe('Debug Hover Model', () => {
     debugHoverTreeModelService.activeNodeDecoration(node);
     let decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugHoverTreeModelService.handleTreeBlur();
     decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('handleTwistierClick method should be work', () => {

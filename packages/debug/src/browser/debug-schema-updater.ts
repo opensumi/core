@@ -18,7 +18,7 @@ export class DebugSchemaUpdater {
   async update(): Promise<void> {
     const debuggers = this.config.getDebuggers();
     const schema = { ...deepClone(launchSchema) };
-    const items = schema!.properties!.configurations.items as IJSONSchema;
+    const items = schema.properties?.configurations.items as IJSONSchema;
     const configurations = debuggers.map((dbg) => ({
       attributes: Object.keys(dbg.configurationAttributes || {}).map((request) => {
         const attributes: IJSONSchema = dbg.configurationAttributes[request];
@@ -28,7 +28,7 @@ export class DebugSchemaUpdater {
     }));
     for (const { attributes, configurationSnippets } of configurations) {
       if (attributes && items.oneOf) {
-        items.oneOf!.push(...attributes);
+        items.oneOf.push(...attributes);
       }
       if (configurationSnippets && items.defaultSnippets) {
         items.defaultSnippets.push(...configurationSnippets);

@@ -73,7 +73,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     debugWatchModelService.handleTreeHandler({
       ...handle,
-      getModel: () => model!,
+      getModel: () => model,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
   };
@@ -99,13 +99,13 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
     handleContextMenu(ev);
   };
 
-  const handleOuterClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = debugWatchModelService;
     enactiveNodeDecoration();
   };
 
-  const handleOuterBlur = (ev: React.FocusEvent) => {
+  const handleOuterBlur = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = debugWatchModelService;
     enactiveNodeDecoration();
@@ -139,7 +139,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
           height={height}
           itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
           onReady={handleTreeReady}
-          model={model!}
+          model={model}
           placeholder={() => <span />}
         >
           {renderWatchNode}

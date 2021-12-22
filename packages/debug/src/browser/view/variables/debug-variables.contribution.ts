@@ -54,7 +54,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
 
         const param = await this.quickInputService.open({
           placeHolder: localize('deugger.menu.setValue.param'),
-          value: node.description.replace(/^\"(.*)\"$/, '$1') as string,
+          value: node.description.replace(/^"(.*)"$/, '$1') as string,
         });
         if (param !== undefined && param !== null) {
           // 设置值

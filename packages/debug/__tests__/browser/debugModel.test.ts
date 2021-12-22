@@ -1,10 +1,5 @@
-import {
-  URI,
-  Disposable,
-  DisposableCollection,
-  IFileServiceClient,
-  IContextKeyService,
-} from '@opensumi/ide-core-browser';
+import { URI, Disposable, DisposableCollection, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import {
@@ -24,10 +19,6 @@ import { IMessageService } from '@opensumi/ide-overlay';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-
-process.on('unhandledRejection', (reason, promise) => {
-  // console.error(reason);
-});
 
 describe('Debug Model', () => {
   let model: DebugModel;
@@ -51,7 +42,7 @@ describe('Debug Model', () => {
     toTearDown.push(Disposable.create(enableMonaCo()));
 
     mockDebugEditor = {
-      ...createMockedMonaco().editor!,
+      ...createMockedMonaco().editor,
       getModel: () => ({
         uri: testFile,
       }),
@@ -99,8 +90,13 @@ describe('Debug Model', () => {
       '0',
       {} as DebugSessionOptions,
       {
-        onRequest: (command: string, handler) => {},
-        on: (command: string, handler) => Disposable.create(() => {}),
+        onRequest: (command: string, handler) => {
+          console.log(`Request ${command} with handle ${handler.name}`);
+        },
+        on: (command: string, handler) => {
+          console.log(`Request ${command} with handle ${handler.name}`);
+          return Disposable.create(() => {});
+        },
         dispose: () => {},
       } as DebugSessionConnection,
       {} as ITerminalApiService,
@@ -122,7 +118,7 @@ describe('Debug Model', () => {
         column: 2,
       },
     });
-    model.focusStackFrame(frame);
+    model.focusStackFrame();
     expect(deltaDecorationsFn).toBeCalledTimes(0);
   });
 });

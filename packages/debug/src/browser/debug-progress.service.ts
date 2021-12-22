@@ -37,7 +37,7 @@ export class DebugProgressService implements IDebugProgress {
     ) {
       this.progressService.withProgress(
         { location: DebugProgressService.DEBUG_PANEL_PROGRESS_ID },
-        (_progress) => new Promise<void>((resolve) => (this.progressResolve = resolve)),
+        () => new Promise<void>((resolve) => (this.progressResolve = resolve)),
       );
     }
   }

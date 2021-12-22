@@ -238,7 +238,7 @@ export class OpenedEditorModelService {
     );
 
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.contextMenuFile) {
           const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
@@ -429,7 +429,7 @@ export class OpenedEditorModelService {
     if (!EditorFileGroup.is(node) && (node as EditorFileGroup).parent) {
       node = (node as EditorFileGroup).parent as EditorFileGroup;
     }
-    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
+    // 这里也可以直接调用node.refresh，但由于刷新事件可能会较多
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onDidRefreshedEmitter.fire();
@@ -442,7 +442,7 @@ export class OpenedEditorModelService {
       this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
+        await this.flushEventQueue();
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
         callback();
@@ -454,7 +454,6 @@ export class OpenedEditorModelService {
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
@@ -471,7 +470,7 @@ export class OpenedEditorModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    const promise = pSeries(
       roots.map((path) => async () => {
         const watcher = this.treeModel.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
