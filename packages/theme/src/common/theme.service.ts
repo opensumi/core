@@ -57,6 +57,7 @@ export interface IIconService {
     icon?: { [index in ThemeType]: string } | string,
     type?: IconType,
     shape?: IconShape,
+    fromExtension?: boolean,
   ): string | undefined;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
   getAvailableThemeInfos(): IconThemeInfo[];
