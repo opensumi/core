@@ -37,11 +37,11 @@ In the actual development process, you may encounter issues such as `node-gyp` a
 
 ## Build and run
 
-If you want to learn how to run OpenSuni or want to debug an issue, you need to get the code locally, build it, and then run it
+If you want to learn how to run OpenSumi or want to debug an issue, you need to get the code locally, build it, and then run it
 
 ### Getting the sources
 
-In the first step, you need to fork a copy of the `OpenSuni` repository, and then clone it locally:
+In the first step, you need to fork a copy of the `OpenSumi` repository, and then clone it locally:
 
 ```bash
 $ git clone https://github.com/<<<your-github-account>>>/core.git
