@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
 
-import type { Terminal, IBufferLine } from 'xterm';
-import { URI } from '@opensumi/ide-core-common';
+import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+import { IDisposable, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import type { TerminalClient } from '../terminal.client';
 import { TerminalLink } from './link';
@@ -76,6 +76,12 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     private readonly _wrapLinkHandler: (
       handler: (event: MouseEvent | undefined, link: string) => void,
     ) => XtermLinkMatcherHandler,
+    private readonly _tooltipCallback: (
+      link: TerminalLink,
+      viewportRange: IViewportRange,
+      modifierDownCallback?: () => void,
+      modifierUpCallback?: () => void,
+    ) => IDisposable,
     private readonly _validationCallback: (
       link: string,
       callback: (result: { uri: URI; isDirectory: boolean } | undefined) => void,
@@ -169,7 +175,9 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
                 link,
                 this._xterm.buffer.active.viewportY,
                 activateCallback,
+                this._tooltipCallback,
                 true,
+                undefined,
               ),
             );
           } else {

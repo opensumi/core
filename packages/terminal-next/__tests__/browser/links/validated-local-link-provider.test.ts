@@ -66,6 +66,7 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
       client,
       () => {},
       (() => {}) as any,
+      () => {},
       (_: string, cb: (result: { uri: URI; isDirectory: boolean } | undefined) => void) => {
         cb({ uri: URI.file('/'), isDirectory: false });
       },

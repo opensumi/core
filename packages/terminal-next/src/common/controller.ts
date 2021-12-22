@@ -4,6 +4,7 @@ import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
+import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
 export interface ITerminalExternalClient {
   readonly id: string;
@@ -97,4 +98,16 @@ export interface ITerminalGroupViewService {
 export interface ITerminalBrowserHistory {
   current: string | undefined;
   groups: (string[] | { clientId: string }[])[];
+}
+
+export const ITerminalHoverManagerService = Symbol('ITerminalHoverManagerService');
+export interface ITerminalHoverManagerService {
+  showHover(
+    targetOptions: ILinkHoverTargetOptions,
+    text: string,
+    linkHandler: (url: string) => void,
+  ): {
+    dispose(): void;
+  };
+  dispose(): void;
 }

@@ -1,4 +1,5 @@
-import type { Terminal, IBufferLine } from 'xterm';
+import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { ILinkComputerTarget, LinkComputer } from '../../common';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
 import { TerminalLink } from './link';
@@ -10,6 +11,12 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
   constructor(
     private readonly _xterm: Terminal,
     private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => void,
+    private readonly _tooltipCallback: (
+      link: TerminalLink,
+      viewportRange: IViewportRange,
+      modifierDownCallback?: () => void,
+      modifierUpCallback?: () => void,
+    ) => IDisposable,
   ) {
     super();
   }
@@ -43,7 +50,9 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
         link.url?.toString() || '',
         this._xterm.buffer.active.viewportY,
         this._activateCallback,
+        this._tooltipCallback,
         true,
+        undefined,
       );
     });
   }

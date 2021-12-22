@@ -4,7 +4,11 @@ import { TerminalProtocolLinkProvider } from '../../../src/browser/links/protoco
 describe('Workbench - TerminalWebLinkProvider', () => {
   async function assertLink(text: string, expected: { text: string; range: [number, number][] }[]) {
     const xterm = new Terminal();
-    const provider = new TerminalProtocolLinkProvider(xterm, () => {});
+    const provider = new TerminalProtocolLinkProvider(
+      xterm,
+      () => {},
+      () => {},
+    );
 
     // Write the text and wait for the parser to finish
     await new Promise<void>((r) => xterm.write(text, r));
