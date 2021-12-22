@@ -5,6 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
 
 import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IDisposable, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import type { TerminalClient } from '../terminal.client';
@@ -68,7 +69,11 @@ export const lineAndColumnClauseGroupCount = 6;
 
 const MAX_LENGTH = 2000;
 
+@Injectable({ multiple: true })
 export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   constructor(
     private readonly _xterm: Terminal,
     private readonly _client: TerminalClient,
@@ -169,7 +174,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
               this._activateFileCallback(event, text);
             });
             r(
-              new TerminalLink(
+              this.injector.get(TerminalLink, [
                 this._xterm,
                 bufferRange,
                 link,
@@ -178,7 +183,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
                 this._tooltipCallback,
                 true,
                 undefined,
-              ),
+              ]),
             );
           } else {
             r(undefined);

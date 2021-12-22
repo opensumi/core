@@ -1,5 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
 import { ITerminalHoverManagerService, ITerminalGroupViewService, ITerminalController } from '../common';
 import { ILinkHoverTargetOptions } from './links/link-manager';
 
@@ -9,28 +8,6 @@ const TIPS_OFFSET_X = 5;
 @Injectable()
 export class TerminalHoverManagerService implements ITerminalHoverManagerService {
   hoverWidget: HTMLElement | undefined;
-
-  @Autowired(ITerminalController)
-  private readonly controller: ITerminalController;
-
-  @Autowired(ITerminalGroupViewService)
-  private readonly terminalView: ITerminalGroupViewService;
-
-  constructor() {
-    this.controller.onDidCloseTerminal(() => {
-      this.hideHover();
-    });
-    this.controller.onDidChangeActiveTerminal(() => {
-      this.hideHover();
-    });
-  }
-
-  private _addDisposableListener(node: Node, type: string, handler: EventListener) {
-    node.addEventListener(type, handler);
-    return Disposable.create(() => {
-      node.removeEventListener(type, handler);
-    });
-  }
 
   private appendTerminalHoverContainer() {
     const overlayContainer = document.querySelector('#ide-overlay');

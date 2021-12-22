@@ -1,4 +1,5 @@
 import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
   IDisposable,
@@ -8,14 +9,22 @@ import {
   isOSX,
   RunOnceScheduler,
 } from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { convertBufferRangeToViewport } from './helpers';
 
+// 默认鼠标放在 link 上面，会显示 tooltip 的延迟时间 (ms)
+const DEFAULT_HOVER_DELAY = 500;
+
+@Injectable({ multiple: true })
 export class TerminalLink extends Disposable implements ILink {
   decorations: ILinkDecorations;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private _tooltipScheduler: RunOnceScheduler | undefined;
   private _hoverListeners: DisposableCollection | undefined;
-  private _tooltipDisposable: Disposable | undefined;
+  private _tooltipDisposable: IDisposable | undefined;
 
   private readonly _onInvalidated = new Emitter<void>();
   public get onInvalidated(): Event<void> {
@@ -106,7 +115,7 @@ export class TerminalLink extends Disposable implements ILink {
         // Clear out scheduler until next hover event
         this._tooltipScheduler?.dispose();
         this._tooltipScheduler = undefined;
-      }, 1000);
+      }, this.preferenceService.get<number>('editor.hover.delay') || DEFAULT_HOVER_DELAY);
       this._tooltipScheduler.schedule();
     }
 

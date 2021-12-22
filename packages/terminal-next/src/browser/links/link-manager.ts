@@ -1,5 +1,5 @@
 import { Terminal, ILinkProvider, IViewportRange } from 'xterm';
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   URI,
   Disposable,
@@ -73,6 +73,9 @@ export class TerminalLinkManager extends Disposable {
   private _standardLinkProviders: ILinkProvider[] = [];
   private _standardLinkProvidersDisposables = new DisposableCollection();
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired()
   private readonly _editorService: WorkbenchEditorService;
 
@@ -98,23 +101,23 @@ export class TerminalLinkManager extends Disposable {
 
     // Protocol links
     const wrappedActivateCallback = this._wrapLinkHandler((_, link) => this._handleProtocolLink(link));
-    const protocolProvider = new TerminalProtocolLinkProvider(
+    const protocolProvider = this.injector.get(TerminalProtocolLinkProvider, [
       this._xterm,
       wrappedActivateCallback,
       this._tooltipCallback.bind(this),
-    );
+    ]);
     this._standardLinkProviders.push(protocolProvider);
 
     // Validated local links
     const wrappedTextLinkActivateCallback = this._wrapLinkHandler((_, link) => this._handleLocalLink(link));
-    const validatedProvider = new TerminalValidatedLocalLinkProvider(
+    const validatedProvider = this.injector.get(TerminalValidatedLocalLinkProvider, [
       this._xterm,
       this._client,
       wrappedTextLinkActivateCallback,
       this._wrapLinkHandler.bind(this),
       this._tooltipCallback.bind(this),
       async (link, cb) => cb(await this._resolvePath(link)),
-    );
+    ]);
     this._standardLinkProviders.push(validatedProvider);
 
     this._registerStandardLinkProviders();
@@ -183,13 +186,13 @@ export class TerminalLinkManager extends Disposable {
     instance: ITerminalClient,
     linkProvider: ITerminalExternalLinkProvider,
   ): IDisposable {
-    const wrappedLinkProvider = new TerminalExternalLinkProviderAdapter(
+    const wrappedLinkProvider = this.injector.get(TerminalExternalLinkProviderAdapter, [
       this._xterm,
       instance,
       linkProvider,
       this._wrapLinkHandler.bind(this),
       this._tooltipCallback.bind(this),
-    );
+    ]);
     const newLinkProvider = this._xterm.registerLinkProvider(wrappedLinkProvider);
     // Re-register the standard link providers so they are a lower priority that the new one
     this._registerStandardLinkProviders();
