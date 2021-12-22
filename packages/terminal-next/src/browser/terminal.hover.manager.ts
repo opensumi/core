@@ -7,9 +7,10 @@ const TIPS_OFFSET_X = 5;
 
 @Injectable()
 export class TerminalHoverManagerService implements ITerminalHoverManagerService {
-  hoverWidget: HTMLElement | undefined;
+  private hoverOverlay: HTMLElement | undefined;
+  private hoverWidget: HTMLElement | undefined;
 
-  private appendTerminalHoverContainer() {
+  private appendTerminalHoverOverlay() {
     const overlayContainer = document.querySelector('#ide-overlay');
 
     if (!overlayContainer) {
@@ -19,7 +20,10 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
     const overlay = document.createElement('div');
     overlay.classList.add('terminal-hover-overlay');
     overlayContainer.appendChild(overlay);
+    this.hoverOverlay = overlay;
+  }
 
+  private appendTerminalHoverContainer() {
     this.hoverWidget = document.createElement('div');
     this.hoverWidget.style.display = 'none';
     this.hoverWidget.style.position = 'fixed';
@@ -29,10 +33,16 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
     this.hoverWidget.style.borderWidth = '0.5px';
     this.hoverWidget.style.borderStyle = 'solid';
     this.hoverWidget.style.padding = '5px';
+    this.hoverWidget.style.top = '-500px';
+    this.hoverWidget.style.left = '-500px';
     this.hoverWidget.style.zIndex = '10';
 
     this.hoverWidget.classList.add('hover-container');
-    overlay.appendChild(this.hoverWidget);
+    if (!this.hoverOverlay) {
+      this.appendTerminalHoverOverlay();
+    }
+
+    this.hoverOverlay?.appendChild(this.hoverWidget);
   }
 
   showHover(targetOptions: ILinkHoverTargetOptions, text: string, linkHandler: (url: string) => void) {
@@ -45,15 +55,26 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
     const boundingClientRect = targetOptions.boundingClientRect;
 
     if (this.hoverWidget) {
-      this.hoverWidget.style.top = `${
-        (viewportRange.start.y - 1) * cellDimensions.height + boundingClientRect.y - TIPS_OFFSET_Y
-      }px`;
-      this.hoverWidget.style.left = `${
-        viewportRange.start.x * cellDimensions.width + boundingClientRect.x + TIPS_OFFSET_X
-      }px`;
-      this.hoverWidget.style.display = 'inline';
       this.hoverWidget.textContent = text;
+      this.hoverWidget.style.display = 'inline';
     }
+
+    // wait for the hover widget to be rendered
+    requestAnimationFrame(() => {
+      if (this.hoverWidget) {
+        this.hoverWidget.style.top = `${
+          (viewportRange.start.y - 1) * cellDimensions.height + boundingClientRect.y - TIPS_OFFSET_Y
+        }px`;
+
+        let tooltipsLeft = viewportRange.start.x * cellDimensions.width + boundingClientRect.x + TIPS_OFFSET_X;
+        // if the tooltip is too close to the right edge of the terminal, move it to the left
+        if (tooltipsLeft + this.hoverWidget.clientWidth > boundingClientRect.x + boundingClientRect.width) {
+          tooltipsLeft = boundingClientRect.x + boundingClientRect.width - this.hoverWidget.clientWidth - TIPS_OFFSET_X;
+        }
+
+        this.hoverWidget.style.left = `${tooltipsLeft}px`;
+      }
+    });
 
     return {
       dispose: () => {
@@ -64,7 +85,7 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
 
   hideHover() {
     if (this.hoverWidget) {
-      this.hoverWidget.style.display = 'none';
+      this.dispose();
     }
   }
 

@@ -12,7 +12,7 @@ import {
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { convertBufferRangeToViewport } from './helpers';
 
-// 默认鼠标放在 link 上面，会显示 tooltip 的延迟时间 (ms)
+// default delay time (ms) for showing tooltip when mouse is over a link
 const DEFAULT_HOVER_DELAY = 500;
 
 @Injectable({ multiple: true })
