@@ -92,8 +92,12 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const currentSessionId = currentSession && currentSession.id;
 
   const renderToolBar = (session: DebugSession | undefined): React.ReactNode => {
-    if (session && session.id && toolBarMenuMap.has(session.id)) {
-      return <InlineMenuBar menus={toolBarMenuMap.get(session.id)!} />;
+    if (session && session.id) {
+      const menus = toolBarMenuMap.get(session.id);
+      if (!menus) {
+        return null;
+      }
+      return <InlineMenuBar menus={menus} />;
     }
     return null;
   };
@@ -241,7 +245,7 @@ const FloatDebugToolbarView = observer(() => {
         style={{ pointerEvents: controller.enable ? 'all' : 'none' }}
         className={styles.debug_toolbar_container}
         onMouseMove={(e) => controller.onMouseMove(e)}
-        onMouseUp={(e) => controller.onMouseUp()}
+        onMouseUp={() => controller.onMouseUp()}
       >
         <div
           style={{

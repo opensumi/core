@@ -822,7 +822,9 @@ export class DebugSession implements IDebugSession {
 
     const focus = (f: DebugStackFrame | undefined) => {
       if (this.stoppedDetails && !this.stoppedDetails.preserveFocusHint) {
-        this.currentThread!.currentFrame = f;
+        if (this.currentThread) {
+          this.currentThread.currentFrame = f;
+        }
       }
     };
 
@@ -839,7 +841,7 @@ export class DebugSession implements IDebugSession {
         const model = editor.monacoEditor.getModel();
         if (model) {
           const uri = URI.parse(model.uri.toString());
-          const curFram = frames.filter((f: DebugStackFrame) => f.source!.uri.toString() === uri.toString());
+          const curFram = frames.filter((f: DebugStackFrame) => f.source?.uri.toString() === uri.toString());
           if (Array.isArray(curFram)) {
             focus(curFram[0]);
           }

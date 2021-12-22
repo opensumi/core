@@ -135,7 +135,7 @@ export class DebugModelManager extends Disposable {
         debugModel.push(model);
         this.models.set(uriString, debugModel);
         monacoModel.onWillDispose(() => {
-          model!.dispose();
+          model.dispose();
           this.models.delete(uriString);
         });
       }
@@ -191,8 +191,13 @@ export class DebugModelManager extends Disposable {
       return;
     }
     // 同一个uri可能对应多个打开的monacoEditor，这里只需要验证其中一个即可
-    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].getEditor().getModel()!);
-    if (!canSetBreakpoints) {
+    const model = debugModel[0].getEditor().getModel();
+    if (model) {
+      const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(model);
+      if (!canSetBreakpoints) {
+        return;
+      }
+    } else {
       return;
     }
     for (const model of debugModel) {

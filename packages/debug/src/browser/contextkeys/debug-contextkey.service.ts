@@ -17,7 +17,7 @@ export class DebugContextKey {
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 
-  private _contextKeyService: IScopedContextKeyService | undefined;
+  private _contextKeyService: IScopedContextKeyService;
 
   public readonly contextInDebugRepl: IContextKey<boolean>;
   public readonly contextInDebugConsole: IContextKey<boolean>;
@@ -41,6 +41,6 @@ export class DebugContextKey {
   }
 
   public get contextKeyScoped(): IScopedContextKeyService {
-    return this._contextKeyService!;
+    return this._contextKeyService;
   }
 }

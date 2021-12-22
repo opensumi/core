@@ -114,12 +114,12 @@ export class DragAndDropService extends WithEventBus {
     }
   };
 
-  handleDragEnter = (ev: React.DragEvent, node: File | Directory) => {
+  handleDragEnter = (ev: React.DragEvent) => {
     ev.stopPropagation();
     ev.preventDefault();
   };
 
-  handleDragLeave = (ev: React.DragEvent, node: File | Directory) => {
+  handleDragLeave = (ev: React.DragEvent) => {
     ev.preventDefault();
     ev.stopPropagation();
     this.toCancelNodeExpansion.dispose();
@@ -233,7 +233,10 @@ export class DragAndDropService extends WithEventBus {
         resources = this.beingDraggedNodes;
       }
       if (resources.length > 0) {
-        const targetContainerUri = activeUri ? activeUri : (containing && containing.uri)!;
+        const targetContainerUri = activeUri ? activeUri : containing && containing.uri;
+        if (!targetContainerUri) {
+          return;
+        }
         const resourcesCanBeMoved = resources.filter(
           (resource: File | Directory) =>
             resource && resource.parent && !(resource.parent as Directory).uri.isEqual(targetContainerUri),
@@ -323,7 +326,7 @@ export class DragAndDropService extends WithEventBus {
     }
   };
 
-  handleDragEnd = (ev: React.DragEvent, node: File | Directory) => {
+  handleDragEnd = (_ev: React.DragEvent, node: File | Directory) => {
     this.beingDraggedDec.removeTarget(node);
     if (this.potentialParent) {
       this.draggedOverDec.removeTarget(this.potentialParent);

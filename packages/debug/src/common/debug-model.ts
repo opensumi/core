@@ -132,7 +132,7 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
   uri: URI;
-  position: monaco.Position;
+  position: monaco.Position | null;
   init: () => Promise<void>;
   renderBreakpoints: () => void;
   toggleBreakpoint: (position?: monaco.Position) => void;

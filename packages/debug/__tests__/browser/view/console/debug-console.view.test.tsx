@@ -17,7 +17,7 @@ import {
   DefaultDebugSessionFactory,
   DebugSession,
 } from '@opensumi/ide-debug/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-core-node';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import {
@@ -55,11 +55,12 @@ describe('Debug console component Test Suites', () => {
     show: jest.fn(),
     onDidChangeContext: jest.fn(() => Disposable.create(() => {})),
   } as any;
+
   const mockDebugSessionManager = {
     onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
     onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
-    currentSession: IDebugSession,
-    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
+    currentSession: null,
+    updateCurrentSession: jest.fn(() => {}),
   };
 
   const DebugConsoleView = observer(
@@ -69,7 +70,7 @@ describe('Debug console component Test Suites', () => {
       const handleTreeReady = (handle: IRecycleTreeHandle) => {
         tree.handleTreeHandler({
           ...handle,
-          getModel: () => model?.treeModel!,
+          getModel: () => model?.treeModel,
           hasDirectFocus: () => wrapperRef.current === document.activeElement,
         });
       };
@@ -100,7 +101,7 @@ describe('Debug console component Test Suites', () => {
           onReady={handleTreeReady}
           filter={filterValue}
           filterProvider={{ fuzzyOptions }}
-          model={model!.treeModel}
+          model={model.treeModel}
           overflow={'auto'}
         >
           {(props: INodeRendererWrapProps) => {
@@ -219,14 +220,14 @@ describe('Debug console component Test Suites', () => {
 
   it('repl filter', async () => {
     const session = createMockSession('mock', {});
-    // @ts-ignore
-    mockDebugSessionManager.currentSession = session;
+    mockDebugSessionManager.currentSession = session as any;
     const model = await debugConsoleModelService.initTreeModel(session as DebugSession);
     const tree = debugConsoleModelService;
-
-    act(() => {
-      ReactDOM.render(<DebugConsoleView tree={tree} model={model!}></DebugConsoleView>, container);
-    });
+    if (model) {
+      act(() => {
+        ReactDOM.render(<DebugConsoleView tree={tree} model={model}></DebugConsoleView>, container);
+      });
+    }
 
     await tree.execute('ABCD\n');
     await tree.execute('EFGH\n');

@@ -112,8 +112,8 @@ function createInlineValueDecorationsInsideRange(
             lineToNamesMap.set(lineNumber, []);
           }
 
-          if (lineToNamesMap.get(lineNumber)!.indexOf(name) === -1) {
-            lineToNamesMap.get(lineNumber)!.push(name);
+          if (lineToNamesMap.get(lineNumber)?.indexOf(name) === -1) {
+            lineToNamesMap.get(lineNumber)?.push(name);
           }
         }
       }
@@ -168,7 +168,7 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
             result.set(word, []);
           }
 
-          result.get(word)!.push(lineNumber);
+          result.get(word)?.push(lineNumber);
         }
       }
     }
@@ -206,7 +206,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
   public contribute(editor: IEditor): IDisposable {
     this.disposer.addDispose(
-      this.contextKeyService.onDidChangeContext((e) => {
+      this.contextKeyService.onDidChangeContext(() => {
         if (this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY)) {
           this.toggleHoverEnabled(editor);
         }
@@ -460,7 +460,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
             variables as DebugVariable[],
             range,
             model,
-            getWordToLineNumbersMap(editor?.monacoEditor.getModel()!),
+            getWordToLineNumbersMap(editor?.monacoEditor.getModel()),
           );
         }),
       );

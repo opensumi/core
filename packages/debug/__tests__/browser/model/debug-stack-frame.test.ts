@@ -25,7 +25,7 @@ describe('DebugStackFrame Model', () => {
       openSource = jest.fn();
       session = {
         id: 'session',
-        sendRequest: jest.fn((type, args) => {
+        sendRequest: jest.fn((type) => {
           if (type === 'scopes') {
             return {
               body: {

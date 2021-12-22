@@ -30,7 +30,7 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
   );
 
   const handleItemClicked = React.useCallback(
-    (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType) => {
+    (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode) => {
       // 阻止点击事件冒泡
       ev.stopPropagation();
 
@@ -38,7 +38,7 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
       if (!item) {
         return;
       }
-      handleItemClick(item, type);
+      handleItemClick(item);
     },
     [outlineModelService],
   );

@@ -72,7 +72,7 @@ describe('DebugSessionConnection', () => {
     }),
   };
 
-  const connectionFactory = (sessionId: string) => mockConnection as any;
+  const connectionFactory = () => mockConnection as any;
 
   const traceOutputChannel = {
     appendLine: jest.fn(),
@@ -181,7 +181,7 @@ describe('DebugSessionConnection', () => {
     const threadId = 10086;
     const delayDebugSessionConnection = injector.get(DebugSessionConnection, [
       '10010',
-      async (sessionId: string) =>
+      async () =>
         ({
           onClose: jest.fn(),
           onMessage: messageEmitter.event,

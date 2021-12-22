@@ -84,13 +84,13 @@ export const DebugVariableView = observer(({ viewState }: React.PropsWithChildre
     handleContextMenu(ev);
   };
 
-  const handleOuterClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = debugVariablesModelService;
     enactiveNodeDecoration();
   };
 
-  const handleOuterBlur = (ev: React.FocusEvent) => {
+  const handleOuterBlur = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = debugVariablesModelService;
     enactiveNodeDecoration();
@@ -125,7 +125,7 @@ export const DebugVariableView = observer(({ viewState }: React.PropsWithChildre
           width={width}
           itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
           onReady={handleTreeReady}
-          model={model!}
+          model={model}
           placeholder={() => <span></span>}
           overflow={'auto'}
         >

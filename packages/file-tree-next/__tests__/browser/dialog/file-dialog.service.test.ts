@@ -103,7 +103,7 @@ describe('FileDialogService should be work', () => {
     const children = await fileTreeDialogService.resolveChildren();
     expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(1);
     expect(children.length > 0).toBeTruthy();
-    await fileTreeDialogService.resolveChildren(children![0] as Directory);
+    await fileTreeDialogService.resolveChildren(children && (children[0] as Directory));
     expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(2);
     done();
   });

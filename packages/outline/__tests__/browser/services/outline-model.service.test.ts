@@ -146,8 +146,6 @@ describe('OutlineTreeModelService', () => {
     expect(typeof outlineTreeModelService.handleTreeBlur).toBe('function');
     expect(typeof outlineTreeModelService.toggleDirectory).toBe('function');
     expect(typeof outlineTreeModelService.refresh).toBe('function');
-    expect(typeof outlineTreeModelService.flushEventQueue).toBe('function');
-    expect(outlineTreeModelService.flushEventQueuePromise).toBeUndefined();
     expect(outlineTreeModelService.outlineTreeHandle).toBeUndefined();
     expect(outlineTreeModelService.decorations).toBeDefined();
     expect(outlineTreeModelService.treeModel).toBeDefined();

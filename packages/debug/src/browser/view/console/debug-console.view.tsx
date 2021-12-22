@@ -49,7 +49,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     disposer.addDispose(
       consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
         if (model) {
-          await model.treeModel!.root.ensureLoaded();
+          await model.treeModel.root.ensureLoaded();
           disposer.addDispose(
             model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
               consoleModel.treeHandle.layoutItem();
@@ -96,7 +96,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       });
       resizeObserver.observe(wrapperRef.current);
       return () => {
-        resizeObserver.unobserve(wrapperRef.current!);
+        resizeObserver.unobserve(wrapperRef.current);
         if (animationFrame) {
           window.cancelAnimationFrame(animationFrame);
         }
@@ -117,7 +117,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     consoleModel.handleTreeHandler({
       ...handle,
-      getModel: () => model?.treeModel!,
+      getModel: () => model?.treeModel,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
   };
@@ -147,7 +147,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     handleContextMenu(ev);
   };
 
-  const handleConsoleClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = consoleModel;
     enactiveNodeDecoration();
@@ -155,7 +155,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     debugConsoleService.focusInput();
   };
 
-  const handleOuterBlur = (ev: React.FocusEvent) => {
+  const handleOuterBlur = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = consoleModel;
     enactiveNodeDecoration();
@@ -205,7 +205,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         overScanCount={10}
         filter={filterMode() === 'filter' ? filterValue : ''}
         filterProvider={{ fuzzyOptions, filterAlways: true }}
-        model={model!.treeModel}
+        model={model.treeModel}
         overflow={'auto'}
         supportDynamicHeights={isWordWrap}
       >
@@ -220,6 +220,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         className={styles.debug_console_output}
         tabIndex={-1}
         onBlur={handleOuterBlur}
+        onClick={handleOuterClick}
         ref={wrapperRef}
         data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
       >
@@ -333,15 +334,19 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
             initial,
           );
 
-        let left: number;
+        let left = 0;
         if (preIndex !== 0 && cacheLeftMap.has(matchers[preIndex].startIndex)) {
-          const pre = cacheLeftMap.get(matchers[preIndex].startIndex)!;
-          left = excute(startIndex, pre.startIndex, pre.left);
+          const pre = cacheLeftMap.get(matchers[preIndex].startIndex);
+          if (pre) {
+            left = excute(startIndex, pre.startIndex, pre.left);
+          }
         } else {
           left = excute(startIndex, 0, 0);
         }
-        cacheLeftMap.set(startIndex, { startIndex, left });
-        return left;
+        if (left) {
+          cacheLeftMap.set(startIndex, { startIndex, left });
+          return left;
+        }
       }
       return 0;
     };

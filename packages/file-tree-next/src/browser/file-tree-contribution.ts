@@ -364,13 +364,13 @@ export class FileTreeContribution
         if (!searchFolder) {
           return;
         }
-        let searchPath: string;
+        let searchPath = '';
         if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理
           for (const root of await this.workspaceService.roots) {
             const rootUri = new URI(root.uri);
             if (rootUri.isEqualOrParent(searchFolder)) {
-              searchPath = `./${rootUri.relative(searchFolder)!.toString()}`;
+              searchPath = `./${rootUri.relative(searchFolder)?.toString()}`;
               break;
             }
           }
@@ -378,11 +378,11 @@ export class FileTreeContribution
           if (this.workspaceService.workspace) {
             const rootUri = new URI(this.workspaceService.workspace.uri);
             if (rootUri.isEqualOrParent(searchFolder)) {
-              searchPath = `./${rootUri.relative(searchFolder)!.toString()}`;
+              searchPath = `./${rootUri.relative(searchFolder)?.toString()}`;
             }
           }
         }
-        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath! });
+        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath });
       },
       isVisible: () =>
         !!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile),
@@ -444,9 +444,9 @@ export class FileTreeContribution
       execute: (uri) => {
         if (!uri) {
           if (this.fileTreeModelService.contextMenuFile) {
-            uri = this.fileTreeModelService.contextMenuFile!.uri;
+            uri = this.fileTreeModelService.contextMenuFile.uri;
           } else if (this.fileTreeModelService.focusedFile) {
-            uri = this.fileTreeModelService.focusedFile!.uri;
+            uri = this.fileTreeModelService.focusedFile.uri;
           } else {
             return;
           }
@@ -559,7 +559,7 @@ export class FileTreeContribution
               return await this.clipboardService.writeText('./');
             }
             if (rootUri.isEqualOrParent(uri)) {
-              return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
+              return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)?.toString() || ''));
             }
           }
         } else {
@@ -568,7 +568,7 @@ export class FileTreeContribution
             if (rootUri.isEqual(uri)) {
               return await this.clipboardService.writeText('./');
             }
-            return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
+            return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)?.toString() || ''));
           }
         }
       },
@@ -700,7 +700,7 @@ export class FileTreeContribution
           handler?.setCollapsed(ExplorerResourceViewId, false);
         }
         if (!uri && this.workbenchEditorService.currentEditor) {
-          uri = this.workbenchEditorService.currentEditor.currentUri!;
+          uri = this.workbenchEditorService.currentEditor.currentUri || undefined;
         }
         if (uri) {
           this.fileTreeModelService.location(uri);

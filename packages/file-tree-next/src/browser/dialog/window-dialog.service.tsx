@@ -46,7 +46,9 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
     const defaultUriStr = await this.recentGlobalStorage.get<string>('RECENT_DIALOG_DEFAULT_URI');
     if (!defaultUriStr) {
       const userHome = await this.fileServiceClient.getCurrentUserHome();
-      this._defaultUri = new URI(userHome!.uri);
+      if (userHome) {
+        this._defaultUri = new URI(userHome.uri);
+      }
     } else {
       this._defaultUri = new URI(defaultUriStr);
     }
@@ -119,7 +121,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       let fileTreeDialogService: FileTreeDialogService;
       if (options.defaultUri) {
-        fileTreeDialogService = this.injector.get(FileTreeDialogService, [options.defaultUri!.toString()]);
+        fileTreeDialogService = this.injector.get(FileTreeDialogService, [options.defaultUri.toString()]);
       } else {
         fileTreeDialogService = this.injector.get(FileTreeDialogService);
       }
@@ -165,7 +167,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       let fileTreeDialogService: FileTreeDialogService;
       if (options.defaultUri) {
-        fileTreeDialogService = this.injector.get(FileTreeDialogService, [options.defaultUri!.toString()]);
+        fileTreeDialogService = this.injector.get(FileTreeDialogService, [options.defaultUri.toString()]);
       } else {
         fileTreeDialogService = this.injector.get(FileTreeDialogService);
       }

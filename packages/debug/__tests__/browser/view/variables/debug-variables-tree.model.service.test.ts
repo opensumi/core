@@ -116,7 +116,6 @@ describe('Debug Variables Tree Model', () => {
     expect(typeof debugVariablesModelService.handleTreeBlur).toBe('function');
     expect(typeof debugVariablesModelService.handleTwistierClick).toBe('function');
     expect(typeof debugVariablesModelService.toggleDirectory).toBe('function');
-    expect(debugVariablesModelService.flushEventQueuePromise).toBeUndefined();
     expect(debugVariablesModelService.treeHandle).toBeUndefined();
     expect(debugVariablesModelService.decorations).toBeUndefined();
     expect(debugVariablesModelService.treeModel).toBeUndefined();
@@ -145,7 +144,7 @@ describe('Debug Variables Tree Model', () => {
     debugVariablesModelService.activeNodeDecoration(node);
     const decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('enactiveNodeDecoration method should be work', () => {
@@ -157,11 +156,11 @@ describe('Debug Variables Tree Model', () => {
     debugVariablesModelService.activeNodeDecoration(node);
     let decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugVariablesModelService.enactiveNodeDecoration();
     decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('removeNodeDecoration method should be work', () => {
@@ -175,11 +174,11 @@ describe('Debug Variables Tree Model', () => {
     debugVariablesModelService.removeNodeDecoration();
     decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
+    expect(decoration && decoration.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => {}, getModel: () => debugVariablesModelService.treeModel! } as any;
+    const treeHandle = { ensureVisible: () => {}, getModel: () => debugVariablesModelService.treeModel } as any;
     debugVariablesModelService.handleTreeHandler(treeHandle);
     expect(debugVariablesModelService.treeHandle.getModel()).toEqual(treeHandle.getModel());
   });
@@ -194,11 +193,11 @@ describe('Debug Variables Tree Model', () => {
     debugVariablesModelService.activeNodeDecoration(node);
     let decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugVariablesModelService.handleTreeBlur();
     decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+    expect(decoration && decoration.classlist).toEqual([styles.mod_selected]);
   });
 
   it('handleTwistierClick method should be work', () => {

@@ -251,18 +251,20 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
       breakpoints: {},
       defaultExceptionFilter: [],
     });
-    this._breakpointsEnabled = data!.breakpointsEnabled;
+    this._breakpointsEnabled = data.breakpointsEnabled;
     // eslint-disable-next-line guard-for-in
-    for (const uri in data!.breakpoints) {
+    for (const uri in data.breakpoints) {
       this.setBreakpoints(
         new URI(uri),
-        data!.breakpoints[uri].map((v) => Object.assign(v, { status: new Map() })),
+        data.breakpoints[uri].map((v) => Object.assign(v, { status: new Map() })),
       );
     }
     this.defaultExceptionFilter = data.defaultExceptionFilter || [];
     this.exceptionFilterValue = {};
     this.defaultExceptionFilter.forEach((item) => {
-      this.exceptionFilterValue![item.filter] = !!item.default;
+      if (this.exceptionFilterValue) {
+        this.exceptionFilterValue[item.filter] = !!item.default;
+      }
     });
   }
 
