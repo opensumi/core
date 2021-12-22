@@ -391,7 +391,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   });
 
   it('should be able to getConfiguration and use default value', async (done) => {
-    const config = extHostWorkspaceAPI.getConfiguration('a.b', '', '');
+    const config = extHostWorkspaceAPI.getConfiguration('a.b', '');
     expect(config.get('mockobj.key', 'defaultvalue')).toBe('defaultvalue');
 
     done();
