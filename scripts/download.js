@@ -1,22 +1,19 @@
-const path = require("path");
-const rimraf = require("rimraf");
-const mkdirp = require("mkdirp");
-const fs = require("fs-extra");
-const yauzl = require("yauzl");
-const log = require("debug")("InstallExtension");
-const os = require("os");
-const got = require("got");
-const urllib = require("urllib");
-const awaitEvent = require("await-event");
-const { v4 } = require("uuid");
+const path = require('path');
+const rimraf = require('rimraf');
+const mkdirp = require('mkdirp');
+const fs = require('fs-extra');
+const yauzl = require('yauzl');
+const log = require('debug')('InstallExtension');
+const os = require('os');
+const got = require('got');
+const urllib = require('urllib');
+const awaitEvent = require('await-event');
+const { v4 } = require('uuid');
 
 // 放置 vscode extension 的目录
-const targetDir = path.resolve(__dirname, "../tools/extensions/");
+const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const { extensions } = require(path.resolve(
-  __dirname,
-  "../configs/vscode-extensions.json"
-));
+const { extensions } = require(path.resolve(__dirname, '../configs/vscode-extensions.json'));
 
 // 限制并发数，运行promise
 const parallelRunPromise = (lazyPromises, n) => {
@@ -51,10 +48,10 @@ const parallelRunPromise = (lazyPromises, n) => {
   return new Promise(addWorking);
 };
 
-const api = "https://open-vsx.org/api/";
+const api = 'https://open-vsx.org/api/';
 
-async function downloadExtension(url, namespace, extensionName) {
-  const tmpPath = path.join(os.tmpdir(), "extension", v4());
+async function downloadExtension (url, namespace, extensionName) {
+  const tmpPath = path.join(os.tmpdir(), 'extension', v4());
   const tmpZipFile = path.join(tmpPath, path.basename(url));
   await fs.mkdirp(tmpPath);
 
@@ -62,7 +59,7 @@ async function downloadExtension(url, namespace, extensionName) {
   const data = await got.default.stream(url, { timeout: 100000 });
 
   data.pipe(tmpStream);
-  await Promise.race([awaitEvent(data, "end"), awaitEvent(data, "error")]);
+  await Promise.race([awaitEvent(data, 'end'), awaitEvent(data, 'error')]);
   tmpStream.close();
 
   const targetDirName = path.basename(`${namespace}.${extensionName}`);
@@ -70,7 +67,7 @@ async function downloadExtension(url, namespace, extensionName) {
   return { tmpZipFile, targetDirName };
 }
 
-function openZipStream(zipFile, entry) {
+function openZipStream (zipFile, entry) {
   return new Promise((resolve, reject) => {
     zipFile.openReadStream(entry, (error, stream) => {
       if (error) {
@@ -82,7 +79,7 @@ function openZipStream(zipFile, entry) {
   });
 }
 
-function modeFromEntry(entry) {
+function modeFromEntry (entry) {
   const attr = entry.externalFileAttributes >> 16 || 33188;
 
   return [448 /* S_IRWXU */, 56 /* S_IRWXG */, 7 /* S_IRWXO */]
@@ -90,7 +87,7 @@ function modeFromEntry(entry) {
     .reduce((a, b) => a + b, attr & 61440 /* S_IFMT */);
 }
 
-function createZipFile(zipFilePath) {
+function createZipFile (zipFilePath) {
   return new Promise((resolve, reject) => {
     yauzl.open(zipFilePath, { lazyEntries: true }, (err, zipfile) => {
       if (err) {
@@ -101,8 +98,8 @@ function createZipFile(zipFilePath) {
   });
 }
 
-function unzipFile(dist, targetDirName, tmpZipFile) {
-  const sourcePathRegex = new RegExp("^extension");
+function unzipFile (dist, targetDirName, tmpZipFile) {
+  const sourcePathRegex = new RegExp('^extension');
   return new Promise(async (resolve, reject) => {
     try {
       const extensionDir = path.join(dist, targetDirName);
@@ -111,24 +108,24 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 
       const zipFile = await createZipFile(tmpZipFile);
       zipFile.readEntry();
-      zipFile.on("error", (e) => {
+      zipFile.on('error', (e) => {
         reject(e);
       });
 
-      zipFile.on("close", () => {
-        if (!fs.pathExistsSync(path.join(extensionDir, "package.json"))) {
+      zipFile.on('close', () => {
+        if (!fs.pathExistsSync(path.join(extensionDir, 'package.json'))) {
           reject(`Download Error: ${extensionDir}/package.json`);
           return;
         }
         fs.remove(tmpZipFile).then(() => resolve(extensionDir));
       });
 
-      zipFile.on("entry", (entry) => {
+      zipFile.on('entry', (entry) => {
         if (!sourcePathRegex.test(entry.fileName)) {
           zipFile.readEntry();
           return;
         }
-        let fileName = entry.fileName.replace(sourcePathRegex, "");
+        let fileName = entry.fileName.replace(sourcePathRegex, '');
 
         if (/\/$/.test(fileName)) {
           const targetFileName = path.join(extensionDir, fileName);
@@ -139,9 +136,9 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
         let originalFileName;
         // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
         // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
-        if (fileName.endsWith(".asar") && this.options.isElectronEnv) {
+        if (fileName.endsWith('.asar') && this.options.isElectronEnv) {
           originalFileName = fileName;
-          fileName += "_prevent_bug";
+          fileName += '_prevent_bug';
         }
         const readStream = openZipStream(zipFile, entry);
         const mode = modeFromEntry(entry);
@@ -155,17 +152,14 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 
           fs.mkdirp(targetDirName).then(() => {
             const writerStream = fs.createWriteStream(targetFileName, { mode });
-            writerStream.on("close", () => {
+            writerStream.on('close', () => {
               if (originalFileName) {
                 // rename .asar, if filename has been modified
-                fs.renameSync(
-                  targetFileName,
-                  path.join(extensionDir, originalFileName)
-                );
+                fs.renameSync(targetFileName, path.join(extensionDir, originalFileName));
               }
               zipFile.readEntry();
             });
-            stream.on("error", (err) => {
+            stream.on('error', (err) => {
               throw err;
             });
             stream.pipe(writerStream);
@@ -179,19 +173,13 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 }
 
 const installExtension = async (namespace, name, version) => {
-  const path = version
-    ? `${namespace}/${name}/${version}`
-    : `${namespace}/${name}`;
+  const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
   const res = await urllib.request(`${api}${path}`, {
-    dataType: "json",
+    dataType: 'json',
     timeout: 100000,
   });
   if (res.data.files && res.data.files.download) {
-    const { targetDirName, tmpZipFile } = await downloadExtension(
-      res.data.files.download,
-      namespace,
-      name
-    );
+    const { targetDirName, tmpZipFile } = await downloadExtension(res.data.files.download, namespace, name);
     // 解压插件
     await unzipFile(targetDir, targetDirName, tmpZipFile);
     rimraf.sync(tmpZipFile);
@@ -199,7 +187,7 @@ const installExtension = async (namespace, name, version) => {
 };
 
 const downloadVscodeExtensions = async () => {
-  log("清空 vscode extension 目录：%s", targetDir);
+  log('清空 vscode extension 目录：%s', targetDir);
   rimraf.sync(targetDir);
   mkdirp.sync(targetDir);
 
@@ -211,7 +199,7 @@ const downloadVscodeExtensions = async () => {
     for (const item of items) {
       const { name, version } = item;
       promises.push(async () => {
-        log("开始安装：%s", name, version);
+        log('开始安装：%s', name, version);
         try {
           await installExtension(publisher, name, version);
         } catch (e) {
@@ -223,7 +211,7 @@ const downloadVscodeExtensions = async () => {
 
   // 限制并发 promise 数
   await parallelRunPromise(promises, 3);
-  log("安装完毕");
+  log('安装完毕');
 };
 
 // 执行并捕捉异常
