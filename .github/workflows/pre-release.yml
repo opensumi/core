@@ -58,7 +58,7 @@ jobs:
           lerna publish --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --no-private -y
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - uses: actions/github-script@v4
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
