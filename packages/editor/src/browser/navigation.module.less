@@ -27,10 +27,16 @@
     display: flex;
     align-items: center;
     white-space: nowrap;
+
     > span:first-child {
       font-size: 14px;
       vertical-align: middle;
       padding-right: 5px;
+
+      &::before {
+        background-size: 12px;
+        font-size: calc(1.5 * 12px);
+      }
     }
     &:hover {
       color: var(--breadcrumb-focusForeground);

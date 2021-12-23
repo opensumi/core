@@ -251,7 +251,7 @@
         "version": "1.55.2"
       },
       {
-        "name": "typescript-basics",
+        "name": "typescript",
         "version": "1.60.0"
       },
       {
@@ -269,6 +269,16 @@
       {
         "name": "yaml",
         "version": "1.55.2"
+      }
+    ],
+    "vscode-icons-team": [
+      {
+        "name": "vscode-icons"
+      }
+    ],
+    "opensumi": [
+      {
+        "name": "opensumi-default-themes"
       }
     ]
   }
