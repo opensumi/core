@@ -32,7 +32,7 @@ renderApp({
   useCdnIcon: true,
   useExperimentalShadowDom: true,
   defaultPreferences: {
-    'general.theme': 'ide-dark',
+    'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,

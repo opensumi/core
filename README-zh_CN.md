@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg)](https://github.com/opensumi/core/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
 
-![perview](https://img.alicdn.com/imgextra/i1/O1CN01eP6aZU1al34XVd38l_!!6000000003369-2-tps-2842-1714.png)
+![perview](https://img.alicdn.com/imgextra/i1/O1CN01n6girT1wJ2OmjQ15K_!!6000000006286-2-tps-2844-1830.png)
 
 [English](./README.md) | 简体中文
 
@@ -13,13 +13,13 @@
 由于国内墙的缘故，部分包的下载安装都会比较缓慢，建议在开始前将你的 npm 镜像切换至国内 taobao 镜像地址，或安装一个 npm 镜像切换工具用于快速切换，如 [nrm](https://www.npmjs.com/package/nrm), 手动设置方式如下：
 
 ```bash
-$ npm config set registry https://registry.npm.taobao.org
+$ npm config set registry https://registry.npmmirror.com
 ```
 
 由于 `canvas` 依赖 GitHub Release 资源，在国内网络环境下极易超时，故安装依赖时请加上对应的镜像地址如下：
 
 ```bash
-$ npm install --canvas_binary_host_mirror=https://npm.taobao.org/mirrors/node-canvas-prebuilt/
+$ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/node-canvas-prebuilt/
 $ npm run init
 $ npm run start
 ```
