@@ -48,14 +48,10 @@ jobs:
             echo "::set-output name=exists_tag::false"
           fi
 
-      - name: Build
-        run: |
-          npm run build:all
-
       # exclude tools/dev-tool
       - name: Publish prepatch version
         run: |
-          lerna publish --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --no-private -y
+          lerna publish --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version --canary --ignore-prepublish --ignore-scripts --no-private -y
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
