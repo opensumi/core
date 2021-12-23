@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { ITerminalHoverManagerService, ITerminalGroupViewService, ITerminalController } from '../common';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { ITerminalHoverManagerService } from '../common';
 import { ILinkHoverTargetOptions } from './links/link-manager';
 
 const TIPS_OFFSET_Y = 20;
@@ -76,11 +77,7 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
       }
     });
 
-    return {
-      dispose: () => {
-        this.dispose();
-      },
-    };
+    return Disposable.create(() => this.dispose());
   }
 
   hideHover() {

@@ -177,9 +177,7 @@ export class TerminalLinkManager extends Disposable {
     const attached = this._hoverManager.showHover(targetOptions, text, linkHandler);
     link?.onInvalidated(() => attached.dispose());
 
-    return {
-      dispose: () => attached.dispose(),
-    };
+    return Disposable.create(() => attached.dispose());
   }
 
   public registerExternalLinkProvider(

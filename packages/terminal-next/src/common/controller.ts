@@ -101,13 +101,6 @@ export interface ITerminalBrowserHistory {
 }
 
 export const ITerminalHoverManagerService = Symbol('ITerminalHoverManagerService');
-export interface ITerminalHoverManagerService {
-  showHover(
-    targetOptions: ILinkHoverTargetOptions,
-    text: string,
-    linkHandler: (url: string) => void,
-  ): {
-    dispose(): void;
-  };
-  dispose(): void;
+export interface ITerminalHoverManagerService extends IDisposable {
+  showHover(targetOptions: ILinkHoverTargetOptions, text: string, linkHandler: (url: string) => void): IDisposable;
 }
