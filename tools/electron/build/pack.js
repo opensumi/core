@@ -15,7 +15,7 @@ electronBuilder.build({
       },
     ],
     asar: true,
-    asarUnpack: 'node_modules/vscode-ripgrep',
+    asarUnpack: 'node_modules/@opensumi/vscode-ripgrep',
     mac: {
       target: 'dmg',
     },

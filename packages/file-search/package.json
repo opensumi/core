@@ -19,7 +19,7 @@
     "@opensumi/ide-core-common": "2.13.3",
     "@opensumi/ide-core-node": "2.13.3",
     "@opensumi/ide-process": "2.13.3",
-    "vscode-ripgrep": "^1.12.0",
+    "@opensumi/vscode-ripgrep": "^1.3.2",
     "fuzzy": "^0.1.3"
   },
   "devDependencies": {
