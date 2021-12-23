@@ -323,8 +323,8 @@ export class DebugSession implements IDebugSession {
     const response = await this.connection.sendRequest(
       'initialize',
       {
-        clientID: 'KatiTian',
-        clientName: 'KatiTian IDE',
+        clientID: 'OpenSumi',
+        clientName: 'OpenSumi IDE',
         adapterID: this.configuration.type,
         locale: 'en-US',
         linesStartAt1: true,
@@ -379,7 +379,7 @@ export class DebugSession implements IDebugSession {
     return this.sendRequest('setExceptionBreakpoints', args);
   }
 
-  public onStateChange(): void {
+  protected onStateChange(): void {
     const state = this.state;
     if (this.previousState !== state) {
       this.previousState = state;
