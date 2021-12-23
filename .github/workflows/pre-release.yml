@@ -1,0 +1,63 @@
+name: Next Release Flow
+
+on:
+  issues:
+    types: [opened, reopened, labeled]
+
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') &&
+      startsWith(github.event.issue.body, '## OpenSumi next version prerelease')
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: |
+          npm i
+
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - name: Tag Check
+        id: tag_check
+        run: |
+          GET_API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/git/ref/tags/v${CURRENT_VERSION}"
+          http_status_code=$(curl -LI $GET_API_URL -o /dev/null -w '%{http_code}\n' -s \
+            -H "Authorization: token ${GITHUB_TOKEN}")
+          if [ "$http_status_code" -ne "404" ] ; then
+            echo "::set-output name=exists_tag::true"
+          else
+            echo "::set-output name=exists_tag::false"
+          fi
+
+      # exclude tools/dev-tool
+      - name: Generate prepatch version
+        run: |
+          lerna version --ignore-changes 'tools/**' --no-push prepatch
+
+      - name: Build
+        run: |
+          npm run build:all
+  
+      # Publish prepatch version
