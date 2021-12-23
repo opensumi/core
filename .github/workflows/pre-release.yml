@@ -54,10 +54,10 @@ jobs:
       # exclude tools/dev-tool
       - name: Generate prepatch version
         run: |
-          lerna version --ignore-changes 'tools/**' --no-push prepatch
+          lerna version --ignore-changes 'tools/**' --no-push prepatch -y
 
       - name: Build
         run: |
           npm run build:all
-  
+
       # Publish prepatch version
