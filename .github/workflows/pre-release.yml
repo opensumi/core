@@ -4,10 +4,6 @@ on:
   issues:
     types: [opened, reopened, labeled]
 
-env:
-  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   release:
     name: Release
@@ -30,9 +26,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install dependencies
+      - name: Install dependencies & Build
         run: |
           npm i
+          npm run init
 
       - name: Set Current Version
         run: |
@@ -51,13 +48,24 @@ jobs:
             echo "::set-output name=exists_tag::false"
           fi
 
-      # exclude tools/dev-tool
-      - name: Generate prepatch version
-        run: |
-          lerna version --ignore-changes 'tools/**' --no-push prepatch
-
       - name: Build
         run: |
           npm run build:all
-  
-      # Publish prepatch version
+
+      # exclude tools/dev-tool
+      - name: Publish prepatch version
+        run: |
+          lerna publish --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🎉 Pre Release. You can install prerelease version via `npm install package@next`'
+            })
