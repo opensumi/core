@@ -101,7 +101,7 @@ $ npm start
 $ MY_WORKSPACE={workspace_path} npm start
 ```
 
-![perview](https://img.alicdn.com/imgextra/i1/O1CN01eP6aZU1al34XVd38l_!!6000000003369-2-tps-2842-1714.png)
+![perview](https://img.alicdn.com/imgextra/i1/O1CN01n6girT1wJ2OmjQ15K_!!6000000006286-2-tps-2844-1830.png)
 
 ## 调试
 

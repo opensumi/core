@@ -4,7 +4,7 @@ A framework helps you quickly build Cloud or Desktop IDE products.
 
 [![CI](https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg)](https://github.com/opensumi/core/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
 
-![perview](https://img.alicdn.com/imgextra/i2/O1CN01RkgC7P1zhGC1IgghU_!!6000000006745-2-tps-2930-1802.png)
+![perview](https://img.alicdn.com/imgextra/i3/O1CN01uIRRRl1wmLkN9geV3_!!6000000006350-2-tps-2844-1830.png)
 
 English | [简体中文](./README-zh_CN.md)
 
@@ -30,7 +30,7 @@ Read through our [contributing guidelines](./CONTRIBUTING.md) to learn about our
 
 ## Want to Help?
 
-Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines]((./CONTRIBUTING.md)) for contributing and then check out one of our issues labeled as help wanted or good first issue.
+Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines](<(./CONTRIBUTING.md)>) for contributing and then check out one of our issues labeled as help wanted or good first issue.
 
 ## License
 

@@ -1,8 +1,8 @@
-import * as glob from 'glob';
-import * as path from 'path';
+import glob from 'glob';
+import path from 'path';
 import { run } from './fn/shell';
-import * as fs from 'fs-extra';
-const nsfw = require('nsfw');
+import { copy } from 'fs-extra';
+import nsfw from 'nsfw';
 
 (async () => {
   await run('npm run clean');
@@ -20,7 +20,7 @@ const nsfw = require('nsfw');
 
   const watcher = await (nsfw as any)(cwd, (e) => {
     e.forEach((e) => {
-      if (e.action === nsfw.actions.CREATED || e.action === nsfw.actions.MODIFIED ||  e.action === nsfw.actions.RENAMED) {
+      if (e.action === nsfw.actions.CREATED || e.action === nsfw.actions.MODIFIED || e.action === nsfw.actions.RENAMED) {
         const filePath = e.newFile ? path.join(e.directory, e.newFile!) : path.join(e.directory, e.file!);
         if (fileSet.has(filePath)) {
           console.log('non-ts change detected:', filePath);
@@ -48,5 +48,5 @@ const nsfw = require('nsfw');
 async function copyOneFile(file, cwd) {
   const from = path.join(cwd, file);
   const to = path.join(cwd, file.replace(/\/src\//, '/lib/'));
-  await fs.copy(from, to);
+  await copy(from, to);
 }
