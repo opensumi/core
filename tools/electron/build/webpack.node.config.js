@@ -43,7 +43,9 @@ module.exports = {
   },
   externals: [
     function (context, request, callback) {
-      if (['node-pty', 'nsfw', 'spdlog', 'vscode-ripgrep', 'vm2', 'keytar', 'vertx'].indexOf(request) !== -1) {
+      if (
+        ['node-pty', 'nsfw', 'spdlog', '@opensumi/vscode-ripgrep', 'vm2', 'keytar', 'vertx'].indexOf(request) !== -1
+      ) {
         return callback(null, 'commonjs ' + request);
       }
       callback();
