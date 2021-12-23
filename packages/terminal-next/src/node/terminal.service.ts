@@ -1,10 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { PtyService, IPty } from './pty';
-import { ITerminalNodeService, TerminalOptions, ITerminalServiceClient } from '../common';
+import { IPty, PtyService, IPtyService } from './pty';
+import { IShellLaunchConfig } from '../common/pty';
+import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
 
 /**
  * terminal service 的具体实现
+ * @lengthmin: 其实这里应该换成每个实例持有一个 pty 实例，待讨论并推进实现
  */
 @Injectable()
 export class TerminalServiceImpl implements ITerminalNodeService {
@@ -13,7 +15,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   private terminalMap: Map<string, IPty> = new Map();
   private clientTerminalMap: Map<string, Map<string, IPty>> = new Map();
   private clientTerminalThresholdMap: Map<string, NodeJS.Timeout> = new Map();
-  private ptyService = new PtyService();
+
+  @Autowired(IPtyService)
+  private ptyService: PtyService;
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
 
@@ -61,13 +65,14 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
   }
 
-  public async create(id: string, rows: number, cols: number, options: TerminalOptions) {
+  public async create(id: string, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
-    const terminal = await this.ptyService.create(rows, cols, options);
+
+    const terminal = await this.ptyService.create2(options);
 
     this.terminalMap.set(id, terminal);
 
-    terminal.on('data', (data) => {
+    terminal.onData((data) => {
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.clientMessage(id, data);
@@ -76,7 +81,8 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       }
     });
 
-    terminal.on('exit', (exitCode: number, signal: number | undefined) => {
+    terminal.onExit(({ exitCode, signal }) => {
+      this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.closeClient(id, exitCode, signal);
@@ -86,11 +92,10 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     });
 
     const clientMap = this.clientTerminalMap.get(clientId);
-
     if (!clientMap) {
       this.clientTerminalMap.set(clientId, new Map());
     }
-    (this.clientTerminalMap.get(clientId) as Map<string, IPty>).set(id, terminal);
+    this.clientTerminalMap.get(clientId)!.set(id, terminal);
 
     return terminal;
   }
@@ -116,10 +121,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   getShellName(id: string): string {
     const terminal = this.getTerminal(id);
     if (!terminal) {
-      return '';
+      return 'invalid terminal';
     }
-    const match = terminal.bin.match(/[\w|.]+$/);
-    return match ? match[0] : 'sh';
+    return terminal.parsedName;
   }
 
   getProcessId(id: string): number {

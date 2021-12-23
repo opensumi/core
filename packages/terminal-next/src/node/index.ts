@@ -10,6 +10,7 @@ import {
   ITerminalServicePath,
 } from '../common';
 import { TerminalProcessServiceImpl } from './terminal-process.service';
+import { PtyService, IPtyService } from './pty';
 
 @Injectable()
 export class TerminalNodePtyModule extends NodeModule {
@@ -25,6 +26,10 @@ export class TerminalNodePtyModule extends NodeModule {
     {
       token: ITerminalProcessService,
       useClass: TerminalProcessServiceImpl,
+    },
+    {
+      token: IPtyService,
+      useClass: PtyService,
     },
   ];
 

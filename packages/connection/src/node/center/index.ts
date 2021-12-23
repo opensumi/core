@@ -17,26 +17,26 @@ export enum ServiceType {
   Stub,
 }
 
-export function initRPCService(center: RPCServiceCenter) {
+export function initRPCService<T = void>(center: RPCServiceCenter) {
   return {
-    createRPCService: (name: string, service?: any): any => {
-      const proxy = new RPCServiceStub(name, center, ServiceType.Service).getProxy();
+    createRPCService: (name: string, service?: any) => {
+      const proxy = new RPCServiceStub(name, center, ServiceType.Service).getProxy<T>();
       if (service) {
         proxy.onRequestService(service);
       }
 
       return proxy;
     },
-    getRPCService: (name: string): any => new RPCServiceStub(name, center, ServiceType.Stub).getProxy(),
+    getRPCService: (name: string) => new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>(),
   };
 }
 
-export function createRPCService(name: string, center: RPCServiceCenter): any {
-  return new RPCServiceStub(name, center, ServiceType.Service).getProxy();
+export function createRPCService<T = void>(name: string, center: RPCServiceCenter): any {
+  return new RPCServiceStub(name, center, ServiceType.Service).getProxy<T>();
 }
 
-export function getRPCService(name: string, center: RPCServiceCenter): any {
-  return new RPCServiceStub(name, center, ServiceType.Stub).getProxy();
+export function getRPCService<T = void>(name: string, center: RPCServiceCenter): any {
+  return new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>();
 }
 
 interface Ibench {
@@ -136,14 +136,14 @@ export class RPCServiceStub {
   async ready() {
     return this.center.when();
   }
-  getNotificationName(name) {
+  getNotificationName(name: string) {
     return `on:${this.serviceName}:${name}`;
   }
-  getRequestName(name) {
+  getRequestName(name: string) {
     return `${this.serviceName}:${name}`;
   }
   // 服务方
-  on(name, method: RPCServiceMethod) {
+  on(name: string, method: RPCServiceMethod) {
     this.onRequest(name, method);
   }
   getServiceMethod(service): string[] {
@@ -171,18 +171,19 @@ export class RPCServiceStub {
       this.onRequest(method, service[method].bind(service));
     }
   }
-  onRequest(name, method: RPCServiceMethod) {
+
+  onRequest(name: string, method: RPCServiceMethod) {
     this.center.onRequest(this.getMethodName(name), method);
   }
-  broadcast(name, ...args) {
+  broadcast(name: string, ...args) {
     return this.center.broadcast(this.getMethodName(name), ...args);
   }
 
-  getMethodName(name) {
+  getMethodName(name: string) {
     return name.startsWith('on') ? this.getNotificationName(name) : this.getRequestName(name);
   }
-  getProxy = () =>
-    new Proxy(this, {
+  getProxy = <T>() =>
+    new Proxy<RPCServiceStub & T>(this as any, {
       // 调用方
       get: (target, prop: string) => {
         if (!target[prop]) {

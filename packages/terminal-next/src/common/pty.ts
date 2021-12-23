@@ -1,15 +1,12 @@
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@opensumi/ide-core-common';
-import { WindowsShellType } from './shell';
+import { ShellType, WindowsShellType } from './shell';
+import { IPty } from 'node-pty';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalProcessPath = 'ITerminalProcessPath';
-
-export const ITerminalNodeService = Symbol('ITerminalNodeService');
-export const ITerminalProcessService = Symbol('ITerminalProcessServices');
-export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
-export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
 export interface Terminal {
   readonly xterm: XTerm;
@@ -149,38 +146,30 @@ export interface TerminalOptions {
   beforeCreate?: (terminalId: string) => void;
 }
 
+export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create(id: string, rows: number, cols: number, options: TerminalOptions);
-
+  create(id: string, options: IShellLaunchConfig): Promise<IPty>;
   onMessage(id: string, msg: string): void;
-
   resize(id: string, rows: number, cols: number);
-
   getShellName(id: string): string;
-
   getProcessId(id: string): number;
-
-  disposeById(id: string);
-
-  dispose();
-
-  setClient(clientId: string, client: ITerminalServiceClient);
-
-  closeClient(clientId: string);
-
+  disposeById(id: string): void;
+  dispose(): void;
+  setClient(clientId: string, client: ITerminalServiceClient): void;
+  closeClient(clientId: string): void;
   ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
 }
 
+export const ITerminalProcessService = Symbol('ITerminalProcessService');
 export interface ITerminalProcessService {
   getEnv(): Promise<{ [key in string]: string | undefined }>;
 }
 
+export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export interface ITerminalServiceClient {
   create(
     id: string,
-    rows: number,
-    cols: number,
-    options: TerminalOptions,
+    options: IShellLaunchConfig,
   ):
     | Promise<{
         pid: number;
@@ -191,17 +180,15 @@ export interface ITerminalServiceClient {
         name: string;
       };
   onMessage(id: string, msg: string): void;
-  resize(id: string, rows: number, cols: number);
-  disposeById(id: string);
+  resize(id: string, rows: number, cols: number): void;
+  disposeById(id: string): void;
   getProcessId(id: string): number;
-  clientMessage(id, data);
+  clientMessage(id: string, data): void;
   closeClient(id: string, code?: number, signal?: number): void;
-  setConnectionClientId(clientId: string);
-  dispose();
+  setConnectionClientId(clientId: string): void;
+  dispose(): void;
   getShellName(id: string): string;
-
   ensureTerminal(terminalIdArr: string[]): boolean;
-
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
 }
 
@@ -211,6 +198,8 @@ export interface ITerminalInfo {
   isActive: boolean;
 }
 
+// 搜了一下代码，在 OpenSumi 里已经没有地方引用了
+export const IExternlTerminalService = Symbol('IExternlTerminalService');
 /**
  * 使用依赖注入的方式复写这个类型，
  * 支持更多形式的 termial 实现。
@@ -254,4 +243,49 @@ export interface IExternlTerminalService {
    * @param id
    */
   getProcessId(id: string): Promise<number>;
+}
+
+export interface IShellLaunchConfig {
+  shellPath: string;
+  args: string[];
+
+  isExtensionTerminal?: boolean;
+
+  shellType?: ShellType;
+
+  os: OperatingSystem;
+
+  /**
+   * Whether the terminal process environment should be exactly as provided in
+   * `TerminalOptions.env`. When this is false (default), the environment will be based on the
+   * window's environment and also apply configured platform settings like
+   * `terminal.integrated.windows.env` on top. When this is true, the complete environment
+   * must be provided as nothing will be inherited from the process or any configuration.
+   */
+  strictEnv?: boolean;
+
+  /**
+   * Name of the terminal to be set in environment ($TERM variable).
+   */
+  name?: string;
+
+  /**
+   * Number of intial cols of the pty.
+   */
+  cols: number;
+
+  /**
+   * Number of initial rows of the pty.
+   */
+  rows: number;
+
+  /**
+   * Working directory to be set for the child program.
+   */
+  cwd?: string;
+
+  /**
+   * Environment to be set for the child program.
+   */
+  env?: { [key: string]: string | null };
 }

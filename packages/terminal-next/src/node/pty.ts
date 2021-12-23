@@ -1,22 +1,27 @@
-import os from 'os';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
-import { TerminalOptions } from '../common';
+import { IShellLaunchConfig } from '../common';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
+import { INodeLogger } from '@opensumi/ide-core-node';
+import { Injectable, Autowired } from '@opensumi/di';
 
 export { pty };
 
 export interface IPty extends pty.IPty {
   bin: string;
+  options: IShellLaunchConfig;
+  parsedName: string;
 }
 
-const defaultWindowsType = 'powershell.exe';
+export const IPtyService = Symbol('IPtyService');
 
+@Injectable()
 export class PtyService {
-  async create(rows: number, cols: number, options: TerminalOptions): Promise<IPty> {
-    const bin =
-      options.shellPath || (os.platform() === 'win32' ? defaultWindowsType : process.env['SHELL'] || '/bin/sh');
+  @Autowired(INodeLogger)
+  private readonly logger: INodeLogger;
+
+  async create2(options: IShellLaunchConfig) {
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -49,14 +54,17 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
-    const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
-      name: 'xterm-256color',
-      cols: cols || 100,
-      rows: rows || 30,
-      cwd: options.cwd ? options.cwd!.toString() : '',
+    const ptyProcess = pty.spawn(options.shellPath, options.args || [], {
+      name: options.name || 'xterm-256color',
+      cols: options.cols || 100,
+      rows: options.rows || 30,
+      cwd: options.cwd,
       env: ptyEnv,
     });
-    (ptyProcess as any).bin = bin;
+    (ptyProcess as IPty).bin = options.shellPath;
+    (ptyProcess as IPty).options = options;
+    const match = options.shellPath.match(/[\w|.]+$/);
+    (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;
   }
 

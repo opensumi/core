@@ -8,3 +8,5 @@ export enum WindowsShellType {
   'powershell' = 'powershell',
   'git-bash' = 'git-bash',
 }
+
+export type ShellType = WindowsShellType | string;

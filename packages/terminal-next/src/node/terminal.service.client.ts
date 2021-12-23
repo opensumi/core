@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
+import { IShellLaunchConfig, ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
@@ -29,7 +29,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
-
     this.terminalService.setClient(this.clientId, this);
   }
 
@@ -43,6 +42,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   closeClient(id: string, code?: number, signal?: number) {
     if (this.client) {
+      // NodePtyTerminalService
       this.client.closeClient(id, code, signal);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
@@ -54,16 +54,15 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, rows: number, cols: number, options: TerminalOptions) {
-    const clientId = this.clientId;
-
-    this.terminalService.setClient(clientId, this);
-    this.logger.log('create pty id', id);
-    const pty = (await this.terminalService.create(id, rows, cols, options)) as IPty;
+  async create(id: string, options: IShellLaunchConfig) {
+    this.terminalService.setClient(this.clientId, this);
+    const pty = (await this.terminalService.create(id, options)) as IPty;
+    this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
     this.terminalMap.set(id, pty);
     return {
+      id,
       pid: pty.pid,
-      name: this.terminalService.getShellName(id) || '',
+      name: pty.parsedName,
     };
   }
 
@@ -111,11 +110,5 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   dispose() {
     this.terminalService.closeClient(this.clientId);
-
-    /*
-    this.terminalMap.forEach((pty) => {
-      pty.kill();
-    });
-    */
   }
 }

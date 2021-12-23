@@ -35,11 +35,13 @@ import {
   ITerminalExitEvent,
   ITerminalConnection,
   ITerminalExternalLinkProvider,
+  IShellLaunchConfig,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import styles from './component/terminal.module.less';
 
@@ -78,7 +80,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly injector: Injector;
 
   @Autowired(ITerminalInternalService)
-  protected readonly service: ITerminalInternalService;
+  protected readonly internalService: ITerminalInternalService;
 
   @Autowired(IWorkspaceService)
   protected readonly workspace: IWorkspaceService;
@@ -88,6 +90,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(IFileServiceClient)
   protected readonly fileService: IFileServiceClient;
+
+  @Autowired(IMessageService)
+  protected readonly messageService: IMessageService;
 
   @Autowired(ITerminalTheme)
   protected readonly theme: ITerminalTheme;
@@ -141,6 +146,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   onResponseTime: Event<number> = this._onResponseTime.event;
 
   async init(widget: IWidget, options: TerminalOptions = {}) {
+    // TODO: 在这里把 TerminalOptions 转为内部要用的 IShellLaunchConfig
     this._uid = widget.id;
     this._options = options || {};
     this.name = this._options.name || '';
@@ -151,7 +157,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
-      ...this.service.getOptions(),
+      ...this.internalService.getOptions(),
     });
 
     if (options.message) {
@@ -229,6 +235,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     );
 
+    // TODO: 移动到 AttachAddon 的 onExit 中
+    this.addDispose(
+      this.internalService.onExit((ev) => {
+        this.logger.warn(`${this.id} ${this.name} exit with ${JSON.stringify(ev)}`);
+
+        // const commandLine = this._term.getOption;
+        if (ev.code !== 0) {
+          this.messageService.error(`Terminal exited with code ${ev.code} signal ${ev.signal}`);
+        }
+      }),
+    );
+
     this._apply(widget);
     if (await this._checkWorkspace()) {
       this._attachXterm();
@@ -244,7 +262,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   get pid() {
-    return this.service.getProcessId(this.id);
+    return this.internalService.getProcessId(this.id);
   }
 
   get options() {
@@ -339,29 +357,48 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._onLinksReady.fire(this);
   }
 
-  private async _doAttach() {
-    const sessionId = this.id;
+  private prepareShellLaunchConfig() {
     const type = this.preference.get<string>('type');
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
 
-    const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
-
-    const extraShellArgs: string[] = [];
-    if (this._os === OperatingSystem.Windows && type === 'git-bash') {
-      extraShellArgs.push('--login');
-    }
-
-    const ptyOptions = {
+    const ptyOptions: IShellLaunchConfig = {
+      shellPath: this._options.shellPath || '',
       cwd: this._workspacePath,
-      ...this._options,
-      shellArgs: [...(this._options.shellArgs || []), ...(linuxShellArgs || []), ...extraShellArgs],
+      args: [],
+      cols,
+      rows,
+      shellType: type,
+      os: this._os,
+      env: this._options.env,
+      name: this._options.name,
+      strictEnv: this._options.strictEnv,
+      isExtensionTerminal: this._options.isExtensionTerminal,
     };
 
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
+    if (this._options.shellArgs) {
+      if (Array.isArray(this._options.shellArgs)) {
+        ptyOptions.args.push(...this._options.shellArgs);
+      } else {
+        ptyOptions.args.push(this._options.shellArgs);
+      }
+    }
+
+    return ptyOptions;
+  }
+
+  private async _doAttach() {
+    const sessionId = this.id;
+
+    const launchConfig = this.prepareShellLaunchConfig();
+    this.logger.debug(`${sessionId} attach with ${JSON.stringify(launchConfig)}`);
     let connection: ITerminalConnection | undefined;
+
     try {
-      connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
-    } catch {
+      connection = await this.internalService.attach(sessionId, this._term, launchConfig);
+    } catch (e) {
       // noop
+      console.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
+      // TODO emit error
     }
 
     this._attachAddon.setConnection(connection);
@@ -381,7 +418,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _doResize() {
-    this.service.resize(this.id, this._term.cols, this._term.rows);
+    this.internalService.resize(this.id, this._term.cols, this._term.rows);
   }
 
   _prepare() {
@@ -408,7 +445,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     // rAF 在不可见状态下会丢失，所以一定要用 setTimeout
     setTimeout(() => {
       this._layout();
-      this.service.getOs().then((os) => {
+      this.internalService.getOs().then((os) => {
         this._os = os;
       });
       this.attach();
@@ -473,7 +510,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _checkReady() {
     if (!this._ready) {
-      throw new Error('client not ready');
+      throw new Error('terminal client not ready');
     }
   }
 
@@ -571,7 +608,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async sendText(message: string) {
-    await this.service.sendText(this.id, message);
+    await this.internalService.sendText(this.id, message);
     this._onInput.fire({ id: this.id, data: message });
   }
 
@@ -587,7 +624,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     super.dispose();
 
     if (clear) {
-      this.service.disposeById(this.id);
+      this.internalService.disposeById(this.id);
     }
   }
 }

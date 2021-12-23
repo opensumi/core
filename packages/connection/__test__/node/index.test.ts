@@ -124,7 +124,11 @@ describe('connection', () => {
     const clientCenter = new RPCServiceCenter();
     clientCenter.setConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
 
-    const { getRPCService } = initRPCService(clientCenter);
+    const { getRPCService } = initRPCService<
+      MockFileService & {
+        onFileChange: (k: any) => void;
+      }
+    >(clientCenter);
 
     const remoteService = getRPCService('MockFileServicePath');
     const remoteResult = await remoteService.getContent('1');

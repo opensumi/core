@@ -173,7 +173,9 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
-    const { getRPCService } = initRPCService(mainThreadCenter);
+    const { getRPCService } = initRPCService<{
+      onMessage: (msg: string) => void;
+    }>(mainThreadCenter);
 
     const service = getRPCService('ExtProtocol');
     const onMessageEmitter = new Emitter<string>();

@@ -1,9 +1,9 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@opensumi/ide-core-common';
-import { OS } from '@opensumi/ide-core-common/lib/platform';
+import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
-import { electronEnv } from '@opensumi/ide-core-browser';
+import { CorePreferences, electronEnv } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generate,
@@ -14,8 +14,8 @@ import {
   ITerminalServicePath,
   ITerminalConnection,
   IPtyExitEvent,
-  TerminalOptions,
   ITerminalController,
+  IShellLaunchConfig,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';
@@ -50,16 +50,9 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this._processExtHostProxies.get(id);
   }
 
-  async attach(
-    sessionId: string,
-    xterm: Terminal,
-    rows: number,
-    cols: number,
-    options: TerminalOptions = {},
-    type: string,
-  ) {
+  async attach(sessionId: string, xterm: Terminal, options: IShellLaunchConfig) {
     if (options.isExtensionTerminal) {
-      const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+      const proxy = new TerminalProcessExtHostProxy(sessionId, options.cols, options.rows, this.controller);
       proxy.start();
       proxy.onProcessExit((code) => {
         this._processExtHostProxies.delete(sessionId);
@@ -69,11 +62,12 @@ export class TerminalInternalService implements ITerminalInternalService {
         name: options.name || '',
         readonly: false,
         onData: proxy.onProcessData.bind(proxy),
-        sendData: proxy.input.bind(proxy),
         onExit: proxy.onProcessExit.bind(proxy),
+        sendData: proxy.input.bind(proxy),
       };
     }
-    return this.service.attach(sessionId, xterm, rows, cols, options, type);
+
+    return this.service.attach(sessionId, xterm, options);
   }
 
   async sendText(sessionId: string, message: string) {
@@ -133,7 +127,10 @@ export class NodePtyTerminalService implements ITerminalService {
   protected readonly logger: ILogger;
 
   @Autowired(ITerminalServicePath)
-  protected readonly service: ITerminalServiceClient;
+  protected readonly serviceClientRPC: ITerminalServiceClient;
+
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
 
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
@@ -153,7 +150,7 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async check(ids: string[]) {
-    const ensureResult = await this.service.ensureTerminal(ids);
+    const ensureResult = await this.serviceClientRPC.ensureTerminal(ids);
     return ensureResult;
   }
 
@@ -162,29 +159,50 @@ export class NodePtyTerminalService implements ITerminalService {
       name,
       readonly: false,
       onData: (handler: (value: string | ArrayBuffer) => void) => this._dispatcher.on(sessionId, handler),
+      onExit: (handler: (exitCode: number | undefined) => void) => this.onExit((e) => handler(e.code)),
       sendData: (message: string) => {
         this.sendText(sessionId, message);
       },
     };
   }
 
-  async attach(sessionId: string, _: Terminal, rows: number, cols: number, options = {}, type?: string) {
-    let shellPath: string | undefined;
-    // default 的情况交给系统环境来决定使用的终端类型
-    if (type === 'default') {
-      type = undefined;
-    }
-    if (type) {
+  private async finishShellLaunchConfig(options: IShellLaunchConfig) {
+    // TODO: fix 目前设置 default 的话，不会启动 ZSH，待排查
+    if (options.shellType && options.shellType !== 'default') {
       if (isWindows) {
-        shellPath = await this.service.$resolveWindowsShellPath(type as WindowsShellType);
+        options.shellPath =
+          (await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType)) || '';
       } else {
-        shellPath = `/bin/${type}`;
+        options.shellPath = `/bin/${options.shellType}`;
+      }
+    } else if (options.shellType === 'default') {
+      // default 的情况交给系统环境来决定使用的终端类型
+      // TODO: feat: 优化 default 逻辑
+      if (options.os === OperatingSystem.Windows) {
+        options.shellPath = 'powershell.exe';
+        options.shellType = WindowsShellType.powershell;
+      } else {
+        options.shellPath = process.env['SHELL'] || '/bin/sh';
+        options.shellType = options.shellPath;
       }
     }
-    const { name, pid } = await this.service.create(sessionId, rows, cols, {
-      shellPath,
-      ...options,
-    });
+
+    if (options.os === OperatingSystem.Windows) {
+      if (options.shellType === WindowsShellType['git-bash']) {
+        options.args.push('--login');
+      }
+    } else if (options.os === OperatingSystem.Linux) {
+      const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
+      options.args.push(...linuxShellArgs);
+    } else if (options.os === OperatingSystem.Macintosh) {
+    }
+    return options;
+  }
+
+  async attach(sessionId: string, _: Terminal, options: IShellLaunchConfig) {
+    const finalOptions = await this.finishShellLaunchConfig(options);
+    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(finalOptions)}`);
+    const { name, pid } = await this.serviceClientRPC.create(sessionId, finalOptions);
 
     if (!pid || !name) {
       return;
@@ -196,7 +214,7 @@ export class NodePtyTerminalService implements ITerminalService {
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
     const id = requestId || NodePtyTerminalService.countId++;
 
-    this.service.onMessage(
+    this.serviceClientRPC.onMessage(
       sessionId,
       JSON.stringify({
         id,
@@ -219,11 +237,11 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   disposeById(sessionId: string) {
-    this.service.disposeById(sessionId);
+    this.serviceClientRPC.disposeById(sessionId);
   }
 
   async getProcessId(sessionId: string) {
-    return this.service.getProcessId(sessionId);
+    return this.serviceClientRPC.getProcessId(sessionId);
   }
 
   /**
@@ -244,6 +262,14 @@ export class NodePtyTerminalService implements ITerminalService {
    */
   closeClient(sessionId: string, code?: number, signal?: number) {
     this._onExit.fire({ sessionId, code, signal });
+  }
+
+  sendError(sessionId: string, message: string, stopped: boolean) {
+    this._onError.fire({
+      id: sessionId,
+      message,
+      stopped,
+    });
   }
 
   async getOs() {

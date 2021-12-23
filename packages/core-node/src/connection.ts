@@ -2,7 +2,7 @@ import http from 'http';
 import net from 'net';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@opensumi/ide-connection';
-import { Injector, ClassCreator, FactoryCreator } from '@opensumi/di';
+import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import ws from 'ws';
 
 import {
@@ -101,12 +101,13 @@ export function bindModuleBackService(
           logger.log('back service', service.token);
           const serviceToken = service.token;
 
-          if (!injector.creatorMap.get(serviceToken)) {
+          if (!injector.creatorMap.has(serviceToken)) {
             continue;
           }
-          const creator = injector.creatorMap.get(serviceToken)!;
-          // @ts-ignore
-          if (creator.useFactory) {
+
+          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+
+          if ((creator as FactoryCreator).useFactory) {
             const serviceFactory = (creator as FactoryCreator).useFactory;
             childInjector.addProviders({
               token: serviceToken,
