@@ -460,6 +460,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (setPersist) {
       this.setPersist(this.monacoModel.getAlternativeVersionId());
       this.baseContent = content;
+      this.dirtyChanges = [];
     }
   }
 
