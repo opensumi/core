@@ -126,11 +126,16 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
   private _terminal: Terminal;
 
   private _onData = new Emitter<string | ArrayBuffer>();
-  onData: Event<string | ArrayBuffer> = this._onData.event;
+  onData = this._onData.event;
+
   private _onExit = new Emitter<number | undefined>();
-  onExit: Event<number | undefined> = this._onExit.event;
+  onExit = this._onExit.event;
+
+  private _onError = new Emitter<{ code?: number; name?: string; bin?: string }>();
+  onError = this._onError.event;
+
   private _onTime = new Emitter<number>();
-  onTime: Event<number> = this._onTime.event;
+  onTime = this._onTime.event;
 
   private _lastInputTime = 0;
 
@@ -156,6 +161,14 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
         this._disposeConnection.addDispose(
           connection.onExit((code) => {
             this._onExit.fire(code);
+
+            if (code !== 0) {
+              this._onError.fire({
+                code,
+                name: connection.name,
+                bin: connection.launchConfig?.shellPath,
+              });
+            }
           }),
         );
       }

@@ -9,8 +9,11 @@ import { Injectable, Autowired } from '@opensumi/di';
 export { pty };
 
 export interface IPty extends pty.IPty {
+  /**
+   * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
+   */
   bin: string;
-  options: IShellLaunchConfig;
+  launchConfig: IShellLaunchConfig;
   parsedName: string;
 }
 
@@ -54,6 +57,10 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
+    if (!options.shellPath) {
+      throw new Error('Shell config has empty shellPath');
+    }
+
     const ptyProcess = pty.spawn(options.shellPath, options.args || [], {
       name: options.name || 'xterm-256color',
       cols: options.cols || 100,
@@ -62,7 +69,7 @@ export class PtyService {
       env: ptyEnv,
     });
     (ptyProcess as IPty).bin = options.shellPath;
-    (ptyProcess as IPty).options = options;
+    (ptyProcess as IPty).launchConfig = options;
     const match = options.shellPath.match(/[\w|.]+$/);
     (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;

@@ -165,20 +165,17 @@ export interface ITerminalProcessService {
   getEnv(): Promise<{ [key in string]: string | undefined }>;
 }
 
+export interface INodePtyInstance {
+  id: string;
+  name: string;
+  pid: number;
+  proess: string;
+  shellPath?: string;
+}
+
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export interface ITerminalServiceClient {
-  create(
-    id: string,
-    options: IShellLaunchConfig,
-  ):
-    | Promise<{
-        pid: number;
-        name: string;
-      }>
-    | {
-        pid: number;
-        name: string;
-      };
+  create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;
@@ -246,14 +243,12 @@ export interface IExternlTerminalService {
 }
 
 export interface IShellLaunchConfig {
-  shellPath: string;
-  args: string[];
+  shellPath?: string;
+  args?: string[];
 
   isExtensionTerminal?: boolean;
-
   shellType?: ShellType;
-
-  os: OperatingSystem;
+  os?: OperatingSystem;
 
   /**
    * Whether the terminal process environment should be exactly as provided in

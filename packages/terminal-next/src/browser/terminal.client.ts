@@ -146,7 +146,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   onResponseTime: Event<number> = this._onResponseTime.event;
 
   async init(widget: IWidget, options: TerminalOptions = {}) {
-    // TODO: 在这里把 TerminalOptions 转为内部要用的 IShellLaunchConfig
     this._uid = widget.id;
     this._options = options || {};
     this.name = this._options.name || '';
@@ -235,18 +234,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     );
 
-    // TODO: 移动到 AttachAddon 的 onExit 中
-    this.addDispose(
-      this.internalService.onExit((ev) => {
-        this.logger.warn(`${this.id} ${this.name} exit with ${JSON.stringify(ev)}`);
-
-        // const commandLine = this._term.getOption;
-        if (ev.code !== 0) {
-          this.messageService.error(`Terminal exited with code ${ev.code} signal ${ev.signal}`);
-        }
-      }),
-    );
-
     this._apply(widget);
     if (await this._checkWorkspace()) {
       this._attachXterm();
@@ -317,8 +304,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._onOutput.fire({ id: this.id, data });
       }),
       this._attachAddon.onExit((code) => {
+        this.logger.warn(`${this.id} ${this.name} exit with ${code}`);
         this._onExit.fire({ id: this.id, code });
       }),
+      this._attachAddon.onError((e) => {
+        this.messageService.error(`Terminal ${this.name}(${e.bin}) exited with code ${e.code}`);
+      }),
+
       this._attachAddon.onTime((delta) => {
         this._onResponseTime.fire(delta);
         this.reporter.performance(REPORT_NAME.TERMINAL_MEASURE, {
@@ -362,8 +354,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
 
     const ptyOptions: IShellLaunchConfig = {
-      shellPath: this._options.shellPath || '',
-      cwd: this._workspacePath,
+      shellPath: this._options.shellPath,
+      cwd: this._options.cwd?.toString() || this._workspacePath,
       args: [],
       cols,
       rows,
@@ -375,11 +367,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       isExtensionTerminal: this._options.isExtensionTerminal,
     };
 
+    // 将 shellArgs 的 string | string[] 转为 string[]
     if (this._options.shellArgs) {
       if (Array.isArray(this._options.shellArgs)) {
-        ptyOptions.args.push(...this._options.shellArgs);
+        ptyOptions.args?.push(...this._options.shellArgs);
       } else {
-        ptyOptions.args.push(this._options.shellArgs);
+        ptyOptions.args?.push(this._options.shellArgs);
       }
     }
 
@@ -388,20 +381,19 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async _doAttach() {
     const sessionId = this.id;
-
     const launchConfig = this.prepareShellLaunchConfig();
-    this.logger.debug(`${sessionId} attach with ${JSON.stringify(launchConfig)}`);
+
     let connection: ITerminalConnection | undefined;
 
     try {
       connection = await this.internalService.attach(sessionId, this._term, launchConfig);
     } catch (e) {
-      // noop
-      console.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
       // TODO emit error
+      console.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
     }
 
     this._attachAddon.setConnection(connection);
+
     if (!connection) {
       this._attached.resolve();
       return;
@@ -442,8 +434,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   _attachAfterRender() {
     // 等待 widget 渲染后再 attach，尽可能在创建时获取到准确的宽高
-    // rAF 在不可见状态下会丢失，所以一定要用 setTimeout
-    setTimeout(() => {
+    // requestAnimationFrame 在不可见状态下会丢失，所以一定要用 queueMicrotask
+    queueMicrotask(() => {
       this._layout();
       this.internalService.getOs().then((os) => {
         this._os = os;

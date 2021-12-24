@@ -2,7 +2,7 @@ import { IDisposable } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
-import { IShellLaunchConfig, TerminalOptions } from './pty';
+import { IShellLaunchConfig } from './pty';
 import { ITerminalConnection } from './client';
 
 export interface IPtyExitEvent {
@@ -33,9 +33,13 @@ export interface ITerminalService {
    *
    * @param sessionId 会话唯一标识
    * @param xterm 返回的 xTerm 终端实例
-   * @param options 创建一个新终端的进程选项
+   * @param launchConfig 创建一个新终端的进程选项
    */
-  attach(sessionId: string, xterm: Terminal, options?: IShellLaunchConfig): Promise<ITerminalConnection | undefined>;
+  attach(
+    sessionId: string,
+    xterm: Terminal,
+    launchConfig?: IShellLaunchConfig,
+  ): Promise<ITerminalConnection | undefined>;
   /**
    *
    * @param id 会话唯一标识

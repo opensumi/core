@@ -6,7 +6,7 @@ import { Emitter as Dispatcher } from 'event-kit';
 import { CorePreferences, electronEnv } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
-  generate,
+  generateSessionId,
   ITerminalService,
   ITerminalInternalService,
   ITerminalError,
@@ -16,6 +16,7 @@ import {
   IPtyExitEvent,
   ITerminalController,
   IShellLaunchConfig,
+  INodePtyInstance,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';
@@ -35,7 +36,7 @@ export class TerminalInternalService implements ITerminalInternalService {
   private _processExtHostProxies = new Map<string, TerminalProcessExtHostProxy>();
 
   generateSessionId() {
-    return this.service.generateSessionId ? this.service.generateSessionId() : generate();
+    return this.service.generateSessionId ? this.service.generateSessionId() : generateSessionId();
   }
 
   getOptions() {
@@ -50,24 +51,25 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this._processExtHostProxies.get(id);
   }
 
-  async attach(sessionId: string, xterm: Terminal, options: IShellLaunchConfig) {
-    if (options.isExtensionTerminal) {
-      const proxy = new TerminalProcessExtHostProxy(sessionId, options.cols, options.rows, this.controller);
+  async attach(sessionId: string, xterm: Terminal, launchConfig: IShellLaunchConfig) {
+    if (launchConfig.isExtensionTerminal) {
+      const proxy = new TerminalProcessExtHostProxy(sessionId, launchConfig.cols, launchConfig.rows, this.controller);
       proxy.start();
-      proxy.onProcessExit((code) => {
+      proxy.onProcessExit(() => {
         this._processExtHostProxies.delete(sessionId);
       });
       this._processExtHostProxies.set(sessionId, proxy);
       return {
-        name: options.name || '',
+        name: launchConfig.name || '',
         readonly: false,
+        launchConfig,
         onData: proxy.onProcessData.bind(proxy),
         onExit: proxy.onProcessExit.bind(proxy),
         sendData: proxy.input.bind(proxy),
       };
     }
 
-    return this.service.attach(sessionId, xterm, options);
+    return this.service.attach(sessionId, xterm, launchConfig);
   }
 
   async sendText(sessionId: string, message: string) {
@@ -138,14 +140,23 @@ export class NodePtyTerminalService implements ITerminalService {
   private _onExit = new Emitter<IPtyExitEvent>();
   public onExit: Event<IPtyExitEvent> = this._onExit.event;
 
-  private _dispatcher = new Dispatcher();
+  private _onDataDispatcher = new Dispatcher<void, { [key: string]: string }>();
+  private _onExitDispatcher = new Dispatcher<
+    void,
+    {
+      [key: string]: {
+        code?: number;
+        signal?: number;
+      };
+    }
+  >();
 
   generateSessionId() {
     if (isElectronEnv()) {
-      return electronEnv.metadata.windowClientId + '|' + generate();
+      return electronEnv.metadata.windowClientId + '|' + generateSessionId();
     } else {
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
-      return WSChanneHandler.clientId + '|' + generate();
+      return WSChanneHandler.clientId + '|' + generateSessionId();
     }
   }
 
@@ -154,24 +165,29 @@ export class NodePtyTerminalService implements ITerminalService {
     return ensureResult;
   }
 
-  private _createCustomWebSocket(sessionId: string, name: string): ITerminalConnection {
-    return {
-      name,
-      readonly: false,
-      onData: (handler: (value: string | ArrayBuffer) => void) => this._dispatcher.on(sessionId, handler),
-      onExit: (handler: (exitCode: number | undefined) => void) => this.onExit((e) => handler(e.code)),
-      sendData: (message: string) => {
-        this.sendText(sessionId, message);
-      },
-    };
-  }
+  private _createCustomWebSocket = (
+    sessionId: string,
+    pty: INodePtyInstance,
+    launchConfig: IShellLaunchConfig,
+  ): ITerminalConnection => ({
+    name: pty.name,
+    readonly: false,
+    launchConfig,
+    onData: (handler: (value: string | ArrayBuffer) => void) => this._onDataDispatcher.on(sessionId, handler),
+    onExit: (handler: (exitCode: number | undefined) => void) =>
+      this._onExitDispatcher.on(sessionId, (e) => {
+        handler(e.code);
+      }),
+    sendData: (message: string) => {
+      this.sendText(sessionId, message);
+    },
+  });
 
   private async finishShellLaunchConfig(options: IShellLaunchConfig) {
     // TODO: fix 目前设置 default 的话，不会启动 ZSH，待排查
     if (options.shellType && options.shellType !== 'default') {
       if (isWindows) {
-        options.shellPath =
-          (await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType)) || '';
+        options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
       } else {
         options.shellPath = `/bin/${options.shellType}`;
       }
@@ -189,11 +205,11 @@ export class NodePtyTerminalService implements ITerminalService {
 
     if (options.os === OperatingSystem.Windows) {
       if (options.shellType === WindowsShellType['git-bash']) {
-        options.args.push('--login');
+        options.args?.push('--login');
       }
     } else if (options.os === OperatingSystem.Linux) {
       const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
-      options.args.push(...linuxShellArgs);
+      options.args?.push(...linuxShellArgs);
     } else if (options.os === OperatingSystem.Macintosh) {
     }
     return options;
@@ -202,13 +218,13 @@ export class NodePtyTerminalService implements ITerminalService {
   async attach(sessionId: string, _: Terminal, options: IShellLaunchConfig) {
     const finalOptions = await this.finishShellLaunchConfig(options);
     this.logger.log(`attach ${sessionId} with options ${JSON.stringify(finalOptions)}`);
-    const { name, pid } = await this.serviceClientRPC.create(sessionId, finalOptions);
+    const ptyInstance = await this.serviceClientRPC.create(sessionId, finalOptions);
 
-    if (!pid || !name) {
+    if (!ptyInstance.pid || !ptyInstance.name) {
       return;
     }
 
-    return this._createCustomWebSocket(sessionId, name);
+    return this._createCustomWebSocket(sessionId, ptyInstance, finalOptions);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
@@ -248,11 +264,10 @@ export class NodePtyTerminalService implements ITerminalService {
    * for pty node
    *
    * @param sessionId
-   * @param type
    * @param message
    */
   onMessage(sessionId: string, message: string) {
-    this._dispatcher.emit(sessionId, message);
+    this._onDataDispatcher.emit(sessionId, message);
   }
 
   /**
@@ -261,6 +276,7 @@ export class NodePtyTerminalService implements ITerminalService {
    * @param sessionId
    */
   closeClient(sessionId: string, code?: number, signal?: number) {
+    this._onExitDispatcher.emit(sessionId, { code, signal });
     this._onExit.fire({ sessionId, code, signal });
   }
 
@@ -274,5 +290,10 @@ export class NodePtyTerminalService implements ITerminalService {
 
   async getOs() {
     return OS;
+  }
+
+  dispose() {
+    this._onDataDispatcher.dispose();
+    this._onExitDispatcher.dispose();
   }
 }

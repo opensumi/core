@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { IShellLaunchConfig, ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
+import { IShellLaunchConfig, ITerminalNodeService, ITerminalServiceClient, INodePtyInstance } from '../common';
 import { IPty } from './pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
@@ -54,7 +54,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, options: IShellLaunchConfig) {
+  async create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance> {
     this.terminalService.setClient(this.clientId, this);
     const pty = (await this.terminalService.create(id, options)) as IPty;
     this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
@@ -62,7 +62,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return {
       id,
       pid: pty.pid,
+      proess: pty.process,
       name: pty.parsedName,
+      shellPath: pty.launchConfig.shellPath,
     };
   }
 
