@@ -32,15 +32,16 @@ tips() {
   printf "${tty_bold}%s${tty_reset}\n" "$(chomp "$1")"
 }
 
-execute() {
-  $@
-}
-
+DRY_RUN=false
 
 # read arguments
 declare -a args=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
+  --dry-run)
+    DRY_RUN=true
+    shift 1
+    ;;
   --force-clean)
     readonly forceClean="$2"
     shift 2
@@ -54,10 +55,18 @@ done
 
 # project dir
 SHELL_DIR=$(cd "$(dirname "$0")";pwd)
-PROJECT_DIR=$(dirname $SHELL_DIR)
+PROJECT_DIR=$(dirname "$SHELL_DIR")
+
+execute() {
+  if [[ $DRY_RUN = true ]]; then
+    echo $@
+  else
+    $@
+  fi
+}
 
 # ======================= 正式处理 =======================
-read -ep "确认使用镜像源安装依赖(Y/n/q):" is_start
+read -rep "确认使用镜像源安装依赖(Y/n/q):" is_start
 if [[ $is_start = "n" ]]; then
   exit 0
 elif [[ $is_start = 'q' ]]; then
@@ -75,8 +84,7 @@ tips "1. 修改为 npmmirror 镜像源"
 execute cp -f "$PROJECT_DIR/scripts/npmrc-cn" "$PROJECT_DIR/.npmrc"
 
 tips
-tips "2. 判断是否为强制清理缓存"
-
+tips "2. 判断是否强制清理缓存"
 
 if [[ "$forceClean" = "true" ]]; then
   if command -v npm &> /dev/null; then
@@ -97,12 +105,15 @@ fi
 
 tips
 tips "3. 使用 yarn 安装依赖"
-cd $PROJECT_DIR
+cd "$PROJECT_DIR"
 execute yarn
 
 # 4. 如果返回错误，重新试安装依赖
 # TODO
 
 tips
-tips "5. 结束"
+tips "5. 结束，清理部分产物"
+cd "$PROJECT_DIR"
+execute git checkout ./.npmrc
+
 tips 依赖安装结束
