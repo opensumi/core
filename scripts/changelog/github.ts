@@ -30,6 +30,43 @@ async function getPrDesc(
   return ret;
 }
 
+export async function getTagList(
+  per_page: number = 10,
+  projectId = 'opensumi/core'
+) {
+  const res = await fetch(
+    `https://api.github.com/repos/${projectId}/tags?per_page=${per_page}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  const ret = await res.json();
+  return ret;
+}
+
+export async function compareCommits(
+  base: string,
+  head: string,
+  projectId = 'opensumi/core'
+) {
+  const res = await fetch(
+    `https://api.github.com/repos/${projectId}/compare/${base}...${head}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  const ret = await res.json();
+  return ret;
+}
+
 /**
  * 从 commit log 按照 github 的特性分离 changelog
  */

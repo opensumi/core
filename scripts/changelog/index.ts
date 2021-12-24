@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { argv } from 'yargs';
-import chalk from 'chalk';
 import { run } from './run';
+import chalk from 'chalk';
 
 if (!process.env.GITHUB_TOKEN) {
   console.log(chalk.red('Please export your github persional access token as env `GITHUB_TOKEN`'));
@@ -14,4 +14,5 @@ if (!process.env.GITHUB_TOKEN) {
 // npm run changelog -- --from=v1.34.0
 const from = argv.from as string;
 const to = argv.to as string;
-run(from, to);
+const isRemote = argv.remote as boolean;
+run(from, to, isRemote);
