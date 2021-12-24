@@ -95,7 +95,7 @@ export class PtyService {
 
   async create2(options: IShellLaunchConfig) {
     if (!options.shellPath) {
-      throw new Error('cannot start shell because: empty shellPath');
+      throw new Error('options.shellPath not set');
     }
 
     const locale = osLocale.sync();

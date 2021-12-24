@@ -190,11 +190,10 @@ export class NodePtyTerminalService implements ITerminalService {
       if (isWindows) {
         options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
       } else {
-        options.shellPath = `/bin/${options.shellType}`;
+        options.shellPath = await this.serviceClientRPC.$resolveLinuxShellPath(options.shellType);
       }
-    } else if (options.shellType === 'default') {
+    } else if (!options.shellType || options.shellType === 'default') {
       // default 的情况交给系统环境来决定使用的终端类型
-      // TODO: feat: 优化 default 逻辑
       if (options.os === OperatingSystem.Windows) {
         options.shellPath = 'powershell.exe';
         options.shellType = WindowsShellType.powershell;

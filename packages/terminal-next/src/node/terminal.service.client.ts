@@ -10,7 +10,7 @@ import {
 import { IPty } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
-import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findShellExecutable, findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
 
 /**
  * NodePtyTerminalService
@@ -92,6 +92,11 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         // 未知的 shell，返回 undefined，后续会使用系统默认值处理
         return undefined;
     }
+  }
+
+  async $resolveLinuxShellPath(type: string): Promise<string | undefined> {
+    const candidates = [type, `/bin/${type}`, `/usr/bin/${type}`];
+    return findShellExecutableAsync(candidates);
   }
 
   onMessage(id: string, msg: string): void {
