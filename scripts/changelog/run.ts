@@ -6,7 +6,7 @@ import { formatBytes, getType, getChangelog, getNickNameDesc, prettyDate } from 
 import * as Github from './github';
 import { ICommitLogFields } from './types';
 
-const OTHER_CHANGE_FIELD_KEY = 'Other Changes';
+const OTHER_CHANGE_FIELD_KEY = '其他改动';
 const RELEASE_VERSION_REGEX = /^v\d+\.\d+\.\d+$/;
 const VERSION_COMMIT_MAP = new Map();
 
@@ -25,7 +25,7 @@ const getTypeSorter = () => {
   while ((myArray = regex.exec(content)) !== null) {
     // 去掉两端空格
     let sorterKey = myArray[1].trim();
-    if (sorterKey.startsWith(OTHER_CHANGE_FIELD_KEY)) {
+    if (sorterKey.startsWith(OTHER_CHANGE_FIELD_KEY) || sorterKey.includes(OTHER_CHANGE_FIELD_KEY)) {
       sorterKey = OTHER_CHANGE_FIELD_KEY;
     }
     sorterDesc.push(sorterKey);
@@ -33,34 +33,45 @@ const getTypeSorter = () => {
   return sorterDesc;
 }
 
+const prTypeMap  = {
+  '新特性提交': '🎉 New Features',
+  '日常 bug 修复': '🐛 Bug Fixes',
+  '代码风格优化': '💄 Code Style Changes',
+  '重构': '🪚 Refactors',
+  '其他改动': '🧹 Chores',
+  '性能优化': '🚀 Performance Improvements',
+  '文档改进': '📚 Documentation Changes',
+  '样式改进': '💄 Style Changes',
+  '测试用例': '⏱ Tests',
+}
+
+function convertToEnglishType(type: string) {
+  if (prTypeMap[type]) {
+    return prTypeMap[type];
+  }
+  // 没有或匹配不到默认都是 🧹 Chores
+  return '🧹 Chores';
+}
+
 function convertToMarkdown(logs: ICommitLogFields[]) {
   const extendedLogs = logs.map((log) => {
     return {
       ...log,
       changelog: getChangelog(log.pullRequestDescription),
-      type: getType(log.pullRequestDescription),
+      type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
       href: Github.getPullRequestLink(log.pullRequestId),
       nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
     };
   });
 
   const prTypedList = groupBy(extendedLogs, 'type');
-  const extendedPrTypedList = Object.keys(prTypedList).reduce((prev, cur) => {
-    // 给 `Other Changes` 做脏合并
-    if (cur.startsWith(OTHER_CHANGE_FIELD_KEY)) {
-      prev[OTHER_CHANGE_FIELD_KEY] = (prev[OTHER_CHANGE_FIELD_KEY] || []).concat(prTypedList[cur]);
-    } else {
-      prev[cur] = prTypedList[cur];
-    }
-    return prev;
-  }, {}) as typeof prTypedList;
 
   // 数组降维
   const sorterDesc = getTypeSorter();
   return Array.prototype.concat.apply(
     [],
-    Object.keys(extendedPrTypedList)
-    // 按照 MERGET_TEMPLATE 中顺序做排序
+    Object.keys(prTypedList)
+    // 按照 MERGE_TEMPLATE 中顺序做排序
     .sort((a, b) => {
       const aPos = sorterDesc.indexOf(a);
       const bPos = sorterDesc.indexOf(b);
@@ -117,14 +128,14 @@ async function getTagsByV(isRemote?: boolean) {
     // GtiHub Action 下，通过 API 获取 TagList
     const remoteTagList = await Github.getTagList();
     list = remoteTagList.map((tag) => {
-      VERSION_COMMIT_MAP.set(tag.name, tag.commits)
+      VERSION_COMMIT_MAP.set(tag.name, tag.commit.sha);
       return  tag.name;
     });
   }
   return list;
 }
 
-async function findSymmetricRevision(isRemote?: boolean) {
+async function findSymmetricRevision(isRemote: boolean = false) {
   const tagList = await getTagsByV(isRemote);
   let tagA: string | undefined = undefined;
   let tagB: string | undefined = undefined;
@@ -147,12 +158,12 @@ async function findSymmetricRevision(isRemote?: boolean) {
 }
 
 export async function run(from: string, to: string, isRemote?: boolean) {
+  console.log(`from: ${from}`, `to: ${to}`, isRemote ? 'remote' : 'local');
   const [tagFrom, tagTo] = (!from || !to) ? await findSymmetricRevision(isRemote) : [];
   const tagA = from || tagFrom;
   const tagB = to || tagTo;
-  if (!tagA || !tagB) {
-    console.log(`Missing revision ${tagA}..${tagB}`);
-    return;
+  if ((!tagA || !tagB)) {
+    throw new Error(`Missing revision ${tagA}..${tagB}`);
   }
 
   console.log(`Generating changelog from revision ${tagA}..${tagB}`);
@@ -162,21 +173,23 @@ export async function run(from: string, to: string, isRemote?: boolean) {
     let head;
     if (process.env.GITHUB_SHA) {
       // 如果存在 GITHUB_SHA，说明当前处于 Github Actions 环境，使用最新的 Release 版本与当前提供的 Commit SHA 做比较
-      base = VERSION_COMMIT_MAP[tagB].sha;
+      base = VERSION_COMMIT_MAP.get(tagB);
       head = process.env.GITHUB_SHA;
     } else {
-      base = VERSION_COMMIT_MAP[tagA].sha;
-      head = VERSION_COMMIT_MAP[tagB].sha;
+      base = VERSION_COMMIT_MAP.get(tagA);
+      head = VERSION_COMMIT_MAP.get(tagB);
     }
-    const commits = await Github.compareCommits(base, head);
+    console.log('base:', base);
+    console.log('head:', head);
+    const result = await Github.compareCommits(base, head);
     logs = {
-      all: commits,
-      total: commits.length,
+      all: result.commits.map((e) => e.commit),
+      total: result.commits.length,
     };
   } else {
     logs = await readLogs(tagA, tagB);
   }
-  console.log(`Read ${logs.total} logs`);
+
   const githubPrLogs = await Github.extractChangelog(logs.all);
   const releaseContent = convertToMarkdown(githubPrLogs);
 

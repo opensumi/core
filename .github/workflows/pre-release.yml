@@ -36,7 +36,7 @@ jobs:
       - name: Create release log
         id: release-log
         run:  |
-          npm run changelog --remote
+          npm run changelog -- --remote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
