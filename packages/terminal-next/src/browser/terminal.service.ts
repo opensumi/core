@@ -17,6 +17,7 @@ import {
   ITerminalController,
   IShellLaunchConfig,
   INodePtyInstance,
+  isTerminalError,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';
@@ -275,17 +276,15 @@ export class NodePtyTerminalService implements ITerminalService {
    *
    * @param sessionId
    */
-  closeClient(sessionId: string, code?: number, signal?: number) {
-    this._onExitDispatcher.emit(sessionId, { code, signal });
-    this._onExit.fire({ sessionId, code, signal });
-  }
-
-  sendError(sessionId: string, message: string, stopped: boolean) {
-    this._onError.fire({
-      id: sessionId,
-      message,
-      stopped,
-    });
+  closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }) {
+    if (isTerminalError(data)) {
+      // 说明是 error
+      this._onError.fire(data);
+    } else {
+      // 说明是 pty 报出来的正常退出
+      this._onExitDispatcher.emit(sessionId, { code: data.code, signal: data.signal });
+      this._onExit.fire({ sessionId, code: data.code, signal: data.signal });
+    }
   }
 
   async getOs() {

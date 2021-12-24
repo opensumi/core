@@ -25,6 +25,10 @@ export class PtyService {
   private readonly logger: INodeLogger;
 
   async create2(options: IShellLaunchConfig) {
+    if (!options.shellPath) {
+      throw new Error('cannot start shell because: empty shellPath');
+    }
+
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -55,10 +59,6 @@ export class PtyService {
         },
         options.env,
       ) as { [key: string]: string };
-    }
-
-    if (!options.shellPath) {
-      throw new Error('Shell config has empty shellPath');
     }
 
     const ptyProcess = pty.spawn(options.shellPath, options.args || [], {

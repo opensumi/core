@@ -308,9 +308,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._onExit.fire({ id: this.id, code });
       }),
       this._attachAddon.onError((e) => {
-        this.messageService.error(`Terminal ${this.name}(${e.bin}) exited with code ${e.code}`);
+        this.messageService.error(`terminal ${this.name}(${e.bin}) exited with code ${e.code}`);
       }),
-
       this._attachAddon.onTime((delta) => {
         this._onResponseTime.fire(delta);
         this.reporter.performance(REPORT_NAME.TERMINAL_MEASURE, {
@@ -390,6 +389,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     } catch (e) {
       // TODO emit error
       console.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
+      this.messageService.error(`${e.message}`);
+      this._onExit.fire({ id: this.id, code: -1 });
     }
 
     this._attachAddon.setConnection(connection);

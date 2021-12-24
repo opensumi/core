@@ -4,6 +4,7 @@ import { Uri } from '@opensumi/ide-core-common';
 import { ShellType, WindowsShellType } from './shell';
 import { IPty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { ITerminalError } from './error';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalProcessPath = 'ITerminalProcessPath';
@@ -181,7 +182,15 @@ export interface ITerminalServiceClient {
   disposeById(id: string): void;
   getProcessId(id: string): number;
   clientMessage(id: string, data): void;
-  closeClient(id: string, code?: number, signal?: number): void;
+  closeClient(
+    sessionId: string,
+    data:
+      | ITerminalError
+      | {
+          code?: number;
+          signal?: number;
+        },
+  ): void;
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;

@@ -1,13 +1,22 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { IShellLaunchConfig, ITerminalNodeService, ITerminalServiceClient, INodePtyInstance } from '../common';
+import {
+  IShellLaunchConfig,
+  ITerminalNodeService,
+  ITerminalServiceClient,
+  INodePtyInstance,
+  ITerminalError,
+} from '../common';
 import { IPty } from './pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
 
+/**
+ * NodePtyTerminalService
+ */
 interface IRPCTerminalService {
-  closeClient(id: string, code?: number, signal?: number): void;
+  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number }): void;
   onMessage(id: string, msg: string): void;
 }
 
@@ -40,10 +49,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     }
   }
 
-  closeClient(id: string, code?: number, signal?: number) {
+  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number }) {
     if (this.client) {
-      // NodePtyTerminalService
-      this.client.closeClient(id, code, signal);
+      this.client.closeClient(id, data);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
@@ -55,17 +63,26 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   async create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance> {
-    this.terminalService.setClient(this.clientId, this);
-    const pty = (await this.terminalService.create(id, options)) as IPty;
-    this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
-    this.terminalMap.set(id, pty);
-    return {
-      id,
-      pid: pty.pid,
-      proess: pty.process,
-      name: pty.parsedName,
-      shellPath: pty.launchConfig.shellPath,
-    };
+    try {
+      const pty = (await this.terminalService.create(id, options)) as IPty;
+      this.terminalService.setClient(this.clientId, this);
+      this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
+      this.terminalMap.set(id, pty);
+      return {
+        id,
+        pid: pty.pid,
+        proess: pty.process,
+        name: pty.parsedName,
+        shellPath: pty.launchConfig.shellPath,
+      };
+    } catch (error) {
+      this.closeClient(id, {
+        id,
+        message: error.message,
+        stopped: true,
+      });
+      throw error;
+    }
   }
 
   async $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined> {

@@ -85,14 +85,16 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.closeClient(id, exitCode, signal);
+        serviceClient.closeClient(id, {
+          code: exitCode,
+          signal,
+        });
       } else {
         this.logger.warn(`terminal: pty ${clientId} on data not found`);
       }
     });
 
-    const clientMap = this.clientTerminalMap.get(clientId);
-    if (!clientMap) {
+    if (!this.clientTerminalMap.has(clientId)) {
       this.clientTerminalMap.set(clientId, new Map());
     }
     this.clientTerminalMap.get(clientId)!.set(id, terminal);
