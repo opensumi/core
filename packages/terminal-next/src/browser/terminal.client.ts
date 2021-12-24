@@ -311,6 +311,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
       this._attachAddon.onExit((code) => {
         this.logger.warn(`${this.id} ${this.name} exit with ${code}`);
+        if (code !== 0) {
+          this.messageService.error(
+            `terminal ${this.name}(${this._attachAddon.connection?.launchConfig?.shellPath}) exited with non-zero code ${code}`,
+          );
+        }
         this._onExit.fire({ id: this.id, code });
       }),
 
