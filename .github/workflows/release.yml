@@ -64,19 +64,21 @@ jobs:
       # 更新 Changelog 到 release issue 正文
       - name: Update prerelease changelog for current issue
         uses: actions/github-script@v4
+        id: changelog
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
+          # JavaScript
           script: |
             const fs = require('fs');
             const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
-            context.env.CHANGELOG = releasemd;
             github.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 OpenSumi Release ${new Date().toLocaleDateString()}`,
-              body: `${new Date().toLocaleDateString()} Release Summary \r\n ${releasemd}`
-            })
+              title: `🤖 OpenSumi Release v${process.env.CURRENT_VERSION} - ${new Date().toDateString()}`,
+              body: `## v${process.env.CURRENT_VERSION} Release Summary \r\n ${releasemd}`
+            });
+            return releasemd;
 
       - name: Create Git Tag
         if: steps.tag_check.outputs.exists_tag == 'false'
@@ -98,7 +100,7 @@ jobs:
           tag_name: v${{ env.CURRENT_VERSION }}
           release_name: OpenSumi Release v${{ env.CURRENT_VERSION }}
           body: |
-            ${{ env.CHANGELOG }}
+            ${{steps.changelog.outputs.result}}
           draft: false
           prerelease: false
 
@@ -115,9 +117,22 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            const issueBody =
+              '🎉 New release version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install release version via `npm install package@' +
+              process.env.CURRENT_VERSION +
+              '`' +
+              ' [@' +
+              context.issue.owner +
+              ']' +
+              '(https://github.com/' +
+              context.issue.owner +
+              ')';
+
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🎉 Release version publish successful! You can install release version via `npm install package@latest`'
+              body: issueBody
             })
