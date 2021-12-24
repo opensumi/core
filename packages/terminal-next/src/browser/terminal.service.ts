@@ -20,7 +20,7 @@ import {
   isTerminalError,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
-import { WindowsShellType } from '../common/shell';
+import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 
 export interface EventMessage {
   data: string;
@@ -185,21 +185,20 @@ export class NodePtyTerminalService implements ITerminalService {
   });
 
   private async finishShellLaunchConfig(options: IShellLaunchConfig) {
-    // TODO: fix 目前设置 default 的话，不会启动 ZSH，待排查
-    if (options.shellType && options.shellType !== 'default') {
+    if (!options.shellType || options.shellType === 'default') {
+      // default 的情况交给系统环境来决定使用的终端类型
+      if (options.os === OperatingSystem.Windows) {
+        options.shellPath = WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell;
+        options.shellType = WindowsShellType.powershell;
+      } else {
+        options.shellPath = await this.serviceClientRPC.$resolvePotentialLinuxShellPath();
+        options.shellType = options.shellPath;
+      }
+    } else {
       if (isWindows) {
         options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
       } else {
         options.shellPath = await this.serviceClientRPC.$resolveLinuxShellPath(options.shellType);
-      }
-    } else if (!options.shellType || options.shellType === 'default') {
-      // default 的情况交给系统环境来决定使用的终端类型
-      if (options.os === OperatingSystem.Windows) {
-        options.shellPath = 'powershell.exe';
-        options.shellType = WindowsShellType.powershell;
-      } else {
-        options.shellPath = process.env['SHELL'] || '/bin/sh';
-        options.shellType = options.shellPath;
       }
     }
 

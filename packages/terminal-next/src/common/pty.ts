@@ -206,6 +206,8 @@ export interface ITerminalServiceClient {
   ensureTerminal(terminalIdArr: string[]): boolean;
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
   $resolveLinuxShellPath(type: string): Promise<string | undefined>;
+  $resolvePotentialLinuxShellPath(): Promise<string | undefined>;
+  $resolveShellPath(paths: string[]): Promise<string | undefined>;
 }
 
 export interface ITerminalInfo {

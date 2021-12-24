@@ -215,7 +215,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       enum:
         isElectronRenderer() && isWindows
           ? ['powershell', 'cmd', 'git-bash', 'default']
-          : ['bash', 'zsh', 'sh', 'default'],
+          : ['zsh', 'bash', 'sh', 'default'],
       default: isElectronRenderer() && isWindows ? 'git-bash' : '',
       description: '%preference.terminal.typeDesc%',
     },

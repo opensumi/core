@@ -1,6 +1,6 @@
 export const WINDOWS_DEFAULT_SHELL_PATH_MAPS = {
-  ['powershell']: 'powershell.exe',
-  ['cmd']: 'cmd.exe',
+  powershell: 'powershell.exe',
+  cmd: 'cmd.exe',
 };
 
 export enum WindowsShellType {

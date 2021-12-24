@@ -85,7 +85,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       case WindowsShellType.cmd:
         return WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd;
       case WindowsShellType['git-bash']: {
-        const shell = findShellExecutable(WINDOWS_GIT_BASH_PATHS);
+        const shell = await findShellExecutableAsync(WINDOWS_GIT_BASH_PATHS);
         return shell;
       }
       default:
@@ -93,10 +93,27 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return undefined;
     }
   }
-
   async $resolveLinuxShellPath(type: string): Promise<string | undefined> {
     const candidates = [type, `/bin/${type}`, `/usr/bin/${type}`];
-    return findShellExecutableAsync(candidates);
+    return await findShellExecutableAsync(candidates);
+  }
+
+  async $resolveShellPath(paths: string[]): Promise<string | undefined> {
+    return await findShellExecutableAsync(paths);
+  }
+
+  async $resolvePotentialLinuxShellPath(): Promise<string | undefined> {
+    if (process.env.SHELL) {
+      return process.env.SHELL;
+    }
+
+    const candidates = ['zsh', 'bash', 'sh'];
+    for (const candidate of candidates) {
+      const path = await this.$resolveLinuxShellPath(candidate);
+      if (path) {
+        return path;
+      }
+    }
   }
 
   onMessage(id: string, msg: string): void {
