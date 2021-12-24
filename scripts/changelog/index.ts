@@ -3,10 +3,10 @@ import { argv } from 'yargs';
 import chalk from 'chalk';
 import { run } from './run';
 
-if (!process.env.ANTCODE_PRIVATE_TOKEN) {
-  console.log(chalk.red('Please export your AntCode private token as env `ANTCODE_PRIVATE_TOKEN`'));
-  console.log(chalk.green('You can access your own private secret by https://code.alipay.com/profile/private_tokens'));
-  console.log(chalk.yellow('Please keep your antcode private secret carefully'));
+if (!process.env.GITHUB_TOKEN) {
+  console.log(chalk.red('Please export your github persional access token as env `GITHUB_TOKEN`'));
+  console.log(chalk.green('You can access your own access token by https://github.com/settings/tokens'));
+  console.log(chalk.yellow('Please keep your github access token carefully'));
   process.exit();
 }
 
