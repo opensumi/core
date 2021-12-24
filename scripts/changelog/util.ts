@@ -38,7 +38,7 @@ export function getType(message) {
 // 从 PR 描述中提取 changelog
 export function getChangelog(message) {
   const stripedMsg = message.replace(/\r?\n|\r/g, '');
-  const match = /### changelog(.+)$/.exec(stripedMsg);
+  const match = /### changelog(.+)$/i.exec(stripedMsg);
   return match && match[1] && match[1] && cleanupUselessContent(match[1]);
 }
 
