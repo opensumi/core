@@ -175,6 +175,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     const currentThemeType = this.currentTheme.type;
 
     this.toggleBaseThemeClass(prevThemeType, currentThemeType);
+
     this.doApplyTheme(this.currentTheme);
   }
 
