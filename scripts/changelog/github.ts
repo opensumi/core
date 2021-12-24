@@ -80,7 +80,6 @@ export async function extractChangelog(
   );
   const result: ICommitLogFields[] = [];
   const regex = /\(#(\d+)\)$/;
-
   for (const log of githubPrLogs) {
     const ret = regex.exec(log.message);
     if (ret && ret[1]) {
