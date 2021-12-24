@@ -43,6 +43,7 @@ const prTypeMap  = {
   '文档改进': '📚 Documentation Changes',
   '样式改进': '💄 Style Changes',
   '测试用例': '⏱ Tests',
+  'Other Changes': '🧹 Chores'
 }
 
 function convertToEnglishType(type: string) {
@@ -168,6 +169,8 @@ export async function run(from: string, to: string, isRemote?: boolean) {
 
   console.log(`Generating changelog from revision ${tagA}..${tagB}`);
   let logs;
+  let releaseTitle;
+  let compareLink;
   if (isRemote) {
     let base;
     let head;
@@ -190,13 +193,18 @@ export async function run(from: string, to: string, isRemote?: boolean) {
     logs = await readLogs(tagA, tagB);
   }
 
+  if (process.env.GITHUB_SHA) {
+    compareLink = Github.getCompareLink(VERSION_COMMIT_MAP.get(tagB), process.env.GITHUB_SHA);
+    releaseTitle = [`### [${process.env.GITHUB_SHA}](${compareLink})`, `> ${prettyDate(logs.latest?.date)}`];
+  } else {
+    compareLink = Github.getCompareLink(tagA, tagB);
+    releaseTitle = [`### [${tagB}](${compareLink})`, `> ${prettyDate(logs.latest?.date)}`];
+  }
+
   const githubPrLogs = await Github.extractChangelog(logs.all);
   const releaseContent = convertToMarkdown(githubPrLogs);
 
-  const compareLink = Github.getCompareLink(tagA, tagB);
-  const relaseTitle = [`### [${tagB}](${compareLink})`, `> ${prettyDate(logs.latest?.date)}`];
-
-  const changelog = [...relaseTitle, ...releaseContent].join('\n\n');
+  const changelog = [...releaseTitle, ...releaseContent].join('\n\n');
 
   const logFile = path.resolve(__dirname, '../../releaselog.md');
   await fs.promises.writeFile(logFile, changelog);
