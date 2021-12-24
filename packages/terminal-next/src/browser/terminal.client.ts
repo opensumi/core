@@ -396,10 +396,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     try {
       connection = await this.internalService.attach(sessionId, this._term, launchConfig);
     } catch (e) {
-      // TODO emit error
-      console.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
-      this.messageService.error(`${e.message}`);
-      this._onExit.fire({ id: this.id, code: -1 });
+      this.logger.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
     }
 
     this._attachAddon.setConnection(connection);
