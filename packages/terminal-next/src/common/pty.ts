@@ -2,9 +2,18 @@ import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@opensumi/ide-core-common';
 import { ShellType, WindowsShellType } from './shell';
-import { IPty } from 'node-pty';
+import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalError } from './error';
+
+export interface IPty extends INodePty {
+  /**
+   * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
+   */
+  bin: string;
+  launchConfig: IShellLaunchConfig;
+  parsedName: string;
+}
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalProcessPath = 'ITerminalProcessPath';
@@ -149,7 +158,7 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create(id: string, options: IShellLaunchConfig): Promise<IPty>;
+  create(id: string, options: IShellLaunchConfig): Promise<IPty | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number);
   getShellName(id: string): string;
@@ -176,7 +185,7 @@ export interface INodePtyInstance {
 
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export interface ITerminalServiceClient {
-  create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance>;
+  create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;

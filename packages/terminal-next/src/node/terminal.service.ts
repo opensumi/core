@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IPty, PtyService, IPtyService } from './pty';
+import { PtyService, IPtyService } from './pty';
+import { IPty } from '../common/pty';
 import { IShellLaunchConfig } from '../common/pty';
 import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
@@ -67,37 +68,46 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public async create(id: string, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
+    let terminal: IPty | undefined;
 
-    const terminal = await this.ptyService.create2(options);
+    try {
+      terminal = (await this.ptyService.create2(options)) as IPty;
+      this.terminalMap.set(id, terminal);
 
-    this.terminalMap.set(id, terminal);
+      terminal.onData((data) => {
+        if (this.serviceClientMap.has(clientId)) {
+          const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+          serviceClient.clientMessage(id, data);
+        } else {
+          this.logger.warn(`terminal: pty ${clientId} on data not found`);
+        }
+      });
 
-    terminal.onData((data) => {
-      if (this.serviceClientMap.has(clientId)) {
-        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.clientMessage(id, data);
-      } else {
-        this.logger.warn(`terminal: pty ${clientId} on data not found`);
+      terminal.onExit(({ exitCode, signal }) => {
+        this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
+        if (this.serviceClientMap.has(clientId)) {
+          const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+          serviceClient.closeClient(id, {
+            code: exitCode,
+            signal,
+          });
+        } else {
+          this.logger.warn(`terminal: pty ${clientId} on data not found`);
+        }
+      });
+
+      if (!this.clientTerminalMap.has(clientId)) {
+        this.clientTerminalMap.set(clientId, new Map());
       }
-    });
-
-    terminal.onExit(({ exitCode, signal }) => {
-      this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
-      if (this.serviceClientMap.has(clientId)) {
-        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.closeClient(id, {
-          code: exitCode,
-          signal,
-        });
-      } else {
-        this.logger.warn(`terminal: pty ${clientId} on data not found`);
-      }
-    });
-
-    if (!this.clientTerminalMap.has(clientId)) {
-      this.clientTerminalMap.set(clientId, new Map());
+      this.clientTerminalMap.get(clientId)!.set(id, terminal);
+    } catch (error) {
+      const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+      serviceClient.closeClient(id, {
+        id,
+        message: error.message,
+        stopped: true,
+      });
     }
-    this.clientTerminalMap.get(clientId)!.set(id, terminal);
 
     return terminal;
   }

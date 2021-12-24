@@ -219,13 +219,13 @@ export class NodePtyTerminalService implements ITerminalService {
   async attach(sessionId: string, _: Terminal, options: IShellLaunchConfig) {
     const finalOptions = await this.finishShellLaunchConfig(options);
     this.logger.log(`attach ${sessionId} with options ${JSON.stringify(finalOptions)}`);
+
     const ptyInstance = await this.serviceClientRPC.create(sessionId, finalOptions);
-
-    if (!ptyInstance.pid || !ptyInstance.name) {
-      return;
+    if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
+      // 有 pid 或者 name 的才视为创建成功
+      // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
+      return this._createCustomWebSocket(sessionId, ptyInstance, finalOptions);
     }
-
-    return this._createCustomWebSocket(sessionId, ptyInstance, finalOptions);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
@@ -279,6 +279,7 @@ export class NodePtyTerminalService implements ITerminalService {
   closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }) {
     if (isTerminalError(data)) {
       // 说明是 error
+      // 但好像不能复用之前的 error
       this._onError.fire(data);
     } else {
       // 说明是 pty 报出来的正常退出

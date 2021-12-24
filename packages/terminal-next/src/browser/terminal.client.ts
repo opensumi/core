@@ -234,6 +234,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     );
 
+    this.addDispose(
+      this.internalService.onError((error) => {
+        this.messageService.error(error.message);
+      }),
+    );
+
     this._apply(widget);
     if (await this._checkWorkspace()) {
       this._attachXterm();
@@ -307,9 +313,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this.logger.warn(`${this.id} ${this.name} exit with ${code}`);
         this._onExit.fire({ id: this.id, code });
       }),
-      this._attachAddon.onError((e) => {
-        this.messageService.error(`terminal ${this.name}(${e.bin}) exited with code ${e.code}`);
-      }),
+
       this._attachAddon.onTime((delta) => {
         this._onResponseTime.fire(delta);
         this.reporter.performance(REPORT_NAME.TERMINAL_MEASURE, {

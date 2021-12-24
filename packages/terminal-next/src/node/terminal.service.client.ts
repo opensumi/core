@@ -7,7 +7,7 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
-import { IPty } from './pty';
+import { IPty } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
@@ -62,9 +62,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance> {
-    try {
-      const pty = (await this.terminalService.create(id, options)) as IPty;
+  async create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined> {
+    const pty = await this.terminalService.create(id, options);
+    if (pty) {
       this.terminalService.setClient(this.clientId, this);
       this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
       this.terminalMap.set(id, pty);
@@ -75,13 +75,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         name: pty.parsedName,
         shellPath: pty.launchConfig.shellPath,
       };
-    } catch (error) {
-      this.closeClient(id, {
-        id,
-        message: error.message,
-        stopped: true,
-      });
-      throw error;
     }
   }
 
