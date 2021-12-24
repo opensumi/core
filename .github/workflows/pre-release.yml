@@ -26,6 +26,30 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
+      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
+      - name: Create release log
+        id: release-log
+        run:  |
+          npm run changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 更新 Changelog 到 pre-release issue 正文
+      - name: Update prerelease changelog for current issue
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## OpenSumi next version prerelease\r\n ${releasemd}`
+            })
+
+      # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
           npm i
@@ -48,7 +72,7 @@ jobs:
             echo "::set-output name=exists_tag::false"
           fi
 
-      # exclude tools/dev-tool
+      # 发布 next 版本，并在 issue 中回复
       - name: Publish prepatch version
         run: |
           lerna publish --preid next --dist-tag next --force-publish='*' --no-push --no-git-tag-version --canary --ignore-prepublish --ignore-scripts --no-private -y
