@@ -42,6 +42,8 @@ import {
 } from './mock.service';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -124,7 +126,13 @@ export const injector = new Injector([
   },
   {
     token: ILogger,
-    useValue: {},
+    useClass: MockLogger,
+  },
+  {
+    token: IMessageService,
+    useValue: {
+      error: jest.fn(),
+    },
   },
   {
     token: ITerminalNetwork,
