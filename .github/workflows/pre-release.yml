@@ -26,6 +26,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm i
+          npm run init
+
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
       - name: Create release log
         id: release-log
@@ -48,12 +54,6 @@ jobs:
               repo: context.repo.repo,
               body: `## OpenSumi next version prerelease\r\n ${releasemd}`
             })
-
-      # 安装依赖并构建
-      - name: Install dependencies & Build
-        run: |
-          npm i
-          npm run init
 
       - name: Set Current Version
         run: |
