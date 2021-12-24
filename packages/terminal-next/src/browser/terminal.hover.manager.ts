@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 import { ITerminalHoverManagerService } from '../common';
 import { ILinkHoverTargetOptions } from './links/link-manager';
 
@@ -44,6 +44,10 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
     }
 
     this.hoverOverlay?.appendChild(this.hoverWidget);
+  }
+
+  setHoverOverlay(overlay: HTMLElement) {
+    this.hoverOverlay = overlay;
   }
 
   showHover(targetOptions: ILinkHoverTargetOptions, text: string, linkHandler: (url: string) => void) {
