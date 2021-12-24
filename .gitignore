@@ -81,3 +81,4 @@ releaselog.md
 tools/electron/app
 tools/electron/extensions
 tools/workspace
+.npmrc
