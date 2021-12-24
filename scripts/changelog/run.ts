@@ -6,7 +6,9 @@ import { formatBytes, getType, getChangelog, getNickNameDesc, prettyDate } from 
 import * as Github from './github';
 import { ICommitLogFields } from './types';
 
-const OTHER_CHANGE_FIELD_KEY = '其他改动';
+const OTHER_CHANGE_FIELD_KEY = 'Other Changes';
+const RELEASE_VERSION_REGEX = /^v\d+\.\d+\.\d+$/;
+const VERSION_COMMIT_MAP = new Map();
 
 const git = simpleGit();
 
@@ -44,7 +46,7 @@ function convertToMarkdown(logs: ICommitLogFields[]) {
 
   const prTypedList = groupBy(extendedLogs, 'type');
   const extendedPrTypedList = Object.keys(prTypedList).reduce((prev, cur) => {
-    // 给 `其他改动` 做脏合并
+    // 给 `Other Changes` 做脏合并
     if (cur.startsWith(OTHER_CHANGE_FIELD_KEY)) {
       prev[OTHER_CHANGE_FIELD_KEY] = (prev[OTHER_CHANGE_FIELD_KEY] || []).concat(prTypedList[cur]);
     } else {
@@ -103,27 +105,36 @@ function readLogs(from: string, to: string) {
 }
 
 /**
- * 获取全部的 tag list
+ * 获取全部的 TagList
  */
-async function getTagsByV() {
-  // 倒序获取 tag list
-  const ret = await git.tags(['-l', '--sort=-v:refname']);
-  return ret.all;
+async function getTagsByV(isRemote?: boolean) {
+  let list;
+  if (!isRemote) {
+    // 倒序获取本地 TagList
+    const ret = await git.tags(['-l', '--sort=-v:refname']);
+    list = ret.all;
+  } else {
+    // GtiHub Action 下，通过 API 获取 TagList
+    const remoteTagList = await Github.getTagList();
+    list = remoteTagList.map((tag) => {
+      VERSION_COMMIT_MAP.set(tag.name, tag.commits)
+      return  tag.name;
+    });
+  }
+  return list;
 }
 
-async function findSymmetricRevision() {
-  // v1.30.1
-  const releaseVersionRegex = /^v\d+\.\d+\.\d+$/;
-  const tagList = await getTagsByV();
+async function findSymmetricRevision(isRemote?: boolean) {
+  const tagList = await getTagsByV(isRemote);
   let tagA: string | undefined = undefined;
   let tagB: string | undefined = undefined;
   for (const tag of tagList) {
-    if (tagB === undefined && releaseVersionRegex.test(tag)) {
+    if (tagB === undefined && RELEASE_VERSION_REGEX.test(tag)) {
       tagB = tag;
       continue;
     }
 
-    if (tagA === undefined && releaseVersionRegex.test(tag)) {
+    if (tagA === undefined && RELEASE_VERSION_REGEX.test(tag)) {
       tagA = tag;
       continue;
     }
@@ -135,8 +146,8 @@ async function findSymmetricRevision() {
   return [tagA, tagB];
 }
 
-export async function run(from: string, to: string) {
-  const [tagFrom, tagTo] = (!from || !to) ? await findSymmetricRevision() : [];
+export async function run(from: string, to: string, isRemote?: boolean) {
+  const [tagFrom, tagTo] = (!from || !to) ? await findSymmetricRevision(isRemote) : [];
   const tagA = from || tagFrom;
   const tagB = to || tagTo;
   if (!tagA || !tagB) {
@@ -145,8 +156,26 @@ export async function run(from: string, to: string) {
   }
 
   console.log(`Generating changelog from revision ${tagA}..${tagB}`);
-
-  const logs = await readLogs(tagA, tagB);
+  let logs;
+  if (isRemote) {
+    let base;
+    let head;
+    if (process.env.GITHUB_SHA) {
+      // 如果存在 GITHUB_SHA，说明当前处于 Github Actions 环境，使用最新的 Release 版本与当前提供的 Commit SHA 做比较
+      base = VERSION_COMMIT_MAP[tagB].sha;
+      head = process.env.GITHUB_SHA;
+    } else {
+      base = VERSION_COMMIT_MAP[tagA].sha;
+      head = VERSION_COMMIT_MAP[tagB].sha;
+    }
+    const commits = await Github.compareCommits(base, head);
+    logs = {
+      all: commits,
+      total: commits.length,
+    };
+  } else {
+    logs = await readLogs(tagA, tagB);
+  }
   console.log(`Read ${logs.total} logs`);
   const githubPrLogs = await Github.extractChangelog(logs.all);
   const releaseContent = convertToMarkdown(githubPrLogs);
