@@ -174,9 +174,14 @@ export interface AppConfig {
    */
   didRendered?: () => void;
   /**
-   * vscode-oniguruma-wasm 资源地址
+   * @deprecated
+   * vscode-oniguruma-wasm 资源地址，在 Windows 版本中很容易传送错误的地址，请使用 onigWasmUri 参数
    */
   onigWasmPath?: string;
+  /**
+   * vscode-oniguruma-wasm 资源 Uri 地址
+   */
+  onigWasmUri?: string;
   /**
    * 工作区文件后缀，默认后缀为 `sumi-workspace`
    */
