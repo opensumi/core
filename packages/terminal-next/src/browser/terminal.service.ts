@@ -195,10 +195,16 @@ export class NodePtyTerminalService implements ITerminalService {
         options.shellType = options.shellPath;
       }
     } else {
+      // 此时显然 shellType 存在并且不会是 default
       if (isWindows) {
         options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
       } else {
         options.shellPath = await this.serviceClientRPC.$resolveLinuxShellPath(options.shellType);
+      }
+      // 如果经过了上面的解析， options.shellPath 还是 undefined，那么就让 shellPath === type
+      // 在之后的 PtyService 会再校验 shellPath 是否存在
+      if (!options.shellPath) {
+        options.shellPath = options.shellType;
       }
     }
 
@@ -276,8 +282,6 @@ export class NodePtyTerminalService implements ITerminalService {
    */
   closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }) {
     if (isTerminalError(data)) {
-      // 说明是 error
-      // 但好像不能复用之前的 error
       this._onError.fire(data);
     } else {
       // 说明是 pty 报出来的正常退出

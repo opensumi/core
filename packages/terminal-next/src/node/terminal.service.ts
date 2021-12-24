@@ -101,12 +101,15 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       }
       this.clientTerminalMap.get(clientId)!.set(id, terminal);
     } catch (error) {
-      const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-      serviceClient.closeClient(id, {
-        id,
-        message: error.message,
-        stopped: true,
-      });
+      this.logger.error(`${id} create terminal error: ${error}, options: ${JSON.stringify(options)}`);
+      if (this.serviceClientMap.has(clientId)) {
+        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+        serviceClient.closeClient(id, {
+          id,
+          message: error.message,
+          stopped: true,
+        });
+      }
     }
 
     return terminal;
