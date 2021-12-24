@@ -3,6 +3,7 @@ import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
 import { IShellLaunchConfig } from '../common';
 import { IPty } from '../common/pty';
+import { exists } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 import { INodeLogger, isWindows } from '@opensumi/ide-core-node';
 import { Injectable, Autowired } from '@opensumi/di';
@@ -13,15 +14,6 @@ export { pty };
 export const IPtyService = Symbol('IPtyService');
 export interface IProcessEnvironment {
   [key: string]: string | undefined;
-}
-
-async function exists(path: string): Promise<boolean> {
-  try {
-    await promises.access(path);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export function getCaseInsensitive(target: Record<string, any>, key: string): any {

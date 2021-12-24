@@ -10,7 +10,7 @@ import {
 import { IPty } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
-import { findShellExecutable, findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
 
 /**
  * NodePtyTerminalService

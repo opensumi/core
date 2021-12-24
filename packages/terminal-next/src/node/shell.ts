@@ -1,6 +1,7 @@
 import { normalize } from '@opensumi/ide-core-common';
 import fs from 'fs';
 
+// TODO: 用户装在 D 盘的不就识别不对了
 export const WINDOWS_GIT_BASH_PATHS = [
   `${process.env['ProgramW6432']}\\Git\\bin\\bash.exe`,
   `${process.env['ProgramW6432']}\\Git\\usr\\bin\\bash.exe`,
@@ -16,21 +17,17 @@ export const exists = async (p: string) => {
     p = normalize(p);
     await fs.promises.access(p);
     return p;
-  } catch (error) {}
+  } catch {
+    return;
+  }
 };
 
 export async function findShellExecutableAsync(candidate: string[]): Promise<string | undefined> {
   if (candidate.length === 0) {
     return undefined;
   }
-  const toPromise = candidate.map(exists);
-  return Promise.all(toPromise).then((lists) => {
-    for (const v of lists) {
-      if (v) {
-        return v;
-      }
-    }
-  });
+  // 找到第一个存在的路径
+  return Promise.all(candidate.map(exists)).then((v) => v.find(Boolean));
 }
 
 export function findShellExecutable(candidate: string[]): string | undefined {
