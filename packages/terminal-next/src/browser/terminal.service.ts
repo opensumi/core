@@ -20,7 +20,7 @@ import {
   isTerminalError,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
-import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
+import { WindowsShellType } from '../common/shell';
 
 export interface EventMessage {
   data: string;
@@ -185,18 +185,22 @@ export class NodePtyTerminalService implements ITerminalService {
   });
 
   private async finishShellLaunchConfig(options: IShellLaunchConfig) {
+    // we use `options.os` to determine platform
+    // in `ITerminalClient.prepareShellLaunchConfig`, it will use `ITerminalService.getOs()` set correct `options.os`
+
     if (!options.shellType || options.shellType === 'default') {
       // default 的情况交给系统环境来决定使用的终端类型
       if (options.os === OperatingSystem.Windows) {
-        options.shellPath = WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell;
-        options.shellType = WindowsShellType.powershell;
+        const { path, type } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
+        options.shellPath = path;
+        options.shellType = type;
       } else {
         options.shellPath = await this.serviceClientRPC.$resolvePotentialLinuxShellPath();
         options.shellType = options.shellPath;
       }
     } else {
       // 此时显然 shellType 存在并且不会是 default
-      if (isWindows) {
+      if (options.os === OperatingSystem.Windows) {
         options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
       } else {
         options.shellPath = await this.serviceClientRPC.$resolveLinuxShellPath(options.shellType);
@@ -208,15 +212,44 @@ export class NodePtyTerminalService implements ITerminalService {
       }
     }
 
-    if (options.os === OperatingSystem.Windows) {
-      if (options.shellType === WindowsShellType['git-bash']) {
-        options.args?.push('--login');
+    // TODO: support vscode terminal integrated settings
+    // 'terminal.integrated.automationShell.windows'
+    // 'terminal.integrated.automationShell.osx'
+    // 'terminal.integrated.automationShell.linux'
+    // 'terminal.integrated.shell.windows'
+    // 'terminal.integrated.shell.osx'
+    // 'terminal.integrated.shell.linux'
+    // 'terminal.integrated.env.windows'
+    // 'terminal.integrated.env.osx'
+    // 'terminal.integrated.env.linux'
+    // 'terminal.integrated.cwd'
+    // 'terminal.integrated.detectLocale'
+
+    let vscodeShellType: 'windows' | 'osx' | 'linux' = 'linux';
+
+    switch (options.os) {
+      case OperatingSystem.Windows: {
+        vscodeShellType = 'windows';
+        if (options.shellType === WindowsShellType['git-bash']) {
+          options.args?.push('--login');
+        }
+        break;
       }
-    } else if (options.os === OperatingSystem.Linux) {
-      const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
-      options.args?.push(...linuxShellArgs);
-    } else if (options.os === OperatingSystem.Macintosh) {
+      case OperatingSystem.Linux: {
+        vscodeShellType = 'linux';
+        break;
+      }
+      case OperatingSystem.Macintosh: {
+        vscodeShellType = 'osx';
+        break;
+      }
+      default:
+        break;
     }
+
+    const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${vscodeShellType}`);
+    options.args?.push(...platformSpecificArgs);
+
     return options;
   }
 
@@ -291,6 +324,7 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getOs() {
+    // is this right to check WebIDE Terminal OS type?
     return OS;
   }
 

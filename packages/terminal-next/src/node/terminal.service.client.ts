@@ -116,6 +116,34 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     }
   }
 
+  async $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }> {
+    const candidates = [
+      WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell,
+      ...WINDOWS_GIT_BASH_PATHS,
+      WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd,
+    ];
+
+    // at least one of the candidates should be valid
+    // because all windows has cmd
+    let type: WindowsShellType;
+    const path = (await findShellExecutableAsync(candidates)) as string;
+
+    // if path is not undefined, then it is a known shell path in the candidate list
+    // so we compare the path to the known shell paths to determine the type
+    if (path === WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell) {
+      type = WindowsShellType.powershell;
+    } else if (path === WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd) {
+      type = WindowsShellType.cmd;
+    } else {
+      type = WindowsShellType['git-bash'];
+    }
+
+    return {
+      path,
+      type,
+    };
+  }
+
   onMessage(id: string, msg: string): void {
     const { data, params, method } = JSON.parse(msg);
 

@@ -248,6 +248,14 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: [],
       description: '%preference.terminal.integrated.shellArgs.linuxDesc%',
     },
+    'terminal.integrated.shellArgs.osx': {
+      type: 'array',
+      default: [],
+    },
+    'terminal.integrated.shellArgs.windows': {
+      type: 'array',
+      default: [],
+    },
     'output.maxChannelLine': {
       type: 'number',
       default: 50000,
@@ -323,6 +331,8 @@ export interface CoreConfiguration {
   'general.language': string;
   'general.theme': string;
   'terminal.integrated.shellArgs.linux': string[];
+  'terminal.integrated.shellArgs.osx': string[];
+  'terminal.integrated.shellArgs.windows': string[];
   'view.saveLayoutWithWorkspace': boolean;
 }
 

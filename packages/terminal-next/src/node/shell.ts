@@ -26,10 +26,13 @@ export async function findShellExecutableAsync(candidate: string[]): Promise<str
   if (candidate.length === 0) {
     return undefined;
   }
-  // 找到第一个存在的路径
+  // return the first exists one
   return Promise.all(candidate.map(exists)).then((v) => v.find(Boolean));
 }
 
+/**
+ * @deprecated use findShellExecutableAsync
+ */
 export function findShellExecutable(candidate: string[]): string | undefined {
   if (candidate.length === 0) {
     return undefined;

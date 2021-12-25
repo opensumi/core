@@ -207,6 +207,7 @@ export interface ITerminalServiceClient {
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
   $resolveLinuxShellPath(type: string): Promise<string | undefined>;
   $resolvePotentialLinuxShellPath(): Promise<string | undefined>;
+  $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
 }
 
