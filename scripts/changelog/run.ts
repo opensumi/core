@@ -51,7 +51,7 @@ function convertToEnglishType(type: string) {
     return prTypeMap[type];
   }
   // 没有或匹配不到默认都是 🧹 Chores
-  return '🧹 Chores';
+  return type;
 }
 
 function convertToMarkdown(logs: ICommitLogFields[]) {
