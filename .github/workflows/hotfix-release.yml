@@ -158,10 +158,18 @@ jobs:
               body: issueBody
             })
 
+            // 添加 hotfix-published label
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'hotfix-published'
+            });
+
             // 关闭 issue
             github.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'closed'
+              state: 'closed',
             })

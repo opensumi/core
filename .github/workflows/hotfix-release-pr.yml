@@ -1,0 +1,76 @@
+# 适用于 OpenSumi core 仓库的 hotfix 发布后回源流程
+name: Create Hotfix Pull Request
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: write # for checkout and commit
+  pull-requests: write # for create pr
+
+jobs:
+  createPullRequest:
+    if: |
+      github.event_name == 'issues' &&
+      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
+      github.event.issue.title == 'OpenSumi Hotfix' &&
+      github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name)) &&
+      github.event.issue.labels.find(label => label.name == 'hotfix-published')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      #  根据 issue label 获取 release 分支
+      - name: Check release branch
+        uses: actions/github-script@v4
+        id: get-release-branch
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            if (github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name))) {
+              const label = github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name));
+              return label.name;
+            }
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        if: steps.get-release-branch.outputs.result !== null
+        with:
+          checkout_branch: ${{ steps.get-release-branch.outputs.result }}
+
+      - name: Git Identity
+        if: steps.get-release-branch.outputs.result !== null
+        run: |
+          git config --global user.name '${GITHUB_ACTOR}'
+          git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
+      - name: Create Pull Request
+        if: steps.get-release-branch.outputs.result !== null
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "🤖 Update v${{ steps.get-release-branch.outputs.result }}"
+          committer: GitHub <noreply@github.com>
+          author: '${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>'
+          title: '🤖 Chore: v${{ steps.get-release-branch.outputs.result }}'
+          body: |
+            ## v${{ steps.get-release-branch.outputs.result }} to main
+
+          labels: 'Type: Release'
+          branch: 'main'
+          request-to-parent: false
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ env.PULL_REQUEST_NUMBER }}"
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pr_number }}"
