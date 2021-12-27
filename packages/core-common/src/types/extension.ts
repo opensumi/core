@@ -83,3 +83,5 @@ export interface IExtensionActivateEventPayload {
 }
 
 export class ExtensionActivateEvent extends BasicEvent<IExtensionActivateEventPayload> {}
+
+export class ExtensionDidContributes extends BasicEvent<void> {}
