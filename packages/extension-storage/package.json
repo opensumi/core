@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension-storage",
-  "version": "2.13.4",
+  "version": "2.13.5",
   "files": [
     "lib"
   ],
@@ -16,14 +16,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.13.4",
-    "@opensumi/ide-core-node": "2.13.4",
-    "@opensumi/ide-file-service": "2.13.4",
-    "@opensumi/ide-logs": "2.13.4",
-    "@opensumi/ide-workspace": "2.13.4"
+    "@opensumi/ide-core-common": "2.13.5",
+    "@opensumi/ide-core-node": "2.13.5",
+    "@opensumi/ide-file-service": "2.13.5",
+    "@opensumi/ide-logs": "2.13.5",
+    "@opensumi/ide-workspace": "2.13.5"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.13.4",
+    "@opensumi/ide-core-browser": "2.13.5",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
