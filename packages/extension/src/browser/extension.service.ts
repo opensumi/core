@@ -3,7 +3,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
-import { localize, OnEvent, WithEventBus, ProgressLocation } from '@opensumi/ide-core-common';
+import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import {
   AppConfig,
@@ -474,6 +474,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
     });
+    this.eventBus.fire(new ExtensionDidContributes());
   }
 
   /**

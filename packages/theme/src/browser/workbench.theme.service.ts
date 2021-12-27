@@ -29,6 +29,8 @@ import {
   isLinux,
   isWindows,
   IThemeColor,
+  OnEvent,
+  ExtensionDidContributes,
 } from '@opensumi/ide-core-common';
 import { Autowired, Injectable } from '@opensumi/di';
 import { getColorRegistry } from '../common/color-registry';
@@ -99,17 +101,41 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.applyPlatformClass();
   }
 
+  @OnEvent(ExtensionDidContributes)
+  onDidExtensionContributes() {
+    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: ThemeInfo) => {
+      if (!pre.has(cur.themeId)) {
+        pre.set(cur.themeId, cur.name);
+      }
+      return pre;
+    }, new Map());
+
+    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
+    if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId)) {
+      this.applyTheme(themeId);
+    } else {
+      this.applyTheme(DEFAULT_THEME_ID);
+    }
+
+    this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
+  }
+
   public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
     const disposables = new DisposableCollection();
     disposables.push({
       dispose: () => this.doSetPreferenceSchema(),
     });
+    const preferenceThemeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
 
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
       const themeId = getThemeId(contribution);
 
       this.themeContributionRegistry.set(themeId, themeExtContribution);
+
+      if (preferenceThemeId === themeId) {
+        this.applyTheme(preferenceThemeId);
+      }
 
       disposables.push({
         dispose: () => {
@@ -253,20 +279,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       },
       true,
     );
-
-    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: ThemeInfo) => {
-      if (!pre.has(cur.themeId)) {
-        pre.set(cur.themeId, cur.name);
-      }
-      return pre;
-    }, new Map());
-
-    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
-    if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId) && !this.currentTheme) {
-      this.applyTheme(themeId);
-    }
-
-    this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
   }
 
   private get colorCustomizations(): IColorCustomizations {
