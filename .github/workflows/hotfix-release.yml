@@ -5,7 +5,7 @@ on:
   # 在 Hotfix Release Issue 评论特定内容后执行
   issue_comment:
     types: [created]
-  issue:
+  issues:
     types: [labeled]
 
 jobs:
