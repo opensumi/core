@@ -24,6 +24,7 @@ import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '../../tree';
+import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
@@ -48,7 +49,7 @@ export class DebugConsoleContribution
   private readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired()
-  private debugConsoleInputDocumentProvider: DebugConsoleInputDocumentProvider;
+  private readonly debugConsoleInputDocumentProvider: DebugConsoleInputDocumentProvider;
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
@@ -58,6 +59,9 @@ export class DebugConsoleContribution
 
   @Autowired(DebugConsoleFilterService)
   protected readonly debugConsoleFilterService: DebugConsoleFilterService;
+
+  @Autowired(DebugContextKey)
+  protected readonly debugContextKey: DebugContextKey;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register(
@@ -95,6 +99,7 @@ export class DebugConsoleContribution
       execute: () => {
         this.debugConsoleModelService.clear();
       },
+      isEnabled: () => this.debugContextKey.contextInDebugConsole.get() === true,
     });
     registry.registerCommand(DEBUG_COMMANDS.COPY_CONSOLE_ITEM, {
       execute: (node: DebugConsoleNode) => {
@@ -110,6 +115,7 @@ export class DebugConsoleContribution
       execute: () => {
         this.debugConsoleModelService.collapseAll();
       },
+      isEnabled: () => this.debugContextKey.contextInDebugConsole.get() === true,
     });
     registry.registerCommand(DEBUG_COMMANDS.CONSOLE_ENTER_EVALUATE, {
       execute: () => {
