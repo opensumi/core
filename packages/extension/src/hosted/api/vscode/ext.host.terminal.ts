@@ -254,6 +254,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
               id: nextLinkId++,
               startIndex: providerLink.startIndex,
               length: providerLink.length,
+              label: providerLink.tooltip,
             };
             cacheLinkMap.set(link.id, {
               provider: provideResult.provider,

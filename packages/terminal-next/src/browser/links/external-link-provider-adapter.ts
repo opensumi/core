@@ -1,4 +1,6 @@
-import type { Terminal, IBufferLine } from 'xterm';
+import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
 import { TerminalLink } from './link';
 import { TerminalBaseLinkProvider } from './base';
@@ -9,7 +11,11 @@ import { XtermLinkMatcherHandler } from './link-manager';
  * An adapter to convert a simple external link provider into an internal link provider that
  * manages link lifecycle, hovers, etc. and gets registered in xterm.js.
  */
+@Injectable({ multiple: true })
 export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvider {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   constructor(
     private readonly _xterm: Terminal,
     private readonly _instance: ITerminalClient,
@@ -17,6 +23,12 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
     private readonly _wrapLinkHandler: (
       handler: (event: MouseEvent | undefined, link: string) => void,
     ) => XtermLinkMatcherHandler,
+    private readonly _tooltipCallback: (
+      link: TerminalLink,
+      viewportRange: IViewportRange,
+      modifierDownCallback?: () => void,
+      modifierUpCallback?: () => void,
+    ) => IDisposable,
   ) {
     super();
   }
@@ -61,14 +73,17 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
       );
       const matchingText = lineContent.substr(link.startIndex, link.length) || '';
       const activateLink = this._wrapLinkHandler((_, text) => link.activate(text));
-      return new TerminalLink(
+
+      return this.injector.get(TerminalLink, [
         this._xterm,
         bufferRange,
         matchingText,
         this._xterm.buffer.active.viewportY,
         activateLink,
+        this._tooltipCallback,
         true,
-      );
+        link.label,
+      ]);
     });
   }
 }

@@ -167,7 +167,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     } else {
       // BtnStyle == inline 或 btnTitleStyle === 'vertical' (类似小程序IDE工具栏） 的模式
       if (btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL) {
-        backgroundBindings.style['min-width'] = '42px';
+        backgroundBindings.style['minWidth'] = '42px';
       }
       buttonElement = (
         <div

@@ -1,10 +1,30 @@
-import type { IBufferRange, ILink, ILinkDecorations, Terminal } from 'xterm';
-import { Disposable, DisposableCollection, Emitter, Event, isOSX } from '@opensumi/ide-core-common';
+import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
+import { Injectable, Autowired } from '@opensumi/di';
+import {
+  Disposable,
+  IDisposable,
+  DisposableCollection,
+  Emitter,
+  Event,
+  isOSX,
+  RunOnceScheduler,
+} from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { convertBufferRangeToViewport } from './helpers';
 
+// default delay time (ms) for showing tooltip when mouse is over a link
+const DEFAULT_HOVER_DELAY = 500;
+
+@Injectable({ multiple: true })
 export class TerminalLink extends Disposable implements ILink {
   decorations: ILinkDecorations;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  private _tooltipScheduler: RunOnceScheduler | undefined;
   private _hoverListeners: DisposableCollection | undefined;
+  private _tooltipDisposable: IDisposable | undefined;
 
   private readonly _onInvalidated = new Emitter<void>();
   public get onInvalidated(): Event<void> {
@@ -17,7 +37,14 @@ export class TerminalLink extends Disposable implements ILink {
     public readonly text: string,
     private readonly _viewportY: number,
     private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => void,
+    private readonly _tooltipCallback: (
+      link: TerminalLink,
+      viewportRange: IViewportRange,
+      modifierDownCallback?: () => void,
+      modifierUpCallback?: () => void,
+    ) => IDisposable,
     private readonly _isHighConfidenceLink: boolean,
+    readonly label: string | undefined,
   ) {
     super();
     this.decorations = {
@@ -30,6 +57,10 @@ export class TerminalLink extends Disposable implements ILink {
     super.dispose();
     this._hoverListeners?.dispose();
     this._hoverListeners = undefined;
+    this._tooltipScheduler?.dispose();
+    this._tooltipScheduler = undefined;
+    this._tooltipDisposable?.dispose();
+    this._tooltipDisposable = undefined;
   }
 
   activate(event: MouseEvent | undefined, text: string): void {
@@ -71,6 +102,24 @@ export class TerminalLink extends Disposable implements ILink {
       }),
     );
 
+    // Only show the tooltip and highlight for high confidence links (not word/search workspace
+    // links). Feedback was that this makes using the terminal overly noisy.
+    if (this._isHighConfidenceLink) {
+      this._tooltipScheduler = new RunOnceScheduler(() => {
+        this._tooltipDisposable = this._tooltipCallback(
+          this,
+          convertBufferRangeToViewport(this.range, this._viewportY),
+          this._isHighConfidenceLink ? () => this._enableDecorations() : undefined,
+          this._isHighConfidenceLink ? () => this._disableDecorations() : undefined,
+        );
+        // Clear out scheduler until next hover event
+        this._tooltipScheduler?.dispose();
+        this._tooltipScheduler = undefined;
+      }, this.preferenceService.get<number>('editor.hover.delay') || DEFAULT_HOVER_DELAY);
+      this._tooltipScheduler.schedule();
+    }
+
+    const origin = { x: event.pageX, y: event.pageY };
     this._hoverListeners.push(
       this._addDisposableListener(document, 'mousemove', (e) => {
         // Update decorations
@@ -79,6 +128,16 @@ export class TerminalLink extends Disposable implements ILink {
         } else {
           this._disableDecorations();
         }
+
+        // Reset the scheduler if the mouse moves too much
+        if (
+          Math.abs(e.pageX - origin.x) > window.devicePixelRatio * 2 ||
+          Math.abs(e.pageY - origin.y) > window.devicePixelRatio * 2
+        ) {
+          origin.x = e.pageX;
+          origin.y = e.pageY;
+          this._tooltipScheduler?.schedule();
+        }
       }),
     );
   }
@@ -86,6 +145,10 @@ export class TerminalLink extends Disposable implements ILink {
   leave(): void {
     this._hoverListeners?.dispose();
     this._hoverListeners = undefined;
+    this._tooltipScheduler?.dispose();
+    this._tooltipScheduler = undefined;
+    this._tooltipDisposable?.dispose();
+    this._tooltipDisposable = undefined;
   }
 
   private _enableDecorations(): void {

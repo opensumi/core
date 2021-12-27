@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
+  "private": true,
   "dependencies": {
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.2.2",
