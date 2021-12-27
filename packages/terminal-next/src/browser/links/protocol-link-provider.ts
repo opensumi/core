@@ -1,15 +1,27 @@
-import type { Terminal, IBufferLine } from 'xterm';
+import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { ILinkComputerTarget, LinkComputer } from '../../common';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
 import { TerminalLink } from './link';
 import { TerminalBaseLinkProvider } from './base';
 
+@Injectable({ multiple: true })
 export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
   private _linkComputerTarget: ILinkComputerTarget | undefined;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   constructor(
     private readonly _xterm: Terminal,
     private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => void,
+    private readonly _tooltipCallback: (
+      link: TerminalLink,
+      viewportRange: IViewportRange,
+      modifierDownCallback?: () => void,
+      modifierUpCallback?: () => void,
+    ) => IDisposable,
   ) {
     super();
   }
@@ -37,14 +49,16 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
       const range = convertLinkRangeToBuffer(lines, this._xterm.cols, link.range, startLine);
 
       // Check if the link if within the mouse position
-      return new TerminalLink(
+      return this.injector.get(TerminalLink, [
         this._xterm,
         range,
         link.url?.toString() || '',
         this._xterm.buffer.active.viewportY,
         this._activateCallback,
+        this._tooltipCallback,
         true,
-      );
+        undefined,
+      ]);
     });
   }
 }

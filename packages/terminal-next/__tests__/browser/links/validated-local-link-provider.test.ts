@@ -1,6 +1,7 @@
 import { Terminal, ILink } from 'xterm';
 import { URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { TerminalValidatedLocalLinkProvider } from '../../../src/browser/links/validated-local-link-provider';
 
 const unixLinks = ['/foo', '~/foo', './foo', '../foo', '/foo/bar', '/foo/bar+more', 'foo/bar', 'foo/bar+more'];
@@ -58,18 +59,23 @@ function format(pattern: string, ...args: any[]) {
 }
 
 describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
+  const injector = createBrowserInjector([]);
+
   async function assertLink(text: string, isWindows: boolean, expected: { text: string; range: [number, number][] }[]) {
     const xterm = new Terminal();
     const client = { os: isWindows ? OperatingSystem.Windows : OperatingSystem.Linux } as any;
-    const provider = new TerminalValidatedLocalLinkProvider(
+    const provider = injector.get(TerminalValidatedLocalLinkProvider, [
       xterm,
       client,
       () => {},
       (() => {}) as any,
+      () => ({
+        dispose: () => {},
+      }),
       (_: string, cb: (result: { uri: URI; isDirectory: boolean } | undefined) => void) => {
         cb({ uri: URI.file('/'), isDirectory: false });
       },
-    );
+    ]);
 
     // Write the text and wait for the parser to finish
     await new Promise<void>((r) => xterm.write(text, r));

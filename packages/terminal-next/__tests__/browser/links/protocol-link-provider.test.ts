@@ -1,10 +1,19 @@
 import { Terminal, ILink } from 'xterm';
 import { TerminalProtocolLinkProvider } from '../../../src/browser/links/protocol-link-provider';
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 
 describe('Workbench - TerminalWebLinkProvider', () => {
+  const injector = createBrowserInjector([]);
+
   async function assertLink(text: string, expected: { text: string; range: [number, number][] }[]) {
     const xterm = new Terminal();
-    const provider = new TerminalProtocolLinkProvider(xterm, () => {});
+    const provider = injector.get(TerminalProtocolLinkProvider, [
+      xterm,
+      () => {},
+      () => ({
+        dispose: () => {},
+      }),
+    ]);
 
     // Write the text and wait for the parser to finish
     await new Promise<void>((r) => xterm.write(text, r));
