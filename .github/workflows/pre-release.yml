@@ -56,8 +56,8 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 OpenSumi PreRelease ${new Date().toLocaleDateString()}`,
-              body: `${new Date().toLocaleDateString()} Pre-Release Summary \r\n ${releasemd}`
+              title: `🤖 OpenSumi PreRelease ${new Date().toDateString()}`,
+              body: `## ${new Date().toDateString()} Pre-Release Summary \r\n ${releasemd}`
             })
 
       # 发布 next 版本，并在 issue 中回复
@@ -75,13 +75,32 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
       - uses: actions/github-script@v4
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            const issueBody =
+              '🎉 Pre-Release version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install prerelease version via `npm install package@' +
+              process.env.CURRENT_VERSION +
+              '`' +
+              ' [@' +
+              context.issue.owner +
+              ']' +
+              '(https://github.com/' +
+              context.issue.owner +
+              ')';
+
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🎉 Pre Release version publish successful! You can install prerelease version via `npm install package@next`'
+              body: issueBody
             })
