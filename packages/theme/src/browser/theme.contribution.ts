@@ -59,18 +59,6 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
-
-    this.initializeDefaultTheme();
-  }
-
-  private initializeDefaultTheme() {
-    const globalProvider = this.preferenceService.getProvider(PreferenceScope.User);
-    if (globalProvider) {
-      const themeId = globalProvider.get<string>(COLOR_THEME_SETTING);
-      if (!themeId || themeId === DEFAULT_THEME_ID) {
-        this.themeService.applyTheme(DEFAULT_THEME_ID);
-      }
-    }
   }
 
   private registerDefaultTokenModifier() {
