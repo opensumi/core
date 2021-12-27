@@ -1,3 +1,5 @@
+# 适用于 OpenSumi core 仓库的测试版本发布流程
+
 name: Next Release Flow
 
 on:
@@ -89,14 +91,7 @@ jobs:
               '🎉 Pre-Release version ' +
               process.env.CURRENT_VERSION +
               ' publish successful! You can install prerelease version via `npm install package@' +
-              process.env.CURRENT_VERSION +
-              '`' +
-              ' [@' +
-              context.issue.owner +
-              ']' +
-              '(https://github.com/' +
-              context.issue.owner +
-              ')';
+              process.env.CURRENT_VERSION;
 
             github.issues.createComment({
               issue_number: context.issue.number,

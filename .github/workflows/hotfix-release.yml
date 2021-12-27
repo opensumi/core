@@ -1,0 +1,167 @@
+# 适用于 OpenSumi core 仓库的 hotfix 正式版本发布流程
+# Release 分支规则: vx.x
+
+on:
+  # 在 Hotfix Release Issue 评论特定内容后执行
+  issue_comment:
+    types: [created]
+  issue:
+    types: [labeled]
+
+jobs:
+  hotfix:
+    name: Hotfix Release
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') &&
+      ((startsWith(github.event.issue.body, '## OpenSumi Hotfix') && github.event.issue.title == 'OpenSumi Hotfix') || startsWith(github.event.comment.body, '/hotfix')) &&
+      github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name))
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    # 基于当前 label 切换到对应的分支
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      #  根据 issue label 获取 release 分支
+      - name: Check release branch
+        uses: actions/github-script@v4
+        id: get-release-branch
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            if (github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name))) {
+              const label = github.event.issue.labels.find(label => /^v\d+\.\d+$/.test(label.name));
+              return label.name;
+            }
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        if: steps.get-release-branch.outputs.result !== null
+        with:
+          checkout_branch: ${{ steps.get-release-branch.outputs.result }}
+
+      # 根据评论内容获取发布模式，默认为 next 版本, 可以通过 /hotfix-release 来发布正式的 hotfix 版本
+      - name: Check release mode
+        uses: actions/github-script@v4
+        if: steps.get-release-branch.outputs.result !== null
+        id: release-mode
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            if (github.event.comment.body) {
+              return /\/hotfix-next/g.test(github.event.comment.body) ? 'next' : 'release';
+            }
+            return 'next';
+
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        if: steps.get-release-branch.outputs.result !== null
+        run: |
+          npm i
+          npm run init
+
+      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
+      - name: Create release log
+        if: steps.get-release-branch.outputs.result !== null
+        id: release-log
+        run: |
+          npm run changelog -- --remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 更新 Changelog 到 pre-release issue 正文
+      - name: Update prerelease changelog for current issue
+        if: steps.get-release-branch.outputs.result !== null
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OpenSumi Hotfix ${new Date().toDateString()}`,
+              body: `## ${new Date().toDateString()} Hotfix Summary \r\n ${releasemd}`
+            })
+
+      # 发布 next 版本，并在 issue 中回复
+      - name: Publish next hotfix version
+        if: steps.get-release-branch.outputs.result !== null && steps.release-mode.outputs.result == 'next'
+        run: |
+          lerna publish --preid hotfix-next-$(date +%s) --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v4
+        if: steps.get-release-branch.outputs.result !== null && steps.release-mode.outputs.result == 'next'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueBody =
+              '🎉 Hotfix next version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install prerelease version via `npm install package@' +
+              process.env.CURRENT_VERSION;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueBody
+            })
+
+      # 发布 hotfix 正式版本，并在 issue 中回复
+      - name: Publish hotfix version
+        if: steps.get-release-branch.outputs.result !== null && steps.release-mode.outputs.result == 'release'
+        run: |
+          lerna publish from-package --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v4
+        if: steps.get-release-branch.outputs.result !== null && steps.release-mode.outputs.result == 'release'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueBody =
+              '🎉 Hotfix version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install prerelease version via `npm install package@' +
+              process.env.CURRENT_VERSION;
+
+            // 评论
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueBody
+            })
+
+            // 关闭 issue
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed'
+            })
