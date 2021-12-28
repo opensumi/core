@@ -59,9 +59,11 @@ export const TabbarViewBase: React.FC<{
     }, []);
     const { currentContainerId, handleTabClick } = tabbarService;
 
-    const disableTabBar = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
+    const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
-    if (canHideTabbar && disableTabBar && !currentContainerId) {
+    const willHideTabbar = canHideTabbar && hideTabBarWhenHidePanel;
+
+    if (willHideTabbar && !currentContainerId) {
       // 之所以要用这么偏门的方法，是因为：
       // 我尝试了好几种方案，比如让 tabbar 或其他几个组件返回 null 的话
       // 会导致 SplitPanel 计算 children 的尺寸不正确，或者计算 tabbar 上按钮区域长度不对等等
@@ -123,7 +125,8 @@ export const TabbarViewBase: React.FC<{
                 key={containerId}
                 id={containerId}
                 onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
-                onClick={(e) => handleTabClick(e, forbidCollapse)}
+                // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
+                onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
                 ref={(el) => (ref = el)}
                 className={clsx({ active: currentContainerId === containerId }, tabClassName)}
               >
