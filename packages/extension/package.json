@@ -12,9 +12,9 @@
     "prepublishOnly": "npm run build",
     "build": "npm run build:pkg && npm run build:ext-host && npm run compile:worker",
     "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.extension.json",
-    "compile:worker": "webpack --config webpack.config.worker.js --progress",
+    "compile:worker": "webpack --config webpack.config.worker.js",
     "compile:worker:slient": "webpack --config webpack.config.worker.js",
-    "watch:worker": "webpack -w --config webpack.config.worker.js --progress",
+    "watch:worker": "webpack -w --config webpack.config.worker.js",
     "build:ext-host": "tsc -p ../../configs/ts/references/tsconfig.extension.json",
     "watch:ext-host": "tsc --watch -p ../../configs/ts/references/tsconfig.extension.json"
   },

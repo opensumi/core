@@ -49,11 +49,11 @@ $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/node-can
 
 ## 构建和运行
 
-如果你想了解如何运行 OpenSuni 或者想调试一个 Issue，你需要在本地获取代码，构建，然后运行它
+如果你想了解如何运行 OpenSumi 或者想调试一个 Issue，你需要在本地获取代码，构建，然后运行它
 
 ### 获取代码
 
-第一步，你需要先 Fork 一份 `OpenSuni` 仓库副本，然后再将其克隆到本地：
+第一步，你需要先 Fork 一份 `OpenSumi` 仓库副本，然后再将其克隆到本地：
 
 ```bash
 $ git clone https://github.com/<<<your-github-account>>>/core.git

@@ -25,7 +25,7 @@
     "bundle:standard": "cross-env NODE_ENV=production webpack --config webpack.standard.config.js",
     "bundle:standard:analysis": "cross-env analysis=1 npm run bundle:standard",
     "bundle:lite": "cross-env NODE_ENV=production webpack --config webpack.lite.config.js",
-    "bundle:lite:stats": "cross-env NODE_ENV=production webpack --progress --profile --config webpack.lite.config.js --json > stats.json",
+    "bundle:lite:stats": "cross-env NODE_ENV=production webpack --profile --config webpack.lite.config.js --json > stats.json",
     "bundle:lite:analysis": "cross-env analysis=1 npm run bundle:lite",
     "prod": "node prod-server.js",
     "prod:lite": "npm run bundle:lite && npm run prod"

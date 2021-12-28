@@ -34,6 +34,7 @@ module.exports = createWebpackConfig(__dirname, require('path').join(__dirname, 
     new ServiceWorkerWebpackPlugin({
       entry: path.join(__dirname, 'entry/web-lite/sw.js'),
     }),
+    !process.env.CI && new ProgressPlugin(),
   ]
     .concat(process.env.analysis ? new BundleAnalyzerPlugin() : null)
     .filter(Boolean),

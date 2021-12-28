@@ -42,6 +42,9 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     closable = true,
     from?: string,
   ): Promise<T | undefined> {
+    if (!rawMessage) {
+      return Promise.resolve(undefined);
+    }
     let message = rawMessage;
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (

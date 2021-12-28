@@ -1,10 +1,12 @@
 const path = require('path');
 const fs = require('fs');
+const { ProgressPlugin } = require('webpack');
 
 const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'));
 
+/** @type { import('webpack').Configuration } */
 module.exports = {
   entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
   node: {
@@ -33,4 +35,5 @@ module.exports = {
       { test: /\.css$/, loader: 'null-loader' },
     ],
   },
+  plugins: [!process.env.CI && new ProgressPlugin()].filter(Boolean),
 };

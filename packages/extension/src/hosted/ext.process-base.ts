@@ -68,16 +68,21 @@ export interface ExtProcessConfig {
 
 async function initRPCProtocol(extInjector): Promise<any> {
   const extCenter = new RPCServiceCenter();
-  const { getRPCService } = initRPCService(extCenter);
+  const { getRPCService } = initRPCService<{
+    onMessage(msg: string): void;
+  }>(extCenter);
+
   const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
+
   const onMessageEmitter = new Emitter<string>();
-  service.on('onMessage', (msg) => {
+  service.on('onMessage', (msg: string) => {
     onMessageEmitter.fire(msg);
   });
+
   const onMessage = onMessageEmitter.event;
   const send = service.onMessage;
 
