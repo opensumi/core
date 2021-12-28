@@ -427,7 +427,7 @@ export class DebugSession implements IDebugSession {
             breakpoint = this.id2Breakpoint.get(raw.id);
             if (breakpoint) {
               (breakpoint as IRuntimeBreakpoint).status.set(this.id, raw);
-              this.breakpointManager.updateBreakpoint(breakpoint);
+              this.breakpointManager.updateBreakpoint(breakpoint, true);
             }
           }
           break;
