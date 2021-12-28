@@ -77,7 +77,7 @@ export class DebugSource extends DebugSourceData {
       const models = this.modelManager.resolve(this.uri);
       if (models) {
         for (const model of models) {
-          model.focusStackFrame(frame);
+          model.focusStackFrame();
         }
       }
     } else {

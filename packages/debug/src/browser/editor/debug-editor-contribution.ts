@@ -214,11 +214,11 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
         if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
           editor.monacoEditor.updateOptions({ hover: { enabled: true } });
-          this.debugModelManager.model?.debugHoverWidget.hide();
+          this.debugModelManager.model?.getDebugHoverWidget().hide();
           const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
             if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
               editor.monacoEditor.updateOptions({ hover: { enabled: false } });
-              this.debugModelManager.model?.debugHoverWidget.show();
+              this.debugModelManager.model?.getDebugHoverWidget().show();
               listener.dispose();
             }
           });

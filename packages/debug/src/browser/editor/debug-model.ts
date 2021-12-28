@@ -246,7 +246,7 @@ export class DebugModel implements IDebugModel {
    * @param {DebugStackFrame} frame
    * @memberof DebugModel
    */
-  focusStackFrame(frame: DebugStackFrame) {
+  focusStackFrame() {
     this.renderFrames();
   }
 
@@ -703,6 +703,10 @@ export class DebugModel implements IDebugModel {
 
   public getBreakpointWidget(): DebugBreakpointWidget {
     return this.breakpointWidget;
+  }
+
+  public getDebugHoverWidget(): DebugHoverWidget {
+    return this.debugHoverWidget;
   }
 }
 
