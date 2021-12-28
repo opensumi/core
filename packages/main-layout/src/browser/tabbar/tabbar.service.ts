@@ -398,6 +398,7 @@ export class TabbarService extends WithEventBus {
   @action.bound handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId && !forbidCollapse) {
+      // 双击同一个 tab 时隐藏 panel
       this.currentContainerId = '';
     } else {
       this.currentContainerId = containerId;
