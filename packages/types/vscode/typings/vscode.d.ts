@@ -291,23 +291,23 @@ declare module 'vscode' {
     isExtensionTerminal?: boolean;
 
     /**
-		 * A message to write to the terminal on first launch, note that this is not sent to the
-		 * process but, rather written directly to the terminal. This supports escape sequences such
-		 * a setting text style.
-		 */
-		message?: string;
+     * A message to write to the terminal on first launch, note that this is not sent to the
+     * process but, rather written directly to the terminal. This supports escape sequences such
+     * a setting text style.
+     */
+    message?: string;
 
-		/**
-		 * The icon path or {@link ThemeIcon} for the terminal.
-		 */
-		iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    /**
+     * The icon path or {@link ThemeIcon} for the terminal.
+     */
+    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
 
-		/**
-		 * The icon {@link ThemeColor} for the terminal.
-		 * The `terminal.ansi*` theme keys are
-		 * recommended for the best contrast and consistency across themes.
-		 */
-		color?: ThemeColor;
+    /**
+     * The icon {@link ThemeColor} for the terminal.
+     * The `terminal.ansi*` theme keys are
+     * recommended for the best contrast and consistency across themes.
+     */
+    color?: ThemeColor;
   }
 
   /**
@@ -361,13 +361,13 @@ declare module 'vscode' {
     length: number;
 
     /**
-     * TODO: The tooltip text when you hover over this link.
+     * The tooltip text when you hover over this link.
      *
      * If a tooltip is provided, is will be displayed in a string that includes instructions on
      * how to trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary
      * depending on OS, user settings, and localization.
      */
-    // tooltip?: string;
+    tooltip?: string;
   }
 
   /**
@@ -402,16 +402,16 @@ declare module 'vscode' {
     pty: Pseudoterminal;
 
     /**
-		 * The icon path or {@link ThemeIcon} for the terminal.
-		 */
-		iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+     * The icon path or {@link ThemeIcon} for the terminal.
+     */
+    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
 
-		/**
-		 * The icon {@link ThemeColor} for the terminal.
-		 * The standard `terminal.ansi*` theme keys are
-		 * recommended for the best contrast and consistency across themes.
-		 */
-		color?: ThemeColor;
+    /**
+     * The icon {@link ThemeColor} for the terminal.
+     * The standard `terminal.ansi*` theme keys are
+     * recommended for the best contrast and consistency across themes.
+     */
+    color?: ThemeColor;
   }
 
   /**
@@ -501,22 +501,22 @@ declare module 'vscode' {
     onDidClose?: Event<void | number>;
 
     /**
-		 * An event that when fired allows changing the name of the terminal.
-		 *
-		 * **Example:** Change the terminal name to "My new terminal".
-		 * ```typescript
-		 * const writeEmitter = new vscode.EventEmitter<string>();
-		 * const changeNameEmitter = new vscode.EventEmitter<string>();
-		 * const pty: vscode.Pseudoterminal = {
-		 *   onDidWrite: writeEmitter.event,
-		 *   onDidChangeName: changeNameEmitter.event,
-		 *   open: () => changeNameEmitter.fire('My new terminal'),
-		 *   close: () => {}
-		 * };
-		 * vscode.window.createTerminal({ name: 'My terminal', pty });
-		 * ```
-		 */
-		onDidChangeName?: Event<string>;
+     * An event that when fired allows changing the name of the terminal.
+     *
+     * **Example:** Change the terminal name to "My new terminal".
+     * ```typescript
+     * const writeEmitter = new vscode.EventEmitter<string>();
+     * const changeNameEmitter = new vscode.EventEmitter<string>();
+     * const pty: vscode.Pseudoterminal = {
+     *   onDidWrite: writeEmitter.event,
+     *   onDidChangeName: changeNameEmitter.event,
+     *   open: () => changeNameEmitter.fire('My new terminal'),
+     *   close: () => {}
+     * };
+     * vscode.window.createTerminal({ name: 'My terminal', pty });
+     * ```
+     */
+    onDidChangeName?: Event<string>;
 
     /**
      * Implement to handle when the pty is open and ready to start firing events.
@@ -1672,19 +1672,19 @@ declare module 'vscode' {
      * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
      * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
      */
-     accessibilityInformation?: AccessibilityInformation;
+    accessibilityInformation?: AccessibilityInformation;
 
-     /**
-      * @param label A human-readable string describing this item
-      * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
-      */
-     constructor(label: string | TreeItemLabel, collapsibleState?: TreeItemCollapsibleState);
+    /**
+     * @param label A human-readable string describing this item
+     * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
+     */
+    constructor(label: string | TreeItemLabel, collapsibleState?: TreeItemCollapsibleState);
 
-     /**
-      * @param resourceUri The {@link Uri} of the resource representing this item.
-      * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
-      */
-     constructor(resourceUri: Uri, collapsibleState?: TreeItemCollapsibleState);
+    /**
+     * @param resourceUri The {@link Uri} of the resource representing this item.
+     * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
+     */
+    constructor(resourceUri: Uri, collapsibleState?: TreeItemCollapsibleState);
   }
   /**
    * Represents a line of text, such as a line of source code.
@@ -2001,7 +2001,7 @@ declare module 'vscode' {
      * @param pathSegments One more more path fragments
      * @returns A new uri which path is joined with the given fragments
      */
-     static joinPath(base: Uri, ...pathSegments: string[]): Uri;
+    static joinPath(base: Uri, ...pathSegments: string[]): Uri;
 
     /**
      * Use the `file` and `parse` factory functions to create new `Uri` objects.
@@ -2203,7 +2203,7 @@ declare module 'vscode' {
 
     /** The text change is caused by an redo operation. */
     Redo = 2,
-	}
+  }
 
   /**
    * An event describing a transactional [document](#TextDocument) change.
@@ -2492,9 +2492,9 @@ declare module 'vscode' {
     readonly keys: readonly string[];
   }
 
-    /**
-   * The event data that is fired when a secret is added or removed.
-   */
+  /**
+ * The event data that is fired when a secret is added or removed.
+ */
   export interface SecretStorageChangeEvent {
     /**
      * The key of the secret that has changed.
@@ -2777,7 +2777,7 @@ declare module 'vscode' {
     /**
      * The uri of the directory containing the extension.
      */
-     readonly extensionUri: Uri;
+    readonly extensionUri: Uri;
 
     /**
      * Gets the extension's environment variable collection for this workspace, enabling changes

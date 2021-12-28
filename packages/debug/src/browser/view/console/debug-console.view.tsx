@@ -147,7 +147,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     handleContextMenu(ev);
   };
 
-  const handleOuterClick = (ev: React.MouseEvent) => {
+  const handleConsoleClick = (ev: React.MouseEvent) => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = consoleModel;
     enactiveNodeDecoration();
@@ -215,7 +215,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   };
 
   return (
-    <div className={styles.debug_console} onContextMenu={handleOuterContextMenu} onClick={handleOuterClick}>
+    <div className={styles.debug_console} onContextMenu={handleOuterContextMenu} onClick={handleConsoleClick}>
       <div
         className={styles.debug_console_output}
         tabIndex={-1}

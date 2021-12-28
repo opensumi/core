@@ -29,7 +29,7 @@
     "@opensumi/ide-workspace": "2.13.6",
     "@opensumi/ide-workspace-edit": "2.13.6",
     "@opensumi/ide-components": "2.13.6",
-    "vscode-ripgrep": "^1.12.0"
+    "@opensumi/vscode-ripgrep": "^1.3.2"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "2.13.6",

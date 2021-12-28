@@ -95,8 +95,8 @@ export interface ITerminalLinkDto {
   startIndex: number;
   /** The length of the link in the line. */
   length: number;
-  /** TODO: The descriptive label for what the link does when activated. */
-  // label?: string;
+  /** The descriptive label for what the link does when activated. */
+  label?: string;
 }
 
 export interface ITerminalLaunchError {

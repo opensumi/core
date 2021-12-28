@@ -1,7 +1,7 @@
 import fuzzy from 'fuzzy';
 import readline from 'readline';
 import path from 'path';
-import { rgPath } from 'vscode-ripgrep';
+import { rgPath } from '@opensumi/vscode-ripgrep';
 import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@opensumi/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
