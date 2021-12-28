@@ -44,15 +44,15 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
   }
 
-  private async asAccess(storagePath: string, force?: boolean) {
+  private async asAccess(storageUri: string, force?: boolean) {
     if (force) {
-      return await this.fileSystem.access(storagePath);
+      return await this.fileSystem.access(storageUri);
     }
-    if (!this.storageExistPromises.has(storagePath)) {
-      const promise = this.fileSystem.access(storagePath);
-      this.storageExistPromises.set(storagePath, promise);
+    if (!this.storageExistPromises.has(storageUri)) {
+      const promise = this.fileSystem.access(storageUri);
+      this.storageExistPromises.set(storageUri, promise);
     }
-    return await this.storageExistPromises.get(storagePath);
+    return await this.storageExistPromises.get(storageUri);
   }
 
   private async setupDirectories(workspace, roots, extensionStorageDirName): Promise<ExtensionStorageUri> {
@@ -159,13 +159,13 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
     const target = URI.file(pathToFile);
-    const existed = await this.asAccess(pathToFile, true);
+    const existed = await this.asAccess(target.toString(), true);
     if (!existed) {
       return {};
     }
     try {
-      const { content } = await this.fileSystem.resolveContent(target.toString());
-      return JSON.parse(content);
+      const { content } = await this.fileSystem.readFile(target.toString());
+      return JSON.parse(content.toString());
     } catch (error) {
       this.logger.error('Failed to parse data from "', target.toString(), '". Reason:', error);
       return {};
