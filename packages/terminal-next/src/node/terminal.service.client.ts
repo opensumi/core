@@ -13,7 +13,7 @@ import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/she
 import { findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
 
 /**
- * NodePtyTerminalService
+ * this RPC target: NodePtyTerminalService
  */
 interface IRPCTerminalService {
   closeClient(id: string, data: ITerminalError | { code?: number; signal?: number }): void;

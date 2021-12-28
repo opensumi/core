@@ -1,95 +1,83 @@
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalProcess.ts
+
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
 import { IShellLaunchConfig } from '../common';
 import { IPty } from '../common/pty';
-import { exists } from './shell';
+import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { INodeLogger, isWindows } from '@opensumi/ide-core-node';
+import { formatLocalize, INodeLogger } from '@opensumi/ide-core-node';
 import { Injectable, Autowired } from '@opensumi/di';
 import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
+import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 export { pty };
 
 export const IPtyService = Symbol('IPtyService');
-export interface IProcessEnvironment {
-  [key: string]: string | undefined;
-}
-
-export function getCaseInsensitive(target: Record<string, any>, key: string): any {
-  const lowercaseKey = key.toLowerCase();
-  const equivalentKey = Object.keys(target).find((k) => k.toLowerCase() === lowercaseKey);
-  return equivalentKey ? target[equivalentKey] : target[key];
-}
-
-export async function findExecutable(
-  command: string,
-  cwd?: string,
-  paths?: string[],
-  env: IProcessEnvironment = process.env as IProcessEnvironment,
-): Promise<string | undefined> {
-  // If we have an absolute path then we take it.
-  if (path.isAbsolute(command)) {
-    return (await exists(command)) ? command : undefined;
-  }
-  if (cwd === undefined) {
-    cwd = process.cwd();
-  }
-  const dir = path.dirname(command);
-  if (dir !== '.') {
-    // We have a directory and the directory is relative (see above). Make the path absolute
-    // to the current working directory.
-    const fullPath = path.join(cwd, command);
-    return (await exists(fullPath)) ? fullPath : undefined;
-  }
-  const envPath = getCaseInsensitive(env, 'PATH');
-  if (paths === undefined && typeof envPath === 'string') {
-    paths = envPath.split(path.delimiter);
-  }
-  // No PATH environment. Make path absolute to the cwd.
-  if (paths === undefined || paths.length === 0) {
-    const fullPath = path.join(cwd, command);
-    return (await exists(fullPath)) ? fullPath : undefined;
-  }
-  // We have a simple file name. We get the path variable from the env
-  // and try to find the executable on the path.
-  for (let pathEntry of paths) {
-    // The path entry is absolute.
-    let fullPath: string;
-    if (path.isAbsolute(pathEntry)) {
-      fullPath = path.join(pathEntry, command);
-    } else {
-      fullPath = path.join(cwd, pathEntry, command);
-    }
-
-    if (await exists(fullPath)) {
-      return fullPath;
-    }
-    if (isWindows) {
-      let withExtension = fullPath + '.com';
-      if (await exists(withExtension)) {
-        return withExtension;
-      }
-      withExtension = fullPath + '.exe';
-      if (await exists(withExtension)) {
-        return withExtension;
-      }
-    }
-  }
-  const fullPath = path.join(cwd, command);
-  return (await exists(fullPath)) ? fullPath : undefined;
-}
 
 @Injectable()
 export class PtyService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  async create2(options: IShellLaunchConfig) {
-    if (!options.shellPath) {
-      throw new Error('options.shellPath not set');
+  async _validateCwd(options: IShellLaunchConfig) {
+    if (options.cwd) {
+      try {
+        const result = await promises.stat(options.cwd);
+        if (!result.isDirectory()) {
+          return {
+            message: formatLocalize('terminal.launchFail.cwdNotDirectory', options.cwd),
+          };
+        }
+      } catch (err) {
+        if (err?.code === 'ENOENT') {
+          return {
+            message: formatLocalize('terminal.launchFail.cwdDoesNotExist', options.cwd),
+          };
+        }
+      }
     }
 
+    return undefined;
+  }
+  async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment) {
+    if (!options.shellPath) {
+      return {
+        message: 'options.shellPath not set',
+      };
+    }
+    try {
+      const result = await promises.stat(options.shellPath);
+      if (!result.isFile() && !result.isSymbolicLink()) {
+        return {
+          message: formatLocalize('terminal.launchFail.executableIsNotFileOrSymlink', options.shellPath),
+        };
+      }
+    } catch (err) {
+      if (err?.code === 'ENOENT') {
+        // The executable isn't an absolute path, try find it on the PATH or CWD
+        const envPaths: string[] | undefined =
+          options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
+        const executable = await findExecutable(options.shellPath, options.cwd, envPaths, ptyEnv);
+        if (!executable) {
+          return {
+            message: formatLocalize('terminal.launchFail.executableDoesNotExist', options.shellPath),
+          };
+        }
+        // Set the shellPath explicitly here so that node-pty doesn't need to search the
+        // $PATH too.
+        options.shellPath = executable;
+      }
+    }
+  }
+
+  async create2(options: IShellLaunchConfig) {
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -122,36 +110,24 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
-    try {
-      const result = await promises.stat(options.shellPath);
-      if (!result.isFile() && !result.isSymbolicLink()) {
-        throw new Error(`Path to shell executable "${options.shellPath}" is not a file or a symlink`);
-      }
-    } catch (err) {
-      if (err?.code === 'ENOENT') {
-        // The executable isn't an absolute path, try find it on the PATH or CWD
-        const envPaths: string[] | undefined =
-          options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
-        const executable = await findExecutable(options.shellPath, options.cwd, envPaths, ptyEnv);
-        if (!executable) {
-          throw new Error(`Path to shell shellPath "${options.shellPath}" does not exist`);
-        }
-        // Set the shellPath explicitly here so that node-pty doesn't need to search the
-        // $PATH too.
-        options.shellPath = executable;
-      }
+    const results = await Promise.all([this._validateCwd(options), this._validateExecutable(options, ptyEnv)]);
+    const firstError = results.find((r) => r !== undefined);
+    if (firstError) {
+      throw new Error(firstError.message);
     }
 
-    const ptyProcess = pty.spawn(options.shellPath, options.args || [], {
+    // above code will validate shellPath and throw if it doesn't exist
+
+    const ptyProcess = pty.spawn(options.shellPath as string, options.args || [], {
       name: options.name || 'xterm-256color',
       cols: options.cols || 100,
       rows: options.rows || 30,
       cwd: options.cwd,
       env: ptyEnv,
     });
-    (ptyProcess as IPty).bin = options.shellPath;
+    (ptyProcess as IPty).bin = options.shellPath as string;
     (ptyProcess as IPty).launchConfig = options;
-    const match = options.shellPath.match(/[\w|.]+$/);
+    const match = (options.shellPath as string).match(/[\w|.]+$/);
     (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;
   }
