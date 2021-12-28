@@ -67,15 +67,6 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!workspace) {
-      if (!this.storagePathInitialized) {
-        this.deferredWorkspaceStoragePath.resolve(undefined);
-        this.deferredStoragePath.resolve(undefined);
-        this.storagePathInitialized = true;
-      }
-      return (this.cachedStoragePath = undefined);
-    }
-
     if (!(await this.fileSystem.access(URI.file(parentStorageDir).toString()))) {
       await this.fileSystem.createFolder(URI.file(parentStorageDir).toString());
     }
@@ -121,18 +112,31 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    * @returns {Promise<string>}
    * @memberof ExtensionStoragePathImpl
    */
-  async buildWorkspaceId(workspace: FileStat, roots: FileStat[], extensionStorageDirName: string): Promise<string> {
+  async buildWorkspaceId(
+    workspace: FileStat | undefined,
+    roots: FileStat[],
+    extensionStorageDirName: string,
+  ): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     const getTemporaryWorkspaceFileUri = (home: URI): URI =>
       home
         .resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
         .resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`)
         .withScheme('file');
+    const getTemporaryWorkspaceUri = (home: URI): URI =>
+      home
+        .resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
+        .resolve(`${UNTITLED_WORKSPACE}`)
+        .withScheme('file');
+    if (!workspace) {
+      const untitled = getTemporaryWorkspaceUri(new URI(homeDir));
+      // 当不存在工作区信息时，使用 `UNTITLED_WORKSPACE` 作为工作区
+      return crypto.createHash('md5').update(untitled.toString()).digest('hex');
+    }
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
-
     if (untitledWorkspace.toString() === workspace.uri) {
-      // 当workspace为临时工作区时
-      // 为每个workspace root创建一个临时存储路径
+      // 当 workspace 为临时工作区时
+      // 为每个 workspace root 创建一个临时存储路径
       // 服务.code-workspace, 及.sumi-workspace这种多工作区模式
       const rootsStr = roots
         .map((root) => root.uri)
@@ -141,12 +145,6 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       return crypto.createHash('md5').update(rootsStr).digest('hex');
     } else {
       const uri = new URI(workspace.uri);
-      let displayName = uri.displayName;
-
-      if ((!workspace || !workspace.isDirectory) && displayName.endsWith(`.${this.workspaceSuffixName}`)) {
-        displayName = displayName.slice(0, displayName.lastIndexOf('.'));
-      }
-
       return crypto.createHash('md5').update(uri.toString()).digest('hex');
     }
   }

@@ -246,14 +246,15 @@ export namespace DebugBreakpointWidgetCommands {
 )
 export class DebugContribution
   implements
-  ComponentContribution,
-  TabBarToolbarContribution,
-  CommandContribution,
-  KeybindingContribution,
-  JsonSchemaContribution,
-  PreferenceContribution,
-  MenuContribution,
-  BrowserEditorContribution {
+    ComponentContribution,
+    TabBarToolbarContribution,
+    CommandContribution,
+    KeybindingContribution,
+    JsonSchemaContribution,
+    PreferenceContribution,
+    MenuContribution,
+    BrowserEditorContribution
+{
   schema: PreferenceSchema = debugPreferencesSchema;
 
   @Autowired(IMainLayoutService)
