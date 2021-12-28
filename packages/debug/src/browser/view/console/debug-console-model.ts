@@ -22,7 +22,7 @@ export class DebugConsoleTreeModel extends TreeModel {
 
   /**
    * 判断是否滚动到了底部
-   * TODO: //临时处理 by @倾一
+   * TODO: //临时处理 by @Ricbet
    */
   get isScrollBottom(): boolean {
     this._tempScrollOffset = Math.max(this.state.scrollOffset, this._tempScrollOffset);

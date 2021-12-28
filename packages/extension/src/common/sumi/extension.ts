@@ -12,7 +12,7 @@ export interface IContributeMenubarItem extends Omit<IMenubarItem, 'label'> {
 
 export interface IContributedSubmenu extends Omit<ISubmenuItem, 'submenu' | 'label' | 'order' | 'iconClass'> {
   id: ISubmenuItem['submenu']; // submenu id
-  title?: ISubmenuItem['label']; // label 后续对插件输出统一使用 title 字段 @柳千
+  title?: ISubmenuItem['label']; // label 后续对插件输出统一使用 title 字段
   when?: string;
   icon?: { [index in ThemeType]: string } | string;
 }

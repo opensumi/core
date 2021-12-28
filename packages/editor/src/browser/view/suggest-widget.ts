@@ -16,7 +16,7 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
     const suggestController = editor.monacoEditor.getContribution<SuggestController>(SuggestController.ID);
     if (suggestController && suggestController.widget && suggestController.widget.value) {
       const suggestWidget = suggestController.widget.value;
-      // FIXME: @寻壑 仅通过鼠标选中会走onDidSelect事件，键盘会过acceptSelectedSuggestionOnEnter这个command
+      // FIXME: 仅通过鼠标选中会走onDidSelect事件，键盘会过acceptSelectedSuggestionOnEnter这个command
       disposable.push(
         suggestWidget.onDidSelect((e) => {
           this.eventBus.fire(

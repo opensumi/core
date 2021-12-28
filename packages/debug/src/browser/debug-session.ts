@@ -394,7 +394,7 @@ export class DebugSession implements IDebugSession {
   protected id2Breakpoint = new Map<number, DebugBreakpoint>();
   /**
    * 运行时的断点修改
-   * TODO:// 待重构 @倾一
+   * TODO:// 待重构 @Ricbet
    * @param body
    */
   protected async onUpdateBreakpoint(body: DebugProtocol.BreakpointEvent['body']): Promise<void> {

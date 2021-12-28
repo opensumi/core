@@ -74,7 +74,6 @@ declare module 'vscode' {
      *
      * @param edit A workspace edit.
      * @return A thenable that resolves when the edit could be applied.
-     * @Owner 吭头
      */
     export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
 
@@ -151,7 +150,6 @@ declare module 'vscode' {
      * @param ignoreChangeEvents Ignore when files have been changed.
      * @param ignoreDeleteEvents Ignore when files have been deleted.
      * @return A new file system watcher instance.
-     * @墨蜇
      */
     export function createFileSystemWatcher(globPattern: GlobPattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean): FileSystemWatcher;
 
@@ -165,7 +163,6 @@ declare module 'vscode' {
      * @param provider The filesystem provider.
      * @param options Immutable metadata about the provider.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-     * @墨蛰
      */
     export function registerFileSystemProvider(scheme: string, provider: FileSystemProvider, options?: { isCaseSensitive?: boolean, isReadonly?: boolean }): Disposable;
 
@@ -272,7 +269,6 @@ declare module 'vscode' {
      * @param token A token that can be used to signal cancellation to the underlying search engine.
      * @return A thenable that resolves to an array of resource identifiers. Will return no results if no
      * [workspace folders](#workspace.workspaceFolders) are opened.
-     * @墨蜇
      */
     export function findFiles(include: GlobPattern, exclude?: GlobPattern | null, maxResults?: number, token?: CancellationToken): Thenable<Uri[]>;
 
@@ -331,7 +327,6 @@ declare module 'vscode' {
      *
      * @param uri An uri.
      * @return A workspace folder or `undefined`
-     * @墨蜇
      */
     export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
 
