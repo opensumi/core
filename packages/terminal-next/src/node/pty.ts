@@ -12,7 +12,7 @@ import { IShellLaunchConfig } from '../common';
 import { IPty } from '../common/pty';
 import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { formatLocalize, INodeLogger } from '@opensumi/ide-core-node';
+import { INodeLogger } from '@opensumi/ide-core-node';
 import { Injectable, Autowired } from '@opensumi/di';
 import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
@@ -32,13 +32,13 @@ export class PtyService {
         const result = await promises.stat(options.cwd);
         if (!result.isDirectory()) {
           return {
-            message: formatLocalize('terminal.launchFail.cwdNotDirectory', options.cwd),
+            message: `Starting directory (cwd) "${options.cwd}" is not a directory`,
           };
         }
       } catch (err) {
         if (err?.code === 'ENOENT') {
           return {
-            message: formatLocalize('terminal.launchFail.cwdDoesNotExist', options.cwd),
+            message: `Starting directory (cwd) "${options.cwd}" does not exist`,
           };
         }
       }
@@ -49,14 +49,14 @@ export class PtyService {
   async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment) {
     if (!options.shellPath) {
       return {
-        message: 'options.shellPath not set',
+        message: 'IShellLaunchConfig.shellPath not set',
       };
     }
     try {
       const result = await promises.stat(options.shellPath);
       if (!result.isFile() && !result.isSymbolicLink()) {
         return {
-          message: formatLocalize('terminal.launchFail.executableIsNotFileOrSymlink', options.shellPath),
+          message: `Path to shell executable "${options.shellPath}" is not a file or a symlink`,
         };
       }
     } catch (err) {
@@ -67,7 +67,7 @@ export class PtyService {
         const executable = await findExecutable(options.shellPath, options.cwd, envPaths, ptyEnv);
         if (!executable) {
           return {
-            message: formatLocalize('terminal.launchFail.executableDoesNotExist', options.shellPath),
+            message: `Path to shell executable "${options.shellPath}" does not exist`,
           };
         }
         // Set the shellPath explicitly here so that node-pty doesn't need to search the
@@ -113,6 +113,7 @@ export class PtyService {
     const results = await Promise.all([this._validateCwd(options), this._validateExecutable(options, ptyEnv)]);
     const firstError = results.find((r) => r !== undefined);
     if (firstError) {
+      this.logger.error(`validate shell launch config failed: ${firstError.message}`);
       throw new Error(firstError.message);
     }
 
