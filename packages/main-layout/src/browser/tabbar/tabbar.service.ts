@@ -40,7 +40,7 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
-  // 排序位置，小的在前 （考虑改成 index 语义更好？ @寻壑）
+  // 排序位置，数字越小优先级越高
   priority: number;
 }
 const CONTAINER_NAME_MAP = {
