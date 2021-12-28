@@ -36,6 +36,7 @@ export const TabbarViewBase: React.FC<{
   className?: string;
   // tab上预留的位置，用来控制tab过多的显示效果
   margin?: number;
+  canHideTabbar?: boolean;
 }> = observer(
   ({
     TabView,
@@ -47,6 +48,7 @@ export const TabbarViewBase: React.FC<{
     className,
     margin,
     tabSize,
+    canHideTabbar,
   }) => {
     const { side, direction, fullSize } = React.useContext(TabbarConfig);
     const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -59,7 +61,7 @@ export const TabbarViewBase: React.FC<{
 
     const disableTabBar = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
-    if (disableTabBar && !currentContainerId) {
+    if (canHideTabbar && disableTabBar && !currentContainerId) {
       // 之所以要用这么偏门的方法，是因为：
       // 我尝试了好几种方案，比如让 tabbar 或其他几个组件返回 null 的话
       // 会导致 SplitPanel 计算 children 的尺寸不正确，或者计算 tabbar 上按钮区域长度不对等等
@@ -267,6 +269,7 @@ export const NextBottomTabbarRenderer: React.FC = () => {
         TabView={TextTabView}
         barSize={24}
         panelBorderSize={1}
+        canHideTabbar
       />
     </div>
   );
