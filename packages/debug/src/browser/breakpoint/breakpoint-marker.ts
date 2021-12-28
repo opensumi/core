@@ -31,7 +31,7 @@ export namespace DebugBreakpoint {
       id: generateId(uri.toString(), data.line, data.column),
       uri: uri.toString(),
       enabled,
-      status: new Map(),
+      status: new Map<string, DebugProtocol.Breakpoint>(),
       raw: {
         column: undefined,
         condition: undefined,

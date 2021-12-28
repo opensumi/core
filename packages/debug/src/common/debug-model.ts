@@ -6,6 +6,10 @@ import { DebugEditor } from './debug-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugBreakpoint } from '../browser';
 
+export interface IDebugBreakpointWidget extends IDisposable {
+  position: monaco.Position | undefined;
+}
+
 export const DebugAdapterSession = Symbol('DebugAdapterSession');
 
 export interface DebugAdapterSession {
@@ -117,11 +121,13 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
+  breakpoint: DebugBreakpoint | undefined;
   onContextMenu: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseDown: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseMove: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseLeave: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
-  editor: DebugEditor;
   getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[];
-  [key: string]: any;
+  getEditor: () => DebugEditor;
+  getBreakpointWidget: () => IDebugBreakpointWidget;
+  render: () => void;
 }

@@ -28,13 +28,13 @@ export class DebugModel implements IDebugModel {
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(DebugEditor)
-  readonly editor: DebugEditor;
+  private readonly editor: DebugEditor;
 
   @Autowired(DebugBreakpointWidget)
-  readonly breakpointWidget: DebugBreakpointWidget;
+  private readonly breakpointWidget: DebugBreakpointWidget;
 
   @Autowired(DebugHoverWidget)
-  readonly debugHoverWidget: DebugHoverWidget;
+  private readonly debugHoverWidget: DebugHoverWidget;
 
   @Autowired(IDebugSessionManager)
   private debugSessionManager: DebugSessionManager;
@@ -409,7 +409,13 @@ export class DebugModel implements IDebugModel {
     });
   }
 
-  private async getCandidateBreakpoints(breakpoints: DebugBreakpoint[]) {
+  private async getCandidateBreakpoints(breakpoints: DebugBreakpoint[]): Promise<
+    {
+      range: monaco.Range;
+      options: monaco.editor.IModelDecorationOptions;
+      breakpoint?: DebugBreakpoint | undefined;
+    }[]
+  > {
     const model = this.editor.getModel();
     const session = this.debugSessionManager.currentSession;
     if (!model || !session?.capabilities.supportsBreakpointLocationsRequest) {
@@ -659,10 +665,6 @@ export class DebugModel implements IDebugModel {
     this.deltaHintDecorations([]);
   }
 
-  public getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[] {
-    return this.breakpointManager.getBreakpoints(uri, filter);
-  }
-
   protected hintDecorations: string[] = [];
   protected hintBreakpoint(event) {
     const hintDecorations = this.createHintDecorations(event);
@@ -689,6 +691,18 @@ export class DebugModel implements IDebugModel {
       ];
     }
     return [];
+  }
+
+  public getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[] {
+    return this.breakpointManager.getBreakpoints(uri, filter);
+  }
+
+  public getEditor(): DebugEditor {
+    return this.editor;
+  }
+
+  public getBreakpointWidget(): DebugBreakpointWidget {
+    return this.breakpointWidget;
   }
 }
 
