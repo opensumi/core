@@ -1,7 +1,7 @@
 ---
 name: OpenSumi Pre-release
 about: 用于发布 pre-release 版本，npm tag 为 next
-title: "[Pre-release]"
+title: OpenSumi Pre-Release
 labels: pre-release
 assignees: ''
 
