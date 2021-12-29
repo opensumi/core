@@ -13,8 +13,11 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: |
-      (github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') &&
-      ((startsWith(github.event.issue.body, '## OpenSumi release') && github.event.issue.title == 'OpenSumi Release') && startsWith(github.event.comment.body, '/release'))
+      (github.event.issue.author_association == 'OWNER') &&
+      ((contains(github.event.issue.body, 'Release Summary') &&
+        contains(github.event.issue.title,'OpenSumi Release')) &&
+        startsWith(github.event.comment.body, '/release')) &&
+      contains(github.event.issue.labels.*.name, 'release')
 
     strategy:
       matrix:
@@ -128,7 +131,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: issueBody
+              body: issueBody,
             });
 
             // 关闭 issue
@@ -137,4 +140,12 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'closed'
+            });
+
+            // 锁定 issue
+            github.issues.lock({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              lock_reason: 'resolved',
             });
