@@ -24,7 +24,6 @@ import {
 import { Autowired } from '@opensumi/di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
-import { COLOR_THEME_SETTING } from './workbench.theme.service';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -56,9 +55,14 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
   initialize() {
+    this.registerDefaultColorTheme();
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
+  }
+
+  private registerDefaultColorTheme() {
+    this.themeService.applyTheme(DEFAULT_THEME_ID);
   }
 
   private registerDefaultTokenModifier() {
