@@ -18,7 +18,8 @@ jobs:
     # issue 评论包含 '/pre-release'
     # issue label 包含 'pre-release'
     if: |
-      (github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') &&
+      ((github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') ||
+      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER')) &&
       ((contains(github.event.issue.body, 'Pre-release Summary') &&
         contains(github.event.issue.title,'OpenSumi Pre-release')) &&
         startsWith(github.event.comment.body, '/pre-release')) &&
