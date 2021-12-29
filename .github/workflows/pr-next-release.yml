@@ -9,10 +9,14 @@ jobs:
     name: Next Version
 
     runs-on: ubuntu-latest
+    # 在 pull request 评论触发的 issue_comment 事件中执行
+    # 需满足评论人为项目 OWNER 或 MEMBER，或评论人为 PR 发起人
     if: |
       github.event.issue.pull_request &&
-      (startsWith(github.event.comment.body, '/publish it') ||
-        startsWith(github.event.comment.body, '/publish now'))
+      (github.event.issue.user.login == github.event.comment.user.login ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'OWNER') &&
+      startsWith(github.event.comment.body, '/publish')
 
     steps:
       - uses: xt0rted/pull-request-comment-branch@v1
