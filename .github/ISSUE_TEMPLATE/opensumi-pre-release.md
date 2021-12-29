@@ -7,5 +7,5 @@ assignees: ''
 
 ---
 
-## Pre-Release Summary
+## OpenSumi next version prerelease Summary
 <!-- 请勿直接编辑正文，next 版本发布后机器人会自动填充 -->
