@@ -23,13 +23,7 @@ export const customLayoutConfig: LayoutConfig = {
     modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: [
-      '@opensumi/ide-terminal-next',
-      '@opensumi/ide-output',
-      'debug-console',
-      '@opensumi/ide-markers',
-      '@opensumi/ide-refactor-preview',
-    ],
+    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
   },
   [SlotLocation.statusBar]: {
     modules: ['@opensumi/ide-status-bar'],
