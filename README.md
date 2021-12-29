@@ -34,6 +34,6 @@ Want to report a bug, contribute some code, or improve documentation? Excellent!
 
 ## License
 
-Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Technology Group.
+Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
 Licensed under the [MIT](LICENSE) license.
