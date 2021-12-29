@@ -123,7 +123,6 @@ declare module 'vscode' {
      *
      * @param uri Identifies the resource to open.
      * @return A promise that resolves to a [document](#TextDocument).
-     * @Owner 木农
      */
     export function openTextDocument(uri: Uri): Thenable<TextDocument>;
 
@@ -240,7 +239,6 @@ declare module 'vscode' {
 
     /**
      * All text documents currently known to the system.
-     * @Owner 木农
      */
     export const textDocuments: TextDocument[];
 
