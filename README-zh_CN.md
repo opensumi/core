@@ -46,6 +46,6 @@ $ MY_WORKSPACE={local_path} npm run start
 
 ## 协议
 
-Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Technology Group.
+Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
 Licensed under the [MIT](LICENSE) license.
