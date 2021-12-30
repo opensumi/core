@@ -263,7 +263,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
             if (payload.oldOpenType.type === 'diff') {
               change.removed.push(
-                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original),
+                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original, true),
               );
             }
           }
