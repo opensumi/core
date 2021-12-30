@@ -280,7 +280,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
         // tslint:disable-next-line no-console
-        console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
+        console.warn(`${viewOrContainerId} view tabbar not found.`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
     }
