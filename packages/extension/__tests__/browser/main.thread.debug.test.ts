@@ -79,6 +79,7 @@ const mockBreakpointManager = {
   onDidChangeBreakpoints: jest.fn(() => Disposable.create(() => {})),
   addBreakpoint: jest.fn(),
   findMarkers: jest.fn(),
+  delBreakpoint: jest.fn(),
 };
 
 const mockDebugConsoleModelService = {
@@ -254,7 +255,6 @@ describe('MainThreadDebug API Test Suite', () => {
         enabled: true,
       },
     ];
-    const remove = jest.fn();
     mockBreakpointManager.findMarkers.mockReturnValueOnce([
       {
         data: {
@@ -262,17 +262,9 @@ describe('MainThreadDebug API Test Suite', () => {
         },
       },
     ]);
-    mockDebugModelManager.resolve.mockReturnValueOnce([
-      {
-        breakpoint: {
-          remove,
-        },
-      },
-    ]);
     mockBreakpointManager.findMarkers.mockClear();
     await mainThreadDebug.$removeBreakpoints(breakpoints as any);
     expect(mockBreakpointManager.findMarkers).toBeCalledTimes(1);
-    expect(remove).toBeCalledTimes(1);
   });
 
   it('$customRequest method should be work', async () => {

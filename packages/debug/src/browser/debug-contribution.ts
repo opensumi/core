@@ -77,6 +77,7 @@ import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-serv
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { DebugProgressService } from './debug-progress.service';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
+import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -318,6 +319,9 @@ export class DebugContribution
 
   @Autowired(DebugRunToCursorService)
   protected readonly debugRunToCursorService: DebugRunToCursorService;
+
+  @Autowired(DebugContextKey)
+  protected readonly debugContextKey: DebugContextKey;
 
   private firstSessionStart = true;
 
@@ -682,11 +686,13 @@ export class DebugContribution
       execute: (uri: URI) => {
         this.debugRunToCursorService.run(uri);
       },
+      isEnabled: () => this.debugContextKey.contextDebugState.get() === 'Stopped',
     });
     commands.registerCommand(DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR, {
       execute: (uri: URI) => {
         this.debugRunToCursorService.run(uri, true);
       },
+      isEnabled: () => this.debugContextKey.contextDebugState.get() === 'Stopped',
     });
   }
 

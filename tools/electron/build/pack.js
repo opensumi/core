@@ -2,6 +2,10 @@ const electronBuilder = require('electron-builder');
 const path = require('path');
 const rootPackage = require('../package.json');
 
+if (process.env.NODE_ENV !== 'production') {
+  process.env.CSC_IDENTITY_AUTO_DISCOVERY = false;
+}
+
 electronBuilder.build({
   config: {
     productName: 'OpenSumi IDE',
@@ -15,7 +19,7 @@ electronBuilder.build({
       },
     ],
     asar: true,
-    asarUnpack: 'node_modules/vscode-ripgrep',
+    asarUnpack: 'node_modules/@opensumi/vscode-ripgrep',
     mac: {
       target: 'dmg',
     },

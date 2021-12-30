@@ -1,3 +1,4 @@
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -72,6 +73,9 @@ export class DebugConsoleModelService {
 
   @Autowired(LinkDetector)
   private readonly linkDetector: LinkDetector;
+
+  @Autowired(DebugContextKey)
+  private readonly debugContextKey: DebugContextKey;
 
   private _activeDebugSessionModel: IDebugConsoleModel | undefined;
   private debugSessionModelMap: Map<string, IDebugConsoleModel> = new Map();
@@ -374,6 +378,7 @@ export class DebugConsoleModelService {
     ev.preventDefault();
 
     const { x, y } = ev.nativeEvent;
+    this.debugContextKey.contextInDebugConsole.set(true);
 
     if (expression) {
       this.activeNodeActivedDecoration(expression);
@@ -390,14 +395,18 @@ export class DebugConsoleModelService {
     }
     const menus = this.contextMenuService.createMenu({
       id: MenuId.DebugConsoleContext,
-      contextKeyService: this.contextMenuContextKeyService,
+      contextKeyService: this.debugContextKey.contextKeyScoped,
     });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
+
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
       args: [node],
+      onHide: () => {
+        this.debugContextKey.contextInDebugConsole.set(false);
+      },
     });
   };
 

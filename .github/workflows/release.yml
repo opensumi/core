@@ -1,53 +1,151 @@
-name: RELEASE
+# 适用于 OpenSumi core 仓库的正式版本发布流程
+
+name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+
+  # 在 Release Issue 评论特定内容后执行
+  issue_comment:
+    events: [created]
 
 jobs:
-  build:
+  release:
+    name: Release
     runs-on: ubuntu-latest
+    if: |
+      (github.event.issue.author_association == 'OWNER') &&
+      ((contains(github.event.issue.body, 'Release Summary') &&
+        contains(github.event.issue.title,'OpenSumi Release')) &&
+        startsWith(github.event.comment.body, '/release')) &&
+      contains(github.event.issue.labels.*.name, 'release')
 
     strategy:
       matrix:
-        node_version: [12.x]
+        node-version: [12.x]
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
 
-    - name: Build
-      run: |
-        npm i
-        npm run init
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
 
-    - name: Package Electron
-      run: |
-        cd tools/electron
-        npm i
-        npm run rebuild-native
-        npm run link-local
-        npm run pack
+      - name: Tag Check
+        id: tag_check
+        run: |
+          GET_API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/git/ref/tags/v${CURRENT_VERSION}"
+          http_status_code=$(curl -LI $GET_API_URL -o /dev/null -w '%{http_code}\n' -s \
+            -H "Authorization: token ${GITHUB_TOKEN}")
+          if [ "$http_status_code" -ne "404" ] ; then
+            echo "::set-output name=exists_tag::true"
+          else
+            echo "::set-output name=exists_tag::false"
+          fi
 
-    - uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: true
-        files: |
-          LICENSE
-          tools/electron/dist/*.dmg
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm i
+          npm run init
 
-    - name: Release ✅
-      if: ${{ success() }}
-      run: |
-        echo 执行成功
+      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
+      - name: Create release log
+        id: release-log
+        run: |
+          npm run changelog -- --remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Release 🚨
-      if: ${{ failure() }}
-      run: |
-        echo 执行失败
+      # 更新 Changelog 到 release issue 正文
+      - name: Update prerelease changelog for current issue
+        uses: actions/github-script@v4
+        id: changelog
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          # JavaScript
+          script: |
+            const fs = require('fs');
+            const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OpenSumi Release v${process.env.CURRENT_VERSION} - ${new Date().toDateString()}`,
+              body: `## v${process.env.CURRENT_VERSION} Release Summary \r\n ${releasemd}`
+            });
+            return releasemd;
+
+      - name: Create Git Tag
+        if: steps.tag_check.outputs.exists_tag == 'false'
+        uses: pkgdeps/git-tag-action@v2
+        with:
+          version: ${{ env.CURRENT_VERSION }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repo: ${{ github.repository }}
+          git_commit_sha: ${{ github.sha }}
+          git_tag_prefix: "v"
+
+      - name: Create Release
+        id: create_release
+        if: steps.tag_check.outputs.exists_tag == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.CURRENT_VERSION }}
+          release_name: OpenSumi Release v${{ env.CURRENT_VERSION }}
+          body: |
+            ${{steps.changelog.outputs.result}}
+          draft: false
+          prerelease: false
+
+      # 发布正式版本，并在 issue 中回复
+      - name: Publish prod version
+        if: steps.tag_check.outputs.exists_tag == 'false'
+        run: |
+          lerna publish from-package --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueBody =
+              '🎉 New release version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install release version via `npm install package@' +
+              process.env.CURRENT_VERSION;
+
+            // 在 issue 中通知版本已发布完，并附带版本号
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueBody,
+            });
+
+            // 关闭 issue
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed'
+            });
+
+            // 锁定 issue
+            github.issues.lock({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              lock_reason: 'resolved',
+            });

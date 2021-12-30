@@ -121,16 +121,18 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
 }
 
 export class AttachAddon extends Disposable implements ITerminalAddon {
-  private _connection: ITerminalConnection | undefined;
+  connection: ITerminalConnection | undefined;
   private _disposeConnection: Disposable | null;
   private _terminal: Terminal;
 
   private _onData = new Emitter<string | ArrayBuffer>();
-  onData: Event<string | ArrayBuffer> = this._onData.event;
+  onData = this._onData.event;
+
   private _onExit = new Emitter<number | undefined>();
-  onExit: Event<number | undefined> = this._onExit.event;
+  onExit = this._onExit.event;
+
   private _onTime = new Emitter<number>();
-  onTime: Event<number> = this._onTime.event;
+  onTime = this._onTime.event;
 
   private _lastInputTime = 0;
 
@@ -139,7 +141,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
       this._disposeConnection.dispose();
       this._disposeConnection = null;
     }
-    this._connection = connection;
+    this.connection = connection;
     if (connection) {
       this._disposeConnection = new Disposable(
         connection.onData((data: string | ArrayBuffer) => {
@@ -170,15 +172,15 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
   }
 
   private _sendData(data: string): void {
-    if (!this._connection || this._connection.readonly) {
+    if (!this.connection || this.connection.readonly) {
       return;
     }
     this._timeResponse();
-    this._connection.sendData(data);
+    this.connection.sendData(data);
   }
 
   private _sendBinary(data: string): void {
-    if (!this._connection || this._connection.readonly) {
+    if (!this.connection || this.connection.readonly) {
       return;
     }
     const buffer = new Uint8Array(data.length);
@@ -186,7 +188,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
       buffer[i] = data.charCodeAt(i) & 255;
     }
     this._timeResponse();
-    this._connection.sendData(buffer);
+    this.connection.sendData(buffer);
   }
 
   private _timeResponse() {

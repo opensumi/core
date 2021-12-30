@@ -61,10 +61,6 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     this.registerDefaultTokenModifier();
   }
 
-  private registerDefaultColorTheme() {
-    this.themeService.applyTheme(DEFAULT_THEME_ID);
-  }
-
   private registerDefaultTokenModifier() {
     this.semanticTokenRegistry.registerTokenModifier(
       'declaration',

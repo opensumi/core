@@ -180,7 +180,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
     slotRendererRegistry.addTabbar(slot);
   }
   if (!componentKeys || !componentKeys.length) {
-    getDebugLogger().warn(`${slot}位置未声明任何视图`);
+    getDebugLogger().warn(`No ${slot} view declared by location.`);
   }
   const [componentInfos, setInfos] = React.useState<ComponentRegistryInfo[]>([]);
   const updateComponentInfos = React.useCallback(() => {
@@ -188,7 +188,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
     componentKeys.forEach((token) => {
       const info = componentRegistry.getComponentRegistryInfo(token);
       if (!info) {
-        getDebugLogger().warn(`${token}对应的组件不存在，请检查`);
+        getDebugLogger().warn(`${token} view isn't registered, please check.`);
       } else {
         infos.push(info);
       }

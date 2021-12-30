@@ -133,8 +133,8 @@ export class DebugModel implements IDebugModel {
     return this.getBreakpoint();
   }
 
-  protected getBreakpoint(position: monaco.Position = this.position) {
-    return this.breakpointManager.getBreakpoint(this.uri, position.lineNumber);
+  protected getBreakpoint(position?: monaco.Position) {
+    return this.breakpointManager.getBreakpoint(this.uri, position ? position.lineNumber : undefined);
   }
 
   /**

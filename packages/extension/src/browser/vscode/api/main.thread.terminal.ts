@@ -237,6 +237,7 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
       id: dto.id,
       startIndex: dto.startIndex,
       length: dto.length,
+      label: dto.label,
       activate: () => proxy.$activateLink(instance.id, dto.id),
     }));
   }

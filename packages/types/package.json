@@ -7,10 +7,7 @@
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
-  "scripts": {
-    "prepublishOnly": "npm run build",
-    "build": "ts-node ./build"
-  },
+  "scripts": {},
   "dependencies": {
     "@opensumi/ide-components": "2.13.7",
     "@types/react": "^16.9.33",

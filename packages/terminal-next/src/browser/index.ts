@@ -17,6 +17,7 @@ import {
   IWidget,
   ITerminalRenderProvider,
   ITerminalNetwork,
+  ITerminalHoverManagerService,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import {
@@ -34,6 +35,7 @@ import { TerminalRestore } from './terminal.restore';
 import { TerminalClientFactory } from './terminal.client';
 import { TerminalApiService } from './terminal.api';
 import { TerminalSearchService } from './terminal.search';
+import { TerminalHoverManagerService } from './terminal.hover.manager';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalErrorService } from './terminal.error';
 import { TerminalPreference } from './terminal.preference';
@@ -66,6 +68,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalSearchService,
       useClass: TerminalSearchService,
+    },
+    {
+      token: ITerminalHoverManagerService,
+      useClass: TerminalHoverManagerService,
     },
     {
       token: ITerminalGroupViewService,

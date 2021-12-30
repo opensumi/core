@@ -1,0 +1,108 @@
+# 适用于 OpenSumi core 仓库的测试版本发布流程, 仅用于发布测试版本，npm tag 为 next
+name: Next Release Flow
+
+on:
+  # 创建 Pre-Release Issue 后执行
+  issues:
+    types: [opened]
+  # 在 Pre-Release Issue 评论特定内容后执行
+  issue_comment:
+    events: [created]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    # issue 正文包含 'Pre-Release'
+    # issue 标题包含 'OpenSumi Pre-Release'
+    # issue 评论包含 '/pre-release'
+    # issue label 包含 'pre-release'
+    if: |
+      ((github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') ||
+      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER')) &&
+      ((contains(github.event.issue.body, 'Pre-release Summary') &&
+        contains(github.event.issue.title,'OpenSumi Pre-release')) &&
+        startsWith(github.event.comment.body, '/pre-release')) &&
+      contains(github.event.issue.labels.*.name, 'pre-release')
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm i
+          npm run init
+
+      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
+      - name: Create release log
+        id: release-log
+        run: |
+          npm run changelog -- --remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 更新 Changelog 到 pre-release issue 正文
+      - name: Update prerelease changelog for current issue
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
+            github.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 OpenSumi Pre-release ${new Date().toDateString()}`,
+              body: `## ${new Date().toDateString()} Pre-release Summary \r\n ${releasemd}`
+            })
+
+      # 发布 next 版本，并在 issue 中回复
+      # 使用 lerna publish 命令
+      # --preid 指定前缀，确保版本唯一，前缀使用 $(date +%s) 生成类似  2.12.1-1640328423.0
+      # --dist-tag 指定发布的 tag，默认是 latest
+      # --no-push 指定不推送到远程仓库
+      # --no-git-tag-version 不生成 git tag
+      # --prepatch 指定发布的版本为 prepatch 版本, 只更新 patch 版本
+      # --ignore-scripts 指定不执行脚本
+      # --ignore-prepublish 忽略 pre-publish 脚本
+      - name: Publish prepatch version
+        run: |
+          lerna publish --preid next-$(date +%s) --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Set Current Version
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueBody =
+              '🎉 Pre-Release version ' +
+              process.env.CURRENT_VERSION +
+              ' publish successful! You can install prerelease version via `npm install package@' +
+              process.env.CURRENT_VERSION;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueBody
+            })

@@ -116,7 +116,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._createClient(widget, options);
   }
 
-  private _createClient(widget: IWidget, options = {}) {
+  private _createClient(widget: IWidget, options: TerminalOptions = {}) {
     const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
