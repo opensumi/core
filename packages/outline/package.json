@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-outline",
-  "version": "2.13.6",
+  "version": "2.13.7",
   "files": [
     "lib"
   ],
@@ -17,13 +17,13 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@opensumi/ide-core-common": "2.13.6",
-    "@opensumi/ide-core-browser": "2.13.6",
-    "@opensumi/ide-components": "2.13.6",
-    "@opensumi/ide-editor": "2.13.6",
-    "@opensumi/ide-explorer": "2.13.6",
-    "@opensumi/ide-main-layout": "2.13.6",
-    "@opensumi/ide-theme": "2.13.6",
+    "@opensumi/ide-core-common": "2.13.7",
+    "@opensumi/ide-core-browser": "2.13.7",
+    "@opensumi/ide-components": "2.13.7",
+    "@opensumi/ide-editor": "2.13.7",
+    "@opensumi/ide-explorer": "2.13.7",
+    "@opensumi/ide-main-layout": "2.13.7",
+    "@opensumi/ide-theme": "2.13.7",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
