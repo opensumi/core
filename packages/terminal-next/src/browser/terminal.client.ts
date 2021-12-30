@@ -364,8 +364,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     let connection: ITerminalConnection | undefined;
 
     const finalOptions = {
-      ...this.options,
-      cwd: this.options?.cwd?.toString() || this._workspacePath,
+      ...this._options,
+      cwd: this._options?.cwd?.toString() || this._workspacePath,
     };
 
     try {

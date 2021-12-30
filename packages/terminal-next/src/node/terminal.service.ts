@@ -67,49 +67,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
   }
 
-  /**
-   * 内部已经不会调用这个方法了，只会调用 create2
-   * @deprecated Will remove in the next major version
-   * @param id
-   * @param rows
-   * @param cols
-   * @param options
-   * @returns
-   */
-  public async create(id: string, rows: number, cols: number, options: TerminalOptions) {
-    const clientId = id.split('|')[0];
-    const terminal = await this.ptyService.create(rows, cols, options);
-
-    this.terminalMap.set(id, terminal);
-
-    terminal.on('data', (data) => {
-      if (this.serviceClientMap.has(clientId)) {
-        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.clientMessage(id, data);
-      } else {
-        this.logger.warn(`terminal: pty ${clientId} on data not found`);
-      }
-    });
-
-    terminal.on('exit', (exitCode: number, signal: number | undefined) => {
-      if (this.serviceClientMap.has(clientId)) {
-        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.closeClient(id, exitCode, signal);
-      } else {
-        this.logger.warn(`terminal: pty ${clientId} on data not found`);
-      }
-    });
-
-    const clientMap = this.clientTerminalMap.get(clientId);
-
-    if (!clientMap) {
-      this.clientTerminalMap.set(clientId, new Map());
-    }
-    (this.clientTerminalMap.get(clientId) as Map<string, IPty>).set(id, terminal);
-
-    return terminal;
-  }
-
   public async create2(id: string, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
     let terminal: IPty | undefined;

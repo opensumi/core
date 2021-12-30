@@ -70,13 +70,8 @@ export class NodePtyTerminalService implements ITerminalService {
     return ensureResult;
   }
 
-  private _createCustomWebSocket2 = (sessionId: string, pty: INodePtyInstance): ITerminalConnection => ({
-    ...this._createCustomWebSocket(sessionId, pty.name),
-    ptyInstance: pty,
-  });
-
-  private _createCustomWebSocket = (sessionId: string, name: string): ITerminalConnection => ({
-    name,
+  private _createCustomWebSocket = (sessionId: string, pty: INodePtyInstance): ITerminalConnection => ({
+    name: pty.name,
     readonly: false,
     onData: (handler: (value: string | ArrayBuffer) => void) => this._onDataDispatcher.on(sessionId, handler),
     onExit: (handler: (exitCode: number | undefined) => void) =>
@@ -86,18 +81,8 @@ export class NodePtyTerminalService implements ITerminalService {
     sendData: (message: string) => {
       this.sendText(sessionId, message);
     },
+    ptyInstance: pty,
   });
-
-  async attach2(sessionId: string, launchConfig: IShellLaunchConfig) {
-    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(launchConfig)}`);
-
-    const ptyInstance = await this.serviceClientRPC.create2(sessionId, launchConfig);
-    if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
-      // 有 pid 或者 name 的才视为创建成功
-      // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
-      return this._createCustomWebSocket2(sessionId, ptyInstance);
-    }
-  }
 
   /**
    *
@@ -181,7 +166,7 @@ export class NodePtyTerminalService implements ITerminalService {
     if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
       // 有 pid 或者 name 的才视为创建成功
       // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
-      return this._createCustomWebSocket2(sessionId, ptyInstance);
+      return this._createCustomWebSocket(sessionId, ptyInstance);
     }
   }
 
