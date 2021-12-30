@@ -1,12 +1,11 @@
 .preferences {
   height: 100%;
-  font-size: 13px;
+  font-size: @base-font-size;
   overflow: hidden;
   padding: 16px 32px 0 32px;
   box-sizing: border-box;
   min-width: 500px;
   .preference_noResults {
-    font-size: 13px;
     padding: 20px;
     color: var(--foreground);
   }
@@ -56,7 +55,7 @@
       }
       .index_item {
         height: 26px;
-        font-size: 13px;
+        font-size: @base-font-size;
         line-height: 26px;
         padding-left: 9px;
         cursor: pointer;
@@ -84,7 +83,6 @@
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
-          font-size: 13px;
           cursor: pointer;
           &:hover {
             color: var(--list-hoverForeground);
@@ -104,7 +102,7 @@
         width: 16px;
       }
       :global(.kt-checkbox) {
-        font-size: 13px;
+        font-size: @base-font-size;
       }
       .section_title {
         font-size: 14px;
@@ -138,7 +136,7 @@
       }
       .key {
         margin-bottom: 5px;
-        font-size: 13px;
+        font-size: @base-font-size;
       }
       .check {
         display: flex;
@@ -150,7 +148,7 @@
         }
       }
       .desc {
-        font-size: 13px;
+        font-size: @base-font-size;
         opacity: 0.75;
         color: var(--descriptionForeground);
         margin-bottom: 5px;
@@ -245,7 +243,7 @@
 
   .tabs {
     padding: 0 !important;
-    font-size: 13px;
+    font-size: @base-font-size;
     :global {
       .kt-tab {
         padding-left: 10px;
@@ -262,7 +260,7 @@
     opacity: 0.75;
   }
   .preference_reset {
-    font-size: 13px;
+    font-size: @base-font-size;
     cursor: pointer;
     display: inline-block;
     &:hover {
