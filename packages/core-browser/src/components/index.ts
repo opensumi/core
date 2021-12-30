@@ -8,7 +8,6 @@ export { Select as NativeSelect } from './select';
 
 /**
  * re exports from ide-components
- * Don't export recycle-list for now
  */
 export * from '@opensumi/ide-components/lib/button';
 export * from '@opensumi/ide-components/lib/badge';
@@ -23,3 +22,4 @@ export * from '@opensumi/ide-components/lib/notification';
 export * from '@opensumi/ide-components/lib/popover';
 export * from '@opensumi/ide-components/lib/message';
 export * from '@opensumi/ide-components/lib/tooltip';
+export * from '@opensumi/ide-components/lib/recycle-list';
