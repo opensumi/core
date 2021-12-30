@@ -18,6 +18,10 @@ jobs:
         github.event.comment.author_association == 'OWNER') &&
       startsWith(github.event.comment.body, '/publish')
 
+    strategy:
+      matrix:
+        node-version: [12.x]
+
     steps:
       - uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
