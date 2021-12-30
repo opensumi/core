@@ -15,7 +15,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
-import { TerminalInternalService } from '../../src/browser/terminal.service';
+import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
 import { TerminalNetworkService } from '../../src/browser/terminal.network';
 import {

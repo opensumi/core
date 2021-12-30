@@ -100,9 +100,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     });
 
     this.proxy.$setTerminals(infoList);
-    const shellPath = this.preference.get<string>('terminal.type');
-    if (shellPath) {
-      this.proxy.$acceptDefaultShell(shellPath);
+    const shellType = this.preference.get<string>('terminal.type');
+    if (shellType) {
+      this.proxy.$acceptDefaultShell(shellType);
     }
   }
 

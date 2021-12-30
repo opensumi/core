@@ -9,7 +9,7 @@ import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
 import { IShellLaunchConfig } from '../common';
-import { IPty } from '../common/pty';
+import { IPty, TerminalOptions } from '../common/pty';
 import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 import { INodeLogger } from '@opensumi/ide-core-node';
@@ -75,6 +75,25 @@ export class PtyService {
         options.shellPath = executable;
       }
     }
+  }
+
+  /**
+   * 内部已经不会调用这个方法了，只会调用 create2
+   * @deprecated Will remove in the next major version
+   * @param rows
+   * @param cols
+   * @param options
+   * @returns
+   */
+  async create(rows: number, cols: number, options: TerminalOptions): Promise<IPty> {
+    const ptyProcess = await this.create2({
+      ...options,
+      cwd: options.cwd?.toString(),
+      args: typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [],
+      rows,
+      cols,
+    });
+    return ptyProcess as IPty;
   }
 
   async create2(options: IShellLaunchConfig) {

@@ -7,7 +7,7 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
-import { IPty } from '../common/pty';
+import { IPty, TerminalOptions } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
@@ -16,7 +16,7 @@ import { findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
  * this RPC target: NodePtyTerminalService
  */
 interface IRPCTerminalService {
-  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number }): void;
+  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number } | number, signal?: number): void;
   onMessage(id: string, msg: string): void;
 }
 
@@ -49,9 +49,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     }
   }
 
-  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number }) {
+  closeClient(id: string, data: ITerminalError | { code?: number; signal?: number } | number, signal?: number) {
     if (this.client) {
-      this.client.closeClient(id, data);
+      this.client.closeClient(id, data, signal);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
@@ -62,8 +62,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined> {
-    const pty = await this.terminalService.create(id, options);
+  async create2(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined> {
+    const pty = await this.terminalService.create2(id, options);
     if (pty) {
       this.terminalService.setClient(this.clientId, this);
       this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
@@ -93,7 +93,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return undefined;
     }
   }
-  async $resolveLinuxShellPath(type: string): Promise<string | undefined> {
+  async $resolveUnixShellPath(type: string): Promise<string | undefined> {
     const candidates = [type, `/bin/${type}`, `/usr/bin/${type}`];
     return await findShellExecutableAsync(candidates);
   }
@@ -102,14 +102,14 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return await findShellExecutableAsync(paths);
   }
 
-  async $resolvePotentialLinuxShellPath(): Promise<string | undefined> {
+  async $resolvePotentialUnixShellPath(): Promise<string | undefined> {
     if (process.env.SHELL) {
       return process.env.SHELL;
     }
 
     const candidates = ['zsh', 'bash', 'sh'];
     for (const candidate of candidates) {
-      const path = await this.$resolveLinuxShellPath(candidate);
+      const path = await this.$resolveUnixShellPath(candidate);
       if (path) {
         return path;
       }
@@ -118,8 +118,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   async $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }> {
     const candidates = [
-      WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell,
       ...WINDOWS_GIT_BASH_PATHS,
+      WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell,
       WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd,
     ];
 

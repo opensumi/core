@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PtyService, IPtyService } from './pty';
-import { IPty } from '../common/pty';
+import { IPty, TerminalOptions } from '../common/pty';
 import { IShellLaunchConfig } from '../common/pty';
 import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
@@ -42,6 +42,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   public closeClient(clientId: string) {
+    // TODO: 实现关闭客户端，调用客户端的 closeClient 方法
     const closeTimer = global.setTimeout(
       () => {
         this.disposeClient(clientId);
@@ -66,7 +67,50 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
   }
 
-  public async create(id: string, options: IShellLaunchConfig) {
+  /**
+   * 内部已经不会调用这个方法了，只会调用 create2
+   * @deprecated Will remove in the next major version
+   * @param id
+   * @param rows
+   * @param cols
+   * @param options
+   * @returns
+   */
+  public async create(id: string, rows: number, cols: number, options: TerminalOptions) {
+    const clientId = id.split('|')[0];
+    const terminal = await this.ptyService.create(rows, cols, options);
+
+    this.terminalMap.set(id, terminal);
+
+    terminal.on('data', (data) => {
+      if (this.serviceClientMap.has(clientId)) {
+        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+        serviceClient.clientMessage(id, data);
+      } else {
+        this.logger.warn(`terminal: pty ${clientId} on data not found`);
+      }
+    });
+
+    terminal.on('exit', (exitCode: number, signal: number | undefined) => {
+      if (this.serviceClientMap.has(clientId)) {
+        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+        serviceClient.closeClient(id, exitCode, signal);
+      } else {
+        this.logger.warn(`terminal: pty ${clientId} on data not found`);
+      }
+    });
+
+    const clientMap = this.clientTerminalMap.get(clientId);
+
+    if (!clientMap) {
+      this.clientTerminalMap.set(clientId, new Map());
+    }
+    (this.clientTerminalMap.get(clientId) as Map<string, IPty>).set(id, terminal);
+
+    return terminal;
+  }
+
+  public async create2(id: string, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
     let terminal: IPty | undefined;
 

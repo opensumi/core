@@ -36,7 +36,7 @@ import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/co
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { ITerminalInternalService, ITerminalController } from '@opensumi/ide-terminal-next';
-import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
+import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { MonacoService } from '@opensumi/ide-monaco';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';

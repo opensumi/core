@@ -30,7 +30,8 @@ import {
 } from './contribution';
 import { TerminalController } from './terminal.controller';
 import { TerminalTheme } from './terminal.theme';
-import { TerminalInternalService, NodePtyTerminalService } from './terminal.service';
+import { NodePtyTerminalService } from './terminal.service';
+import { TerminalInternalService } from './terminal.internal.service';
 import { TerminalRestore } from './terminal.restore';
 import { TerminalClientFactory } from './terminal.client';
 import { TerminalApiService } from './terminal.api';

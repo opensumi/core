@@ -214,9 +214,9 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum:
         isElectronRenderer() && isWindows
-          ? ['powershell', 'cmd', 'git-bash', 'default']
+          ? ['git-bash', 'powershell', 'cmd', 'default']
           : ['zsh', 'bash', 'sh', 'default'],
-      default: isElectronRenderer() && isWindows ? 'git-bash' : '',
+      default: 'default',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {
