@@ -285,7 +285,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     for (const origin of this.breakpointManager.findMarkers({ dataFilter: (data) => ids.has(data.id) })) {
       const model = this.modelManager.resolve(new URI(origin.data.uri));
       if (model && model[0].breakpoint) {
-        model[0].breakpoint.remove();
+        this.breakpointManager.delBreakpoint(model[0].breakpoint);
       }
     }
   }
