@@ -122,22 +122,24 @@ export class NodePtyTerminalService implements ITerminalService {
       }
 
       // and now, we have the following two situations:
-      if (!shellPath && !shellType) {
-        // 1. `terminal.type` is set to a falsy value, or set to `default`
-        if (terminalOs === OperatingSystem.Windows) {
-          // in windows, at least we can launch the cmd.exe
-          const { type: _type, path } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
-          shellType = _type;
-          shellPath = path;
+      if (!shellPath) {
+        if (!shellType || shellType === 'default') {
+          // 1. `terminal.type` is set to a falsy value, or set to `default`
+          if (terminalOs === OperatingSystem.Windows) {
+            // in windows, at least we can launch the cmd.exe
+            const { type: _type, path } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
+            shellType = _type;
+            shellPath = path;
+          } else {
+            // in unix, at least we can launch the sh
+            shellPath = await this.serviceClientRPC.$resolvePotentialUnixShellPath();
+          }
         } else {
-          // in unix, at least we can launch the sh
-          shellPath = await this.serviceClientRPC.$resolvePotentialUnixShellPath();
+          // 2. `terminal.type` is set to a truthy value, but the shell path is not resolved, for example cannot resolve 'git-bash'
+          //     but in this situation, we preserve the user settings, launch the type as shell path
+          //     on PtyService we also have a fallback to check the shellPath is valid
+          shellPath = shellType;
         }
-      } else if (!shellPath && shellType) {
-        // 2. `terminal.type` is set to a truthy value, but the shell path is not resolved, for example cannot resolve 'git-bash'
-        //     but in this situation, we preserve the user settings, launch the type as shell path
-        //     on PtyService we also have a fallback to check the shellPath is valid
-        shellPath = shellType;
       }
 
       const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${platformKey}`);
