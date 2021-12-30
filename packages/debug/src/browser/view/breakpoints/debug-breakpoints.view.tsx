@@ -12,11 +12,10 @@ import {
   isDebugBreakpoint,
   isRuntimeBreakpoint,
   getStatus,
-  ISourceBreakpoint,
 } from '../../breakpoint';
 import { Badge, RecycleList } from '@opensumi/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { IDebugSessionManager } from '../../../common';
+import { IDebugSessionManager, ISourceBreakpoint } from '../../../common';
 
 export interface BreakpointItem {
   name: string;

@@ -1,10 +1,19 @@
+import { IRuntimeBreakpoint, ISourceBreakpoint } from './debug-breakpoint';
+import { IDebugHoverWidget } from './debug-hover';
 import stream from 'stream';
 import type { editor } from '@opensumi/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
 import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@opensumi/ide-core-common';
 import { DebugEditor } from './debug-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { DebugBreakpoint } from '../browser';
+
+export interface IDebugBreakpointWidget extends IDisposable {
+  position: monaco.Position | undefined;
+}
+
+export interface IDebugBreakpointWidget extends IDisposable {
+  position: monaco.Position | undefined;
+}
 
 export const DebugAdapterSession = Symbol('DebugAdapterSession');
 
@@ -117,11 +126,18 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
+  focusStackFrame: () => void;
+  breakpoint: ISourceBreakpoint | IRuntimeBreakpoint | undefined;
   onContextMenu: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseDown: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseMove: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseLeave: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
-  editor: DebugEditor;
-  getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[];
-  [key: string]: any;
+  getBreakpoints(
+    uri?: URI | undefined,
+    filter?: Partial<monaco.IPosition> | undefined,
+  ): Array<ISourceBreakpoint | IRuntimeBreakpoint>;
+  getEditor: () => DebugEditor;
+  getBreakpointWidget: () => IDebugBreakpointWidget;
+  getDebugHoverWidget: () => IDebugHoverWidget;
+  render: () => void;
 }

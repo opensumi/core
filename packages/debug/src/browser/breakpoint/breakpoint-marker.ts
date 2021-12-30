@@ -1,23 +1,10 @@
 import { URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import btoa = require('btoa');
+import { IRuntimeBreakpoint, ISourceBreakpoint } from '../../common';
 import { Marker } from '../markers';
 
 export const BREAKPOINT_KIND = 'breakpoint';
-
-export interface ISourceBreakpoint {
-  id: string;
-  enabled: boolean;
-  uri: string;
-  raw: DebugProtocol.SourceBreakpoint;
-  logMessage?: string;
-  message?: string;
-  status: Map<string, DebugProtocol.Breakpoint>;
-}
-
-export interface IRuntimeBreakpoint extends ISourceBreakpoint {
-  status: Map<string, DebugProtocol.Breakpoint>;
-}
 
 export type DebugBreakpoint = ISourceBreakpoint | IRuntimeBreakpoint;
 
@@ -31,7 +18,7 @@ export namespace DebugBreakpoint {
       id: generateId(uri.toString(), data.line, data.column),
       uri: uri.toString(),
       enabled,
-      status: new Map(),
+      status: new Map<string, DebugProtocol.Breakpoint>(),
       raw: {
         column: undefined,
         condition: undefined,

@@ -6,12 +6,11 @@ import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { BreakpointManager } from '../breakpoint';
 import { DebugEditor } from '../../common/debug-editor';
 import { IDebugSessionManager } from '../../common/debug-session';
-import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widget';
+import { DebugHoverWidget } from './debug-hover-widget';
 import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
-import { DebugStackFrame } from '../model';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
-import { IDebugModel, DEBUG_REPORT_NAME } from '../../common';
+import { IDebugModel, DEBUG_REPORT_NAME, ShowDebugHoverOptions } from '../../common';
 import {
   ICtxMenuRenderer,
   generateMergedCtxMenu,
@@ -28,13 +27,13 @@ export class DebugModel implements IDebugModel {
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(DebugEditor)
-  readonly editor: DebugEditor;
+  private readonly editor: DebugEditor;
 
   @Autowired(DebugBreakpointWidget)
-  readonly breakpointWidget: DebugBreakpointWidget;
+  private readonly breakpointWidget: DebugBreakpointWidget;
 
   @Autowired(DebugHoverWidget)
-  readonly debugHoverWidget: DebugHoverWidget;
+  private readonly debugHoverWidget: DebugHoverWidget;
 
   @Autowired(IDebugSessionManager)
   private debugSessionManager: DebugSessionManager;
@@ -246,7 +245,7 @@ export class DebugModel implements IDebugModel {
    * @param {DebugStackFrame} frame
    * @memberof DebugModel
    */
-  focusStackFrame(frame: DebugStackFrame) {
+  focusStackFrame() {
     this.renderFrames();
   }
 
@@ -409,7 +408,13 @@ export class DebugModel implements IDebugModel {
     });
   }
 
-  private async getCandidateBreakpoints(breakpoints: DebugBreakpoint[]) {
+  private async getCandidateBreakpoints(breakpoints: DebugBreakpoint[]): Promise<
+    {
+      range: monaco.Range;
+      options: monaco.editor.IModelDecorationOptions;
+      breakpoint?: DebugBreakpoint | undefined;
+    }[]
+  > {
     const model = this.editor.getModel();
     const session = this.debugSessionManager.currentSession;
     if (!model || !session?.capabilities.supportsBreakpointLocationsRequest) {
@@ -659,10 +664,6 @@ export class DebugModel implements IDebugModel {
     this.deltaHintDecorations([]);
   }
 
-  public getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[] {
-    return this.breakpointManager.getBreakpoints(uri, filter);
-  }
-
   protected hintDecorations: string[] = [];
   protected hintBreakpoint(event) {
     const hintDecorations = this.createHintDecorations(event);
@@ -689,6 +690,22 @@ export class DebugModel implements IDebugModel {
       ];
     }
     return [];
+  }
+
+  public getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[] {
+    return this.breakpointManager.getBreakpoints(uri, filter);
+  }
+
+  public getEditor(): DebugEditor {
+    return this.editor;
+  }
+
+  public getBreakpointWidget(): DebugBreakpointWidget {
+    return this.breakpointWidget;
+  }
+
+  public getDebugHoverWidget(): DebugHoverWidget {
+    return this.debugHoverWidget;
   }
 }
 

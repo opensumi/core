@@ -22,6 +22,7 @@ import {
   DebugEventTypes,
   DebugRequestTypes,
   DebugExitEvent,
+  IRuntimeBreakpoint,
 } from '../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -30,7 +31,7 @@ import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
 import { IMessageService } from '@opensumi/ide-overlay';
-import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBreakpoint } from './breakpoint';
+import { BreakpointManager, BreakpointsChangeEvent, DebugBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -1106,7 +1107,7 @@ export class DebugSession implements IDebugSession {
   }
 
   public currentEditor(): DebugEditor | undefined {
-    return this.getModel()?.editor;
+    return this.getModel()?.getEditor();
   }
 
   public getModel(): IDebugModel | undefined {

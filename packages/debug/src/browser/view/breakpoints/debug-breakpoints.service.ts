@@ -176,7 +176,6 @@ export class DebugBreakpointsService extends WithEventBus {
 
   delBreakpoint(bp: DebugBreakpoint): void {
     this.breakpoints.delBreakpoint(bp);
-    this.updateBreakpoints();
   }
 
   @action

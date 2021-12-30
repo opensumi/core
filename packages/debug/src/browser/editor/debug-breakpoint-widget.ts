@@ -3,7 +3,7 @@ import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, positionToRange } from '@opensumi/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DebugEditor } from '../../common';
+import { DebugEditor, IDebugBreakpointWidget } from '../../common';
 import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 
@@ -13,7 +13,7 @@ export enum TopStackType {
 }
 
 @Injectable()
-export class DebugBreakpointWidget extends Disposable {
+export class DebugBreakpointWidget extends Disposable implements IDebugBreakpointWidget {
   @Autowired(DebugEditor)
   private readonly editor: DebugEditor;
 
