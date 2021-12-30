@@ -1,6 +1,6 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@opensumi/ide-core-common';
+import { isElectronEnv, Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { CorePreferences, electronEnv } from '@opensumi/ide-core-browser';
@@ -104,7 +104,7 @@ export class NodePtyTerminalService implements ITerminalService {
   ) {
     let shellPath = options.shellPath;
     const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
-    const platformKey = this.getPlatformKey();
+    const platformKey = await this.getPlatformKey();
     const terminalOs = await this.getOs();
     if (!shellPath) {
       // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
@@ -150,7 +150,7 @@ export class NodePtyTerminalService implements ITerminalService {
 
     const launchConfig: IShellLaunchConfig = {
       shellPath,
-      cwd: options.cwd?.toString(),
+      cwd: options.cwd,
       args: shellArgs,
       cols,
       rows,
@@ -195,9 +195,13 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
-  getPlatformKey(): 'osx' | 'windows' | 'linux' {
+  async getPlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
     // follow vscode
-    return OS === OperatingSystem.Macintosh ? 'osx' : OS === OperatingSystem.Windows ? 'windows' : 'linux';
+    return (await this.getOs()) === OperatingSystem.Macintosh
+      ? 'osx'
+      : OS === OperatingSystem.Windows
+      ? 'windows'
+      : 'linux';
   }
 
   disposeById(sessionId: string) {

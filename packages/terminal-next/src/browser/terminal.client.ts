@@ -365,7 +365,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     const finalOptions = {
       ...this._options,
-      cwd: this._options?.cwd?.toString() || this._workspacePath,
+      cwd: this._options?.cwd || this._workspacePath,
     };
 
     try {

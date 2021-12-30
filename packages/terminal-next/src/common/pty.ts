@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@opensumi/ide-core-common';
-import { ShellType, WindowsShellType } from './shell';
+import { WindowsShellType } from './shell';
 import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalError } from './error';
@@ -300,7 +300,7 @@ export interface IShellLaunchConfig {
   /**
    * Working directory to be set for the child program.
    */
-  cwd?: string;
+  cwd?: string | Uri;
 
   /**
    * Environment to be set for the child program.
