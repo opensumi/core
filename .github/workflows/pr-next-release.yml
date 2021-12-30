@@ -23,14 +23,18 @@ jobs:
         node-version: [12.x]
 
     steps:
-
-      - name: maintain-comment
-        uses: actions-cool/maintain-one-comment@v2
+      - uses: actions/github-script@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            🎉Next version is publishing. Please wait for the next release...
-          emojis: 'rocket'
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const commentBody = '🚀🚀🚀 Next version is publishing. Please wait for a moment...';
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
 
       - uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
