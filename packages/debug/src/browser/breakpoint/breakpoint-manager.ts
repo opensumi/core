@@ -11,34 +11,23 @@ import {
   STORAGE_NAMESPACE,
   IReporterService,
 } from '@opensumi/ide-core-browser';
-import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
+import { DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { DebugModel } from '../editor';
-import { DEBUG_REPORT_NAME } from '../../common';
-
-export interface BreakpointsChangeEvent {
-  affected: URI[];
-  added: DebugBreakpoint[];
-  removed: DebugBreakpoint[];
-  changed: DebugBreakpoint[];
-  /**
-   * 标识后端调试状态已更新，这是纯视图更新。
-   */
-  statusUpdated?: boolean;
-}
+import { BreakpointsChangeEvent, DEBUG_REPORT_NAME, IDebugBreakpoint } from '../../common';
 
 export interface ExceptionBreakpointsChangeEvent {
   filters: string[];
 }
 
 export interface SelectedBreakpoint {
-  breakpoint?: DebugBreakpoint;
+  breakpoint?: IDebugBreakpoint;
   model: DebugModel;
 }
 
 @Injectable()
-export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
+export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
   protected readonly owner = 'breakpoint';
   private _selectedBreakpoint: SelectedBreakpoint;
 
@@ -95,12 +84,12 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     }
   }
 
-  setMarkers(uri: URI, owner: string, newMarkers: DebugBreakpoint[]): Marker<DebugBreakpoint>[] {
+  setMarkers(uri: URI, owner: string, newMarkers: IDebugBreakpoint[]): Marker<IDebugBreakpoint>[] {
     const result = super.setMarkers(uri, owner, newMarkers);
-    const added: DebugBreakpoint[] = [];
-    const removed: DebugBreakpoint[] = [];
-    const changed: DebugBreakpoint[] = [];
-    const oldMarkers = new Map(result.map(({ data }) => [data.id, data] as [string, DebugBreakpoint]));
+    const added: IDebugBreakpoint[] = [];
+    const removed: IDebugBreakpoint[] = [];
+    const changed: IDebugBreakpoint[] = [];
+    const oldMarkers = new Map(result.map(({ data }) => [data.id, data] as [string, IDebugBreakpoint]));
     const ids = new Set<string>();
 
     for (const newMarker of newMarkers) {
@@ -120,17 +109,17 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     return result;
   }
 
-  getBreakpoint(uri: URI, filter: number | Partial<monaco.IPosition> | undefined): DebugBreakpoint | undefined {
+  getBreakpoint(uri: URI, filter: number | Partial<monaco.IPosition> | undefined): IDebugBreakpoint | undefined {
     if (typeof filter === 'number') {
       filter = { lineNumber: filter };
     }
     return this.getBreakpoints(uri, filter)[0];
   }
 
-  getBreakpoints(uri?: URI, filter?: Partial<monaco.IPosition>): DebugBreakpoint[] {
-    let dataFilter: ((breakpoint: DebugBreakpoint) => boolean) | undefined;
+  getBreakpoints(uri?: URI, filter?: Partial<monaco.IPosition>): IDebugBreakpoint[] {
+    let dataFilter: ((breakpoint: IDebugBreakpoint) => boolean) | undefined;
     if (filter) {
-      dataFilter = (breakpoint: DebugBreakpoint) => {
+      dataFilter = (breakpoint: IDebugBreakpoint) => {
         if (
           (filter.lineNumber && breakpoint.raw.line !== filter.lineNumber) ||
           (filter.column && breakpoint.raw.column !== filter.column)
@@ -146,7 +135,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     }).map((marker) => marker.data);
   }
 
-  setBreakpoints(uri: URI, breakpoints: DebugBreakpoint[]): void {
+  setBreakpoints(uri: URI, breakpoints: IDebugBreakpoint[]): void {
     if (breakpoints.length > 0) {
       this._affected.add(uri.toString());
     } else {
@@ -159,7 +148,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     );
   }
 
-  addBreakpoint(breakpoint: DebugBreakpoint): boolean {
+  addBreakpoint(breakpoint: IDebugBreakpoint): boolean {
     const uri = new URI(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
     const existed = breakpoints.find(
@@ -173,13 +162,13 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     return false;
   }
 
-  delBreakpoint(breakpoint: DebugBreakpoint): boolean {
+  delBreakpoint(breakpoint: IDebugBreakpoint): boolean {
     const uri = URI.parse(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
     const index = breakpoints.findIndex((bp) => bp.id === breakpoint.id);
     if (index > -1) {
       breakpoints.splice(index, 1);
-      this.setBreakpoints(uri, ([] as DebugBreakpoint[]).concat(breakpoints));
+      this.setBreakpoints(uri, ([] as IDebugBreakpoint[]).concat(breakpoints));
       return true;
     }
     return false;
@@ -199,7 +188,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     });
   }
 
-  updateBreakpoint(breakpoint: DebugBreakpoint, statusUpdated = false) {
+  updateBreakpoint(breakpoint: IDebugBreakpoint, statusUpdated = false) {
     const uri = URI.parse(breakpoint.uri);
     this.onDidChangeBreakpointsEmitter.fire({
       affected: [uri],
@@ -210,7 +199,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     });
   }
 
-  updateBreakpoints(breakpoints: DebugBreakpoint[], statusUpdated = false) {
+  updateBreakpoints(breakpoints: IDebugBreakpoint[], statusUpdated = false) {
     const uriStrings = new Set<string>();
     breakpoints.forEach((breakpoint) => {
       uriStrings.add(breakpoint.uri);
@@ -350,7 +339,7 @@ export namespace BreakpointManager {
   export interface Data {
     breakpointsEnabled: boolean;
     breakpoints: {
-      [uri: string]: DebugBreakpoint[];
+      [uri: string]: IDebugBreakpoint[];
     };
     defaultExceptionFilter: DebugExceptionBreakpoint[];
   }

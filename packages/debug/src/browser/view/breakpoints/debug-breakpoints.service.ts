@@ -17,7 +17,7 @@ import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY } from '../../../common';
+import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY, IDebugBreakpoint } from '../../../common';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 
 @Injectable()
@@ -93,7 +93,7 @@ export class DebugBreakpointsService extends WithEventBus {
     });
   }
 
-  public getBreakpointDecoration(breakpoint: DebugBreakpoint, isDebugMode = false, enabled = true) {
+  public getBreakpointDecoration(breakpoint: IDebugBreakpoint, isDebugMode = false, enabled = true) {
     return new DebugDecorator().getDecoration(breakpoint, isDebugMode, enabled);
   }
 
@@ -121,7 +121,7 @@ export class DebugBreakpointsService extends WithEventBus {
   }
 
   @action.bound
-  toggleBreakpointEnable(data: DebugBreakpoint | DebugExceptionBreakpoint) {
+  toggleBreakpointEnable(data: IDebugBreakpoint | DebugExceptionBreakpoint) {
     if (isDebugBreakpoint(data)) {
       const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), {
         lineNumber: data.raw.line,
@@ -137,7 +137,7 @@ export class DebugBreakpointsService extends WithEventBus {
     }
   }
 
-  extractNodes(items: (DebugExceptionBreakpoint | DebugBreakpoint)[]) {
+  extractNodes(items: (DebugExceptionBreakpoint | IDebugBreakpoint)[]) {
     const nodes: BreakpointItem[] = [];
     items.forEach((item) => {
       if (isDebugBreakpoint(item)) {
@@ -174,7 +174,7 @@ export class DebugBreakpointsService extends WithEventBus {
     this.breakpoints.clearBreakpoints();
   }
 
-  delBreakpoint(bp: DebugBreakpoint): void {
+  delBreakpoint(bp: IDebugBreakpoint): void {
     this.breakpoints.delBreakpoint(bp);
   }
 

@@ -1,13 +1,14 @@
 import { localize } from '@opensumi/ide-core-browser';
-import { DebugBreakpoint, isRuntimeBreakpoint } from './breakpoint-marker';
+import { IDebugBreakpoint } from '../../common';
+import { isRuntimeBreakpoint } from './breakpoint-marker';
 
-export class DebugBreakpointDecoration {
+export interface IBreakpointDecoration {
   readonly className: string;
   readonly message: string[];
 }
 
 export class DebugDecorator {
-  protected getDisabledBreakpointDecoration(breakpoint: DebugBreakpoint): DebugBreakpointDecoration {
+  protected getDisabledBreakpointDecoration(breakpoint: IDebugBreakpoint): IBreakpointDecoration {
     const decoration = this.getBreakpointDecoration(breakpoint);
     return {
       className: decoration.className + '-disabled',
@@ -15,7 +16,7 @@ export class DebugDecorator {
     };
   }
 
-  protected getBreakpointDecoration(breakpoint: DebugBreakpoint, message?: string[]): DebugBreakpointDecoration {
+  protected getBreakpointDecoration(breakpoint: IDebugBreakpoint, message?: string[]): IBreakpointDecoration {
     if (breakpoint.raw.logMessage) {
       return {
         className: 'sumi-debug-logpoint',
@@ -34,7 +35,7 @@ export class DebugDecorator {
     };
   }
 
-  protected getUnverifiedBreakpointDecoration(breakpoint: DebugBreakpoint): DebugBreakpointDecoration {
+  protected getUnverifiedBreakpointDecoration(breakpoint: IDebugBreakpoint): IBreakpointDecoration {
     const decoration = this.getBreakpointDecoration(breakpoint);
     return {
       className: decoration.className + '-unverified',
@@ -42,7 +43,7 @@ export class DebugDecorator {
     };
   }
 
-  getDecoration(breakpoint: DebugBreakpoint, isDebugMode = false, enabled = true): DebugBreakpointDecoration {
+  getDecoration(breakpoint: IDebugBreakpoint, isDebugMode = false, enabled = true): IBreakpointDecoration {
     if (!breakpoint.enabled || !enabled) {
       return this.getDisabledBreakpointDecoration(breakpoint);
     }

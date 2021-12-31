@@ -1,3 +1,4 @@
+import { URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 export interface ISourceBreakpoint {
@@ -27,3 +28,16 @@ export interface BreakpointChangeData {
 export type DebugBreakpointWidgetContext = {
   [context in TSourceBrekpointProperties]?: string;
 };
+
+export interface BreakpointsChangeEvent {
+  affected: URI[];
+  added: IDebugBreakpoint[];
+  removed: IDebugBreakpoint[];
+  changed: IDebugBreakpoint[];
+  /**
+   * 标识后端调试状态已更新，这是纯视图更新。
+   */
+  statusUpdated?: boolean;
+}
+
+export type IDebugBreakpoint = ISourceBreakpoint | IRuntimeBreakpoint;

@@ -1,19 +1,17 @@
 import { URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import btoa = require('btoa');
-import { IRuntimeBreakpoint, ISourceBreakpoint } from '../../common';
+import { IRuntimeBreakpoint, IDebugBreakpoint } from '../../common';
 import { Marker } from '../markers';
 
 export const BREAKPOINT_KIND = 'breakpoint';
-
-export type DebugBreakpoint = ISourceBreakpoint | IRuntimeBreakpoint;
 
 function generateId(uri: string, line: number, column = 1) {
   return btoa(`${uri}:${line}:${column}`);
 }
 
 export namespace DebugBreakpoint {
-  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, enabled = true): DebugBreakpoint {
+  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, enabled = true): IDebugBreakpoint {
     return {
       id: generateId(uri.toString(), data.line, data.column),
       uri: uri.toString(),
@@ -39,27 +37,27 @@ export interface IExceptionBreakpoint {
 export type DebugExceptionBreakpoint = IExceptionBreakpoint;
 
 export function isDebugBreakpoint(
-  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint,
-): breakpoint is DebugBreakpoint {
-  return !!breakpoint && !!(breakpoint as DebugBreakpoint).raw;
+  breakpoint: IDebugBreakpoint | DebugExceptionBreakpoint,
+): breakpoint is IDebugBreakpoint {
+  return !!breakpoint && !!(breakpoint as IDebugBreakpoint).raw;
 }
 
 export function getStatus(breakpoint: IRuntimeBreakpoint) {
   return Array.from(breakpoint.status.values()).filter((b) => b.verified)[0];
 }
 
-export function isRuntimeBreakpoint(breakpoint: DebugBreakpoint): breakpoint is IRuntimeBreakpoint {
+export function isRuntimeBreakpoint(breakpoint: IDebugBreakpoint): breakpoint is IRuntimeBreakpoint {
   const status = getStatus(breakpoint);
   return !!(status && status.verified);
 }
 
 export function isDebugExceptionBreakpoint(
-  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint,
+  breakpoint: IDebugBreakpoint | DebugExceptionBreakpoint,
 ): breakpoint is DebugExceptionBreakpoint {
   return breakpoint && !!(breakpoint as DebugExceptionBreakpoint).filter;
 }
 
-export interface BreakpointMarker extends Marker<DebugBreakpoint> {
+export interface BreakpointMarker extends Marker<IDebugBreakpoint> {
   kind: 'breakpoint';
 }
 

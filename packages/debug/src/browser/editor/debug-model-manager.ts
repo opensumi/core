@@ -3,11 +3,11 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { DebugModelFactory, IDebugModel } from '../../common';
-import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
+import { DebugModelFactory, IDebugModel, BreakpointsChangeEvent } from '../../common';
+import { BreakpointManager } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 
-export enum DebugModelSupportedEventType {
+enum DebugModelSupportedEventType {
   down = 'Down',
   move = 'Move',
   leave = 'Leave',

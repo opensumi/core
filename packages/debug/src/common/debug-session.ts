@@ -1,8 +1,7 @@
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { IDisposable } from '@opensumi/ide-core-browser';
 import { DebugSessionOptions, IDebugSessionDTO } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable } from '@opensumi/ide-core-common';
 
 export enum DebugState {
   Inactive,

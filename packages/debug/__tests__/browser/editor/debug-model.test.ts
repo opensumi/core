@@ -149,13 +149,7 @@ describe('Debug Model', () => {
 
   it('focusStackFrame should be work', () => {
     mockEditor.deltaDecorations.mockClear();
-    const mockFrame = {
-      raw: {
-        line: 1,
-        column: 1,
-      },
-    };
-    debugModel.focusStackFrame(mockFrame);
+    debugModel.focusStackFrame();
     expect(mockEditor.deltaDecorations).toBeCalledTimes(0);
   });
 
@@ -173,16 +167,16 @@ describe('Debug Model', () => {
 
   it('toggleBreakpoint should be work', () => {
     mockBreakpointManager.getBreakpoints.mockClear();
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 });
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
     expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);
     mockBreakpointManager.getBreakpoints.mockReturnValueOnce([] as any);
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 });
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
   });
 
   it('openBreakpointView should be work', () => {
-    debugModel.openBreakpointView();
+    debugModel.openBreakpointView({ lineNumber: 1, column: 1 } as monaco.Position);
     expect(mockBreakpointWidget.show).toBeCalledTimes(1);
   });
 

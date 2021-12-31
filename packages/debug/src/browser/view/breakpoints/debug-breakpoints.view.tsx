@@ -15,13 +15,13 @@ import {
 } from '../../breakpoint';
 import { Badge, RecycleList } from '@opensumi/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { IDebugSessionManager, ISourceBreakpoint } from '../../../common';
+import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
 
 export interface BreakpointItem {
   name: string;
   id: string;
   description: string;
-  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint;
+  breakpoint: IDebugBreakpoint | DebugExceptionBreakpoint;
 }
 
 export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
@@ -86,10 +86,10 @@ export const BreakpointItem = ({
         };
       } else {
         options['range'] = {
-          startColumn: (data.breakpoint as DebugBreakpoint).raw.column || 0,
-          endColumn: (data.breakpoint as DebugBreakpoint).raw.column || 0,
-          startLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
-          endLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
+          startColumn: (data.breakpoint as IDebugBreakpoint).raw.column || 0,
+          endColumn: (data.breakpoint as IDebugBreakpoint).raw.column || 0,
+          startLineNumber: (data.breakpoint as IDebugBreakpoint).raw.line,
+          endLineNumber: (data.breakpoint as IDebugBreakpoint).raw.line,
         };
       }
       commandService.executeCommand(
@@ -121,7 +121,7 @@ export const BreakpointItem = ({
 
   const getBreakpointIcon = () => {
     const { className } = debugBreakpointsService.getBreakpointDecoration(
-      data.breakpoint as DebugBreakpoint,
+      data.breakpoint as IDebugBreakpoint,
       isDebugMode,
       breakpointEnabled && enabled,
     );
@@ -142,7 +142,7 @@ export const BreakpointItem = ({
 
   const removeBreakpoint = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     event.stopPropagation();
-    debugBreakpointsService.delBreakpoint(data.breakpoint as DebugBreakpoint);
+    debugBreakpointsService.delBreakpoint(data.breakpoint as IDebugBreakpoint);
   };
 
   return (
@@ -161,7 +161,7 @@ export const BreakpointItem = ({
             className={cls(styles.debug_remove_breakpoints_icon, getIcon('close'))}
           ></a>
           <Badge className={styles.debug_breakpoints_badge}>
-            {(data.breakpoint as DebugBreakpoint).raw.line}
+            {(data.breakpoint as IDebugBreakpoint).raw.line}
             {!!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}`}
           </Badge>
         </>
