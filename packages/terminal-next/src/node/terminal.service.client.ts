@@ -7,10 +7,10 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
-import { IPty, TerminalOptions } from '../common/pty';
+import { IPty } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
-import { findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findExecutable, findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
 
 /**
  * this RPC target: NodePtyTerminalService
@@ -93,6 +93,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return undefined;
     }
   }
+
   async $resolveUnixShellPath(type: string): Promise<string | undefined> {
     const candidates = [type, `/bin/${type}`, `/usr/bin/${type}`];
     return await findShellExecutableAsync(candidates);
@@ -117,30 +118,24 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   async $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }> {
-    const candidates = [
-      ...WINDOWS_GIT_BASH_PATHS,
-      WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell,
-      WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd,
-    ];
-
-    // at least one of the candidates should be valid
-    // because all windows has cmd
-    let type: WindowsShellType;
-    const path = (await findShellExecutableAsync(candidates)) as string;
-
-    // if path is not undefined, then it is a known shell path in the candidate list
-    // so we compare the path to the known shell paths to determine the type
-    if (path === WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell) {
-      type = WindowsShellType.powershell;
-    } else if (path === WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd) {
-      type = WindowsShellType.cmd;
-    } else {
-      type = WindowsShellType['git-bash'];
+    let path = await findShellExecutableAsync(WINDOWS_GIT_BASH_PATHS);
+    if (path) {
+      return {
+        path,
+        type: WindowsShellType['git-bash'],
+      };
+    }
+    path = await findExecutable(WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell);
+    if (path) {
+      return {
+        path,
+        type: WindowsShellType.powershell,
+      };
     }
 
     return {
-      path,
-      type,
+      path: WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd,
+      type: WindowsShellType.cmd,
     };
   }
 

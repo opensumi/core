@@ -38,7 +38,7 @@ export async function findShellExecutableAsync(candidate: string[]): Promise<str
     return undefined;
   }
   // return the first exists one
-  return Promise.all(candidate.map(exists)).then((v) => v.find(Boolean));
+  return Promise.all(candidate.map((v) => findExecutable(v))).then((v) => v.find(Boolean));
 }
 
 /**

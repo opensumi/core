@@ -10,6 +10,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import path from 'path';
 import * as fs from 'fs-extra';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 describe('terminal service test cases', () => {
   let terminalService: ITerminalService;
@@ -103,7 +104,7 @@ describe('terminal service test cases', () => {
     }
   });
   it('should be valid launchConfig with empty type or default', async () => {
-    if ((await terminalService.getOs()) !== 1) {
+    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
       await terminalService.attach(sessionId, {} as any, 200, 200, {}, '');
       expect(launchConfig.shellPath).toEqual('detectedBash');
       await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'default');
@@ -112,7 +113,7 @@ describe('terminal service test cases', () => {
   });
 
   it('should be valid launchConfig with specific type', async () => {
-    if ((await terminalService.getOs()) !== 1) {
+    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
       await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'bash');
       expect(launchConfig.shellPath).toEqual('bash');
       await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'asdasdasdasd');

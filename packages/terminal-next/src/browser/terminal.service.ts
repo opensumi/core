@@ -142,6 +142,11 @@ export class NodePtyTerminalService implements ITerminalService {
         }
       }
 
+      // if we still can not find the shell path, we use shellType as the target shell path
+      if (!shellPath) {
+        shellPath = shellType;
+      }
+
       const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${platformKey}`);
       shellArgs.push(...platformSpecificArgs);
 
