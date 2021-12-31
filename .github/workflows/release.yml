@@ -50,6 +50,14 @@ jobs:
             echo "::set-output name=exists_tag::false"
           fi
 
+      - name: Git Identity
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
