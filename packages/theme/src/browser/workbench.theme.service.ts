@@ -113,8 +113,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
     if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId)) {
       this.applyTheme(themeId);
-    } else {
-      this.applyTheme(DEFAULT_THEME_ID);
     }
 
     this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
