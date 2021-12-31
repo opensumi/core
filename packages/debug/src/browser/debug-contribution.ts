@@ -59,6 +59,7 @@ import {
   DEBUG_REPORT_NAME,
   DEBUG_WELCOME_ID,
   DEBUG_SCHEME,
+  TSourceBrekpointProperties,
 } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
@@ -529,7 +530,7 @@ export class DebugContribution
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
-          let defaultContext: TBreakpointZoneWidget = 'condition';
+          let defaultContext: TSourceBrekpointProperties = 'condition';
           if (selectedBreakpoint.breakpoint) {
             const raw = selectedBreakpoint.breakpoint.raw;
             if (raw.condition) {

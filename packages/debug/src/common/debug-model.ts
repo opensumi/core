@@ -2,7 +2,7 @@ import {
   IRuntimeBreakpoint,
   ISourceBreakpoint,
   DebugBreakpointWidgetContext,
-  TBreakpointZoneWidget,
+  TSourceBrekpointProperties,
 } from './debug-breakpoint';
 import { IDebugHoverWidget } from './debug-hover';
 import stream from 'stream';
@@ -139,7 +139,7 @@ export interface IDebugModel extends IDisposable {
   openBreakpointView: (
     position: monaco.Position,
     context?: DebugBreakpointWidgetContext,
-    defaultContext?: TBreakpointZoneWidget,
+    defaultContext?: TSourceBrekpointProperties,
   ) => void;
   closeBreakpointView: () => void;
   acceptBreakpoint: () => void;

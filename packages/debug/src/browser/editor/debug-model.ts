@@ -14,7 +14,7 @@ import {
   IDebugModel,
   DEBUG_REPORT_NAME,
   ShowDebugHoverOptions,
-  TBreakpointZoneWidget,
+  TSourceBrekpointProperties,
   DebugBreakpointWidgetContext,
 } from '../../common';
 import {
@@ -602,7 +602,7 @@ export class DebugModel implements IDebugModel {
   openBreakpointView = (
     position: monaco.Position,
     context?: DebugBreakpointWidgetContext,
-    defaultContext?: TBreakpointZoneWidget,
+    defaultContext?: TSourceBrekpointProperties,
   ) => {
     this.breakpointWidget.show(position, context, defaultContext);
   };

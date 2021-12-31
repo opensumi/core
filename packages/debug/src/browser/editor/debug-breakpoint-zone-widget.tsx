@@ -3,7 +3,12 @@ import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
-import { BreakpointChangeData, DebugBreakpointWidgetContext, DebugEditor, TBreakpointZoneWidget } from '../../common';
+import {
+  BreakpointChangeData,
+  DebugBreakpointWidgetContext,
+  DebugEditor,
+  TSourceBrekpointProperties,
+} from '../../common';
 import styles from './debug-breakpoint.module.less';
 import { Select, Option } from '@opensumi/ide-components';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
@@ -44,14 +49,14 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     };
   }
 
-  get breakpointType(): TBreakpointZoneWidget {
+  get breakpointType(): TSourceBrekpointProperties {
     return this.context;
   }
 
   constructor(
     public editor: DebugEditor,
     private readonly contexts: DebugBreakpointWidgetContext = {},
-    private context: TBreakpointZoneWidget = 'condition',
+    private context: TSourceBrekpointProperties = 'condition',
   ) {
     super(editor);
 
@@ -143,7 +148,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     );
   }
 
-  protected renderOption(context: TBreakpointZoneWidget, label: string): JSX.Element {
+  protected renderOption(context: TSourceBrekpointProperties, label: string): JSX.Element {
     return <Option value={context}>{label}</Option>;
   }
 
@@ -155,7 +160,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this._onBlur.fire();
   };
 
-  protected readonly selectContextHandler = (value: TBreakpointZoneWidget) => {
+  protected readonly selectContextHandler = (value: TSourceBrekpointProperties) => {
     if (this.input) {
       this.contexts[this.context] = this.input.monacoEditor.getValue() || undefined;
     }
@@ -230,7 +235,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     );
   }
 
-  getContextToLocalize(ctx: TBreakpointZoneWidget) {
+  getContextToLocalize(ctx: TSourceBrekpointProperties) {
     switch (ctx) {
       case 'logMessage':
         return localize('debug.expression.logMessage');

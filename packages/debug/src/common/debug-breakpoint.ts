@@ -14,16 +14,16 @@ export interface IRuntimeBreakpoint extends ISourceBreakpoint {
   status: Map<string, DebugProtocol.Breakpoint>;
 }
 
-export type TBreakpointZoneWidget = keyof Pick<
+export type TSourceBrekpointProperties = keyof Pick<
   DebugProtocol.SourceBreakpoint,
   'condition' | 'hitCondition' | 'logMessage'
 >;
 
 export interface BreakpointChangeData {
-  context: TBreakpointZoneWidget;
+  context: TSourceBrekpointProperties;
   value: string;
 }
 
 export type DebugBreakpointWidgetContext = {
-  [context in TBreakpointZoneWidget]?: string;
+  [context in TSourceBrekpointProperties]?: string;
 };
