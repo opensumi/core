@@ -22,6 +22,7 @@ import {
   IDebugServer,
   IDebuggerContribution,
   IDebugServiceContributionPoint,
+  IDebugBreakpoint,
 } from '@opensumi/ide-debug';
 import {
   DebugSessionManager,
@@ -364,7 +365,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
-  private toCustomApiBreakpoints(sourceBreakpoints: DebugBreakpoint[]): Breakpoint[] {
+  private toCustomApiBreakpoints(sourceBreakpoints: IDebugBreakpoint[]): Breakpoint[] {
     return sourceBreakpoints.map((b) => ({
       id: b.id,
       enabled: b.enabled,
