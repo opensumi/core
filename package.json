@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide",
-  "version": "2.13.7",
+  "version": "2.13.8",
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
