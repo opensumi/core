@@ -3,24 +3,14 @@ import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
-import { DebugEditor } from '../../common';
+import { BreakpointChangeData, DebugBreakpointWidgetContext, DebugEditor, TBreakpointZoneWidget } from '../../common';
 import styles from './debug-breakpoint.module.less';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { Select, Option } from '@opensumi/ide-components';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 import { ICodeEditor } from '@opensumi/ide-editor';
 import { Injectable, Autowired } from '@opensumi/di';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-
-export interface BreakpointChangeData {
-  context: DebugBreakpointZoneWidget.Context;
-  value: string;
-}
-
-export type DebugBreakpointWidgetContext = {
-  [context in DebugBreakpointZoneWidget.Context]?: string;
-};
 
 @Injectable({ multiple: true })
 export class DebugBreakpointZoneWidget extends ZoneWidget {
@@ -54,14 +44,14 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     };
   }
 
-  get breakpointType(): DebugBreakpointZoneWidget.Context {
+  get breakpointType(): TBreakpointZoneWidget {
     return this.context;
   }
 
   constructor(
     public editor: DebugEditor,
     private readonly contexts: DebugBreakpointWidgetContext = {},
-    private context: DebugBreakpointZoneWidget.Context = 'condition',
+    private context: TBreakpointZoneWidget = 'condition',
   ) {
     super(editor);
 
@@ -153,7 +143,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     );
   }
 
-  protected renderOption(context: DebugBreakpointZoneWidget.Context, label: string): JSX.Element {
+  protected renderOption(context: TBreakpointZoneWidget, label: string): JSX.Element {
     return <Option value={context}>{label}</Option>;
   }
 
@@ -165,7 +155,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this._onBlur.fire();
   };
 
-  protected readonly selectContextHandler = (value: DebugBreakpointZoneWidget.Context) => {
+  protected readonly selectContextHandler = (value: TBreakpointZoneWidget) => {
     if (this.input) {
       this.contexts[this.context] = this.input.monacoEditor.getValue() || undefined;
     }
@@ -240,7 +230,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     );
   }
 
-  getContextToLocalize(ctx: DebugBreakpointZoneWidget.Context) {
+  getContextToLocalize(ctx: TBreakpointZoneWidget) {
     switch (ctx) {
       case 'logMessage':
         return localize('debug.expression.logMessage');
@@ -261,8 +251,4 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
         return localize('debug.expression.condition.placeholder');
     }
   }
-}
-
-export namespace DebugBreakpointZoneWidget {
-  export type Context = keyof Pick<DebugProtocol.SourceBreakpoint, 'condition' | 'hitCondition' | 'logMessage'>;
 }

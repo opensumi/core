@@ -1,4 +1,9 @@
-import { IRuntimeBreakpoint, ISourceBreakpoint } from './debug-breakpoint';
+import {
+  IRuntimeBreakpoint,
+  ISourceBreakpoint,
+  DebugBreakpointWidgetContext,
+  TBreakpointZoneWidget,
+} from './debug-breakpoint';
 import { IDebugHoverWidget } from './debug-hover';
 import stream from 'stream';
 import type { editor } from '@opensumi/monaco-editor-core';
@@ -126,6 +131,18 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
+  uri: URI;
+  position: monaco.Position;
+  init: () => Promise<void>;
+  renderBreakpoints: () => void;
+  toggleBreakpoint: (position?: monaco.Position) => void;
+  openBreakpointView: (
+    position: monaco.Position,
+    context?: DebugBreakpointWidgetContext,
+    defaultContext?: TBreakpointZoneWidget,
+  ) => void;
+  closeBreakpointView: () => void;
+  acceptBreakpoint: () => void;
   focusStackFrame: () => void;
   breakpoint: ISourceBreakpoint | IRuntimeBreakpoint | undefined;
   onContextMenu: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
