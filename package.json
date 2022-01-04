@@ -52,6 +52,7 @@
         "dependsOn": [
           "^build"
         ],
+        "cache": false,
         "outputs": [
           ".next/**",
           "lib/**",
@@ -60,6 +61,11 @@
       }
     }
   },
+  "workspaces": [
+    "packages/*",
+    "tools/dev-tool"
+  ],
+  "private": true,
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
