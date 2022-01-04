@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "husky install",
     "clean:cache": "rimraf .cache",
-    "clean": "rimraf ./packages/*/lib",
+    "clean": "rimraf ./packages/**/.turbo ./packages/**/lib/*",
     "check:dep": "ts-node ./scripts/depcheck",
     "init:deps": "ts-node ./scripts/bootstrap",
     "init": "npm run init:deps && npm run clean && npm run build:all",
@@ -44,6 +44,22 @@
     "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
     "changelog-old": "node scripts/changelog/index.js",
     "changelog": "ts-node -P scripts/tsconfig.scripts.json scripts/changelog/index.ts"
+  },
+  "turbo": {
+    "baseBranch": "origin/main",
+    "pipeline": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ],
+        "cache": false,
+        "outputs": [
+          ".next/**",
+          "lib/**",
+          "dist/**"
+        ]
+      }
+    }
   },
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
@@ -144,6 +160,7 @@
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.0",
     "ts-jest": "^27.0.3",
+    "turbo": "^1.0.24",
     "urllib": "^2.37.4",
     "uuid": "^8.3.2",
     "write-pkg": "^4.0.0",
