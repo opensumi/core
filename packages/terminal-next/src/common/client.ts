@@ -2,7 +2,6 @@ import { Terminal } from 'xterm';
 import { IDisposable, Disposable, Event, Deferred } from '@opensumi/ide-core-common';
 import { INodePtyInstance, TerminalOptions } from './pty';
 import { IWidget } from './resize';
-import { IShellLaunchConfig } from '.';
 
 export interface ITerminalDataEvent {
   id: string;
@@ -172,7 +171,8 @@ export interface ITerminalConnection {
   sendData(data: string | ArrayBuffer): void;
   onData: Event<string | ArrayBuffer>;
   onExit?: Event<number | undefined>;
-  launchConfig?: IShellLaunchConfig;
+
+  ptyInstance?: INodePtyInstance;
 }
 
 /**

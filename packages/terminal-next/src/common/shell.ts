@@ -9,4 +9,4 @@ export enum WindowsShellType {
   'git-bash' = 'git-bash',
 }
 
-export type ShellType = WindowsShellType | string;
+export type ShellType = WindowsShellType | 'default' | string;

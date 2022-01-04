@@ -7,6 +7,7 @@
 
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
+import os from 'os';
 import omit from 'lodash.omit';
 import { IShellLaunchConfig } from '../common';
 import { IPty } from '../common/pty';
@@ -26,19 +27,19 @@ export class PtyService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  async _validateCwd(options: IShellLaunchConfig) {
-    if (options.cwd) {
+  async _validateCwd(cwd: string) {
+    if (cwd) {
       try {
-        const result = await promises.stat(options.cwd);
+        const result = await promises.stat(cwd);
         if (!result.isDirectory()) {
           return {
-            message: `Starting directory (cwd) "${options.cwd}" is not a directory`,
+            message: `Starting directory (cwd) "${cwd}" is not a directory`,
           };
         }
       } catch (err) {
         if (err?.code === 'ENOENT') {
           return {
-            message: `Starting directory (cwd) "${options.cwd}" does not exist`,
+            message: `Starting directory (cwd) "${cwd}" does not exist`,
           };
         }
       }
@@ -46,7 +47,7 @@ export class PtyService {
 
     return undefined;
   }
-  async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment) {
+  async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment, cwd: string) {
     if (!options.shellPath) {
       return {
         message: 'IShellLaunchConfig.shellPath not set',
@@ -64,7 +65,7 @@ export class PtyService {
         // The executable isn't an absolute path, try find it on the PATH or CWD
         const envPaths: string[] | undefined =
           options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
-        const executable = await findExecutable(options.shellPath, options.cwd, envPaths, ptyEnv);
+        const executable = await findExecutable(options.shellPath, cwd, envPaths, ptyEnv);
         if (!executable) {
           return {
             message: `Path to shell executable "${options.shellPath}" does not exist`,
@@ -110,7 +111,9 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
-    const results = await Promise.all([this._validateCwd(options), this._validateExecutable(options, ptyEnv)]);
+    const cwd = this.parseCwd(options);
+
+    const results = await Promise.all([this._validateCwd(cwd), this._validateExecutable(options, ptyEnv, cwd)]);
     const firstError = results.find((r) => r !== undefined);
     if (firstError) {
       this.logger.error(`validate shell launch config failed: ${firstError.message}`);
@@ -123,7 +126,7 @@ export class PtyService {
       name: options.name || 'xterm-256color',
       cols: options.cols || 100,
       rows: options.rows || 30,
-      cwd: options.cwd,
+      cwd,
       env: ptyEnv,
     });
     (ptyProcess as IPty).bin = options.shellPath as string;
@@ -131,6 +134,12 @@ export class PtyService {
     const match = (options.shellPath as string).match(/[\w|.]+$/);
     (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;
+  }
+  parseCwd(options: IShellLaunchConfig) {
+    if (options.cwd) {
+      return typeof options.cwd === 'string' ? options.cwd : options.cwd.fsPath;
+    }
+    return os.homedir();
   }
 
   resize(termninal: pty.IPty, rows: number, cols: number) {

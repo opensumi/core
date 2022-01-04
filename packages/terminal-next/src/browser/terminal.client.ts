@@ -35,7 +35,6 @@ import {
   ITerminalExitEvent,
   ITerminalConnection,
   ITerminalExternalLinkProvider,
-  IShellLaunchConfig,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
@@ -313,7 +312,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this.logger.warn(`${this.id} ${this.name} exit with ${code}`);
         if (code !== 0) {
           this.messageService.error(
-            `terminal ${this.name}(${this._attachAddon.connection?.launchConfig?.shellPath}) exited with non-zero code ${code}`,
+            `terminal ${this.name}(${this._attachAddon.connection?.ptyInstance?.shellPath}) exited with non-zero code ${code}`,
           );
         }
         this._onExit.fire({ id: this.id, code });
@@ -357,55 +356,30 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._onLinksReady.fire(this);
   }
 
-  private prepareShellLaunchConfig() {
+  private async _doAttach() {
+    const sessionId = this.id;
     const type = this.preference.get<string>('type');
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
 
-    const ptyOptions: IShellLaunchConfig = {
-      shellPath: this._options.shellPath,
-      cwd: this._options.cwd?.toString() || this._workspacePath,
-      args: [],
-      cols,
-      rows,
-      shellType: type,
-      os: this._os,
-      env: this._options.env,
-      name: this._options.name,
-      strictEnv: this._options.strictEnv,
-      isExtensionTerminal: this._options.isExtensionTerminal,
-    };
-
-    // 将 shellArgs 的 string | string[] 转为 string[]
-    if (this._options.shellArgs) {
-      if (Array.isArray(this._options.shellArgs)) {
-        ptyOptions.args?.push(...this._options.shellArgs);
-      } else {
-        ptyOptions.args?.push(this._options.shellArgs);
-      }
-    }
-
-    return ptyOptions;
-  }
-
-  private async _doAttach() {
-    const sessionId = this.id;
-    const launchConfig = this.prepareShellLaunchConfig();
-
     let connection: ITerminalConnection | undefined;
 
-    try {
-      connection = await this.internalService.attach(sessionId, this._term, launchConfig);
-    } catch (e) {
-      this.logger.error(`attach ${sessionId} terminal failed`, connection, JSON.stringify(launchConfig), e);
-    }
+    const finalOptions = {
+      ...this._options,
+      cwd: this._options?.cwd || this._workspacePath,
+    };
 
-    this._attachAddon.setConnection(connection);
+    try {
+      connection = await this.internalService.attach(sessionId, this._term, rows, cols, finalOptions, type);
+    } catch (e) {
+      this.logger.error(`attach ${sessionId} terminal failed, type: ${type}`, JSON.stringify(finalOptions), e);
+    }
 
     if (!connection) {
       this._attached.resolve();
       return;
     }
 
+    this._attachAddon.setConnection(connection);
     this.name = this.name || connection.name || 'shell';
     this._ready = true;
     this._attached.resolve();

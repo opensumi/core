@@ -13,6 +13,7 @@ import { isWindows } from '@opensumi/ide-core-node';
 import fs from 'fs';
 
 // TODO: 用户装在 D 盘的不就识别不对了
+// 要增加一些查找方法，此处需要参考 V 老师的进行改进
 export const WINDOWS_GIT_BASH_PATHS = [
   `${process.env['ProgramW6432']}\\Git\\bin\\bash.exe`,
   `${process.env['ProgramW6432']}\\Git\\usr\\bin\\bash.exe`,
@@ -25,8 +26,7 @@ export const WINDOWS_GIT_BASH_PATHS = [
 
 export const exists = async (p: string) => {
   try {
-    p = normalize(p);
-    await fs.promises.access(p);
+    await fs.promises.access(normalize(p));
     return p;
   } catch {
     return;
@@ -38,7 +38,7 @@ export async function findShellExecutableAsync(candidate: string[]): Promise<str
     return undefined;
   }
   // return the first exists one
-  return Promise.all(candidate.map(exists)).then((v) => v.find(Boolean));
+  return Promise.all(candidate.map((v) => findExecutable(v))).then((v) => v.find(Boolean));
 }
 
 /**

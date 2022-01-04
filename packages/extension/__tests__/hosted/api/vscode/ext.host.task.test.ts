@@ -48,7 +48,7 @@ import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/vari
 import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browser/terminal.view';
 import { TerminalClientFactory } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
-import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
+import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
 import { TerminalPreference } from '@opensumi/ide-terminal-next/lib/browser/terminal.preference';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';

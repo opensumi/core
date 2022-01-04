@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@opensumi/ide-core-common';
-import { ShellType, WindowsShellType } from './shell';
+import { WindowsShellType } from './shell';
 import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalError } from './error';
@@ -158,7 +158,7 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create(id: string, options: IShellLaunchConfig): Promise<IPty | undefined>;
+  create2(id: string, options: IShellLaunchConfig): Promise<IPty | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number);
   getShellName(id: string): string;
@@ -185,7 +185,7 @@ export interface INodePtyInstance {
 
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export interface ITerminalServiceClient {
-  create(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined>;
+  create2(id: string, launchConfig: IShellLaunchConfig): Promise<INodePtyInstance | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;
@@ -193,20 +193,22 @@ export interface ITerminalServiceClient {
   clientMessage(id: string, data): void;
   closeClient(
     sessionId: string,
-    data:
+    data?:
       | ITerminalError
       | {
           code?: number;
           signal?: number;
-        },
+        }
+      | number,
+    signal?: number,
   ): void;
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;
   ensureTerminal(terminalIdArr: string[]): boolean;
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
-  $resolveLinuxShellPath(type: string): Promise<string | undefined>;
-  $resolvePotentialLinuxShellPath(): Promise<string | undefined>;
+  $resolveUnixShellPath(type: string): Promise<string | undefined>;
+  $resolvePotentialUnixShellPath(): Promise<string | undefined>;
   $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
 }
@@ -264,12 +266,11 @@ export interface IExternlTerminalService {
   getProcessId(id: string): Promise<number>;
 }
 
+// 仅仅是 NodePty 启动所需的最小化字段
 export interface IShellLaunchConfig {
   shellPath?: string;
   args?: string[];
 
-  isExtensionTerminal?: boolean;
-  shellType?: ShellType;
   os?: OperatingSystem;
 
   /**
@@ -299,7 +300,7 @@ export interface IShellLaunchConfig {
   /**
    * Working directory to be set for the child program.
    */
-  cwd?: string;
+  cwd?: string | Uri;
 
   /**
    * Environment to be set for the child program.

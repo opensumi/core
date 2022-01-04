@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PtyService, IPtyService } from './pty';
-import { IPty } from '../common/pty';
+import { IPty, TerminalOptions } from '../common/pty';
 import { IShellLaunchConfig } from '../common/pty';
 import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
@@ -42,6 +42,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   public closeClient(clientId: string) {
+    // TODO: 实现关闭客户端，调用客户端的 closeClient 方法
     const closeTimer = global.setTimeout(
       () => {
         this.disposeClient(clientId);
@@ -66,7 +67,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
   }
 
-  public async create(id: string, options: IShellLaunchConfig) {
+  public async create2(id: string, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
     let terminal: IPty | undefined;
 

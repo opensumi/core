@@ -1,6 +1,6 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@opensumi/ide-core-common';
+import { isElectronEnv, Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { CorePreferences, electronEnv } from '@opensumi/ide-core-browser';
@@ -8,117 +8,21 @@ import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generateSessionId,
   ITerminalService,
-  ITerminalInternalService,
   ITerminalError,
   ITerminalServiceClient,
   ITerminalServicePath,
   ITerminalConnection,
   IPtyExitEvent,
-  ITerminalController,
   IShellLaunchConfig,
   INodePtyInstance,
   isTerminalError,
+  TerminalOptions,
 } from '../common';
-import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
-import { WindowsShellType } from '../common/shell';
+import { ShellType, WindowsShellType } from '../common/shell';
 
 export interface EventMessage {
   data: string;
 }
-
-@Injectable()
-export class TerminalInternalService implements ITerminalInternalService {
-  @Autowired(ITerminalService)
-  protected readonly service: ITerminalService;
-
-  @Autowired(ITerminalController)
-  protected readonly controller: ITerminalController;
-
-  private _processExtHostProxies = new Map<string, TerminalProcessExtHostProxy>();
-
-  generateSessionId() {
-    return this.service.generateSessionId ? this.service.generateSessionId() : generateSessionId();
-  }
-
-  getOptions() {
-    return this.service.getOptions ? this.service.getOptions() : {};
-  }
-
-  check(sessionIds: string[]) {
-    return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
-  }
-
-  private _getExtHostProxy(id: string) {
-    return this._processExtHostProxies.get(id);
-  }
-
-  async attach(sessionId: string, xterm: Terminal, launchConfig: IShellLaunchConfig) {
-    if (launchConfig.isExtensionTerminal) {
-      const proxy = new TerminalProcessExtHostProxy(sessionId, launchConfig.cols, launchConfig.rows, this.controller);
-      proxy.start();
-      proxy.onProcessExit(() => {
-        this._processExtHostProxies.delete(sessionId);
-      });
-      this._processExtHostProxies.set(sessionId, proxy);
-      return {
-        name: launchConfig.name || '',
-        readonly: false,
-        launchConfig,
-        onData: proxy.onProcessData.bind(proxy),
-        onExit: proxy.onProcessExit.bind(proxy),
-        sendData: proxy.input.bind(proxy),
-      };
-    }
-
-    return this.service.attach(sessionId, xterm, launchConfig);
-  }
-
-  async sendText(sessionId: string, message: string) {
-    const proxy = this._getExtHostProxy(sessionId);
-    if (proxy) {
-      return proxy.emitData(message);
-    }
-    return this.service.sendText(sessionId, message);
-  }
-
-  async resize(sessionId: string, cols: number, rows: number) {
-    const proxy = this._getExtHostProxy(sessionId);
-    if (proxy) {
-      return proxy.resize(cols, rows);
-    }
-    return this.service.resize(sessionId, cols, rows);
-  }
-
-  disposeById(sessionId: string) {
-    const proxy = this._getExtHostProxy(sessionId);
-    if (proxy) {
-      this._processExtHostProxies.delete(sessionId);
-      return proxy.dispose();
-    }
-    return this.service.disposeById(sessionId);
-  }
-
-  async getProcessId(sessionId: string) {
-    const proxy = this._getExtHostProxy(sessionId);
-    if (proxy) {
-      return -1;
-    }
-    return this.service.getProcessId(sessionId);
-  }
-
-  onError(handler: (error: ITerminalError) => void) {
-    return this.service.onError(handler);
-  }
-
-  onExit(handler: (event: IPtyExitEvent) => void) {
-    return this.service.onExit(handler);
-  }
-
-  async getOs() {
-    return this.service.getOs();
-  }
-}
-
 @Injectable()
 export class NodePtyTerminalService implements ITerminalService {
   static countId = 1;
@@ -166,14 +70,9 @@ export class NodePtyTerminalService implements ITerminalService {
     return ensureResult;
   }
 
-  private _createCustomWebSocket = (
-    sessionId: string,
-    pty: INodePtyInstance,
-    launchConfig: IShellLaunchConfig,
-  ): ITerminalConnection => ({
+  private _createCustomWebSocket = (sessionId: string, pty: INodePtyInstance): ITerminalConnection => ({
     name: pty.name,
     readonly: false,
-    launchConfig,
     onData: (handler: (value: string | ArrayBuffer) => void) => this._onDataDispatcher.on(sessionId, handler),
     onExit: (handler: (exitCode: number | undefined) => void) =>
       this._onExitDispatcher.on(sessionId, (e) => {
@@ -182,86 +81,99 @@ export class NodePtyTerminalService implements ITerminalService {
     sendData: (message: string) => {
       this.sendText(sessionId, message);
     },
+    ptyInstance: pty,
   });
 
-  private async finishShellLaunchConfig(options: IShellLaunchConfig) {
-    // we use `options.os` to determine platform
-    // in `ITerminalClient.prepareShellLaunchConfig`, it will use `ITerminalService.getOs()` set correct `options.os`
-
-    if (!options.shellType || options.shellType === 'default') {
-      // default 的情况交给系统环境来决定使用的终端类型
-      if (options.os === OperatingSystem.Windows) {
-        const { path, type } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
-        options.shellPath = path;
-        options.shellType = type;
-      } else {
-        options.shellPath = await this.serviceClientRPC.$resolvePotentialLinuxShellPath();
-        options.shellType = options.shellPath;
-      }
-    } else {
-      // 此时显然 shellType 存在并且不会是 default
-      if (options.os === OperatingSystem.Windows) {
-        options.shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(options.shellType as WindowsShellType);
-      } else {
-        options.shellPath = await this.serviceClientRPC.$resolveLinuxShellPath(options.shellType);
-      }
-      // 如果经过了上面的解析， options.shellPath 还是 undefined，那么就让 shellPath === type
-      // 在之后的 PtyService 会再校验 shellPath 是否存在
-      if (!options.shellPath) {
-        options.shellPath = options.shellType;
-      }
-    }
-
-    // TODO: support vscode terminal integrated settings
-    // 'terminal.integrated.automationShell.windows'
-    // 'terminal.integrated.automationShell.osx'
-    // 'terminal.integrated.automationShell.linux'
-    // 'terminal.integrated.shell.windows'
-    // 'terminal.integrated.shell.osx'
-    // 'terminal.integrated.shell.linux'
-    // 'terminal.integrated.env.windows'
-    // 'terminal.integrated.env.osx'
-    // 'terminal.integrated.env.linux'
-    // 'terminal.integrated.cwd'
-    // 'terminal.integrated.detectLocale'
-
-    let vscodeShellType: 'windows' | 'osx' | 'linux' = 'linux';
-
-    switch (options.os) {
-      case OperatingSystem.Windows: {
-        vscodeShellType = 'windows';
-        if (options.shellType === WindowsShellType['git-bash']) {
-          options.args?.push('--login');
+  /**
+   *
+   * @param sessionId
+   * @param _
+   * @param rows
+   * @param cols
+   * @param options
+   * @param shellType
+   * @returns
+   */
+  async attach(
+    sessionId: string,
+    _: Terminal,
+    rows: number,
+    cols: number,
+    options: TerminalOptions = {},
+    shellType?: ShellType,
+  ) {
+    let shellPath = options.shellPath;
+    const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
+    const platformKey = await this.getPlatformKey();
+    const terminalOs = await this.getOs();
+    if (!shellPath) {
+      // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
+      if (shellType && shellType !== 'default') {
+        if (terminalOs === OperatingSystem.Windows) {
+          shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(shellType as WindowsShellType);
+        } else {
+          shellPath = await this.serviceClientRPC.$resolveUnixShellPath(shellType);
         }
-        break;
+
+        if (!shellPath) {
+          // TODO: we can show error message here
+          // "the shell you want to launch is not exists"
+        }
       }
-      case OperatingSystem.Linux: {
-        vscodeShellType = 'linux';
-        break;
+
+      // and now, we have the following two situations:
+      if (!shellPath) {
+        if (!shellType || shellType === 'default') {
+          // 1. `terminal.type` is set to a falsy value, or set to `default`
+          if (terminalOs === OperatingSystem.Windows) {
+            // in windows, at least we can launch the cmd.exe
+            const { type: _type, path } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
+            shellType = _type;
+            shellPath = path;
+          } else {
+            // in unix, at least we can launch the sh
+            shellPath = await this.serviceClientRPC.$resolvePotentialUnixShellPath();
+          }
+        } else {
+          // 2. `terminal.type` is set to a truthy value, but the shell path is not resolved, for example cannot resolve 'git-bash'
+          //     but in this situation, we preserve the user settings, launch the type as shell path
+          //     on PtyService we also have a fallback to check the shellPath is valid
+          shellPath = shellType;
+        }
       }
-      case OperatingSystem.Macintosh: {
-        vscodeShellType = 'osx';
-        break;
+
+      // if we still can not find the shell path, we use shellType as the target shell path
+      if (!shellPath) {
+        shellPath = shellType;
       }
-      default:
-        break;
+
+      const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${platformKey}`);
+      shellArgs.push(...platformSpecificArgs);
+
+      if (shellType === WindowsShellType['git-bash']) {
+        shellArgs.push('--login');
+      }
     }
 
-    const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${vscodeShellType}`);
-    options.args?.push(...platformSpecificArgs);
+    const launchConfig: IShellLaunchConfig = {
+      shellPath,
+      cwd: options.cwd,
+      args: shellArgs,
+      cols,
+      rows,
+      os: terminalOs,
+      env: options.env,
+      name: options.name,
+      strictEnv: options.strictEnv,
+    };
 
-    return options;
-  }
+    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(launchConfig)}`);
 
-  async attach(sessionId: string, _: Terminal, options: IShellLaunchConfig) {
-    const finalOptions = await this.finishShellLaunchConfig(options);
-    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(finalOptions)}`);
-
-    const ptyInstance = await this.serviceClientRPC.create(sessionId, finalOptions);
+    const ptyInstance = await this.serviceClientRPC.create2(sessionId, launchConfig);
     if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
       // 有 pid 或者 name 的才视为创建成功
       // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
-      return this._createCustomWebSocket(sessionId, ptyInstance, finalOptions);
+      return this._createCustomWebSocket(sessionId, ptyInstance);
     }
   }
 
@@ -290,6 +202,15 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
+  async getPlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    // follow vscode
+    return (await this.getOs()) === OperatingSystem.Macintosh
+      ? 'osx'
+      : OS === OperatingSystem.Windows
+      ? 'windows'
+      : 'linux';
+  }
+
   disposeById(sessionId: string) {
     this.serviceClientRPC.disposeById(sessionId);
   }
@@ -313,10 +234,16 @@ export class NodePtyTerminalService implements ITerminalService {
    *
    * @param sessionId
    */
-  closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }) {
+  closeClient(id: string, code?: number, signal?: number): void;
+  closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }): void;
+  closeClient(sessionId: string, data?: ITerminalError | { code?: number; signal?: number } | number, signal?: number) {
     if (isTerminalError(data)) {
       this._onError.fire(data);
-    } else {
+    } else if (typeof data === 'number') {
+      // 说明是 pty 报出来的正常退出
+      this._onExitDispatcher.emit(sessionId, { code: data, signal });
+      this._onExit.fire({ sessionId, code: data, signal });
+    } else if (data) {
       // 说明是 pty 报出来的正常退出
       this._onExitDispatcher.emit(sessionId, { code: data.code, signal: data.signal });
       this._onExit.fire({ sessionId, code: data.code, signal: data.signal });
