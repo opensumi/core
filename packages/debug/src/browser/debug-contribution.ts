@@ -59,6 +59,7 @@ import {
   DEBUG_REPORT_NAME,
   DEBUG_WELCOME_ID,
   DEBUG_SCHEME,
+  TSourceBrekpointProperties,
 } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
@@ -71,7 +72,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
-import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -530,7 +530,7 @@ export class DebugContribution
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
-          let defaultContext: DebugBreakpointZoneWidget.Context = 'condition';
+          let defaultContext: TSourceBrekpointProperties = 'condition';
           if (selectedBreakpoint.breakpoint) {
             const raw = selectedBreakpoint.breakpoint.raw;
             if (raw.condition) {

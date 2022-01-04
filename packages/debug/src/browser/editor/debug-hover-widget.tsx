@@ -11,39 +11,21 @@ import {
   IReporterService,
 } from '@opensumi/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DebugEditor, IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
+import {
+  DebugEditor,
+  IDebugSessionManager,
+  DEBUG_REPORT_NAME,
+  IDebugHoverWidget,
+  ShowDebugHoverOptions,
+  HideDebugHoverOptions,
+} from '../../common';
 import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
 import { DebugHoverView } from './debug-hover.view';
 import debounce = require('lodash.debounce');
 
-export interface ShowDebugHoverOptions {
-  /**
-   * 选中区域
-   */
-  selection: monaco.Range;
-  /**
-   * 是否为焦点
-   * 默认值：false
-   */
-  focus?: boolean;
-  /**
-   * 是否立即调用，当为true时会清理之前的队列
-   * 默认值：true
-   */
-  immediate?: boolean;
-}
-
-export interface HideDebugHoverOptions {
-  /**
-   * 是否立即调用，当为true时会清理之前的队列
-   * 默认值：true
-   */
-  immediate?: boolean;
-}
-
 @Injectable()
-export class DebugHoverWidget implements monaco.editor.IContentWidget {
+export class DebugHoverWidget implements IDebugHoverWidget {
   static ID = 'debug-hover-widget';
 
   protected readonly toDispose = new DisposableCollection();

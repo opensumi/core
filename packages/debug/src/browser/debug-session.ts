@@ -22,6 +22,9 @@ import {
   DebugEventTypes,
   DebugRequestTypes,
   DebugExitEvent,
+  IRuntimeBreakpoint,
+  BreakpointsChangeEvent,
+  IDebugBreakpoint,
 } from '../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -30,7 +33,7 @@ import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
 import { IMessageService } from '@opensumi/ide-overlay';
-import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBreakpoint } from './breakpoint';
+import { BreakpointManager, DebugBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -391,14 +394,14 @@ export class DebugSession implements IDebugSession {
    * runtime 时候的临时缓存，每次调试的时候都应该清空，
    * 会等待首次初始化完成
    */
-  protected id2Breakpoint = new Map<number, DebugBreakpoint>();
+  protected id2Breakpoint = new Map<number, IDebugBreakpoint>();
   /**
    * 运行时的断点修改
    * TODO:// 待重构 @倾一
    * @param body
    */
   protected async onUpdateBreakpoint(body: DebugProtocol.BreakpointEvent['body']): Promise<void> {
-    let breakpoint: DebugBreakpoint | undefined;
+    let breakpoint: IDebugBreakpoint | undefined;
     if (this.settingBreakpoints) {
       await this.settingBreakpoints.promise;
     }
@@ -482,11 +485,11 @@ export class DebugSession implements IDebugSession {
     return await Promise.all(promises);
   }
 
-  public delBreakpoint(breakpoint: DebugBreakpoint): boolean {
+  public delBreakpoint(breakpoint: IDebugBreakpoint): boolean {
     return this.breakpointManager.delBreakpoint(breakpoint);
   }
 
-  public async addBreakpoint(breakpoint: DebugBreakpoint, isBpDeferred?: boolean): Promise<void> {
+  public async addBreakpoint(breakpoint: IDebugBreakpoint, isBpDeferred?: boolean): Promise<void> {
     if (isBpDeferred) {
       this.breakpointManager.setBpDeffered();
     }
@@ -1106,7 +1109,7 @@ export class DebugSession implements IDebugSession {
   }
 
   public currentEditor(): DebugEditor | undefined {
-    return this.getModel()?.editor;
+    return this.getModel()?.getEditor();
   }
 
   public getModel(): IDebugModel | undefined {
