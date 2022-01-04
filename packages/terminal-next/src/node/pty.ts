@@ -1,22 +1,83 @@
-import os from 'os';
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalProcess.ts
+
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import omit from 'lodash.omit';
-import { TerminalOptions } from '../common';
+import { IShellLaunchConfig } from '../common';
+import { IPty } from '../common/pty';
+import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-
+import { INodeLogger } from '@opensumi/ide-core-node';
+import { Injectable, Autowired } from '@opensumi/di';
+import { promises } from 'fs';
+import * as path from '@opensumi/ide-core-common/lib/path';
+import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 export { pty };
 
-export interface IPty extends pty.IPty {
-  bin: string;
-}
+export const IPtyService = Symbol('IPtyService');
 
-const defaultWindowsType = 'powershell.exe';
-
+@Injectable()
 export class PtyService {
-  async create(rows: number, cols: number, options: TerminalOptions): Promise<IPty> {
-    const bin =
-      options.shellPath || (os.platform() === 'win32' ? defaultWindowsType : process.env['SHELL'] || '/bin/sh');
+  @Autowired(INodeLogger)
+  private readonly logger: INodeLogger;
+
+  async _validateCwd(options: IShellLaunchConfig) {
+    if (options.cwd) {
+      try {
+        const result = await promises.stat(options.cwd);
+        if (!result.isDirectory()) {
+          return {
+            message: `Starting directory (cwd) "${options.cwd}" is not a directory`,
+          };
+        }
+      } catch (err) {
+        if (err?.code === 'ENOENT') {
+          return {
+            message: `Starting directory (cwd) "${options.cwd}" does not exist`,
+          };
+        }
+      }
+    }
+
+    return undefined;
+  }
+  async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment) {
+    if (!options.shellPath) {
+      return {
+        message: 'IShellLaunchConfig.shellPath not set',
+      };
+    }
+    try {
+      const result = await promises.stat(options.shellPath);
+      if (!result.isFile() && !result.isSymbolicLink()) {
+        return {
+          message: `Path to shell executable "${options.shellPath}" is not a file or a symlink`,
+        };
+      }
+    } catch (err) {
+      if (err?.code === 'ENOENT') {
+        // The executable isn't an absolute path, try find it on the PATH or CWD
+        const envPaths: string[] | undefined =
+          options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
+        const executable = await findExecutable(options.shellPath, options.cwd, envPaths, ptyEnv);
+        if (!executable) {
+          return {
+            message: `Path to shell executable "${options.shellPath}" does not exist`,
+          };
+        }
+        // Set the shellPath explicitly here so that node-pty doesn't need to search the
+        // $PATH too.
+        options.shellPath = executable;
+      }
+    }
+  }
+
+  async create2(options: IShellLaunchConfig) {
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -49,14 +110,26 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
-    const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
-      name: 'xterm-256color',
-      cols: cols || 100,
-      rows: rows || 30,
-      cwd: options.cwd ? options.cwd!.toString() : '',
+    const results = await Promise.all([this._validateCwd(options), this._validateExecutable(options, ptyEnv)]);
+    const firstError = results.find((r) => r !== undefined);
+    if (firstError) {
+      this.logger.error(`validate shell launch config failed: ${firstError.message}`);
+      throw new Error(firstError.message);
+    }
+
+    // above code will validate shellPath and throw if it doesn't exist
+
+    const ptyProcess = pty.spawn(options.shellPath as string, options.args || [], {
+      name: options.name || 'xterm-256color',
+      cols: options.cols || 100,
+      rows: options.rows || 30,
+      cwd: options.cwd,
       env: ptyEnv,
     });
-    (ptyProcess as any).bin = bin;
+    (ptyProcess as IPty).bin = options.shellPath as string;
+    (ptyProcess as IPty).launchConfig = options;
+    const match = (options.shellPath as string).match(/[\w|.]+$/);
+    (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;
   }
 

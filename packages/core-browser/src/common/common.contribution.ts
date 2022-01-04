@@ -32,15 +32,15 @@ export class ClientCommonContribution
     MenuContribution,
     KeybindingContribution
 {
+  schema: PreferenceSchema = corePreferenceSchema;
+
+  private inputFocusedContext: IContextKey<boolean>;
+
   @Autowired(CommandService)
   protected commandService: CommandService;
 
-  schema: PreferenceSchema = corePreferenceSchema;
-
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
-
-  private inputFocusedContext: IContextKey<boolean>;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -82,7 +82,7 @@ export class ClientCommonContribution
     command.registerCommand(EDITOR_COMMANDS.SELECT_ALL);
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute: () => {
-        alert(replaceLocalizePlaceholder(this.appConfig.appName) || 'KAITIAN IDE Framework'); // todo
+        alert(replaceLocalizePlaceholder(this.appConfig.appName));
       },
     });
   }
@@ -90,7 +90,10 @@ export class ClientCommonContribution
   registerMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'KAITIAN Electron'), order: 0 });
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, {
+        label: localize('app.name', this.appConfig.appName),
+        order: 0,
+      });
     }
     menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
     menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });

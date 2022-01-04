@@ -164,7 +164,6 @@ declare module 'sumi-worker' {
      *
      * @param uri Identifies the resource to open.
      * @return A promise that resolves to a [document](#TextDocument).
-     * @Owner 木农
      *
      * A short-hand for `openTextDocument(Uri.file(fileName))`.
      *
@@ -237,7 +236,6 @@ declare module 'sumi-worker' {
 
     /**
      * All text documents currently known to the system.
-     * @Owner 木农
      */
     export const textDocuments: TextDocument[];
 

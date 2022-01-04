@@ -40,7 +40,7 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
-  // 排序位置，小的在前 （考虑改成 index 语义更好？ @寻壑）
+  // 排序位置，数字越小优先级越高
   priority: number;
 }
 const CONTAINER_NAME_MAP = {
@@ -398,6 +398,7 @@ export class TabbarService extends WithEventBus {
   @action.bound handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId && !forbidCollapse) {
+      // 双击同一个 tab 时隐藏 panel
       this.currentContainerId = '';
     } else {
       this.currentContainerId = containerId;

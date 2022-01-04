@@ -2,9 +2,11 @@ const path = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { ProgressPlugin } = require('webpack');
 
 const tsConfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.components.json');
 
+/** @type { import('webpack').Configuration } */
 module.exports = {
   entry: path.join(__dirname, './src/index.ts'),
   output: {
@@ -18,7 +20,8 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'index.css',
     }),
-  ],
+    !process.env.CI && new ProgressPlugin(),
+  ].filter(Boolean),
   node: {
     net: 'empty',
     child_process: 'empty',
@@ -105,4 +108,5 @@ module.exports = {
       },
     ],
   },
+  stats: process.env.CI ? 'errors-only' : 'normal',
 };

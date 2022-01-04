@@ -3,9 +3,14 @@ import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, positionToRange } from '@opensumi/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DebugEditor } from '../../common';
-import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
+import {
+  DebugBreakpointWidgetContext,
+  DebugEditor,
+  IDebugBreakpointWidget,
+  TSourceBrekpointProperties,
+} from '../../common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
+import { DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 
 export enum TopStackType {
   exception,
@@ -13,7 +18,7 @@ export enum TopStackType {
 }
 
 @Injectable()
-export class DebugBreakpointWidget extends Disposable {
+export class DebugBreakpointWidget extends Disposable implements IDebugBreakpointWidget {
   @Autowired(DebugEditor)
   private readonly editor: DebugEditor;
 
@@ -46,14 +51,14 @@ export class DebugBreakpointWidget extends Disposable {
     return this.zone?.values;
   }
 
-  get breakpointType(): DebugBreakpointZoneWidget.Context {
+  get breakpointType(): TSourceBrekpointProperties {
     return this.zone?.breakpointType;
   }
 
   show(
     position: monaco.Position,
     contexts?: DebugBreakpointWidgetContext,
-    defaultContext: DebugBreakpointZoneWidget.Context = 'condition',
+    defaultContext: TSourceBrekpointProperties = 'condition',
   ) {
     this.dispose();
     this._position = position;

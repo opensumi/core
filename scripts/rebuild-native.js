@@ -1,8 +1,7 @@
 const { execSync } = require("child_process");
 const { pathExistsSync, copySync, removeSync } = require("fs-extra");
-const { basename, join } = require('path');
+const { join } = require('path');
 const argv = require('yargs').argv;
-const fs = require('fs')
 
 
 const nativeModules = [
@@ -22,7 +21,7 @@ if (target === 'electron') {
 
   console.log('rebuilding native for electron version ' + version);
 
-  commands = [require('os').arch === 'win32' ? 'set HOME=~/.electron-gyp':'HOME=~/.electron-gyp','node-gyp','rebuild',`--target=${version}`,'--arch=x64','--dist-url=https://electronjs.org/headers', 'openssl_fips=X']
+  commands = [require('os').arch === 'win32' ? 'set HOME=~/.electron-gyp' : 'HOME=~/.electron-gyp', 'node-gyp', 'rebuild', `--target=${version}`, '--arch=x64', '--dist-url=https://electronjs.org/headers', 'openssl_fips=X']
 
 } else if (target === 'node') {
 
@@ -34,8 +33,8 @@ if (target === 'electron') {
 
 }
 
-function rebuildModule(modulePath, type, version) {
-  const info = require(join(modulePath,'./package.json'));
+function rebuildModule (modulePath, type, version) {
+  const info = require(join(modulePath, './package.json'));
   console.log('rebuilding ' + info.name)
   const cache = getBuildCacheDir(modulePath, type, version, target);
   if (pathExistsSync(cache) && !argv['force-rebuild']) {
@@ -52,9 +51,9 @@ function rebuildModule(modulePath, type, version) {
 
 }
 
-function getBuildCacheDir(modulePath, type, version, target) {
-  const info = require(join(modulePath,'./package.json'));
-  return join(require('os').tmpdir(), 'ide_build_cache', target, info.name + '-' + info.version , type + '-' + version);
+function getBuildCacheDir (modulePath, type, version, target) {
+  const info = require(join(modulePath, './package.json'));
+  return join(require('os').tmpdir(), 'ide_build_cache', target, info.name + '-' + info.version, type + '-' + version);
 }
 
 

@@ -584,6 +584,10 @@ export const localizationBundle = {
     'terminal.environment.relaunch': 'Relaunch Terminal',
     'terminal.environment.changes': "Extensions want to make the following changes to the terminal's environment:",
     'terminal.environment.removal': "Extensions want to remove these existing changes from the terminal's environment:",
+    'terminal.launchFail.cwdNotDirectory': 'Starting directory (cwd) "{0}" is not a directory',
+    'terminal.launchFail.cwdDoesNotExist': 'Starting directory (cwd) "{0}" does not exist',
+    'terminal.launchFail.executableIsNotFileOrSymlink': 'Path to shell executable "{0}" is not a file or a symlink',
+    'terminal.launchFail.executableDoesNotExist': 'Path to shell executable "{0}" does not exist',
 
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',

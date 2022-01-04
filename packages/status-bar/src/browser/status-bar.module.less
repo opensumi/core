@@ -1,7 +1,7 @@
 @import '~@opensumi/ide-core-browser/lib/style/variable.less';
 
 /* Statusbar */
-@kt-statusBar-font-size: 12px;
+@statusBar-font-size: 12px;
 
 .statusBar {
   background: var(--statusBar-background);
@@ -24,7 +24,7 @@
 
 .right {
   justify-content: flex-end;
-  padding-right: calc(@kt-ui-spacing*2);
+  padding-right: calc(@base-ui-spacing*2);
 }
 
 .element {
@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   padding: 0 4px;
-  font-size: @kt-statusBar-font-size;
+  font-size: @statusBar-font-size;
   &:first-child {
     padding: 0px 10px;
   }
@@ -48,11 +48,11 @@
 }
 
 .area.left .element {
-  margin-right: @kt-ui-spacing;
+  margin-right: @base-ui-spacing;
 }
 
 .area.right .element {
-  margin-left: @kt-ui-spacing;
+  margin-left: @base-ui-spacing;
 }
 
 // .element {

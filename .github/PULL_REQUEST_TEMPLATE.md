@@ -1,18 +1,19 @@
-### 变动类型
+### Types
 
-> 请将这段及下面未选中的项一起删除，保持 PR 描述的简洁性
+<!-- Please delete this line and the unselected items below to keep the PR description clean -->
 
-- [ ] 新特性提交
-- [ ] 日常 bug 修复
-- [ ] 文档改进
-- [ ] 样式改进
-- [ ] TypeScript 定义更新
-- [ ] 重构
-- [ ] 代码风格优化
-- [ ] 测试用例
-- [ ] 分支合并
-- [ ] 其他改动（是关于什么的改动？）
+- [ ] 🎉 New Features
+- [ ] 🐛 Bug Fixes
+- [ ] 📚 Documentation Changes
+- [ ] 💄 Code Style Changes
+- [ ] 💄 Style Changes
+- [ ] 🪚 Refactors
+- [ ] 🚀 Performance Improvements
+- [ ] 🏗️ Build System
+- [ ] ⏱ Tests
+- [ ] 🧹 Chores
+- [ ] Other Changes
 
-### 需求背景和解决方案
+### Background or solution
 
-### changelog
+### Changelog

@@ -1,4 +1,5 @@
 import { URI } from '@opensumi/ide-core-browser';
+import { IDebugBreakpoint } from '@opensumi/ide-debug';
 import { DebugDecorator, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser';
 
 describe('Breakpoints Decoration', () => {
@@ -7,7 +8,7 @@ describe('Breakpoints Decoration', () => {
   describe('Get breakpoint decoration with debugMode', () => {
     const decoration: DebugDecorator = new DebugDecorator();
     it('when breakpoint is disabled', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,
@@ -20,7 +21,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,
@@ -37,7 +38,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is logPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,
@@ -54,7 +55,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is conditionPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,
@@ -71,7 +72,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is normal breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,
@@ -91,7 +92,7 @@ describe('Breakpoints Decoration', () => {
     const decoration: DebugDecorator = new DebugDecorator();
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(
+      const breakpoint: IDebugBreakpoint = DebugBreakpoint.create(
         new URI('test.js'),
         {
           line: 1,

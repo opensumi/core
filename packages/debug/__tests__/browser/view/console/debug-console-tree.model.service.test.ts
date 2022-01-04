@@ -33,6 +33,7 @@ import { WSChannelHandler } from '@opensumi/ide-connection';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { ITaskService } from '@opensumi/ide-task';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
+import { DebugContextKey } from '@opensumi/ide-debug/lib/browser/contextkeys/debug-contextkey.service';
 
 describe('Debug Console Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -179,6 +180,14 @@ describe('Debug Console Tree Model', () => {
     mockInjector.overrideProviders({
       token: ITaskService,
       useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: DebugContextKey,
+      useValue: {
+        contextInDebugConsole: {
+          set: jest.fn(),
+        },
+      },
     });
 
     debugConsoleModelService = mockInjector.get(DebugConsoleModelService);

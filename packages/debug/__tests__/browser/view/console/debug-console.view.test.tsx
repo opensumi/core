@@ -217,9 +217,6 @@ describe('Debug console component Test Suites', () => {
     container = null;
   });
 
-  /**
-   * 这块测试还在补 by @倾一
-   */
   it('repl filter', async () => {
     const session = createMockSession('mock', {});
     // @ts-ignore

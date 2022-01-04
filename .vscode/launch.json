@@ -9,33 +9,27 @@
       "request": "attach",
       "name": "Attach to BackEnd",
       "port": 9999,
-      "restart": true,
+      "restart": true
     },
     {
       "type": "node",
       "request": "attach",
       "name": "Attach to Electron Main",
       "port": 9229,
-      "restart": true,
+      "restart": true
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Launch BackEnd",
-      "args": [
-        "./entry/web/server.ts"
-      ],
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "args": ["./entry/web/server.ts"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/packages/startup",
       "protocol": "inspector",
       "console": "internalConsole",
       "env": {
-        "IS_DEV" : "1",
+        "IS_DEV": "1",
         "KTLOG_SHOW_DEBUG": "1"
       }
     },
@@ -44,10 +38,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/.bin/webpack-dev-server",
-      "args": [
-        "--config",
-        "${workspaceRoot}/packages/startup/webpack.config.js"
-      ],
+      "args": ["--config", "${workspaceRoot}/packages/startup/webpack.config.js"],
       "cwd": "${workspaceRoot}/packages/startup",
       "console": "internalConsole"
     },
@@ -58,9 +49,7 @@
       "port": 9889,
       "restart": true,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/tools/extension/**/*.js"
-      ],
+      "outFiles": ["${workspaceRoot}/tools/extension/**/*.js"],
       "sourceMapPathOverrides": {
         "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
         "webpack:///./*": "${workspaceRoot}/*",
@@ -72,7 +61,7 @@
       "request": "launch",
       "name": "Jest Current File",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["${relativeFile}"],
+      "args": ["${relativeFile}", "--detectOpenHandles"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
@@ -80,18 +69,12 @@
       "type": "node",
       "request": "launch",
       "name": "Publish test",
-      "args": [
-        "./scripts/publish.ts"
-      ],
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "args": ["./scripts/publish.ts"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
-      "console": "internalConsole",
+      "console": "internalConsole"
     },
     {
       "type": "node",

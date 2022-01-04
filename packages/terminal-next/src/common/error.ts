@@ -23,6 +23,10 @@ export interface ITerminalError {
   reconnected?: boolean;
 }
 
+export function isTerminalError(data: any): data is ITerminalError {
+  return data.message !== undefined;
+}
+
 export const ITerminalErrorService = Symbol('ITerminalErrorService');
 export interface ITerminalErrorService {
   errors: Map<string, ITerminalError>;

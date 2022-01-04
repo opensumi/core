@@ -144,7 +144,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async start() {
-    await this.clear();
     try {
       this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
@@ -207,8 +206,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   async clear() {
     if (this.node) {
-      await this.node.dispose();
-      this.node = null;
+      try {
+        await this.node.dispose();
+      } catch (error) {
+        const logger = getDebugLogger();
+        logger.error(error);
+      } finally {
+        this.node = null;
+      }
     }
   }
 
@@ -303,8 +308,8 @@ export class KTNodeProcess {
       return new Promise<void>((resolve, reject) => {
         treeKill(this._process.pid, 'SIGKILL', (err) => {
           if (err) {
-            logger.error(`tree kill error" \n ${err.message}`);
-            reject();
+            logger.error(`tree kill error \n ${err.message}`);
+            reject(err);
           } else {
             logger.log('kill fork process', this._process.pid);
             resolve();

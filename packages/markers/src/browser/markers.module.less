@@ -1,7 +1,7 @@
 @import '~@opensumi/ide-core-browser/lib/style/variable.less';
 
-@kt-markers-inline-color: gray;
-@kt-markers-item-margin: 0 5px 0 5px;
+@markers-inline-color: gray;
+@markers-item-margin: 0 5px 0 5px;
 
 .highlight {
   background-color: rgba(255, 0, 0, 0.3);
@@ -9,7 +9,7 @@
 }
 
 .markersContent {
-  font-size: @kt-default-font-size;
+  font-size: @base-font-size;
   width: 100%;
   height: 100%;
   overflow: auto;
@@ -17,7 +17,7 @@
 
   // 空内容
   .empty {
-    color: @kt-markers-inline-color;
+    color: @markers-inline-color;
     margin: 10px 0 0 10px;
     display: flex;
     flex-direction: row;
@@ -39,7 +39,7 @@
   .itemTitleName {
     // 标题
     color: var(--foreground);
-    margin: @kt-markers-item-margin;
+    margin: @markers-item-margin;
     max-width: 300px;
     overflow: hidden;
     white-space: nowrap;
@@ -48,8 +48,8 @@
 
   .itemTitleDescription {
     // 文件名称
-    color: @kt-markers-inline-color;
-    margin: @kt-markers-item-margin;
+    color: @markers-inline-color;
+    margin: @markers-item-margin;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -71,13 +71,13 @@
 
     .typeContainer {
       // 详细信息中的错误码
-      color: @kt-markers-inline-color;
+      color: @markers-inline-color;
       display: flex;
       flex-direction: row;
       white-space: nowrap;
 
       .type {
-        color: @kt-markers-inline-color;
+        color: @markers-inline-color;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -86,8 +86,8 @@
 
     .position {
       // 错误位置信息
-      color: @kt-markers-inline-color;
-      margin: @kt-markers-item-margin;
+      color: @markers-inline-color;
+      margin: @markers-item-margin;
     }
   }
 }

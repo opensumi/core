@@ -852,7 +852,6 @@ declare module 'sumi-worker' {
    *
    * @see [CompletionItemProvider.provideCompletionItems](#CompletionItemProvider.provideCompletionItems)
    * @see [CompletionItemProvider.resolveCompletionItem](#CompletionItemProvider.resolveCompletionItem)
-   * @寻壑
    */
   export class CompletionItem {
     /**
@@ -973,7 +972,6 @@ declare module 'sumi-worker' {
   /**
    * Represents a collection of [completion items](#CompletionItem) to be presented
    * in the editor.
-   * @寻壑
    */
   export class CompletionList {
     /**
@@ -2038,7 +2036,6 @@ declare module 'sumi-worker' {
    * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document
    * symbols can be hierarchical and they have two ranges: one that encloses its definition and one that points to
    * its most interesting range, e.g. the range of an identifier.
-   * @寻壑
    */
   export class DocumentSymbol {
     /**

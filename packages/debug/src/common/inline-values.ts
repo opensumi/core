@@ -1,6 +1,6 @@
+import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IRange, CancellationToken, Event } from '@opensumi/ide-core-common';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 // Inline Values
 /**

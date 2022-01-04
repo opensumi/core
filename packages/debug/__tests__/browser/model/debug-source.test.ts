@@ -119,7 +119,7 @@ describe('DebugSource Model', () => {
       };
       await debugSource.open({}, frame as any);
       expect(workbenchEditorService.open).toBeCalledTimes(1);
-      expect(model.focusStackFrame).toBeCalledWith(frame);
+      expect(model.focusStackFrame).toBeCalledWith();
       done();
     });
 

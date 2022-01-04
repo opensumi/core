@@ -89,7 +89,7 @@ export class RawContextKey<T> implements IRawContextKey<T> {
   /**
    * is equal to
    */
-  public equalsTo(value: string): string {
+  public equalsTo<T = string>(value: T): string {
     return this.raw + ' == ' + value;
   }
 

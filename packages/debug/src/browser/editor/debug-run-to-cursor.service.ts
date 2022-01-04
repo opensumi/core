@@ -6,6 +6,7 @@ import { URI } from '@opensumi/ide-core-common';
 import { DebugSessionManager } from './../debug-session-manager';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IDebugSessionManager, DebugState } from './../../common/debug-session';
+import { IDebugBreakpoint } from '../../common';
 
 @Injectable()
 export class DebugRunToCursorService {
@@ -58,9 +59,9 @@ export class DebugRunToCursorService {
     const bpExists = !!sessionModel.getBreakpoints(uri, { column: position.column, lineNumber: position.lineNumber })
       .length;
 
-    let breakpointToRemove: DebugBreakpoint | undefined;
+    let breakpointToRemove: IDebugBreakpoint | undefined;
     let threadToContinue = currentSession.currentThread;
-    let enabledBreakpoints: DebugBreakpoint[] = [];
+    let enabledBreakpoints: IDebugBreakpoint[] = [];
 
     if (!bpExists) {
       if (isForce) {
@@ -169,7 +170,7 @@ export class DebugRunToCursorService {
     return { thread: bestThread, breakpoint: bp };
   }
 
-  private recoverStatus(bks: DebugBreakpoint[]): void {
+  private recoverStatus(bks: IDebugBreakpoint[]): void {
     bks.forEach((bk) => {
       this.debugBreakpointsService.toggleBreakpointEnable(bk);
     });
