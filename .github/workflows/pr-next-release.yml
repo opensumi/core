@@ -49,7 +49,7 @@ jobs:
               status: 'in_progress',
               head_sha: suite.data.head_sha,
               output: {
-                title: 'Pre-Release version is publishing. Please wait for a moment...'',
+                title: 'Pre-Release version is publishing. Please wait for a moment...',
                 summary: `A version for pull request is **running**. sha: **${process.env.HEAD_SHA}**`,
               },
             });
