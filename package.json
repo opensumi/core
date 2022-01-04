@@ -52,7 +52,6 @@
         "dependsOn": [
           "^build"
         ],
-        "cache": false,
         "outputs": [
           ".next/**",
           "lib/**",
