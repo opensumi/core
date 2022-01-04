@@ -1,7 +1,3 @@
-/**
- * API OWENR: 伊北
- */
-
 declare module 'vscode' {
   /**
    * Represents the input box in the Source Control viewlet.

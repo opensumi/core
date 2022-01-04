@@ -1,7 +1,3 @@
-/**
- * API OWENR: 墨蛰
- */
-
 declare module 'vscode' {
   /**
    * Namespace describing the environment the editor runs in.

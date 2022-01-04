@@ -1636,8 +1636,6 @@ declare module 'sumi-worker' {
 
   /**
    * A cancellation source creates and controls a [cancellation token](#CancellationToken).
-   * @墨蛰
-   *
    */
   export class CancellationTokenSource {
     /**
@@ -1689,7 +1687,6 @@ declare module 'sumi-worker' {
    * Represents a related message and source code location for a diagnostic. This should be
    * used to point to code locations that cause or related to a diagnostics, e.g. when duplicating
    * a symbol in a scope.
-   * @寻壑
    */
   export class DiagnosticRelatedInformation {
     /**
@@ -1758,7 +1755,6 @@ declare module 'sumi-worker' {
   /**
    * Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
    * are only valid in the scope of a file.
-   * @寻壑
    */
   export class Diagnostic {
     /**
@@ -2094,7 +2090,6 @@ declare module 'sumi-worker' {
    *
    * This class has factory methods for common error-cases, like `FileNotFound` when
    * a file or folder doesn't exist, use them like so: `throw vscode.FileSystemError.FileNotFound(someUri);`
-   * @墨蛰
    */
   export class FileSystemError extends Error {
     /**

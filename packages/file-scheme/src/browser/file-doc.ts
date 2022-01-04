@@ -87,9 +87,6 @@ export class FileSchemeDocumentProvider
   }
 }
 
-/**
- * TODO: 这个应该换个地方 @寻壑
- */
 @Injectable()
 export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
   isReadonly(uri: URI) {

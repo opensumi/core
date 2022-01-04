@@ -1,7 +1,3 @@
-/**
- * API OWENR: 墨蛰
- */
-
 declare module 'vscode' {
 	/**
 	 * Namespace for dealing with installed extensions. Extensions are represented
