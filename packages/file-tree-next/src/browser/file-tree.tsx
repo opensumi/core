@@ -29,6 +29,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [model, setModel] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const disposableRef: React.RefObject<DisposableCollection> = React.useRef(new DisposableCollection());
 
   const { height } = viewState;
   const fileTreeService = useInjectable<FileTreeService>(IFileTreeService);
@@ -135,25 +136,24 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
 
   React.useEffect(() => {
     ensureIsReady();
-    const disposable = new DisposableCollection();
-    disposable.push(
+    disposableRef.current?.push(
       iconService.onThemeChange((theme) => {
         setIconTheme(theme);
       }),
     );
-    disposable.push(
+    disposableRef.current?.push(
       fileTreeService.onTreeIndentChange(({ indent, baseIndent }) => {
         setTreeIndent({ indent, baseIndent });
       }),
     );
-    disposable.push(
+    disposableRef.current?.push(
       fileTreeService.onFilterModeChange((flag) => {
         setFilterMode(flag);
       }),
     );
     return () => {
       fileTreeModelService.removeFileDecoration();
-      disposable.dispose();
+      disposableRef.current?.dispose();
     };
   }, []);
 
@@ -188,15 +188,17 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     await expandAllCacheDirectory();
   }, [fileTreeModelService]);
 
-  const ensureIsReady = async () => {
+  const ensureIsReady = React.useCallback(async () => {
     await fileTreeModelService.whenReady;
     if (fileTreeModelService.treeModel) {
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
       await fileTreeModelService.treeModel.root.ensureLoaded();
     }
-    setIsReady(true);
-  };
+    if (!disposableRef.current?.disposed) {
+      setIsReady(true);
+    }
+  }, [fileTreeModelService, disposableRef.current]);
 
   const handleTreeReady = React.useCallback(
     (handle: IRecycleTreeFilterHandle) => {
