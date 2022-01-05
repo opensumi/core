@@ -328,6 +328,7 @@ describe('Strings', () => {
   });
 
   test('fuzzyContains', () => {
+    expect(!strings.fuzzyContains(undefined!, null!)).toBeTruthy();
     expect(!strings.fuzzyContains('', '')).toBeTruthy();
     expect(strings.fuzzyContains('hello world', 'h')).toBeTruthy();
     expect(!strings.fuzzyContains('hello world', 'q')).toBeTruthy();
