@@ -43,7 +43,7 @@ export class RenameAdapter {
         if (rejectReason) {
           return {
             rejectReason,
-            edits: undefined!,
+            edits: [],
           } as model.WorkspaceEditDto;
         } else {
           return Promise.reject<model.WorkspaceEditDto>(error);
@@ -72,7 +72,7 @@ export class RenameAdapter {
     return Promise.resolve(this.provider.prepareRename(doc, pos, token)).then(
       (rangeOrLocation) => {
         let range: vscode.Range | undefined;
-        let text: string;
+        let text: string | undefined;
         if (rangeOrLocation && types.Range.isRange(rangeOrLocation)) {
           range = rangeOrLocation;
           text = doc.getText(rangeOrLocation);
@@ -81,17 +81,17 @@ export class RenameAdapter {
           text = rangeOrLocation.placeholder;
         }
 
-        if (!range) {
+        if (!range || !text) {
           return undefined;
         }
+
         if (range.start.line > pos.line || range.end.line < pos.line) {
-          // tslint:disable-next-line:no-console
           console.warn('INVALID rename location: position line must be within range start/end lines');
           return undefined;
         }
         return {
-          range: Converter.fromRange(range)!,
-          text: text!,
+          range: Converter.fromRange(range),
+          text,
         };
       },
       (error) => {
@@ -99,8 +99,6 @@ export class RenameAdapter {
         if (rejectReason) {
           return Promise.resolve({
             rejectReason,
-            range: undefined!,
-            text: undefined!,
           } as model.RenameLocation & model.Rejection);
         } else {
           return Promise.reject(error);

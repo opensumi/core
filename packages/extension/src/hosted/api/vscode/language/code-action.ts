@@ -69,7 +69,7 @@ export class CodeActionAdapter {
       this.provider.provideCodeActions(doc, ran, codeActionContext, createToken()),
     ).then((commandsOrActions) => {
       if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
-        return undefined!;
+        return undefined;
       }
 
       cacheId = this._cache.add(commandsOrActions);

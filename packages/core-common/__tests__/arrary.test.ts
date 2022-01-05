@@ -317,14 +317,14 @@ describe('Arrays', () => {
   });
 
   test('coalesce - inplace', () => {
-    let a: Array<number | null> = [null, 1, null, 2, 3];
+    let a: Array<number | null | undefined> = [null, 1, null, 2, 3];
     arrays.coalesceInPlace(a);
     equal(a.length, 3);
     equal(a[0], 1);
     equal(a[1], 2);
     equal(a[2], 3);
 
-    a = [null, 1, null, undefined!, undefined!, 2, 3];
+    a = [null, 1, null, undefined, undefined, 2, 3];
     arrays.coalesceInPlace(a);
     equal(a.length, 3);
     equal(a[0], 1);

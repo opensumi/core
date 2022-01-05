@@ -169,10 +169,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideHover: (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_HOVER);
         return this.proxy.$provideHoverWithDuration(handle, model.uri, position, token).then(({ result, _dur }) => {
@@ -267,12 +267,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           token: monaco.CancellationToken,
         ) => {
           if (!this.isLanguageFeatureEnabled(model)) {
-            return undefined!;
+            return undefined;
           }
           const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
           const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
           if (!result) {
-            return undefined!;
+            return undefined;
           }
 
           if (result[ISuggestResultDtoField.completions].length) {
@@ -374,16 +374,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideDefinition: async (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DEFINITION);
         const { result, _dur } = await this.proxy.$provideDefinitionWithDuration(handle, model.uri, position, token);
 
         if (!result) {
-          return undefined!;
+          return undefined;
         }
         timer.timeEnd(extname(model.uri.fsPath), {
           extDuration: _dur,
@@ -424,15 +424,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideTypeDefinition: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_TYPE_DEFINITION);
         return this.proxy.$provideTypeDefinition(handle, model.uri, position, token).then((result) => {
           if (!result) {
-            return undefined!;
+            return undefined;
           }
           timer.timeEnd(extname(model.uri.fsPath));
           if (Array.isArray(result)) {
@@ -487,10 +487,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideFoldingRanges: (model, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_FOLDING_RANGES);
         return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => {
@@ -519,10 +519,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideDocumentColors: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_COLORS);
         return this.proxy.$provideDocumentColors(handle, model.uri, token).then((documentColors) => {
@@ -544,7 +544,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
       provideColorPresentations: (model, colorInfo, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_COLOR_PRESENTATIONS);
         return this.proxy
@@ -586,15 +586,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideDocumentHighlights: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_HIGHLIGHTS);
         return this.proxy.$provideDocumentHighlights(handle, model.uri, position, token).then((result) => {
           if (!result) {
-            return undefined!;
+            return undefined;
           }
           if (Array.isArray(result)) {
             timer.timeEnd(extname(model.uri.fsPath));
@@ -608,7 +608,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             return highlights;
           }
 
-          return undefined!;
+          return undefined;
         });
       },
     };
@@ -646,10 +646,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       extensionId: extension.id,
       provideDocumentFormattingEdits: async (model, options) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_FORMATTING_EDITS);
         return this.proxy.$provideDocumentFormattingEdits(handle, model.uri, options).then((result) => {
@@ -695,10 +695,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       extensionId: extension.id,
       provideDocumentRangeFormattingEdits: async (model, range, options) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_RANGE_FORMATTING_EDITS);
         return this.proxy.$provideDocumentRangeFormattingEdits(handle, model.uri, range, options).then((result) => {
@@ -741,10 +741,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       autoFormatTriggerCharacters,
       provideOnTypeFormattingEdits: async (model, position, ch, options) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_ON_TYPE_FORMATTING_EDITS);
         return this.proxy
@@ -784,7 +784,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideCodeLenses: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_LENSES);
         return this.proxy.$provideCodeLenses(handle, model.uri, token).then((dto) => {
@@ -799,7 +799,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
       resolveCodeLens: async (model, codeLens, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         this.reporter.point(REPORT_NAME.RESOLVE_CODE_LENS);
         return this.proxy.$resolveCodeLens(handle, codeLens, token).then((v) => v!);
@@ -856,15 +856,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideImplementation: (model, position, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_IMPLEMENTATION);
         return this.proxy.$provideImplementationWithDuration(handle, model.uri, position).then(({ result, _dur }) => {
           if (!result) {
-            return undefined!;
+            return undefined;
           }
           timer.timeEnd(extname(model.uri.fsPath), {
             extDuration: _dur,
@@ -925,10 +925,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const provider: modes.CodeActionProvider = {
       provideCodeActions: async (model: any, rangeOrSelection, monacoContext) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
         const listDto = await this.proxy
@@ -967,7 +967,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const provider: monaco.languages.LinkProvider = {
       provideLinks: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_LINKS);
         return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((linksDto) => {
@@ -1043,17 +1043,17 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideReferences: (model, position, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_REFERENCES);
         return this.proxy
           .$provideReferencesWithDuration(handle, model.uri, position, context, token)
           .then(({ result, _dur }) => {
             if (!result) {
-              return undefined!;
+              return undefined;
             }
 
             if (Array.isArray(result)) {
@@ -1067,7 +1067,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               return references;
             }
 
-            return undefined!;
+            return undefined;
           });
       },
     };
@@ -1105,7 +1105,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideDocumentSymbols: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_SYMBOLS);
         return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => {
@@ -1144,10 +1144,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       signatureHelpRetriggerCharacters: metadata.retriggerCharacters,
       provideSignatureHelp: (model, position, token, context) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_SIGNATURE_HELP);
         return this.proxy.$provideSignatureHelp(handle, model.uri, position, context, token).then((v) => {
@@ -1188,10 +1188,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideRenameEdits: (model, position, newName, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_RENAME_EDITS);
         return this.proxy.$provideRenameEdits(handle, model.uri, position, newName, token).then((v) => {
@@ -1204,10 +1204,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       resolveRenameLocation: supportsResolveLocation
         ? (model, position, token) => {
             if (!this.isLanguageFeatureEnabled(model)) {
-              return undefined!;
+              return undefined;
             }
             if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-              return undefined!;
+              return undefined;
             }
             return this.proxy.$resolveRenameLocation(handle, model.uri, position, token).then((v) => v!);
           }
@@ -1252,11 +1252,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       provideSelectionRanges: (model, positions, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
+          return undefined;
         }
 
         if (!this.isLanguageFeatureEnabled(model)) {
-          return undefined!;
+          return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_SELECTION_RANGES);
         return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token).then((v) => {

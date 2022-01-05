@@ -118,7 +118,7 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
       return selector.map((sel) => this.doTransformDocumentSelector(sel)!);
     }
 
-    return [this.doTransformDocumentSelector(selector)!];
+    return [this.doTransformDocumentSelector(selector as string | vscode.DocumentFilter)!];
   }
 
   private doTransformDocumentSelector(selector: string | vscode.DocumentFilter): SerializedDocumentFilter | undefined {

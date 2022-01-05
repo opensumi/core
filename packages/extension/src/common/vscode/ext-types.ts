@@ -1221,13 +1221,10 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
   set(uri: Uri, edits: TextEdit[]): void {
     if (!edits) {
       // remove all text edits for `uri`
-      for (let i = 0; i < this._edits.length; i++) {
-        const element = this._edits[i];
-        if (element && element._type === WorkspaceEditType.Text && element.uri.toString() === uri.toString()) {
-          this._edits[i] = undefined!;
-        }
-      }
-      this._edits = this._edits.filter((e) => !!e);
+      this._edits = this._edits.filter(
+        (element) =>
+          !(element && element._type === WorkspaceEditType.Text && element.uri.toString() === uri.toString()),
+      );
     } else {
       // append edit to the end
       for (const edit of edits) {
@@ -1244,9 +1241,6 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
       if (candidate && candidate._type === WorkspaceEditType.Text && candidate.uri.toString() === uri.toString()) {
         res.push(candidate.edit);
       }
-    }
-    if (res.length === 0) {
-      return undefined!;
     }
     return res;
   }
