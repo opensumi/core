@@ -47,7 +47,7 @@ export class LayoutState {
           : this.globalLayoutStorage.get<any>(key, defaultState);
       }
     } catch (err) {
-      this.logger.warn('Layout state parse 出错，使用默认 state');
+      this.logger.warn('Layout state parse error, use default state');
       storedState = defaultState;
     }
     return storedState;
