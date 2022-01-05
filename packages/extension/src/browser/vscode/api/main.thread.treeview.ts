@@ -340,7 +340,7 @@ export class TreeViewDataProvider extends Tree {
     const icon = await this.toIconClass(item);
     const actions = this.getInlineMenuNodes(item.contextValue || '');
     const { label, description } = this.getLabelAndDescription(item);
-    console.log('createFoldNode', label);
+
     const node = new ExtensionCompositeTreeNode(
       this,
       parent,
