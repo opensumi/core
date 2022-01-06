@@ -31,7 +31,10 @@ export const ExtensionTabBarTreeView = observer(
 
     const isVisible = React.useMemo(() => {
       const state = accordionService?.getViewState(treeViewId);
-      return !state?.collapsed && !state?.hidden;
+      if (!state) {
+        return false;
+      }
+      return !state.collapsed && !state.hidden;
     }, [accordionService]);
 
     React.useEffect(() => {

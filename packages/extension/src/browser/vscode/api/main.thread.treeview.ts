@@ -93,7 +93,7 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     });
 
     this.addDispose(
-      this.eventBus?.on(ViewCollapseChangedEvent, (e) => {
+      this.eventBus.on(ViewCollapseChangedEvent, (e) => {
         if (e.payload.viewId && this.treeModels.has(e.payload.viewId) && !e.payload.collapsed) {
           const treeModel = this.treeModels.get(e.payload.viewId);
           if (treeModel) {
