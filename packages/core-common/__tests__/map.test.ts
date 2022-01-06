@@ -658,9 +658,9 @@ describe('Map', () => {
   // });
 
   test('mapToSerializable / serializableToMap', () => {
-    const map = new Map<string, string>();
+    const map = new Map<string, string | null>();
     map.set('1', 'foo');
-    map.set('2', null!);
+    map.set('2', null);
     map.set('3', 'bar');
 
     const map2 = serializableToMap(mapToSerializable(map));

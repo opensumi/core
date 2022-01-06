@@ -288,7 +288,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     newWorkspaceFolders.splice(
       start,
       deleteCount,
-      ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri), name: undefined!, index: undefined! })),
+      ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri) } as vscode.WorkspaceFolder)),
     );
 
     for (let i = 0; i < newWorkspaceFolders.length; i++) {
