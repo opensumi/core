@@ -7,6 +7,7 @@ import '@opensumi/ide-core-browser/lib/style/index.less';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { SlotLocation } from '@opensumi/ide-core-browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
+import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
 import { renderApp } from './render-app';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
@@ -15,7 +16,7 @@ import { SampleModule } from '../sample-modules';
 import '../styles.less';
 
 renderApp({
-  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule],
+  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
   layoutConfig: {
     ...defaultConfig,
     ...{

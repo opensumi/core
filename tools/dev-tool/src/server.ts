@@ -1,18 +1,54 @@
 import 'tsconfig-paths/register';
+import { Injector } from '@opensumi/di';
 import path from 'path';
 import http from 'http';
 import Koa from 'koa';
+import KoaRouter from 'koa-router';
+import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node';
+import {
+  IExternalFileArgs,
+  IExternalUrlArgs,
+  IRemoteOpenerClient,
+  RemoteOpenerClientToken,
+  RemoteOpenerServiceToken,
+} from '@opensumi/ide-remote-opener/lib/common';
 import { Deferred } from '@opensumi/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();
+  const router = new KoaRouter();
   const deferred = new Deferred<http.Server>();
+
+  router.get('/open', (ctx) => {
+    const openerService: IRemoteOpenerClient = injector.get(RemoteOpenerClientToken);
+    try {
+      console.log('received open request', ctx.query);
+      openerService.openExternal(
+        ctx.query as unknown as IExternalFileArgs | IExternalUrlArgs,
+        ctx.query.clientId as unknown as string,
+      );
+      ctx.body = 'successful';
+    } catch (err: any) {
+      ctx.body = `Error: ${err.message}`;
+    }
+  });
+
+  app.use(router.routes());
+
+  const injector = new Injector([
+    {
+      token: RemoteOpenerServiceToken,
+      useClass: RemoteOpenerServiceImpl,
+    },
+  ]);
+
   const port = process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {
     webSocketHandler: [
       // new TerminalHandler(logger),
     ],
+    injector,
     use: app.use.bind(app),
     marketplace: {
       endpoint: 'https://open-vsx.org/api',
