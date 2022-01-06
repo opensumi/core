@@ -7,6 +7,8 @@ import defaultTheme from './default-theme';
 
 @Injectable()
 export class ThemeStore {
+  static STORE_THEME_DATA_KEY = 'latestTheme';
+
   private themes: {
     [themeId: string]: ThemeData;
   } = {};
@@ -34,25 +36,56 @@ export class ThemeStore {
   }
 
   loadDefaultTheme() {
-    getDebugLogger().warn('没有检测到默认主题插件，使用默认主题样式！');
+    getDebugLogger().warn('The default theme plugin is not detected, and the default theme style is used.');
     const theme = this.injector.get(ThemeData);
     theme.initializeFromData(defaultTheme);
     return theme;
   }
 
+  private async tryLoadLatestTheme() {
+    // 尝试使用最近一次缓存的主题信息进行加载
+    const themeData = this.getLatestThemeData();
+    if (themeData) {
+      try {
+        const { contribution, basePath } = themeData;
+        const theme = await this.initTheme(contribution, new URI(basePath));
+        return theme;
+      } catch (e) {
+        // 主题不存在或被卸载时，移除缓存，使用默认样式
+        localStorage.removeItem(ThemeStore.STORE_THEME_DATA_KEY);
+      }
+    }
+    return this.loadDefaultTheme();
+  }
+
+  private storeLatestThemeData(contribution?: ThemeContribution, basePath?: URI) {
+    localStorage.setItem(
+      ThemeStore.STORE_THEME_DATA_KEY,
+      JSON.stringify({ contribution, basePath: basePath?.toString() }),
+    );
+  }
+
+  private getLatestThemeData() {
+    const data = localStorage.getItem(ThemeStore.STORE_THEME_DATA_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+  }
+
   public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<ThemeData> {
-    // 测试情况下传入的contribution为空，加载默认主题
+    // 测试情况下传入的contribution为空，尝试加载上次缓存的最新主题
     if (!contribution || !basePath) {
-      return this.loadDefaultTheme();
+      return await this.tryLoadLatestTheme();
     }
     const id = getThemeId(contribution);
     if (!this.themes[id]) {
       const theme = await this.initTheme(contribution, basePath);
       if (theme) {
         // 正常加载主题
+        this.storeLatestThemeData(contribution, basePath);
         return theme;
       }
-      // 加载主题出现了未知问题
+      // 加载主题出现了未知问题, 使用默认主题配色
       return this.loadDefaultTheme();
     }
     // 主题有缓存

@@ -17,7 +17,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "dependencies": {
-    "@opensumi/di": "^1.0.0",
+    "@opensumi/di": "^1.1.0",
     "iconv-lite": "^0.6.0",
     "jschardet": "3.0.0",
     "shortid": "^2.2.14",
