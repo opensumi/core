@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-components",
-  "version": "2.13.8",
+  "version": "2.13.9",
   "description": "@opensumi/ide-components",
   "license": "MIT",
   "main": "lib/index.js",
