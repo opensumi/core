@@ -36,7 +36,7 @@ export class ThemeStore {
   }
 
   loadDefaultTheme() {
-    getDebugLogger().warn('The default theme plugin is not detected, and the default theme style is used.');
+    getDebugLogger().warn('The default theme extension is not detected, and the default theme style is used.');
     const theme = this.injector.get(ThemeData);
     theme.initializeFromData(defaultTheme);
     return theme;

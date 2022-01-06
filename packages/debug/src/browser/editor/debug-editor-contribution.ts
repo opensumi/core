@@ -1,3 +1,4 @@
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { InlineValueContext } from './../../common/inline-values';
 import { DebugModelManager } from './debug-model-manager';
@@ -13,7 +14,6 @@ import {
   onUnexpectedExternalError,
   Position,
   createMemoizer,
-  Emitter,
   Event,
 } from '@opensumi/ide-core-common';
 import { flatten } from '@opensumi/ide-core-common/lib/arrays';
@@ -30,7 +30,13 @@ import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/co
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { Constants } from '@opensumi/ide-core-common/lib/uint';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
-import { CONTEXT_DEBUG_STOPPED_KEY, DebugState, IDebugSessionManager } from './../../common';
+import {
+  CONTEXT_DEBUG_STOPPED_KEY,
+  DebugState,
+  IDebugSessionManager,
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_IN_DEBUG_MODE_KEY,
+} from './../../common';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
@@ -193,10 +199,8 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
 
-  protected readonly onDidInDebugModeEmitter = new Emitter<IEditor>();
-  public readonly onDidInDebugMode: Event<IEditor> = this.onDidInDebugModeEmitter.event;
-
   private readonly disposer: Disposable = new Disposable();
+  private readonly editorListenerdisposer: Disposable = new Disposable();
 
   constructor() {}
 
@@ -204,38 +208,8 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
     this.disposer.addDispose(
       this.contextKeyService.onDidChangeContext((e) => {
         if (this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY)) {
-          this.onDidInDebugModeEmitter.fire(editor);
           this.toggleHoverEnabled(editor);
         }
-      }),
-    );
-
-    this.disposer.addDispose(
-      editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
-        if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
-          editor.monacoEditor.updateOptions({ hover: { enabled: true } });
-          this.debugModelManager.model?.debugHoverWidget.hide();
-          const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
-            if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
-              editor.monacoEditor.updateOptions({ hover: { enabled: false } });
-              this.debugModelManager.model?.debugHoverWidget.show();
-              listener.dispose();
-            }
-          });
-        }
-      }),
-    );
-
-    this.disposer.addDispose(
-      editor.monacoEditor.onDidChangeModelContent(async () => {
-        DebugEditorContribution.MEMOIZER.clear();
-        await this.directRunUpdateInlineValueDecorations(editor);
-      }),
-    );
-
-    this.disposer.addDispose(
-      editor.monacoEditor.onDidChangeModel(async () => {
-        await this.directRunUpdateInlineValueDecorations(editor);
       }),
     );
 
@@ -243,22 +217,67 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       this.debugSessionManager.onDidChangeActiveDebugSession(() => {
         if (this.debugSessionManager.currentSession) {
           this.disposer.addDispose([
-            Event.any(
+            Event.any<void | DebugProtocol.StoppedEvent>(
               this.debugSessionManager.currentSession.onDidChangeCallStack,
-              this.debugSessionManager.currentSession.onDidStop as unknown as Event<void>,
+              this.debugSessionManager.currentSession.onDidStop,
             )(async () => {
               await this.directRunUpdateInlineValueDecorations(editor);
             }),
 
             this.debugSessionManager.currentSession.onDidExitAdapter(() => {
               this.removeInlineValuesScheduler(editor).schedule();
+              this.editorListenerdisposer.dispose();
             }),
           ]);
+          this.disposer.addDispose(this.debugSessionManager.currentSession);
+
+          this.registerEditorListener(editor);
         }
       }),
     );
 
+    this.disposer.addDispose(this.editorListenerdisposer);
+
     return this.disposer;
+  }
+
+  private registerEditorListener(editor: IEditor): void {
+    this.editorListenerdisposer.addDispose(
+      editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
+        // 如果当前 session 会话的 editor 和当前打开的 editor 不一致，则不作处理
+        if (
+          this.debugSessionManager.currentSession?.currentFrame?.source?.uri.toString() !==
+          editor.currentUri?.toString()
+        ) {
+          return;
+        }
+
+        if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
+          editor.monacoEditor.updateOptions({ hover: { enabled: true } });
+          this.debugModelManager.model?.getDebugHoverWidget().hide();
+          const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
+            if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
+              editor.monacoEditor.updateOptions({ hover: { enabled: false } });
+              this.debugModelManager.model?.getDebugHoverWidget().show();
+              listener.dispose();
+            }
+          });
+        }
+      }),
+    );
+
+    this.editorListenerdisposer.addDispose(
+      editor.monacoEditor.onDidChangeModelContent(async () => {
+        DebugEditorContribution.MEMOIZER.clear();
+        await this.directRunUpdateInlineValueDecorations(editor);
+      }),
+    );
+
+    this.editorListenerdisposer.addDispose(
+      editor.monacoEditor.onDidChangeModel(async () => {
+        await this.directRunUpdateInlineValueDecorations(editor);
+      }),
+    );
   }
 
   public registerDecorationType(): void {

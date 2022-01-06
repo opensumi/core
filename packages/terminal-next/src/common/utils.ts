@@ -9,4 +9,4 @@ export const userActionViewUuid = () => `UI_View_${uuid()}${count()}`;
 
 export const apiActionViewUuid = () => `API_View_${uuid()}${count()}`;
 
-export const generate = () => uuid();
+export const generateSessionId = () => uuid();

@@ -628,6 +628,10 @@ export const localizationBundle = {
     'terminal.environment.changed': '终端环境变量已经被部分插件修改',
     'terminal.environment.changes': '扩展期望对终端的环境变量做以下更改：',
     'terminal.environment.removal': '扩展期望从现有的终端环境变量中删除以下值：',
+    'terminal.launchFail.cwdNotDirectory': '终端启动目录 (cwd) "{0}" 不是一个文件夹',
+    'terminal.launchFail.cwdDoesNotExist': '终端启动目录 (cwd) "{0}" 不存在',
+    'terminal.launchFail.executableIsNotFileOrSymlink': '终端启动的可执行文件 "{0}" 的路径非文件或符号链接',
+    'terminal.launchFail.executableDoesNotExist': '终端启动的可执行文件 "{0}" 的路径不存在',
 
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',

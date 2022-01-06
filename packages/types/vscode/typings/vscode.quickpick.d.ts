@@ -1,7 +1,3 @@
-/**
- * API OWENR: 蛋总
- */
-
 declare module 'vscode' {
 
   /**

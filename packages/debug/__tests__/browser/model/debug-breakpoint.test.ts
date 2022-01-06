@@ -9,6 +9,7 @@ import {
   isDebugBreakpoint,
   DebugDecorator,
 } from '@opensumi/ide-debug/lib/browser';
+import { IDebugBreakpoint } from '@opensumi/ide-debug';
 
 describe('Debug Breakpoints', () => {
   const mockInjector = createBrowserInjector([FileServiceClientModule]);
@@ -22,7 +23,7 @@ describe('Debug Breakpoints', () => {
   });
 
   describe('Breakpoint Source', () => {
-    let breakpoint: DebugBreakpoint;
+    let breakpoint: IDebugBreakpoint;
     let decorator: DebugDecorator;
 
     beforeEach(() => {

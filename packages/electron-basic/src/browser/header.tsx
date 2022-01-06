@@ -201,7 +201,7 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   const title =
     (currentResource ? currentResource.name + ' — ' : '') +
     (dirname ? dirname + ' — ' : '') +
-    (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
+    replaceLocalizePlaceholder(appConfig.appName);
 
   // 同时更新 Html Title
   useEffect(() => {

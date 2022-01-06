@@ -19,6 +19,8 @@ function renderError(error: ITerminalError, eService: ITerminalErrorService, vie
     eService.fix(error.id);
   };
 
+  // TODO: 展示要打开的地址不存在等错误情况 + Terminal 之前的最后几行信息
+  // 比如说 TerminalError 有几个已知的错误 code
   return error.stopped ? (
     <div className={styles.terminalCover}>
       <div>{localize('terminal.disconnected')}</div>

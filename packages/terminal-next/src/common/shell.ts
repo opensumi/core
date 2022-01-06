@@ -1,6 +1,6 @@
 export const WINDOWS_DEFAULT_SHELL_PATH_MAPS = {
-  ['powershell']: 'powershell.exe',
-  ['cmd']: 'cmd.exe',
+  powershell: 'powershell.exe',
+  cmd: 'cmd.exe',
 };
 
 export enum WindowsShellType {
@@ -8,3 +8,5 @@ export enum WindowsShellType {
   'powershell' = 'powershell',
   'git-bash' = 'git-bash',
 }
+
+export type ShellType = WindowsShellType | 'default' | string;

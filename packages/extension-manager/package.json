@@ -11,6 +11,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.extension-manager.json"
   },
   "dependencies": {
+    "@opensumi/di": "^1.0.0",
     "@opensumi/ide-components": "2.13.9",
     "@opensumi/ide-core-common": "2.13.9",
     "@opensumi/ide-core-node": "2.13.9",

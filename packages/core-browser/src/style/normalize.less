@@ -1,8 +1,5 @@
-@kt-html-selector: html;
-@kt-body-selector: body;
-
-@{kt-html-selector},
-@{kt-body-selector} {
+html,
+body {
   margin: 0;
   padding: 0;
   // 使用该字体获取与vscode一致的图标表现
@@ -16,7 +13,7 @@
   // -webkit-font-smoothing: antialiased;
 }
 
-@{kt-html-selector} {
+html {
   /* 防止 overlay/modal 撑开页面元素 */
   overflow: hidden;
   /* 防止mac上的回退手势 */
@@ -30,8 +27,6 @@
   // 全局设置滚动条样式
   ::-webkit-scrollbar {
     background: transparent;
-    height: var(--kt-scrollbar-width);
-    width: var(--kt-scrollbar-width);
   }
 
   ::-webkit-scrollbar:hover {

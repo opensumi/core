@@ -3,11 +3,11 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { DebugModelFactory, IDebugModel } from '../../common';
-import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
+import { DebugModelFactory, IDebugModel, BreakpointsChangeEvent } from '../../common';
+import { BreakpointManager } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 
-export enum DebugModelSupportedEventType {
+enum DebugModelSupportedEventType {
   down = 'Down',
   move = 'Move',
   leave = 'Leave',
@@ -64,6 +64,7 @@ export class DebugModelManager extends Disposable {
     this.editorCollection.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
     this.breakpointManager.onDidChangeBreakpoints((event) => {
+      const { statusUpdated } = event;
       const { currentEditor } = this.editorService;
       const uri = currentEditor && currentEditor.currentUri;
       if (uri) {
@@ -89,13 +90,14 @@ export class DebugModelManager extends Disposable {
         return;
       }
       for (const model of models) {
-        const position = model.breakpointWidget.position;
+        const breakpointWidget = model.getBreakpointWidget();
+        const position = breakpointWidget.position;
         if (!position) {
           return;
         }
         for (const breakpoint of removed) {
           if (breakpoint.raw.line === position.lineNumber) {
-            model.breakpointWidget.dispose();
+            breakpointWidget.dispose();
           }
         }
       }
@@ -120,7 +122,7 @@ export class DebugModelManager extends Disposable {
       let isRendered = false;
       if (debugModel.length > 0) {
         for (const model of debugModel) {
-          if ((model.editor as any)._id === (monacoEditor as any)._id) {
+          if ((model.getEditor() as any)._id === (monacoEditor as any)._id) {
             model.render();
             isRendered = true;
             break;
@@ -189,12 +191,12 @@ export class DebugModelManager extends Disposable {
       return;
     }
     // 同一个uri可能对应多个打开的monacoEditor，这里只需要验证其中一个即可
-    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].editor.getModel()!);
+    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].getEditor().getModel()!);
     if (!canSetBreakpoints) {
       return;
     }
     for (const model of debugModel) {
-      if (model.editor.getId() === monacoEditor.getId()) {
+      if (model.getEditor().getId() === monacoEditor.getId()) {
         switch (type) {
           case DebugModelSupportedEventType.contextMenu:
             model.onContextMenu(event);

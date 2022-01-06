@@ -82,7 +82,7 @@ export interface ITerminalService {
    *
    * @param sessionid
    */
-  onExit(handler: (sessionid: IPtyExitEvent) => void): IDisposable;
+  onExit(handler: (event: IPtyExitEvent) => void): IDisposable;
   /**
    * 返回终端环境的 OS
    */

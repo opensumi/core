@@ -29,20 +29,18 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [model, setModel] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const disposableRef: React.RefObject<DisposableCollection> = React.useRef(new DisposableCollection());
 
   const { height } = viewState;
-  const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
+  const fileTreeService = useInjectable<FileTreeService>(IFileTreeService);
   const {
-    decorationService,
-    labelService,
     iconService,
     locationToCurrentFile,
     filterMode: defaultFilterMode,
     indent: defaultIndent,
     baseIndent: defaultBaseIndent,
-  } = filetreeService;
+  } = fileTreeService;
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
-  const fileTreeService = useInjectable<FileTreeService>(IFileTreeService);
 
   const [treeIndent, setTreeIndent] = React.useState<ITreeIndent>({
     indent: defaultIndent,
@@ -138,25 +136,24 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
 
   React.useEffect(() => {
     ensureIsReady();
-    const disposable = new DisposableCollection();
-    disposable.push(
+    disposableRef.current?.push(
       iconService.onThemeChange((theme) => {
         setIconTheme(theme);
       }),
     );
-    disposable.push(
-      filetreeService.onTreeIndentChange(({ indent, baseIndent }) => {
+    disposableRef.current?.push(
+      fileTreeService.onTreeIndentChange(({ indent, baseIndent }) => {
         setTreeIndent({ indent, baseIndent });
       }),
     );
-    disposable.push(
-      filetreeService.onFilterModeChange((flag) => {
+    disposableRef.current?.push(
+      fileTreeService.onFilterModeChange((flag) => {
         setFilterMode(flag);
       }),
     );
     return () => {
       fileTreeModelService.removeFileDecoration();
-      disposable.dispose();
+      disposableRef.current?.dispose();
     };
   }, []);
 
@@ -186,28 +183,33 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     }
   }, [filterMode]);
 
-  const beforeFilterValueChange = async () => {
+  const beforeFilterValueChange = React.useCallback(async () => {
     const { expandAllCacheDirectory } = fileTreeModelService;
     await expandAllCacheDirectory();
-  };
+  }, [fileTreeModelService]);
 
-  const ensureIsReady = async () => {
+  const ensureIsReady = React.useCallback(async () => {
     await fileTreeModelService.whenReady;
     if (fileTreeModelService.treeModel) {
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
       await fileTreeModelService.treeModel.root.ensureLoaded();
     }
-    setIsReady(true);
-  };
+    if (!disposableRef.current?.disposed) {
+      setIsReady(true);
+    }
+  }, [fileTreeModelService, disposableRef.current]);
 
-  const handleTreeReady = (handle: IRecycleTreeFilterHandle) => {
-    fileTreeModelService.handleTreeHandler({
-      ...handle,
-      getModel: () => fileTreeModelService.treeModel,
-      hasDirectFocus: () => wrapperRef.current === document.activeElement,
-    });
-  };
+  const handleTreeReady = React.useCallback(
+    (handle: IRecycleTreeFilterHandle) => {
+      fileTreeModelService.handleTreeHandler({
+        ...handle,
+        getModel: () => fileTreeModelService.treeModel,
+        hasDirectFocus: () => wrapperRef.current === document.activeElement,
+      });
+    },
+    [wrapperRef.current, model],
+  );
 
   const handleOuterClick = React.useCallback(() => {
     // 空白区域点击，取消焦点状态
@@ -255,62 +257,6 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     [],
   );
 
-  // 直接渲染节点不建议通过 Inline 的方式进行渲染
-  // 否则每次更新时均会带来比较大的重绘成本
-  // 参考：https://github.com/bvaughn/react-window/issues/413#issuecomment-848597993
-  const renderFileTreeNode = React.useCallback(
-    (props: INodeRendererWrapProps) => (
-      <FileTreeNode
-        item={props.item}
-        itemType={props.itemType}
-        template={(props as any).template}
-        decorationService={decorationService}
-        labelService={labelService}
-        dndService={fileTreeModelService.dndService}
-        decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
-        onClick={handleItemClicked}
-        onDoubleClick={handleItemDoubleClicked}
-        onTwistierClick={handleTwistierClick}
-        onContextMenu={handlerContextMenu}
-        defaultLeftPadding={treeIndent.baseIndent}
-        leftPadding={treeIndent.indent}
-        hasPrompt={props.hasPrompt}
-        hasFolderIcons={iconTheme.hasFolderIcons}
-        hasFileIcons={iconTheme.hasFileIcons}
-        hidesExplorerArrows={iconTheme.hidesExplorerArrows}
-      />
-    ),
-    [model, treeIndent, iconTheme],
-  );
-
-  const renderFileTree = () => {
-    if (isReady) {
-      if (isLoading) {
-        return <ProgressBar loading />;
-      } else if (model) {
-        return (
-          <FilterableRecycleTree
-            height={height}
-            itemHeight={FILE_TREE_NODE_HEIGHT}
-            onReady={handleTreeReady}
-            model={model}
-            filterEnabled={filterMode}
-            beforeFilterValueChange={beforeFilterValueChange}
-            filterAfterClear={() => locationToCurrentFile()}
-            filterAutoFocus={true}
-            leaveBottomBlank={true}
-          >
-            {renderFileTreeNode}
-          </FilterableRecycleTree>
-        );
-      } else {
-        return <WelcomeView viewId='file-explorer-next' />;
-      }
-    } else {
-      return <ProgressBar loading />;
-    }
-  };
-
   return (
     <div
       className={cls(styles.file_tree, outerDragOver && styles.outer_drag_over)}
@@ -325,7 +271,121 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
       onDragOver={handleOuterDragOver}
       onDrop={handleOuterDrop}
     >
-      {renderFileTree()}
+      <FileTreeView
+        isLoading={isLoading}
+        isReady={isReady}
+        height={height}
+        model={model}
+        iconTheme={iconTheme}
+        treeIndent={treeIndent}
+        filterMode={filterMode}
+        locationToCurrentFile={locationToCurrentFile}
+        beforeFilterValueChange={beforeFilterValueChange}
+        onTreeReady={handleTreeReady}
+        onContextMenu={handlerContextMenu}
+        onItemClick={handleItemClicked}
+        onItemDoubleClick={handleItemDoubleClicked}
+        onTwistierClick={handleTwistierClick}
+      />
     </div>
   );
 };
+
+interface FileTreeViewProps {
+  model?: TreeModel;
+  isReady: boolean;
+  isLoading: boolean;
+  height: number;
+  filterMode: boolean;
+  treeIndent: ITreeIndent;
+  iconTheme: {
+    hasFolderIcons: boolean;
+    hasFileIcons: boolean;
+    hidesExplorerArrows: boolean;
+  };
+  onTreeReady: (handle: IRecycleTreeFilterHandle) => void;
+  beforeFilterValueChange: () => Promise<void>;
+  locationToCurrentFile: (location: string) => void;
+  onItemClick(event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onItemDoubleClick(event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onContextMenu(ev: React.MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onTwistierClick(ev: React.MouseEvent, item: Directory): void;
+}
+
+const FileTreeView = React.memo(
+  ({
+    isReady,
+    isLoading,
+    height,
+    model,
+    filterMode,
+    treeIndent,
+    iconTheme,
+    onTreeReady,
+    onItemClick,
+    onItemDoubleClick,
+    onContextMenu,
+    onTwistierClick,
+    beforeFilterValueChange,
+  }: FileTreeViewProps) => {
+    const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
+    const { decorationService, labelService, locationToCurrentFile } = filetreeService;
+    const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
+
+    // 直接渲染节点不建议通过 Inline 的方式进行渲染
+    // 否则每次更新时均会带来比较大的重绘成本
+    // 参考：https://github.com/bvaughn/react-window/issues/413#issuecomment-848597993
+    const renderFileTreeNode = React.useCallback(
+      (props: INodeRendererWrapProps) => (
+        <FileTreeNode
+          item={props.item}
+          itemType={props.itemType}
+          template={(props as any).template}
+          decorationService={decorationService}
+          labelService={labelService}
+          dndService={fileTreeModelService.dndService}
+          decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
+          onClick={onItemClick}
+          onDoubleClick={onItemDoubleClick}
+          onTwistierClick={onTwistierClick}
+          onContextMenu={onContextMenu}
+          defaultLeftPadding={treeIndent.baseIndent}
+          leftPadding={treeIndent.indent}
+          hasPrompt={props.hasPrompt}
+          hasFolderIcons={iconTheme.hasFolderIcons}
+          hasFileIcons={iconTheme.hasFileIcons}
+          hidesExplorerArrows={iconTheme.hidesExplorerArrows}
+        />
+      ),
+      [model, treeIndent, iconTheme],
+    );
+
+    if (isReady) {
+      if (isLoading) {
+        return <ProgressBar loading />;
+      } else if (model) {
+        return (
+          <FilterableRecycleTree
+            height={height}
+            itemHeight={FILE_TREE_NODE_HEIGHT}
+            onReady={onTreeReady}
+            model={model}
+            filterEnabled={filterMode}
+            beforeFilterValueChange={beforeFilterValueChange}
+            filterAfterClear={locationToCurrentFile}
+            filterAutoFocus={true}
+            leaveBottomBlank={true}
+          >
+            {renderFileTreeNode}
+          </FilterableRecycleTree>
+        );
+      } else {
+        return <WelcomeView viewId='file-explorer-next' />;
+      }
+    } else {
+      return <ProgressBar loading />;
+    }
+  },
+);
+
+FileTreeView.displayName = 'FileTreeView';

@@ -283,6 +283,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private batchUpdate = (() => {
     let timer: number;
     const commitUpdate = () => {
+      // 已经在 componentWillUnMount 中 disposed 了
+      if (this.disposables.disposed) {
+        return;
+      }
+
       const { root } = this.props.model;
       let newFilePromptInsertionIndex = -1;
       if (

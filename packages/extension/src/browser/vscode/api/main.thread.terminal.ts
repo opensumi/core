@@ -100,9 +100,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     });
 
     this.proxy.$setTerminals(infoList);
-    const shellPath = this.preference.get<string>('terminal.type');
-    if (shellPath) {
-      this.proxy.$acceptDefaultShell(shellPath);
+    const shellType = this.preference.get<string>('terminal.type');
+    if (shellType) {
+      this.proxy.$acceptDefaultShell(shellType);
     }
   }
 
@@ -237,6 +237,7 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
       id: dto.id,
       startIndex: dto.startIndex,
       length: dto.length,
+      label: dto.label,
       activate: () => proxy.$activateLink(instance.id, dto.id),
     }));
   }

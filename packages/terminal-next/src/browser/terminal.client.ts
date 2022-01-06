@@ -40,6 +40,7 @@ import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import styles from './component/terminal.module.less';
 
@@ -78,7 +79,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly injector: Injector;
 
   @Autowired(ITerminalInternalService)
-  protected readonly service: ITerminalInternalService;
+  protected readonly internalService: ITerminalInternalService;
 
   @Autowired(IWorkspaceService)
   protected readonly workspace: IWorkspaceService;
@@ -88,6 +89,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(IFileServiceClient)
   protected readonly fileService: IFileServiceClient;
+
+  @Autowired(IMessageService)
+  protected readonly messageService: IMessageService;
 
   @Autowired(ITerminalTheme)
   protected readonly theme: ITerminalTheme;
@@ -151,7 +155,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
-      ...this.service.getOptions(),
+      ...this.internalService.getOptions(),
     });
 
     if (options.message) {
@@ -229,6 +233,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     );
 
+    this.addDispose(
+      this.internalService.onError((error) => {
+        this.messageService.error(error.message);
+      }),
+    );
+
     this._apply(widget);
     if (await this._checkWorkspace()) {
       this._attachXterm();
@@ -244,7 +254,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   get pid() {
-    return this.service.getProcessId(this.id);
+    return this.internalService.getProcessId(this.id);
   }
 
   get options() {
@@ -299,8 +309,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._onOutput.fire({ id: this.id, data });
       }),
       this._attachAddon.onExit((code) => {
+        this.logger.warn(`${this.id} ${this.name} exit with ${code}`);
+        if (code !== 0) {
+          this.messageService.error(
+            `terminal ${this.name}(${this._attachAddon.connection?.ptyInstance?.shellPath}) exited with non-zero code ${code}`,
+          );
+        }
         this._onExit.fire({ id: this.id, code });
       }),
+
       this._attachAddon.onTime((delta) => {
         this._onResponseTime.fire(delta);
         this.reporter.performance(REPORT_NAME.TERMINAL_MEASURE, {
@@ -342,34 +359,27 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private async _doAttach() {
     const sessionId = this.id;
     const type = this.preference.get<string>('type');
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
 
-    const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
+    let connection: ITerminalConnection | undefined;
 
-    const extraShellArgs: string[] = [];
-    if (this._os === OperatingSystem.Windows && type === 'git-bash') {
-      extraShellArgs.push('--login');
-    }
-
-    const ptyOptions = {
-      cwd: this._workspacePath,
+    const finalOptions = {
       ...this._options,
-      shellArgs: [...(this._options.shellArgs || []), ...(linuxShellArgs || []), ...extraShellArgs],
+      cwd: this._options?.cwd || this._workspacePath,
     };
 
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
-    let connection: ITerminalConnection | undefined;
     try {
-      connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
-    } catch {
-      // noop
+      connection = await this.internalService.attach(sessionId, this._term, rows, cols, finalOptions, type);
+    } catch (e) {
+      this.logger.error(`attach ${sessionId} terminal failed, type: ${type}`, JSON.stringify(finalOptions), e);
     }
 
-    this._attachAddon.setConnection(connection);
     if (!connection) {
       this._attached.resolve();
       return;
     }
 
+    this._attachAddon.setConnection(connection);
     this.name = this.name || connection.name || 'shell';
     this._ready = true;
     this._attached.resolve();
@@ -381,7 +391,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _doResize() {
-    this.service.resize(this.id, this._term.cols, this._term.rows);
+    this.internalService.resize(this.id, this._term.cols, this._term.rows);
   }
 
   _prepare() {
@@ -405,10 +415,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   _attachAfterRender() {
     // 等待 widget 渲染后再 attach，尽可能在创建时获取到准确的宽高
-    // rAF 在不可见状态下会丢失，所以一定要用 setTimeout
-    setTimeout(() => {
+    // requestAnimationFrame 在不可见状态下会丢失，所以一定要用 queueMicrotask
+    queueMicrotask(() => {
       this._layout();
-      this.service.getOs().then((os) => {
+      this.internalService.getOs().then((os) => {
         this._os = os;
       });
       this.attach();
@@ -473,7 +483,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _checkReady() {
     if (!this._ready) {
-      throw new Error('client not ready');
+      throw new Error('terminal client not ready');
     }
   }
 
@@ -571,7 +581,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async sendText(message: string) {
-    await this.service.sendText(this.id, message);
+    await this.internalService.sendText(this.id, message);
     this._onInput.fire({ id: this.id, data: message });
   }
 
@@ -587,7 +597,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     super.dispose();
 
     if (clear) {
-      this.service.disposeById(this.id);
+      this.internalService.disposeById(this.id);
     }
   }
 }

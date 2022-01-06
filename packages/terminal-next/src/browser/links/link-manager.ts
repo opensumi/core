@@ -1,9 +1,17 @@
-import { Terminal, ILinkProvider } from 'xterm';
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Disposable, IDisposable, DisposableCollection, isOSX, FileUri } from '@opensumi/ide-core-common';
-import { OperatingSystem, isWindows } from '@opensumi/ide-core-common/lib/platform';
+import { Terminal, ILinkProvider, IViewportRange } from 'xterm';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import {
+  URI,
+  Disposable,
+  IDisposable,
+  DisposableCollection,
+  isOSX,
+  FileUri,
+  localize,
+} from '@opensumi/ide-core-common';
+import { OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { posix, win32, IPath } from '@opensumi/ide-core-common/lib/path';
-import { IOpenerService } from '@opensumi/ide-core-browser';
+import { IOpenerService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { TerminalProtocolLinkProvider } from './protocol-link-provider';
@@ -18,8 +26,10 @@ import {
   lineAndColumnClauseGroupCount,
 } from './validated-local-link-provider';
 import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
-import { ITerminalClient, ITerminalExternalLinkProvider } from '../../common';
+import { TerminalLink } from './link';
+import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
 import { TerminalClient } from '../terminal.client';
+import { XTermCore } from '../../common/xterm-private';
 
 export type XtermLinkMatcherHandler = (event: MouseEvent | undefined, link: string) => Promise<void>;
 
@@ -28,6 +38,30 @@ export interface ITextEditorSelection {
   readonly startColumn: number;
   readonly endLineNumber?: number;
   readonly endColumn?: number;
+}
+
+export interface ILinkHoverTargetOptions {
+  readonly viewportRange: IViewportRange;
+  readonly cellDimensions: {
+    width: number;
+    height: number;
+  };
+  readonly terminalDimensions: {
+    width: number;
+    height: number;
+  };
+  readonly boundingClientRect: {
+    bottom: number;
+    height: number;
+    left: number;
+    right: number;
+    top: number;
+    width: number;
+    x: number;
+    y: number;
+  };
+  readonly modifierDownCallback?: () => void;
+  readonly modifierUpCallback?: () => void;
 }
 
 /**
@@ -39,17 +73,26 @@ export class TerminalLinkManager extends Disposable {
   private _standardLinkProviders: ILinkProvider[] = [];
   private _standardLinkProvidersDisposables = new DisposableCollection();
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired()
-  private _editorService: WorkbenchEditorService;
+  private readonly _editorService: WorkbenchEditorService;
 
   @Autowired(IOpenerService)
-  private _openerService: IOpenerService;
+  private readonly _openerService: IOpenerService;
 
   @Autowired(IFileServiceClient)
-  private _fileService: IFileServiceClient;
+  private readonly _fileService: IFileServiceClient;
 
   @Autowired(IFileServiceClient)
   private readonly _fileSystem: IFileServiceClient;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(ITerminalHoverManagerService)
+  private readonly _hoverManager: ITerminalHoverManagerService;
 
   private _getHomeDirPromise: Promise<string>;
 
@@ -58,18 +101,23 @@ export class TerminalLinkManager extends Disposable {
 
     // Protocol links
     const wrappedActivateCallback = this._wrapLinkHandler((_, link) => this._handleProtocolLink(link));
-    const protocolProvider = new TerminalProtocolLinkProvider(this._xterm, wrappedActivateCallback);
+    const protocolProvider = this.injector.get(TerminalProtocolLinkProvider, [
+      this._xterm,
+      wrappedActivateCallback,
+      this._tooltipCallback.bind(this),
+    ]);
     this._standardLinkProviders.push(protocolProvider);
 
     // Validated local links
     const wrappedTextLinkActivateCallback = this._wrapLinkHandler((_, link) => this._handleLocalLink(link));
-    const validatedProvider = new TerminalValidatedLocalLinkProvider(
+    const validatedProvider = this.injector.get(TerminalValidatedLocalLinkProvider, [
       this._xterm,
       this._client,
       wrappedTextLinkActivateCallback,
       this._wrapLinkHandler.bind(this),
+      this._tooltipCallback.bind(this),
       async (link, cb) => cb(await this._resolvePath(link)),
-    );
+    ]);
     this._standardLinkProviders.push(validatedProvider);
 
     this._registerStandardLinkProviders();
@@ -87,16 +135,62 @@ export class TerminalLinkManager extends Disposable {
     }
   }
 
+  private _tooltipCallback(
+    link: TerminalLink,
+    viewportRange: IViewportRange,
+    modifierDownCallback?: () => void,
+    modifierUpCallback?: () => void,
+  ) {
+    const core = (this._xterm as any)._core as XTermCore;
+    const cellDimensions = {
+      width: core._renderService.dimensions.actualCellWidth,
+      height: core._renderService.dimensions.actualCellHeight,
+    };
+    const terminalDimensions = {
+      width: this._xterm.cols,
+      height: this._xterm.rows,
+    };
+    const boundingClientRect = core.element.getBoundingClientRect();
+
+    // Don't pass the mouse event as this avoids the modifier check
+    return this._showHover(
+      {
+        viewportRange,
+        cellDimensions,
+        terminalDimensions,
+        boundingClientRect,
+        modifierDownCallback,
+        modifierUpCallback,
+      },
+      this._getLinkHoverString(link.text, link.label),
+      (text) => link.activate(undefined, text),
+      link,
+    );
+  }
+
+  private _showHover(
+    targetOptions: ILinkHoverTargetOptions,
+    text: string,
+    linkHandler: (url: string) => void,
+    link?: TerminalLink,
+  ) {
+    const attached = this._hoverManager.showHover(targetOptions, text, linkHandler);
+    link?.onInvalidated(() => attached.dispose());
+
+    return Disposable.create(() => attached.dispose());
+  }
+
   public registerExternalLinkProvider(
     instance: ITerminalClient,
     linkProvider: ITerminalExternalLinkProvider,
   ): IDisposable {
-    const wrappedLinkProvider = new TerminalExternalLinkProviderAdapter(
+    const wrappedLinkProvider = this.injector.get(TerminalExternalLinkProviderAdapter, [
       this._xterm,
       instance,
       linkProvider,
       this._wrapLinkHandler.bind(this),
-    );
+      this._tooltipCallback.bind(this),
+    ]);
     const newLinkProvider = this._xterm.registerLinkProvider(wrappedLinkProvider);
     // Re-register the standard link providers so they are a lower priority that the new one
     this._registerStandardLinkProviders();
@@ -172,6 +266,30 @@ export class TerminalLinkManager extends Disposable {
       return win32;
     }
     return posix;
+  }
+
+  private _getLinkHoverString(uri: string, label: string | undefined): string {
+    const multiCursorModifier = this.preferenceService.get<'ctrlCmd' | 'alt'>('editor.multiCursorModifier');
+
+    let clickLabel = '';
+    if (multiCursorModifier === 'ctrlCmd') {
+      if (isMacintosh) {
+        clickLabel = localize('terminalLinkHandler.followLinkAlt.mac', 'option + click');
+      } else {
+        clickLabel = localize('terminalLinkHandler.followLinkAlt', 'alt + click');
+      }
+    } else {
+      if (isMacintosh) {
+        clickLabel = localize('terminalLinkHandler.followLinkCmd', 'cmd + click');
+      } else {
+        clickLabel = localize('terminalLinkHandler.followLinkCtrl', 'ctrl + click');
+      }
+    }
+
+    const fallbackLabel = localize('followLink', 'Follow link');
+    label = label || fallbackLabel;
+
+    return `${label} (${clickLabel})`;
   }
 
   /**

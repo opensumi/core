@@ -280,7 +280,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
         // tslint:disable-next-line no-console
-        console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
+        console.warn(`${viewOrContainerId} view tabbar not found.`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
     }
@@ -371,7 +371,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           {
             execute: async () => {
               await this.ensureViewReady(view.id);
-              // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
+              // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上
               return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
             },
           },

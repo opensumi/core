@@ -1,8 +1,3 @@
-/**
- * API OWENR: 吭头
- */
-
-
 declare module 'vscode' {
 
   /**

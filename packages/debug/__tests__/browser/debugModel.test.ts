@@ -122,7 +122,7 @@ describe('Debug Model', () => {
         column: 2,
       },
     });
-    model.focusStackFrame(frame);
+    model.focusStackFrame();
     expect(deltaDecorationsFn).toBeCalledTimes(0);
   });
 });

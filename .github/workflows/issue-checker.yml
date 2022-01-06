@@ -1,0 +1,35 @@
+# 自动关闭非 OWNER 或 MEMBER 创建的 Release 或 Pre-release Issue
+name: Issue Checker
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  release:
+    name: check issue
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.issue.author_association != 'MEMBER' && github.event.issue.author_association != 'OWNER') &&
+      (
+        (github.event.issue.title == 'OpenSumi Pre-Release' && contains(github.event.issue.labels.*.name, 'pre-release')) ||
+        (github.event.issue.title == 'OpenSumi Release' && && contains(github.event.issue.labels.*.name, 'release'))
+      )
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      # 关闭未授权的版本发布流程
+      - name: Close the unauthorized version release process
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.closeandcomment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 Unauthorized workflow, will be closed now`
+            });

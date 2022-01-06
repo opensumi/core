@@ -214,9 +214,9 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum:
         isElectronRenderer() && isWindows
-          ? ['powershell', 'cmd', 'git-bash', 'default']
-          : ['bash', 'zsh', 'sh', 'default'],
-      default: isElectronRenderer() && isWindows ? 'git-bash' : '',
+          ? ['git-bash', 'powershell', 'cmd', 'default']
+          : ['zsh', 'bash', 'sh', 'default'],
+      default: 'default',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {
@@ -247,6 +247,14 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'array',
       default: [],
       description: '%preference.terminal.integrated.shellArgs.linuxDesc%',
+    },
+    'terminal.integrated.shellArgs.osx': {
+      type: 'array',
+      default: [],
+    },
+    'terminal.integrated.shellArgs.windows': {
+      type: 'array',
+      default: [],
     },
     'output.maxChannelLine': {
       type: 'number',
@@ -323,6 +331,8 @@ export interface CoreConfiguration {
   'general.language': string;
   'general.theme': string;
   'terminal.integrated.shellArgs.linux': string[];
+  'terminal.integrated.shellArgs.osx': string[];
+  'terminal.integrated.shellArgs.windows': string[];
   'view.saveLayoutWithWorkspace': boolean;
 }
 

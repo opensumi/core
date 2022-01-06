@@ -6,7 +6,6 @@ Generally speaking, you have many ways to contribute to the development of the `
 
 After you clone and build our warehouse code, check [Issues](https://github.com/opensumi/core/issues). For issues marked with `PR Welcome`, it is best to submit your first PR If you have any questions in the process, you can always consult any project member in the comment area @ any project member.
 
-
 ## Development environment preparation
 
 > The system tool installation method here refers to the [How-to-Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute) document of VS Code for translation, and you can directly view the document.
@@ -38,11 +37,11 @@ In the actual development process, you may encounter issues such as `node-gyp` a
 
 ## Build and run
 
-If you want to learn how to run OpenSuni or want to debug an issue, you need to get the code locally, build it, and then run it
+If you want to learn how to run OpenSumi or want to debug an issue, you need to get the code locally, build it, and then run it
 
 ### Getting the sources
 
-In the first step, you need to fork a copy of the `OpenSuni` repository, and then clone it locally:
+In the first step, you need to fork a copy of the `OpenSumi` repository, and then clone it locally:
 
 ```bash
 $ git clone https://github.com/<<<your-github-account>>>/core.git
@@ -86,9 +85,8 @@ $ npm start
 
 By default, the framework will display the `tools/workspace` directory under the project as the workspace directory. You can also open OpenSumi by specifying the path with `MY_WORKSPACE=`, as shown below:
 
-
 ```bash
-$ MY_WORKSPACE={workspace_path} tnpm start
+$ MY_WORKSPACE={workspace_path} npm start
 ```
 
 ![perview](https://img.alicdn.com/imgextra/i2/O1CN01RkgC7P1zhGC1IgghU_!!6000000006745-2-tps-2930-1802.png)
@@ -105,7 +103,7 @@ For the `Browser process`, you can debug directly through `Chrome Developer Tool
 
 ### Node process
 
-For the `Node process`, after you run the framework through `tnpm start`, you can use `VSCode` or the IDE debug panel built based on OpenSumi to make a breakpoint of the `Node process` by using `Attach to BackEnd` debugging.
+For the `Node process`, after you run the framework through `npm start`, you can use `VSCode` or the IDE debug panel built based on OpenSumi to make a breakpoint of the `Node process` by using `Attach to BackEnd` debugging.
 
 ![](https://img.alicdn.com/imgextra/i3/O1CN014Or5e01CFOtP5rM44_!!6000000000051-2-tps-2828-1760.png#id=fYIYf&originHeight=1760&originWidth=2828&originalType=binary&ratio=1&status=done&style=none&style)
 

@@ -559,7 +559,6 @@ declare module 'sumi-worker' {
      *
      * @param edit A workspace edit.
      * @return A thenable that resolves when the edit could be applied.
-     * @Owner 吭头
      */
     export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
   }
