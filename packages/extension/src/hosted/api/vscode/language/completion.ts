@@ -100,6 +100,7 @@ export class CompletionAdapter {
         } else {
           dto[ISuggestDataDtoField.insertText] = typeof item.label === 'string' ? item.label : item.label.label;
         }
+        dto[ISuggestDataDtoField.documentation] = item.documentation;
       }
 
       const range = this.convertRange(item, inserting, replacing);
