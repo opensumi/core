@@ -213,8 +213,8 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
 
   const handleOuterClick = React.useCallback(() => {
     // 空白区域点击，取消焦点状态
-    const { enactiveFileDecoration } = fileTreeModelService;
-    enactiveFileDecoration();
+    const { deactivateFileDecoration } = fileTreeModelService;
+    deactivateFileDecoration();
   }, []);
 
   const handleFocus = React.useCallback(() => {

@@ -12,7 +12,7 @@ export class Directory extends CompositeTreeNode {
     parent: ICompositeTreeNode | undefined,
     public uri: URI = new URI(''),
     name = '',
-    public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
+    public filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     public tooltip: string,
     id?: number,
   ) {

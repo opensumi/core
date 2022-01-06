@@ -34,25 +34,12 @@ class TempDirectory {}
 describe('FileTreeModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;
   let injector: MockInjector;
+  let contextKey: FileContextKey;
   let fileTreeModelService: FileTreeModelService;
   const rootUri = URI.file('/userhome');
   const mockWatcher = {
     callback: jest.fn(),
   };
-  const mockRoot = {
-    watcher: {
-      on: jest.fn(() => Disposable.create(() => {})),
-      notifyDidChangeMetadata: jest.fn(),
-    },
-    watchEvents: {
-      get: jest.fn(() => mockWatcher),
-    },
-    path: 'testRoot',
-    uri: rootUri,
-  } as any;
-  const mockCtxMenuRenderer = {
-    show: jest.fn(),
-  } as any;
   const newDirectoryByName = (name) => {
     const directory = {
       uri: rootUri.resolve(name),
@@ -67,6 +54,24 @@ describe('FileTreeModelService should be work', () => {
     directory.constructor = new TempDirectory().constructor;
     return directory;
   };
+
+  const mockRoot = {
+    ...newDirectoryByName('testRoot'),
+    watcher: {
+      on: jest.fn(() => Disposable.create(() => {})),
+      notifyDidChangeMetadata: jest.fn(),
+    },
+    watchEvents: {
+      get: jest.fn(() => mockWatcher),
+    },
+    path: 'testRoot',
+    name: 'testRoot',
+    uri: rootUri,
+  } as any;
+  const mockCtxMenuRenderer = {
+    show: jest.fn(),
+  } as any;
+
   const mockDecorationsService = {
     onDidChangeDecorations: jest.fn(() => Disposable.create(() => {})),
   };
@@ -95,6 +100,9 @@ describe('FileTreeModelService should be work', () => {
     startWatchFileEvent: jest.fn(),
     refresh: jest.fn(),
     contextMenuContextKeyService: new MockContextKeyService().createScoped({} as any),
+    get contextKey() {
+      return contextKey;
+    },
   };
   beforeEach(async (done) => {
     injector = createBrowserInjector([]);
@@ -159,6 +167,8 @@ describe('FileTreeModelService should be work', () => {
         },
       },
     );
+    contextKey = injector.get(FileContextKey, [document.createElement('div')]);
+
     const root = {
       ...newDirectoryByName('child'),
       ensureLoaded: jest.fn(),
@@ -210,7 +220,7 @@ describe('FileTreeModelService should be work', () => {
     expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
-  it('activeFileActivedDecoration method should be work', () => {
+  it('activateFileActivedDecoration method should be work', () => {
     const mockFileTreeService = {
       on: jest.fn(),
     } as any;
@@ -223,7 +233,7 @@ describe('FileTreeModelService should be work', () => {
       undefined,
       'tooltip',
     );
-    fileTreeModelService.activeFileActivedDecoration(node);
+    fileTreeModelService.activateFileActivedDecoration(node);
     const decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
     expect(decoration!.classlist).toEqual([styles.mod_actived]);
@@ -248,7 +258,7 @@ describe('FileTreeModelService should be work', () => {
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
   });
 
-  it('enactiveFileDecoration method should be work', () => {
+  it('deactivateFileDecoration method should be work', () => {
     const mockFileTreeService = {
       on: jest.fn(),
     } as any;
@@ -265,7 +275,7 @@ describe('FileTreeModelService should be work', () => {
     let decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
     expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
-    fileTreeModelService.enactiveFileDecoration();
+    fileTreeModelService.deactivateFileDecoration();
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
@@ -371,5 +381,30 @@ describe('FileTreeModelService should be work', () => {
     expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
     expect(mockEvent.stopPropagation).toBeCalledTimes(1);
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
+  });
+  it('should set correct context key', () => {
+    const mockNode: Directory = newDirectoryByName('testDirectory');
+    const mockEvent = {
+      stopPropagation: jest.fn(),
+      preventDefault: jest.fn(),
+      nativeEvent: {
+        x: 1,
+        y: 1,
+      },
+    } as any;
+
+    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeFalsy();
+
+    fileTreeModelService.handleContextMenu(mockEvent, mockNode);
+    // show context key in folder
+    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeTruthy();
+
+    // blur
+    fileTreeModelService.handleTreeBlur();
+    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeFalsy();
+
+    // click in empty area
+    fileTreeModelService.handleContextMenu(mockEvent, undefined);
+    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeTruthy();
   });
 });

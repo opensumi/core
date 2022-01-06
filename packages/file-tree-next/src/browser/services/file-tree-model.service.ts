@@ -386,14 +386,15 @@ export class FileTreeModelService {
   /**
    * 多选情况下，焦点节点只要一个，选中节点有多个
    * 单选情况下，焦点节点与选中节点均只有一个
-   * 在文件树空白区域邮件时，焦点元素为根节点
-   * @param files 选中节点
-   * @param file 焦点节点
+   * 在文件树空白区域右键时，焦点元素为根节点
+   * @param node 焦点节点
    */
-  private setFileTreeContextKey(file: Directory | File) {
-    this.currentContextUriContextKey.set(file.uri.toString());
-    this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());
-    this.contextMenuResourceContext.set(file.uri);
+  private setFileTreeContextKey(node: Directory | File) {
+    this.currentContextUriContextKey.set(node.uri.toString());
+    this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(node.uri) || '').toString());
+    this.contextMenuResourceContext.set(node.uri);
+
+    this.contextKey?.explorerResourceIsFolder.set(node && node.type === TreeNodeType.CompositeTreeNode);
   }
 
   private async loadFileTreeSnapshot(snapshot: ISerializableState) {
@@ -486,7 +487,7 @@ export class FileTreeModelService {
   };
 
   // 右键菜单焦点态切换
-  activeFileActivedDecoration = (target: File | Directory) => {
+  activateFileActivedDecoration = (target: File | Directory) => {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
@@ -575,7 +576,7 @@ export class FileTreeModelService {
   };
 
   // 取消选中节点焦点
-  enactiveFileDecoration = () => {
+  deactivateFileDecoration = () => {
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
       this._focusedFile = undefined;
@@ -608,26 +609,6 @@ export class FileTreeModelService {
     ev.stopPropagation();
     ev.preventDefault();
 
-    const { x, y } = ev.nativeEvent;
-
-    if (this.fileTreeService.isCompactMode && activeUri) {
-      this._activeUri = activeUri;
-      // 存在 activeUri 的情况默认 explorerResourceIsFolder 的值都为 true
-      this.contextKey?.explorerResourceIsFolder.set(true);
-    } else if (!activeUri) {
-      this._activeUri = null;
-      if (file) {
-        this.contextKey?.explorerResourceIsFolder.set(file.type === TreeNodeType.CompositeTreeNode);
-      }
-    }
-
-    if (file) {
-      this.activeFileActivedDecoration(file);
-    } else {
-      this.enactiveFileDecoration();
-      // 失去焦点默认 explorerResourceIsFolder 的值都为 false
-      this.contextKey?.explorerResourceIsFolder.set(false);
-    }
     let nodes: (File | Directory)[];
     let node: File | Directory;
 
@@ -635,6 +616,8 @@ export class FileTreeModelService {
       // 空白区域右键菜单
       nodes = [this.treeModel.root as Directory];
       node = this.treeModel.root as Directory;
+
+      this.deactivateFileDecoration();
     } else {
       node = file;
       if (this._isMutiSelected) {
@@ -646,9 +629,20 @@ export class FileTreeModelService {
       } else {
         nodes = [node];
       }
+
+      this.activateFileActivedDecoration(file);
     }
 
     this.setFileTreeContextKey(node);
+
+    // 这里是一些额外的 contextKey 的判断，补充一下上面的逻辑
+    if (this.fileTreeService.isCompactMode && activeUri) {
+      this._activeUri = activeUri;
+      // 存在 activeUri 的情况默认 explorerResourceIsFolder 的值都为 true
+      this.contextKey?.explorerResourceIsFolder.set(true);
+    } else if (!activeUri) {
+      this._activeUri = null;
+    }
 
     const menus = this.contextMenuService.createMenu({
       id: MenuId.ExplorerContext,
@@ -656,8 +650,11 @@ export class FileTreeModelService {
     });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
+
     // 更新压缩节点对应的Contextkey
     this.setExplorerCompressedContextKey(node, activeUri);
+
+    const { x, y } = ev.nativeEvent;
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
@@ -716,7 +713,7 @@ export class FileTreeModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
     // 清空焦点状态
-    this.enactiveFileDecoration();
+    this.deactivateFileDecoration();
     // 失去焦点默认 explorerResourceIsFolder 的值都为 false
     this.contextKey?.explorerResourceIsFolder.set(false);
   };
@@ -766,7 +763,6 @@ export class FileTreeModelService {
       if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
         this.activeFileDecoration(item);
       }
-      // 更新 explorerResourceIsFolder 的值
       this.contextKey?.explorerResourceIsFolder.set(type === TreeNodeType.CompositeTreeNode);
     }
 
@@ -816,7 +812,7 @@ export class FileTreeModelService {
     if (!nextFileNode) {
       return;
     }
-    this.activeFileActivedDecoration(nextFileNode as File);
+    this.activateFileActivedDecoration(nextFileNode as File);
     if (offsetHeight > height) {
       this.fileTreeHandle.ensureVisible(nextFileNode as File, 'end');
     }
@@ -844,7 +840,7 @@ export class FileTreeModelService {
     }
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     const offsetHeight = prevIndex * FILE_TREE_NODE_HEIGHT;
-    this.activeFileActivedDecoration(prevFileNode as File);
+    this.activateFileActivedDecoration(prevFileNode as File);
     if ((snapshot.scrollPosition || 0) > offsetHeight) {
       this.fileTreeHandle.ensureVisible(prevFileNode as File, 'start');
     }
