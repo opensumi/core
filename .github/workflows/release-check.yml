@@ -1,5 +1,5 @@
 # 自动关闭非 OWNER 或 MEMBER 创建的 Release 或 Pre-release Issue
-name: Issue Checker
+name: Release Check
 
 on:
   issues:
