@@ -12,8 +12,9 @@
   <a href="https://github.com/opensumi/core/blob/master/LICENSE.md">
     <img src="https://img.shields.io/npm/l/@opensumi/ide-core-common.svg" alt="license">
   </a>
+  <a href="https://cla-assistant.io/opensumi/core"><img src="https://cla-assistant.io/readme/badge/opensumi/core" alt="CLA assistant" /></a>
   <a href="https://codecov.io/gh/opensumi/core">
-    <img src="https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957" alt="CI">
+    <img src="https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957" alt="Test Coverage">
   </a>
 </p>
 <h1 align="center">OpenSumi</h1>
