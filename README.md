@@ -1,8 +1,24 @@
-<h1>OpenSumi</h1>
+<p align="center">
+	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i3/O1CN01Rkfi5j1bJrBDnqEtt_!!6000000003445-2-tps-300-300.png" width="150" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/opensumi/core/actions/workflows/ci.yml">
+    <img src="https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
+  <a href="https://www.npmjs.com/package/@opensumi/ide-core-browser">
+    <img src="https://img.shields.io/npm/v/@opensumi/ide-core-common.svg" alt="npm version" >
+  </a>
+  <a href="https://github.com/opensumi/core/blob/master/LICENSE.md">
+    <img src="https://img.shields.io/npm/l/@opensumi/ide-core-common.svg" alt="license">
+  </a>
+  <a href="https://codecov.io/gh/opensumi/core">
+    <img src="https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957" alt="CI">
+  </a>
+</p>
+<h1 align="center">OpenSumi</h1>
 
 A framework helps you quickly build Cloud or Desktop IDE products.
-
-[![CI](https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg)](https://github.com/opensumi/core/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957)](https://codecov.io/gh/opensumi/core)
 
 ![perview](https://img.alicdn.com/imgextra/i3/O1CN01uIRRRl1wmLkN9geV3_!!6000000006350-2-tps-2844-1830.png)
 
