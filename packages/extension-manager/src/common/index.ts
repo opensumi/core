@@ -70,7 +70,7 @@ export const VSXExtensionServiceToken = Symbol('VSXExtensionSerivceToken');
 
 export interface IVSXExtensionService {
   search(keyword: string): Promise<void>;
-  install(extension: VSXExtension): Promise<string | undefined>;
+  install(extension: VSXExtension): Promise<void>;
   getLocalExtension(extensionId: string): Promise<VSXExtension | undefined>;
   getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined>;
   openExtensionEditor(extensionId: string, state: InstallState): Promise<void>;

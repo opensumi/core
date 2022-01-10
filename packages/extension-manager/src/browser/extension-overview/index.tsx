@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
@@ -7,8 +7,8 @@ import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressb
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
-import * as styles from './overview.module.less';
 import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
+import styles from './overview.module.less';
 
 enum TabActiveKey {
   details = 'Details',
@@ -30,18 +30,19 @@ export const ExtensionOverview: ReactEditorComponent<
   VSXExtensionRaw & VSXExtension & { state: string; extensionId: string }
 > = ({ resource }) => {
   const vsxExtensionService = useInjectable<IVSXExtensionService>(VSXExtensionServiceToken);
-  const [loading, setLoading] = React.useState(true);
-  const [activateKey, setActivateKey] = React.useState(TabActiveKey.details);
-  const [metadata, setMetadata] = React.useState<IExtensionMetadata>({});
+  const [loading, setLoading] = useState(true);
+  const [installing, setInstalling] = useState<boolean>(false);
+  const [activateKey, setActivateKey] = useState(TabActiveKey.details);
+  const [metadata, setMetadata] = useState<IExtensionMetadata>({});
 
-  const onDidTabChange = React.useCallback((index: number) => {
+  const onDidTabChange = useCallback((index: number) => {
     const activeKey = tabMap[index];
     if (activeKey) {
       setActivateKey(activeKey);
     }
   }, []);
 
-  const getExtensonMetadata = React.useCallback(
+  const getExtensionMetadata = useCallback(
     ({ readme, changelog }: { [prop: string]: string | undefined }) =>
       [
         readme && fetch(readme).then((res) => res.text()),
@@ -50,15 +51,29 @@ export const ExtensionOverview: ReactEditorComponent<
     [],
   );
 
-  const initExtensionMetadata = React.useCallback(async () => {
+  const initExtensionMetadata = useCallback(async () => {
     const extension = await vsxExtensionService.getRemoteRawExtension(resource.metadata!.extensionId);
     if (extension) {
-      const tasks = getExtensonMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
+      const tasks = getExtensionMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
       const [readme, changelog] = await Promise.all(tasks);
       setMetadata({ readme, changelog, downloadCount: extension.downloadCount });
     }
     setLoading(false);
   }, [resource]);
+
+  const onInstallCallback = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const extension = await vsxExtensionService.getLocalExtension(resource.metadata!.extensionId);
+      if (extension) {
+        setInstalling(true);
+        vsxExtensionService.install(extension).finally(() => {
+          setInstalling(false);
+        });
+      }
+    },
+    [resource],
+  );
 
   React.useEffect(() => {
     initExtensionMetadata();
@@ -88,7 +103,7 @@ export const ExtensionOverview: ReactEditorComponent<
               {resource.metadata?.namespace.toLowerCase() + '.' + resource.metadata?.name.toLowerCase()}
             </span>
           </div>
-          <div className={styles.mainfest}>
+          <div className={styles.manifest}>
             <span>
               <a href={resource.metadata?.namespaceUrl} target='_blank' rel='noopener noreferrer'>
                 {resource.metadata?.namespace}
@@ -109,7 +124,7 @@ export const ExtensionOverview: ReactEditorComponent<
             {resource.metadata?.license && (
               <span>
                 <a href={resource.metadata?.files.license} target='blank'>
-                  Lisense
+                  License
                 </a>
               </span>
             )}
@@ -118,13 +133,16 @@ export const ExtensionOverview: ReactEditorComponent<
           <div className={styles.description}>
             {replaceLocalizePlaceholder(resource.metadata?.description, resource.metadata?.extensionId)}
           </div>
-          {resource.metadata?.state === InstallState.NOT_INSTALLED && (
-            <div>
-              <Button size='small' onClick={() => {}}>
-                {localize('marketplace.extension.install')}
+          <div>
+            {resource.metadata?.state === InstallState.NOT_INSTALLED && (
+              <Button size='small' onClick={onInstallCallback} disabled={installing}>
+                {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
               </Button>
-            </div>
-          )}
+            )}
+            {resource.metadata?.state === InstallState.INSTALLED && (
+              <span>{localize('marketplace.extension.installed')}</span>
+            )}
+          </div>
         </div>
       </div>
       <div className={styles.extension_overview_body}>
