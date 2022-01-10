@@ -133,13 +133,6 @@ function unzipFile (dist, targetDirName, tmpZipFile) {
           return;
         }
 
-        let originalFileName;
-        // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
-        // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
-        if (fileName.endsWith('.asar') && this.options.isElectronEnv) {
-          originalFileName = fileName;
-          fileName += '_prevent_bug';
-        }
         const readStream = openZipStream(zipFile, entry);
         const mode = modeFromEntry(entry);
         readStream.then((stream) => {
@@ -153,10 +146,6 @@ function unzipFile (dist, targetDirName, tmpZipFile) {
           fs.mkdirp(targetDirName).then(() => {
             const writerStream = fs.createWriteStream(targetFileName, { mode });
             writerStream.on('close', () => {
-              if (originalFileName) {
-                // rename .asar, if filename has been modified
-                fs.renameSync(targetFileName, path.join(extensionDir, originalFileName));
-              }
               zipFile.readEntry();
             });
             stream.on('error', (err) => {
