@@ -11,7 +11,7 @@ import {
   IExternalUriService,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { getLanguageId, URI, firstSessionDateStorageKey, isElectronRenderer } from '@opensumi/ide-core-common';
+import { getLanguageId, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { MainThreadStorage } from './main.thread.storage';
 
@@ -65,7 +65,7 @@ export class MainThreadEnv implements IMainThreadEnv {
       appHost,
       appRoot: workspaceDir,
       language: getLanguageId(),
-      uiKind: isElectronRenderer() ? UIKind.Desktop : UIKind.Web,
+      uiKind: this.appConfig.isElectronRenderer ? UIKind.Desktop : UIKind.Web,
       firstSessionDate: firstSessionDateValue?.date,
     });
   }
@@ -105,7 +105,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   private getWindowId() {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       return electronEnv.currentWindowId;
     } else {
       // web 场景先用 clientId

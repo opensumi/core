@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { Domain, URI, CommandContribution, CommandRegistry } from '@opensumi/ide-core-browser';
-import { isElectronRenderer, localize } from '@opensumi/ide-core-common';
+import { Domain, URI, CommandContribution, CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-common';
 import { ResourceService, IResource } from '@opensumi/ide-editor';
 import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData, isWebview } from './types';
 import { Autowired } from '@opensumi/di';
@@ -19,6 +19,9 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
 
   @Autowired(EditorComponentRegistry)
   editorComponentRegistry: EditorComponentRegistry;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider({
@@ -70,7 +73,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           }
         }
       },
-      isEnabled: () => isElectronRenderer(),
+      isEnabled: () => this.appConfig.isElectronRenderer,
     });
   }
 }

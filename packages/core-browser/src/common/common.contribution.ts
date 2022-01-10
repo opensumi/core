@@ -9,7 +9,6 @@ import {
   localize,
   Domain,
   Event,
-  isElectronRenderer,
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 import { PreferenceContribution } from '../preferences';
@@ -89,7 +88,7 @@ export class ClientCommonContribution
 
   registerMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       menus.registerMenubarItem(MenuId.MenubarAppMenu, {
         label: localize('app.name', this.appConfig.appName),
         order: 0,
@@ -185,7 +184,7 @@ export class ClientCommonContribution
     ]);
 
     // Edit 菜单
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [
         {
           command: {

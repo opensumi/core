@@ -32,7 +32,6 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import {
   WithEventBus,
-  isElectronEnv,
   parseWithComments,
   PreferenceService,
   ILogger,
@@ -674,9 +673,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
 
     let wasmUri: string;
-    if (isElectronEnv() && electronEnv.onigWasmPath) {
+    if (this.appConfig.isElectronRenderer && electronEnv.onigWasmPath) {
       wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
-    } else if (isElectronEnv() && electronEnv.onigWasmUri) {
+    } else if (this.appConfig.isElectronRenderer && electronEnv.onigWasmUri) {
       wasmUri = electronEnv.onigWasmUri;
     } else {
       wasmUri =

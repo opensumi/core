@@ -15,7 +15,6 @@ import {
   Emitter,
   IExtensionProps,
   ILogger,
-  isElectronEnv,
   IDisposable,
   toDisposable,
 } from '@opensumi/ide-core-browser';
@@ -137,7 +136,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private get clientId() {
     let clientId: string;
 
-    if (isElectronEnv()) {
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       this.logger.verbose('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
       clientId = electronEnv.metadata.windowClientId;
     } else {
@@ -160,7 +159,9 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private async initExtProtocol() {
     const mainThreadCenter = new RPCServiceCenter();
 
-    if (isElectronEnv()) {
+    // Electron 环境下，未指定 isRemote 时默认使用本地连接
+    // 否则使用 WebSocket 连接
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(
         electronEnv.metadata.windowClientId,
       );

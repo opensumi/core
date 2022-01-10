@@ -1,11 +1,12 @@
 import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { ClientAppContribution } from '../common/common.define';
-import { Domain, ContributionProvider, isElectronRenderer } from '@opensumi/ide-core-common';
+import { Domain, ContributionProvider } from '@opensumi/ide-core-common';
 import { OpenerContribution, IOpenerService } from '.';
 import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
 import { IElectronRendererURLService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
+import { AppConfig } from '../react-providers';
 
 @Domain(OpenerContribution)
 export class DefaultOpenerContribution implements OpenerContribution {
@@ -32,13 +33,16 @@ export class OpenerContributionClient implements ClientAppContribution {
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   onStart() {
     const contributions = this.contributionProvider.getContributions();
     for (const contribution of contributions) {
       contribution.registerOpener(this.openerService);
     }
 
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronRendererURLService: IElectronRendererURLService = this.injector.get(IElectronURLService);
       electronRendererURLService.on('open-url', (payload) => {
         if (electronEnv.currentWindowId === payload.windowId) {

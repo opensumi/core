@@ -25,7 +25,8 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     opts = arg1 as IClientAppOpts;
   }
 
-  opts.workspaceDir = electronEnv.env.WORKSPACE_DIR;
+  // opts.workspaceDir = '/home/admin/workspace/gitlab.alibaba-inc.com/yutian/miniapp77'; // electronEnv.env.WORKSPACE_DIR;
+  opts.workspaceDir = '/Users/yantze/repo/github/opensumi/sumi2/tools/electron'; // electronEnv.env.WORKSPACE_DIR;
   opts.extensionDir = electronEnv.metadata.extensionDir;
   opts.injector = injector;
   if (electronEnv.metadata.workerHostEntry) {
@@ -40,6 +41,11 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     }
   };
 
+  opts.isElectronRenderer = true;
+  opts.isRemote = true;
+  opts.wsPath = 'ws://127.0.0.1:8000';
+  // opts.wsPath = 'wss://cloud-ide-router.alibaba-inc.com/ws/04b6f98f-7180-4284-96b1-a6fb5e920bcf';
+
   const app = new ClientApp(opts);
 
   // 拦截reload行为
@@ -47,6 +53,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     injector.get(IElectronMainLifeCycleService).reloadWindow(electronEnv.currentWindowId);
   };
 
-  const netConnection = await (window as any).createRPCNetConnection();
-  app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
+  // const netConnection = await (window as any).createRPCNetConnection();
+  // app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
+  app.start(document.getElementById('main')!, 'web');
 }
