@@ -450,7 +450,7 @@ export class FileTreeModelService {
       this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
       if (dispatchChange) {
-        this.treeModel.dispatchChange();
+        this.treeModel.doDispatchChange();
       }
     }
   };
@@ -481,7 +481,7 @@ export class FileTreeModelService {
       this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
       if (dispatchChange) {
-        this.treeModel.dispatchChange();
+        this.treeModel.doDispatchChange();
       }
     }
   };
@@ -497,7 +497,7 @@ export class FileTreeModelService {
     }
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuFile = target;
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
   };
 
   // 清空其他焦点态节点，更新当前焦点节点，
@@ -532,7 +532,7 @@ export class FileTreeModelService {
       }
     }
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
   };
 
   // 判断节点是否选中，进行状态反转
@@ -555,7 +555,7 @@ export class FileTreeModelService {
       this.focusedDecoration.addTarget(target);
     }
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
   };
 
   // 选中范围内的所有节点
@@ -572,7 +572,7 @@ export class FileTreeModelService {
     // 选中状态变化
     this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
   };
 
   // 取消选中节点焦点
@@ -935,7 +935,7 @@ export class FileTreeModelService {
       this.loadingDecoration.addTarget(effectNode!);
     }
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
     // 移除文件
     for (const uri of uris) {
       if (!!preUri! && preUri!.isEqualOrParent(uri)) {
@@ -1140,7 +1140,7 @@ export class FileTreeModelService {
             uri: to.toString(),
           });
           target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
-          this.treeModel.dispatchChange();
+          this.treeModel.doDispatchChange();
           if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
             // 当重命名后的压缩节点在父节点中存在子集节点时，刷新父节点
             // 如：
@@ -1462,7 +1462,7 @@ export class FileTreeModelService {
       this.contextKey?.explorerResourceCut.set(false);
     }
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
     const files: (File | Directory)[] = [];
     for (const uri of from) {
       const file = this.fileTreeService.getNodeByPathOrUri(uri);
@@ -1511,7 +1511,7 @@ export class FileTreeModelService {
       }
       this.contextKey?.explorerResourceCut.set(false);
       // 更新视图
-      this.treeModel.dispatchChange();
+      this.treeModel.doDispatchChange();
       this._pasteStore = {
         files: [],
         type: PasteTypes.NONE,
@@ -1569,7 +1569,7 @@ export class FileTreeModelService {
       }
     }
     // 通知视图更新
-    this.treeModel.dispatchChange();
+    this.treeModel.doDispatchChange();
   };
 
   public location = async (pathOrUri: URI | string) => {

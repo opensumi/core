@@ -12,7 +12,7 @@ export interface IFileTreeMetaData extends IOptionalMetaData {
 
 @Injectable({ multiple: true })
 export class FileTreeModel extends TreeModel {
-  static DEFAULT_FLUSH_DELAY = 100;
+  static DEFAULT_FLUSH_DELAY = 16;
 
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;

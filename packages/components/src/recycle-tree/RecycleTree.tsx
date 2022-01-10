@@ -281,7 +281,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
-    let timer: number;
+    let lastFrame: number | null;
     const commitUpdate = () => {
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
@@ -339,9 +339,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.onDidUpdateEmitter.fire();
         });
       }
+
       // 更新批量更新返回的promise对象
-      clearTimeout(timer);
-      timer = setTimeout(commitUpdate, RecycleTree.BATCHED_UPDATE_MAX_DEBOUNCE_MS) as any;
+      if (lastFrame) {
+        window.cancelAnimationFrame(lastFrame);
+      }
+
+      lastFrame = requestAnimationFrame(commitUpdate);
       return this.batchUpdatePromise;
     };
   })();
