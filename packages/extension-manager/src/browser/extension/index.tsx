@@ -8,7 +8,7 @@ import styles from './extension.module.less';
 
 interface IExtensionViewProps {
   extension: VSXExtension;
-  onInstall(extension: VSXExtension): Promise<string | undefined>;
+  onInstall(extension: VSXExtension): Promise<void>;
   onClick(extension: VSXExtension, state: InstallState): void;
   installed: boolean;
 }
