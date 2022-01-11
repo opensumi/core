@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './extension-tree-view.module.less';
-import { isOSX } from '@opensumi/ide-core-browser';
+import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { Injector } from '@opensumi/di';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@opensumi/ide-core-browser';
@@ -12,6 +12,7 @@ import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node'
 import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
 import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.defination';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;
@@ -25,6 +26,16 @@ export const ExtensionTabBarTreeView = observer(
   ({ viewState, model, dataProvider, treeViewId }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
     const [isReady, setIsReady] = React.useState<boolean>(false);
     const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
+    const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+    const accordionService = React.useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
+
+    const isVisible = React.useMemo(() => {
+      const state = accordionService?.getViewState(treeViewId);
+      if (!state) {
+        return false;
+      }
+      return !state.collapsed && !state.hidden;
+    }, [accordionService]);
 
     React.useEffect(() => {
       const disposable = dataProvider.onDidChangeEmpty(() => {
@@ -118,7 +129,7 @@ export const ExtensionTabBarTreeView = observer(
       let unmouted = false;
       (async () => {
         await model.whenReady;
-        if (model.treeModel) {
+        if (model.treeModel && isVisible) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           // 这里需要重新取一下treeModel的值确保为最新的TreeModel
           await model.treeModel.root.ensureLoaded();
@@ -131,7 +142,7 @@ export const ExtensionTabBarTreeView = observer(
         unmouted = true;
         model && model.removeNodeDecoration();
       };
-    }, [model]);
+    }, [model, isVisible]);
 
     React.useEffect(() => {
       const handleBlur = () => {
