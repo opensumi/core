@@ -8,7 +8,7 @@ const MAX_WAIT_AFTER_SUCCESS = 3 * 1000;
 // 即使 getShellPath 已经返回，在这个时间之内执行成功后还是会更新缓存，供下一次调用使用
 const SHELL_TIMEOUT = 30 * 1000;
 
-let shellPath = process.env.SHELL;
+let shellPath = process.env.PATH;
 const isJestTest = process.env.IS_JEST_TEST;
 let updating: Promise<void> | undefined;
 

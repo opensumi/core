@@ -148,7 +148,7 @@ export class NodePtyTerminalService implements ITerminalService {
       }
 
       // if we still can not find the shell path, we use shellType as the target shell path
-      if (!shellPath) {
+      if (!shellPath && shellType !== 'default') {
         shellPath = shellType;
       }
 
