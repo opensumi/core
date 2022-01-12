@@ -245,7 +245,6 @@ const InnerElementType = React.forwardRef((props, ref) => {
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
   public static PADDING_BOTTOM_SIZE = 22;
   private static DEFAULT_ITEM_HEIGHT = 22;
-  private static BATCHED_UPDATE_MAX_DEBOUNCE_MS = 100;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
@@ -281,7 +280,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
-    let timer: number;
+    let lastFrame: number | null;
     const commitUpdate = () => {
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
@@ -325,10 +324,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
       // 更新React组件
-      this.forceUpdate(this.batchUpdateResolver);
-      if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
-        this.filterItems(this.props.filter);
-      }
+      this.forceUpdate(() => {
+        this.batchUpdateResolver();
+        // 如果存在过滤条件，同时筛选一下展示节点
+        if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
+          this.filterItems(this.props.filter);
+        }
+      });
     };
     return () => {
       if (!this.batchUpdatePromise) {
@@ -340,8 +342,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         });
       }
       // 更新批量更新返回的promise对象
-      clearTimeout(timer);
-      timer = setTimeout(commitUpdate, RecycleTree.BATCHED_UPDATE_MAX_DEBOUNCE_MS) as any;
+      if (lastFrame) {
+        window.cancelAnimationFrame(lastFrame);
+      }
+      lastFrame = requestAnimationFrame(commitUpdate);
       return this.batchUpdatePromise;
     };
   })();
