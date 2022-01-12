@@ -4,6 +4,7 @@ import { ITerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from './pty';
 import { ITerminalConnection } from './client';
+import { ITerminalProfile } from './profile';
 
 export interface IPtyExitEvent {
   sessionId: string;
@@ -87,6 +88,7 @@ export interface ITerminalService {
    * 返回终端环境的 OS
    */
   getOs(): Promise<OperatingSystem>;
+  getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

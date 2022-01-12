@@ -5,6 +5,7 @@ import { WindowsShellType } from './shell';
 import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalError } from './error';
+import { ITerminalProfile } from './profile';
 
 export interface IPty extends INodePty {
   /**
@@ -211,6 +212,8 @@ export interface ITerminalServiceClient {
   $resolvePotentialUnixShellPath(): Promise<string | undefined>;
   $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
+  detectAvailableProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
+  getOs(): OperatingSystem;
 }
 
 export interface ITerminalInfo {

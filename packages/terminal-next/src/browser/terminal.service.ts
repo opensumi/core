@@ -17,6 +17,7 @@ import {
   INodePtyInstance,
   isTerminalError,
   TerminalOptions,
+  ITerminalProfile,
 } from '../common';
 import { ShellType, WindowsShellType } from '../common/shell';
 
@@ -104,7 +105,7 @@ export class NodePtyTerminalService implements ITerminalService {
   ) {
     let shellPath = options.shellPath;
     const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
-    const platformKey = await this.getPlatformKey();
+    const platformKey = await this.getVSCodePlatformKey();
     const terminalOs = await this.getOs();
     if (!shellPath) {
       // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
@@ -202,7 +203,7 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
-  async getPlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+  async getVSCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
     // follow vscode
     return (await this.getOs()) === OperatingSystem.Macintosh
       ? 'osx'
@@ -251,8 +252,11 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getOs() {
-    // is this right to check WebIDE Terminal OS type?
-    return OS;
+    return this.serviceClientRPC.getOs();
+  }
+
+  async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
+    return await this.serviceClientRPC.detectAvailableProfiles(autoDetect);
   }
 
   dispose() {

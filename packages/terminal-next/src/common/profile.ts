@@ -7,9 +7,7 @@ export interface ITerminalProfileService {
   readonly availableProfiles: ITerminalProfile[];
   // readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
-  getPlatformKey(): Promise<string>;
   refreshAvailableProfiles(): void;
-  getDefaultProfileName(): string | undefined;
   onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
   // getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
   // registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
@@ -62,3 +60,25 @@ export interface IPotentialTerminalProfile {
 }
 
 export type IUnresolvedTerminalProfile = ITerminalExecutable | ITerminalProfileSource | null;
+
+export function terminalProfileArgsMatch(
+  args1: string | string[] | undefined,
+  args2: string | string[] | undefined,
+): boolean {
+  if (!args1 && !args2) {
+    return true;
+  } else if (typeof args1 === 'string' && typeof args2 === 'string') {
+    return args1 === args2;
+  } else if (Array.isArray(args1) && Array.isArray(args2)) {
+    if (args1.length !== args2.length) {
+      return false;
+    }
+    for (let i = 0; i < args1.length; i++) {
+      if (args1[i] !== args2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}

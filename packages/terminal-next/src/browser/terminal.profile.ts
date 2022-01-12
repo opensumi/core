@@ -1,14 +1,19 @@
-import { Disposable, Emitter, isWindows, WithEventBus, IDisposable, Event } from '@opensumi/ide-core-common';
-import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
-import { ITerminalProfile, ITerminalProfileProvider } from '../common';
-import { ITerminalProfileService } from '../common/profile';
+import { Disposable, Emitter, WithEventBus, IDisposable, Event, throttle, equals } from '@opensumi/ide-core-common';
+import {
+  ITerminalProfile,
+  ITerminalProfileProvider,
+  ITerminalProfileService,
+  ITerminalService,
+  terminalProfileArgsMatch,
+} from '../common';
+import { Injectable, Autowired } from '@opensumi/di';
 
-/*
- * Links TerminalService with TerminalProfileResolverService
- * and keeps the available terminal profiles updated
- */
+@Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
   private _availableProfiles: ITerminalProfile[] | undefined;
+
+  @Autowired(ITerminalService)
+  private terminalService: ITerminalService;
 
   profilesReady: Promise<void>;
   private readonly _onDidChangeAvailableProfiles = new Emitter<ITerminalProfile[]>();
@@ -16,33 +21,21 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     return this._onDidChangeAvailableProfiles.event;
   }
 
+  constructor() {
+    super();
+    this.refreshAvailableProfiles();
+  }
+
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =
     new Map();
 
-  async getPlatformKey(): Promise<string> {
-    // const env = await this._remoteAgentService.getEnvironment();
-    // if (env) {
-    // 	return env.os === OperatingSystem.Windows ? 'windows' : (env.os === OperatingSystem.Macintosh ? 'osx' : 'linux');
-    // }
-    return isWindows ? 'windows' : isMacintosh ? 'osx' : 'linux';
-  }
-
   get availableProfiles(): ITerminalProfile[] {
-    // if (!this._platformConfigJustRefreshed) {
-    // 	this.refreshAvailableProfiles();
-    // }
     return this._availableProfiles || [];
   }
 
-  // get contributedProfiles(): IExtensionTerminalProfile[] {
-  // 	return this._contributedProfiles || [];
-  // }
-
+  @throttle(2000)
   refreshAvailableProfiles(): void {
-    throw new Error('Method not implemented.');
-  }
-  getDefaultProfileName(): string | undefined {
-    throw new Error('Method not implemented.');
+    this._refreshAvailableProfilesNow();
   }
 
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined {
@@ -63,37 +56,29 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     extMap.set(id, profileProvider);
     return Disposable.create(() => this._profileProviders.delete(id));
   }
-  private async _detectProfiles(includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]> {
-    // const primaryBackend = this._terminalInstanceService.getBackend(this._environmentService.remoteAuthority);
-    // if (!primaryBackend) {
-    // 	return this._availableProfiles || [];
-    // }
-    // const platform = await this.getPlatformKey();
-    // this._defaultProfileName = this._configurationService.getValue(`${TerminalSettingPrefix.DefaultProfile}${platform}`) ?? undefined;
-    // return primaryBackend.getProfiles(this._configurationService.getValue(`${TerminalSettingPrefix.Profiles}${platform}`), this._defaultProfileName, includeDetectedProfiles);
-    return [];
+
+  private async _detectProfiles(autoDetect = true): Promise<ITerminalProfile[]> {
+    return await this.terminalService.getProfiles(autoDetect);
   }
 
   protected async _refreshAvailableProfilesNow(): Promise<void> {
-    const profiles = await this._detectProfiles();
-    // if (profiles.length === 0 && this._ifNoProfilesTryAgain) {
-    // 	// available profiles get updated when a terminal is created
-    // 	// or relevant config changes.
-    // 	// if there are no profiles, we want to refresh them again
-    // 	// since terminal creation can't happen in this case and users
-    // 	// might not think to try changing the config
-    // 	this._ifNoProfilesTryAgain = false;
-    // 	await this._refreshAvailableProfilesNow();
-    // 	return;
-    // }
-    // const profilesChanged = !(equals(profiles, this._availableProfiles, profilesEqual));
-    // const contributedProfilesChanged = await this._updateContributedProfiles();
-    // if (profilesChanged || contributedProfilesChanged) {
-    // 	this._availableProfiles = profiles;
-    // 	this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
-    // 	this._profilesReadyBarrier.open();
-    // 	this._updateWebContextKey();
-    // 	await this._refreshPlatformConfig(this._availableProfiles);
-    // }
+    const profiles = await this._detectProfiles(true);
+    const profilesChanged = !equals(profiles, this._availableProfiles, profilesEqual);
+    if (profilesChanged) {
+      this._availableProfiles = profiles;
+      this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
+    }
   }
+}
+
+function profilesEqual(one: ITerminalProfile, other: ITerminalProfile) {
+  return (
+    one.profileName === other.profileName &&
+    terminalProfileArgsMatch(one.args, other.args) &&
+    one.color === other.color &&
+    one.isAutoDetected === other.isAutoDetected &&
+    one.isDefault === other.isDefault &&
+    one.overrideName === other.overrideName &&
+    one.path === other.path
+  );
 }
