@@ -5,7 +5,8 @@
 
 // some code copied and modified from https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/platform/terminal/node/terminalProfiles.ts
 
-import { basename, isWindows, URI } from '@opensumi/ide-core-common';
+import { basename, URI } from '@opensumi/ide-core-common';
+import { isWindows } from '@opensumi/ide-core-common/lib/platform';
 import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 
 import type vscode from 'vscode';
@@ -43,6 +44,8 @@ interface DetectProfileOptions {
   // 自动检测可用的 profile
   autoDetect: boolean;
 }
+
+export const ITerminalProfileServiceNode = Symbol('ITerminalProfileServiceNode');
 
 @Injectable()
 export class TerminalProfileServiceNode {
