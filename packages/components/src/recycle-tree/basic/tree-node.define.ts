@@ -59,6 +59,10 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
   get raw() {
     return this._raw;
   }
+
+  get notExpandable() {
+    return !!this._raw.notExpandable;
+  }
 }
 
 export class BasicTreeNode extends TreeNode {

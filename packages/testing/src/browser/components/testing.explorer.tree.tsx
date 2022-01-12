@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Event, map, useInjectable } from '@opensumi/ide-core-browser';
-import { IBasicInlineMenuPosition, IBasicTreeData } from '@opensumi/ide-components/lib/recycle-tree/basic/types';
-import { BasicRecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
+import { IBasicInlineMenuPosition } from '@opensumi/ide-components/lib/recycle-tree/basic/types';
+import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 
-import { ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
+import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
 import { RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
+import { testingStatesToIcons } from '../icons';
+
+import styles from './testing.module.less';
 
 const TestingExplorerInlineMenus = [
   {
@@ -28,25 +31,15 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
 
-  const [treeData, setTreeData] = useState<IBasicTreeData[]>([]);
+  const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
-  const getItemIcon = React.useCallback((item: ITestTreeItem) => {
-    switch (item.test.expand) {
-      case TestItemExpandState.Expandable:
-        return 'check-close-circle-o';
-      case TestItemExpandState.BusyExpanding:
-        return 'spinner';
-      case TestItemExpandState.Expanded:
-        return 'circle-outline';
-      default:
-        return 'circle-outline';
-    }
-  }, []);
+  const getItemIcon = React.useCallback((item: ITestTreeItem) => testingStatesToIcons.get(item.state) || '', []);
 
   const asTreeData = React.useCallback(
-    (item: ITestTreeItem) => ({
+    (item: ITestTreeItem): ITestTreeData => ({
       label: item.label,
       icon: getItemIcon(item),
+      notExpandable: item.test.expand === TestItemExpandState.NotExpandable,
       rawItem: item,
       get children() {
         if (item.test.expand === TestItemExpandState.Expandable || item.children) {
@@ -66,7 +59,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     )(() => {
       for (const root of testViewModel.roots) {
         if (root.depth === 0 && root.children.size > 0) {
-          const result: IBasicTreeData[] = [];
+          const result: ITestTreeData[] = [];
           for (const child of root.children) {
             result.push(asTreeData(child));
           }
@@ -77,7 +70,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     return disposable.dispose;
   }, [testViewModel]);
 
-  const resolveTestChildren = React.useCallback((node?: IBasicTreeData) => {
+  const resolveTestChildren = React.useCallback((node?: ITestTreeData) => {
     if (!node) {
       return null;
     }
@@ -99,11 +92,17 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     }
   }, []);
 
+  const handleTreeReady = (handle: IRecycleTreeHandle) => {
+    testViewModel.setTreeHandlerApi(handle);
+  };
+
   return (
     <div>
       {treeData.length > 0 && (
         <BasicRecycleTree
           treeData={treeData}
+          onReady={handleTreeReady}
+          itemClassname={styles.item_label}
           height={900}
           resolveChildren={resolveTestChildren}
           inlineMenus={TestingExplorerInlineMenus}
