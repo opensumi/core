@@ -139,6 +139,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     };
   }
 
+  async detectAvailableProfiles(): Promise<any> {
+    return;
+  }
+
   onMessage(id: string, msg: string): void {
     const { data, params, method } = JSON.parse(msg);
 

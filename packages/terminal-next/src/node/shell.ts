@@ -5,15 +5,14 @@
 
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalEnvironment.ts
 
+import os from 'os';
+import fs from 'fs';
+
 import { normalize } from '@opensumi/ide-core-common';
 import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-node';
 
-import fs from 'fs';
-
-// TODO: 用户装在 D 盘的不就识别不对了
-// 要增加一些查找方法，此处需要参考 V 老师的进行改进
 export const WINDOWS_GIT_BASH_PATHS = [
   `${process.env['ProgramW6432']}\\Git\\bin\\bash.exe`,
   `${process.env['ProgramW6432']}\\Git\\usr\\bin\\bash.exe`,
@@ -23,6 +22,17 @@ export const WINDOWS_GIT_BASH_PATHS = [
   `${process.env['UserProfile']}\\scoop\\apps\\git-with-openssh\\current\\bin\\bash.exe`,
   `${process.env['AllUsersProfile']}\\scoop\\apps\\git-with-openssh\\current\\bin\\bash.exe`,
 ];
+
+export async function getPowershellPaths() {
+  const paths: string[] = [];
+  // TODO: 引入 VSCODE 查找逻辑
+  // Add all of the different kinds of PowerShells
+  // for await (const pwshExe of enumeratePowerShellInstallations()) {
+  //   paths.push(pwshExe.exePath);
+  // }
+  paths.push('powershell.exe');
+  return paths;
+}
 
 export const exists = async (p: string) => {
   try {
@@ -119,4 +129,13 @@ export async function findExecutable(
   }
   const fullPath = path.join(cwd, command);
   return (await exists(fullPath)) ? fullPath : undefined;
+}
+
+export function getWindowsBuildNumber(): number {
+  const osVersion = /(\d+)\.(\d+)\.(\d+)/g.exec(os.release());
+  let buildNumber = 0;
+  if (osVersion && osVersion.length === 4) {
+    buildNumber = parseInt(osVersion[3], 10);
+  }
+  return buildNumber;
 }

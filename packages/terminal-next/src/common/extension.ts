@@ -171,33 +171,21 @@ export interface ITerminalProfileProvider {
 }
 
 export interface ICreateContributedTerminalProfileOptions {
-  icon?: URI | string | { light: URI, dark: URI };
+  icon?: URI | string | { light: URI; dark: URI };
   color?: string;
-  location?: TerminalLocation | { viewColumn: number, preserveState?: boolean } | { splitActiveTerminal: boolean };
+  location?: TerminalLocation | { viewColumn: number; preserveState?: boolean } | { splitActiveTerminal: boolean };
 }
 
 export enum TerminalLocation {
   Panel = 1,
-  Editor = 2
+  Editor = 2,
 }
 
 export const enum TerminalLocationString {
   TerminalView = 'view',
-  Editor = 'editor'
+  Editor = 'editor',
 }
 
 export interface ITerminalEnvironment {
   [key: string]: string | null | undefined;
-}
-
-export interface ITerminalProfile {
-  profileName: string;
-  path: string;
-  isDefault: boolean;
-  isAutoDetected?: boolean;
-  args?: string | string[] | undefined;
-  env?: ITerminalEnvironment;
-  overrideName?: boolean;
-  color?: string;
-  icon?: vscode.ThemeIcon | URI | { light: URI, dark: URI };
 }

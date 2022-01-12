@@ -64,7 +64,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   private disposables: DisposableStore = new DisposableStore();
 
-  private _shellPath: string;
+  private _shellPath: string = process.env.SHELL || userInfo().shell;
 
   private readonly _bufferer: TerminalDataBufferer;
   protected _terminalProcesses: Map<string, ITerminalChildProcess> = new Map();
@@ -134,7 +134,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   get shellPath() {
-    return process.env.SHELL || userInfo().shell;
+    return this._shellPath;
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
