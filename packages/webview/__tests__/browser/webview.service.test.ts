@@ -1,11 +1,13 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IThemeService, ITheme } from '@opensumi/ide-theme';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { Disposable } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+
 import { IWebviewService } from '../../src/browser';
 import { WebviewServiceImpl } from '../../src/browser/webview.service';
-import { IThemeService, ITheme } from '@opensumi/ide-theme';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { Disposable } from '@opensumi/ide-core-common';
-import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 const injector = createBrowserInjector([]);
 
@@ -50,6 +52,15 @@ injector.addProviders(
     useValue: {},
   },
 );
+
+const appConfig = injector.get(AppConfig) as AppConfig;
+injector.overrideProviders({
+  token: AppConfig,
+  useValue: {
+    ...appConfig,
+    isElectronRenderer: true,
+  },
+});
 
 mockIframeAndElectronWebview();
 

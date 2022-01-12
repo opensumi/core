@@ -38,6 +38,6 @@ export class ApplicationService implements IApplicationService {
 
   async getBackendOS() {
     await this._initialized.promise;
-    return this._backendOS;
+    return this.backendOS;
   }
 }

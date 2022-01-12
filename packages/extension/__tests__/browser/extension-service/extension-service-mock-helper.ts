@@ -362,6 +362,8 @@ export function setupExtensionServiceInjector() {
       {
         token: AppConfig,
         useValue: {
+          isElectronRenderer: false,
+          isRemote: true,
           noExtHost: true,
           extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
         },
