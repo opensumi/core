@@ -8,6 +8,7 @@ import {
   IPtyExitEvent,
   ITerminalController,
   TerminalOptions,
+  ITerminalProfile,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
@@ -107,5 +108,9 @@ export class TerminalInternalService implements ITerminalInternalService {
 
   async getOs(): Promise<OperatingSystem> {
     return await this.service.getOs();
+  }
+
+  async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
+    return await this.service.getProfiles(autoDetect);
   }
 }
