@@ -26,7 +26,7 @@ import {
   IExtHostWorkspace,
   ConfigurationTarget,
 } from '../../../common/vscode';
-import { Emitter, Event, PreferenceScope, isObject, mixin } from '@opensumi/ide-core-common';
+import { Emitter, Event, PreferenceScope, isObject, mixin, isUndefined } from '@opensumi/ide-core-common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Uri } from '../../../common/vscode/ext-types';
 import cloneDeep = require('lodash.clonedeep');
@@ -105,31 +105,39 @@ export class ExtHostPreference implements IExtHostPreference {
   private readonly OVERRIDE_PROPERTY_PATTERN = new RegExp(this.OVERRIDE_PROPERTY);
 
   private parseConfigurationData(data: { [key: string]: any }): { [key: string]: any } {
-    return Object.keys(data).reduce((result: any, key: string) => {
-      const parts = key.split('.');
-      let branch = result;
-
-      for (let i = 0; i < parts.length; i++) {
-        if (i === parts.length - 1) {
-          branch[parts[i]] = data[key];
-          continue;
-        }
-        if (!branch[parts[i]]) {
-          branch[parts[i]] = {};
-        }
-        branch = branch[parts[i]];
-
-        // overridden 的属性，如languages的 [typescript].editor.tabsize 转换为
-        // "[typescript]" : {
-        //    "editor.tabsize" : "2"
-        //  }
-        if (i === 0 && this.OVERRIDE_PROPERTY_PATTERN.test(parts[i])) {
-          branch[key.substring(parts[0].length + 1)] = data[key];
-          break;
-        }
-      }
-      return result;
-    }, {});
+    return (
+      Object.keys(data)
+        // 配置项按字段长度从大到小排序，方便后续自然过滤有包含关系的配置项
+        // 如当前如果存在 a.b 声明为 string，而又有 a.b.c 的声明
+        // 则这里默认应该忽略掉 a.b 的声明
+        .sort((keyA, keyB) => keyB.length - keyA.length)
+        .reduce((result: any, key: string) => {
+          const parts = key.split('.');
+          let branch = result;
+          for (let i = 0; i < parts.length; i++) {
+            if (i === parts.length - 1) {
+              if (isUndefined(branch[parts[i]])) {
+                // 仅当值为 undefined 时使用配置项的默认值
+                branch[parts[i]] = data[key];
+              }
+              continue;
+            }
+            if (!branch[parts[i]]) {
+              branch[parts[i]] = {};
+            }
+            branch = branch[parts[i]];
+            // overridden 的属性，如languages的 [typescript].editor.tabsize 转换为
+            // "[typescript]" : {
+            //    "editor.tabsize" : "2"
+            //  }
+            if (i === 0 && this.OVERRIDE_PROPERTY_PATTERN.test(parts[i])) {
+              branch[key.substring(parts[0].length + 1)] = data[key];
+              break;
+            }
+          }
+          return result;
+        }, {})
+    );
   }
 
   private toConfigurationChangeEvent(eventData: PreferenceChangeExt[]): ConfigurationChangeEvent {
