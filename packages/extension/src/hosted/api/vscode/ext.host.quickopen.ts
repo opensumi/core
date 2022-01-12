@@ -316,7 +316,6 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   hide(): void {
     this.quickOpen.hideQuickPick();
-    this.dispose();
   }
 
   show(): void {
@@ -437,7 +436,6 @@ class QuickInputExt implements vscode.InputBox {
   }
   hide(): void {
     this.quickOpen.hideInputBox();
-    this.dispose();
   }
 
   dispose(): void {
