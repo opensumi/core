@@ -35,6 +35,7 @@ import {
   ITerminalExitEvent,
   ITerminalConnection,
   ITerminalExternalLinkProvider,
+  ICreateTerminalOptions,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
@@ -604,15 +605,42 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
 @Injectable()
 export class TerminalClientFactory {
+  /**
+   * 创建 terminal 实例最终都会调用该方法
+   */
   static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
+    // 每一个 widget.id 对应一个 TerminalClient
+    // 但是 TerminalClient 内部又依赖了一堆的其他要注入的，所以这里新创建一个 child injector
+    // 让 TerminalClient 依赖的所有类都重新初始化一遍
+
     const child = injector.createChild([
       {
         token: TerminalClient,
         useClass: TerminalClient,
       },
     ]);
+
+    const client = child.get(TerminalClient);
+    client.init(widget, options);
+    return client;
+  }
+  /**
+   * 创建 terminal 实例最终都会调用该方法
+   */
+  static createClient2(injector: Injector, widget: IWidget, options?: ICreateTerminalOptions) {
+    const child = injector.createChild([
+      {
+        token: TerminalClient,
+        useClass: TerminalClient,
+      },
+    ]);
+
     const client = child.get(TerminalClient);
     client.init(widget, options);
     return client;
   }
 }
+
+export const createTerminalClientFactory2 =
+  (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
+    TerminalClientFactory.createClient(injector, widget, options);

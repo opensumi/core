@@ -13,7 +13,7 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { TerminalController } from '../../src/browser/terminal.controller';
-import { TerminalClientFactory } from '../../src/browser/terminal.client';
+import { createTerminalClientFactory2, TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
@@ -28,6 +28,7 @@ import {
   IWidget,
   ITerminalNetwork,
   ITerminalErrorService,
+  ITerminalClientFactory2,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 import {
@@ -115,6 +116,10 @@ export const injector = new Injector([
       (injector) =>
       (widget: IWidget, options = {}) =>
         TerminalClientFactory.createClient(injector, widget, options),
+  },
+  {
+    token: ITerminalClientFactory2,
+    useFactory: createTerminalClientFactory2,
   },
   {
     token: CommandService,

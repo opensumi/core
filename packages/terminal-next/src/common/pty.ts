@@ -6,6 +6,7 @@ import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { ITerminalError } from './error';
 import { ITerminalProfile } from './profile';
+import { TerminalLocation } from './extension';
 
 export interface IPty extends INodePty {
   /**
@@ -309,4 +310,27 @@ export interface IShellLaunchConfig {
    * Environment to be set for the child program.
    */
   env?: { [key: string]: string | null };
+}
+
+export type ITerminalLocationOptions = TerminalLocation | { splitActiveTerminal: boolean };
+
+export interface ICreateTerminalOptions {
+  /**
+   * The shell launch config or profile to launch with, when not specified the default terminal
+   * profile will be used.
+   */
+  config?: IShellLaunchConfig | ITerminalProfile;
+  /**
+   * The current working directory to start with, this will override IShellLaunchConfig.cwd if
+   * specified.
+   */
+  cwd?: string | Uri;
+  /**
+   * The terminal's resource, passed when the terminal has moved windows.
+   */
+  resource?: Uri;
+  /**
+   * The terminal's location (editor or panel), it's terminal parent (split to the right), or editor group
+   */
+  location?: ITerminalLocationOptions;
 }
