@@ -18,7 +18,7 @@ import {
   IUnresolvedTerminalProfile,
   ProfileSource,
 } from '../common/profile';
-import { exists, findExecutable, getPowershellPaths, getWindowsBuildNumber, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { exists, findExecutable, getPowershellPaths, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { ITerminalEnvironment } from '..';
 import { readFile } from 'fs-extra';
