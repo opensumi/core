@@ -48,16 +48,16 @@ export class PtyService {
     return undefined;
   }
   async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment, cwd: string) {
-    if (!options.shellPath) {
+    if (!options.executable) {
       return {
         message: 'IShellLaunchConfig.shellPath not set',
       };
     }
     try {
-      const result = await promises.stat(options.shellPath);
+      const result = await promises.stat(options.executable);
       if (!result.isFile() && !result.isSymbolicLink()) {
         return {
-          message: `Path to shell executable "${options.shellPath}" is not a file or a symlink`,
+          message: `Path to shell executable "${options.executable}" is not a file or a symlink`,
         };
       }
     } catch (err) {
@@ -65,15 +65,15 @@ export class PtyService {
         // The executable isn't an absolute path, try find it on the PATH or CWD
         const envPaths: string[] | undefined =
           options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
-        const executable = await findExecutable(options.shellPath, cwd, envPaths, ptyEnv);
+        const executable = await findExecutable(options.executable, cwd, envPaths, ptyEnv);
         if (!executable) {
           return {
-            message: `Path to shell executable "${options.shellPath}" does not exist`,
+            message: `Path to shell executable "${options.executable}" does not exist`,
           };
         }
         // Set the shellPath explicitly here so that node-pty doesn't need to search the
         // $PATH too.
-        options.shellPath = executable;
+        options.executable = executable;
       }
     }
   }
@@ -122,16 +122,16 @@ export class PtyService {
 
     // above code will validate shellPath and throw if it doesn't exist
 
-    const ptyProcess = pty.spawn(options.shellPath as string, options.args || [], {
+    const args = options.args || [];
+    const ptyProcess = pty.spawn(options.executable as string, args, {
       name: options.name || 'xterm-256color',
-      cols: options.cols || 100,
-      rows: options.rows || 30,
       cwd,
       env: ptyEnv,
     });
-    (ptyProcess as IPty).bin = options.shellPath as string;
+
+    (ptyProcess as IPty).bin = options.executable as string;
     (ptyProcess as IPty).launchConfig = options;
-    const match = (options.shellPath as string).match(/[\w|.]+$/);
+    const match = (options.executable as string).match(/[\w|.]+$/);
     (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
     return ptyProcess as IPty;
   }

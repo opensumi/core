@@ -142,8 +142,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient.updateOptions(this.terminalOptions);
       this.terminalClient.reset();
     } else {
-      this.terminalClient = this.terminalController.createClientWithWidget({
-        ...this.terminalOptions,
+      this.terminalClient = this.terminalController.createClientWithWidget2({
+        terminalOptions: this.terminalOptions,
         closeWhenExited: false,
         beforeCreate: (terminalId) => {
           this._onDidTerminalCreated.fire(terminalId);

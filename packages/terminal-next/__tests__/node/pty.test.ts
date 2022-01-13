@@ -23,26 +23,22 @@ describe('PtyService function should be valid', () => {
   });
 
   it('cannot create a invalid shell case1', async () => {
-    await expect(ptyService.create2({ cols: 200, rows: 200, shellPath: '' })).rejects.toThrowError(
-      'IShellLaunchConfig.shellPath not set',
-    );
+    await expect(ptyService.create2({ executable: '' })).rejects.toThrowError('IShellLaunchConfig.shellPath not set');
   });
 
   it('cannot create a invalid shell case2', async () => {
-    await expect(
-      ptyService.create2({ cols: 200, rows: 200, shellPath, cwd: '/this/path/not/exists' }),
-    ).rejects.toThrowError();
+    await expect(ptyService.create2({ executable: shellPath, cwd: '/this/path/not/exists' })).rejects.toThrowError();
   });
 
   it('can create a valid pty instance', async () => {
-    const instance = await ptyService.create2({ cols: 200, rows: 200, shellPath });
+    const instance = await ptyService.create2({ executable: shellPath });
     expect(instance).toBeDefined();
     expect(instance.pid).toBeDefined();
     expect(instance.launchConfig).toBeDefined();
   });
 
   it('cwd is user home dir if not set', async () => {
-    const instance = await ptyService.create2({ cols: 200, rows: 200, shellPath, args: ['-c', 'pwd'] });
+    const instance = await ptyService.create2({ executable: shellPath, args: ['-c', 'pwd'] });
     let result = '';
 
     if (os.platform() !== 'win32') {

@@ -13,11 +13,11 @@ import {
   ITerminalServicePath,
   ITerminalConnection,
   IPtyExitEvent,
-  IShellLaunchConfig,
   INodePtyInstance,
   isTerminalError,
   TerminalOptions,
   ITerminalProfile,
+  IShellLaunchConfig,
 } from '../common';
 import { ShellType, WindowsShellType } from '../common/shell';
 
@@ -157,17 +157,17 @@ export class NodePtyTerminalService implements ITerminalService {
     }
 
     const launchConfig: IShellLaunchConfig = {
-      shellPath,
+      executable: shellPath,
       cwd: options.cwd,
       args: shellArgs,
-      cols,
-      rows,
-      os: terminalOs,
       env: options.env,
       name: options.name,
       strictEnv: options.strictEnv,
     };
+    return this.attachByLaunchConfig(sessionId, launchConfig);
+  }
 
+  async attachByLaunchConfig(sessionId: string, launchConfig: IShellLaunchConfig) {
     this.logger.log(`attach ${sessionId} with options ${JSON.stringify(launchConfig)}`);
 
     const ptyInstance = await this.serviceClientRPC.create2(sessionId, launchConfig);

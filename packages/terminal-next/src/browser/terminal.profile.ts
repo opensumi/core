@@ -1,5 +1,7 @@
 import { Disposable, Emitter, WithEventBus, IDisposable, Event, throttle, equals } from '@opensumi/ide-core-common';
 import {
+  ICreateTerminalOptions,
+  IResolveDefaultProfileOptions,
   ITerminalProfile,
   ITerminalProfileProvider,
   ITerminalProfileService,
@@ -7,6 +9,7 @@ import {
   terminalProfileArgsMatch,
 } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
@@ -68,6 +71,11 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       this._availableProfiles = profiles;
       this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
     }
+  }
+
+  async resolveDefaultProfile(options: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+    // const os: OperatingSystem = options.os || (await this.terminalService.getOs());
+    return this._availableProfiles?.[0];
   }
 }
 

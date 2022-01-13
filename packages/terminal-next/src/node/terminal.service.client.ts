@@ -79,7 +79,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         pid: pty.pid,
         proess: pty.process,
         name: pty.parsedName,
-        shellPath: pty.launchConfig.shellPath,
+        shellPath: pty.launchConfig.executable,
       };
     }
   }

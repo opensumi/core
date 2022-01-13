@@ -92,7 +92,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     );
     this.disposable.addDispose(
       this.profileSerivce.onDidChangeAvailableProfiles(() => {
-        // this._updateDefaultProfile()
+        this._updateDefaultProfile();
       }),
     );
   }

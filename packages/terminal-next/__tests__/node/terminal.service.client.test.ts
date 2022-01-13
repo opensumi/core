@@ -39,7 +39,7 @@ describe('TerminalServiceClientImpl', () => {
     };
 
     terminalServiceClient.setConnectionClientId(mockId);
-    const pty = await terminalServiceClient.create2(mockId, { name: 'test', cols: 200, rows: 200 });
+    const pty = await terminalServiceClient.create2(mockId, { name: 'test' });
     expect(pty).toBeUndefined();
     expect(closeClientId).toEqual(mockId);
     expect(closeClientData).not.toBeUndefined();
@@ -51,9 +51,7 @@ describe('TerminalServiceClientImpl', () => {
 
     await terminalServiceClient.create2(mockId, {
       name: 'test',
-      shellPath,
-      cols: 200,
-      rows: 200,
+      executable: shellPath,
     });
     const terminal: IPty = (terminalService as any).getTerminal(mockId);
     let receiveData = '';
@@ -84,9 +82,7 @@ describe('TerminalServiceClientImpl', () => {
     const mockId = '2';
     await terminalServiceClient.create2(mockId, {
       name: 'test',
-      shellPath,
-      cols: 200,
-      rows: 200,
+      executable: shellPath,
     });
 
     terminalServiceClient.disposeById(mockId);
