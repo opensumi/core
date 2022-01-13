@@ -27,6 +27,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
 
   opts.workspaceDir = electronEnv.env.WORKSPACE_DIR;
   opts.extensionDir = electronEnv.metadata.extensionDir;
+  opts.isRemote = electronEnv.metadata.isRemote;
   opts.injector = injector;
   if (electronEnv.metadata.workerHostEntry) {
     opts.extWorkerHost = URI.file(electronEnv.metadata.workerHostEntry).toString();
