@@ -1,5 +1,5 @@
 import { ITestTreeData } from './../common/tree-view.model';
-import { applyTestItemUpdate, ITestItemUpdate } from './../common/testCollection';
+import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-components/lib/utils';
 import { Disposable, isDefined, filter, map } from '@opensumi/ide-core-browser';
@@ -45,7 +45,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
   @Autowired(TestServiceToken)
   private readonly testService: ITestService;
 
-  protected readonly items = new Map<string, TestTreeItem>();
+  private readonly items = new Map<string, TestTreeItem>();
 
   private readonly updateEmitter = new Emitter<void>();
   readonly onUpdate = this.updateEmitter.event;
@@ -62,7 +62,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     return filter(rootsIt, isDefined);
   }
 
-  protected getRevealDepth(element: TestTreeItem): number | undefined {
+  private getRevealDepth(element: TestTreeItem): number | undefined {
     return element.depth === 0 ? 0 : undefined;
   }
 
@@ -132,6 +132,10 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
         }),
       );
     }
+  }
+
+  public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {
+    return this.testService.collection.getNodeById(extId);
   }
 
   public expandElement(element: ITestTreeItem, depth: number): Promise<void> {
