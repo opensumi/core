@@ -151,8 +151,13 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     console.log('$appendTestMessagesInRun', runId, taskId, testId, messages);
   }
 
-  $appendOutputToRun(runId: string, taskId: string, output: string, location?: ILocationDto, testId?: string): void {
-    console.log('$appendOutputToRun', runId, taskId, output, location);
+  $appendOutputToRun(runId: string, taskId: string, output: string, locationDto?: ILocationDto, testId?: string): void {
+    console.log('$appendOutputToRun', runId, taskId, output, locationDto);
+    const location = locationDto && {
+      uri: URI.revive(locationDto.uri),
+      range: Range.lift(locationDto.range),
+    };
+    this.withTestResult(runId, (r) => r.appendOutput(output, taskId, location, testId));
   }
 
   $signalCoverageAvailable(runId: string, taskId: string): void {
@@ -161,10 +166,12 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
 
   $startedTestRunTask(runId: string, task: ITestRunTask): void {
     console.log('$startedTestRunTask', runId, task);
+    this.withTestResult(runId, (r) => r.addTask(task));
   }
 
   $finishedTestRunTask(runId: string, taskId: string): void {
     console.log('$finishedTestRunTask', runId, taskId);
+    this.withTestResult(runId, (r) => r.markTaskComplete(taskId));
   }
 
   $startedExtensionTestRun(req: ExtensionRunTestsRequest): void {

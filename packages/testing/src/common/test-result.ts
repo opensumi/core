@@ -1,3 +1,4 @@
+import { Emitter } from '@opensumi/ide-core-common';
 import {
   ExtensionRunTestsRequest,
   IRichLocation,
@@ -20,10 +21,32 @@ export interface ITestRunTaskResults extends ITestRunTask {
 
 export const TestResultServiceToken = Symbol('TestResultService');
 
+interface TestResultItemWithChildren extends TestResultItem {
+  children: TestResultItemWithChildren[];
+}
+
+export const enum TestResultItemChangeReason {
+  Retired,
+  ParentRetired,
+  ComputedStateChange,
+  OwnStateChange,
+}
+
+export type TestResultItemChange = { item: TestResultItem; result: ITestResult } & (
+  | {
+      reason:
+        | TestResultItemChangeReason.Retired
+        | TestResultItemChangeReason.ParentRetired
+        | TestResultItemChangeReason.ComputedStateChange;
+    }
+  | { reason: TestResultItemChangeReason.OwnStateChange; previous: TestResultState }
+);
+
 export interface ITestResultService {
   createTestResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest): ITestResult;
   addTestResult(result: ITestResult): void;
   getResult(resultId: string): ITestResult | undefined;
+  readonly results: ReadonlyArray<ITestResult>;
 }
 
 export interface ITestResult {
@@ -59,11 +82,24 @@ export interface ITestResult {
 }
 
 export class TestResultImpl implements ITestResult {
-  name: string;
-  tests: IterableIterator<TestResultItem>;
-  tasks: readonly ITestRunTaskResults[];
+  private readonly completeEmitter = new Emitter<void>();
+  private readonly changeEmitter = new Emitter<TestResultItemChange>();
+  private readonly testById = new Map<string, TestResultItemWithChildren>();
 
-  completedAt: number | undefined = undefined;
+  private _completedAt?: number;
+
+  public readonly name: string;
+  public readonly tasks: ITestRunTaskResults[] = [];
+  public readonly onChange = this.changeEmitter.event;
+  public readonly onComplete = this.completeEmitter.event;
+
+  public get completedAt() {
+    return this._completedAt;
+  }
+
+  public get tests() {
+    return this.testById.values();
+  }
 
   constructor(public readonly id: string, public readonly request: ResolvedTestRunRequest) {}
 

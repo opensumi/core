@@ -23,7 +23,7 @@ export const debugPreferencesSchema: PreferenceSchema = {
     },
     'debug.openDebug': {
       enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart', 'openOnDebugBreak'],
-      default: 'openOnSessionStart',
+      default: 'openOnDebugBreak',
       description: localize('preference.debug.openDebug'),
     },
     'debug.internalConsoleOptions': {
