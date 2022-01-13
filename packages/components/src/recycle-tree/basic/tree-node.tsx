@@ -75,9 +75,7 @@ export const BasicTreeNodeRenderer: React.FC<
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <Icon icon={node.icon} className='icon' style={{ height: itemHeight, lineHeight: `${itemHeight}px` }} />
-    ),
+    (node: BasicCompositeTreeNode | BasicTreeNode) => <span className={node.icon} style={{ paddingRight: '5px' }} />,
     [],
   );
 
@@ -156,7 +154,11 @@ export const BasicTreeNodeRenderer: React.FC<
     );
   };
 
-  const renderTwice = (item) => {
+  const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
+    if ((item as BasicCompositeTreeNode).notExpandable) {
+      return <div className={cls('segment', 'expansion_toggle')}></div>;
+    }
+
     if (BasicCompositeTreeNode.is(item)) {
       return renderFolderToggle(item as BasicCompositeTreeNode, handlerTwistierClick);
     }

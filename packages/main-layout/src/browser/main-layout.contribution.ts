@@ -153,18 +153,6 @@ export class MainLayoutModuleContribution
 
   async onStart() {
     this.registerSideToggleKey();
-    // vscode用于测试插件使用的默认container
-    this.mainLayoutService.collectTabbarComponent(
-      [],
-      {
-        hideIfEmpty: true,
-        containerId: 'test',
-        title: localize('workbench.testViewContainer').toUpperCase(),
-        iconClass: getIcon('experiment'),
-        fromExtension: true,
-      },
-      SlotLocation.left,
-    );
   }
 
   async onDidStart() {
