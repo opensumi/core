@@ -6,6 +6,7 @@ import {
   Domain,
   getIcon,
   localize,
+  SlotLocation,
 } from '@opensumi/ide-core-browser';
 
 import { TestingContainerId, TestingViewId } from '../common/testing-view';
@@ -23,13 +24,18 @@ export class TestingContribution implements ClientAppContribution, ComponentCont
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(TestingViewId, [], {
-      iconClass: getIcon('test'),
-      title: localize('test.title'),
-      priority: 1,
-      containerId: TestingContainerId,
-      component: TestingView,
-      activateKeyBinding: 'ctrlcmd+shift+t',
-    });
+    registry.register(
+      TestingViewId,
+      [],
+      {
+        iconClass: getIcon('test'),
+        title: localize('test.title'),
+        priority: 1,
+        containerId: TestingContainerId,
+        component: TestingView,
+        activateKeyBinding: 'ctrlcmd+shift+t',
+      },
+      SlotLocation.left,
+    );
   }
 }
