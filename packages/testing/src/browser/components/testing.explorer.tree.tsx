@@ -1,35 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Event, map, useInjectable } from '@opensumi/ide-core-browser';
-import { IBasicInlineMenuPosition } from '@opensumi/ide-components/lib/recycle-tree/basic/types';
+import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 
 import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
-import { RuntTestCommand } from '../../common/commands';
+import { GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
 import { testingStatesToIcons } from '../icons';
+import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
+import { TestingExplorerInlineMenus } from '../../common/testing-view';
 
 import styles from './testing.module.less';
-
-const TestingExplorerInlineMenus = [
-  {
-    icon: 'start',
-    title: 'Run Tests',
-    command: RuntTestCommand.id,
-    position: IBasicInlineMenuPosition.TREE_CONTAINER,
-  },
-  {
-    icon: 'openfile',
-    title: 'Open File',
-    command: 'open-file',
-    position: IBasicInlineMenuPosition.TREE_CONTAINER,
-  },
-];
 
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
@@ -80,15 +67,18 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     return [];
   }, []);
 
-  const inlineMenuActuator = React.useCallback((node, action) => {
-    const { rawItem } = node.raw;
+  const inlineMenuActuator = React.useCallback((node: BasicCompositeTreeNode, action) => {
+    const { rawItem } = node.raw as ITestTreeData;
     switch (action.command) {
-      case RuntTestCommand.id: {
+      case RuntTestCommand.id:
         testService.runTests({
           tests: rawItem.tests,
           group: TestRunProfileBitset.Run,
         });
-      }
+        break;
+      case GoToTestCommand.id:
+        commandService.executeCommand(GoToTestCommand.id, rawItem.test.item.extId);
+        break;
     }
   }, []);
 
