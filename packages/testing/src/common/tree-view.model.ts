@@ -1,3 +1,4 @@
+import { IBasicTreeData, IRecycleTreeHandle } from '@opensumi/ide-components';
 import { Event } from '@opensumi/ide-core-browser';
 
 import { InternalTestItem, TestResultState } from './testCollection';
@@ -11,6 +12,8 @@ export interface ITestTreeViewModel {
   initTreeModel(): Promise<void>;
 
   expandElement(element: ITestTreeItem, depth: number): void;
+
+  setTreeHandlerApi(handle: IRecycleTreeHandle): void;
 }
 
 export interface ITestTreeItem {
@@ -29,4 +32,8 @@ export interface ITestTreeItem {
   duration: number | undefined;
 
   label: string;
+}
+
+export interface ITestTreeData extends IBasicTreeData {
+  rawItem: ITestTreeItem;
 }

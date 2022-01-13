@@ -1,3 +1,5 @@
+import { ITestTreeData } from './../common/tree-view.model';
+import { applyTestItemUpdate, ITestItemUpdate } from './../common/testCollection';
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-components/lib/utils';
 import { Disposable, isDefined, filter, map } from '@opensumi/ide-core-browser';
@@ -11,6 +13,8 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
+import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
+import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 
 export class TestTreeItem implements ITestTreeItem {
   constructor(public test: InternalTestItem, public parent: ITestTreeItem | undefined) {}
@@ -29,6 +33,10 @@ export class TestTreeItem implements ITestTreeItem {
     return [this.test];
   }
 
+  update = (patch: ITestItemUpdate) => {
+    applyTestItemUpdate(this.test, patch);
+  };
+
   duration: number | undefined;
 }
 
@@ -41,6 +49,8 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
 
   private readonly updateEmitter = new Emitter<void>();
   readonly onUpdate = this.updateEmitter.event;
+
+  public treeHandlerApi: IRecycleTreeHandle;
 
   constructor() {
     super();
@@ -79,7 +89,13 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Update: {
-          console.log('update item>>>', op[1]);
+          const patch = op[1];
+          const existing = this.items.get(patch.extId);
+          if (!existing) {
+            break;
+          }
+
+          existing.update(patch);
           break;
         }
         case TestDiffOpType.Remove: {
@@ -94,18 +110,47 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     }
   }
 
-  expandElement(element: ITestTreeItem, depth: number): void {
-    if (!(element instanceof TestTreeItem)) {
-      return;
+  private listenTreeHandlerEvent(): void {
+    if (this.treeHandlerApi) {
+      const model = this.treeHandlerApi.getModel();
+      this.addDispose(
+        model.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, async (node: BasicCompositeTreeNode) => {
+          if (node.expanded) {
+            const raw = node.raw as ITestTreeData;
+            const rawTest = raw.rawItem.test;
+            if (
+              rawTest.expand === TestItemExpandState.Expanded ||
+              rawTest.expand === TestItemExpandState.NotExpandable
+            ) {
+              return;
+            }
+
+            await this.expandElement(raw.rawItem, raw.rawItem.depth);
+            this.updateEmitter.fire();
+            await node.refresh();
+          }
+        }),
+      );
     }
-    if (element.test.expand === TestItemExpandState.NotExpandable) {
-      return;
-    }
-    this.testService.collection.expand(element.test.item.extId, depth);
   }
 
-  initTreeModel(): Promise<void> {
+  public expandElement(element: ITestTreeItem, depth: number): Promise<void> {
+    if (!(element instanceof TestTreeItem)) {
+      return Promise.resolve();
+    }
+    if (element.test.expand === TestItemExpandState.NotExpandable) {
+      return Promise.resolve();
+    }
+    return this.testService.collection.expand(element.test.item.extId, depth);
+  }
+
+  public initTreeModel(): Promise<void> {
     // console.log('do initTreeModel');
     return Promise.resolve();
+  }
+
+  public setTreeHandlerApi(handle: IRecycleTreeHandle): void {
+    this.treeHandlerApi = handle;
+    this.listenTreeHandlerEvent();
   }
 }
