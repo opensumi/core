@@ -117,6 +117,14 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
         model.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, async (node: BasicCompositeTreeNode) => {
           if (node.expanded) {
             const raw = node.raw as ITestTreeData;
+            const rawTest = raw.rawItem.test;
+            if (
+              rawTest.expand === TestItemExpandState.Expanded ||
+              rawTest.expand === TestItemExpandState.NotExpandable
+            ) {
+              return;
+            }
+
             await this.expandElement(raw.rawItem, raw.rawItem.depth);
             this.updateEmitter.fire();
             await node.refresh();
