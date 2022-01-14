@@ -1,3 +1,4 @@
+import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 import { ITestTreeData } from './../common/tree-view.model';
 import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
 import { Autowired, Injectable } from '@opensumi/di';
@@ -15,32 +16,53 @@ import {
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
 import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
-import { TestResultItemChangeReason, TestResultServiceToken } from '../common/test-result';
-import { TestResultServiceImpl } from './test.result.service';
-import { isStateWithResult } from '../common/testingStates';
+import { TestResultItemChange, TestResultItemChangeReason, TestResultServiceToken } from '../common/test-result';
+import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
+import { IComputedStateAndDurationAccessor, refreshComputedState } from '../common/getComputedState';
+
+const computedStateAccessor: IComputedStateAndDurationAccessor<ITestTreeItem> = {
+  getOwnState: (i) => (i instanceof TestTreeItem ? i.ownState : TestResultState.Unset),
+  getCurrentComputedState: (i) => i.state,
+  setComputedState: (i, s) => (i.state = s),
+
+  getCurrentComputedDuration: (i) => i.duration,
+  getOwnDuration: (i) => (i instanceof TestTreeItem ? i.ownDuration : undefined),
+  setComputedDuration: (i, d) => (i.duration = d),
+
+  getChildren: (i) => Iterable.filter(i.children.values(), (t): t is TestTreeItem => t instanceof TestTreeItem),
+  *getParents(i) {
+    for (let parent = i.parent; parent; parent = parent.parent) {
+      yield parent;
+    }
+  },
+};
 
 export class TestTreeItem implements ITestTreeItem {
   constructor(public test: InternalTestItem, public parent: ITestTreeItem | undefined) {}
 
   readonly children = new Set<TestTreeItem>();
 
-  get label() {
+  public get label() {
     return this.test.item.label;
   }
 
-  state = TestResultState.Unset;
+  public state = TestResultState.Unset;
 
-  depth: number = this.parent ? this.parent.depth + 1 : 0;
+  public ownState = TestResultState.Unset;
 
-  get tests() {
+  public depth: number = this.parent ? this.parent.depth + 1 : 0;
+
+  public get tests() {
     return [this.test];
   }
 
-  update = (patch: ITestItemUpdate) => {
+  public update = (patch: ITestItemUpdate) => {
     applyTestItemUpdate(this.test, patch);
   };
 
-  duration: number | undefined;
+  public duration: number | undefined;
+
+  public ownDuration: number | undefined;
 }
 
 @Injectable()
@@ -138,23 +160,48 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
         }),
       );
       this.addDispose(
-        this.testResultService.onTestChanged((evt) => {
-          if (evt.reason !== TestResultItemChangeReason.OwnStateChange) {
-            return;
-          }
-
-          if (
-            evt.item.ownComputedState !== TestResultState.Running &&
-            !(evt.previous === TestResultState.Queued && isStateWithResult(evt.item.ownComputedState))
-          ) {
-            return;
-          }
-
+        this.testResultService.onTestChanged((evt: TestResultItemChange) => {
           console.log('testResultService.onTestChanged', evt);
-          // ** 此处要更新 tree 状态 **
+
+          if (evt.reason === TestResultItemChangeReason.ComputedStateChange) {
+            const item = this.items.get(evt.item.item.extId);
+            if (!item) {
+              return;
+            }
+
+            refreshComputedState(computedStateAccessor, item, evt.item.computedState).forEach((e) => {
+              console.log('refreshComputedState', e);
+              item.state = evt.item.computedState;
+            });
+
+            this.updateEmitter.fire();
+            // 在这里更新树图标
+            return;
+          }
+
+          this.revealTreeById(evt.item.item.extId, false, false);
+        }),
+      );
+      this.addDispose(
+        this.testResultService.onResultsChanged((evt: ResultChangeEvent) => {
+          if ('started' in evt) {
+            console.log('testResultService.started', evt);
+          }
+
+          if ('completed' in evt) {
+            console.log('testResultService.completed', evt);
+          }
         }),
       );
     }
+  }
+
+  private revealTreeById(id: string | undefined, expand = true, focus = true): void {
+    if (!id) {
+      return;
+    }
+
+    // ** 此处要更新 tree 状态 **
   }
 
   public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {

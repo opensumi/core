@@ -10,7 +10,13 @@ import {
   TestResultItemChange,
   TestResultItemChangeReason,
 } from '../common/test-result';
-import { ResolvedTestRunRequest, ExtensionRunTestsRequest, ITestRunProfile } from '../common/testCollection';
+import {
+  ResolvedTestRunRequest,
+  ExtensionRunTestsRequest,
+  ITestRunProfile,
+  TestResultItem,
+  TestResultState,
+} from '../common/testCollection';
 
 export type ResultChangeEvent =
   | { completed: ITestResult }
@@ -64,7 +70,7 @@ export class TestResultServiceImpl implements ITestResultService {
     this.isRunning.set(isRunningTests(this));
   }
 
-  createTestResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest): ITestResult {
+  public createTestResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest): ITestResult {
     if ('targets' in req) {
       const id = uuid();
       const testResult = new TestResultImpl(id, req);
@@ -98,11 +104,11 @@ export class TestResultServiceImpl implements ITestResultService {
     return result;
   }
 
-  getResult(resultId: string): ITestResult | undefined {
+  public getResult(resultId: string): ITestResult | undefined {
     return this.results.find((r) => r.id === resultId);
   }
 
-  addTestResult(result: ITestResult): ITestResult {
+  public addTestResult(result: ITestResult): ITestResult {
     if (result.completedAt === undefined) {
       this.results.unshift(result);
     } else {
@@ -135,5 +141,15 @@ export class TestResultServiceImpl implements ITestResultService {
     }
 
     return result;
+  }
+
+  public getStateById(extId: string): [results: ITestResult, item: TestResultItem] | undefined {
+    for (const result of this.results) {
+      const lookup = result.getStateById(extId);
+      if (lookup && lookup.computedState !== TestResultState.Unset) {
+        return [result, lookup];
+      }
+    }
+    return undefined;
   }
 }

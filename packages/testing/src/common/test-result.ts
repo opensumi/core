@@ -215,9 +215,9 @@ export class TestResultImpl implements ITestResult {
   }
 
   getStateById(testExtId: string): TestResultItem | undefined {
-    console.error('##TestResult## getStateById: >> ', testExtId);
-    throw new Error('Method not implemented.');
+    return this.testById.get(testExtId);
   }
+
   getOutput(): Promise<string> {
     console.error('##TestResult## getOutput: >> ');
     throw new Error('Method not implemented.');

@@ -143,7 +143,6 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     state: TestResultState,
     duration?: number,
   ): void {
-    console.log('$updateTestStateInRun', runId, taskId, testId, state, duration);
     this.withTestResult(runId, (r) => r.updateState(testId, taskId, state, duration));
   }
 
@@ -165,12 +164,10 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $startedTestRunTask(runId: string, task: ITestRunTask): void {
-    console.log('$startedTestRunTask', runId, task);
     this.withTestResult(runId, (r) => r.addTask(task));
   }
 
   $finishedTestRunTask(runId: string, taskId: string): void {
-    console.log('$finishedTestRunTask', runId, taskId);
     this.withTestResult(runId, (r) => r.markTaskComplete(taskId));
   }
 
