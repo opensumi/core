@@ -40,7 +40,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   public isRemote = false;
 
-  isReloading: boolean;
+  public isReloading: boolean;
 
   public metadata: any;
 
@@ -150,13 +150,13 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async start() {
-    try {
-      if (!this.isRemote) {
-        this.startNode();
-      } else {
-        getDebugLogger().log('Remote 模式，停止创建 Server 进程');
-      }
+    if (this.isRemote) {
+      getDebugLogger().log('Remote 模式，停止创建 Server 进程');
+    } else {
+      this.startNode();
+    }
 
+    try {
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
 
       const browserUrlParsed = URI.parse(this.appConfig.browserUrl);

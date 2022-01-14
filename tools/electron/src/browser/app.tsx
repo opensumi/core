@@ -1,4 +1,5 @@
 console.time('Render');
+import type { Socket } from 'net';
 import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
 import { Injector, Domain } from '@opensumi/di';
 import { createSocketConnection } from '@opensumi/ide-connection';
@@ -25,7 +26,6 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     opts = arg1 as IClientAppOpts;
   }
 
-  opts.workspaceDir = electronEnv.env.WORKSPACE_DIR;
   opts.extensionDir = electronEnv.metadata.extensionDir;
   opts.isRemote = electronEnv.metadata.isRemote;
   opts.injector = injector;
@@ -41,6 +41,11 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     }
   };
 
+  if (electronEnv.metadata.isRemote) {
+    opts.wsPath = electronEnv.metadata.wsPath;
+  }
+
+  opts.workspaceDir = electronEnv.env.WORKSPACE_DIR;
   const app = new ClientApp(opts);
 
   // 拦截reload行为
@@ -48,6 +53,19 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     injector.get(IElectronMainLifeCycleService).reloadWindow(electronEnv.currentWindowId);
   };
 
-  const netConnection = await (window as any).createRPCNetConnection();
-  app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
+  const mainDom = document.getElementById('main');
+  if (!mainDom) {
+    throw new Error('main dom not found');
+  }
+
+  if (electronEnv.metadata.isRemote) {
+    app.start(mainDom, 'web');
+  } else {
+    const netConnection = await window.createRPCNetConnection();
+    app.start(mainDom, 'electron', createSocketConnection(netConnection));
+  }
+}
+
+declare global {
+  function createRPCNetConnection(): Promise<Socket>;
 }
