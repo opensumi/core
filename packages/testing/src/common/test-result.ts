@@ -1,4 +1,5 @@
 import { Emitter } from '@opensumi/ide-core-common';
+import { IComputedStateAccessor, refreshComputedState } from './getComputedState';
 import {
   ExtensionRunTestsRequest,
   IRichLocation,
@@ -10,9 +11,18 @@ import {
   TestResultItem,
   TestResultState,
 } from './testCollection';
+import { maxPriority, statesInOrder } from './testingStates';
 
 export type TestStateCount = { [K in TestResultState]: number };
 
+export const makeEmptyCounts = () => {
+  const o: Partial<TestStateCount> = {};
+  for (const state of statesInOrder) {
+    o[state] = 0;
+  }
+
+  return o as TestStateCount;
+};
 export interface ITestRunTaskResults extends ITestRunTask {
   readonly coverage: any | undefined;
 
@@ -92,6 +102,7 @@ export class TestResultImpl implements ITestResult {
   public readonly tasks: ITestRunTaskResults[] = [];
   public readonly onChange = this.changeEmitter.event;
   public readonly onComplete = this.completeEmitter.event;
+  public readonly counts: { [K in TestResultState]: number } = makeEmptyCounts();
 
   public get completedAt() {
     return this._completedAt;
@@ -101,7 +112,53 @@ export class TestResultImpl implements ITestResult {
     return this.testById.values();
   }
 
+  private readonly computedStateAccessor: IComputedStateAccessor<TestResultItemWithChildren> = {
+    getOwnState: (i) => i.ownComputedState,
+    getCurrentComputedState: (i) => i.computedState,
+    setComputedState: (i, s) => (i.computedState = s),
+    getChildren: (i) => i.children,
+    getParents: (i) => {
+      const { testById: testByExtId } = this;
+      return (function* () {
+        for (let parentId = i.parent; parentId; ) {
+          const parent = testByExtId.get(parentId);
+          if (!parent) {
+            break;
+          }
+
+          yield parent;
+          parentId = parent.parent;
+        }
+      })();
+    },
+  };
+
   constructor(public readonly id: string, public readonly request: ResolvedTestRunRequest) {}
+
+  private fireUpdateAndRefresh(entry: TestResultItem, taskIndex: number, newState: TestResultState) {
+    const previousOwnComputed = entry.ownComputedState;
+    entry.tasks[taskIndex].state = newState;
+    const newOwnComputed = maxPriority(...entry.tasks.map((t) => t.state));
+    if (newOwnComputed === previousOwnComputed) {
+      return;
+    }
+
+    entry.ownComputedState = newOwnComputed;
+    this.counts[previousOwnComputed]--;
+    this.counts[newOwnComputed]++;
+    refreshComputedState(this.computedStateAccessor, entry).forEach((t) =>
+      this.changeEmitter.fire(
+        t === entry
+          ? {
+              item: entry,
+              result: this,
+              reason: TestResultItemChangeReason.OwnStateChange,
+              previous: previousOwnComputed,
+            }
+          : { item: t, result: this, reason: TestResultItemChangeReason.ComputedStateChange },
+      ),
+    );
+  }
 
   getStateById(testExtId: string): TestResultItem | undefined {
     throw new Error('Method not implemented.');
@@ -122,7 +179,13 @@ export class TestResultImpl implements ITestResult {
     throw new Error('Method not implemented.');
   }
   addTask(task: ITestRunTask): void {
-    throw new Error('Method not implemented.');
+    const index = this.tasks.length;
+    // ** coverage not implemented **
+    this.tasks.push({ ...task, coverage: undefined, otherMessages: [] });
+    for (const test of this.tests) {
+      test.tasks.push({ duration: undefined, messages: [], state: TestResultState.Unset });
+      this.fireUpdateAndRefresh(test, index, TestResultState.Queued);
+    }
   }
   markTaskComplete(taskId: string): void {
     throw new Error('Method not implemented.');

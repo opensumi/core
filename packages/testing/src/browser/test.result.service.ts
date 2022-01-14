@@ -32,7 +32,7 @@ export class TestResultServiceImpl implements ITestResultService {
   private changeResultEmitter = new Emitter<ResultChangeEvent>();
   private testChangeEmitter = new Emitter<TestResultItemChange>();
 
-  private _results: ITestResult[];
+  private _results: ITestResult[] = [];
   private readonly hasAnyResults: IContextKey<boolean>;
   private readonly isRunning: IContextKey<boolean>;
 
