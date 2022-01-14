@@ -152,4 +152,5 @@ export interface ITaskService {
   terminateTask(key: string): Promise<void>;
 
   onDidStateChange: Event<TaskEvent>;
+  onDidRegisterTaskProvider: Event<string>;
 }
