@@ -7,6 +7,7 @@ import {
   ITestItem,
   ITestOutputMessage,
   ITestRunTask,
+  ITestTaskState,
   ResolvedTestRunRequest,
   TestItemExpandState,
   TestResultItem,
@@ -125,6 +126,21 @@ export class TestResultImpl implements ITestResult {
     return this.testById.values();
   }
 
+  constructor(public readonly id: string, public readonly request: ResolvedTestRunRequest) {}
+
+  protected setAllToState(
+    state: TestResultState,
+    taskId: string,
+    when: (task: ITestTaskState, item: TestResultItem) => boolean,
+  ) {
+    const index = this.mustGetTaskIndex(taskId);
+    for (const test of this.testById.values()) {
+      if (when(test.tasks[index], test)) {
+        this.fireUpdateAndRefresh(test, index, state);
+      }
+    }
+  }
+
   private readonly computedStateAccessor: IComputedStateAccessor<TestResultItemWithChildren> = {
     getOwnState: (i) => i.ownComputedState,
     getCurrentComputedState: (i) => i.computedState,
@@ -145,8 +161,6 @@ export class TestResultImpl implements ITestResult {
       })();
     },
   };
-
-  constructor(public readonly id: string, public readonly request: ResolvedTestRunRequest) {}
 
   private addTestToRun(controllerId: string, item: ITestItem, parent: string | null) {
     const node = itemToNode(controllerId, item, parent);
@@ -256,11 +270,25 @@ export class TestResultImpl implements ITestResult {
     }
   }
   markTaskComplete(taskId: string): void {
-    console.error('##TestResult## markTaskComplete: >> ', taskId);
-    throw new Error('Method not implemented.');
+    this.tasks[this.mustGetTaskIndex(taskId)].running = false;
+    this.setAllToState(
+      TestResultState.Unset,
+      taskId,
+      (t) => t.state === TestResultState.Queued || t.state === TestResultState.Running,
+    );
   }
   markComplete(): void {
-    console.error('##TestResult## markComplete: >> ');
-    throw new Error('Method not implemented.');
+    if (this._completedAt !== undefined) {
+      throw new Error('cannot complete a test result multiple times');
+    }
+
+    for (const task of this.tasks) {
+      if (task.running) {
+        this.markTaskComplete(task.id);
+      }
+    }
+
+    this._completedAt = Date.now();
+    this.completeEmitter.fire();
   }
 }
