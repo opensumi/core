@@ -31,6 +31,7 @@ export enum MenuId {
   MenubarSwitchGroupMenu = 'menubar/switch/group',
   MenubarTerminalMenu = 'menubar/terminal',
   MenubarViewMenu = 'menubar/view',
+  TerminalInstanceContext = 'terminal/instance/context',
   OpenEditorsContext = 'open/editors/context',
   ProblemsPanelContext = 'problems/panel/context',
   SCMChangeTitle = 'scm/change/title',
