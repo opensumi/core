@@ -29,15 +29,13 @@ describe('packages/core-browser/src/application/application.service.ts', () => {
     expect(applicationService.frontendOS).toBe(hostOSType);
   });
 
-  it('async get backend os', async () => {
-    await applicationService.initializeData();
-    expect(applicationService.getBackendOS()).resolves.toBe(hostOSType);
+  it('get backend os', () => {
+    expect(() => applicationService.backendOS).toThrow();
   });
 
-  it('get backend os', async () => {
-    expect(() => applicationService.backendOS).toThrow();
+  it('async get backend os', async () => {
     await applicationService.initializeData();
-    expect(await applicationService.getBackendOS()).toBe('fakeOS');
+    expect(await applicationService.getBackendOS()).resolves.toBe(hostOSType);
   });
 });
 

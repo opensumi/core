@@ -53,15 +53,6 @@ injector.addProviders(
   },
 );
 
-const appConfig = injector.get(AppConfig) as AppConfig;
-injector.overrideProviders({
-  token: AppConfig,
-  useValue: {
-    ...appConfig,
-    isElectronRenderer: true,
-  },
-});
-
 mockIframeAndElectronWebview();
 
 describe('web platform webview service test suite', () => {
@@ -108,7 +99,14 @@ describe('web platform webview service test suite', () => {
 
 describe('electron platform webview service test suite', () => {
   beforeAll(() => {
-    (global as any).isElectronRenderer = true;
+    const appConfig = injector.get(AppConfig) as AppConfig;
+    injector.overrideProviders({
+      token: AppConfig,
+      useValue: {
+        ...appConfig,
+        isElectronRenderer: true,
+      },
+    });
   });
 
   it('should be able to create electron webview', async (done) => {
@@ -147,7 +145,14 @@ describe('electron platform webview service test suite', () => {
 
   afterAll(() => {
     beforeAll(() => {
-      delete (global as any).isElectronRenderer;
+      const appConfig = injector.get(AppConfig) as AppConfig;
+      injector.overrideProviders({
+        token: AppConfig,
+        useValue: {
+          ...appConfig,
+          isElectronRenderer: false,
+        },
+      });
     });
   });
 });
