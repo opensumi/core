@@ -15,6 +15,9 @@ import {
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
 import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
+import { TestResultItemChangeReason, TestResultServiceToken } from '../common/test-result';
+import { TestResultServiceImpl } from './test.result.service';
+import { isStateWithResult } from '../common/testingStates';
 
 export class TestTreeItem implements ITestTreeItem {
   constructor(public test: InternalTestItem, public parent: ITestTreeItem | undefined) {}
@@ -44,6 +47,9 @@ export class TestTreeItem implements ITestTreeItem {
 export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewModel {
   @Autowired(TestServiceToken)
   private readonly testService: ITestService;
+
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
 
   private readonly items = new Map<string, TestTreeItem>();
 
@@ -129,6 +135,23 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             this.updateEmitter.fire();
             await node.refresh();
           }
+        }),
+      );
+      this.addDispose(
+        this.testResultService.onTestChanged((evt) => {
+          if (evt.reason !== TestResultItemChangeReason.OwnStateChange) {
+            return;
+          }
+
+          if (
+            evt.item.ownComputedState !== TestResultState.Running &&
+            !(evt.previous === TestResultState.Queued && isStateWithResult(evt.item.ownComputedState))
+          ) {
+            return;
+          }
+
+          console.log('testResultService.onTestChanged', evt);
+          // ** 此处要更新 tree 状态 **
         }),
       );
     }
