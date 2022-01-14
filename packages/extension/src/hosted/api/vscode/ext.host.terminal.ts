@@ -64,8 +64,6 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   private disposables: DisposableStore = new DisposableStore();
 
-  private _shellPath: string = process.env.SHELL || userInfo().shell;
-
   private readonly _bufferer: TerminalDataBufferer;
   protected _terminalProcesses: Map<string, ITerminalChildProcess> = new Map();
   protected _terminalProcessDisposables: { [id: number]: IDisposable } = {};
@@ -129,12 +127,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.openTerminalEvent.event;
   }
 
-  $acceptDefaultShell(shellPath: string) {
-    this._shellPath = shellPath;
-  }
-
   get shellPath() {
-    return this._shellPath;
+    return this._defaultProfile?.path || process.env.SHELL || userInfo().shell;
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
@@ -317,8 +311,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
     });
   }
 
-  public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile: ITerminalProfile): void {
+  public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void {
     this._defaultProfile = profile;
+    // 还不知道这个 automation 有啥用
     this._defaultAutomationProfile = automationProfile;
   }
 

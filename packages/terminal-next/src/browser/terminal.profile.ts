@@ -71,7 +71,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     }
   }
 
-  async resolveDefaultProfile(options: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+  async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
     // const os: OperatingSystem = options.os || (await this.terminalService.getOs());
     return this._availableProfiles?.[0];
   }

@@ -110,10 +110,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     });
 
     this.proxy.$setTerminals(infoList);
-    const shellType = this.preference.get<string>('terminal.type');
-    if (shellType) {
-      this.proxy.$acceptDefaultShell(shellType);
-    }
+
+    this._updateDefaultProfile();
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
@@ -236,10 +234,10 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   private async _updateDefaultProfile() {
-    // const remoteAuthority = withNullAsUndefined(this._extHostContext.remoteAuthority);
-    // const defaultProfile = this._terminalProfileResolverService.getDefaultProfile({ remoteAuthority, os: this._os });
-    // const defaultAutomationProfile = this._terminalProfileResolverService.getDefaultProfile({ remoteAuthority, os: this._os, allowAutomationShell: true });
-    // this.proxy.$acceptDefaultProfile(...await Promise.all([defaultProfile, defaultAutomationProfile]));
+    const defaultProfile = await this.profileSerivce.resolveDefaultProfile({});
+    if (defaultProfile) {
+      this.proxy.$acceptDefaultProfile(defaultProfile);
+    }
   }
 
   $setEnvironmentVariableCollection(

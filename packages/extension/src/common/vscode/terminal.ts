@@ -73,8 +73,6 @@ export interface IExtHostTerminal {
 
   $onDidOpenTerminal(info: ITerminalInfo);
 
-  $acceptDefaultShell(shellPath: string);
-
   dispose(): void;
 
   $startExtensionTerminal(
@@ -96,7 +94,7 @@ export interface IExtHostTerminal {
     id: string,
     provider: vscode.TerminalProfileProvider,
   ): IDisposable;
-  $acceptDefaultProfile(profile: ITerminalProfile, automationProfile: ITerminalProfile): void;
+  $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void;
   $createContributedProfileTerminal(id: string, options: ICreateContributedTerminalProfileOptions): Promise<void>;
 
   // #region

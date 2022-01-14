@@ -22,7 +22,7 @@ export interface ITerminalProfileService {
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable;
-  resolveDefaultProfile(options: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined>;
+  resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined>;
 }
 
 export interface ITerminalProfile {
