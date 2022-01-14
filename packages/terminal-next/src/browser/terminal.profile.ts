@@ -1,6 +1,5 @@
 import { Disposable, Emitter, WithEventBus, IDisposable, Event, throttle, equals } from '@opensumi/ide-core-common';
 import {
-  ICreateTerminalOptions,
   IResolveDefaultProfileOptions,
   ITerminalProfile,
   ITerminalProfileProvider,
@@ -9,7 +8,6 @@ import {
   terminalProfileArgsMatch,
 } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {

@@ -13,11 +13,11 @@ import {
   ITerminalGroupViewService,
   ITerminalErrorService,
   ITerminalInternalService,
-  TerminalOptions,
-  IWidget,
   ITerminalRenderProvider,
   ITerminalNetwork,
   ITerminalHoverManagerService,
+  ITerminalProfileService,
+  ITerminalClientFactory2,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import {
@@ -33,7 +33,7 @@ import { TerminalTheme } from './terminal.theme';
 import { NodePtyTerminalService } from './terminal.service';
 import { TerminalInternalService } from './terminal.internal.service';
 import { TerminalRestore } from './terminal.restore';
-import { TerminalClientFactory } from './terminal.client';
+import { createTerminalClientFactory, createTerminalClientFactory2, TerminalClientFactory } from './terminal.client';
 import { TerminalApiService } from './terminal.api';
 import { TerminalSearchService } from './terminal.search';
 import { TerminalHoverManagerService } from './terminal.hover.manager';
@@ -44,6 +44,7 @@ import { TerminalRenderProvider } from './terminal.render';
 import { TerminalNetworkService } from './terminal.network';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
 import { TerminalEnvironmentService } from './terminal.environment.service';
+import { TerminalProfileService } from './terminal.profile';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -104,8 +105,11 @@ export class TerminalNextModule extends BrowserModule {
     },
     {
       token: ITerminalClientFactory,
-      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) =>
-        TerminalClientFactory.createClient(injector, widget, options),
+      useFactory: createTerminalClientFactory,
+    },
+    {
+      token: ITerminalClientFactory2,
+      useFactory: createTerminalClientFactory2,
     },
     {
       token: ITerminalNetwork,
@@ -114,6 +118,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: EnvironmentVariableServiceToken,
       useClass: TerminalEnvironmentService,
+    },
+    {
+      token: ITerminalProfileService,
+      useClass: TerminalProfileService,
     },
   ];
 

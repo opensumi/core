@@ -757,6 +757,9 @@ export class TerminalClientFactory {
   }
 }
 
+export const createTerminalClientFactory = (injector: Injector) => (widget: IWidget, options?: TerminalOptions) =>
+  TerminalClientFactory.createClient(injector, widget, options);
+
 export const createTerminalClientFactory2 =
   (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
     TerminalClientFactory.createClient2(injector, widget, options);

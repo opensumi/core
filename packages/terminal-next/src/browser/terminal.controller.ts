@@ -31,7 +31,6 @@ import {
   IStartExtensionTerminalRequest,
   ITerminalExitEvent,
   ITerminalExternalLinkProvider,
-  ITerminalProfileProvider,
   ICreateTerminalOptions,
   ITerminalClientFactory2,
   ICreateClientWithWidgetOptions,
@@ -124,48 +123,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createClientOrIgnore(widget: IWidget, options = {}) {
+  private _createClientOrIgnore(widget: IWidget) {
     if (this._clients.has(widget.id)) {
       return this._clients.get(widget.id)!;
     }
-    return this._createClient(widget, options);
+    return this._createClient(widget);
   }
 
-  private _createClient2(widget: IWidget, options: ICreateTerminalOptions = {}) {
-    const client = this.clientFactory2(widget, options);
-    this._clients.set(client.id, client);
-
-    client.addDispose(
-      client.onExit((e) => {
-        this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
-      }),
-    );
-
-    client.addDispose({
-      dispose: () => {
-        this._clients.delete(client.id);
-        this._onDidCloseTerminal.fire({ id: client.id, code: -1 });
-      },
-    });
-
-    client.addDispose(
-      client.onLinksReady(() => {
-        this._setInstanceLinkProviders(client);
-      }),
-    );
-
-    this._onDidOpenTerminal.fire({
-      id: client.id,
-      name: client.name,
-      isActive: false,
-    });
-
-    this.terminalView.selectWidget(widget.id);
-    return client;
+  private _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
+    let client: ITerminalClient;
+    if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
+      client = this.clientFactory2(widget, options);
+    } else {
+      client = this.clientFactory(widget, options);
+    }
+    return this.setupClient(widget, client);
   }
 
-  private _createClient(widget: IWidget, options?: TerminalOptions) {
-    const client = this.clientFactory(widget, options);
+  setupClient(widget: IWidget, client: ITerminalClient) {
     this._clients.set(client.id, client);
 
     client.addDispose(
@@ -297,7 +272,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.addDispose(
       this.terminalView.onWidgetCreated((widget) => {
-        this._createClientOrIgnore(widget, {});
+        this._createClientOrIgnore(widget);
       }),
     );
 
@@ -440,7 +415,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   /**
-   * @deprecated 请使用 `createClientWithWidget2` Will removed in 2.14.0
+   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.14.0
    */
   createClientWithWidget(options: TerminalOptions) {
     const widgetId = this.service.generateSessionId();
@@ -454,6 +429,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._createClient(widget, options);
   }
 
+  /**
+   * @param options
+   * @returns
+   */
   createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
