@@ -1,3 +1,4 @@
+import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 import { ITestTreeData } from './../common/tree-view.model';
 import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
 import { Autowired, Injectable } from '@opensumi/di';
@@ -15,35 +16,64 @@ import {
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
 import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
+import { TestResultServiceToken } from '../common/test-result';
+import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
+import { IComputedStateAndDurationAccessor, refreshComputedState } from '../common/getComputedState';
+
+const computedStateAccessor: IComputedStateAndDurationAccessor<ITestTreeItem> = {
+  getOwnState: (i) => (i instanceof TestTreeItem ? i.ownState : TestResultState.Unset),
+  getCurrentComputedState: (i) => i.state,
+  setComputedState: (i, s) => (i.state = s),
+
+  getCurrentComputedDuration: (i) => i.duration,
+  getOwnDuration: (i) => (i instanceof TestTreeItem ? i.ownDuration : undefined),
+  setComputedDuration: (i, d) => (i.duration = d),
+
+  getChildren: (i) => Iterable.filter(i.children.values(), (t): t is TestTreeItem => t instanceof TestTreeItem),
+  *getParents(i) {
+    for (let parent = i.parent; parent; parent = parent.parent) {
+      yield parent;
+    }
+  },
+};
 
 export class TestTreeItem implements ITestTreeItem {
   constructor(public test: InternalTestItem, public parent: ITestTreeItem | undefined) {}
 
   readonly children = new Set<TestTreeItem>();
 
-  get label() {
+  public get label() {
     return this.test.item.label;
   }
 
-  state = TestResultState.Unset;
+  public state = TestResultState.Unset;
 
-  depth: number = this.parent ? this.parent.depth + 1 : 0;
+  public ownState = TestResultState.Unset;
 
-  get tests() {
+  public depth: number = this.parent ? this.parent.depth + 1 : 0;
+
+  public get tests() {
     return [this.test];
   }
 
-  update = (patch: ITestItemUpdate) => {
+  public update = (patch: ITestItemUpdate) => {
     applyTestItemUpdate(this.test, patch);
   };
 
-  duration: number | undefined;
+  public duration: number | undefined;
+
+  public ownDuration: number | undefined;
+
+  public retired = false;
 }
 
 @Injectable()
 export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewModel {
   @Autowired(TestServiceToken)
   private readonly testService: ITestService;
+
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
 
   private readonly items = new Map<string, TestTreeItem>();
 
@@ -131,7 +161,44 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           }
         }),
       );
+      this.addDispose(
+        this.testResultService.onTestChanged(({ item: result }) => {
+          if (result.ownComputedState === TestResultState.Unset) {
+            const fallback = this.testResultService.getStateById(result.item.extId);
+            if (fallback) {
+              result = fallback[1];
+            }
+          }
+
+          const item = this.items.get(result.item.extId);
+          if (!item) {
+            return;
+          }
+
+          item.retired = result.retired;
+          item.ownState = result.ownComputedState;
+          item.ownDuration = result.ownDuration;
+          const explicitComputed = item.children.size ? undefined : result.computedState;
+          const model = this.treeHandlerApi.getModel();
+          refreshComputedState(computedStateAccessor, item, explicitComputed);
+          model.dispatchChange();
+          this.revealTreeById(result.item.extId, false, false);
+        }),
+      );
+      this.addDispose(
+        this.testResultService.onResultsChanged((evt: ResultChangeEvent) => {
+          console.error('Not Implement onResultsChanged case');
+        }),
+      );
     }
+  }
+
+  private revealTreeById(id: string | undefined, expand = true, focus = true): void {
+    if (!id) {
+      return;
+    }
+
+    // ** 此处要定位到对应 tree 位置 **
   }
 
   public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {

@@ -1,3 +1,4 @@
+import { ITestResult } from './../common/test-result';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { TestingServiceProviderCount } from '@opensumi/ide-core-browser/lib/contextkey/testing';
@@ -86,7 +87,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
     return this.runResolvedTests(resolved, token);
   }
 
-  async runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<any> {
+  async runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<ITestResult> {
     if (!req.exclude) {
       // default exclude
       req.exclude = [];
@@ -113,6 +114,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
           }),
       );
       await Promise.all(requests);
+      return result;
     } finally {
       result.markComplete();
     }
