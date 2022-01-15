@@ -16,7 +16,7 @@ import {
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
 import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
-import { TestResultItemChange, TestResultItemChangeReason, TestResultServiceToken } from '../common/test-result';
+import { TestResultServiceToken } from '../common/test-result';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
 import { IComputedStateAndDurationAccessor, refreshComputedState } from '../common/getComputedState';
 
@@ -63,6 +63,8 @@ export class TestTreeItem implements ITestTreeItem {
   public duration: number | undefined;
 
   public ownDuration: number | undefined;
+
+  public retired = false;
 }
 
 @Injectable()
@@ -160,37 +162,32 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
         }),
       );
       this.addDispose(
-        this.testResultService.onTestChanged((evt: TestResultItemChange) => {
-          console.log('testResultService.onTestChanged', evt);
-
-          if (evt.reason === TestResultItemChangeReason.ComputedStateChange) {
-            const item = this.items.get(evt.item.item.extId);
-            if (!item) {
-              return;
+        this.testResultService.onTestChanged(({ item: result }) => {
+          if (result.ownComputedState === TestResultState.Unset) {
+            const fallback = this.testResultService.getStateById(result.item.extId);
+            if (fallback) {
+              result = fallback[1];
             }
+          }
 
-            refreshComputedState(computedStateAccessor, item, evt.item.computedState).forEach((e) => {
-              console.log('refreshComputedState', e);
-              item.state = evt.item.computedState;
-            });
-
-            this.updateEmitter.fire();
-            // 在这里更新树图标
+          const item = this.items.get(result.item.extId);
+          if (!item) {
             return;
           }
 
-          this.revealTreeById(evt.item.item.extId, false, false);
+          item.retired = result.retired;
+          item.ownState = result.ownComputedState;
+          item.ownDuration = result.ownDuration;
+          const explicitComputed = item.children.size ? undefined : result.computedState;
+          const model = this.treeHandlerApi.getModel();
+          refreshComputedState(computedStateAccessor, item, explicitComputed);
+          model.dispatchChange();
+          this.revealTreeById(result.item.extId, false, false);
         }),
       );
       this.addDispose(
         this.testResultService.onResultsChanged((evt: ResultChangeEvent) => {
-          if ('started' in evt) {
-            console.log('testResultService.started', evt);
-          }
-
-          if ('completed' in evt) {
-            console.log('testResultService.completed', evt);
-          }
+          console.error('Not Implement onResultsChanged case');
         }),
       );
     }
@@ -201,7 +198,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
       return;
     }
 
-    // ** 此处要更新 tree 状态 **
+    // ** 此处要定位到对应 tree 位置 **
   }
 
   public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {
