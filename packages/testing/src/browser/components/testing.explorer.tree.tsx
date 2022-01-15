@@ -4,7 +4,7 @@ import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-br
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 
 import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
-import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
+import { TestItemExpandState, TestResultState, TestRunProfileBitset } from '../../common/testCollection';
 import { GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
 import { testingStatesToIcons } from '../icons';
@@ -13,6 +13,15 @@ import { TestingExplorerInlineMenus } from '../../common/testing-view';
 
 import styles from './testing.module.less';
 
+const testStatesToIconColors: { [K in TestResultState]?: string } = {
+  [TestResultState.Errored]: styles.testing_iconFailed,
+  [TestResultState.Failed]: styles.testing_iconErrored,
+  [TestResultState.Passed]: styles.testing_iconPassed,
+  [TestResultState.Queued]: styles.testing_runAction,
+  [TestResultState.Unset]: styles.testing_iconQueued,
+  [TestResultState.Skipped]: styles.testing_iconUnset,
+};
+
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
@@ -20,12 +29,14 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
 
   const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
-  const getItemIcon = React.useCallback((item: ITestTreeItem) => testingStatesToIcons.get(item.state) || '', []);
+  const getItemIcon = React.useCallback((item: ITestTreeItem) => `${testingStatesToIcons.get(item.state)} ${testStatesToIconColors[item.state]}` || '', []);
 
   const asTreeData = React.useCallback(
     (item: ITestTreeItem): ITestTreeData => ({
       label: item.label,
-      icon: getItemIcon(item),
+      get icon() {
+        return getItemIcon(item);
+      },
       notExpandable: item.test.expand === TestItemExpandState.NotExpandable,
       rawItem: item,
       get children() {
