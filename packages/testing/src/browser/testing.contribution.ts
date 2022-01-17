@@ -1,3 +1,5 @@
+import { IEditor } from '@opensumi/ide-editor/lib/common';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   ClientAppContribution,
@@ -20,10 +22,13 @@ import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
 import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { TestDecorationsContribution } from './test-decorations';
 
 @Injectable()
-@Domain(ClientAppContribution, ComponentContribution, CommandContribution)
-export class TestingContribution implements ClientAppContribution, ComponentContribution, CommandContribution {
+@Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
+export class TestingContribution
+  implements ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution
+{
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
 
@@ -32,6 +37,9 @@ export class TestingContribution implements ClientAppContribution, ComponentCont
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(TestDecorationsContribution)
+  private readonly testDecorationsContribution: TestDecorationsContribution;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -86,6 +94,12 @@ export class TestingContribution implements ClientAppContribution, ComponentCont
         }
       },
       isVisible: () => false,
+    });
+  }
+
+  registerEditorFeature(registry: IEditorFeatureRegistry) {
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => this.testDecorationsContribution.contribute(editor),
     });
   }
 }

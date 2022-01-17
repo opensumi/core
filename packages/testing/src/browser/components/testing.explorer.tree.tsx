@@ -17,8 +17,8 @@ const testStatesToIconColors: { [K in TestResultState]?: string } = {
   [TestResultState.Errored]: styles.testing_iconFailed,
   [TestResultState.Failed]: styles.testing_iconErrored,
   [TestResultState.Passed]: styles.testing_iconPassed,
-  [TestResultState.Queued]: styles.testing_runAction,
-  [TestResultState.Unset]: styles.testing_iconQueued,
+  [TestResultState.Queued]: styles.testing_iconQueued,
+  [TestResultState.Unset]: styles.testing_iconUnset,
   [TestResultState.Skipped]: styles.testing_iconUnset,
 };
 
@@ -29,7 +29,10 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
 
   const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
-  const getItemIcon = React.useCallback((item: ITestTreeItem) => `${testingStatesToIcons.get(item.state)} ${testStatesToIconColors[item.state]}` || '', []);
+  const getItemIcon = React.useCallback(
+    (item: ITestTreeItem) => `${testingStatesToIcons.get(item.state)} ${testStatesToIconColors[item.state]}` || '',
+    [],
+  );
 
   const asTreeData = React.useCallback(
     (item: ITestTreeItem): ITestTreeData => ({
