@@ -1,16 +1,18 @@
-import { ITerminalService, ITerminalInternalService, ITerminalServicePath } from '../../src/common';
-import { NodePtyTerminalService } from '../../src/browser/terminal.service';
 import os from 'os';
-import { injector } from './inject';
+import path from 'path';
+import fse from 'fs-extra';
 import WebSocket from 'ws';
 import httpProxy from 'http-proxy';
-import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
-import { createProxyServer, createWsServer, resetPort } from './proxy';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import path from 'path';
-import * as fs from 'fs-extra';
-import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+
+import { injector } from './inject';
+import { createProxyServer, createWsServer, resetPort } from './proxy';
+import { ITerminalService, ITerminalServicePath } from '../../src/common';
+import { NodePtyTerminalService } from '../../src/browser/terminal.service';
 
 describe('terminal service test cases', () => {
   let terminalService: ITerminalService;
@@ -31,7 +33,7 @@ describe('terminal service test cases', () => {
   beforeAll(async () => {
     root = FileUri.create(path.join(os.tmpdir(), 'terminal-service-test'));
 
-    await fs.ensureDir(root.path.toString());
+    await fse.ensureDir(root.path.toString());
 
     workspaceService = injector.get(IWorkspaceService);
 
@@ -53,10 +55,19 @@ describe('terminal service test cases', () => {
     server = createWsServer();
     proxy = createProxyServer();
 
-    injector.overrideProviders({
-      token: ITerminalService,
-      useClass: NodePtyTerminalService,
-    });
+    injector.overrideProviders(
+      {
+        token: ITerminalService,
+        useClass: NodePtyTerminalService,
+      },
+      {
+        token: AppConfig,
+        useValue: {
+          isElectronRenderer: true,
+          isRemote: false,
+        },
+      },
+    );
 
     injector.addProviders({
       token: ITerminalServicePath,
@@ -72,6 +83,11 @@ describe('terminal service test cases', () => {
         },
       },
     });
+
+    // electronEnv 在环境中就是 global
+    (global as any).metadata = {
+      windowClientId: 'test-window-client-id',
+    };
   });
 
   afterAll(() => {
@@ -118,6 +134,13 @@ describe('terminal service test cases', () => {
       expect(launchConfig.shellPath).toEqual('bash');
       await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'asdasdasdasd');
       expect(launchConfig.shellPath).toEqual('asdasdasdasd');
+    }
+  });
+
+  it('should be generate a session id', async () => {
+    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
+      const windowClientId = await terminalService.generateSessionId?.();
+      expect(windowClientId).toMatch(/^test-window-client-id.*/);
     }
   });
 });

@@ -1,17 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  OS,
-  IApplicationService,
-  CommonServerPath,
-  ICommonServer,
-  isElectronRenderer,
-  Deferred,
-} from '@opensumi/ide-core-common';
+import { OS, IApplicationService, CommonServerPath, ICommonServer, Deferred } from '@opensumi/ide-core-common';
+import { AppConfig } from '../react-providers';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {
   @Autowired(CommonServerPath)
   protected readonly commonServer: ICommonServer;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   private _backendOS: OS.Type;
 
@@ -31,7 +28,7 @@ export class ApplicationService implements IApplicationService {
       return this._backendOS;
     }
     // electron 作为 backend，可直接使用 frontend 的 os
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       return this.frontendOS;
     }
     throw new Error(
@@ -41,6 +38,6 @@ export class ApplicationService implements IApplicationService {
 
   async getBackendOS() {
     await this._initialized.promise;
-    return this._backendOS;
+    return this.backendOS;
   }
 }

@@ -1,17 +1,19 @@
-import { Injectable, Injector } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { isElectronRenderer, ExtensionCandidate } from '@opensumi/ide-core-common';
-import { electronEnv } from '@opensumi/ide-core-browser';
+import { ExtensionCandidate } from '@opensumi/ide-core-common';
+import { AppConfig, electronEnv } from '@opensumi/ide-core-browser';
 
 import { IMainThreadLifeCycle } from '../../common/sumi/lifecycle';
 
 @Injectable({ multiple: true })
 export class MainThreadLifeCycle implements IMainThreadLifeCycle {
-  constructor(rpcProtocol: IRPCProtocol, private injector: Injector) {}
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
+  constructor(private injector: Injector) {}
 
   $setExtensionCandidate(candidate: ExtensionCandidate[]) {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.setExtensionCandidate(candidate, electronEnv.currentWindowId);
     } else {
@@ -20,7 +22,7 @@ export class MainThreadLifeCycle implements IMainThreadLifeCycle {
   }
 
   $setExtensionDir(dir: string) {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.setExtensionDir(dir, electronEnv.currentWindowId);
     } else {

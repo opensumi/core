@@ -1,9 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
-import { isElectronRenderer, URI } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
 import { IExternalUriService } from '../services';
+import { AppConfig } from '../react-providers';
 
 @Injectable()
 export class WindowService implements IWindowService {
@@ -13,11 +14,14 @@ export class WindowService implements IWindowService {
   @Autowired(IExternalUriService)
   private readonly externalUriService: IExternalUriService;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   openNewWindow(url: string, options?: NewWindowOptions): Window | undefined {
     if (options?.external) {
       url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
     }
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       // Electron 环境下使用 shell.openExternal 方法打开外部 Uri
       const electronMainUIService: IElectronMainUIService = this.injector.get(IElectronMainUIService);
       // TODO: 由于 electron 下没有打开外部的警告（静默打开），此处直接 openExternal 可能会存在一定的安全隐患
@@ -34,7 +38,7 @@ export class WindowService implements IWindowService {
   }
 
   openWorkspace(workspace: URI, options: IOpenWorkspaceOption = {}): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       if (options.newWindow) {
         electronMainLifecycle.openWorkspace(workspace.toString());
@@ -50,7 +54,7 @@ export class WindowService implements IWindowService {
   }
 
   close(): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       // 防止 node 进程被先关闭掉，导致再也无法关闭
       window.close();
     } else {
@@ -59,7 +63,7 @@ export class WindowService implements IWindowService {
   }
 
   maximize(): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.maximizeWindow(electronEnv.currentWindowId);
     } else {
@@ -68,7 +72,7 @@ export class WindowService implements IWindowService {
   }
 
   unmaximize(): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.unmaximizeWindow(electronEnv.currentWindowId);
     } else {
@@ -77,7 +81,7 @@ export class WindowService implements IWindowService {
   }
 
   fullscreen(): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.fullscreenWindow(electronEnv.currentWindowId);
     } else {
@@ -86,7 +90,7 @@ export class WindowService implements IWindowService {
   }
 
   minimize(): void {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.minimizeWindow(electronEnv.currentWindowId);
     } else {

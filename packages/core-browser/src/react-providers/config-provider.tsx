@@ -191,6 +191,17 @@ export interface AppConfig {
    * 默认值为 'alipay'
    */
   componentCDNType?: 'unpkg' | 'jsdelivr' | 'alipay';
+  /**
+   * 指定前端是否为 Electron 环境 (Electron Renderer)
+   * 为兼容老的逻辑，若不兼容则 fallback 到 isElectronRenderer 的判断
+   * 新版本中建议优先使用 isElectronRenderer
+   */
+  isElectronRenderer: boolean;
+  /**
+   * 指定当前是否通过 remote 模式连接到远程的 Server 端
+   * 这将影响 Terminal 与 Extension 模块与子进程的连接方式
+   */
+  isRemote?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
@@ -199,6 +210,7 @@ export const ConfigContext = React.createContext<AppConfig>({
   wsPath: '',
   layoutConfig: {},
   extWorkerHost: '',
+  isElectronRenderer: false,
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {

@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   FileStat,
   FileDeleteOptions,
@@ -19,7 +19,6 @@ import {
   URI,
   Emitter,
   Event,
-  isElectronRenderer,
   IEventBus,
   FileUri,
   DisposableCollection,
@@ -43,7 +42,7 @@ import {
 } from '../common';
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { FilesChangeEvent, ExtensionActivateEvent } from '@opensumi/ide-core-browser';
+import { FilesChangeEvent, ExtensionActivateEvent, AppConfig } from '@opensumi/ide-core-browser';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
@@ -99,10 +98,13 @@ export class FileServiceClient implements IFileServiceClient {
   private fsProviders: Map<string, FileSystemProvider | IDiskFileProvider> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
-  private injector;
+  private injector: Injector;
 
   @Autowired(IEventBus)
   private eventBus: IEventBus;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   private userHomeDeferred: Deferred<FileStat | undefined> = new Deferred();
 
@@ -375,7 +377,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async delete(uriString: string, options?: FileDeleteOptions) {
-    if (isElectronRenderer() && options && options.moveToTrash) {
+    if (this.appConfig.isElectronRenderer && options && options.moveToTrash) {
       const uri = new URI(uriString);
       if (uri.scheme === FILE_SCHEME) {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);

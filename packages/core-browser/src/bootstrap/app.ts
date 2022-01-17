@@ -25,7 +25,6 @@ import {
   setLanguageId,
   IReporterService,
   REPORT_NAME,
-  isElectronEnv,
   IEventBus,
   asExtensionCandidate,
   IApplicationService,
@@ -167,8 +166,11 @@ export class ClientApp implements IClientApp, IDisposable {
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
+      isElectronRenderer: opts.isElectronRenderer || isElectronRenderer(),
       workspaceDir: opts.workspaceDir || '',
-      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata?.extensionDir : ''),
+      extensionDir:
+        opts.extensionDir ||
+        (opts.isElectronRenderer || isElectronRenderer() ? electronEnv.metadata?.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -176,7 +178,7 @@ export class ClientApp implements IClientApp, IDisposable {
       allowSetDocumentTitleFollowWorkspaceDir,
     };
 
-    if (isElectronEnv() && electronEnv.metadata?.extensionDevelopmentHost) {
+    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {
       this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;
     }
 
@@ -191,7 +193,7 @@ export class ClientApp implements IClientApp, IDisposable {
     }
 
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
-    if (isElectronEnv() && electronEnv.metadata?.extensionCandidate) {
+    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionCandidate) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
         electronEnv.metadata.extensionCandidate || [],
       );
@@ -639,7 +641,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
   private _handleBeforeUpload = (event: BeforeUnloadEvent) => {
     // 浏览器关闭事件前
-    if (isElectronRenderer()) {
+    if (this.config.isElectronRenderer) {
       if (this.stateService.state === 'electron_confirmed_close') {
         return;
       }
@@ -675,7 +677,7 @@ export class ClientApp implements IClientApp, IDisposable {
   private _handleUnload = () => {
     // 浏览器关闭事件
     this.stateService.state = 'closing_window';
-    if (!isElectronRenderer()) {
+    if (!this.config.isElectronRenderer) {
       this.disposeSideEffect();
       this.stopContributions();
     }

@@ -7,7 +7,7 @@ import {
   Emitter,
   IEventBus,
   MaybeNull,
-  isElectronRenderer,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
 import { Autowired, Injectable } from '@opensumi/di';
@@ -56,6 +56,9 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   @Autowired(StaticResourceService)
   staticResourceService: StaticResourceService;
@@ -156,7 +159,7 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   }
 
   protected preprocessHtml(html: string): string {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       // 将vscode-resource:/User/xxx 转换为 vscode-resource:///User/xxx
       return html.replace(
         /(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi,

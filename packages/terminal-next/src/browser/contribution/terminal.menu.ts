@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandService, isWindows, isElectronRenderer } from '@opensumi/ide-core-common';
+import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
 import {
   MenuContribution,
   IMenuRegistry,
@@ -129,7 +129,7 @@ export class TerminalMenuContribution implements MenuContribution {
       when,
     });
 
-    if (isElectronRenderer() && isWindows) {
+    if (this.config.isElectronRenderer && isWindows) {
       menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,

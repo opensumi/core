@@ -1,14 +1,13 @@
-import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/di';
-import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
-import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
-import { ChildProcess, fork, ForkOptions } from 'child_process';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
-import { ExtensionCandidate } from '@opensumi/ide-core-common';
-import treeKill = require('tree-kill');
-import { app } from 'electron';
 import semver from 'semver';
 import qs from 'querystring';
+import treeKill from 'tree-kill';
+import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, IpcMainEvent } from 'electron';
+import { ChildProcess, fork, ForkOptions } from 'child_process';
+import { Injectable, Autowired } from '@opensumi/di';
+import { ExtensionCandidate } from '@opensumi/ide-core-common';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
+import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -39,7 +38,9 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private windowClientId: string;
 
-  isReloading: boolean;
+  public isRemote = false;
+
+  public isReloading: boolean;
 
   public metadata: any;
 
@@ -83,12 +84,16 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       if (options.query) {
         this.query = options.query;
       }
+
+      if (options.isRemote) {
+        this.isRemote = options.isRemote;
+      }
     }
 
     this.browser.on('closed', () => {
       this.dispose();
     });
-    const metadataResponser = async (event, windowId) => {
+    const metadataResponser = async (event: IpcMainEvent, windowId: number) => {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
@@ -99,6 +104,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           extensionDir: this.extensionDir,
           extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
           ...this.metadata,
+          isRemote: this.isRemote,
           windowClientId: this.windowClientId,
           workerHostEntry: this.appConfig.extensionWorkerEntry,
           extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
@@ -107,7 +113,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       }
     };
 
-    const rpcListenPathResponser = async (event, windowId) => {
+    const rpcListenPathResponser = async (event: IpcMainEvent, windowId: number) => {
       await this._nodeReady.promise;
       if (windowId === this.browser.id) {
         event.returnValue = this.rpcListenPath;
@@ -144,8 +150,13 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async start() {
-    try {
+    if (this.isRemote) {
+      getDebugLogger().log('Remote 模式，停止创建 Server 进程');
+    } else {
       this.startNode();
+    }
+
+    try {
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
 
       const browserUrlParsed = URI.parse(this.appConfig.browserUrl);
