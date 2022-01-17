@@ -99,6 +99,9 @@ export class TaskService extends Disposable implements ITaskService {
   private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
   public onDidStateChange: Event<TaskEvent> = this._onDidStateChange.event;
 
+  private _onDidRegisterTaskProvider: Emitter<string> = new Emitter();
+  public onDidRegisterTaskProvider: Event<string> = this._onDidRegisterTaskProvider.event;
+
   private providerHandler = 0;
 
   private outputChannel: OutputChannel;
@@ -433,6 +436,8 @@ export class TaskService extends Disposable implements ITaskService {
     const handler = (this.providerHandler += 1);
     this.providers.set(handler, provider);
     this.providerTypes.set(handler, type);
+    this._onDidRegisterTaskProvider.fire(type);
+
     return {
       dispose: () => {
         this.providers.delete(handler);
