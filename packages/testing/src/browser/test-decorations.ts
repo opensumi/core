@@ -72,9 +72,9 @@ const createRunTestDecoration = (
 
   const iconColor = testStatesToIconColors[icon] || defaultIconColor;
 
-  const hoverMessage = hoverMessageParts.join(', ');
+  // const hoverMessage = hoverMessageParts.join(', ');
   if (testIdWithMessages) {
-    const args = encodeURIComponent(JSON.stringify([testIdWithMessages]));
+    // const args = encodeURIComponent(JSON.stringify([testIdWithMessages]));
     // 这里应该使用 markdown 语法解析 command 命令给 hoverMessage 字段
     // e.g (command:vscode.peekTestError?${args})
   }
