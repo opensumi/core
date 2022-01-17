@@ -5,8 +5,8 @@ import { TestResultServiceToken } from './../common/test-result';
 import { TestResultServiceImpl } from './test.result.service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, DisposableStore, IAction, IDisposable, IRange, URI } from '@opensumi/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
+import { Disposable, IDisposable, IRange, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { ITestService, TestServiceToken } from '../common';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -16,7 +16,13 @@ import {
   TestResultItem,
   TestResultState,
 } from '../common/testCollection';
-import { testingRunAllIcon, testingRunIcon, testingStatesToIcons } from './icons';
+import {
+  defaultIconColor,
+  testingRunAllIcon,
+  testingRunIcon,
+  testingStatesToIcons,
+  testStatesToIconColors,
+} from './icons/icons';
 
 interface ITestDecoration extends IDisposable {
   id: string;
@@ -64,6 +70,8 @@ const createRunTestDecoration = (
         : testingRunIcon
       : testingStatesToIcons.get(computedState)!;
 
+  const iconColor = testStatesToIconColors[icon] || defaultIconColor;
+
   const hoverMessage = hoverMessageParts.join(', ');
   if (testIdWithMessages) {
     const args = encodeURIComponent(JSON.stringify([testIdWithMessages]));
@@ -71,7 +79,7 @@ const createRunTestDecoration = (
     // e.g (command:vscode.peekTestError?${args})
   }
 
-  let glyphMarginClassName = icon + ' testing-run-glyph';
+  let glyphMarginClassName = `${icon} ${iconColor} testing-run-glyph`;
   if (retired) {
     glyphMarginClassName += ' retired';
   }
@@ -212,7 +220,7 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
   }
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class TestDecorationsContribution implements IEditorFeatureContribution {
   @Autowired(TestServiceToken)
   private readonly testService: ITestService;
@@ -224,17 +232,18 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
   private readonly injector: Injector;
 
   private currentUri?: URI;
-  private currentEditor?: IEditor;
   private readonly disposer: Disposable = new Disposable();
   private lastDecorations: ITestDecoration[] = [];
 
-  public contribute(editor: IEditor): IDisposable {
-    this.currentEditor = editor;
+  constructor(@Optional() private readonly editor: IEditor) {
     this.currentUri = editor.currentUri!;
+  }
+
+  public contribute(): IDisposable {
     this.setDecorations(this.currentUri);
 
     this.disposer.addDispose(
-      this.currentEditor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
+      this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
         this.setDecorations((e.newModelUrl as unknown as URI) || undefined);
       }),
     );
@@ -243,12 +252,11 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
   }
 
   private setDecorations(uri: URI | undefined | null): void {
-    if (!uri || !this.currentEditor) {
+    if (!uri || !this.editor) {
       return;
     }
 
-    this.currentEditor.monacoEditor.changeDecorations((accessor) => {
-      console.log('this.testService', this.testService, accessor);
+    this.editor.monacoEditor.changeDecorations((accessor) => {
       const newDecorations: ITestDecoration[] = [];
 
       for (const test of this.testService.collection.all) {
@@ -264,7 +272,7 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
           newDecorations[existing] = (newDecorations[existing] as RunTestDecoration).merge(test, resultItem);
         } else {
           newDecorations.push(
-            this.injector.get(RunSingleTestDecoration, [test, this.currentEditor!.monacoEditor, stateLookup?.[1]]),
+            this.injector.get(RunSingleTestDecoration, [test, this.editor!.monacoEditor, stateLookup?.[1]]),
           );
         }
       }

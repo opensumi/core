@@ -4,23 +4,14 @@ import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-br
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 
 import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
-import { TestItemExpandState, TestResultState, TestRunProfileBitset } from '../../common/testCollection';
+import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
 import { GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
-import { testingStatesToIcons } from '../icons';
+import { testingStatesToIcons, testStatesToIconColors } from '../icons/icons';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { TestingExplorerInlineMenus } from '../../common/testing-view';
 
 import styles from './testing.module.less';
-
-const testStatesToIconColors: { [K in TestResultState]?: string } = {
-  [TestResultState.Errored]: styles.testing_iconFailed,
-  [TestResultState.Failed]: styles.testing_iconErrored,
-  [TestResultState.Passed]: styles.testing_iconPassed,
-  [TestResultState.Queued]: styles.testing_iconQueued,
-  [TestResultState.Unset]: styles.testing_iconUnset,
-  [TestResultState.Skipped]: styles.testing_iconUnset,
-};
 
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);

@@ -1,6 +1,6 @@
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
   CommandContribution,
@@ -38,8 +38,8 @@ export class TestingContribution
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  @Autowired(TestDecorationsContribution)
-  private readonly testDecorationsContribution: TestDecorationsContribution;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -99,7 +99,7 @@ export class TestingContribution
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => this.testDecorationsContribution.contribute(editor),
+      contribute: (editor: IEditor) => this.injector.get(TestDecorationsContribution, [editor]).contribute(),
     });
   }
 }
