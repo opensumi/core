@@ -10,3 +10,6 @@ export const testingStatesToIcons = new Map<TestResultState, string>([
   [TestResultState.Skipped, getExternalIcon('debug-step-over')],
   [TestResultState.Unset, getExternalIcon('circle-outline')],
 ]);
+
+export const testingRunIcon = getExternalIcon('run');
+export const testingRunAllIcon = getExternalIcon('run-all');
