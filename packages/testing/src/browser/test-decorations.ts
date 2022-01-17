@@ -226,6 +226,7 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
   private currentUri?: URI;
   private currentEditor?: IEditor;
   private readonly disposer: Disposable = new Disposable();
+  private lastDecorations: ITestDecoration[] = [];
 
   public contribute(editor: IEditor): IDisposable {
     this.currentEditor = editor;
@@ -267,6 +268,14 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
           );
         }
       }
+
+      accessor
+        .deltaDecorations(
+          this.lastDecorations.map((d) => d.id),
+          newDecorations.map((d) => d.editorDecoration),
+        )
+        .forEach((id, i) => (newDecorations[i].id = id));
+      this.lastDecorations = newDecorations;
     });
   }
 }
