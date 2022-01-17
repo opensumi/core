@@ -344,6 +344,12 @@
       ],
       "@opensumi/ide-testing/lib/*": [
         "../packages/testing/src/*"
+      ],
+      "@opensumi/ide-remote-opener": [
+        "../packages/remote-opener/src/index.ts"
+      ],
+      "@opensumi/ide-remote-opener/lib/*": [
+        "../packages/remote-opener/src/*"
       ]
     }
   }

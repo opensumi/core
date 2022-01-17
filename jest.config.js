@@ -19,6 +19,8 @@ module.exports = {
     '!packages/startup/**/*.ts',
     // Test 功能暂未完成
     '!packages/testing/**/*.ts',
+    // CLI 不需要测试
+    '!packages/remote-cli/**/*.ts',
     '!packages/core-electron-main/**/*.ts',
     '!packages/*/src/electron-main/**/*.ts',
   ],

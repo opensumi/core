@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "moduleResolution": "node",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+    "noEmitOnError": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "strictFunctionTypes": false
+  },
+  "include": ["./src"]
+}

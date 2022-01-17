@@ -58,6 +58,9 @@
       "path": "./references/tsconfig.editor.json"
     },
     {
+      "path": "./references/tsconfig.remote-opener.json"
+    },
+    {
       "path": "./references/tsconfig.monaco-enhance.json"
     },
     {
