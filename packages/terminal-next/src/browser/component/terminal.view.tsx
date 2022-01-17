@@ -97,8 +97,9 @@ export default observer(() => {
             key={`terminal-${group.id}`}
             style={{ display: currentGroupIndex === index ? 'block' : 'none' }}
             className={styles.group}
-            onFocus={() => controller.focus()}
-            onBlur={() => controller.blur()}
+            onFocus={controller.focus.bind(controller)}
+            onBlur={controller.blur.bind(controller)}
+            onContextMenu={controller.onContextMenu.bind(controller)}
           >
             <ResizeView
               shadow={false}
