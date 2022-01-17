@@ -586,8 +586,7 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () =>
-        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
@@ -601,8 +600,7 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () =>
-        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
