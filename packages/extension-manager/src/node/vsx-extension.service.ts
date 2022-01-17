@@ -1,9 +1,9 @@
-import urllib from 'urllib';
 import path from 'path';
 import yauzl from 'yauzl';
 import { Readable } from 'stream';
 import os from 'os';
 import fs from 'fs-extra';
+import nodeFetch from 'node-fetch';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable, Autowired } from '@opensumi/di';
@@ -49,9 +49,7 @@ function createZipFile(zipFilePath: string): Promise<yauzl.ZipFile> {
 }
 
 function cleanup(paths: string[]) {
-  paths.forEach((p) => {
-    fs.removeSync(p);
-  });
+  return Promise.all(paths.map((path) => fs.remove(path)));
 }
 
 @Injectable()
@@ -61,15 +59,14 @@ export class VSXExtensionService implements IVSXExtensionBackService {
 
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {
     const uri = `${this.appConfig.marketplace.endpoint}/-/query`;
-    const res = await urllib.request(uri, {
+    const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,
       },
       method: 'POST',
-      dataType: 'json',
-      data: JSON.stringify(param),
+      body: JSON.stringify(param),
     });
-    return res.data;
+    return res.json();
   }
 
   async install(param: IExtensionInstallParam): Promise<string> {
@@ -181,13 +178,12 @@ export class VSXExtensionService implements IVSXExtensionBackService {
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
     const uri = `${this.appConfig.marketplace.endpoint}/-/search?query=${param?.query}`;
-    const res = await urllib.request(uri, {
+    const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,
       },
-      dataType: 'json',
       timeout: 30000,
     });
-    return res.data;
+    return res.json();
   }
 }
