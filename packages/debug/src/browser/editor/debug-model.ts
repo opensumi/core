@@ -635,6 +635,10 @@ export class DebugModel implements IDebugModel {
   };
 
   public onContextMenu(event: monaco.editor.IEditorMouseEvent) {
+    if (!this.marginFreeFromNonDebugDecorations(event.target.position?.lineNumber!)) {
+      return;
+    }
+
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       // 设置当前右键选中的断点
       const breakpoint = this.breakpointManager.getBreakpoint(this._uri, event.target.position!.lineNumber);
@@ -653,7 +657,26 @@ export class DebugModel implements IDebugModel {
     }
   }
 
+  // 不含非 debug 相关的 Decorations
+  private marginFreeFromNonDebugDecorations(line: number): boolean {
+    const decoration = this.editor.getLineDecorations(line);
+    if (Array.isArray(decoration)) {
+      for (const { options } of decoration) {
+        const gcln = options.glyphMarginClassName;
+        if (gcln && gcln.includes('testing-run-glyph')) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   public onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
+    if (!this.marginFreeFromNonDebugDecorations(event.target.position?.lineNumber!)) {
+      return;
+    }
+
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (!event.event.rightButton) {
         // 保证在DebugModelManager中准确获取当前焦点的编辑器
@@ -665,6 +688,11 @@ export class DebugModel implements IDebugModel {
   }
 
   public onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
+    if (!this.marginFreeFromNonDebugDecorations(event.target.position?.lineNumber!)) {
+      this.onMouseLeave(event);
+      return;
+    }
+
     this.showHover(event);
     this.hintBreakpoint(event);
   }
