@@ -11,6 +11,7 @@ import { TestServiceImpl } from './test.service';
 import { TestingContribution } from './testing.contribution';
 import { TestServiceToken } from '../common';
 
+import './icons/icons.less';
 @Injectable()
 export class TestingModule extends BrowserModule {
   providers: Provider[] = [
