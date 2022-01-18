@@ -64,7 +64,6 @@ export class DebugModelManager extends Disposable {
     this.editorCollection.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
     this.breakpointManager.onDidChangeBreakpoints((event) => {
-      const { statusUpdated } = event;
       const { currentEditor } = this.editorService;
       const uri = currentEditor && currentEditor.currentUri;
       if (uri) {

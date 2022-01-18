@@ -128,11 +128,11 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     this.debug.log('Method not implemented.');
   }
   $removeTestProfile(controllerId: string, configId: number): void {
-    this.debug.log('Method not implemented.');
+    this.testProfiles.removeProfile(controllerId, configId);
   }
-  $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
-    this.debug.log('Method not implemented.');
-    return Promise.resolve('');
+  async $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
+    const result = await this.testService.runResolvedTests(req, token);
+    return result.id;
   }
 
   $addTestsToRun(controllerId: string, runId: string, tests: ITestItem[]): void {
@@ -181,11 +181,11 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $startedExtensionTestRun(req: ExtensionRunTestsRequest): void {
-    this.debug.log('Method not implemented.');
+    this.resultService.createTestResult(req);
   }
 
   $finishedExtensionTestRun(runId: string): void {
-    this.debug.log('Method not implemented.');
+    this.withTestResult(runId, (r) => r.markComplete());
   }
 
   private withTestResult<T>(runId: string, fn: (run: ITestResult) => T): T | undefined {
