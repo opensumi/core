@@ -1,20 +1,24 @@
+import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { maxPriority } from './../common/testingStates';
 import { labelForTestInState } from './../common/constants';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { TestResultServiceToken } from './../common/test-result';
-import { TestResultServiceImpl } from './test.result.service';
+import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { Disposable, IDisposable, IRange, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { ITestService, TestServiceToken } from '../common';
+import { TestServiceToken } from '../common';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { Event } from '@opensumi/ide-core-browser';
 import {
   IncrementalTestCollectionItem,
   InternalTestItem,
   TestResultItem,
   TestResultState,
+  TestRunProfileBitset,
+  TestsDiff,
 } from '../common/testCollection';
 import {
   defaultIconColor,
@@ -23,6 +27,7 @@ import {
   testingStatesToIcons,
   testStatesToIconColors,
 } from './icons/icons';
+import { TestServiceImpl } from './test.service';
 
 interface ITestDecoration extends IDisposable {
   id: string;
@@ -70,7 +75,7 @@ const createRunTestDecoration = (
         : testingRunIcon
       : testingStatesToIcons.get(computedState)!;
 
-  const iconColor = testStatesToIconColors[icon] || defaultIconColor;
+  const iconColor = computedState === TestResultState.Unset ? defaultIconColor : testStatesToIconColors[computedState];
 
   // const hoverMessage = hoverMessageParts.join(', ');
   if (testIdWithMessages) {
@@ -79,6 +84,10 @@ const createRunTestDecoration = (
     // e.g (command:vscode.peekTestError?${args})
   }
 
+  /**
+   * testing-run-glyph 这个样式类名是关键字段，不要随意改动
+   * 主要是用来防止与 debug 断点的事件冲突（例: hover、mousedown）
+   */
   let glyphMarginClassName = `${icon} ${iconColor} testing-run-glyph`;
   if (retired) {
     glyphMarginClassName += ' retired';
@@ -107,6 +116,17 @@ abstract class RunTestDecoration extends Disposable {
   }
 
   public click(e: monaco.editor.IEditorMouseEvent): boolean {
+    if (e.target.position?.lineNumber !== this.line || e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN) {
+      return false;
+    }
+
+    if (e.event.rightButton) {
+      this.showContextMenu(e);
+      return true;
+    }
+
+    this.defaultRun();
+
     return true;
   }
 
@@ -140,6 +160,9 @@ abstract class RunTestDecoration extends Disposable {
 }
 
 class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoration {
+  @Autowired(TestServiceToken)
+  private readonly testService: TestServiceImpl;
+
   constructor(
     private readonly tests: {
       test: IncrementalTestCollectionItem;
@@ -173,7 +196,10 @@ class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoratio
   }
 
   protected override defaultRun() {
-    throw new Error('Method not implemented.');
+    return this.testService.runTests({
+      tests: this.tests.map(({ test }) => test),
+      group: TestRunProfileBitset.Run,
+    });
   }
 
   protected override defaultDebug() {
@@ -185,6 +211,9 @@ class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoratio
 class RunSingleTestDecoration extends RunTestDecoration implements ITestDecoration {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(TestServiceToken)
+  private readonly testService: TestServiceImpl;
 
   constructor(
     private readonly test: IncrementalTestCollectionItem,
@@ -212,7 +241,10 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
   }
 
   protected override defaultRun() {
-    throw new Error('Method not implemented.');
+    return this.testService.runTests({
+      tests: [this.test],
+      group: TestRunProfileBitset.Run,
+    });
   }
 
   protected override defaultDebug() {
@@ -223,7 +255,7 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
 @Injectable({ multiple: true })
 export class TestDecorationsContribution implements IEditorFeatureContribution {
   @Autowired(TestServiceToken)
-  private readonly testService: ITestService;
+  private readonly testService: TestServiceImpl;
 
   @Autowired(TestResultServiceToken)
   private readonly testResultService: TestResultServiceImpl;
@@ -231,13 +263,14 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  private currentUri?: URI;
+  public get currentUri(): URI | null {
+    return this.editor.currentUri;
+  }
+
   private readonly disposer: Disposable = new Disposable();
   private lastDecorations: ITestDecoration[] = [];
 
-  constructor(@Optional() private readonly editor: IEditor) {
-    this.currentUri = editor.currentUri!;
-  }
+  constructor(@Optional() private readonly editor: IEditor) {}
 
   public contribute(): IDisposable {
     this.setDecorations(this.currentUri);
@@ -248,11 +281,38 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
       }),
     );
 
+    this.disposer.addDispose(
+      this.editor.monacoEditor.onMouseDown((e) => {
+        for (const decoration of this.lastDecorations) {
+          if (decoration.click(e)) {
+            e.event.stopPropagation();
+            return;
+          }
+        }
+      }),
+    );
+
+    this.disposer.addDispose(
+      this.testResultService.onTestChanged(({ item: result }) => {
+        if (this.currentUri && result.item.uri && result.item.uri.toString() === this.currentUri.toString()) {
+          this.setDecorations(this.currentUri);
+        }
+      }),
+    );
+
+    this.disposer.addDispose(
+      Event.any<TestsDiff | ResultChangeEvent>(
+        this.testResultService.onResultsChanged,
+        this.testService.onDidProcessDiff,
+      )(() => this.setDecorations(this.currentUri)),
+    );
+
     return this.disposer;
   }
 
   private setDecorations(uri: URI | undefined | null): void {
-    if (!uri || !this.editor) {
+    if (!uri) {
+      this.clearDecorations();
       return;
     }
 
@@ -284,6 +344,20 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
         )
         .forEach((id, i) => (newDecorations[i].id = id));
       this.lastDecorations = newDecorations;
+    });
+  }
+
+  private clearDecorations(): void {
+    if (!this.lastDecorations.length) {
+      return;
+    }
+
+    this.editor.monacoEditor.changeDecorations((accessor) => {
+      for (const decoration of this.lastDecorations) {
+        accessor.removeDecoration(decoration.id);
+      }
+
+      this.lastDecorations = [];
     });
   }
 }
