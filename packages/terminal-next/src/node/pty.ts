@@ -9,37 +9,88 @@ import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 import os from 'os';
 import omit from 'lodash.omit';
-import { IShellLaunchConfig } from '../common';
+import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IPty } from '../common/pty';
 import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { Disposable, Emitter, Event, INodeLogger } from '@opensumi/ide-core-node';
 import { Injectable, Autowired } from '@opensumi/di';
 import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
-import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
+import { IProcessEnvironment, isWindows } from '@opensumi/ide-core-common/lib/platform';
+import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
 export { pty };
 
 export const IPtyService = Symbol('IPtyService');
 
-@Injectable()
-export class PtyService {
+@Injectable({ multiple: true })
+export class PtyService extends Disposable {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  async _validateCwd(cwd: string) {
-    if (cwd) {
+  private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
+  private _ptyProcess: IPty | undefined;
+
+  private readonly _onData = new Emitter<string>();
+  readonly onData = this._onData.event;
+  private readonly _onReady = new Emitter<IProcessReadyEvent>();
+  readonly onReady = this._onReady.event;
+  private readonly _onExit = new Emitter<IProcessExitEvent>();
+  readonly onExit = this._onExit.event;
+
+  private readonly _initialCwd: string;
+
+  get pty() {
+    return this._ptyProcess;
+  }
+
+  constructor(public id: string, private readonly shellLaunchConfig: IShellLaunchConfig, cols: number, rows: number) {
+    super();
+    let name: string;
+    if (isWindows) {
+      name = path.basename(this.shellLaunchConfig.executable || '');
+    } else {
+      // Using 'xterm-256color' here helps ensure that the majority of Linux distributions will use a
+      // color prompt as defined in the default ~/.bashrc file.
+      name = 'xterm-256color';
+    }
+    this._initialCwd = this.parseCwd();
+    this._ptyOptions = {
+      name,
+      cwd: this._initialCwd,
+      env: shellLaunchConfig.env as { [key: string]: string },
+      cols,
+      rows,
+    };
+  }
+
+  async kill(): Promise<void> {
+    if (this.disposed) {
+      return;
+    }
+
+    try {
+      if (this._ptyProcess) {
+        this._ptyProcess.kill();
+      }
+    } catch (ex) {}
+
+    this.dispose();
+  }
+
+  async _validateCwd() {
+    if (this._initialCwd) {
       try {
-        const result = await promises.stat(cwd);
+        const result = await promises.stat(this._initialCwd);
         if (!result.isDirectory()) {
           return {
-            message: `Starting directory (cwd) "${cwd}" is not a directory`,
+            message: `Starting directory (cwd) "${this._initialCwd}" is not a directory`,
           };
         }
       } catch (err) {
         if (err?.code === 'ENOENT') {
           return {
-            message: `Starting directory (cwd) "${cwd}" does not exist`,
+            message: `Starting directory (cwd) "${this._initialCwd}" does not exist`,
           };
         }
       }
@@ -47,7 +98,8 @@ export class PtyService {
 
     return undefined;
   }
-  async _validateExecutable(options: IShellLaunchConfig, ptyEnv: IProcessEnvironment, cwd: string) {
+  async _validateExecutable() {
+    const options = this.shellLaunchConfig;
     if (!options.executable) {
       return {
         message: 'IShellLaunchConfig.shellPath not set',
@@ -65,7 +117,7 @@ export class PtyService {
         // The executable isn't an absolute path, try find it on the PATH or CWD
         const envPaths: string[] | undefined =
           options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
-        const executable = await findExecutable(options.executable, cwd, envPaths, ptyEnv);
+        const executable = await findExecutable(options.executable, this._initialCwd, envPaths);
         if (!executable) {
           return {
             message: `Path to shell executable "${options.executable}" does not exist`,
@@ -78,7 +130,9 @@ export class PtyService {
     }
   }
 
-  async create2(options: IShellLaunchConfig) {
+  async start(): Promise<ITerminalLaunchError | undefined> {
+    const options = this.shellLaunchConfig;
+
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -111,44 +165,78 @@ export class PtyService {
       ) as { [key: string]: string };
     }
 
-    const cwd = this.parseCwd(options);
+    this._ptyOptions['env'] = ptyEnv;
 
-    const results = await Promise.all([this._validateCwd(cwd), this._validateExecutable(options, ptyEnv, cwd)]);
+    const results = await Promise.all([this._validateCwd(), this._validateExecutable()]);
     const firstError = results.find((r) => r !== undefined);
     if (firstError) {
-      this.logger.error(`validate shell launch config failed: ${firstError.message}`);
-      throw new Error(firstError.message);
+      return firstError;
     }
 
-    // above code will validate shellPath and throw if it doesn't exist
+    try {
+      await this.setupPtyProcess();
+      return undefined;
+    } catch (err) {
+      this.logger.error('IPty#spawn native exception', err);
+      return { message: `A native exception occurred during launch (${err.message})` };
+    }
+  }
+
+  private async setupPtyProcess() {
+    const options = this.shellLaunchConfig;
 
     const args = options.args || [];
-    const ptyProcess = pty.spawn(options.executable as string, args, {
-      name: options.name || 'xterm-256color',
-      cwd,
-      env: ptyEnv,
+    const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
+
+    ptyProcess.onData((e) => {
+      this._onData.fire(e);
+    });
+
+    ptyProcess.onExit((e) => {
+      this._onExit.fire(e);
     });
 
     (ptyProcess as IPty).bin = options.executable as string;
     (ptyProcess as IPty).launchConfig = options;
     const match = (options.executable as string).match(/[\w|.]+$/);
     (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
-    return ptyProcess as IPty;
+
+    this._sendProcessId(ptyProcess.pid);
+
+    this._ptyProcess = ptyProcess as IPty;
   }
-  parseCwd(options: IShellLaunchConfig) {
-    if (options.cwd) {
-      return typeof options.cwd === 'string' ? options.cwd : options.cwd.fsPath;
+  private _sendProcessId(pid: number) {
+    this._onReady.fire({
+      pid,
+    });
+  }
+
+  parseCwd() {
+    if (this.shellLaunchConfig.cwd) {
+      return typeof this.shellLaunchConfig.cwd === 'string'
+        ? this.shellLaunchConfig.cwd
+        : this.shellLaunchConfig.cwd.fsPath;
     }
     return os.homedir();
   }
 
-  resize(termninal: pty.IPty, rows: number, cols: number) {
+  getShellName() {
+    return this._ptyProcess?.parsedName || 'not started';
+  }
+
+  getPid() {
+    return this._ptyProcess?.pid || -1;
+  }
+
+  resize(rows: number, cols: number) {
     try {
-      termninal.resize(cols, rows);
+      this._ptyProcess?.resize(cols, rows);
     } catch (e) {
       return false;
     }
-
     return true;
+  }
+  onMessage(data: string) {
+    this._ptyProcess?.write(data);
   }
 }

@@ -166,9 +166,9 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create2(id: string, options: IShellLaunchConfig): Promise<IPty | undefined>;
+  create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPty | undefined>;
   onMessage(id: string, msg: string): void;
-  resize(id: string, rows: number, cols: number);
+  resize(id: string, rows: number, cols: number): void;
   getShellName(id: string): string;
   getProcessId(id: string): number;
   disposeById(id: string): void;
@@ -193,12 +193,17 @@ export interface INodePtyInstance {
 
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export interface ITerminalServiceClient {
-  create2(id: string, launchConfig: IShellLaunchConfig): Promise<INodePtyInstance | undefined>;
+  create2(
+    id: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<INodePtyInstance | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;
   getProcessId(id: string): number;
-  clientMessage(id: string, data): void;
+  clientMessage(id: string, data: string): void;
   closeClient(
     sessionId: string,
     data?:

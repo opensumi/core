@@ -42,12 +42,17 @@ export interface ITerminalService {
   attach(
     sessionId: string,
     xterm: Terminal,
-    rows: number,
     cols: number,
+    rows: number,
     options?: TerminalOptions,
     shellType?: string,
   ): Promise<ITerminalConnection | undefined>;
-  attachByLaunchConfig(sessionId: string, launchConfig: IShellLaunchConfig): Promise<ITerminalConnection | undefined>;
+  attachByLaunchConfig(
+    sessionId: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<ITerminalConnection | undefined>;
   /**
    *
    * @param id 会话唯一标识

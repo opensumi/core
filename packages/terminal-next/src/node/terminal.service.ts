@@ -1,6 +1,6 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { PtyService, IPtyService } from './pty';
-import { IPty, TerminalOptions } from '../common/pty';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { PtyService } from './pty';
+import { IPty } from '../common/pty';
 import { IShellLaunchConfig } from '../common/pty';
 import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
@@ -13,14 +13,14 @@ import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
 export class TerminalServiceImpl implements ITerminalNodeService {
   static TerminalPtyCloseThreshold = 10 * 1000;
 
-  private terminalMap: Map<string, IPty> = new Map();
-  private clientTerminalMap: Map<string, Map<string, IPty>> = new Map();
+  private terminalProcessMap: Map<string, PtyService> = new Map();
+  private clientTerminalMap: Map<string, Map<string, PtyService>> = new Map();
   private clientTerminalThresholdMap: Map<string, NodeJS.Timeout> = new Map();
 
-  @Autowired(IPtyService)
-  private ptyService: PtyService;
-
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
+
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
 
   @Autowired(INodeLogger)
   private logger: INodeLogger;
@@ -42,7 +42,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   public closeClient(clientId: string) {
-    // TODO: 实现关闭客户端，调用客户端的 closeClient 方法
     const closeTimer = global.setTimeout(
       () => {
         this.disposeClient(clientId);
@@ -59,21 +58,21 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     const terminalMap = this.clientTerminalMap.get(clientId);
 
     if (terminalMap) {
-      terminalMap.forEach((pty, id) => {
-        this.terminalMap.delete(id);
-        pty.kill();
+      terminalMap.forEach((t, id) => {
+        this.terminalProcessMap.delete(id);
+        t.kill();
       });
       this.clientTerminalMap.delete(clientId);
     }
   }
 
-  public async create2(id: string, options: IShellLaunchConfig) {
+  public async create2(id: string, cols: number, rows: number, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
-    let terminal: IPty | undefined;
+    let terminal: PtyService | undefined;
 
     try {
-      terminal = (await this.ptyService.create2(options)) as IPty;
-      this.terminalMap.set(id, terminal);
+      terminal = this.injector.get(PtyService, [id, options, cols, rows]);
+      this.terminalProcessMap.set(id, terminal);
 
       terminal.onData((data) => {
         if (this.serviceClientMap.has(clientId)) {
@@ -97,6 +96,12 @@ export class TerminalServiceImpl implements ITerminalNodeService {
         }
       });
 
+      const error = await terminal.start();
+      if (error) {
+        this.logger.error(`Terminal process start error (instanceId: ${id})`, error);
+        throw error;
+      }
+
       if (!this.clientTerminalMap.has(clientId)) {
         this.clientTerminalMap.set(clientId, new Map());
       }
@@ -107,31 +112,32 @@ export class TerminalServiceImpl implements ITerminalNodeService {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.closeClient(id, {
           id,
-          message: error.message,
+          code: error?.code,
+          message: error?.message,
           stopped: true,
         });
       }
     }
 
-    return terminal;
+    return terminal?.pty;
   }
 
-  public onMessage(id, msg) {
+  public onMessage(id: string, msg: string) {
     const terminal = this.getTerminal(id);
     if (!terminal) {
       this.logger.warn(`terminal ${id} onMessage not found`, terminal);
       return;
     }
-    terminal.write(msg);
+    terminal.onMessage(msg);
   }
 
-  public resize(id, rows, cols) {
+  public resize(id: string, rows: number, cols: number) {
     const terminal = this.getTerminal(id);
 
     if (!terminal) {
       return;
     }
-    this.ptyService.resize(terminal, rows, cols);
+    terminal.resize(rows, cols);
   }
 
   getShellName(id: string): string {
@@ -139,16 +145,15 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     if (!terminal) {
       return 'invalid terminal';
     }
-    return terminal.parsedName;
+    return terminal.getShellName();
   }
 
   getProcessId(id: string): number {
     const terminal = this.getTerminal(id);
-
     if (!terminal) {
       return -1;
     }
-    return terminal.pid;
+    return terminal.getPid();
   }
 
   disposeById(id: string) {
@@ -167,6 +172,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   private getTerminal(id: string) {
-    return this.terminalMap.get(id);
+    return this.terminalProcessMap.get(id);
   }
 }

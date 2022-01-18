@@ -1,4 +1,14 @@
-import { Disposable, Emitter, WithEventBus, IDisposable, Event, throttle, equals } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  Emitter,
+  WithEventBus,
+  IDisposable,
+  Event,
+  throttle,
+  equals,
+  ILogger,
+  AutoOpenBarrier,
+} from '@opensumi/ide-core-common';
 import {
   IResolveDefaultProfileOptions,
   ITerminalProfile,
@@ -16,7 +26,14 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   @Autowired(ITerminalService)
   private terminalService: ITerminalService;
 
-  profilesReady: Promise<void>;
+  @Autowired(ILogger)
+  private logger: ILogger;
+
+  private _profilesReadyBarrier: AutoOpenBarrier;
+
+  get profilesReady(): Promise<void> {
+    return this._profilesReadyBarrier.wait().then(() => {});
+  }
   private readonly _onDidChangeAvailableProfiles = new Emitter<ITerminalProfile[]>();
   get onDidChangeAvailableProfiles(): Event<ITerminalProfile[]> {
     return this._onDidChangeAvailableProfiles.event;
@@ -24,6 +41,10 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   constructor() {
     super();
+    // Wait up to 5 seconds for profiles to be ready so it's assured that we know the actual
+    // default terminal before launching the first terminal. This isn't expected to ever take
+    // this long.
+    this._profilesReadyBarrier = new AutoOpenBarrier(5000);
     this.refreshAvailableProfiles();
   }
 
@@ -67,11 +88,13 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     const profilesChanged = !equals(profiles, this._availableProfiles, profilesEqual);
     if (profilesChanged) {
       this._availableProfiles = profiles;
+      this._profilesReadyBarrier.open();
       this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
     }
   }
 
   async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+    await this.profilesReady;
     // const os: OperatingSystem = options.os || (await this.terminalService.getOs());
     return this._availableProfiles?.[0];
   }

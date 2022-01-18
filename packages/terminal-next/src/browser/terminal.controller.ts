@@ -8,6 +8,7 @@ import {
   IDisposable,
   DisposableStore,
   Disposable,
+  ILogger,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
@@ -94,6 +95,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(AppConfig)
   config: AppConfig;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
   private terminalContextKey: TerminalContextKey;
 
   @observable
@@ -132,9 +136,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
     let client: ITerminalClient;
+
     if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
+      this.logger.log('create client with clientFactory2');
       client = this.clientFactory2(widget, options);
     } else {
+      this.logger.log('create client with clientFactory');
       client = this.clientFactory(widget, options);
     }
     return this.setupClient(widget, client);
@@ -142,7 +149,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   setupClient(widget: IWidget, client: ITerminalClient) {
     this._clients.set(client.id, client);
-
+    this.logger.log(`setup client ${client.id}, ${typeof client}`);
     client.addDispose(
       client.onExit((e) => {
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });

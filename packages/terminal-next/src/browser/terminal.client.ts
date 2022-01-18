@@ -270,7 +270,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   convertProfileToLaunchConfig(
     shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
-    cwd?: Uri,
+    cwd?: Uri | string,
   ): IShellLaunchConfig {
     if (!shellLaunchConfigOrProfile) {
       return {};
@@ -300,36 +300,36 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   async init2(widget: IWidget, options: ICreateTerminalOptions) {
     this._uid = widget.id;
-
-    const launchConfig = this.convertProfileToLaunchConfig(options.config);
-    this._launchConfig = launchConfig;
-    this.name = launchConfig.name || '';
-
-    this._prepare();
-
-    if (launchConfig.initialText) {
-      this.xterm.raw.writeln(launchConfig.initialText);
-    }
-
-    this.environmentService.mergedCollection?.applyToProcessEnvironment(
-      launchConfig.env || {},
-      this.applicationService.backendOS,
-      this.variableResolver.resolve.bind(this.variableResolver),
-    );
-
-    this.addDispose(
-      this.environmentService.onDidChangeCollections((collection) => {
-        // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-        collection.applyToProcessEnvironment(
-          launchConfig.env || {},
-          this.applicationService.backendOS,
-          this.variableResolver.resolve.bind(this.variableResolver),
-        );
-      }),
-    );
     this.setupWidget(widget);
 
     if (await this._checkWorkspace()) {
+      const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
+      this.logger.log('init2: ', launchConfig);
+      this._launchConfig = launchConfig;
+      this.name = launchConfig.name || '';
+
+      this._prepare();
+
+      if (launchConfig.initialText) {
+        this.xterm.raw.writeln(launchConfig.initialText);
+      }
+
+      this.environmentService.mergedCollection?.applyToProcessEnvironment(
+        launchConfig.env || {},
+        this.applicationService.backendOS,
+        this.variableResolver.resolve.bind(this.variableResolver),
+      );
+
+      this.addDispose(
+        this.environmentService.onDidChangeCollections((collection) => {
+          // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+          collection.applyToProcessEnvironment(
+            launchConfig.env || {},
+            this.applicationService.backendOS,
+            this.variableResolver.resolve.bind(this.variableResolver),
+          );
+        }),
+      );
       this._attachXterm();
       this._attachAfterRender();
     }
@@ -439,6 +439,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private async _doAttach() {
+    this.logger.log('_doAttach');
     const sessionId = this.id;
     const type = this.preference.get<string>('type');
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
@@ -451,7 +452,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     };
 
     try {
-      connection = await this.internalService.attach(sessionId, this.xterm.raw, rows, cols, finalOptions, type);
+      connection = await this.internalService.attach(sessionId, this.xterm.raw, cols, rows, finalOptions, type);
     } catch (e) {
       this.logger.error(`attach ${sessionId} terminal failed, type: ${type}`, JSON.stringify(finalOptions), e);
     }
@@ -542,6 +543,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
   private async _doAttach2() {
     const sessionId = this.id;
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
 
     let connection: ITerminalConnection | undefined;
 
@@ -549,11 +551,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._launchConfig,
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
+    this.logger.log('_doAttach2 with', finalLaunchConfig);
 
     this._launchConfig = finalLaunchConfig;
 
     try {
-      connection = await this.internalService.attachByLaunchConfig(sessionId, this._launchConfig);
+      connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);
     } catch (e) {
       this.logger.error(`attach ${sessionId} terminal failed, _launchConfig`, JSON.stringify(this._launchConfig), e);
     }
@@ -734,16 +737,21 @@ export class TerminalClientFactory {
       },
     ]);
 
+    const logger = injector.get(ILogger) as ILogger;
+
     const client = child.get(TerminalClient);
     const profileService = injector.get(ITerminalProfileService) as ITerminalProfileService;
-    if (!options) {
-      options = {};
+    if (!options || Object.keys(options).length === 0) {
+      options = options ?? {};
       // 没有 options，获取默认 profile
-      const defaultProfile = await profileService.resolveDefaultProfile({});
+      const defaultProfile = await profileService.resolveDefaultProfile();
       if (!defaultProfile) {
-        // 没有获取到 profile，是提示用户失败呢？还是按以前的逻辑来
+        // 其实应该是必定能 resolve 到 profile 的
+        logger.log('cannot get default profile, use old resolve options');
+        // TODO: 没有获取到 profile，是提示用户失败呢？还是按以前的逻辑来
         client.init(widget, {});
       } else {
+        logger.log('get default profile: ', defaultProfile);
         options = {
           config: defaultProfile,
         };

@@ -164,18 +164,20 @@ export class NodePtyTerminalService implements ITerminalService {
       name: options.name,
       strictEnv: options.strictEnv,
     };
-    return this.attachByLaunchConfig(sessionId, launchConfig);
+    return this.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
   }
 
-  async attachByLaunchConfig(sessionId: string, launchConfig: IShellLaunchConfig) {
-    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(launchConfig)}`);
+  async attachByLaunchConfig(sessionId: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
+    this.logger.log(`attachByLaunchConfig ${sessionId} with launchConfig `, launchConfig);
 
-    const ptyInstance = await this.serviceClientRPC.create2(sessionId, launchConfig);
+    const ptyInstance = await this.serviceClientRPC.create2(sessionId, cols, rows, launchConfig);
     if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
+      this.logger.log(`${sessionId} attach success, pid: ${ptyInstance.pid}, name: ${ptyInstance.name}`);
       // 有 pid 或者 name 的才视为创建成功
       // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
       return this._createCustomWebSocket(sessionId, ptyInstance);
     }
+    this.logger.error(`${sessionId} cannot create ptyInstance`, ptyInstance);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {

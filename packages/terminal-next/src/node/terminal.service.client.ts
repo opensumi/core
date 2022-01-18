@@ -68,19 +68,29 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create2(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined> {
-    const pty = await this.terminalService.create2(id, options);
-    if (pty) {
-      this.terminalService.setClient(this.clientId, this);
-      this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
-      this.terminalMap.set(id, pty);
-      return {
-        id,
-        pid: pty.pid,
-        proess: pty.process,
-        name: pty.parsedName,
-        shellPath: pty.launchConfig.executable,
-      };
+  async create2(
+    id: string,
+    cols: number,
+    rows: number,
+    options: IShellLaunchConfig,
+  ): Promise<INodePtyInstance | undefined> {
+    try {
+      const pty = await this.terminalService.create2(id, cols, rows, options);
+      this.logger.log(`create2 ${id} ${cols} ${rows} `, options, pty);
+      if (pty) {
+        this.terminalService.setClient(this.clientId, this);
+        this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
+        this.terminalMap.set(id, pty);
+        return {
+          id,
+          pid: pty.pid,
+          proess: pty.process,
+          name: pty.parsedName,
+          shellPath: pty.launchConfig.executable,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`create2 ${id} ${cols} ${rows} `, options, error);
     }
   }
 

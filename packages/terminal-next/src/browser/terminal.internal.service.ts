@@ -116,8 +116,10 @@ export class TerminalInternalService implements ITerminalInternalService {
   }
   async attachByLaunchConfig(
     sessionId: string,
+    cols: number,
+    rows: number,
     launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
-    return await this.service.attachByLaunchConfig(sessionId, launchConfig);
+    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
   }
 }
