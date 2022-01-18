@@ -21,6 +21,7 @@ export interface ITestController {
 }
 
 export const TestServiceToken = Symbol('TestService');
+export const TestDecorationsToken = Symbol('TestDecorationsToken');
 
 export interface ITestService {
   readonly collection: MainThreadTestCollection;
