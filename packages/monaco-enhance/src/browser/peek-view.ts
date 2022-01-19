@@ -46,7 +46,9 @@ export abstract class PeekViewWidget extends ZoneWidget {
   }
 
   protected _fillHead(container: HTMLElement, noCloseAction?: boolean): void {
-    const titleElement = document.createElement('.peekview-title');
+    const titleElement = document.createElement('div');
+    titleElement.classList.add('peekview-title');
+
     if ((this.options as IPeekViewOptions).supportOnTitleClick) {
       titleElement.classList.add('clickable');
       // handle click event
@@ -54,12 +56,21 @@ export abstract class PeekViewWidget extends ZoneWidget {
     this._headElement!.append(titleElement);
 
     this._fillTitleIcon(titleElement);
-    this._primaryHeading = document.createElement('span.filename');
-    this._secondaryHeading = document.createElement('span.dirname');
-    this._metaHeading = document.createElement('span.meta');
+
+    this._primaryHeading = document.createElement('span');
+    this._primaryHeading.classList.add('filename');
+
+    this._secondaryHeading = document.createElement('span');
+    this._secondaryHeading.classList.add('dirname');
+
+    this._metaHeading = document.createElement('span');
+    this._metaHeading.classList.add('meta');
+
     titleElement.append(this._primaryHeading, this._secondaryHeading, this._metaHeading);
 
-    const actionsContainer = document.createElement('.peekview-actions');
+    const actionsContainer = document.createElement('div');
+    actionsContainer.classList.add('peekview-actions');
+
     this._headElement!.append(actionsContainer);
   }
 

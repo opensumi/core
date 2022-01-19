@@ -40,11 +40,17 @@ export class TestingPeekOpenerServiceImpl extends Disposable implements ITesting
 
   private lastUri?: TestUriWithDocument;
 
-  private async showPeekFromUri(uri: TestUriWithDocument, options?: ITextEditorOptions) {
+  private peekControllerMap: Map<string, TestOutputPeekContribution> = new Map();
+
+  private async showPeekFromUri(testUri: TestUriWithDocument, options?: ITextEditorOptions) {
     const editor = this.editorService.currentEditor;
 
-    this.lastUri = uri;
-    TestOutputPeekContribution.get(editor?.monacoEditor!)!.show(buildTestUri(this.lastUri));
+    this.lastUri = testUri;
+
+    const uri = buildTestUri(this.lastUri);
+    const ctor = this.peekControllerMap.get(editor?.currentUri!.toString()!);
+    ctor?.show(uri);
+
     return true;
   }
 
@@ -77,6 +83,14 @@ export class TestingPeekOpenerServiceImpl extends Disposable implements ITesting
     }
 
     return undefined;
+  }
+
+  public setPeekContrib(uri: URI, contrib: TestOutputPeekContribution): this {
+    const uriStr = uri.toString();
+    if (!this.peekControllerMap.has(uriStr)) {
+      this.peekControllerMap.set(uriStr, contrib);
+    }
+    return this;
   }
 
   public tryPeekFirstError(result: ITestResult, test: TestResultItem, options?: Partial<ITextEditorOptions>): boolean {

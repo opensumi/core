@@ -5,10 +5,12 @@ import {
   IRichLocation,
   ISerializedTestResults,
   ITestItem,
+  ITestMessage,
   ITestOutputMessage,
   ITestRunTask,
   ITestTaskState,
   ResolvedTestRunRequest,
+  SerializedTestMessage,
   TestItemExpandState,
   TestResultItem,
   TestResultState,
@@ -239,6 +241,20 @@ export class TestResultImpl implements ITestResult {
     }
 
     this.fireUpdateAndRefresh(entry, index, state);
+  }
+  appendMessage(testId: string, taskId: string, message: ITestMessage | SerializedTestMessage) {
+    const entry = this.testById.get(testId);
+    if (!entry) {
+      return;
+    }
+
+    entry.tasks[this.mustGetTaskIndex(taskId)].messages.push(message as ITestMessage);
+    this.changeEmitter.fire({
+      item: entry,
+      result: this,
+      reason: TestResultItemChangeReason.OwnStateChange,
+      previous: entry.ownComputedState,
+    });
   }
   appendOutput(output: string, taskId: string, location?: IRichLocation, testId?: string): void {
     console.error('##TestResult## appendOutput: >> ', output, taskId, location, testId);

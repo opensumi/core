@@ -1,3 +1,4 @@
+import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { buildTestUri, parseTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
@@ -14,13 +15,14 @@ import {
 import { TestingOutputPeek } from './test-peek-widget';
 import { TestResultServiceImpl } from '../test.result.service';
 import { TestResultServiceToken } from '../../common/test-result';
-import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { TestingPeekOpenerServiceToken } from '../../common/testingPeekOpener';
+import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
 
 const isDiffable = (
   message: ITestErrorMessage,
 ): message is ITestErrorMessage & { actualOutput: string; expectedOutput: string } =>
   message.actual !== undefined && message.expected !== undefined;
-class TestDto {
+export class TestDto {
   public readonly test: ITestItem;
   public readonly messages: ITestMessage[];
   public readonly expectedUri: URI;
@@ -63,14 +65,12 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   @Autowired(TestResultServiceToken)
   private readonly testResultService: TestResultServiceImpl;
 
+  @Autowired(TestingPeekOpenerServiceToken)
+  private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
+
   private readonly disposer: Disposable = new Disposable();
 
   private readonly peekView = new MutableDisposable<TestingOutputPeek>();
-
-  public static get(editor: ICodeEditor): TestOutputPeekContribution | undefined {
-    console.log('ICodeEditor', editor);
-    return;
-  }
 
   constructor(@Optional() private readonly editor: IEditor) {}
 
@@ -90,6 +90,11 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   }
 
   public contribute(): IDisposable {
+    this.disposer.addDispose(
+      this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
+        this.testingPeekOpenerService.setPeekContrib(e.newModelUrl as unknown as URI, this);
+      }),
+    );
     return this.disposer;
   }
 
@@ -103,6 +108,6 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
       this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor]);
     }
 
-    this.peekView.value.show(dto.revealLocation?.range!, 28);
+    this.peekView.value.setModel(dto);
   }
 }

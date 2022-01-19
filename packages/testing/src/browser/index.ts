@@ -13,6 +13,8 @@ import { TestServiceToken } from '../common';
 import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 
 import './icons/icons.less';
+import './outputPeek/test-peek-widget.less';
+
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 @Injectable()
 export class TestingModule extends BrowserModule {

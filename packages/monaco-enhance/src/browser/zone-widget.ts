@@ -87,6 +87,7 @@ export abstract class ZoneWidget extends Disposable {
 
   protected abstract applyClass(): void;
   protected abstract applyStyle(): void;
+  protected abstract _fillContainer(container: HTMLElement): void;
 
   private _showImpl(where: monaco.IRange, heightInLines: number) {
     const { startLineNumber: lineNumber, startColumn: column } = where;
@@ -179,6 +180,8 @@ export abstract class ZoneWidget extends Disposable {
   render() {
     this._container.style.width = `${this.width}px`;
     this._container.style.left = `${this.left}px`;
+
+    this._fillContainer(this._container);
     this.applyStyle();
   }
 

@@ -24,8 +24,8 @@ import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { TestDecorationsContribution } from './test-decorations';
 import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
-import { ITestingPeekOpenerService, TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
-
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
+import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 @Injectable()
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
 export class TestingContribution
@@ -44,7 +44,7 @@ export class TestingContribution
   private readonly injector: Injector;
 
   @Autowired(TestingPeekOpenerServiceToken)
-  private readonly testingPeekOpenerService: ITestingPeekOpenerService;
+  private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -105,7 +105,6 @@ export class TestingContribution
       execute: async (extId: string) => {
         this.testingPeekOpenerService.open();
       },
-      isVisible: () => false,
     });
   }
 

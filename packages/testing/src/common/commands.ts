@@ -14,4 +14,5 @@ export const GoToTestCommand: Command = {
 
 export const PeekTestError: Command = {
   id: 'testing.peek.test.error',
+  label: 'Peek Output',
 };

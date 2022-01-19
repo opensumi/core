@@ -1,0 +1,88 @@
+// @import '~@opensumi/ide-monaco-enhance/lib/browser/styles.module.less';
+
+.peekview-widget .head {
+  box-sizing: border-box;
+  display: flex;
+}
+
+.peekview-widget .head .peekview-title {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  margin-left: 20px;
+  min-width: 0;
+}
+
+.peekview-widget .head .peekview-title.clickable {
+  cursor: pointer;
+}
+
+.peekview-widget .head .peekview-title .dirname:not(:empty) {
+  font-size: 0.9em;
+  margin-left: 0.5em;
+}
+
+.peekview-widget .head .peekview-title .meta {
+  white-space: nowrap;
+}
+
+.peekview-widget .head .peekview-title .dirname {
+  white-space: nowrap;
+}
+
+.peekview-widget .head .peekview-title .filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.peekview-widget .head .peekview-title .meta:not(:empty)::before {
+  content: '-';
+  padding: 0 0.3em;
+}
+
+.peekview-widget .head .peekview-actions {
+  flex: 1;
+  text-align: right;
+  padding-right: 2px;
+}
+
+.peekview-widget .head .peekview-actions > .monaco-action-bar {
+  display: inline-block;
+}
+
+.peekview-widget .head .peekview-actions > .monaco-action-bar,
+.peekview-widget .head .peekview-actions > .monaco-action-bar > .actions-container {
+  height: 100%;
+}
+
+.peekview-widget > .body {
+  border-top: 1px solid;
+  position: relative;
+}
+
+.peekview-widget .head .peekview-title .codicon {
+  margin-right: 4px;
+}
+
+.testing-output-peek-container {
+  border-top-color: rgb(241, 76, 76);
+  border-bottom-color: rgb(241, 76, 76);
+  height: 416px;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-top-style: solid;
+  border-bottom-style: solid;
+  top: 6px;
+  overflow: hidden;
+
+  .head {
+    background-color: rgba(241, 76, 76, 0.1);
+    height: 22px;
+    line-height: 22px;
+  }
+
+  .body {
+    border-color: rgb(241, 76, 76);
+  }
+}
