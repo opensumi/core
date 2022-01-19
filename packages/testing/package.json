@@ -21,6 +21,9 @@
     "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-dev-tool": "^1.1.0",
     "@opensumi/ide-editor": "2.14.2",
-    "@opensumi/ide-main-layout": "2.14.2"
+    "@opensumi/ide-main-layout": "2.14.2",
+    "@opensumi/ide-monaco": "2.14.2",
+    "@opensumi/ide-file-service": "2.14.2",
+    "@opensumi/ide-monaco-enhance": "2.14.2"
   }
 }
