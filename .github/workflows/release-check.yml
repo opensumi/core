@@ -8,6 +8,8 @@ on:
 jobs:
   log:
     name: echo EVENT_CONTEXT
+    runs-on: ubuntu-latest
+
     steps:
       - env:
           EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
