@@ -14,6 +14,7 @@ import {
 import { TestingOutputPeek } from './test-peek-widget';
 import { TestResultServiceImpl } from '../test.result.service';
 import { TestResultServiceToken } from '../../common/test-result';
+import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 const isDiffable = (
   message: ITestErrorMessage,
@@ -65,6 +66,11 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   private readonly disposer: Disposable = new Disposable();
 
   private readonly peekView = new MutableDisposable<TestingOutputPeek>();
+
+  public static get(editor: ICodeEditor): TestOutputPeekContribution | undefined {
+    console.log('ICodeEditor', editor);
+    return;
+  }
 
   constructor(@Optional() private readonly editor: IEditor) {}
 
