@@ -8,7 +8,7 @@ import { ITerminalError } from './error';
 import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { ITerminalEnvironment, TerminalLocation } from './extension';
 
-export interface IPty extends INodePty {
+export interface IPtyProcess extends INodePty {
   /**
    * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
    */
@@ -166,7 +166,7 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPty | undefined>;
+  create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   getShellName(id: string): string;

@@ -10,16 +10,15 @@ import * as osLocale from 'os-locale';
 import os from 'os';
 import omit from 'lodash.omit';
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
-import { IPty } from '../common/pty';
+import { IPtyProcess } from '../common/pty';
 import { findExecutable } from './shell';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { Disposable, Emitter, Event, INodeLogger } from '@opensumi/ide-core-node';
+import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
 import { Injectable, Autowired } from '@opensumi/di';
 import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
-import { IProcessEnvironment, isWindows } from '@opensumi/ide-core-common/lib/platform';
+import { isWindows } from '@opensumi/ide-core-common/lib/platform';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
-export { pty };
 
 export const IPtyService = Symbol('IPtyService');
 
@@ -29,7 +28,7 @@ export class PtyService extends Disposable {
   private readonly logger: INodeLogger;
 
   private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
-  private _ptyProcess: IPty | undefined;
+  private _ptyProcess: IPtyProcess | undefined;
 
   private readonly _onData = new Emitter<string>();
   readonly onData = this._onData.event;
@@ -78,7 +77,7 @@ export class PtyService extends Disposable {
     this.dispose();
   }
 
-  async _validateCwd() {
+  async _validateCwd(): Promise<ITerminalLaunchError | undefined> {
     if (this._initialCwd) {
       try {
         const result = await promises.stat(this._initialCwd);
@@ -98,7 +97,7 @@ export class PtyService extends Disposable {
 
     return undefined;
   }
-  async _validateExecutable() {
+  async _validateExecutable(): Promise<ITerminalLaunchError | undefined> {
     const options = this.shellLaunchConfig;
     if (!options.executable) {
       return {
@@ -196,14 +195,14 @@ export class PtyService extends Disposable {
       this._onExit.fire(e);
     });
 
-    (ptyProcess as IPty).bin = options.executable as string;
-    (ptyProcess as IPty).launchConfig = options;
+    (ptyProcess as IPtyProcess).bin = options.executable as string;
+    (ptyProcess as IPtyProcess).launchConfig = options;
     const match = (options.executable as string).match(/[\w|.]+$/);
-    (ptyProcess as IPty).parsedName = match ? match[0] : 'sh';
+    (ptyProcess as IPtyProcess).parsedName = match ? match[0] : 'sh';
 
     this._sendProcessId(ptyProcess.pid);
 
-    this._ptyProcess = ptyProcess as IPty;
+    this._ptyProcess = ptyProcess as IPtyProcess;
   }
   private _sendProcessId(pid: number) {
     this._onReady.fire({

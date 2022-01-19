@@ -7,7 +7,7 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
-import { IPty } from '../common/pty';
+import { IPtyProcess } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
@@ -29,7 +29,7 @@ interface IRPCTerminalService {
  */
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> implements ITerminalServiceClient {
-  private terminalMap: Map<string, IPty> = new Map();
+  private terminalMap: Map<string, IPtyProcess> = new Map();
 
   @Autowired(ITerminalNodeService)
   private terminalService: ITerminalNodeService;
@@ -72,14 +72,14 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     id: string,
     cols: number,
     rows: number,
-    options: IShellLaunchConfig,
+    launchConfig: IShellLaunchConfig,
   ): Promise<INodePtyInstance | undefined> {
     try {
-      const pty = await this.terminalService.create2(id, cols, rows, options);
-      this.logger.log(`create2 ${id} ${cols} ${rows} `, options, pty);
+      const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
+      this.logger.log(`create2 ${id} ${cols} ${rows} `, launchConfig, pty);
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
-        this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
+        this.logger.log(`client ${id} create ${pty} with options `, launchConfig);
         this.terminalMap.set(id, pty);
         return {
           id,
@@ -90,7 +90,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         };
       }
     } catch (error) {
-      this.logger.error(`create2 ${id} ${cols} ${rows} `, options, error);
+      this.logger.error(`create2 ${id} ${cols} ${rows} `, launchConfig, error);
     }
   }
 

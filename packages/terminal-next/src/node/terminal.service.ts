@@ -83,20 +83,20 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     serviceClient.clientMessage(sessionId, ptyData);
   }
 
-  public async create2(id: string, cols: number, rows: number, options: IShellLaunchConfig) {
+  public async create2(id: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
-    let terminal: PtyService | undefined;
+    let ptyService: PtyService | undefined;
 
     try {
-      terminal = this.injector.get(PtyService, [id, options, cols, rows]);
-      this.terminalProcessMap.set(id, terminal);
+      ptyService = this.injector.get(PtyService, [id, launchConfig, cols, rows]);
+      this.terminalProcessMap.set(id, ptyService);
 
       // ref: https://hyper.is/blog
       // 合并 pty 输出的数据，16ms 后发送给客户端，如
       // 果在 16ms 内没有收到新的数据，或短时间内数据
       // 超过 BATCH_MAX_SIZE 限定的长度，则立即发送缓
       // 存的数据，避免因为输出较多时阻塞 RPC 通信
-      terminal.onData((chunk: string) => {
+      ptyService.onData((chunk: string) => {
         if (this.serviceClientMap.has(clientId)) {
           if (!this.batchedPtyDataMap.has(id)) {
             this.batchedPtyDataMap.set(id, '');
@@ -126,7 +126,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
         }
       });
 
-      terminal.onExit(({ exitCode, signal }) => {
+      ptyService.onExit(({ exitCode, signal }) => {
         this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
         if (this.serviceClientMap.has(clientId)) {
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
@@ -139,7 +139,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
         }
       });
 
-      const error = await terminal.start();
+      const error = await ptyService.start();
       if (error) {
         this.logger.error(`Terminal process start error (instanceId: ${id})`, error);
         throw error;
@@ -148,9 +148,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       if (!this.clientTerminalMap.has(clientId)) {
         this.clientTerminalMap.set(clientId, new Map());
       }
-      this.clientTerminalMap.get(clientId)?.set(id, terminal);
+      this.clientTerminalMap.get(clientId)?.set(id, ptyService);
     } catch (error) {
-      this.logger.error(`${id} create terminal error: ${error}, options: ${JSON.stringify(options)}`);
+      this.logger.error(`${id} create terminal error: ${error}, options: ${JSON.stringify(launchConfig)}`);
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.closeClient(id, {
@@ -162,7 +162,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       }
     }
 
-    return terminal?.pty;
+    return ptyService?.pty;
   }
 
   public onMessage(id: string, msg: string) {
