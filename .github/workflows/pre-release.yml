@@ -30,6 +30,16 @@ jobs:
         node-version: [12.x]
 
     steps:
+      # 评论正在发布
+      - name: Update status for current issue
+        uses: actions/github-script@v4
+        script:
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🤖 Pre-Release version is publishing ...`
+          })
       - name: Checkout
         uses: actions/checkout@v2
 
