@@ -48,12 +48,12 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `🤖 Pre-Release version is publishing ...`
-          });
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 Pre-Release version is publishing ...`
+            });
 
       - name: Checkout
         uses: actions/checkout@v2
