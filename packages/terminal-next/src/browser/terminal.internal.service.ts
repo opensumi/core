@@ -117,6 +117,9 @@ export class TerminalInternalService implements ITerminalInternalService {
   async getDefaultSystemShell(): Promise<string> {
     return await this.service.getDefaultSystemShell();
   }
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return await this.service.getCodePlatformKey();
+  }
   async attachByLaunchConfig(
     sessionId: string,
     cols: number,

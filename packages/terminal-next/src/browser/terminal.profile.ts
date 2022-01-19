@@ -64,6 +64,12 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     return this._availableProfiles || [];
   }
 
+  getDefaultProfileName(): string | undefined {
+    return this.preferenceService.get<string>(
+      `${CodeTerminalSettingPrefix.DefaultProfile}${this.terminalService.getCodePlatformKey()}`,
+    );
+  }
+
   @throttle(2000)
   refreshAvailableProfiles(): void {
     this._refreshAvailableProfilesNow();
@@ -104,17 +110,16 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
     await this.profilesReady;
-    let profile = await this._resolveRealDefaultProfile();
+    let profile = await this.resolveRealDefaultProfile();
     if (!profile) {
       profile = await this._resolvedFallbackDefaultProfile(options);
     }
     return profile;
   }
 
-  private async _resolveRealDefaultProfile() {
-    const defaultProfileName = this.preferenceService.get<string>(
-      `${CodeTerminalSettingPrefix.DefaultProfile}${this.terminalService.getCodePlatformKey()}`,
-    );
+  async resolveRealDefaultProfile() {
+    await this.profilesReady;
+    const defaultProfileName = this.getDefaultProfileName();
     if (!defaultProfileName) {
       return undefined;
     }

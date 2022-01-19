@@ -197,8 +197,7 @@ export class PtyService extends Disposable {
 
     (ptyProcess as IPtyProcess).bin = options.executable as string;
     (ptyProcess as IPtyProcess).launchConfig = options;
-    const match = (options.executable as string).match(/[\w|.]+$/);
-    (ptyProcess as IPtyProcess).parsedName = match ? match[0] : 'sh';
+    (ptyProcess as IPtyProcess).parsedName = path.basename(options.executable as string);
 
     this._sendProcessId(ptyProcess.pid);
 

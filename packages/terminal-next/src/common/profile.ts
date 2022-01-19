@@ -2,7 +2,6 @@ import { IDisposable, Event, URI } from '@opensumi/ide-core-common';
 import { ITerminalEnvironment, ITerminalProfileProvider } from '..';
 import type vscode from 'vscode';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { CodeTerminalSettingId } from './preference';
 
 export interface IResolveDefaultProfileOptions {
   os?: OperatingSystem;
@@ -11,6 +10,7 @@ export interface IResolveDefaultProfileOptions {
 export const ITerminalProfileService = Symbol('ITerminalProfileService');
 export interface ITerminalProfileService {
   readonly availableProfiles: ITerminalProfile[];
+  getDefaultProfileName(): string | undefined;
   // readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
   refreshAvailableProfiles(): void;
@@ -24,6 +24,7 @@ export interface ITerminalProfileService {
     profileProvider: ITerminalProfileProvider,
   ): IDisposable;
   resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined>;
+  resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined>;
 }
 
 export interface ITerminalProfile {
