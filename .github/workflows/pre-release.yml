@@ -45,7 +45,9 @@ jobs:
       # 评论正在发布
       - name: Update status for current issue
         uses: actions/github-script@v4
-        script: |
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
           github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
