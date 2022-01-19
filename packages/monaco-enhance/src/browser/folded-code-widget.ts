@@ -6,6 +6,7 @@ import { ZoneWidget } from './zone-widget';
 import { IFoldedCodeWidgetContentProvider } from '../common';
 
 export class FoldedCodeWidget extends ZoneWidget {
+  protected _fillContainer(container: HTMLElement): void {}
   protected applyClass() {}
 
   protected applyStyle() {}
