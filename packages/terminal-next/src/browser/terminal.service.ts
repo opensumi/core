@@ -3,7 +3,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { isElectronEnv, Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
-import { CorePreferences, electronEnv } from '@opensumi/ide-core-browser';
+import { CorePreferences, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generateSessionId,
@@ -18,8 +18,11 @@ import {
   TerminalOptions,
   ITerminalProfile,
   IShellLaunchConfig,
+  IUnresolvedTerminalProfile,
+  IDetectProfileOptionsPreference,
 } from '../common';
 import { ShellType, WindowsShellType } from '../common/shell';
+import { CodeTerminalSettingId, CodeTerminalSettingPrefix } from '../common/preference';
 
 export interface EventMessage {
   data: string;
@@ -37,8 +40,8 @@ export class NodePtyTerminalService implements ITerminalService {
   @Autowired(ITerminalServicePath)
   protected readonly serviceClientRPC: ITerminalServiceClient;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
 
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
@@ -105,7 +108,7 @@ export class NodePtyTerminalService implements ITerminalService {
   ) {
     let shellPath = options.shellPath;
     const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
-    const platformKey = await this.getVSCodePlatformKey();
+    const platformKey = await this.getCodePlatformKey();
     const terminalOs = await this.getOs();
     if (!shellPath) {
       // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
@@ -148,7 +151,10 @@ export class NodePtyTerminalService implements ITerminalService {
         shellPath = shellType;
       }
 
-      const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${platformKey}`);
+      const platformSpecificArgs = this.preferenceService.get<string[]>(
+        `${CodeTerminalSettingPrefix.ShellArgs}${platformKey}`,
+        [],
+      );
       shellArgs.push(...platformSpecificArgs);
 
       if (shellType === WindowsShellType['git-bash']) {
@@ -205,13 +211,8 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
-  async getVSCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
-    // follow vscode
-    return (await this.getOs()) === OperatingSystem.Macintosh
-      ? 'osx'
-      : OS === OperatingSystem.Windows
-      ? 'windows'
-      : 'linux';
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return await this.serviceClientRPC.getCodePlatformKey();
   }
 
   disposeById(sessionId: string) {
@@ -258,7 +259,19 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
-    return await this.serviceClientRPC.detectAvailableProfiles(autoDetect);
+    const platformKey = await this.getCodePlatformKey();
+    const terminalPreferences = this.preferenceService.get<IDetectProfileOptionsPreference>(
+      `${CodeTerminalSettingPrefix.Profiles}${platformKey}`,
+      {},
+    );
+    this.logger.log(
+      '🚀 ~ file: terminal.service.ts ~ line 266 ~ NodePtyTerminalService ~ getProfiles ~ terminalPreferences',
+      terminalPreferences,
+    );
+    return await this.serviceClientRPC.detectAvailableProfiles({
+      autoDetect,
+      preference: terminalPreferences,
+    });
   }
 
   async getDefaultSystemShell(): Promise<string> {

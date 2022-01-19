@@ -68,6 +68,7 @@ export interface PreferenceService extends IDisposable {
    * @param resourceUri 资源路径
    * @param overrideIdentifier 一般指语言偏好设置
    */
+  get<T>(preferenceName: string, defaultValue: T, resourceUri?: string, overrideIdentifier?: string): T;
   get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, overrideIdentifier?: string): T | undefined;
 
   /**

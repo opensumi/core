@@ -2,6 +2,7 @@ import { IDisposable, Event, URI } from '@opensumi/ide-core-common';
 import { ITerminalEnvironment, ITerminalProfileProvider } from '..';
 import type vscode from 'vscode';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { CodeTerminalSettingId } from './preference';
 
 export interface IResolveDefaultProfileOptions {
   os?: OperatingSystem;
@@ -87,4 +88,14 @@ export function terminalProfileArgsMatch(
     return true;
   }
   return false;
+}
+
+export interface IDetectProfileOptionsPreference {
+  [key: string]: IUnresolvedTerminalProfile;
+}
+
+export interface IDetectProfileOptions {
+  // 自动检测可用的 profile
+  autoDetect: boolean;
+  preference?: IDetectProfileOptionsPreference;
 }

@@ -12,7 +12,7 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
-import { ITerminalProfile } from '../common/profile';
+import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 
 /**
@@ -155,13 +155,13 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     };
   }
 
-  /**
-   * @param autoDetect 自动检测可用的 profiles
-   */
-  async detectAvailableProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
-    return await this.terminalProfileService.detectAvailableProfiles({
-      autoDetect,
-    });
+  async detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]> {
+    return await this.terminalProfileService.detectAvailableProfiles(options);
+  }
+
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    // follow vscode
+    return this.getOs() === OperatingSystem.Macintosh ? 'osx' : OS === OperatingSystem.Windows ? 'windows' : 'linux';
   }
 
   async getDefaultSystemShell() {

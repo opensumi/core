@@ -10,7 +10,6 @@
 import os from 'os';
 import fs from 'fs';
 
-import { normalize } from '@opensumi/ide-core-common';
 import { IProcessEnvironment, isLinux, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-node';
@@ -38,7 +37,7 @@ export async function getPowershellPaths() {
 
 export const exists = async (p: string) => {
   try {
-    await fs.promises.access(normalize(p));
+    await fs.promises.access(path.normalize(p));
     return p;
   } catch {
     return;
@@ -62,7 +61,7 @@ export function findShellExecutable(candidate: string[]): string | undefined {
   }
 
   for (const p of candidate) {
-    if (fs.existsSync(normalize(p))) {
+    if (fs.existsSync(path.normalize(p))) {
       return p;
     }
     continue;

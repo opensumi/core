@@ -114,6 +114,9 @@ export class TerminalInternalService implements ITerminalInternalService {
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
     return await this.service.getProfiles(autoDetect);
   }
+  async getDefaultSystemShell(): Promise<string> {
+    return await this.service.getDefaultSystemShell();
+  }
   async attachByLaunchConfig(
     sessionId: string,
     cols: number,

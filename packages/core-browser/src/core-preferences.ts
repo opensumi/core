@@ -209,53 +209,6 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%settings.configuration.userBeforeWorkspace%',
     },
-    // 终端
-    'terminal.type': {
-      type: 'string',
-      enum:
-        isElectronRenderer() && isWindows
-          ? ['git-bash', 'powershell', 'cmd', 'default']
-          : ['zsh', 'bash', 'sh', 'default'],
-      default: 'default',
-      description: '%preference.terminal.typeDesc%',
-    },
-    'terminal.fontFamily': {
-      type: 'string',
-    },
-    'terminal.fontSize': {
-      type: 'number',
-      default: 12,
-    },
-    'terminal.fontWeight': {
-      type: 'string',
-      enum: ['normal', 'bold'],
-      default: 400,
-    },
-    'terminal.lineHeight': {
-      type: 'number',
-      default: 1,
-    },
-    'terminal.cursorBlink': {
-      type: 'boolean',
-      default: false,
-    },
-    'terminal.scrollback': {
-      type: 'number',
-      default: 5000,
-    },
-    'terminal.integrated.shellArgs.linux': {
-      type: 'array',
-      default: [],
-      description: '%preference.terminal.integrated.shellArgs.linuxDesc%',
-    },
-    'terminal.integrated.shellArgs.osx': {
-      type: 'array',
-      default: [],
-    },
-    'terminal.integrated.shellArgs.windows': {
-      type: 'array',
-      default: [],
-    },
     'output.maxChannelLine': {
       type: 'number',
       default: 50000,
@@ -330,9 +283,6 @@ export interface CoreConfiguration {
   'files.encoding': string;
   'general.language': string;
   'general.theme': string;
-  'terminal.integrated.shellArgs.linux': string[];
-  'terminal.integrated.shellArgs.osx': string[];
-  'terminal.integrated.shellArgs.windows': string[];
   'view.saveLayoutWithWorkspace': boolean;
 }
 

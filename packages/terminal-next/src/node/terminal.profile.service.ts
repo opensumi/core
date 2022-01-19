@@ -5,7 +5,7 @@
 
 // some code copied and modified from https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/platform/terminal/node/terminalProfiles.ts
 
-import { basename, URI } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { isWindows } from '@opensumi/ide-core-common/lib/platform';
 
 import type vscode from 'vscode';
@@ -19,8 +19,9 @@ import {
 } from '../common/profile';
 import { exists, findExecutable, getPowershellPaths, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { INodeLogger } from '@opensumi/ide-core-node';
-import { ITerminalEnvironment } from '..';
+import { IDetectProfileOptions, ITerminalEnvironment } from '..';
 import { readFile } from 'fs-extra';
+import * as path from '@opensumi/ide-core-common/lib/path';
 
 function applyConfigProfilesToMap(
   configProfiles: { [key: string]: IUnresolvedTerminalProfile } | undefined,
@@ -39,11 +40,6 @@ function applyConfigProfilesToMap(
   }
 }
 
-interface DetectProfileOptions {
-  // 自动检测可用的 profile
-  autoDetect: boolean;
-}
-
 export const ITerminalProfileServiceNode = Symbol('ITerminalProfileServiceNode');
 
 @Injectable()
@@ -52,20 +48,25 @@ export class TerminalProfileServiceNode {
   private logger: INodeLogger;
 
   profileSources: Map<string, IPotentialTerminalProfile> | undefined;
+  private _perferenceProfiles: { [key: string]: IUnresolvedTerminalProfile };
 
   constructor() {}
-  detectAvailableProfiles(options: DetectProfileOptions) {
+  detectAvailableProfiles(options: IDetectProfileOptions) {
+    if (options.preference) {
+      // 说明用户有设置 perference 中的 profile
+      // 目前 Node 端无法获取 browser 层的配置，所以需要前端传进来
+      this._perferenceProfiles = options.preference;
+    }
+
     if (isWindows) {
       return this._detectWindowsProfiles(options);
     }
     return this._detectUnixProfiles(options);
   }
-  // TODO: 从 preference 中加载用户设置的 profile
-  _getPreferenceProfiles() {
-    const profiles = {} as { [key: string]: IUnresolvedTerminalProfile };
-    return profiles;
+  _getPreferenceProfiles(): { [key: string]: IUnresolvedTerminalProfile } {
+    return this._perferenceProfiles || {};
   }
-  async _detectWindowsProfiles(options: DetectProfileOptions) {
+  async _detectWindowsProfiles(options: IDetectProfileOptions) {
     const defaultProfileName = 'windowsDefault';
     const configProfiles = this._getPreferenceProfiles();
     const { autoDetect } = options;
@@ -130,8 +131,6 @@ export class TerminalProfileServiceNode {
       return;
     }
     this.profileSources = new Map();
-
-    this.profileSources = new Map();
     this.profileSources.set('Git Bash', {
       profileName: 'Git Bash',
       paths: WINDOWS_GIT_BASH_PATHS,
@@ -144,7 +143,7 @@ export class TerminalProfileServiceNode {
       // icon: ThemeIcon.asThemeIcon(Codicon.terminalPowershell),
     });
   }
-  async _detectUnixProfiles(options: DetectProfileOptions) {
+  async _detectUnixProfiles(options: IDetectProfileOptions) {
     const defaultProfileName = 'unixDefault';
     const { autoDetect } = options;
     const configProfiles = this._getPreferenceProfiles();
@@ -155,7 +154,7 @@ export class TerminalProfileServiceNode {
       const profiles = contents.split('\n').filter((e) => e.trim().indexOf('#') !== 0 && e.trim().length > 0);
       const counts: Map<string, number> = new Map();
       for (const profile of profiles) {
-        let profileName = basename(profile);
+        let profileName = path.basename(profile);
         let count = counts.get(profileName) || 0;
         count++;
         if (count > 1) {
@@ -182,8 +181,8 @@ export class TerminalProfileServiceNode {
       return Promise.resolve(undefined);
     }
 
-    const path = potentialPaths.shift() as string;
-    if (path === '') {
+    const potentialPath = potentialPaths.shift() as string;
+    if (potentialPath === '') {
       // 如果是空的，则跳过
       return this.validateProfilePaths(
         profileName,
@@ -198,7 +197,7 @@ export class TerminalProfileServiceNode {
 
     const profile: ITerminalProfile = {
       profileName,
-      path,
+      path: potentialPath,
       args,
       env,
       overrideName,
@@ -207,9 +206,9 @@ export class TerminalProfileServiceNode {
     };
 
     // For non-absolute paths, check if it's available on $PATH
-    if (basename(path) === path) {
+    if (path.basename(potentialPath) === potentialPath) {
       // The executable isn't an absolute path, try find it on the PATH
-      const executable = await findExecutable(path, undefined, undefined, undefined);
+      const executable = await findExecutable(potentialPath, undefined, undefined, undefined);
       if (!executable) {
         return this.validateProfilePaths(
           profileName,
@@ -224,7 +223,7 @@ export class TerminalProfileServiceNode {
       return profile;
     }
 
-    const result = await exists(path);
+    const result = await exists(potentialPath);
     if (result) {
       return profile;
     }
