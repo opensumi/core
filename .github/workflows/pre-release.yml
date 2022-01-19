@@ -2,6 +2,7 @@
 name: Next Release Flow
 
 on:
+
   # 在 Pre-Release Issue 评论特定内容后执行
   issue_comment:
     events: [created]
@@ -15,13 +16,16 @@ jobs:
     # issue 评论包含 '/pre-release'
     # issue label 包含 'pre-release'
     if: |
-      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'CONTRIBUTOR') &&
+      github.event_name == 'issue_comment' &&
       (
-        startsWith(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
-        github.event.issue.title == 'OpenSumi Pre-Release' &&
-        startsWith(github.event.comment.body, '/pre-release') &&
-        contains(github.event.issue.labels.*.name, 'pre-release')
-      )
+        github.event.issue.author_association == 'MEMBER' ||
+        github.event.issue.author_association == 'OWNER' ||
+        github.event.issue.author_association == 'CONTRIBUTOR'
+      ) &&
+      startsWith(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
+      contains(github.event.issue.labels.*.name, 'pre-release') &&
+      github.event.issue.title == 'OpenSumi Pre-Release' &&
+      startsWith(github.event.comment.body, '/pre-release')
 
     strategy:
       matrix:
