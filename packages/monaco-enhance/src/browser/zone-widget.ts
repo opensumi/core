@@ -158,6 +158,18 @@ export abstract class ZoneWidget extends Disposable {
     this._container.style.height = `${height}px`;
   }
 
+  protected setCssClass(className: string, classToReplace?: string): void {
+    if (!this._container) {
+      return;
+    }
+
+    if (classToReplace) {
+      this._container.classList.remove(classToReplace);
+    }
+
+    this._container.classList.add(className);
+  }
+
   layout(layoutInfo: monaco.editor.EditorLayoutInfo) {
     this.left = this._getLeft(layoutInfo);
     this.width = this._getWidth(layoutInfo);

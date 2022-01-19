@@ -23,6 +23,7 @@ import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.
 import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { TestDecorationsContribution } from './test-decorations';
+import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
 
 @Injectable()
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
@@ -100,6 +101,9 @@ export class TestingContribution
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => this.injector.get(TestDecorationsContribution, [editor]).contribute(),
+    });
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => this.injector.get(TestOutputPeekContribution, [editor]).contribute(),
     });
   }
 }

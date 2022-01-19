@@ -21,6 +21,8 @@
     "@opensumi/ide-components": "2.13.9",
     "@opensumi/ide-dev-tool": "^1.1.0",
     "@opensumi/ide-editor": "2.13.9",
+    "@opensumi/ide-monaco": "2.13.9",
+    "@opensumi/ide-file-service": "2.13.9",
     "@opensumi/ide-main-layout": "2.13.9"
   }
 }
