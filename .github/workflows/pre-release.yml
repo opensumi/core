@@ -123,11 +123,18 @@ jobs:
               '🎉 Pre-Release version ' +
               process.env.CURRENT_VERSION +
               ' publish successful! You can install prerelease version via `npm install package@' +
-              process.env.CURRENT_VERSION;
+              process.env.CURRENT_VERSION +
+              ' `' +
+              ' [@' +
+              context.payload.comment.user.login +
+              ']' +
+              '(https://github.com/' +
+              context.payload.comment.user.login +
+              ')';
 
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: issueBody
-            })
+            });
