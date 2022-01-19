@@ -16,14 +16,16 @@ import {
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
-import { GoToTestCommand } from '../common/commands';
+import { GoToTestCommand, PeekTestError } from '../common/commands';
 
 import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
 import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { TestDecorationsContribution } from './test-decorations';
-
+import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
+import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 @Injectable()
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
 export class TestingContribution
@@ -40,6 +42,9 @@ export class TestingContribution
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(TestingPeekOpenerServiceToken)
+  private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -95,11 +100,20 @@ export class TestingContribution
       },
       isVisible: () => false,
     });
+
+    commands.registerCommand(PeekTestError, {
+      execute: async (extId: string) => {
+        this.testingPeekOpenerService.open();
+      },
+    });
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => this.injector.get(TestDecorationsContribution, [editor]).contribute(),
+    });
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => this.injector.get(TestOutputPeekContribution, [editor]).contribute(),
     });
   }
 }

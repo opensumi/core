@@ -147,7 +147,17 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $appendTestMessagesInRun(runId: string, taskId: string, testId: string, messages: SerializedTestMessage[]): void {
-    console.log('$appendTestMessagesInRun', runId, taskId, testId, messages);
+    const r = this.resultService.getResult(runId);
+    if (r && r instanceof TestResultImpl) {
+      for (const message of messages) {
+        if (message.location) {
+          message.location.uri = URI.revive(message.location.uri);
+          message.location.range = Range.lift(message.location.range);
+        }
+
+        r.appendMessage(testId, taskId, message);
+      }
+    }
   }
 
   $appendOutputToRun(runId: string, taskId: string, output: string, locationDto?: ILocationDto, testId?: string): void {
