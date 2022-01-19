@@ -67,7 +67,7 @@ export class VSXExtensionService implements IVSXExtensionService {
     }
   }
 
-  async install(extension: VSXExtension): Promise<string | undefined> {
+  async install(extension: VSXExtension): Promise<void> {
     const id = extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
     if (this.tasks.has(id) || !extension.downloadUrl) {
       return;
@@ -81,12 +81,11 @@ export class VSXExtensionService implements IVSXExtensionService {
     });
     this.tasks.set(id, task);
     this.updateStatusBar();
-    task.then((res) => {
+    return task.then((res) => {
       this.tasks.delete(id);
       this.updateStatusBar();
       this.extensionManagementService.postChangedExtension(false, res);
     });
-    return task;
   }
 
   private asExtensionId(extension: VSXExtension) {

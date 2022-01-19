@@ -299,9 +299,11 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
       if (codeWindow.isReloading) {
         codeWindow.isReloading = false;
 
-        // reload 的情况下不需要等待 startNode 执行完
-        // 所以可以同时执行 startNode 和 reload 前端
-        codeWindow.startNode();
+        if (!codeWindow.isRemote) {
+          // reload 的情况下不需要等待 startNode 执行完
+          // 所以可以同时执行 startNode 和 reload 前端
+          codeWindow.startNode();
+        }
         window.webContents.reload();
       } else {
         // 正常关闭窗口的情况下，需要回收子进程，耗时可能会比较长

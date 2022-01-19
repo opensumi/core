@@ -13,7 +13,6 @@ import {
   IWebviewReviver,
 } from './types';
 import {
-  isElectronRenderer,
   getDebugLogger,
   localize,
   URI,
@@ -26,6 +25,7 @@ import {
   StorageProvider,
   IStorage,
   STORAGE_SCHEMA,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
@@ -57,6 +57,9 @@ export class WebviewServiceImpl implements IWebviewService {
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   @Autowired(EditorPreferences)
   protected readonly editorPreferences: EditorPreferences;
@@ -113,7 +116,7 @@ export class WebviewServiceImpl implements IWebviewService {
   }
 
   createPlainWebview(options: IPlainWebviewConstructionOptions = {}): IPlainWebview {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       if (options.preferredImpl && options.preferredImpl === 'iframe') {
         return new IframePlainWebview();
       }
@@ -130,7 +133,7 @@ export class WebviewServiceImpl implements IWebviewService {
 
   createWebview(options?: IWebviewContentOptions): IWebview {
     let webview: IWebview;
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       webview = this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount++).toString(), options]);
     } else {
       webview = this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount++).toString(), options]);
@@ -271,7 +274,7 @@ export class WebviewServiceImpl implements IWebviewService {
     options?: Electron.BrowserWindowConstructorOptions,
     env?: { [key: string]: string },
   ): IPlainWebviewWindow {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       return this.injector.get(ElectronPlainWebviewWindow, [options, env]);
     }
     throw new Error('not supported!');

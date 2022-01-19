@@ -1,9 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { PtyService } from './pty';
-import { IPty } from '../common/pty';
 import { IShellLaunchConfig } from '../common/pty';
 import { ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
+
+// ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
+// 批处理字符最大长度
+const BATCH_MAX_SIZE = 200 * 1024;
+// 批处理延时
+const BATCH_DURATION_MS = 16;
 
 /**
  * terminal service 的具体实现
@@ -27,6 +32,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  private batchedPtyDataMap: Map<string, string> = new Map();
+  private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     this.serviceClientMap.set(clientId, client);
@@ -66,6 +74,15 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
   }
 
+  private flushPtyData(clientId: string, sessionId: string) {
+    const ptyData = this.batchedPtyDataMap.get(sessionId)!;
+    this.batchedPtyDataMap.delete(sessionId);
+    this.batchedPtyDataTimer.delete(sessionId);
+
+    const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+    serviceClient.clientMessage(sessionId, ptyData);
+  }
+
   public async create2(id: string, cols: number, rows: number, options: IShellLaunchConfig) {
     const clientId = id.split('|')[0];
     let terminal: PtyService | undefined;
@@ -74,10 +91,36 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       terminal = this.injector.get(PtyService, [id, options, cols, rows]);
       this.terminalProcessMap.set(id, terminal);
 
-      terminal.onData((data) => {
+      // ref: https://hyper.is/blog
+      // 合并 pty 输出的数据，16ms 后发送给客户端，如
+      // 果在 16ms 内没有收到新的数据，或短时间内数据
+      // 超过 BATCH_MAX_SIZE 限定的长度，则立即发送缓
+      // 存的数据，避免因为输出较多时阻塞 RPC 通信
+      terminal.onData((chunk: string) => {
         if (this.serviceClientMap.has(clientId)) {
-          const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-          serviceClient.clientMessage(id, data);
+          if (!this.batchedPtyDataMap.has(id)) {
+            this.batchedPtyDataMap.set(id, '');
+          }
+
+          this.batchedPtyDataMap.set(id, this.batchedPtyDataMap.get(id) + chunk);
+
+          const ptyData = this.batchedPtyDataMap.get(id) || '';
+
+          if (ptyData?.length + chunk.length >= BATCH_MAX_SIZE) {
+            if (this.batchedPtyDataTimer.has(id)) {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              global.clearTimeout(this.batchedPtyDataTimer.get(id)!);
+              this.batchedPtyDataTimer.delete(id);
+            }
+            this.flushPtyData(clientId, id);
+          }
+
+          if (!this.batchedPtyDataTimer.has(id)) {
+            this.batchedPtyDataTimer.set(
+              id,
+              global.setTimeout(() => this.flushPtyData(clientId, id), BATCH_DURATION_MS),
+            );
+          }
         } else {
           this.logger.warn(`terminal: pty ${clientId} on data not found`);
         }
@@ -105,7 +148,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       if (!this.clientTerminalMap.has(clientId)) {
         this.clientTerminalMap.set(clientId, new Map());
       }
-      this.clientTerminalMap.get(clientId)!.set(id, terminal);
+      this.clientTerminalMap.get(clientId)?.set(id, terminal);
     } catch (error) {
       this.logger.error(`${id} create terminal error: ${error}, options: ${JSON.stringify(options)}`);
       if (this.serviceClientMap.has(clientId)) {

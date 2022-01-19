@@ -9,7 +9,6 @@ import {
   CommandServiceImpl,
   CommandRegistry,
   IElectronMainMenuService,
-  isElectronRenderer,
   ReporterMetadata,
   IReporter,
   IReporterService,
@@ -68,7 +67,7 @@ import {
   ElectronMenuFactory,
 } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
-import { SlotRendererContribution } from '../react-providers';
+import { AppConfig, SlotRendererContribution } from '../react-providers';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
@@ -253,8 +252,9 @@ export function injectInnerProviders(injector: Injector) {
   ];
   injector.addProviders(...providers);
 
+  const appConfig: AppConfig = injector.get(AppConfig);
   // 为electron添加独特的api服务，主要是向electron-main进行调用的服务
-  if (isElectronRenderer()) {
+  if (appConfig.isElectronRenderer) {
     injector.addProviders(
       {
         token: IElectronMainMenuService,

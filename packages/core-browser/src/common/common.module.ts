@@ -6,6 +6,7 @@ import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/o
 import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
 import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
+import { RemoteOpenerConverterContributionClient } from '../remote-opener/converter.contribution';
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {
@@ -16,6 +17,7 @@ export class ClientCommonModule extends BrowserModule {
     OpenerContributionClient,
     AuthenticationContribution,
     HashCalculateContribution,
+    RemoteOpenerConverterContributionClient,
   ];
   backServices = [
     {

@@ -1,15 +1,14 @@
-import * as React from 'react';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
 
 import { InstallState, VSXExtension } from '../../common';
 
-import * as styles from './extension.module.less';
+import styles from './extension.module.less';
 
 interface IExtensionViewProps {
   extension: VSXExtension;
-  onInstall(extension: VSXExtension): Promise<string | undefined>;
+  onInstall(extension: VSXExtension): Promise<void>;
   onClick(extension: VSXExtension, state: InstallState): void;
   installed: boolean;
 }

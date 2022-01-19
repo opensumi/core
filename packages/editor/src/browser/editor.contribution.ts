@@ -17,7 +17,6 @@ import {
   CommandService,
   QuickPickService,
   IEventBus,
-  isElectronRenderer,
   Schemas,
   PreferenceService,
   Disposable,
@@ -32,9 +31,10 @@ import {
   IContextKeyService,
   getLanguageIdFromMonaco,
   QuickPickItem,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
+import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 
@@ -95,6 +95,9 @@ export class EditorContribution
 {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
@@ -200,7 +203,7 @@ export class EditorContribution
   }
 
   onWillStop(app: IClientApp) {
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       return this.onWillStopElectron();
     } else {
       return this.workbenchEditorService.hasDirty() || !this.cacheProvider.isFlushed();
@@ -247,6 +250,10 @@ export class EditorContribution
     return false;
   }
 
+  private isElectronRenderer(): boolean {
+    return this.appConfig.isElectronRenderer;
+  }
+
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SAVE_CURRENT.id,
@@ -254,23 +261,23 @@ export class EditorContribution
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+w' : 'alt+shift+w',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+w' : 'alt+shift+w',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
-      keybinding: isElectronEnv() ? 'alt+cmd+left' : 'ctrlcmd+ctrl+left',
+      keybinding: this.isElectronRenderer() ? 'alt+cmd+left' : 'ctrlcmd+ctrl+left',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEXT.id,
-      keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+ctrl+right',
+      keybinding: this.isElectronRenderer() ? 'alt+cmd+right' : 'ctrlcmd+ctrl+right',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+pageup' : 'alt+pageup',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+pageup' : 'alt+pageup',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEXT.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+pagedown' : 'alt+pagedown',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+pagedown' : 'alt+pagedown',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
@@ -318,21 +325,21 @@ export class EditorContribution
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.REOPEN_CLOSED.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+shift+t' : 'alt+shift+t',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+shift+t' : 'alt+shift+t',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+n' : 'alt+n',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+n' : 'alt+n',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+t' : 'ctrlcmd+o',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+t' : 'ctrlcmd+o',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+alt+t' : 'ctrlcmd+alt+o',
+      keybinding: this.isElectronRenderer() ? 'ctrlcmd+alt+t' : 'ctrlcmd+alt+o',
     });
-    if (isElectronEnv()) {
+    if (this.isElectronRenderer()) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.NEXT.id,
         keybinding: 'ctrl+tab',

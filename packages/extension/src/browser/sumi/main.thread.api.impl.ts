@@ -11,7 +11,7 @@ import { MainThreadIDEWindow } from './main.thread.window';
 
 export function createSumiApiFactory(rpcProtocol: IRPCProtocol, injector: Injector) {
   const disposer = new Disposable();
-  const lifeCycle = injector.get(MainThreadLifeCycle, [rpcProtocol, injector]);
+  const lifeCycle = injector.get(MainThreadLifeCycle, [injector]);
 
   const mainThreadTheme = injector.get(MainThreadTheme, [rpcProtocol, injector]);
   disposer.addDispose(mainThreadTheme);

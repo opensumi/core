@@ -58,8 +58,8 @@ import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
 import { TaskModule } from '@opensumi/ide-task/lib/browser';
 import { customLayoutConfig } from './layout';
-import { DemoModule } from 'modules/demo';
-import { TopbarModule } from 'modules/topbar/browser';
+// import { DemoModule } from 'modules/demo';
+// import { TopbarModule } from 'modules/topbar/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,
@@ -115,7 +115,7 @@ renderApp({
     ...CommonBrowserModules,
     ElectronBasicModule,
     StartupModule,
-    DemoModule,
+    // DemoModule,
     // TopbarModule, // Topbar demo
   ],
   layoutConfig: customLayoutConfig,

@@ -346,6 +346,15 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return options.containerId;
   }
 
+  getViewAccordionService(viewId: string) {
+    const containerId = this.viewToContainerMap.get(viewId);
+    if (!containerId) {
+      return;
+    }
+
+    return this.getAccordionService(containerId);
+  }
+
   collectViewComponent(view: View, containerId: string, props: any = {}, options?: ViewComponentOptions): string {
     this.customViews.set(view.id, view);
     this.viewToContainerMap.set(view.id, containerId);

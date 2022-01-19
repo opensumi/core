@@ -584,6 +584,7 @@ export class FileTreeModelService {
     }
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this._contextMenuFile = undefined;
     }
     this.treeModel?.dispatchChange();
   };

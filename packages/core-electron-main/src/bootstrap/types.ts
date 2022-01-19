@@ -134,6 +134,11 @@ export interface ICodeWindowOptions {
   extensionDir?: string;
   extensionCandidate?: ExtensionCandidate[];
   query?: { [key: string]: string | string[] };
+  /**
+   * 指定当前是否通过 remote 模式连接到远程的 Server 端
+   * 如果为 true，则会在启动时停止启动本地的服务器，并且在启动时会连接到远程的服务器
+   */
+  isRemote?: boolean;
 }
 
 export interface IParsedArgs {

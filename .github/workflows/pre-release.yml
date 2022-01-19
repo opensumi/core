@@ -2,14 +2,22 @@
 name: Next Release Flow
 
 on:
-  # 创建 Pre-Release Issue 后执行
-  issues:
-    types: [opened]
+
   # 在 Pre-Release Issue 评论特定内容后执行
   issue_comment:
     events: [created]
 
 jobs:
+  log:
+    name: echo EVENT_CONTEXT
+    runs-on: ubuntu-latest
+
+    steps:
+      - env:
+          EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
+        run: |
+          echo $EVENT_CONTEXT
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -18,18 +26,35 @@ jobs:
     # issue 评论包含 '/pre-release'
     # issue label 包含 'pre-release'
     if: |
-      ((github.event.issue.author_association == 'MEMBER' || github.event.issue.author_association == 'OWNER') ||
-      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER')) &&
-      ((contains(github.event.issue.body, 'Pre-Release Summary') &&
-        contains(github.event.issue.title,'OpenSumi Pre-Release')) &&
-        startsWith(github.event.comment.body, '/pre-release')) &&
-      contains(github.event.issue.labels.*.name, 'pre-release')
+      github.event_name == 'issue_comment' &&
+      (
+        github.event.issue.author_association == 'MEMBER' ||
+        github.event.issue.author_association == 'OWNER' ||
+        github.event.issue.author_association == 'CONTRIBUTOR'
+      ) &&
+      startsWith(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
+      contains(github.event.issue.labels.*.name, 'pre-release') &&
+      github.event.issue.title == 'OpenSumi Pre-Release' &&
+      startsWith(github.event.comment.body, '/pre-release')
 
     strategy:
       matrix:
         node-version: [12.x]
 
     steps:
+      # 评论正在发布
+      - name: Update status for current issue
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 Pre-Release version is publishing ...`
+            });
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -65,8 +90,8 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 OpenSumi Pre-release ${new Date().toDateString()}`,
-              body: `## ${new Date().toDateString()} Pre-release Summary \r\n ${releasemd}`
+              title: `🤖 OpenSumi Pre-Release ${new Date().toDateString()}`,
+              body: `## ${new Date().toDateString()} Pre-Release Summary \r\n ${releasemd}`
             })
 
       # 发布 next 版本，并在 issue 中回复
@@ -98,11 +123,18 @@ jobs:
               '🎉 Pre-Release version ' +
               process.env.CURRENT_VERSION +
               ' publish successful! You can install prerelease version via `npm install package@' +
-              process.env.CURRENT_VERSION;
+              process.env.CURRENT_VERSION +
+              ' `' +
+              ' [@' +
+              context.payload.comment.user.login +
+              ']' +
+              '(https://github.com/' +
+              context.payload.comment.user.login +
+              ')';
 
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: issueBody
-            })
+            });

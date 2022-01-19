@@ -1,9 +1,9 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { isElectronEnv, Emitter, ILogger, Event } from '@opensumi/ide-core-common';
+import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
-import { CorePreferences, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generateSessionId,
@@ -43,6 +43,9 @@ export class NodePtyTerminalService implements ITerminalService {
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
 
@@ -61,7 +64,9 @@ export class NodePtyTerminalService implements ITerminalService {
   >();
 
   generateSessionId() {
-    if (isElectronEnv()) {
+    // Electron 环境下，未指定 isRemote 时默认使用本地连接
+    // 否则使用 WebSocket 连接
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       return electronEnv.metadata.windowClientId + '|' + generateSessionId();
     } else {
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
@@ -147,7 +152,7 @@ export class NodePtyTerminalService implements ITerminalService {
       }
 
       // if we still can not find the shell path, we use shellType as the target shell path
-      if (!shellPath) {
+      if (!shellPath && shellType !== 'default') {
         shellPath = shellType;
       }
 

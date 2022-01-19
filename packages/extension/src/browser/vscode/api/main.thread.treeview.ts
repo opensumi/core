@@ -17,8 +17,9 @@ import {
   URI,
   IContextKeyService,
   CancellationTokenSource,
+  WithEventBus,
 } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
@@ -32,9 +33,10 @@ import {
   MenuNode,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 @Injectable({ multiple: true })
-export class MainThreadTreeView implements IMainThreadTreeView {
+export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeView {
   static TREE_VIEW_COLLAPSE_ALL_COMMAND_ID = 'TREE_VIEW_COLLAPSE_ALL';
 
   private readonly proxy: IExtHostTreeView;
@@ -53,6 +55,9 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   @Autowired(IThemeService)
   private readonly themeService: IThemeService;
+
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
@@ -77,6 +82,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   private disposable: DisposableStore = new DisposableStore();
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+    super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
     this._registerInternalCommands();
@@ -85,6 +91,17 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         this.userhome = new URI(home.uri);
       }
     });
+
+    this.addDispose(
+      this.eventBus.on(ViewCollapseChangedEvent, (e) => {
+        if (e.payload.viewId && this.treeModels.has(e.payload.viewId) && !e.payload.collapsed) {
+          const treeModel = this.treeModels.get(e.payload.viewId);
+          if (treeModel) {
+            this.progressService.withProgress({ location: e.payload.viewId }, () => treeModel.refresh());
+          }
+        }
+      }),
+    );
   }
 
   dispose() {
@@ -323,6 +340,7 @@ export class TreeViewDataProvider extends Tree {
     const icon = await this.toIconClass(item);
     const actions = this.getInlineMenuNodes(item.contextValue || '');
     const { label, description } = this.getLabelAndDescription(item);
+
     const node = new ExtensionCompositeTreeNode(
       this,
       parent,

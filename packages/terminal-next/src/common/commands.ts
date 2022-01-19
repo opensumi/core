@@ -45,13 +45,13 @@ export namespace TERMINAL_COMMANDS {
 
   export const CLEAR_CONTENT = {
     id: 'terminal.clearContent',
-    label: '%terminal.menu.clearCurrentGroup%',
+    label: '%terminal.menu.clearCurrentContent%',
     category: CATEGORY,
   };
 
   export const CLEAR_ALL_CONTENT = {
     id: 'terminal.clearAllContent',
-    label: '%terminal.menu.clearAllGroups%',
+    label: '%terminal.menu.clearAllContents%',
   };
 
   export const TAB_RENAME = {
@@ -60,6 +60,7 @@ export namespace TERMINAL_COMMANDS {
 
   export const SELECT_ALL_CONTENT = {
     id: 'terminal.selectAllContent',
+    label: '%terminal.menu.selectAllContent%',
   };
 
   export const MORE_SETTINGS = {
@@ -98,14 +99,18 @@ export namespace TERMINAL_COMMANDS {
 
   export const COPY = {
     id: 'terminal.copy',
+    label: '%edit.copy%',
   };
 
   export const PASTE = {
     id: 'terminal.paste',
+    label: '%edit.paste%',
   };
 
   export const SELECT_ALL = {
     id: 'terminal.selectAll',
+    label: '%terminal.menu.selectCurrentContent%',
+    category: CATEGORY,
   };
 
   export const RE_LAUNCH = {

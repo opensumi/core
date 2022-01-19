@@ -1,6 +1,11 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandService, isWindows, isElectronRenderer } from '@opensumi/ide-core-common';
-import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
+import {
+  MenuContribution,
+  IMenuRegistry,
+  getTabbarCommonMenuId,
+  MenuId as CoreMenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   localize,
   PreferenceService,
@@ -76,6 +81,27 @@ export class TerminalMenuContribution implements MenuContribution {
     });
     /** end */
 
+    /** 终端面板右键菜单 */
+    menuRegistry.registerMenuItem(CoreMenuId.TerminalInstanceContext, {
+      command: TERMINAL_COMMANDS.COPY,
+      group: '1_modify',
+    });
+
+    menuRegistry.registerMenuItem(CoreMenuId.TerminalInstanceContext, {
+      command: TERMINAL_COMMANDS.PASTE,
+      group: '1_modify',
+    });
+
+    menuRegistry.registerMenuItem(CoreMenuId.TerminalInstanceContext, {
+      command: TERMINAL_COMMANDS.SELECT_ALL,
+      group: '1_modify',
+    });
+
+    menuRegistry.registerMenuItem(CoreMenuId.TerminalInstanceContext, {
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT,
+      group: '1_modify',
+    });
+
     const location = getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig);
     const tabbarCtxKey = getTabbarCtxKey(location);
     const commonMenuId = getTabbarCommonMenuId(location);
@@ -103,7 +129,7 @@ export class TerminalMenuContribution implements MenuContribution {
       when,
     });
 
-    if (isElectronRenderer() && isWindows) {
+    if (this.config.isElectronRenderer && isWindows) {
       menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,

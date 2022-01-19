@@ -39,6 +39,9 @@ import {
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
+import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
+import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -97,6 +100,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private ctxMenuRenderer: ICtxMenuRenderer;
 
   private terminalContextKey: TerminalContextKey;
 
@@ -389,6 +398,19 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   blur() {
     this._focus = false;
     this.terminalContextKey.isTerminalFocused.set(false);
+  }
+
+  onContextMenu(e: React.MouseEvent<HTMLElement>): void {
+    e.preventDefault();
+    const menus = this.menuService.createMenu(MenuId.TerminalInstanceContext);
+    const menuNodes = generateCtxMenu({ menus });
+    this.ctxMenuRenderer.show({
+      menuNodes: menuNodes[1],
+      anchor: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+    });
   }
 
   toJSON() {

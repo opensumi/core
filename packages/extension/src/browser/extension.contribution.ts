@@ -17,13 +17,13 @@ import {
   IContextKeyService,
   IEventBus,
   IPreferenceSettingsService,
-  isElectronEnv,
   localize,
   QuickOpenItem,
   QuickOpenService,
   replaceLocalizePlaceholder,
   URI,
   ILogger,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -59,7 +59,11 @@ import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from 
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
-  if (isElectronEnv()) {
+  const appConfig: AppConfig = injector.get(AppConfig);
+
+  // Electron 环境下，未指定 isRemote 时默认使用本地连接
+  // 否则使用 WebSocket 连接
+  if (appConfig.isElectronRenderer && !appConfig.isRemote) {
     clientId = electronEnv.metadata.windowClientId;
   } else {
     const channelHandler = injector.get(WSChannelHandler);

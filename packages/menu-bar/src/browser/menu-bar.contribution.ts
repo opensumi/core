@@ -1,12 +1,16 @@
+import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 
 import { MenuBarMixToolbarAction } from './menu-bar.view';
 import { ToolbarAction } from './toolbar-action.view';
-import { ToolBarActionContribution, isElectronEnv, IToolbarRegistry } from '@opensumi/ide-core-browser';
+import { ToolBarActionContribution, AppConfig, IToolbarRegistry } from '@opensumi/ide-core-browser';
 
 @Domain(ComponentContribution, ToolBarActionContribution)
 export class MenuBarContribution implements ComponentContribution, ToolBarActionContribution {
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register(
       '@opensumi/ide-menu-bar',
@@ -19,7 +23,7 @@ export class MenuBarContribution implements ComponentContribution, ToolBarAction
       },
     );
 
-    if (!isElectronEnv()) {
+    if (!this.appConfig.isElectronRenderer) {
       registry.register('@opensumi/ide-toolbar-action', {
         id: 'ide-toolbar-action',
         component: ToolbarAction,
@@ -28,7 +32,7 @@ export class MenuBarContribution implements ComponentContribution, ToolBarAction
   }
 
   registerToolbarActions(registry: IToolbarRegistry) {
-    if (!isElectronEnv()) {
+    if (!this.appConfig.isElectronRenderer) {
       registry.addLocation('menu-right');
       registry.addLocation('menu-left');
     }

@@ -1,0 +1,30 @@
+{
+  "name": "@opensumi/remote-cli",
+  "version": "1.0.0",
+  "files": [
+    "lib"
+  ],
+  "preview": true,
+  "license": "MIT",
+  "main": "lib/index.js",
+  "private": true,
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "webpack --config=webpack.config.js --progress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:opensumi/core.git"
+  },
+  "dependencies": {
+    "commander": "^8.1.0",
+    "got": "^11.8.2",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.1",
+    "ts-loader": "^6.0.1"
+  }
+}

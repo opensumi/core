@@ -18,7 +18,6 @@ import {
   PreferenceService,
   formatLocalize,
   OS,
-  isElectronRenderer,
   WORKSPACE_COMMANDS,
   AppConfig,
 } from '@opensumi/ide-core-browser';
@@ -586,8 +585,7 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () =>
-        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
@@ -601,8 +599,7 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () =>
-        !!this.fileTreeModelService.contextMenuFile || this.fileTreeModelService.selectedFiles.length > 0,
+      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
@@ -626,7 +623,7 @@ export class FileTreeContribution
         this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
     });
 
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer) {
       commands.registerCommand(FILE_COMMANDS.VSCODE_OPEN_FOLDER, {
         execute: (uri?: URI, arg?: boolean | { forceNewWindow?: boolean }) => {
           const windowService: IWindowService = this.injector.get(IWindowService);

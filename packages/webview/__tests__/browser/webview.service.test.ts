@@ -1,15 +1,17 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IThemeService, ITheme } from '@opensumi/ide-theme';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { Disposable } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+
 import { IWebviewService } from '../../src/browser';
 import { WebviewServiceImpl } from '../../src/browser/webview.service';
-import { IThemeService, ITheme } from '@opensumi/ide-theme';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { Disposable } from '@opensumi/ide-core-common';
-import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-const injector = createBrowserInjector([]);
-
-injector.addProviders(
+let injector: MockInjector;
+const providers = [
   {
     token: IWebviewService,
     useClass: WebviewServiceImpl,
@@ -49,11 +51,16 @@ injector.addProviders(
     token: EditorPreferences,
     useValue: {},
   },
-);
+];
 
 mockIframeAndElectronWebview();
 
 describe('web platform webview service test suite', () => {
+  beforeAll(() => {
+    injector = createBrowserInjector([]);
+    injector.addProviders(...providers);
+  });
+
   it('should be able to create iframe webview', async (done) => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createWebview();
@@ -97,7 +104,9 @@ describe('web platform webview service test suite', () => {
 
 describe('electron platform webview service test suite', () => {
   beforeAll(() => {
-    (global as any).isElectronRenderer = true;
+    global.isElectronRenderer = true;
+    injector = createBrowserInjector([]);
+    injector.addProviders(...providers);
   });
 
   it('should be able to create electron webview', async (done) => {
@@ -136,7 +145,7 @@ describe('electron platform webview service test suite', () => {
 
   afterAll(() => {
     beforeAll(() => {
-      delete (global as any).isElectronRenderer;
+      global.isElectronRenderer = false;
     });
   });
 });
@@ -161,4 +170,12 @@ function mockIframeAndElectronWebview() {
     }
     return element;
   };
+}
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      isElectronRenderer: boolean;
+    }
+  }
 }

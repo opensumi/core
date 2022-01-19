@@ -3,7 +3,9 @@ console.time('Render');
 import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/components';
+import { generate } from 'shortid';
 
+const CLIENT_ID = 'W_' + generate();
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
   opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
@@ -19,7 +21,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';
   opts.layoutComponent = ToolbarActionBasedLayout;
-
+  opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
     // tslint:disable no-console
     console.timeEnd('Render');
