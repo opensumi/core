@@ -261,6 +261,10 @@ export class NodePtyTerminalService implements ITerminalService {
     return await this.serviceClientRPC.detectAvailableProfiles(autoDetect);
   }
 
+  async getDefaultSystemShell(): Promise<string> {
+    return await this.serviceClientRPC.getDefaultSystemShell();
+  }
+
   dispose() {
     this._onDataDispatcher.dispose();
     this._onExitDispatcher.dispose();

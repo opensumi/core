@@ -10,7 +10,7 @@ import {
 import { IPty } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
-import { findExecutable, findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 import { ITerminalProfile } from '../common/profile';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
@@ -159,9 +159,13 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
    * @param autoDetect 自动检测可用的 profiles
    */
   async detectAvailableProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
-    return this.terminalProfileService.detectAvailableProfiles({
+    return await this.terminalProfileService.detectAvailableProfiles({
       autoDetect,
     });
+  }
+
+  async getDefaultSystemShell() {
+    return await getSystemShell();
   }
 
   onMessage(id: string, msg: string): void {

@@ -18,6 +18,10 @@ import {
   terminalProfileArgsMatch,
 } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import * as path from '@opensumi/ide-core-common/lib/path';
+
+const generatedProfileName = 'Generated Profile';
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
@@ -95,8 +99,32 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
     await this.profilesReady;
-    // const os: OperatingSystem = options.os || (await this.terminalService.getOs());
-    return this._availableProfiles?.[0];
+    let profile = this._availableProfiles?.[0];
+    if (!profile) {
+      profile = await this._resolvedFallbackDefaultProfile(options);
+    }
+    return profile;
+  }
+
+  private async _resolvedFallbackDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile> {
+    const executable = await this.terminalService.getDefaultSystemShell();
+    // Finally fallback to a generated profile
+    let args: string | string[] | undefined;
+    const os = options?.os ?? (await this.terminalService.getOs());
+    if (os === OperatingSystem.Macintosh && path.parse(executable).name.match(/(zsh|bash)/)) {
+      // macOS should launch a login shell by default
+      args = ['--login'];
+    } else {
+      // Resolve undefined to []
+      args = [];
+    }
+
+    return {
+      profileName: generatedProfileName,
+      path: executable,
+      args,
+      isDefault: false,
+    };
   }
 }
 

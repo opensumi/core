@@ -7,7 +7,6 @@
 
 import { basename, URI } from '@opensumi/ide-core-common';
 import { isWindows } from '@opensumi/ide-core-common/lib/platform';
-import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 
 import type vscode from 'vscode';
 
@@ -51,9 +50,6 @@ export const ITerminalProfileServiceNode = Symbol('ITerminalProfileServiceNode')
 export class TerminalProfileServiceNode {
   @Autowired(INodeLogger)
   private logger: INodeLogger;
-
-  @Autowired(IVariableResolverService)
-  private variableResolver: IVariableResolverService;
 
   profileSources: Map<string, IPotentialTerminalProfile> | undefined;
 
