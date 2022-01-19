@@ -41,8 +41,6 @@
       "@opensumi/ide-file-search/lib/*": ["../packages/file-search/src/*"],
       "@opensumi/ide-search": ["../packages/search/src/index.ts"],
       "@opensumi/ide-search/lib/*": ["../packages/search/src/*"],
-      "@opensumi/ide-language-server": ["../packages/language-server/src/index.ts"],
-      "@opensumi/ide-language-server/lib/*": ["../packages/language-server/src/*"],
       "@opensumi/ide-file-scheme": ["../packages/file-scheme/src/index.ts"],
       "@opensumi/ide-file-scheme/lib/*": ["../packages/file-scheme/src/*"],
       "@opensumi/ide-output": ["../packages/output/src/index.ts"],

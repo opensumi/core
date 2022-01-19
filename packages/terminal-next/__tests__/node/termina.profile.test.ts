@@ -1,22 +1,11 @@
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
 import { TerminalProfileServiceNode } from '../../src/node/terminal.profile.service';
-import { IPtyProcess } from '../../src/common/pty';
-import os from 'os';
 
 describe('TerminalServiceClientImpl', () => {
   let injector: Injector;
   let terminalProfileService: TerminalProfileServiceNode;
-  const mockClientId = 'a';
-  let shellPath = '';
-
-  if (os.platform() === 'win32') {
-    shellPath = 'powershell';
-  } else if (os.platform() === 'linux' || os.platform() === 'darwin') {
-    shellPath = 'sh';
-  }
 
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
@@ -28,7 +17,7 @@ describe('TerminalServiceClientImpl', () => {
       autoDetect: false,
     });
 
-    expect(ps.length === 0);
+    expect(ps).toHaveLength(0);
   });
 
   it('can parse preference configs', async () => {
@@ -42,15 +31,15 @@ describe('TerminalServiceClientImpl', () => {
       },
     });
 
-    expect(ps.length === 1);
-    expect(ps[0].profileName === 'bash');
-    expect(ps[0].args === ['-l']);
+    expect(ps).toHaveLength(1);
+    expect(ps[0].profileName).toEqual('bash');
+    expect(ps[0].args).toEqual(['-l']);
   });
   it('can resolve autoDetect profiles', async () => {
     const ps = await terminalProfileService.detectAvailableProfiles({
       autoDetect: true,
     });
 
-    expect(ps.length > 0);
+    expect(ps.length).toBeGreaterThan(0);
   });
 });
