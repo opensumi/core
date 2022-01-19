@@ -16,16 +16,15 @@ jobs:
         (github.event.issue.title == 'OpenSumi Release' && contains(github.event.issue.labels.*.name, 'release'))
       )
 
-    - env:
-        EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
-      run: |
-        echo $EVENT_CONTEXT
-
     strategy:
       matrix:
         node-version: [12.x]
 
     steps:
+      - env:
+          EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
+        run: |
+          echo $EVENT_CONTEXT
       # 关闭未授权的版本发布流程
       - name: Close the unauthorized version release process
         uses: actions/github-script@v4
