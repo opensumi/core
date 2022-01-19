@@ -32,10 +32,10 @@ jobs:
         github.event.issue.author_association == 'OWNER' ||
         github.event.issue.author_association == 'CONTRIBUTOR'
       ) &&
-      startsWith(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
+      contains(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
       contains(github.event.issue.labels.*.name, 'pre-release') &&
-      github.event.issue.title == 'OpenSumi Pre-Release' &&
-      startsWith(github.event.comment.body, '/pre-release')
+      contains(github.event.issue.title, 'OpenSumi Pre-Release') &&
+      contains(github.event.comment.body, '/pre-release')
 
     strategy:
       matrix:
