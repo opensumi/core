@@ -10,7 +10,7 @@ jobs:
     name: check issue
     runs-on: ubuntu-latest
     if: |
-      (github.event.issue.author_association != 'MEMBER' || github.event.issue.author_association != 'OWNER') &&
+      (github.event.issue.author_association != 'MEMBER' && github.event.issue.author_association != 'OWNER') &&
       (
         (github.event.issue.title == 'OpenSumi Pre-Release' && contains(github.event.issue.labels.*.name, 'pre-release')) ||
         (github.event.issue.title == 'OpenSumi Release' && contains(github.event.issue.labels.*.name, 'release'))
