@@ -275,5 +275,32 @@ export const terminalPreferenceSchema: PreferenceSchema = {
         },
       },
     },
+    [CodeTerminalSettingId.DefaultProfileLinux]: {
+      restricted: true,
+      markdownDescription: localize(
+        'terminal.integrated.defaultProfile.linux',
+        'The default profile used on Linux. This setting will currently be ignored if either {0} or {1} are set.',
+      ),
+      type: ['string', 'null'],
+      default: null,
+    },
+    [CodeTerminalSettingId.DefaultProfileMacOs]: {
+      restricted: true,
+      markdownDescription: localize(
+        'terminal.integrated.defaultProfile.osx',
+        'The default profile used on macOS. This setting will currently be ignored if either {0} or {1} are set.',
+      ),
+      type: ['string', 'null'],
+      default: null,
+    },
+    [CodeTerminalSettingId.DefaultProfileWindows]: {
+      restricted: true,
+      markdownDescription: localize(
+        'terminal.integrated.defaultProfile.windows',
+        'The default profile used on Windows. This setting will currently be ignored if either {0} or {1} are set.',
+      ),
+      type: ['string', 'null'],
+      default: null,
+    },
   },
 };

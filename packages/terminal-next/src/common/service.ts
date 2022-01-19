@@ -96,6 +96,7 @@ export interface ITerminalService {
   getOs(): Promise<OperatingSystem>;
   getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(): Promise<string>;
+  getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

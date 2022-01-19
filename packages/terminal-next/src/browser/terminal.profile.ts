@@ -20,6 +20,8 @@ import {
 import { Injectable, Autowired } from '@opensumi/di';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import * as path from '@opensumi/ide-core-common/lib/path';
+import { CodeTerminalSettingPrefix } from '../common/preference';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 
 const generatedProfileName = 'Generated Profile';
 
@@ -32,6 +34,9 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   private _profilesReadyBarrier: AutoOpenBarrier;
 
@@ -99,11 +104,21 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
     await this.profilesReady;
-    let profile = this._availableProfiles?.[0];
+    let profile = await this._resolveRealDefaultProfile();
     if (!profile) {
       profile = await this._resolvedFallbackDefaultProfile(options);
     }
     return profile;
+  }
+
+  private async _resolveRealDefaultProfile() {
+    const defaultProfileName = this.preferenceService.get<string>(
+      `${CodeTerminalSettingPrefix.DefaultProfile}${this.terminalService.getCodePlatformKey()}`,
+    );
+    if (!defaultProfileName) {
+      return undefined;
+    }
+    return this.availableProfiles.find((v) => v.profileName === defaultProfileName);
   }
 
   private async _resolvedFallbackDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile> {
