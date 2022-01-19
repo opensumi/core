@@ -6,7 +6,14 @@ on:
     types: [opened]
 
 jobs:
-  release:
+  log:
+    name: echo EVENT_CONTEXT
+    steps:
+      - env:
+          EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
+        run: |
+          echo $EVENT_CONTEXT
+  check:
     name: check issue
     runs-on: ubuntu-latest
     if: |
@@ -21,10 +28,6 @@ jobs:
         node-version: [12.x]
 
     steps:
-      - env:
-          EVENT_CONTEXT: ${{ toJSON(github.event.issue) }}
-        run: |
-          echo $EVENT_CONTEXT
       # 关闭未授权的版本发布流程
       - name: Close the unauthorized version release process
         uses: actions/github-script@v4
