@@ -60,7 +60,7 @@ export class TerminalApiService implements ITerminalApiService {
   }
 
   async createTerminal(options: vscode.TerminalOptions): Promise<ITerminalExternalClient> {
-    const client = this.controller.createClientWithWidget2({
+    const client = await this.controller.createClientWithWidget2({
       terminalOptions: options,
     });
 

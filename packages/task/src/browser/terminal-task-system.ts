@@ -137,12 +137,12 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     );
   }
 
-  private createTerminal(reuse?: boolean) {
+  private async createTerminal(reuse?: boolean) {
     if (reuse && this.terminalClient) {
       this.terminalClient.updateOptions(this.terminalOptions);
       this.terminalClient.reset();
     } else {
-      this.terminalClient = this.terminalController.createClientWithWidget2({
+      this.terminalClient = await this.terminalController.createClientWithWidget2({
         terminalOptions: this.terminalOptions,
         closeWhenExited: false,
         beforeCreate: (terminalId) => {
@@ -185,7 +185,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   async execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }> {
     this.taskStatus = TaskStatus.PROCESS_READY;
-    this.createTerminal(reuse);
+    await this.createTerminal(reuse);
 
     this.terminalClient?.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;

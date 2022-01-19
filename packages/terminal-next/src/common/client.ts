@@ -170,7 +170,7 @@ export type ITerminalClientFactory2 = (
   widget: IWidget,
   options?: ICreateTerminalOptions,
   disposable?: IDisposable,
-) => ITerminalClient;
+) => Promise<ITerminalClient>;
 
 export interface ITerminalConnection {
   name: string;

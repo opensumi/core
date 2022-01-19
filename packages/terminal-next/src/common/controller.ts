@@ -59,8 +59,8 @@ export interface ITerminalController extends Disposable {
   /**
    * @deprecated 请使用 `createClientWithWidget2` Will removed in 2.14.0
    */
-  createClientWithWidget(options: TerminalOptions): ITerminalClient;
-  createClientWithWidget2(options: ICreateClientWithWidgetOptions): ITerminalClient;
+  createClientWithWidget(options: TerminalOptions): Promise<ITerminalClient>;
+  createClientWithWidget2(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;

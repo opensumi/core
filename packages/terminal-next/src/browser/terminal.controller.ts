@@ -136,29 +136,29 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createClientOrIgnore(widget: IWidget) {
+  private async _createClientOrIgnore(widget: IWidget) {
     if (this._clients.has(widget.id)) {
       return this._clients.get(widget.id)!;
     }
-    return this._createClient(widget);
+    return await this._createClient(widget);
   }
 
-  private _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
+  private async _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
     let client: ITerminalClient;
 
     if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
-      this.logger.log('create client with clientFactory2');
-      client = this.clientFactory2(widget, options);
+      client = await this.clientFactory2(widget, options);
+      this.logger.log('create client with clientFactory2', client);
     } else {
-      this.logger.log('create client with clientFactory');
-      client = this.clientFactory(widget, options);
+      client = await this.clientFactory(widget, options);
+      this.logger.log('create client with clientFactory', client);
     }
     return this.setupClient(widget, client);
   }
 
   setupClient(widget: IWidget, client: ITerminalClient) {
     this._clients.set(client.id, client);
-    this.logger.log(`setup client ${client.id}, ${typeof client}`);
+    this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
@@ -244,7 +244,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId,
         );
-        const client = this.clientFactory(widget, {});
+        const client = await this.clientFactory(widget, {});
         this._clients.set(client.id, client);
 
         if (current === client.id) {
@@ -446,7 +446,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   /**
    * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.14.0
    */
-  createClientWithWidget(options: TerminalOptions) {
+  async createClientWithWidget(options: TerminalOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
@@ -455,14 +455,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       options.beforeCreate(widgetId);
     }
 
-    return this._createClient(widget, options);
+    return await this._createClient(widget, options);
   }
 
   /**
    * @param options
    * @returns
    */
-  createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
+  async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
@@ -471,7 +471,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       options.beforeCreate(widgetId);
     }
 
-    return this._createClient(widget, options.terminalOptions);
+    return await this._createClient(widget, options.terminalOptions);
   }
 
   clearCurrentGroup() {
