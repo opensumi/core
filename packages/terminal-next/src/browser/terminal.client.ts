@@ -226,43 +226,43 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /**
    * @deprecated Please use `init2` instead.
    */
-  async init(widget: IWidget, options: TerminalOptions = {}) {
+  async init(widget: IWidget, options?: TerminalOptions) {
     this._uid = widget.id;
-    const terminalOptions = options || {};
-    this.name = terminalOptions.name || '';
-
-    this._prepare();
-
-    if (options.message) {
-      this.xterm.raw.writeln(options.message);
-    }
-
-    // 可能存在 env 为 undefined 的情况，做一下初始化
-    if (!terminalOptions.env) {
-      terminalOptions.env = {};
-    }
-
-    this.environmentService.mergedCollection?.applyToProcessEnvironment(
-      terminalOptions.env,
-      this.applicationService.backendOS,
-      this.variableResolver.resolve.bind(this.variableResolver),
-    );
-    this._terminalOptions = terminalOptions;
-
-    this.addDispose(
-      this.environmentService.onDidChangeCollections((collection) => {
-        // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-        collection.applyToProcessEnvironment(
-          terminalOptions.env || {},
-          this.applicationService.backendOS,
-          this.variableResolver.resolve.bind(this.variableResolver),
-        );
-      }),
-    );
-
     this.setupWidget(widget);
 
     if (await this._checkWorkspace()) {
+      const terminalOptions = options || {};
+      this.name = terminalOptions.name || '';
+
+      this._prepare();
+
+      if (terminalOptions.message) {
+        this.xterm.raw.writeln(terminalOptions.message);
+      }
+
+      // 可能存在 env 为 undefined 的情况，做一下初始化
+      if (!terminalOptions.env) {
+        terminalOptions.env = {};
+      }
+
+      this.environmentService.mergedCollection?.applyToProcessEnvironment(
+        terminalOptions.env,
+        this.applicationService.backendOS,
+        this.variableResolver.resolve.bind(this.variableResolver),
+      );
+      this._terminalOptions = terminalOptions;
+
+      this.addDispose(
+        this.environmentService.onDidChangeCollections((collection) => {
+          // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+          collection.applyToProcessEnvironment(
+            terminalOptions.env || {},
+            this.applicationService.backendOS,
+            this.variableResolver.resolve.bind(this.variableResolver),
+          );
+        }),
+      );
+
       this._attachXterm();
       this._attachAfterRender();
     }

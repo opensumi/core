@@ -18,11 +18,10 @@ import {
   TerminalOptions,
   ITerminalProfile,
   IShellLaunchConfig,
-  IUnresolvedTerminalProfile,
   IDetectProfileOptionsPreference,
 } from '../common';
 import { ShellType, WindowsShellType } from '../common/shell';
-import { CodeTerminalSettingId, CodeTerminalSettingPrefix } from '../common/preference';
+import { CodeTerminalSettingPrefix } from '../common/preference';
 
 export interface EventMessage {
   data: string;

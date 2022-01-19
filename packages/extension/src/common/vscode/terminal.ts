@@ -14,18 +14,12 @@ import type vscode from 'vscode';
 import { IExtensionDescription } from './extension';
 
 export interface IMainThreadTerminal {
-  $sendText(id: string, text: string, addNewLine?: boolean);
-
-  $show(id: string, preserveFocus?: boolean);
-
-  $hide(id: string);
-
-  $dispose(id: string);
-
-  $getProcessId(id: string);
-
+  $sendText(id: string, text: string, addNewLine?: boolean): void;
+  $show(id: string, preserveFocus?: boolean): void;
+  $hide(id: string): void;
+  $dispose(id: string): void;
+  $getProcessId(id: string): Promise<number | undefined>;
   $createTerminal(options: vscode.TerminalOptions): Promise<string | void>;
-
   $startLinkProvider(): void;
   $stopLinkProvider(): void;
 

@@ -32,9 +32,6 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   @Autowired(ITerminalService)
   private terminalService: ITerminalService;
 
-  @Autowired(ILogger)
-  private logger: ILogger;
-
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
