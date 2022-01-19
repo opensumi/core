@@ -10,8 +10,10 @@ import { TestResultServiceImpl } from './test.result.service';
 import { TestServiceImpl } from './test.service';
 import { TestingContribution } from './testing.contribution';
 import { TestServiceToken } from '../common';
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 
 import './icons/icons.less';
+import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 @Injectable()
 export class TestingModule extends BrowserModule {
   providers: Provider[] = [
@@ -31,6 +33,10 @@ export class TestingModule extends BrowserModule {
     {
       token: TestResultServiceToken,
       useClass: TestResultServiceImpl,
+    },
+    {
+      token: TestingPeekOpenerServiceToken,
+      useClass: TestingPeekOpenerServiceImpl,
     },
   ];
 }

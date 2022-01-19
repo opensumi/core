@@ -16,7 +16,7 @@ import {
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
-import { GoToTestCommand } from '../common/commands';
+import { GoToTestCommand, PeekTestError } from '../common/commands';
 
 import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
@@ -24,6 +24,7 @@ import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { TestDecorationsContribution } from './test-decorations';
 import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
+import { ITestingPeekOpenerService, TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 
 @Injectable()
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
@@ -41,6 +42,9 @@ export class TestingContribution
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(TestingPeekOpenerServiceToken)
+  private readonly testingPeekOpenerService: ITestingPeekOpenerService;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -93,6 +97,13 @@ export class TestingContribution
             focus: true,
           });
         }
+      },
+      isVisible: () => false,
+    });
+
+    commands.registerCommand(PeekTestError, {
+      execute: async (extId: string) => {
+        this.testingPeekOpenerService.open();
       },
       isVisible: () => false,
     });

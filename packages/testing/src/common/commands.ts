@@ -11,3 +11,7 @@ export const GoToTestCommand: Command = {
   label: 'Go To Test',
   iconClass: getExternalIcon('go-to-file'),
 };
+
+export const PeekTestError: Command = {
+  id: 'testing.peek.test.error',
+};
