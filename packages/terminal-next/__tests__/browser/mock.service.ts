@@ -3,7 +3,13 @@ import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@opensumi/ide-core-common';
 import { OS } from '@opensumi/ide-core-common/lib/platform';
 import { Disposable } from '@opensumi/ide-core-browser';
-import { ITerminalService, ITerminalConnection, ITerminalError } from '../../src/common';
+import {
+  ITerminalService,
+  ITerminalConnection,
+  ITerminalError,
+  IShellLaunchConfig,
+  ITerminalProfile,
+} from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
@@ -33,6 +39,39 @@ export class MockSocketService implements ITerminalService {
   constructor() {
     this._socks = new Map();
     this._response = new Map();
+  }
+  async attachByLaunchConfig(
+    sessionId: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<ITerminalConnection | undefined> {
+    const sock = new WebSocket(localhost(getPort()));
+    this._socks.set(sessionId, sock);
+
+    await delay(1000);
+
+    this._handleMethod(sessionId);
+
+    await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols, rows });
+
+    return this._customConnection(sessionId);
+  }
+
+  async getProfiles(_: boolean): Promise<ITerminalProfile[]> {
+    return [
+      {
+        profileName: 'bash',
+        path: '/bin/bash',
+        isDefault: true,
+      },
+    ];
+  }
+  async getDefaultSystemShell(): Promise<string> {
+    return (await this.getProfiles(true))[0].path;
+  }
+  getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return Promise.resolve('osx');
   }
 
   makeId() {
@@ -68,7 +107,7 @@ export class MockSocketService implements ITerminalService {
     });
   }
 
-  private _custommConnection(sessionId: string): ITerminalConnection {
+  private _customConnection(sessionId: string): ITerminalConnection {
     return {
       onData: (handler: (json: any) => void) => {
         this._handleStdoutMessage(sessionId, handler);
@@ -128,16 +167,7 @@ export class MockSocketService implements ITerminalService {
   }
 
   async attach(sessionId: string, term: Terminal) {
-    const sock = new WebSocket(localhost(getPort()));
-    this._socks.set(sessionId, sock);
-
-    await delay(1000);
-
-    this._handleMethod(sessionId);
-
-    await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols: term.cols, rows: term.rows });
-
-    return this._custommConnection(sessionId);
+    return this.attachByLaunchConfig(sessionId, term.cols, term.rows, {});
   }
 
   async sendText(sessionId: string, data: string) {
