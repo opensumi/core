@@ -70,7 +70,7 @@ describe('Terminal Client', () => {
         return target[prop];
       },
     });
-    client = factory(widget, {});
+    client = await factory(widget, {});
     client.addDispose(
       Disposable.create(async () => {
         if (root) {

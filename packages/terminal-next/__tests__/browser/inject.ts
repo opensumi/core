@@ -28,6 +28,8 @@ import {
   ITerminalInternalService,
   ITerminalNetwork,
   ITerminalErrorService,
+  ITerminalProfileService,
+  ITerminalServicePath,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 import {
@@ -44,6 +46,8 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { TerminalProfileService } from '../../lib/browser/terminal.profile';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -147,6 +151,27 @@ export const injector = new Injector([
     token: EnvironmentVariableServiceToken,
     useValue: {
       onDidChangeCollections: () => Disposable.create(() => {}),
+    },
+  },
+  {
+    token: ITerminalProfileService,
+    useClass: TerminalProfileService,
+  },
+  {
+    token: ITerminalServicePath,
+    useValue: {
+      getCodePlatformKey() {
+        return 'osx';
+      },
+      getDefaultSystemShell() {
+        return '/bin/sh';
+      },
+      getOs() {
+        return OperatingSystem.Macintosh;
+      },
+      detectAvailableProfiles() {
+        return [];
+      },
     },
   },
 ]);

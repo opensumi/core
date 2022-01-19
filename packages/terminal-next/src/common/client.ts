@@ -163,7 +163,7 @@ export type ITerminalClientFactory = (
   widget: IWidget,
   options?: TerminalOptions,
   disposable?: IDisposable,
-) => ITerminalClient;
+) => Promise<ITerminalClient>;
 
 export const ITerminalClientFactory2 = Symbol('ITerminalClientFactory2');
 export type ITerminalClientFactory2 = (

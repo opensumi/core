@@ -7,7 +7,6 @@ import {
   Event,
   IDisposable,
   DisposableStore,
-  Disposable,
   ILogger,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

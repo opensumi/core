@@ -710,7 +710,7 @@ export class TerminalClientFactory {
   /**
    * 创建 terminal 实例最终都会调用该方法
    */
-  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
+  static async createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
     // 每一个 widget.id 对应一个 TerminalClient
     // 但是 TerminalClient 内部又依赖了一堆的其他要注入的，所以这里新创建一个 child injector
     // 让 TerminalClient 依赖的所有类都重新初始化一遍
@@ -723,7 +723,7 @@ export class TerminalClientFactory {
     ]);
 
     const client = child.get(TerminalClient);
-    client.init(widget, options);
+    await client.init(widget, options);
     return client;
   }
   /**
@@ -749,18 +749,18 @@ export class TerminalClientFactory {
         // 其实应该是必定能 resolve 到 profile 的
         logger.log('cannot get default profile, use old resolve options');
         // TODO: 没有获取到 profile，是提示用户失败呢？还是按以前的逻辑来
-        client.init(widget, {});
+        await client.init(widget, {});
       } else {
         logger.log('get default profile: ', defaultProfile);
         options = {
           config: defaultProfile,
         };
-        client.init2(widget, options);
+        await client.init2(widget, options);
       }
       return client;
     }
 
-    client.init2(widget, options);
+    await client.init2(widget, options);
     return client;
   }
 }

@@ -34,7 +34,7 @@ import { TerminalTheme } from './terminal.theme';
 import { NodePtyTerminalService } from './terminal.service';
 import { TerminalInternalService } from './terminal.internal.service';
 import { TerminalRestore } from './terminal.restore';
-import { createTerminalClientFactory, createTerminalClientFactory2, TerminalClientFactory } from './terminal.client';
+import { createTerminalClientFactory, createTerminalClientFactory2 } from './terminal.client';
 import { TerminalApiService } from './terminal.api';
 import { TerminalSearchService } from './terminal.search';
 import { TerminalHoverManagerService } from './terminal.hover.manager';
