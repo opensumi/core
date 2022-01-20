@@ -172,6 +172,16 @@ export const injector = new Injector([
       detectAvailableProfiles() {
         return [];
       },
+      create2: (sessionId, cols, rows, launchConfig) => ({
+        pid: 0,
+        name: '123',
+      }),
+      $resolveUnixShellPath(p) {
+        return p;
+      },
+      $resolvePotentialUnixShellPath() {
+        return 'detectedBash';
+      },
     },
   },
 ]);

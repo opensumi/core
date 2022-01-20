@@ -252,8 +252,8 @@ export class MockTerminalThemeService {
 
 /** Mock Preference Service */
 export class MockPreferenceService {
-  get() {
-    return undefined;
+  get(key: string, defaultValue?: any) {
+    return defaultValue;
   }
   onPreferenceChanged() {
     return new Disposable();

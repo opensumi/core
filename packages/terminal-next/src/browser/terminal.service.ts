@@ -159,6 +159,7 @@ export class NodePtyTerminalService implements ITerminalService {
         `${CodeTerminalSettingPrefix.ShellArgs}${platformKey}`,
         [],
       );
+
       shellArgs.push(...platformSpecificArgs);
 
       if (shellType === WindowsShellType['git-bash']) {

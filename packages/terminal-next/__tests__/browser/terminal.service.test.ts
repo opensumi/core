@@ -11,7 +11,7 @@ import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
-import { ITerminalService, ITerminalServicePath } from '../../src/common';
+import { IShellLaunchConfig, ITerminalService, ITerminalServicePath } from '../../src/common';
 import { NodePtyTerminalService } from '../../src/browser/terminal.service';
 
 describe('terminal service test cases', () => {
@@ -29,7 +29,7 @@ describe('terminal service test cases', () => {
   let server: WebSocket.Server;
   let workspaceService: IWorkspaceService;
   let root: URI | null;
-  let launchConfig: any;
+  let launchConfig: IShellLaunchConfig | undefined;
   beforeAll(async () => {
     root = FileUri.create(path.join(os.tmpdir(), 'terminal-service-test'));
 
@@ -69,11 +69,23 @@ describe('terminal service test cases', () => {
       },
     );
 
-    injector.addProviders({
+    injector.overrideProviders({
       token: ITerminalServicePath,
       useValue: {
-        create2: (_, c) => {
-          launchConfig = c;
+        getCodePlatformKey() {
+          return 'osx';
+        },
+        getDefaultSystemShell() {
+          return '/bin/sh';
+        },
+        getOs() {
+          return OperatingSystem.Macintosh;
+        },
+        detectAvailableProfiles() {
+          return [];
+        },
+        create2: (sessionId, cols, rows, _launchConfig) => {
+          launchConfig = _launchConfig;
         },
         $resolveUnixShellPath(p) {
           return p;
@@ -103,44 +115,43 @@ describe('terminal service test cases', () => {
   afterEach(() => {
     launchConfig = undefined;
   });
-
-  it('should be valid launchConfig with a valid shell path and ignore type', async () => {
-    if ((await terminalService.getOs()) !== 1) {
-      await terminalService.attach(
-        sessionId,
-        {} as any,
-        200,
-        200,
-        {
-          shellPath,
-        },
-        'asdasd',
-      );
-      expect(launchConfig.shellPath).toEqual(shellPath);
-    }
-  });
-  it('should be valid launchConfig with empty type or default', async () => {
-    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
-      await terminalService.attach(sessionId, {} as any, 200, 200, {}, '');
-      expect(launchConfig.shellPath).toEqual('detectedBash');
-      await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'default');
-      expect(launchConfig.shellPath).toEqual('detectedBash');
-    }
-  });
-
-  it('should be valid launchConfig with specific type', async () => {
-    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
-      await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'bash');
-      expect(launchConfig.shellPath).toEqual('bash');
-      await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'asdasdasdasd');
-      expect(launchConfig.shellPath).toEqual('asdasdasdasd');
-    }
-  });
-
   it('should be generate a session id', async () => {
-    if ((await terminalService.getOs()) !== OperatingSystem.Windows) {
-      const windowClientId = await terminalService.generateSessionId?.();
-      expect(windowClientId).toMatch(/^test-window-client-id.*/);
-    }
+    const windowClientId = await terminalService.generateSessionId?.();
+    expect(windowClientId).toMatch(/^test-window-client-id.*/);
+  });
+
+  it('[attach] should be valid launchConfig with a valid shell path and ignore type', async () => {
+    await terminalService.attach(
+      sessionId,
+      {} as any,
+      200,
+      200,
+      {
+        shellPath,
+      },
+      'asdasd',
+    );
+    expect(launchConfig?.executable).toEqual(shellPath);
+  });
+  it('[attach] should be valid launchConfig with empty type or default', async () => {
+    await terminalService.attach(sessionId, {} as any, 200, 200, {}, '');
+    expect(launchConfig?.executable).toEqual('detectedBash');
+    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'default');
+    expect(launchConfig?.executable).toEqual('detectedBash');
+  });
+
+  it('[attach] should be valid launchConfig with specific type', async () => {
+    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'bash');
+    expect(launchConfig?.executable).toEqual('bash');
+    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'asdasdasdasd');
+    expect(launchConfig?.executable).toEqual('asdasdasdasd');
+  });
+
+  it('[attachByLaunchConfig] can launch valid config', async () => {
+    const launchConfig: IShellLaunchConfig = {
+      executable: shellPath,
+    };
+    await terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig);
+    expect(launchConfig?.executable).toEqual(shellPath);
   });
 });
