@@ -45,6 +45,9 @@ const diffEditorOptions: IDiffEditorOptions = {
   renderSideBySide: true,
 };
 
+const getMessage = (dto?: TestDto) =>
+  dto ? dto.messages[dto.messageIndex] : { message: '', actual: '', expected: '' };
+
 const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
   const { dto } = props;
   const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
@@ -62,7 +65,8 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
       documentModelService.createModelReference(actualUri),
     ]).then((data) => {
       const [original, modified] = data;
-      // const []
+      const { actual, expected } = getMessage(dto) as ITestErrorMessage;
+
       const diffEditor = editorCollectionService.createDiffEditor(editorRef.current!, {
         ...getSimpleEditorOptions(),
         ...diffEditorOptions,
@@ -71,6 +75,9 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
       const originalModel = original.instance.getMonacoModel();
       const modifiedModel = modified.instance.getMonacoModel();
 
+      originalModel.setValue(expected!);
+      modifiedModel.setValue(actual!);
+
       diffEditor.compare(original, modified);
 
       diffEditor.originalEditor.monacoEditor.setModel(originalModel);
@@ -78,7 +85,7 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
     });
   }, []);
 
-  return <div ref={editorRef} style={{ height: '2000px' }}></div>;
+  return <div ref={editorRef} style={{ height: 'inherit' }}></div>;
 };
 
 export const TestMessageContainer = () => {
@@ -87,8 +94,6 @@ export const TestMessageContainer = () => {
 
   const [type, setType] = useState<EContainerType>();
   const [dto, setDto] = useState<TestDto>();
-
-  const getMessage = (dto?: TestDto) => (dto ? dto.messages[dto.messageIndex] : { message: '' });
 
   useEffect(() => {
     disposer.addDispose(
@@ -111,5 +116,5 @@ export const TestMessageContainer = () => {
     };
   }, []);
 
-  return <div>{type === EContainerType.DIFF ? <DiffContentProvider dto={dto} /> : ''}</div>;
+  return <>{type === EContainerType.DIFF ? <DiffContentProvider dto={dto} /> : ''}</>;
 };

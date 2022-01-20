@@ -43,7 +43,7 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
-    return Promise.resolve('??????????????????????');
+    return Promise.resolve('');
   }
   isReadonly(uri: URI): MaybePromise<boolean> {
     return true;
