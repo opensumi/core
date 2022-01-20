@@ -341,11 +341,17 @@ export class PreferenceContribution
           lines = text.split('\n');
           preferenceLine = lines[numReturns - 1];
         }
-        const regStr = `\\s+\\"${preferenceId.replace('/./g', '\\.')}\\":\\s?\\"`;
+        const regStr = `\\s+\\"${preferenceId.replace(/\./g, '\\.')}\\":\\s?\[\"|{|t|f|\[]`;
         const match = new RegExp(regStr, 'g').exec(preferenceLine);
         if (match) {
-          editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length + 1 });
-          await commandService.executeCommand('editor.action.triggerSuggest');
+          const isStringExpr = match[0].slice(-1) === '"';
+          if (!isStringExpr) {
+            editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length });
+          } else {
+            editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length + 1 });
+            // 只对 String 类型配置展示提示，包括不存在配置项时追加的情况
+            await commandService.executeCommand('editor.action.triggerSuggest');
+          }
         }
       }
     }
