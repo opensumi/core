@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '@opensumi/ide-core-common';
-import { TestResultState, TestRunProfileBitset } from './testCollection';
+import { TestMessageType, TestResultState, TestRunProfileBitset } from './testCollection';
 
 export const enum Testing {
   // marked as "extension" so that any existing test extensions are assigned to it.
@@ -41,10 +41,16 @@ export const testStateNames: { [K in TestResultState]: string } = {
   [TestResultState.Unset]: localize('testState.unset', 'Not yet run'),
 };
 
-export const labelForTestInState = (label: string, state: TestResultState) => 'label then the unit tests state, for example "Addition Tests (Running)"';
+export const labelForTestInState = (label: string, state: TestResultState) =>
+  'label then the unit tests state, for example "Addition Tests (Running)"';
 
 export const testConfigurationGroupNames: { [K in TestRunProfileBitset]: string } = {
   [TestRunProfileBitset.Debug]: localize('testGroup.debug', 'Debug'),
   [TestRunProfileBitset.Run]: localize('testGroup.run', 'Run'),
   [TestRunProfileBitset.Coverage]: localize('testGroup.coverage', 'Coverage'),
+};
+
+export const testMessageSeverityColors = {
+  [TestMessageType.Error]: '#F14C4C',
+  [TestMessageType.Info]: '#33333380', // --> #333333 透明度 0.5 的结果
 };
