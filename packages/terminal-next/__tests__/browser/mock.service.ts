@@ -1,18 +1,21 @@
 import WebSocket from 'ws';
 import { Terminal } from 'xterm';
-import { uuid, URI, Emitter } from '@opensumi/ide-core-common';
+import { uuid, URI, Emitter, IDisposable, PreferenceScope } from '@opensumi/ide-core-common';
 import { OS } from '@opensumi/ide-core-common/lib/platform';
-import { Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import {
   ITerminalService,
   ITerminalConnection,
   ITerminalError,
   IShellLaunchConfig,
   ITerminalProfile,
+  ITerminalProfileService,
+  IResolveDefaultProfileOptions,
+  ITerminalProfileProvider,
 } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
-
+import { PreferenceService } from '@opensumi/ide-core-browser';
 // Ref: https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -251,7 +254,55 @@ export class MockTerminalThemeService {
 /** End */
 
 /** Mock Preference Service */
-export class MockPreferenceService {
+export class MockPreferenceService implements PreferenceService {
+  ready: Promise<void> = Promise.resolve();
+  hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean {
+    return false;
+  }
+  async set(
+    preferenceName: string,
+    value: any,
+    scope?: PreferenceScope,
+    resourceUri?: string,
+    overrideIdentifier?: string,
+  ): Promise<void> {}
+  onPreferencesChanged() {
+    return Disposable.NULL;
+  }
+  onLanguagePreferencesChanged() {
+    return Disposable.NULL;
+  }
+  inspect<T>(
+    preferenceName: string,
+    resourceUri?: string,
+    language?: string,
+  ):
+    | {
+        preferenceName: string;
+        defaultValue: T | undefined;
+        globalValue: T | undefined;
+        workspaceValue: T | undefined;
+        workspaceFolderValue: T | undefined;
+      }
+    | undefined {
+    return;
+  }
+  getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
+    return;
+  }
+  resolve<T>(
+    preferenceName: string,
+    defaultValue?: T,
+    resourceUri?: string,
+    language?: string,
+    untilScope?: PreferenceScope,
+  ): PreferenceResolveResult<T> {
+    throw new Error('Method not implemented.');
+  }
+  onSpecificPreferenceChange() {
+    return Disposable.NULL;
+  }
+  dispose(): void {}
   get(key: string, defaultValue?: any) {
     return defaultValue;
   }
@@ -276,3 +327,39 @@ export class MockErrorService {
   async fix(_sessionId: string) {}
 }
 /** End */
+
+export class MockProfileService implements ITerminalProfileService {
+  availableProfiles: ITerminalProfile[] = [
+    {
+      isDefault: true,
+      path: '/bin/sh',
+      profileName: 'default',
+    },
+  ];
+  getDefaultProfileName(): string | undefined {
+    return 'default';
+  }
+  profilesReady: Promise<void> = Promise.resolve();
+  refreshAvailableProfiles(): void {
+    return;
+  }
+  onDidChangeAvailableProfiles() {
+    return new Disposable();
+  }
+  getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined {
+    return;
+  }
+  registerTerminalProfileProvider(
+    extensionIdentifier: string,
+    id: string,
+    profileProvider: ITerminalProfileProvider,
+  ): IDisposable {
+    return new Disposable();
+  }
+  resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+    return Promise.resolve(this.availableProfiles[0]);
+  }
+  resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
+    return this.resolveDefaultProfile();
+  }
+}

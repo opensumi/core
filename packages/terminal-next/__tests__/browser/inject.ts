@@ -41,6 +41,7 @@ import {
   MockFileService,
   MockEditorService,
   MockErrorService,
+  MockProfileService,
 } from './mock.service';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
@@ -155,7 +156,7 @@ export const injector = new Injector([
   },
   {
     token: ITerminalProfileService,
-    useClass: TerminalProfileService,
+    useValue: new MockProfileService(),
   },
   {
     token: ITerminalServicePath,
