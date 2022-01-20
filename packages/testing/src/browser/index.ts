@@ -14,6 +14,7 @@ import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 
 import './icons/icons.less';
 import './outputPeek/test-peek-widget.less';
+import './theme.less';
 
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 @Injectable()
