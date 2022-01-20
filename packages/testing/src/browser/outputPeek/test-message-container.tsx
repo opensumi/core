@@ -3,14 +3,14 @@ import { Disposable } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
   getSimpleEditorOptions,
+  IDiffEditor,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IDiffEditorOptions, IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
-import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { TestPeekMessageToken } from '../../common';
-import { ITestErrorMessage, ITestMessage } from '../../common/testCollection';
+import { ITestErrorMessage } from '../../common/testCollection';
 import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
@@ -58,6 +58,7 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
     if (!dto) {
       return;
     }
+    let diffEditor: IDiffEditor;
 
     const { expectedUri, actualUri } = dto;
     Promise.all([
@@ -67,7 +68,7 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
       const [original, modified] = data;
       const { actual, expected } = getMessage(dto) as ITestErrorMessage;
 
-      const diffEditor = editorCollectionService.createDiffEditor(editorRef.current!, {
+      diffEditor = editorCollectionService.createDiffEditor(editorRef.current!, {
         ...getSimpleEditorOptions(),
         ...diffEditorOptions,
       });
@@ -83,6 +84,12 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
       diffEditor.originalEditor.monacoEditor.setModel(originalModel);
       diffEditor.modifiedEditor.monacoEditor.setModel(modifiedModel);
     });
+
+    return () => {
+      if (diffEditor) {
+        diffEditor.dispose();
+      }
+    };
   }, []);
 
   return <div ref={editorRef} style={{ height: 'inherit' }}></div>;
