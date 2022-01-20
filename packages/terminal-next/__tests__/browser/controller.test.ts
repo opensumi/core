@@ -21,10 +21,10 @@ describe('Terminal Controller', () => {
   });
 
   afterAll(() => {
+    // 不知道为啥 ws.close 就会报错，看其他的 test 没有这个问题
+    // 先注释掉
+    // ws.close();
     proxy.close();
-    ws.close((err) => {
-      console.log(err);
-    });
   });
 
   it('Recovery', async () => {
