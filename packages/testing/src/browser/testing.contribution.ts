@@ -1,5 +1,12 @@
+import { Emitter } from '@opensumi/ide-core-common';
+import { TEST_DATA_SCHEME } from './../common/testingUri';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  IEditorFeatureRegistry,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelContentProvider,
+} from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
@@ -10,13 +17,15 @@ import {
   ComponentRegistry,
   Domain,
   EDITOR_COMMANDS,
+  Event,
   FileType,
   getIcon,
   localize,
+  MaybePromise,
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
-import { GoToTestCommand, PeekTestError } from '../common/commands';
+import { ClosePeekTest, GoToTestCommand, PeekTestError } from '../common/commands';
 
 import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
@@ -26,6 +35,24 @@ import { TestDecorationsContribution } from './test-decorations';
 import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
 import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
+
+@Injectable()
+export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
+  private _onDidChangeContent = new Emitter<URI>();
+
+  onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
+
+  provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
+    return Promise.resolve('??????????????????????');
+  }
+  isReadonly(uri: URI): MaybePromise<boolean> {
+    return true;
+  }
+  handlesScheme(scheme: string) {
+    return scheme === TEST_DATA_SCHEME;
+  }
+}
+
 @Injectable()
 @Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
 export class TestingContribution
@@ -45,6 +72,9 @@ export class TestingContribution
 
   @Autowired(TestingPeekOpenerServiceToken)
   private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
+
+  @Autowired()
+  private readonly debugConsoleInputDocumentProvider: TestingOutputPeekDocumentProvider;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -105,6 +135,21 @@ export class TestingContribution
       execute: async (extId: string) => {
         this.testingPeekOpenerService.open();
       },
+      isVisible: () => false,
+    });
+
+    commands.registerCommand(ClosePeekTest, {
+      execute: async (uri: string) => {
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.removePeek();
+        }
+      },
+      isVisible: () => false,
     });
   }
 
@@ -115,5 +160,9 @@ export class TestingContribution
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => this.injector.get(TestOutputPeekContribution, [editor]).contribute(),
     });
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.debugConsoleInputDocumentProvider);
   }
 }

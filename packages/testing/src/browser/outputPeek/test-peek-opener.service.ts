@@ -40,7 +40,11 @@ export class TestingPeekOpenerServiceImpl extends Disposable implements ITesting
 
   private lastUri?: TestUriWithDocument;
 
-  private peekControllerMap: Map<string, TestOutputPeekContribution> = new Map();
+  public readonly peekControllerMap: Map<string, TestOutputPeekContribution> = new Map();
+
+  public get currentUri(): URI | undefined {
+    return this.editorService.currentEditor?.currentUri!;
+  }
 
   private async showPeekFromUri(testUri: TestUriWithDocument, options?: ITextEditorOptions) {
     const editor = this.editorService.currentEditor;
@@ -93,6 +97,12 @@ export class TestingPeekOpenerServiceImpl extends Disposable implements ITesting
     return this;
   }
 
+  public delPeekContrib(uri: URI): this {
+    const uriStr = uri.toString();
+    this.peekControllerMap.delete(uriStr);
+    return this;
+  }
+
   public tryPeekFirstError(result: ITestResult, test: TestResultItem, options?: Partial<ITextEditorOptions>): boolean {
     throw new Error('Method not implemented.');
   }
@@ -112,6 +122,8 @@ export class TestingPeekOpenerServiceImpl extends Disposable implements ITesting
   }
 
   public closeAllPeeks(): void {
-    throw new Error('Method not implemented.');
+    for (const ctor of this.peekControllerMap.values()) {
+      ctor.removePeek();
+    }
   }
 }

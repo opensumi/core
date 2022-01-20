@@ -138,6 +138,10 @@ export abstract class ZoneWidget extends Disposable {
 
   hide() {}
 
+  create(): void {
+    this._fillContainer(this._container);
+  }
+
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {
     if (info.minimap && info.minimap.minimapWidth > 0 && info.minimap.minimapLeft === 0) {
       return info.minimap.minimapWidth;
@@ -181,7 +185,6 @@ export abstract class ZoneWidget extends Disposable {
     this._container.style.width = `${this.width}px`;
     this._container.style.left = `${this.left}px`;
 
-    this._fillContainer(this._container);
     this.applyStyle();
   }
 
