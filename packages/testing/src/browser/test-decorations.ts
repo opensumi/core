@@ -1,20 +1,26 @@
+import { Color, RGBA, themeColorFromId } from '@opensumi/ide-theme';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 import { maxPriority } from './../common/testingStates';
-import { labelForTestInState } from './../common/constants';
+import { labelForTestInState, testMessageSeverityColors } from './../common/constants';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { TestResultServiceToken } from './../common/test-result';
+import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { Disposable, IDisposable, IRange, URI } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { TestServiceToken } from '../common';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Event } from '@opensumi/ide-core-browser';
+import { Event, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 import {
   IncrementalTestCollectionItem,
   InternalTestItem,
+  IRichLocation,
+  ITestMessage,
+  TestMessageType,
   TestResultItem,
   TestResultState,
   TestRunProfileBitset,
@@ -28,12 +34,22 @@ import {
   testStatesToIconColors,
 } from './icons/icons';
 import { TestServiceImpl } from './test.service';
+import { removeAnsiEscapeCodes } from '@opensumi/ide-core-common';
+import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import { buildTestUri, TestUriType } from '../common/testingUri';
 
 interface ITestDecoration extends IDisposable {
   id: string;
   readonly editorDecoration: IModelDeltaDecoration;
   click(e: monaco.editor.IEditorMouseEvent): boolean;
 }
+
+const FONT_FAMILY_VAR = '--testMessageDecorationFontFamily';
+
+const hasValidLocation = <T extends { location?: IRichLocation }>(
+  editorUri: URI,
+  t: T,
+): t is T & { location: IRichLocation } => t.location?.uri.toString() === editorUri.toString();
 
 const firstLineRange = (originalRange: IRange) => ({
   startLineNumber: originalRange.startLineNumber,
@@ -253,6 +269,77 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
 }
 
 @Injectable({ multiple: true })
+class TestMessageDecoration implements ITestDecoration {
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
+
+  public id = '';
+
+  public readonly editorDecoration: IModelDeltaDecoration;
+  private readonly decorationId = `testmessage-${uuid()}`;
+  private codeEditorService: MonacoCodeService;
+
+  constructor(
+    public readonly testMessage: ITestMessage,
+    private readonly messageUri: URI | undefined,
+    public readonly location: IRichLocation,
+    private readonly editor: ICodeEditor,
+  ) {
+    this.codeEditorService = this.overrideServicesRegistry.getRegisteredService(
+      ServiceNames.CODE_EDITOR_SERVICE,
+    ) as MonacoCodeService;
+
+    const severity = testMessage.type;
+    const message =
+      typeof testMessage.message === 'string' ? removeAnsiEscapeCodes(testMessage.message) : testMessage.message.value;
+    this.codeEditorService.registerDecorationType(
+      'test-message-decoration',
+      this.decorationId,
+      {
+        after: {
+          contentText: message,
+          color: `${testMessageSeverityColors[severity]}`,
+          fontSize: `${editor.getOption(EditorOption.fontSize)}px`,
+          fontFamily: `var(${FONT_FAMILY_VAR})`,
+          padding: '0px 12px 0px 24px',
+        },
+      },
+      undefined,
+      editor,
+    );
+
+    const options = this.codeEditorService.resolveDecorationOptions(this.decorationId, true);
+    options.hoverMessage = typeof message === 'string' ? new MarkdownString().appendText(message) : message;
+    options.afterContentClassName = `${options.afterContentClassName} testing-inline-message-content`;
+    options.zIndex = 10;
+    options.className = `testing-inline-message-margin testing-inline-message-severity-${severity}`;
+    options.isWholeLine = true;
+    options.stickiness = monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
+    options.collapseOnReplaceEdit = true;
+
+    this.editorDecoration = { range: firstLineRange(location.range), options };
+  }
+
+  click(e: monaco.editor.IEditorMouseEvent): boolean {
+    if (e.event.rightButton) {
+      return false;
+    }
+
+    if (!this.messageUri) {
+      return false;
+    }
+
+    // 这里要实现点击后弹出 output peek widget
+
+    return false;
+  }
+
+  dispose(): void {
+    this.codeEditorService.removeDecorationType(this.decorationId);
+  }
+}
+
+@Injectable({ multiple: true })
 export class TestDecorationsContribution implements IEditorFeatureContribution {
   @Autowired(TestServiceToken)
   private readonly testService: TestServiceImpl;
@@ -268,6 +355,8 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
   }
 
   private readonly disposer: Disposable = new Disposable();
+  private invalidatedMessages = new WeakSet<ITestMessage>();
+
   private lastDecorations: ITestDecoration[] = [];
 
   constructor(@Optional() private readonly editor: IEditor) {}
@@ -278,6 +367,32 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
         this.setDecorations((e.newModelUrl as unknown as URI) || undefined);
+      }),
+    );
+
+    this.disposer.addDispose(
+      this.editor.monacoEditor.onDidChangeModelContent((e) => {
+        if (!this.currentUri) {
+          return;
+        }
+
+        let update = false;
+        for (const change of e.changes) {
+          for (const deco of this.lastDecorations) {
+            if (
+              deco instanceof TestMessageDecoration &&
+              deco.location.range.startLineNumber >= change.range.startLineNumber &&
+              deco.location.range.endLineNumber <= change.range.endLineNumber
+            ) {
+              this.invalidatedMessages.add(deco.testMessage);
+              update = true;
+            }
+          }
+        }
+
+        if (update) {
+          this.setDecorations(this.currentUri);
+        }
       }),
     );
 
@@ -334,6 +449,36 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
           newDecorations.push(
             this.injector.get(RunSingleTestDecoration, [test, this.editor!.monacoEditor, stateLookup?.[1]]),
           );
+        }
+      }
+
+      const lastResult = this.testResultService.results[0];
+      if (lastResult instanceof TestResultImpl) {
+        // task.otherMessages 的情况还未处理
+
+        for (const test of lastResult.tests) {
+          for (let taskId = 0; taskId < test.tasks.length; taskId++) {
+            const state = test.tasks[taskId];
+            for (let i = 0; i < state.messages.length; i++) {
+              const m = state.messages[i];
+              if (!this.invalidatedMessages.has(m) && hasValidLocation(uri, m)) {
+                const uri =
+                  m.type === TestMessageType.Info
+                    ? undefined
+                    : buildTestUri({
+                        type: TestUriType.ResultActualOutput,
+                        messageIndex: i,
+                        taskIndex: taskId,
+                        resultId: lastResult.id,
+                        testExtId: test.item.extId,
+                      });
+
+                newDecorations.push(
+                  this.injector.get(TestMessageDecoration, [m, uri, m.location, this.editor.monacoEditor]),
+                );
+              }
+            }
+          }
         }
       }
 
