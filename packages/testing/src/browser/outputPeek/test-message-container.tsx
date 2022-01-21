@@ -5,14 +5,16 @@ import {
   getSimpleEditorOptions,
   IDiffEditor,
   IEditorDocumentModelService,
+  IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
 import { IDiffEditorOptions, IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { TestPeekMessageToken } from '../../common';
 import { ITestErrorMessage } from '../../common/testCollection';
 import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
+import { Markdown } from '@opensumi/ide-markdown';
 
 enum EContainerType {
   DIFF,
@@ -48,7 +50,41 @@ const diffEditorOptions: IDiffEditorOptions = {
 const getMessage = (dto?: TestDto) =>
   dto ? dto.messages[dto.messageIndex] : { message: '', actual: '', expected: '' };
 
-const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
+const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
+
+const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined }) => {
+  const { dto } = props;
+
+  // const openerService: IOpenerService = useInjectable(IOpenerService);
+
+  const shadowRootRef = useRef<HTMLDivElement | null>(null);
+  const [message, useMessage] = useState<IMarkdownString | null>(null);
+  const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
+
+  React.useEffect(() => {
+    if (shadowRootRef.current) {
+      const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
+      if (!shadowRoot) {
+        setShadowRoot(shadowRootElement);
+      }
+
+      const message = getMessage(dto).message;
+      useMessage(message as IMarkdownString);
+    }
+  }, []);
+
+  return (
+    <div ref={shadowRootRef} className={'preview-markdown'}>
+      {shadowRoot && (
+        <ShadowContent root={shadowRoot}>
+          <Markdown content={message?.value!}></Markdown>
+        </ShadowContent>
+      )}
+    </div>
+  );
+});
+
+const DiffContentProvider = React.memo((props: { dto: TestDto | undefined }) => {
   const { dto } = props;
   const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
   const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
@@ -93,7 +129,7 @@ const DiffContentProvider = (props: { dto: TestDto | undefined }) => {
   }, []);
 
   return <div ref={editorRef} style={{ height: 'inherit' }}></div>;
-};
+});
 
 export const TestMessageContainer = () => {
   const disposer: Disposable = new Disposable();
@@ -123,5 +159,15 @@ export const TestMessageContainer = () => {
     };
   }, []);
 
-  return <>{type === EContainerType.DIFF ? <DiffContentProvider dto={dto} /> : ''}</>;
+  return (
+    <>
+      {type === EContainerType.DIFF ? (
+        <DiffContentProvider dto={dto} />
+      ) : type === EContainerType.MARKDOWN ? (
+        <MarkdownContentProvider dto={dto} />
+      ) : (
+        ''
+      )}
+    </>
+  );
 };
