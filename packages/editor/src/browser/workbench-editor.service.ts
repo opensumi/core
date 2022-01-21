@@ -613,6 +613,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _isInDiffEditorContextKey: IContextKey<boolean>;
 
+  private _diffResourceContextKey: ResourceContextKey;
+
   private _isInDiffRightEditorContextKey: IContextKey<boolean>;
 
   private _isInEditorComponentContextKey: IContextKey<boolean>;
@@ -755,6 +757,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           return getLanguageFromModel(uri);
         }
       });
+      this._diffResourceContextKey = new ResourceContextKey(
+        this.contextKeyService,
+        (uri: URI) => {
+          const res = getLanguageFromModel(uri);
+          if (res) {
+            return res!;
+          } else {
+            return getLanguageFromModel(uri);
+          }
+        },
+        'diffResource',
+      );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
       this._isInDiffRightEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffRightEditor', false);
@@ -778,10 +792,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this._editorLangIDContextKey.reset();
     }
-    this._isInDiffEditorContextKey.set(!!this.currentOpenType && this.currentOpenType.type === 'diff');
+    this._isInDiffEditorContextKey.set(this.isDiffEditorMode());
     // 没有 focus 的时候默认添加在 RightDiffEditor
-    this._isInDiffRightEditorContextKey.set(!!this.currentOpenType && this.currentOpenType.type === 'diff');
-    this._isInEditorComponentContextKey.set(this.currentOpenType?.type === 'component');
+    this._isInDiffRightEditorContextKey.set(this.isDiffEditorMode());
+    this._isInEditorComponentContextKey.set(this.isComponentMode());
+    if (this.isDiffEditorMode()) {
+      this._diffResourceContextKey.set(this.currentResource?.uri);
+    }
     this.updateContextKeyWhenDiffEditorChangesFocus();
   }
 
@@ -1836,15 +1853,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   isCodeEditorMode() {
-    return this.currentOpenType && this.currentOpenType.type === 'code';
+    return !!this.currentOpenType && this.currentOpenType.type === 'code';
   }
 
   isDiffEditorMode() {
-    return this.currentOpenType && this.currentOpenType.type === 'diff';
+    return !!this.currentOpenType && this.currentOpenType.type === 'diff';
   }
 
   isComponentMode() {
-    return this.currentOpenType && this.currentOpenType.type === 'component';
+    return !!this.currentOpenType && this.currentOpenType.type === 'component';
   }
 
   async restoreState(state: IEditorGroupState) {
