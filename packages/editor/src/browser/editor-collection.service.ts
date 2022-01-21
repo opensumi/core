@@ -546,7 +546,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
 
   private currentUri: URI | undefined;
 
-  private diffResourceKey: ResourceContextKey;
+  private diffResourceKeys: ResourceContextKey[];
 
   protected saveCurrentState() {
     if (this.currentUri) {
@@ -640,7 +640,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       }
     }
     await this.updateOptionsOnModelChange();
-    this.diffResourceKey.set(this.currentUri);
+    this.diffResourceKeys.forEach((r) => r.set(this.currentUri));
   }
 
   showFirstDiff() {
@@ -690,11 +690,17 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.addDiffEditors([this]);
 
-    // 为 modified editor 的 contextKeyService 注入diffEditor的ResourceKey
+    // 为 modified 和 original editor 的 contextKeyService 注入diffEditor的ResourceKey
     const modifiedContextKeyService = this.contextKeyService.createScoped(
       (this.modifiedEditor.monacoEditor as any)._contextKeyService,
     );
-    this.diffResourceKey = new ResourceContextKey(modifiedContextKeyService, undefined, 'diffResource');
+    const originalContextKeyService = this.contextKeyService.createScoped(
+      (this.originalEditor.monacoEditor as any)._contextKeyService,
+    );
+    this.diffResourceKeys = [
+      new ResourceContextKey(modifiedContextKeyService, undefined, 'diffResource'),
+      new ResourceContextKey(originalContextKeyService, undefined, 'diffResource'),
+    ];
   }
 
   layout(): void {
