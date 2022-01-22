@@ -151,11 +151,9 @@ export const TestMessageContainer = () => {
       testingPeekMessageService.onDidReveal(async (dto: TestDto) => {
         setDto(dto);
         const message = getMessage(dto);
-        console.log('testingPeekMessageService', dto);
         if (dto.isDiffable) {
           setType(EContainerType.DIFF);
         } else if (!(dto.isDiffable || typeof message.message === 'string')) {
-          console.log('testingPeekMessageService', message.message.value);
           setType(EContainerType.MARKDOWN);
         } else {
           setType(EContainerType.PLANTTEXT);

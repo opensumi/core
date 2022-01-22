@@ -74,7 +74,7 @@ export class TestingContribution
   private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
 
   @Autowired()
-  private readonly debugConsoleInputDocumentProvider: TestingOutputPeekDocumentProvider;
+  private readonly testingOutputPeekDocumentProvider: TestingOutputPeekDocumentProvider;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -163,6 +163,6 @@ export class TestingContribution
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
-    registry.registerEditorDocumentModelContentProvider(this.debugConsoleInputDocumentProvider);
+    registry.registerEditorDocumentModelContentProvider(this.testingOutputPeekDocumentProvider);
   }
 }
