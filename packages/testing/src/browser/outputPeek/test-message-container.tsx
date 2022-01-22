@@ -173,7 +173,7 @@ export const TestMessageContainer = () => {
       ) : type === EContainerType.MARKDOWN ? (
         <MarkdownContentProvider dto={dto} />
       ) : (
-        ''
+        getMessage(dto).message
       )}
     </>
   );
