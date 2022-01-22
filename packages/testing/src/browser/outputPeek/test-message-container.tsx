@@ -58,7 +58,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
   // const openerService: IOpenerService = useInjectable(IOpenerService);
 
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
-  const [message, useMessage] = useState<IMarkdownString | null>(null);
+  const [message, useMessage] = useState<string>('');
   const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
 
   React.useEffect(() => {
@@ -68,8 +68,10 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
         setShadowRoot(shadowRootElement);
       }
 
-      const message = getMessage(dto).message;
-      useMessage(message as IMarkdownString);
+      const mdStr = getMessage(dto).message;
+      // 不处理 \t 制表符
+      const message = mdStr ? (mdStr as IMarkdownString).value.replace(/\t/g, '') : '';
+      useMessage(message);
     }
   }, []);
 
@@ -77,7 +79,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
     <div ref={shadowRootRef} className={'preview-markdown'}>
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
-          <Markdown content={message?.value!}></Markdown>
+          <Markdown content={message}></Markdown>
         </ShadowContent>
       )}
     </div>
@@ -143,10 +145,11 @@ export const TestMessageContainer = () => {
       testingPeekMessageService.onDidReveal(async (dto: TestDto) => {
         setDto(dto);
         const message = getMessage(dto);
-
+        console.log('testingPeekMessageService', dto);
         if (dto.isDiffable) {
           setType(EContainerType.DIFF);
         } else if (!(dto.isDiffable || typeof message.message === 'string')) {
+          console.log('testingPeekMessageService', message.message.value);
           setType(EContainerType.MARKDOWN);
         } else {
           setType(EContainerType.PLANTTEXT);
