@@ -1,5 +1,5 @@
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
+import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
+import { Disposable, Schemas, URI } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
   getSimpleEditorOptions,
@@ -55,11 +55,17 @@ const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, ro
 const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined }) => {
   const { dto } = props;
 
-  // const openerService: IOpenerService = useInjectable(IOpenerService);
+  const openerService: IOpenerService = useInjectable(IOpenerService);
 
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [message, useMessage] = useState<string>('');
   const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
+
+  const handleLinkClick = (uri: URI) => {
+    if (uri && uri.scheme === Schemas.command) {
+      openerService.open(uri);
+    }
+  };
 
   React.useEffect(() => {
     if (shadowRootRef.current) {
@@ -79,7 +85,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
     <div ref={shadowRootRef} className={'preview-markdown'}>
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
-          <Markdown content={message}></Markdown>
+          <Markdown content={message} onLinkClick={handleLinkClick}></Markdown>
         </ShadowContent>
       )}
     </div>

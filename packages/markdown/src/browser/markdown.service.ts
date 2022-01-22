@@ -24,6 +24,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
     container: HTMLElement,
     cancellationToken: CancellationToken,
     onUpdate?: Event<string>,
+    onLinkClick?: (uri: URI) => void,
   ): Promise<IDisposable> {
     const body = await this.getBody(content);
     if (cancellationToken.isCancellationRequested) {
@@ -46,6 +47,9 @@ export class MarkdownServiceImpl implements IMarkdownService {
         // Whitelist supported schemes for links
         if (this.isSupportedLink(link)) {
           this.openerService.open(link);
+        }
+        if (onLinkClick) {
+          onLinkClick(link);
         }
       }),
     );
