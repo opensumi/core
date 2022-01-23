@@ -1,22 +1,22 @@
 import React from 'react';
 import {
+  DisposableCollection,
+  getIcon,
+  IPreferenceSettingsService,
+  isElectronRenderer,
+  localize,
+  PreferenceDataProperty,
+  PreferenceItem,
+  PreferenceProvider,
+  PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceService,
-  useInjectable,
-  PreferenceSchemaProvider,
-  PreferenceItem,
   replaceLocalizePlaceholder,
-  localize,
-  getIcon,
-  PreferenceDataProperty,
-  isElectronRenderer,
-  IPreferenceSettingsService,
-  PreferenceProvider,
-  DisposableCollection,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
-import { Input, Select, Option, CheckBox, Button, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
+import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import { PreferenceSettingsService } from './preference-settings.service';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName } from '../common';
@@ -125,7 +125,11 @@ export const NextPreferenceItem = ({
           return <CheckboxPreferenceItem {...props} />;
         case 'integer':
         case 'number':
-          return <InputPreferenceItem {...props} isNumber={true} />;
+          if (renderSchema.enum) {
+            return <SelectPreferenceItem {...props} />;
+          } else {
+            return <InputPreferenceItem {...props} />;
+          }
         case 'string':
           if (renderSchema.enum) {
             return <SelectPreferenceItem {...props} />;
@@ -348,17 +352,39 @@ function SelectPreferenceItem({
   scope,
   hasValueInScope,
 }: IPreferenceItemProps) {
+  console.log('preferenceName', preferenceName, localizedName, currentValue, schema);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const [value, setValue] = React.useState<string>();
+  const [description, setDescription] = React.useState<string | number | boolean>();
 
   const optionEnum = (schema as PreferenceDataProperty).enum;
+  const optionEnumDescriptions = (schema as PreferenceDataProperty).enumDescriptions;
 
   React.useEffect(() => {
+    console.log('optionEnum', optionEnum, optionEnumDescriptions);
+    if (optionEnum && optionEnumDescriptions) {
+      const currentValueIndex = optionEnum.indexOf(currentValue);
+      if (currentValueIndex > -1) {
+        const description = optionEnumDescriptions[currentValueIndex];
+        if (description) {
+          setDescription(description);
+        }
+      }
+    }
     setValue(currentValue);
   }, [currentValue]);
 
   const handlerValueChange = (value) => {
+    if (optionEnum && optionEnumDescriptions) {
+      const currentValueIndex = optionEnum.indexOf(value);
+      if (currentValueIndex > -1) {
+        const description = optionEnumDescriptions[currentValueIndex];
+        if (description) {
+          setDescription(description);
+        }
+      }
+    }
     setValue(value);
     preferenceService.set(preferenceName, value, scope);
   };
@@ -370,6 +396,7 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
+      console.log('callin renderEnumOptions');
       return isElectronRenderer() ? (
         <option value={item} key={`${idx} - ${item}`}>
           {replaceLocalizePlaceholder((labels[item] || item).toString())}
@@ -384,6 +411,7 @@ function SelectPreferenceItem({
         </Option>
       );
     });
+
   const renderNoneOptions = () =>
     isElectronRenderer() ? (
       <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>
@@ -433,6 +461,15 @@ function SelectPreferenceItem({
             onChange={handlerValueChange}
             value={value}
             className={styles.select_control}
+            description={description?.toString()}
+            onMouseEnter={(index) => {
+              if (optionEnumDescriptions) {
+                const description = optionEnumDescriptions[index];
+                if (description) {
+                  setDescription(description);
+                }
+              }
+            }}
           >
             {options}
           </Select>

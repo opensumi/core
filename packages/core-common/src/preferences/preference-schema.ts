@@ -71,6 +71,7 @@ export interface PreferenceItem {
    */
   defaultValue?: any;
   enum?: Array<string | number | boolean>;
+  enumDescriptions?: Array<string | number | boolean>;
   items?: PreferenceItem;
   properties?: { [name: string]: PreferenceItem };
   additionalProperties?: object;
