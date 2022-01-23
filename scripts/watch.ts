@@ -7,11 +7,11 @@ import nsfw from 'nsfw';
 (async () => {
   // await run('npm run clean');
 
-  const filePatten = '*/src/**/!(*.ts|*.tsx)';
+  const filePattern = '*/src/**/!(*.ts|*.tsx)';
 
-  console.log(`[COPY]: ${filePatten}`);
+  console.log(`[COPY]: ${filePattern}`);
   const cwd = path.join(__dirname, '../packages');
-  const files = glob.sync(filePatten, { cwd, nodir: true });
+  const files = glob.sync(filePattern, { cwd, nodir: true });
   const fileSet = new Set();
   for (const file of files) {
     await copyOneFile(file, cwd);
