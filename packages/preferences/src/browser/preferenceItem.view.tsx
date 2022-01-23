@@ -18,7 +18,6 @@ import styles from './preferences.module.less';
 import classnames from 'classnames';
 import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import { PreferenceSettingsService } from './preference-settings.service';
-import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName } from '../common';
 
 interface IPreferenceItemProps {
@@ -358,11 +357,11 @@ function SelectPreferenceItem({
   const [value, setValue] = React.useState<string>();
   const [description, setDescription] = React.useState<string | number | boolean>();
 
-  const optionEnum = (schema as PreferenceDataProperty).enum;
-  const optionEnumDescriptions = (schema as PreferenceDataProperty).enumDescriptions;
+  const config = schema as PreferenceDataProperty;
+  const optionEnum = config.enum;
+  const optionEnumDescriptions = config.enumDescriptions;
 
   React.useEffect(() => {
-    console.log('optionEnum', optionEnum, optionEnumDescriptions);
     if (optionEnum && optionEnumDescriptions) {
       const currentValueIndex = optionEnum.indexOf(currentValue);
       if (currentValueIndex > -1) {
@@ -396,18 +395,16 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
-      console.log('callin renderEnumOptions');
-      return isElectronRenderer() ? (
-        <option value={item} key={`${idx} - ${item}`}>
-          {replaceLocalizePlaceholder((labels[item] || item).toString())}
-        </option>
-      ) : (
+
+      return (
         <Option
           value={item}
           label={replaceLocalizePlaceholder((labels[item] || item).toString())}
           key={`${idx} - ${item}`}
+          className={styles.select_option}
         >
           {replaceLocalizePlaceholder((labels[item] || item).toString())}
+          {item === config.default && <div className={styles.select_default_option_tips}>default</div>}
         </Option>
       );
     });
@@ -444,36 +441,24 @@ function SelectPreferenceItem({
         <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
       )}
       <div className={styles.control_wrap}>
-        {isElectronRenderer() ? (
-          <NativeSelect
-            onChange={(event) => {
-              handlerValueChange(event.target.value);
-            }}
-            className={styles.select_control}
-            value={value}
-          >
-            {options}
-          </NativeSelect>
-        ) : (
-          <Select
-            dropdownRenderType='absolute'
-            maxHeight='200'
-            onChange={handlerValueChange}
-            value={value}
-            className={styles.select_control}
-            description={description?.toString()}
-            onMouseEnter={(index) => {
-              if (optionEnumDescriptions) {
-                const description = optionEnumDescriptions[index];
-                if (description) {
-                  setDescription(description);
-                }
+        <Select
+          dropdownRenderType='absolute'
+          maxHeight='200'
+          onChange={handlerValueChange}
+          value={value}
+          className={styles.select_control}
+          description={description?.toString()}
+          onMouseEnter={(index) => {
+            if (optionEnumDescriptions) {
+              const description = optionEnumDescriptions[index];
+              if (description) {
+                setDescription(description);
               }
-            }}
-          >
-            {options}
-          </Select>
-        )}
+            }
+          }}
+        >
+          {options}
+        </Select>
       </div>
     </div>
   );

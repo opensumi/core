@@ -452,8 +452,6 @@ export function Select<T = string>({
     />
   );
 
-  console.log('hello', open && (isDataOptions(options) || isDataOptionGroups(options)));
-
   return (
     <div className={classNames('kt-select-container', className)} ref={selectRef}>
       <p className={selectClasses} onClick={toggleOpen} style={style}>
