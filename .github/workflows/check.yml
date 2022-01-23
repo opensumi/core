@@ -27,6 +27,7 @@ jobs:
       run: |
         npm i
         npm run init
+        npm run bundle:lite
 
     - name: Lint
       run: |
