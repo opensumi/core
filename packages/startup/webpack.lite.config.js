@@ -4,8 +4,9 @@ const { createWebpackConfig } = require('@opensumi/ide-dev-tool/src/webpack');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const baseDir = path.join(__dirname, 'entry/web-lite');
 
-module.exports = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web-lite/app.tsx'), {
+module.exports = createWebpackConfig(baseDir, path.join(baseDir, 'app.tsx'), {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   resolve: {
     alias: {
@@ -24,7 +25,10 @@ module.exports = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web-
     new webpack.ProvidePlugin({ BrowserFS: 'bfsGlobal', process: 'processGlobal', Buffer: 'bufferGlobal' }),
     // FIXME: not working
     new CopyPlugin([
-      { from: path.join(__dirname, '../extension/lib/worker-host.js'), to: path.join(__dirname, './entry/web-lite/dist/worker-host.js')},
+      {
+        from: path.join(__dirname, '../extension/lib/worker-host.js'),
+        to: path.join(baseDir, './dist/worker-host.js'),
+      },
     ]),
     !process.env.CI && new webpack.ProgressPlugin(),
   ]
