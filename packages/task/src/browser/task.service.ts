@@ -116,11 +116,12 @@ export class TaskService extends Disposable implements ITaskService {
     this.outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
     this.providers = new Map();
     this.providerTypes = new Map();
-    this.addDispose(
-      this.taskSystem.onDidStateChange((e) => {
-        this._onDidStateChange.fire(e);
-      }),
-    );
+    this.addDispose([
+      this.taskSystem.onDidStateChange((e) => this._onDidStateChange.fire(e)),
+      this.taskSystem.onDidBackgroundTaskBegin((e) => this._onDidStateChange.fire(e)),
+      this.taskSystem.onDidBackgroundTaskEnded((e) => this._onDidStateChange.fire(e)),
+      this.taskSystem.onDidProblemMatched((e) => this._onDidStateChange.fire(e)),
+    ]);
   }
 
   private get workspaceFolders() {

@@ -123,6 +123,9 @@ export interface TaskTerminateResponse extends TerminateResponse {
 export const ITaskSystem = Symbol('ITaskSystem');
 export interface ITaskSystem {
   onDidStateChange: Event<TaskEvent>;
+  onDidBackgroundTaskBegin: Event<TaskEvent>;
+  onDidBackgroundTaskEnded: Event<TaskEvent>;
+  onDidProblemMatched: Event<TaskEvent>;
   run(task: Task | ConfiguringTask): Promise<ITaskExecuteResult>;
   rerun(): ITaskExecuteResult | undefined;
   isActive(): Promise<boolean>;

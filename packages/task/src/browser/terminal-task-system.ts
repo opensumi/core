@@ -11,6 +11,7 @@ import {
   removeAnsiEscapeCodes,
   Emitter,
   DisposableCollection,
+  ProblemMatch,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -69,6 +70,15 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   private _onDidTerminalCreated: Emitter<string> = new Emitter();
 
   private _onDidTaskProcessExit: Emitter<number | undefined> = new Emitter();
+
+  private _onDidBackgroundTaskBegin: Emitter<void> = new Emitter();
+  public onDidBackgroundTaskBegin: Event<void> = this._onDidBackgroundTaskBegin.event;
+
+  private _onDidBackgroundTaskEnd: Emitter<void> = new Emitter();
+  public onDidBackgroundTaskEnd: Event<void> = this._onDidBackgroundTaskEnd.event;
+
+  private _onDidProblemMatched: Emitter<ProblemMatch[]> = new Emitter();
+  public onDidProblemMatched: Event<ProblemMatch[]> = this._onDidProblemMatched.event;
 
   private _onDidTerminalWidgetRemove: Emitter<void> = new Emitter();
 
@@ -155,7 +165,21 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
     this.addDispose(
       this.terminalClient.onOutput((e) => {
-        this.collector.processLine(removeAnsiEscapeCodes(e.data.toString()));
+        const output = removeAnsiEscapeCodes(e.data.toString());
+        const isBegin = this.collector.matchBeginMatcher(output);
+        if (isBegin) {
+          this._onDidBackgroundTaskBegin.fire();
+        }
+
+        const isEnd = this.collector.matchEndMatcher(output);
+        if (isEnd) {
+          this._onDidBackgroundTaskEnd.fire();
+        }
+
+        const markers = this.collector.processLine(output);
+        if (markers.length > 0) {
+          this._onDidProblemMatched.fire(markers);
+        }
       }),
     );
 
@@ -252,9 +276,18 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
   private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
 
+  private _onDidBackgroundTaskBegin: Emitter<TaskEvent> = new Emitter();
+
+  private _onDidBackgroundTaskEnded: Emitter<TaskEvent> = new Emitter();
+
+  private _onDidProblemMatched: Emitter<TaskEvent> = new Emitter();
+
   private taskExecutors: TerminalTaskExecutor[] = [];
 
   onDidStateChange: Event<TaskEvent> = this._onDidStateChange.event;
+  onDidBackgroundTaskBegin: Event<TaskEvent> = this._onDidBackgroundTaskBegin.event;
+  onDidBackgroundTaskEnded: Event<TaskEvent> = this._onDidBackgroundTaskEnded.event;
+  onDidProblemMatched: Event<TaskEvent> = this._onDidProblemMatched.event;
 
   run(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
     this.currentTask = task;
@@ -359,6 +392,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
           this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessEnded, task, code));
           this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.End, task));
         }),
+      );
+      this.addDispose(
+        executor.onDidBackgroundTaskBegin(() =>
+          this._onDidBackgroundTaskBegin.fire(TaskEvent.create(TaskEventKind.BackgroundTaskBegin, task)),
+        ),
+      );
+      this.addDispose(
+        executor.onDidBackgroundTaskEnd(() =>
+          this._onDidBackgroundTaskEnded.fire(TaskEvent.create(TaskEventKind.BackgroundTaskEnded, task)),
+        ),
+      );
+      this.addDispose(
+        executor.onDidProblemMatched((problems) =>
+          this._onDidProblemMatched.fire(TaskEvent.create(TaskEventKind.ProblemMatched, task, problems)),
+        ),
       );
     }
 
