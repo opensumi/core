@@ -1,3 +1,5 @@
+import { TestingIsInPeek } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { IContextKey, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { buildTestUri, parseTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
@@ -68,11 +70,19 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   @Autowired(TestingPeekOpenerServiceToken)
   private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
 
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
   private readonly disposer: Disposable = new Disposable();
 
   private readonly peekView = new MutableDisposable<TestingOutputPeek>();
+  private readonly visible: IContextKey<boolean>;
 
-  constructor(@Optional() private readonly editor: IEditor) {}
+  private currentPeekUri: URI | undefined;
+
+  constructor(@Optional() private readonly editor: IEditor) {
+    this.visible = TestingIsInPeek.bind(this.contextKeyService);
+  }
 
   private retrieveTest(uri: URI): TestDto | undefined {
     const parts = parseTestUri(uri);
@@ -92,10 +102,35 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   public contribute(): IDisposable {
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
+        if (e.newModelUrl?.scheme !== Schemas.file) {
+          return;
+        }
+
         this.testingPeekOpenerService.setPeekContrib(e.newModelUrl as unknown as URI, this);
       }),
     );
+
+    this.disposer.addDispose(
+      Disposable.create(() => {
+        if (this.editor.currentUri) {
+          this.testingPeekOpenerService.delPeekContrib(this.editor.currentUri);
+        }
+      }),
+    );
     return this.disposer;
+  }
+
+  public toggle(uri: URI) {
+    if (this.currentPeekUri?.toString() === uri.toString()) {
+      this.peekView.clear();
+    } else {
+      this.show(uri);
+    }
+  }
+
+  public removePeek() {
+    this.peekView.value?.hide();
+    this.peekView.clear();
   }
 
   public async show(uri: URI): Promise<void> {
@@ -106,8 +141,19 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
     if (!this.peekView.value) {
       this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor]);
+      this.disposer.addDispose(
+        this.peekView.value.onDidClose(() => {
+          this.visible.set(false);
+          this.currentPeekUri = undefined;
+          this.peekView.value = undefined;
+        }),
+      );
+
+      this.visible.set(true);
+      this.peekView.value.create();
     }
 
     this.peekView.value.setModel(dto);
+    this.currentPeekUri = uri;
   }
 }
