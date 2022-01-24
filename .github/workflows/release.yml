@@ -94,6 +94,15 @@ jobs:
             });
             return releasemd;
 
+      # 发布正式版本
+      - name: Publish prod version
+        if: steps.checkTag.outputs.exists == 'false'
+        run: |
+          lerna publish --exact ${{CURRENT_VERSION}} --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create Git Tag
         if: steps.checkTag.outputs.exists == 'false'
         uses: pkgdeps/git-tag-action@v2
@@ -117,15 +126,6 @@ jobs:
             ${{steps.changelog.outputs.result}}
           draft: false
           prerelease: false
-
-      # 发布正式版本，并在 issue 中回复
-      - name: Publish prod version
-        if: steps.checkTag.outputs.exists == 'false'
-        run: |
-          lerna publish --exact from-package --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - uses: actions/github-script@v4
         if: steps.checkTag.outputs.exists == 'false'
