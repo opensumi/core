@@ -351,42 +351,33 @@ function SelectPreferenceItem({
   scope,
   hasValueInScope,
 }: IPreferenceItemProps) {
-  console.log('preferenceName', preferenceName, localizedName, currentValue, schema);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = React.useState<string>();
-  const [description, setDescription] = React.useState<string | number | boolean>();
-
   const config = schema as PreferenceDataProperty;
   const optionEnum = config.enum;
   const optionEnumDescriptions = config.enumDescriptions;
 
-  React.useEffect(() => {
-    if (optionEnum && optionEnumDescriptions) {
-      const currentValueIndex = optionEnum.indexOf(currentValue);
-      if (currentValueIndex > -1) {
-        const description = optionEnumDescriptions[currentValueIndex];
-        if (description) {
-          setDescription(description);
-        }
-      }
+  const [value, setValue] = React.useState<string>(currentValue);
+
+  // 鼠标还没有划过来的时候，需要一个默认的描述信息
+  const defaultDescription = React.useMemo((): string => {
+    if (optionEnumDescriptions && optionEnum) {
+      return optionEnumDescriptions[optionEnum.indexOf(currentValue)] || '';
     }
+
+    return '';
+  }, [schema]);
+  const [description, setDescription] = React.useState<string>(defaultDescription);
+
+  React.useEffect(() => {
     setValue(currentValue);
   }, [currentValue]);
 
   const handlerValueChange = (value) => {
-    if (optionEnum && optionEnumDescriptions) {
-      const currentValueIndex = optionEnum.indexOf(value);
-      if (currentValueIndex > -1) {
-        const description = optionEnumDescriptions[currentValueIndex];
-        if (description) {
-          setDescription(description);
-        }
-      }
-    }
     setValue(value);
     preferenceService.set(preferenceName, value, scope);
   };
+
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
 
@@ -404,7 +395,9 @@ function SelectPreferenceItem({
           className={styles.select_option}
         >
           {replaceLocalizePlaceholder((labels[item] || item).toString())}
-          {item === config.default && <div className={styles.select_default_option_tips}>default</div>}
+          {item === config.default && (
+            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+          )}
         </Option>
       );
     });
@@ -424,7 +417,24 @@ function SelectPreferenceItem({
         {localize('preference.stringArray.none')}
       </Option>
     );
+
   const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
+
+  // 处理鼠标移动时候对应枚举值描述的变化
+  const handleDescriptionChange = React.useCallback(
+    (_, index) => {
+      if (optionEnumDescriptions) {
+        const description = optionEnumDescriptions[index];
+        if (description) {
+          setDescription(description);
+        } else {
+          // 对应的描述不存在，则设置为空，在渲染时会过滤掉 falsy 的值
+          setDescription('');
+        }
+      }
+    },
+    [optionEnumDescriptions, setDescription],
+  );
 
   return (
     <div className={styles.preference_line}>
@@ -447,15 +457,8 @@ function SelectPreferenceItem({
           onChange={handlerValueChange}
           value={value}
           className={styles.select_control}
-          description={description?.toString()}
-          onMouseEnter={(index) => {
-            if (optionEnumDescriptions) {
-              const description = optionEnumDescriptions[index];
-              if (description) {
-                setDescription(description);
-              }
-            }
-          }}
+          description={description}
+          onMouseEnter={handleDescriptionChange}
         >
           {options}
         </Select>

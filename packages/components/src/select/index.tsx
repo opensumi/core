@@ -28,7 +28,7 @@ export interface ISelectProps<T = string> {
    * 当鼠标划过时触发回调
    * @param value 鼠标划过的是第几个 option
    */
-  onMouseEnter?: (value: number) => void;
+  onMouseEnter?: (value: T, index: number) => void;
   maxHeight?: string;
   [prop: string]: any;
   optionStyle?: any;
@@ -302,9 +302,9 @@ export function Select<T = string>({
       <div
         key={`${element.props.value}_${index}`}
         className={classNames({
-          ['kt-select-option-select']: value === (node as React.ReactElement).props.value,
+          ['kt-select-option-select']: value === element.props.value,
         })}
-        onMouseEnter={() => onMouseEnter?.(index)}
+        onMouseEnter={() => onMouseEnter?.(element.props.value, index)}
         onClick={
           disabled
             ? noop

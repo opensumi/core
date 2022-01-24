@@ -401,6 +401,9 @@ export const localizationBundle = {
     'preference.stringArray.operate.editTip': 'Press ↲',
     'preference.stringArray.none': 'None',
 
+    // Default value prompt message for enumerated options in settings
+    'preference.enum.default': 'default',
+
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
     'preference.terminal.typeDesc': 'To change the default type of create a new terminal',
