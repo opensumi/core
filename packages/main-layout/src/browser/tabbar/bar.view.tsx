@@ -212,11 +212,11 @@ export const RightTabbarRenderer: React.FC = () => {
   return (
     <div className={styles.right_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
       <TabbarViewBase
-        tabSize={44}
+        tabSize={48}
         MoreTabView={IconElipses}
         tabClassName={styles.kt_right_tab}
         TabView={IconTabView}
-        barSize={40}
+        barSize={48}
         panelBorderSize={1}
       />
     </div>

@@ -77,6 +77,30 @@
     overflow: hidden;
   }
 }
+.right_tab_bar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--activityBar-background);
+  border-left: 1px solid var(--activityBar-border);
+  border-top: 1px solid var(--activityBar-border);
+  .tab_bar {
+    height: 100%;
+    .icon_tab {
+      width: 48px;
+      height: 40px;
+      margin: 0;
+    }
+    :global {
+      .activity-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
 .tab_container {
   display: flex;
 }
@@ -85,6 +109,7 @@
   left: 0;
   right: 0;
   height: 100%;
+  border-top: 1px solid var(--sideBar-border);
 }
 :global(.left-slot) {
   height: 100%;
@@ -101,27 +126,11 @@
 
 :global(.right-slot) {
   height: 100%;
-  background-color: var(--activityBar-background);
-  .tab_bar {
-    border-left: 1px solid var(--activityBar-border);
-    height: 100%;
-    .icon_tab {
-      width: 40px;
-      height: 44px;
-      margin: 0;
-    }
-    :global {
-      .activity-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-    }
-  }
   .panel_wrap {
     border-left: 1px solid var(--sideBar-border);
   }
 }
+
 .view_container {
   display: flex;
   flex-direction: column;
@@ -231,7 +240,8 @@
     }
   }
 }
-.kt_left_tab {
+.kt_left_tab,
+.kt_right_tab {
   margin-top: 8px;
   background-color: var(--activityBar-background);
   width: 48px;
@@ -244,9 +254,7 @@
         content: '';
         display: block;
         position: absolute;
-        left: 0;
         height: 100%;
-        border-left: 3px solid var(--activityBar-activeBorder);
       }
       :global {
         div.activity-icon {
@@ -259,18 +267,29 @@
     }
   }
 }
-.kt_right_tab {
-  background-color: var(--activityBar-background);
-  width: 40px;
-  &:global(.on-drag-over) {
-    background-color: var(--activityBar-dropBackground);
-  }
+
+.kt_left_tab {
   &:global(.active) {
     .icon_tab {
-      background-color: var(--sideBar-background);
+      &::before {
+        left: 0;
+        border-left: 3px solid var(--activityBar-activeBorder);
+      }
     }
   }
 }
+
+.kt_right_tab {
+  &:global(.active) {
+    .icon_tab {
+      &::before {
+        right: 0;
+        border-right: 3px solid var(--activityBar-activeBorder);
+      }
+    }
+  }
+}
+
 .kt_bottom_tab {
   margin: 0 4px;
   padding: 0 8px;
