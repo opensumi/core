@@ -43,19 +43,14 @@ jobs:
           CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
 
-      - name: Tag Check
-        id: tag_check
-        run: |
-          GET_API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/git/ref/tags/v${CURRENT_VERSION}"
-          http_status_code=$(curl -LI $GET_API_URL -o /dev/null -w '%{http_code}\n' -s \
-            -H "Authorization: token ${GITHUB_TOKEN}")
-          if [ "$http_status_code" -ne "404" ] ; then
-            echo "::set-output name=exists_tag::true"
-          else
-            echo "::set-output name=exists_tag::false"
-          fi
+      - uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        env:
+          TAG: v${{env.CURRENT_VERSION}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Git Identity
+        if: steps.checkTag.outputs.exists == 'false'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -65,12 +60,14 @@ jobs:
 
       # 安装依赖并构建
       - name: Install dependencies & Build
+        if: steps.checkTag.outputs.exists == 'false'
         run: |
           npm i
           npm run init
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
       - name: Create release log
+        if: steps.checkTag.outputs.exists == 'false'
         id: release-log
         run: |
           npm run changelog -- --remote
@@ -79,6 +76,7 @@ jobs:
 
       # 更新 Changelog 到 release issue 正文
       - name: Update prerelease changelog for current issue
+        if: steps.checkTag.outputs.exists == 'false'
         uses: actions/github-script@v4
         id: changelog
         with:
@@ -97,7 +95,7 @@ jobs:
             return releasemd;
 
       - name: Create Git Tag
-        if: steps.tag_check.outputs.exists_tag == 'false'
+        if: steps.checkTag.outputs.exists == 'false'
         uses: pkgdeps/git-tag-action@v2
         with:
           version: ${{ env.CURRENT_VERSION }}
@@ -108,7 +106,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        if: steps.tag_check.outputs.exists_tag == 'false'
+        if: steps.checkTag.outputs.exists == 'false'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,7 +120,7 @@ jobs:
 
       # 发布正式版本，并在 issue 中回复
       - name: Publish prod version
-        if: steps.tag_check.outputs.exists_tag == 'false'
+        if: steps.checkTag.outputs.exists == 'false'
         run: |
           lerna publish --exact from-package --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
         env:
@@ -130,6 +128,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - uses: actions/github-script@v4
+        if: steps.checkTag.outputs.exists == 'false'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -162,3 +161,19 @@ jobs:
               repo: context.repo.repo,
               lock_reason: 'resolved',
             });
+
+      - uses: actions/github-script@v4
+        if: steps.checkTag.outputs.exists == 'true'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueBody =
+              '❌ Sorry, v' +
+              process.env.CURRENT_VERSION +
+              ' is already existed! please update your lerna.json and try again.';
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueBody
+            })
