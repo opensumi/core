@@ -28,9 +28,11 @@
 
 .peekview-widget .head .peekview-title .dirname {
   white-space: nowrap;
+  color: var(--descriptionForeground);
 }
 
 .peekview-widget .head .peekview-title .filename {
+  color: var(--kt-accentForeground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -66,8 +68,8 @@
 }
 
 .testing-output-peek-container {
-  border-top-color: rgb(241, 76, 76);
-  border-bottom-color: rgb(241, 76, 76);
+  border-top-color: var(--errorForeground);
+  border-bottom-color: var(--errorForeground);
   height: 416px;
   border-top-width: 1px;
   border-bottom-width: 1px;
@@ -77,12 +79,29 @@
   overflow: hidden;
 
   .head {
-    background-color: rgba(241, 76, 76, 0.1);
+    background-color: var(--testing-peekHeaderBackground);
     height: 22px;
     line-height: 22px;
   }
 
   .body {
-    border-color: rgb(241, 76, 76);
+    border-color: var(--errorForeground);
+    height: inherit;
+  }
+
+  .test-output-peek-wrapper {
+    height: inherit;
+  }
+
+  .test-output-peek-message-container,
+  .test-output-peek-tree {
+    height: inherit;
+  }
+
+  .preview-markdown {
+    position: relative;
+    overflow: hidden;
+    padding: 8px 12px 8px 20px;
+    height: calc(100% - 16px);
   }
 }

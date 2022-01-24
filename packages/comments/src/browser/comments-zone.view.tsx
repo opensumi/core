@@ -132,6 +132,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
 
 @Injectable({ multiple: true })
 export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZoneWidget {
+  protected _fillContainer(container: HTMLElement): void {}
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
