@@ -1,5 +1,21 @@
-import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '@opensumi/ide-file-service/lib/common';
-import { Event, URI, FileUri, Uri, Emitter, FileChangeType, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
+import {
+  IDiskFileProvider,
+  FileChangeEvent,
+  FileStat,
+  FileType,
+  FileSystemError,
+  notEmpty,
+  isErrnoException,
+} from '@opensumi/ide-file-service/lib/common';
+import {
+  Event,
+  URI,
+  FileUri,
+  Uri,
+  Emitter,
+  FileChangeType,
+  FileSystemProviderCapabilities,
+} from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { promisify } from '@opensumi/ide-core-common/lib/browser-fs/util';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
@@ -9,19 +25,17 @@ import * as paths from 'path';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { HttpTreeList } from './http-file.service';
 
-interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
+interface BrowserFsProviderOptions {
+  isReadonly?: boolean;
+  rootFolder: string;
+}
 
 export const BROWSER_HOME_DIR = FileUri.create('/home');
 
 // 预览模式下，文件改动仅同步到本地；常规场景直接同步远端，本地不做文件存储
 // 利用storage来记录文件已加载的信息，dispose时记得清楚
 export class BrowserFsProvider implements IDiskFileProvider {
-
-  static H5VideoExtList = [
-    'mp4',
-    'ogg',
-    'webm',
-  ];
+  static H5VideoExtList = ['mp4', 'ogg', 'webm'];
 
   static binaryExtList = [
     'aac',
@@ -67,16 +81,14 @@ export class BrowserFsProvider implements IDiskFileProvider {
   protected readonly onDidChangeFileEmitter = new Emitter<FileChangeEvent>();
   onDidChangeFile: Event<FileChangeEvent> = this.onDidChangeFileEmitter.event;
 
-  constructor(private httpFileService: AbstractHttpFileService, private options: BrowserFsProviderOptions) {
-
-  }
+  constructor(private httpFileService: AbstractHttpFileService, private options: BrowserFsProviderOptions) {}
 
   capabilities: FileSystemProviderCapabilities = 2048;
   onDidChangeCapabilities: Event<void> = new Emitter<void>().event;
 
   readonly?: boolean | undefined;
 
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): number {
     // TODO: shall we implement this method?
     return 0;
   }
@@ -102,7 +114,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     try {
       const dirList = await promisify(fs.readdir)(uri.fsPath);
 
-      for (const name of dirList as  string[]) {
+      for (const name of dirList as string[]) {
         const filePath = paths.join(uri.fsPath, name);
         result.push([name, this.getFileStatType(await promisify(fs.stat)(filePath))]);
       }
@@ -140,7 +152,11 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return BinaryBuffer.fromString(content!).buffer;
   }
-  async writeFile(uri: Uri, buffer: Uint8Array, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
+  async writeFile(
+    uri: Uri,
+    buffer: Uint8Array,
+    options: { create: boolean; overwrite: boolean; isInit?: boolean },
+  ): Promise<void | FileStat> {
     const content = BinaryBuffer.wrap(buffer).toString();
     this.checkCapability();
 
@@ -160,34 +176,40 @@ export class BrowserFsProvider implements IDiskFileProvider {
         await this.httpFileService.createFile(uri, content, {});
       }
       const stat = await this.createFile(uri, { content });
-      this.onDidChangeFileEmitter.fire([{
-        uri: uri.toString(),
-        type: FileChangeType.ADDED,
-      }]);
+      this.onDidChangeFileEmitter.fire([
+        {
+          uri: uri.toString(),
+          type: FileChangeType.ADDED,
+        },
+      ]);
       return stat;
     }
     if (!options.isInit && uri.fsPath.startsWith(this.options.rootFolder)) {
       await this.httpFileService.updateFile(uri, content, {});
     }
     await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
-    this.onDidChangeFileEmitter.fire([{
-      uri: uri.toString(),
-      type: FileChangeType.UPDATED,
-    }]);
+    this.onDidChangeFileEmitter.fire([
+      {
+        uri: uri.toString(),
+        type: FileChangeType.UPDATED,
+      },
+    ]);
   }
   // FIXME: 支持删除目录
-  async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
+  async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined }): Promise<void> {
     this.checkCapability();
     if (uri.fsPath.startsWith(this.options.rootFolder)) {
-      await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
+      await this.httpFileService.deleteFile(uri, { recursive: options.recursive });
     }
-    await promisify(fs.unlink)((uri.fsPath));
-    this.onDidChangeFileEmitter.fire([{
-      uri: uri.toString(),
-      type: FileChangeType.DELETED,
-    }]);
+    await promisify(fs.unlink)(uri.fsPath);
+    this.onDidChangeFileEmitter.fire([
+      {
+        uri: uri.toString(),
+        type: FileChangeType.DELETED,
+      },
+    ]);
   }
-  async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
+  async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(oldUri);
     // FIXME: 如何保证browserFs侧写入和远端写入的原子性？
@@ -195,13 +217,16 @@ export class BrowserFsProvider implements IDiskFileProvider {
       await this.httpFileService.updateFile(oldUri, content.toString(), { newUri });
     }
     await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
-    this.onDidChangeFileEmitter.fire([{
-      uri: oldUri.toString(),
-      type: FileChangeType.DELETED,
-    }, {
-      uri: newUri.toString(),
-      type: FileChangeType.ADDED,
-    }]);
+    this.onDidChangeFileEmitter.fire([
+      {
+        uri: oldUri.toString(),
+        type: FileChangeType.DELETED,
+      },
+      {
+        uri: newUri.toString(),
+        type: FileChangeType.ADDED,
+      },
+    ]);
   }
   async access(uri: Uri): Promise<boolean> {
     const _uri = new URI(uri);
@@ -221,17 +246,19 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
   }
 
-  async copy(source: Uri, destination: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
+  async copy(source: Uri, destination: Uri, options: { overwrite: boolean }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(source);
     if (source.fsPath.startsWith(this.options.rootFolder)) {
       await this.httpFileService.createFile(destination, content.toString(), {});
     }
     await promisify(fs.writeFile)(destination.fsPath, content);
-    this.onDidChangeFileEmitter.fire([{
-      uri: destination.toString(),
-      type: FileChangeType.ADDED,
-    }]);
+    this.onDidChangeFileEmitter.fire([
+      {
+        uri: destination.toString(),
+        type: FileChangeType.ADDED,
+      },
+    ]);
   }
 
   private homeStat: FileStat | undefined;
@@ -290,7 +317,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     if (content || !uri.path.dir.toString().endsWith('.sumi')) {
       await this.ensureDir(uri.path.dir.toString());
       // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
-      content && await promisify(fs.writeFile)(FileUri.fsPath(uri), content);
+      content && (await promisify(fs.writeFile)(FileUri.fsPath(uri), content));
     }
     return content;
   }
@@ -306,7 +333,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     const parentUri = _uri.parent;
     const parentStat = await this.doGetStat(parentUri, 0);
     if (!parentStat) {
-      await ensureDir((FileUri.fsPath(parentUri)));
+      await ensureDir(FileUri.fsPath(parentUri));
     }
     try {
       await promisify(fs.writeFile)(FileUri.fsPath(_uri), options.content);
@@ -345,7 +372,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
       const fileStat = await this.doCreateFileStat(uri, lstat);
 
       return fileStat;
-
     } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
@@ -361,9 +387,17 @@ export class BrowserFsProvider implements IDiskFileProvider {
     const ensureNodes: Promise<FileStat>[] = [];
     for (const node of childNodes) {
       if (node.children.length) {
-        ensureNodes.push(this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri));
+        ensureNodes.push(
+          this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri),
+        );
       } else {
-        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, BinaryBuffer.fromString('').buffer, {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
+        ensureNodes.push(
+          this.writeFile(
+            URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri,
+            BinaryBuffer.fromString('').buffer,
+            { create: true, isInit: true, overwrite: false },
+          ) as Promise<FileStat>,
+        );
       }
     }
     try {
@@ -410,7 +444,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return new Promise((resolve) => {
       fs.readdir(FileUri.fsPath(uri), async (err, files) => {
-        const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));
+        const children = await Promise.all(
+          files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)),
+        );
         resolve(children.filter(notEmpty));
       });
     });
@@ -434,10 +470,10 @@ export class BrowserFsProvider implements IDiskFileProvider {
 export abstract class AbstractHttpFileService {
   abstract readFile(uri: Uri, encoding?: string): Promise<string>;
   abstract readDir(uri: Uri): Promise<HttpTreeList>;
-  updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+  updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri }): Promise<void> {
     throw new Error('updateFile method not implemented');
   }
-  createFile(uri: Uri, content: string, options: { encoding?: string; }): Promise<void> {
+  createFile(uri: Uri, content: string, options: { encoding?: string }): Promise<void> {
     throw new Error('createFile method not implemented');
   }
   deleteFile(uri: Uri, options: { recursive?: boolean }): Promise<void> {

@@ -13,34 +13,33 @@ const mockFiles = [
   },
   {
     path: 'README.md',
-    content: '# Hello world\ntry edit this file and save'
+    content: '# Hello world\ntry edit this file and save',
   },
   {
     path: 'sample.json',
     content: '{"hello": "world"}',
-  }
-]
+  },
+];
 
 const PathSeperator = '/';
 
-export type HttpTreeList = {path: string; content?: string; children: HttpTreeList}[];
+export type HttpTreeList = { path: string; content?: string; children: HttpTreeList }[];
 
 // NOTE: 一个内存文件读写的简单实现，集成时可以自行替换
 @Injectable()
 export class HttpFileService extends AbstractHttpFileService {
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
   private fileTree: HttpTreeList;
 
-  public fileMap: {[filename: string]: string};
+  public fileMap: { [filename: string]: string };
 
   constructor() {
     super();
   }
 
-  initWorkspace(uri: Uri): {[filename: string]: string} {
+  initWorkspace(uri: Uri): { [filename: string]: string } {
     const map = {};
     mockFiles.forEach((item) => {
       map[item.path] = item.content;
@@ -50,12 +49,12 @@ export class HttpFileService extends AbstractHttpFileService {
     return this.fileMap;
   }
 
-  private pathToTree(files: {[filename: string]: string}) {
+  private pathToTree(files: { [filename: string]: string }) {
     // // https://stackoverflow.com/questions/54424774/how-to-convert-an-array-of-paths-into-tree-object
     const result: HttpTreeList = [];
     // helper 的对象
     const accumulator = { __result__: result };
-    const filelist = Object.keys(files).map((path => ({path, content: files[path]})))
+    const filelist = Object.keys(files).map((path) => ({ path, content: files[path] }));
     filelist.forEach((file) => {
       const path = file.path!;
       // 初始的 accumulator 为 level
@@ -93,31 +92,29 @@ export class HttpFileService extends AbstractHttpFileService {
     const _uri = new URI(uri);
     const treeNode = this.getTargetTreeNode(_uri);
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
-    return (treeNode?.children || []).map(item => {
-      return {
-        ...item,
-        path: relativePath + PathSeperator + item.path,
-      };
-    })
+    return (treeNode?.children || []).map((item) => ({
+      ...item,
+      path: relativePath + PathSeperator + item.path,
+    }));
   }
 
   private getTargetTreeNode(uri: URI) {
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(uri)!.toString();
     if (!relativePath) {
       // 根目录
-      return {children: this.fileTree, path: relativePath};
+      return { children: this.fileTree, path: relativePath };
     }
     const paths = relativePath.split(PathSeperator);
-    let targetNode: {path: string; content?: string; children: HttpTreeList} | undefined;
+    let targetNode: { path: string; content?: string; children: HttpTreeList } | undefined;
     let nodeList = this.fileTree;
     paths.forEach((path) => {
-      targetNode = nodeList.find(node => node.path === path);
+      targetNode = nodeList.find((node) => node.path === path);
       nodeList = targetNode?.children || [];
     });
     return targetNode;
   }
 
-  async updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+  async updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri }): Promise<void> {
     const _uri = new URI(uri);
     // TODO: sync update to remote logic
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
@@ -137,7 +134,7 @@ export class HttpFileService extends AbstractHttpFileService {
     }
   }
 
-  async createFile(uri: Uri, content: string, options: { encoding?: string; }) {
+  async createFile(uri: Uri, content: string, options: { encoding?: string }) {
     const _uri = new URI(uri);
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
     // TODO: sync create to remote logic
@@ -146,7 +143,7 @@ export class HttpFileService extends AbstractHttpFileService {
     this.fileTree = this.pathToTree(this.fileMap);
   }
 
-  async deleteFile(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }) {
+  async deleteFile(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean }) {
     const _uri = new URI(uri);
     const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
     // TODO: sync delete to remote logic
@@ -159,5 +156,4 @@ export class HttpFileService extends AbstractHttpFileService {
     const path = URI.file(this.appConfig.workspaceDir).relative(uri)!.toString();
     return path;
   }
-
 }
