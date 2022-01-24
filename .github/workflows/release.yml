@@ -98,7 +98,7 @@ jobs:
       - name: Publish prod version
         if: steps.checkTag.outputs.exists == 'false'
         run: |
-          lerna publish --exact ${{CURRENT_VERSION}} --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
+          lerna publish --exact ${{env.CURRENT_VERSION}} --dist-tag latest --force-publish='*' --ignore-prepublish --ignore-scripts --no-private -y
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
