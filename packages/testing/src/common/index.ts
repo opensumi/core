@@ -22,6 +22,11 @@ export interface ITestController {
 
 export const TestServiceToken = Symbol('TestService');
 export const TestDecorationsToken = Symbol('TestDecorationsToken');
+export const TestPeekMessageToken = Symbol('TestPeekMessageToken');
+
+export interface ITestingPeekMessageService {
+  onDidReveal: Event<any>;
+}
 
 export interface ITestService {
   readonly collection: MainThreadTestCollection;

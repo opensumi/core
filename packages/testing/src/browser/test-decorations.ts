@@ -1,4 +1,5 @@
-import { Color, RGBA, themeColorFromId } from '@opensumi/ide-theme';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -7,8 +8,6 @@ import { labelForTestInState, testMessageSeverityColors } from './../common/cons
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
@@ -37,6 +36,8 @@ import { TestServiceImpl } from './test.service';
 import { removeAnsiEscapeCodes } from '@opensumi/ide-core-common';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { buildTestUri, TestUriType } from '../common/testingUri';
+import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 
 interface ITestDecoration extends IDisposable {
   id: string;
@@ -273,17 +274,23 @@ class TestMessageDecoration implements ITestDecoration {
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
-  public id = '';
+  @Autowired(TestingPeekOpenerServiceToken)
+  private readonly testingPeekOpenerService: TestingPeekOpenerServiceImpl;
 
-  public readonly editorDecoration: IModelDeltaDecoration;
   private readonly decorationId = `testmessage-${uuid()}`;
   private codeEditorService: MonacoCodeService;
+  private get monacoEditor(): ICodeEditor {
+    return this.editor.monacoEditor;
+  }
+
+  public readonly editorDecoration: IModelDeltaDecoration;
+  public id = '';
 
   constructor(
     public readonly testMessage: ITestMessage,
     private readonly messageUri: URI | undefined,
     public readonly location: IRichLocation,
-    private readonly editor: ICodeEditor,
+    private readonly editor: IEditor,
   ) {
     this.codeEditorService = this.overrideServicesRegistry.getRegisteredService(
       ServiceNames.CODE_EDITOR_SERVICE,
@@ -299,13 +306,13 @@ class TestMessageDecoration implements ITestDecoration {
         after: {
           contentText: message,
           color: `${testMessageSeverityColors[severity]}`,
-          fontSize: `${editor.getOption(EditorOption.fontSize)}px`,
+          fontSize: `${this.monacoEditor.getOption(EditorOption.fontSize)}px`,
           fontFamily: `var(${FONT_FAMILY_VAR})`,
           padding: '0px 12px 0px 24px',
         },
       },
       undefined,
-      editor,
+      this.monacoEditor,
     );
 
     const options = this.codeEditorService.resolveDecorationOptions(this.decorationId, true);
@@ -329,7 +336,12 @@ class TestMessageDecoration implements ITestDecoration {
       return false;
     }
 
-    // 这里要实现点击后弹出 output peek widget
+    if (e.target.element?.className.includes(this.decorationId)) {
+      const ctor = this.testingPeekOpenerService.peekControllerMap.get(this.editor.currentUri?.toString()!);
+      if (ctor) {
+        ctor.toggle(this.messageUri);
+      }
+    }
 
     return false;
   }
@@ -473,9 +485,7 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
                         testExtId: test.item.extId,
                       });
 
-                newDecorations.push(
-                  this.injector.get(TestMessageDecoration, [m, uri, m.location, this.editor.monacoEditor]),
-                );
+                newDecorations.push(this.injector.get(TestMessageDecoration, [m, uri, m.location, this.editor]));
               }
             }
           }
