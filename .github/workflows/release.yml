@@ -13,7 +13,12 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: |
-      (github.event.issue.author_association == 'OWNER') &&
+      github.event_name == 'issue_comment' &&
+      (
+        github.event.issue.author_association == 'MEMBER' ||
+        github.event.issue.author_association == 'OWNER' ||
+        github.event.issue.author_association == 'CONTRIBUTOR'
+      ) &&
       ((contains(github.event.issue.body, 'Release Summary') &&
         contains(github.event.issue.title,'OpenSumi Release')) &&
         startsWith(github.event.comment.body, '/release')) &&
