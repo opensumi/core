@@ -16,3 +16,8 @@ export const PeekTestError: Command = {
   id: 'testing.peek.test.error',
   label: 'Peek Output',
 };
+
+export const ClosePeekTest: Command = {
+  id: 'testing.peek.test.close',
+  label: 'Close Peek Output',
+};

@@ -1,4 +1,4 @@
-import { CancellationToken, IDisposable, Event } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable, Event, URI } from '@opensumi/ide-core-common';
 
 export interface IMarkdownService {
   previewMarkdownInContainer(
@@ -6,6 +6,7 @@ export interface IMarkdownService {
     container: HTMLElement,
     cancellationToken: CancellationToken,
     onUpdate?: Event<string>,
+    onLinkClick?: (uri: URI) => void,
   ): Promise<IDisposable>;
 }
 
