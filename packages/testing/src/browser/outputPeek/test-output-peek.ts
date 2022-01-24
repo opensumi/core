@@ -141,11 +141,13 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
     if (!this.peekView.value) {
       this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor]);
-      this.peekView.value.onDidClose(() => {
-        this.visible.set(false);
-        this.currentPeekUri = undefined;
-        this.peekView.value = undefined;
-      });
+      this.disposer.addDispose(
+        this.peekView.value.onDidClose(() => {
+          this.visible.set(false);
+          this.currentPeekUri = undefined;
+          this.peekView.value = undefined;
+        }),
+      );
 
       this.visible.set(true);
       this.peekView.value.create();

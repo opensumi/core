@@ -1,5 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../color-registry';
+import { registerColor, transparent } from '../color-registry';
+import { contrastBorder } from './base';
+import { editorErrorForeground } from './editor';
 
 export const testingColorIconFailed = registerColor(
   'testing.iconFailed',
@@ -69,4 +71,24 @@ export const testingColorIconSkipped = registerColor(
     hc: '#848484',
   },
   localize('testing.iconSkipped', "Color for the 'Skipped' icon in the test explorer."),
+);
+
+export const testingPeekBorder = registerColor(
+  'testing.peekBorder',
+  {
+    dark: editorErrorForeground,
+    light: editorErrorForeground,
+    hc: contrastBorder,
+  },
+  localize('testing.peekBorder', 'Color of the peek view borders and arrow.'),
+);
+
+export const testingPeekHeaderBackground = registerColor(
+  'testing.peekHeaderBackground',
+  {
+    dark: transparent(editorErrorForeground, 0.1),
+    light: transparent(editorErrorForeground, 0.1),
+    hc: null,
+  },
+  localize('testing.peekBorder', 'Color of the peek view borders and arrow.'),
 );
