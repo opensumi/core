@@ -18,6 +18,7 @@ import {
   ITerminalHoverManagerService,
   ITerminalProfileService,
   ITerminalClientFactory2,
+  ITerminalContributionService,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import {
@@ -46,6 +47,7 @@ import { TerminalNetworkService } from './terminal.network';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
 import { TerminalEnvironmentService } from './terminal.environment.service';
 import { TerminalProfileService } from './terminal.profile';
+import { TerminalContributionService } from './terminal.contribution';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -124,6 +126,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalProfileService,
       useClass: TerminalProfileService,
+    },
+    {
+      token: ITerminalContributionService,
+      useClass: TerminalContributionService,
     },
   ];
 

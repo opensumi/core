@@ -1,7 +1,13 @@
 import { IDisposable, Event, URI } from '@opensumi/ide-core-common';
-import { ITerminalEnvironment, ITerminalProfileProvider } from '..';
+import {
+  ICreateContributedTerminalProfileOptions,
+  IShellLaunchConfig,
+  ITerminalEnvironment,
+  ITerminalProfileProvider,
+} from '..';
 import type vscode from 'vscode';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 
 export interface IResolveDefaultProfileOptions {
   os?: OperatingSystem;
@@ -11,12 +17,12 @@ export const ITerminalProfileService = Symbol('ITerminalProfileService');
 export interface ITerminalProfileService {
   readonly availableProfiles: ITerminalProfile[];
   getDefaultProfileName(): string | undefined;
-  // readonly contributedProfiles: IExtensionTerminalProfile[];
+  readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
   refreshAvailableProfiles(): void;
   onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
-  // getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
-  // registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
+  getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
+  registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined;
   registerTerminalProfileProvider(
     extensionIdentifier: string,
@@ -99,4 +105,35 @@ export interface IDetectProfileOptions {
   // 自动检测可用的 profile
   autoDetect: boolean;
   preference?: IDetectProfileOptionsPreference;
+}
+
+export interface ITerminalContributions {
+  profiles?: ITerminalProfileContribution[];
+}
+
+export interface ITerminalProfileContribution {
+  title: string;
+  id: string;
+  icon?: URI | { light: URI; dark: URI } | string;
+  color?: string;
+}
+
+export interface IExtensionTerminalProfile extends ITerminalProfileContribution {
+  extensionIdentifier: string;
+}
+
+export type ITerminalProfileObject = ITerminalExecutable | ITerminalProfileSource | IExtensionTerminalProfile | null;
+export type ITerminalProfileType = ITerminalProfile | IExtensionTerminalProfile;
+
+export const ITerminalContributionService = Symbol('ITerminalContributionService');
+export interface ITerminalContributionService {
+  readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
+  add(extension: IExtensionMetaData, contributions: ITerminalContributions): void;
+}
+
+export interface IRegisterContributedProfileArgs {
+  extensionIdentifier: string;
+  id: string;
+  title: string;
+  options: ICreateContributedTerminalProfileOptions;
 }
