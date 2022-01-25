@@ -7,10 +7,11 @@ import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensum
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
 import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 import { RemoteOpenerConverterContributionClient } from '../remote-opener/converter.contribution';
+import { RemoteOpenerConverterContribution } from '../remote-opener';
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {
-  contributionProvider = [OpenerContribution];
+  contributionProvider = [OpenerContribution, RemoteOpenerConverterContribution];
   providers = [
     ClientCommonContribution,
     DefaultOpenerContribution,
