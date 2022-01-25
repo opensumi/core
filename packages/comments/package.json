@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-comments",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "files": [
     "lib"
   ],
@@ -16,14 +16,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.14.0",
-    "@opensumi/ide-core-browser": "2.14.0",
-    "@opensumi/ide-core-common": "2.14.0",
-    "@opensumi/ide-core-node": "2.14.0",
-    "@opensumi/ide-editor": "2.14.0",
-    "@opensumi/ide-main-layout": "2.14.0",
-    "@opensumi/ide-monaco-enhance": "2.14.0",
-    "@opensumi/ide-theme": "2.14.0",
+    "@opensumi/ide-components": "2.14.1",
+    "@opensumi/ide-core-browser": "2.14.1",
+    "@opensumi/ide-core-common": "2.14.1",
+    "@opensumi/ide-core-node": "2.14.1",
+    "@opensumi/ide-editor": "2.14.1",
+    "@opensumi/ide-main-layout": "2.14.1",
+    "@opensumi/ide-monaco-enhance": "2.14.1",
+    "@opensumi/ide-theme": "2.14.1",
     "lodash.flattendeep": "^4.4.0",
     "lodash.groupby": "^4.6.0",
     "react-mentions": "^3.3.1"
