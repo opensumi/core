@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IJSONSchemaMap, isString, basename, URI, ProblemMatcher } from '@opensumi/ide-core-common';
+import { IJSONSchemaMap, isString, basename, URI, ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { IWorkspaceFolder } from './index';
@@ -1083,6 +1083,9 @@ export const enum TaskEventKind {
   Changed = 'changed',
   Terminated = 'terminated',
   ProcessEnded = 'processEnded',
+  BackgroundTaskBegin = 'backgroundTaskBegin',
+  BackgroundTaskEnded = 'backgroundTaskEnded',
+  ProblemMatched = 'problemMatched',
   End = 'end',
 }
 
@@ -1100,6 +1103,7 @@ export interface TaskEvent {
   processId?: number;
   exitCode?: number;
   terminalId?: string;
+  problems?: ProblemMatch[];
   __task?: Task;
 }
 
@@ -1118,6 +1122,7 @@ export namespace TaskEvent {
   ): TaskEvent;
   // tslint:disable-next-line: unified-signatures
   export function create(kind: TaskEventKind.Start, task: Task, terminalId?: string): TaskEvent;
+  export function create(kind: TaskEventKind.ProblemMatched, task: Task, problems?: ProblemMatch[]): TaskEvent;
   export function create(
     kind:
       | TaskEventKind.DependsOnStarted
@@ -1125,14 +1130,17 @@ export namespace TaskEvent {
       | TaskEventKind.Active
       | TaskEventKind.Inactive
       | TaskEventKind.Terminated
-      | TaskEventKind.End,
+      | TaskEventKind.End
+      | TaskEventKind.BackgroundTaskBegin
+      | TaskEventKind.BackgroundTaskEnded
+      | TaskEventKind.ProblemMatched,
     task: Task,
   ): TaskEvent;
   export function create(kind: TaskEventKind.Changed): TaskEvent;
   export function create(
     kind: TaskEventKind,
     task?: Task,
-    processIdOrExitCodeOrTerminalId?: number | string,
+    processIdOrExitCodeOrTerminalIdOrProblems?: number | string | ProblemMatch[],
   ): TaskEvent {
     if (task) {
       const result: TaskEvent = {
@@ -1147,11 +1155,13 @@ export namespace TaskEvent {
         __task: task,
       };
       if (kind === TaskEventKind.Start) {
-        result.terminalId = processIdOrExitCodeOrTerminalId as string;
+        result.terminalId = processIdOrExitCodeOrTerminalIdOrProblems as string;
       } else if (kind === TaskEventKind.ProcessStarted) {
-        result.processId = processIdOrExitCodeOrTerminalId as number;
+        result.processId = processIdOrExitCodeOrTerminalIdOrProblems as number;
       } else if (kind === TaskEventKind.ProcessEnded) {
-        result.exitCode = processIdOrExitCodeOrTerminalId as number;
+        result.exitCode = processIdOrExitCodeOrTerminalIdOrProblems as number;
+      } else if (kind === TaskEventKind.ProblemMatched) {
+        result.problems = processIdOrExitCodeOrTerminalIdOrProblems as ProblemMatch[];
       }
       return Object.freeze(result);
     } else {

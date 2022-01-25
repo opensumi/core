@@ -325,11 +325,13 @@ export class PreferenceContribution
         let lines;
         let numReturns;
         let preferenceLine;
-        const { index } = text.match(preferenceId) || {};
+        const { index } = text.match(new RegExp(`\\"${preferenceId}\\"`)) || {};
         if (index && index >= 0) {
-          numReturns = text.slice(0, index).match(new RegExp('\n', 'g'))!.length + 1;
-          lines = text.split('\n');
-          preferenceLine = lines[numReturns - 1];
+          numReturns = text.slice(0, index).match(new RegExp('\\n', 'g'))?.length || -1 + 1;
+          if (numReturns > 0) {
+            lines = text.split('\n');
+            preferenceLine = lines[numReturns];
+          }
         } else {
           // 如果不存在配置项，追加配置项内容
           const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
@@ -337,18 +339,25 @@ export class PreferenceContribution
           const content = jsoncparser.applyEdits(text, edits);
           editor.monacoEditor.setValue(content);
           text = content;
-          numReturns = text.slice(0, index).match(new RegExp('\n', 'g'))!.length;
-          lines = text.split('\n');
-          preferenceLine = lines[numReturns - 1];
+          numReturns = text.slice(0, index).match(new RegExp('\\n', 'g'))?.length || -1;
+          if (numReturns > 1) {
+            lines = text.split('\n');
+            preferenceLine = lines[numReturns - 1];
+          }
         }
-        const regStr = `\\s+\\"${preferenceId.replace(/\./g, '\\.')}\\":\\s?\[\"|{|t|f|\[]`;
+        if (!preferenceLine) {
+          return;
+        }
+        const regStr = `\\s+\\"${preferenceId}\\":\\s?["|{|t|f|[]`;
         const match = new RegExp(regStr, 'g').exec(preferenceLine);
         if (match) {
           const isStringExpr = match[0].slice(-1) === '"';
-          if (!isStringExpr) {
-            editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length });
-          } else {
-            editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length + 1 });
+          editor.monacoEditor.revealPositionInCenterIfOutsideViewport(
+            { lineNumber: numReturns + 1, column: match[0].length + 1 },
+            1,
+          );
+          editor.monacoEditor.setPosition({ lineNumber: numReturns + 1, column: match[0].length + 1 });
+          if (isStringExpr) {
             // 只对 String 类型配置展示提示，包括不存在配置项时追加的情况
             await commandService.executeCommand('editor.action.triggerSuggest');
           }
