@@ -443,7 +443,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   /**
-   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.14.0
+   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.17.0
    */
   async createClientWithWidget(options: TerminalOptions) {
     const widgetId = this.service.generateSessionId();
