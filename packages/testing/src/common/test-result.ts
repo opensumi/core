@@ -85,6 +85,14 @@ export const maxCountPriority = (counts: Readonly<TestStateCount>) => {
   return TestResultState.Unset;
 };
 
+export const resultItemParents = function* (results: ITestResult, item: TestResultItem) {
+  let i: TestResultItem | undefined = item;
+  while (i) {
+    yield i;
+    i = i.parent ? results.getStateById(i.parent) : undefined;
+  }
+};
+
 export interface ITestResult {
   readonly counts: Readonly<TestStateCount>;
 
