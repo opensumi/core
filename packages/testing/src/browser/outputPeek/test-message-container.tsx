@@ -167,7 +167,7 @@ export const TestMessageContainer = () => {
   }, []);
 
   return (
-    <>
+    <div className='test-output-peek-message-container' style={{ height: '100%' }}>
       {type === EContainerType.DIFF ? (
         <DiffContentProvider dto={dto} />
       ) : type === EContainerType.MARKDOWN ? (
@@ -175,6 +175,6 @@ export const TestMessageContainer = () => {
       ) : (
         getMessage(dto).message
       )}
-    </>
+    </div>
   );
 };

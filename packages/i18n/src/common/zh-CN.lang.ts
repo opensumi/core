@@ -919,6 +919,7 @@ export const localizationBundle = {
 
     // #region Testing
     'test.title': '测试管理器',
+    'test.result.runFinished': '测试运行完成于 {0}',
     // #endregion
   },
 };
