@@ -2513,6 +2513,15 @@ export enum TaskPanelKind {
   New = 3,
 }
 
+@es5ClassCompat
+export class TerminalProfile implements vscode.TerminalProfile {
+  constructor(public options: vscode.TerminalOptions | vscode.ExtensionTerminalOptions) {
+    if (typeof options !== 'object') {
+      illegalArgument('options');
+    }
+  }
+}
+
 /**
  * Controls the behaviour of the terminal's visibility.
  */
