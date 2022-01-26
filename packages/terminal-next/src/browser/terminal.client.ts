@@ -50,7 +50,6 @@ import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { XTerm } from './xterm';
-import { ThemeColor } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
