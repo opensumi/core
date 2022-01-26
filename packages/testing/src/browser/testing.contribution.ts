@@ -6,6 +6,7 @@ import {
   IEditorFeatureRegistry,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
+  WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -25,7 +26,13 @@ import {
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
-import { ClosePeekTest, GoToTestCommand, PeekTestError } from '../common/commands';
+import {
+  ClosePeekTest,
+  GoToTestCommand,
+  PeekTestError,
+  TestingDebugCurrentFile,
+  TestingRunCurrentFile,
+} from '../common/commands';
 
 import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
@@ -35,6 +42,9 @@ import { TestDecorationsContribution } from './test-decorations';
 import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
 import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
+import { TestServiceImpl } from './test.service';
+import { TestServiceToken } from '../common';
+import { TestRunProfileBitset } from '../common/testCollection';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -75,6 +85,12 @@ export class TestingContribution
 
   @Autowired()
   private readonly testingOutputPeekDocumentProvider: TestingOutputPeekDocumentProvider;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorService;
+
+  @Autowired(TestServiceToken)
+  private readonly testService: TestServiceImpl;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -151,6 +167,39 @@ export class TestingContribution
       },
       isVisible: () => false,
     });
+
+    commands.registerCommand(TestingRunCurrentFile, {
+      execute: async () => {
+        executeTestsInCurrentFile(TestRunProfileBitset.Run);
+      },
+    });
+
+    commands.registerCommand(TestingDebugCurrentFile, {
+      execute: async () => {
+        executeTestsInCurrentFile(TestRunProfileBitset.Debug);
+      },
+    });
+
+    const executeTestsInCurrentFile = (group: TestRunProfileBitset) => {
+      const currentEditor = this.editorService.currentEditor;
+      const monacoEditor = currentEditor?.monacoEditor;
+      const position = monacoEditor?.getPosition();
+      const model = monacoEditor?.getModel();
+
+      if (!position || !model || !('uri' in model)) {
+        return;
+      }
+
+      const demandedUri = model.uri.toString();
+      for (const test of this.testService.collection.all) {
+        if (test.item.uri?.toString() === demandedUri) {
+          this.testService.runTests({
+            tests: [test],
+            group,
+          });
+        }
+      }
+    };
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
