@@ -446,15 +446,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.17.0
    */
   async createClientWithWidget(options: TerminalOptions) {
-    const widgetId = this.service.generateSessionId();
-    const { group } = this._createOneGroup();
-    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
-
-    if (options.beforeCreate && typeof options.beforeCreate === 'function') {
-      options.beforeCreate(widgetId);
-    }
-
-    return await this._createClient(widget, options);
+    return await this.createClientWithWidget2({
+      terminalOptions: options,
+      args: options.args,
+      beforeCreate: options.beforeCreate,
+      closeWhenExited: options.closeWhenExited,
+    });
   }
 
   /**
