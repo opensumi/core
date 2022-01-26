@@ -10,7 +10,7 @@ export function LayoutComponent() {
       <SplitPanel overflow='hidden' id='main-horizontal' flex={1}>
         <SlotRenderer slot='left' defaultSize={310} minResize={204} minSize={49} />
         <SlotRenderer flexGrow={1} minResize={300} slot='main' />
-        <SlotRenderer slot='right' defaultSize={310} minResize={200} minSize={31} />
+        <SlotRenderer slot='right' defaultSize={310} minResize={204} minSize={49} />
       </SplitPanel>
       <SlotRenderer slot='statusBar' />
     </BoxPanel>

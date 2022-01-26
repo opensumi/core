@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ConfigContext, localize } from '@opensumi/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { ViewState } from '@opensumi/ide-core-browser';
 import cls from 'classnames';
@@ -15,21 +15,20 @@ import { SearchRulesWidget } from './search.rules.widget';
 export const Search = React.memo(
   observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
     const searchOptionRef = React.createRef<HTMLDivElement>();
-    const configContext = React.useContext(ConfigContext);
-    const { injector } = configContext;
-    const searchBrowserService = injector.get(ContentSearchClientService);
+    const searchBrowserService = useInjectable(ContentSearchClientService);
     const [searchPanelLayout, setSearchPanelLayout] = React.useState({ height: 0, width: 0 });
-
-    const searchResults = searchBrowserService.searchResults;
-    const resultTotal = searchBrowserService.resultTotal;
-    const searchState = searchBrowserService.searchState;
-    const doReplaceAll = searchBrowserService.doReplaceAll;
-    const updateUIState = searchBrowserService.updateUIState;
-    const UIState = searchBrowserService.UIState;
-    const searchError = searchBrowserService.searchError;
-    const isSearchDoing = searchBrowserService.isSearchDoing;
-    const validateMessage = searchBrowserService.validateMessage;
-    const isShowValidateMessage = searchBrowserService.isShowValidateMessage;
+    const {
+      searchResults,
+      resultTotal,
+      searchState,
+      doReplaceAll,
+      updateUIState,
+      UIState,
+      searchError,
+      isSearchDoing,
+      validateMessage,
+      isShowValidateMessage,
+    } = searchBrowserService;
 
     const onDetailToggle = React.useCallback(() => {
       updateUIState({ isDetailOpen: !UIState.isDetailOpen });
@@ -74,7 +73,6 @@ export const Search = React.memo(
       width: viewState.width || '100%',
       height: viewState.height,
     };
-
     return (
       <div className={styles.wrap} style={collapsePanelContainerStyle}>
         <div className={styles['loading-wrap']}>
@@ -107,7 +105,7 @@ export const Search = React.memo(
             onReplaceRuleChange={searchBrowserService.onReplaceInputChange}
             replaceInputEl={searchBrowserService.replaceInputEl}
             doReplaceAll={doReplaceAll}
-            resultCount={resultTotal.resultNum}
+            resultTotal={resultTotal}
           />
 
           <div className={cls(styles.search_details)}>

@@ -21,7 +21,6 @@ export const DefaultLayout = ToolbarActionBasedLayout;
 
 export function ToolbarActionBasedLayout() {
   const { colors, layout } = getStorageValue();
-
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer color={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />

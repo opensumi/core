@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/sumi",
-  "version": "2.13.9",
+  "version": "2.14.1",
   "typings": "index.d.ts",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "scripts": {},
   "dependencies": {
-    "@opensumi/ide-components": "2.13.9",
+    "@opensumi/ide-components": "2.14.1",
     "@types/react": "^16.9.33",
     "vscode-uri": "^3.0.2"
   }

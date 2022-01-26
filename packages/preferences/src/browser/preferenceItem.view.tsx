@@ -1,24 +1,23 @@
 import React from 'react';
 import {
+  DisposableCollection,
+  getIcon,
+  IPreferenceSettingsService,
+  isElectronRenderer,
+  localize,
+  PreferenceDataProperty,
+  PreferenceItem,
+  PreferenceProvider,
+  PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceService,
-  useInjectable,
-  PreferenceSchemaProvider,
-  PreferenceItem,
   replaceLocalizePlaceholder,
-  localize,
-  getIcon,
-  PreferenceDataProperty,
-  isElectronRenderer,
-  IPreferenceSettingsService,
-  PreferenceProvider,
-  DisposableCollection,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
-import { Input, Select, Option, CheckBox, Button, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
+import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import { PreferenceSettingsService } from './preference-settings.service';
-import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName } from '../common';
 
 interface IPreferenceItemProps {
@@ -125,7 +124,11 @@ export const NextPreferenceItem = ({
           return <CheckboxPreferenceItem {...props} />;
         case 'integer':
         case 'number':
-          return <InputPreferenceItem {...props} isNumber={true} />;
+          if (renderSchema.enum) {
+            return <SelectPreferenceItem {...props} />;
+          } else {
+            return <InputPreferenceItem {...props} />;
+          }
         case 'string':
           if (renderSchema.enum) {
             return <SelectPreferenceItem {...props} />;
@@ -350,9 +353,21 @@ function SelectPreferenceItem({
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = React.useState<string>();
+  const config = schema as PreferenceDataProperty;
+  const optionEnum = config.enum;
+  const optionEnumDescriptions = config.enumDescriptions;
 
-  const optionEnum = (schema as PreferenceDataProperty).enum;
+  const [value, setValue] = React.useState<string>(currentValue);
+
+  // 鼠标还没有划过来的时候，需要一个默认的描述信息
+  const defaultDescription = React.useMemo((): string => {
+    if (optionEnumDescriptions && optionEnum) {
+      return optionEnumDescriptions[optionEnum.indexOf(currentValue)] || '';
+    }
+
+    return '';
+  }, [schema]);
+  const [description, setDescription] = React.useState<string>(defaultDescription);
 
   React.useEffect(() => {
     setValue(currentValue);
@@ -362,6 +377,7 @@ function SelectPreferenceItem({
     setValue(value);
     preferenceService.set(preferenceName, value, scope);
   };
+
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
 
@@ -370,20 +386,22 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
-      return isElectronRenderer() ? (
-        <option value={item} key={`${idx} - ${item}`}>
-          {replaceLocalizePlaceholder((labels[item] || item).toString())}
-        </option>
-      ) : (
+
+      return (
         <Option
           value={item}
           label={replaceLocalizePlaceholder((labels[item] || item).toString())}
           key={`${idx} - ${item}`}
+          className={styles.select_option}
         >
           {replaceLocalizePlaceholder((labels[item] || item).toString())}
+          {item === config.default && (
+            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+          )}
         </Option>
       );
     });
+
   const renderNoneOptions = () =>
     isElectronRenderer() ? (
       <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>
@@ -399,7 +417,24 @@ function SelectPreferenceItem({
         {localize('preference.stringArray.none')}
       </Option>
     );
+
   const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
+
+  // 处理鼠标移动时候对应枚举值描述的变化
+  const handleDescriptionChange = React.useCallback(
+    (_, index) => {
+      if (optionEnumDescriptions) {
+        const description = optionEnumDescriptions[index];
+        if (description) {
+          setDescription(description);
+        } else {
+          // 对应的描述不存在，则设置为空，在渲染时会过滤掉 falsy 的值
+          setDescription('');
+        }
+      }
+    },
+    [optionEnumDescriptions, setDescription],
+  );
 
   return (
     <div className={styles.preference_line}>
@@ -416,27 +451,17 @@ function SelectPreferenceItem({
         <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
       )}
       <div className={styles.control_wrap}>
-        {isElectronRenderer() ? (
-          <NativeSelect
-            onChange={(event) => {
-              handlerValueChange(event.target.value);
-            }}
-            className={styles.select_control}
-            value={value}
-          >
-            {options}
-          </NativeSelect>
-        ) : (
-          <Select
-            dropdownRenderType='absolute'
-            maxHeight='200'
-            onChange={handlerValueChange}
-            value={value}
-            className={styles.select_control}
-          >
-            {options}
-          </Select>
-        )}
+        <Select
+          dropdownRenderType='absolute'
+          maxHeight='200'
+          onChange={handlerValueChange}
+          value={value}
+          className={styles.select_control}
+          description={description}
+          onMouseEnter={handleDescriptionChange}
+        >
+          {options}
+        </Select>
       </div>
     </div>
   );

@@ -24,6 +24,11 @@ export interface ISelectProps<T = string> {
   value?: T;
   disabled?: boolean;
   onChange?: (value: T) => void;
+  /**
+   * 当鼠标划过时触发回调
+   * @param value 鼠标划过的是第几个 option
+   */
+  onMouseEnter?: (value: T, index: number) => void;
   maxHeight?: string;
   [prop: string]: any;
   optionStyle?: any;
@@ -71,6 +76,11 @@ export interface ISelectProps<T = string> {
    * 默认值为 fixed
    */
   dropdownRenderType?: 'fixed' | 'absolute';
+
+  /**
+   * 当前鼠标划过属性的描述信息
+   */
+  description?: string;
 }
 
 export const Option: React.FC<
@@ -83,6 +93,7 @@ export const Option: React.FC<
     disabled?: boolean;
     label?: string | undefined;
     style?: any;
+    containerClassName?: string[];
   }>
 > = ({ value, children, disabled, onClick, className, ...otherProps }) => (
   <span
@@ -218,6 +229,7 @@ export function Select<T = string>({
   children,
   value,
   onChange,
+  onMouseEnter,
   optionLabelProp,
   style,
   optionStyle,
@@ -237,6 +249,7 @@ export function Select<T = string>({
   onBeforeShowOptions,
   allowOptionsOverflow,
   dropdownRenderType = 'fixed',
+  description,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -270,6 +283,10 @@ export function Select<T = string>({
   });
 
   function Wrapper(node: React.ReactNode, index: number) {
+    if (!node) {
+      return null;
+    }
+
     if (typeof node === 'string' || typeof node === 'number') {
       node = (
         <Option value={node} label={String(node)} key={`${node}_${index}`}>
@@ -277,13 +294,17 @@ export function Select<T = string>({
         </Option>
       );
     }
-    const disabled = (node as React.ReactElement).props?.disabled || false;
+
+    const element = node as React.ReactElement;
+    const disabled = element.props?.disabled || false;
+
     return (
       <div
-        key={`${(node as React.ReactElement).props.value}_${index}`}
+        key={`${element.props.value}_${index}`}
         className={classNames({
-          ['kt-select-option-select']: value === (node as React.ReactElement).props.value,
+          ['kt-select-option-select']: value === element.props.value,
         })}
+        onMouseEnter={() => onMouseEnter?.(element.props.value, index)}
         onClick={
           disabled
             ? noop
@@ -466,10 +487,20 @@ export function Select<T = string>({
           <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }} ref={overlayRef}>
             {options && (options as React.ReactNode[]).map((v, i) => Wrapper(v, i))}
             {children && flatChildren(children, Wrapper)}
+            {description && <Description text={description} />}
             <div className='kt-select-overlay' onClick={toggleOpen}></div>
           </div>
         ))}
     </div>
+  );
+}
+
+function Description({ text }: { text: string }) {
+  return (
+    <>
+      <div className='kt-option-divider' />
+      <div className='kt-option-description'>{text}</div>
+    </>
   );
 }
 

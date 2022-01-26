@@ -2,7 +2,6 @@
 name: Next Release Flow
 
 on:
-
   # 在 Pre-Release Issue 评论特定内容后执行
   issue_comment:
     events: [created]
@@ -32,10 +31,10 @@ jobs:
         github.event.issue.author_association == 'OWNER' ||
         github.event.issue.author_association == 'CONTRIBUTOR'
       ) &&
-      startsWith(github.event.issue.body, '## OpenSumi Pre-Release Summary') &&
+      contains(github.event.issue.body, 'Pre-Release Summary') &&
       contains(github.event.issue.labels.*.name, 'pre-release') &&
-      github.event.issue.title == 'OpenSumi Pre-Release' &&
-      startsWith(github.event.comment.body, '/pre-release')
+      contains(github.event.issue.title, 'OpenSumi Pre-Release') &&
+      contains(github.event.comment.body, '/pre-release')
 
     strategy:
       matrix:
@@ -86,13 +85,17 @@ jobs:
           script: |
             const fs = require('fs');
             const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
+            const lernaJson = require('./lerna.json');
+            const version = lernaJson.version.split('.');
+            const nextVersion = `${version[0]}.${version[1]}.${parseInt(version[2]) + 1}-next`;
+
             github.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 OpenSumi Pre-Release ${new Date().toDateString()}`,
-              body: `## ${new Date().toDateString()} Pre-Release Summary \r\n ${releasemd}`
-            })
+              title: `🤖 OpenSumi Pre-Release ${nextVersion}`,
+              body: `## ${nextVersion} Pre-Release Summary \r\n ${releasemd}`
+            });
 
       # 发布 next 版本，并在 issue 中回复
       # 使用 lerna publish 命令

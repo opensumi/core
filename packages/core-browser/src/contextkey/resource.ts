@@ -32,9 +32,10 @@ export class ResourceContextKey {
     );
   }
 
-  set(uri: URI) {
+  set(uri: URI | undefined) {
     if (!uri) {
       this.reset();
+      return;
     }
 
     const resource = this.resourceKey.get();

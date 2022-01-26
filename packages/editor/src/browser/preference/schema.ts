@@ -1714,6 +1714,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.tabSize': {
     type: 'number',
     default: EDITOR_FONT_DEFAULTS.tabSize,
+    minimum: 1,
     description: '%editor.configuration.tabSize%',
   },
   'editor.formatOnPaste': {

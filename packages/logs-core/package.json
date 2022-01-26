@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-logs",
-  "version": "2.13.9",
+  "version": "2.14.1",
   "files": [
     "lib"
   ],
@@ -16,14 +16,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.13.9",
-    "@opensumi/ide-core-common": "2.13.9",
-    "@opensumi/ide-core-node": "2.13.9",
+    "@opensumi/ide-connection": "2.14.1",
+    "@opensumi/ide-core-common": "2.14.1",
+    "@opensumi/ide-core-node": "2.14.1",
     "archiver": "^3.1.1",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.13.9",
+    "@opensumi/ide-core-browser": "2.14.1",
     "@opensumi/ide-dev-tool": "^1.3.1",
     "@types/debug": "^4.1.5"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-workspace-edit",
-  "version": "2.13.9",
+  "version": "2.14.1",
   "files": [
     "lib"
   ],
@@ -16,17 +16,17 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.13.9",
-    "@opensumi/ide-core-node": "2.13.9",
-    "@opensumi/ide-editor": "2.13.9",
-    "@opensumi/ide-file-service": "2.13.9",
-    "@opensumi/ide-overlay": "2.13.9",
-    "@opensumi/ide-main-layout": "2.13.9",
-    "@opensumi/ide-components": "2.13.9",
-    "@opensumi/ide-monaco": "2.13.9"
+    "@opensumi/ide-components": "2.14.1",
+    "@opensumi/ide-core-common": "2.14.1",
+    "@opensumi/ide-core-node": "2.14.1",
+    "@opensumi/ide-editor": "2.14.1",
+    "@opensumi/ide-file-service": "2.14.1",
+    "@opensumi/ide-main-layout": "2.14.1",
+    "@opensumi/ide-monaco": "2.14.1",
+    "@opensumi/ide-overlay": "2.14.1"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.13.9",
+    "@opensumi/ide-core-browser": "2.14.1",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }

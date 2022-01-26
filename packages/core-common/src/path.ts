@@ -159,9 +159,9 @@ export class Path {
     }
 
     if (this.raw.endsWith(Path.separator) || relativePath.startsWith(Path.separator)) {
-      return new Path(this.raw + relativePath);
+      return new Path(posix.join(this.raw, relativePath));
     }
-    return new Path(this.raw + Path.separator + relativePath);
+    return new Path(posix.join(this.raw, Path.separator, relativePath));
   }
 
   toString(): string {

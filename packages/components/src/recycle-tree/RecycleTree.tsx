@@ -333,6 +333,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       });
     };
     return () => {
+      // 如果上次更新队列未完成，直接使用上次更新队列作为最新结果
       if (!this.batchUpdatePromise) {
         this.batchUpdatePromise = new Promise((res) => (this.batchUpdateResolver = res));
         this.batchUpdatePromise.then(() => {
@@ -340,12 +341,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.batchUpdateResolver = null;
           this.onDidUpdateEmitter.fire();
         });
+        // 更新批量更新返回的promise对象
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = requestAnimationFrame(commitUpdate.bind(this));
       }
-      // 更新批量更新返回的promise对象
-      if (lastFrame) {
-        window.cancelAnimationFrame(lastFrame);
-      }
-      lastFrame = requestAnimationFrame(commitUpdate);
       return this.batchUpdatePromise;
     };
   })();

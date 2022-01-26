@@ -130,6 +130,11 @@
     }
   }
 
+  .kt-select-description {
+    line-height: 1;
+    margin-bottom: -3px;
+  }
+
   span {
     color: var(--kt-selectDropdown-foreground);
     background-color: var(--kt-selectDropdown-background);
@@ -146,6 +151,27 @@
     &:hover {
       background-color: var(--kt-selectDropdown-hoverBackground);
     }
+  }
+
+  .kt-option-divider {
+    height: 1px;
+    background-color: var(--kt-select-border);
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .kt-option-description {
+    min-height: 26px;
+    max-height: 52px;
+    font-size: 12px;
+    line-height: 26px;
+    padding: 0 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .kt-option-disabled {
