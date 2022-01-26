@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
-import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 import {
   IExtensionTerminalProfile,
   ITerminalContributions,
@@ -24,11 +23,11 @@ export class TerminalContributionService implements ITerminalContributionService
     return Array.from(this._terminalProfiles.values());
   }
 
-  add(extension: IExtensionMetaData, contributions: ITerminalContributions) {
+  add(extensionId: string, contributions: ITerminalContributions) {
     const profiles =
       contributions?.profiles
         ?.filter((p) => hasValidTerminalIcon(p))
-        .map((e) => ({ ...e, extensionIdentifier: extension.extensionId })) || [];
+        .map((e) => ({ ...e, extensionIdentifier: extensionId })) || [];
     for (const profile of profiles) {
       this._terminalProfiles.set(profile.id, profile);
     }

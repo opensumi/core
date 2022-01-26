@@ -8,7 +8,6 @@ import {
 } from '..';
 import type vscode from 'vscode';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 
 export interface IResolveDefaultProfileOptions {
   os?: OperatingSystem;
@@ -133,7 +132,7 @@ export type ITerminalProfileType = ITerminalProfile | IExtensionTerminalProfile;
 export const ITerminalContributionService = Symbol('ITerminalContributionService');
 export interface ITerminalContributionService {
   readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
-  add(extension: IExtensionMetaData, contributions: ITerminalContributions): void;
+  add(extensionId: string, contributions: ITerminalContributions): void;
 }
 
 export interface IRegisterContributedProfileArgs {
