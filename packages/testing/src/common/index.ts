@@ -32,7 +32,7 @@ export interface ITestService {
   readonly collection: MainThreadTestCollection;
 
   registerTestController(id: string, testController: ITestController): IDisposable;
-  runTests(req: any, token?: CancellationToken): Promise<any>;
+  runTests(req: AmbiguousRunTestsRequest, token?: CancellationToken): Promise<ITestResult>;
   publishDiff(controllerId: string, diff: TestsDiff): void;
   runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<ITestResult>;
 
