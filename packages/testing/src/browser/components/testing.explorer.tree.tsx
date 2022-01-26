@@ -7,7 +7,7 @@ import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToke
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
 import { GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
-import { testingStatesToIcons, testStatesToIconColors } from '../icons/icons';
+import { getIconWithColor } from '../icons/icons';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { TestingExplorerInlineMenus } from '../../common/testing-view';
 
@@ -20,10 +20,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
 
   const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
-  const getItemIcon = React.useCallback(
-    (item: ITestTreeItem) => `${testingStatesToIcons.get(item.state)} ${testStatesToIconColors[item.state]}` || '',
-    [],
-  );
+  const getItemIcon = React.useCallback((item: ITestTreeItem) => getIconWithColor(item.state), []);
 
   const asTreeData = React.useCallback(
     (item: ITestTreeItem): ITestTreeData => ({

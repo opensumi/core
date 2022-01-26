@@ -36,6 +36,6 @@ export interface ITestTreeItem {
   label: string;
 }
 
-export interface ITestTreeData extends IBasicTreeData {
-  rawItem: ITestTreeItem;
+export interface ITestTreeData<T = ITestTreeItem> extends IBasicTreeData {
+  rawItem: T;
 }
