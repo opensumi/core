@@ -16,6 +16,8 @@ import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { firstLine } from '../../common/testingStates';
 
+import styles from '../components/testing.module.less';
+
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
   @Autowired(IContextKeyService)

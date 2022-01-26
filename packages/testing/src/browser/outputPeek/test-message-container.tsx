@@ -16,6 +16,8 @@ import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 import { Markdown } from '@opensumi/ide-markdown';
 
+import styles from '../components/testing.module.less';
+
 enum EContainerType {
   DIFF,
   PLANTTEXT,
@@ -82,7 +84,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
   }, []);
 
   return (
-    <div ref={shadowRootRef} className={'preview-markdown'}>
+    <div ref={shadowRootRef} className={styles.preview_markdown}>
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
           <Markdown content={message} onLinkClick={handleLinkClick}></Markdown>
@@ -167,7 +169,7 @@ export const TestMessageContainer = () => {
   }, []);
 
   return (
-    <div className='test-output-peek-message-container' style={{ height: '100%' }}>
+    <div className={styles.test_output_peek_message_container} style={{ height: '100%' }}>
       {type === EContainerType.DIFF ? (
         <DiffContentProvider dto={dto} />
       ) : type === EContainerType.MARKDOWN ? (

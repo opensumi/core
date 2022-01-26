@@ -13,6 +13,8 @@ import { getIconWithColor } from '../icons/icons';
 import { TestResultServiceImpl } from '../test.result.service';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
+import styles from '../components/testing.module.less';
+
 enum ETestTreeType {
   RESULT = 'result',
   TEST = 'test',
@@ -157,9 +159,9 @@ export const TestTreeContainer = () => {
   );
 
   return (
-    <div className='test-output-peek-tree'>
+    <div className={styles.test_output_peek_tree}>
       {treeData.length > 0 && (
-        <BasicRecycleTree treeData={treeData} height={900} resolveChildren={resolveTestChildren} />
+        <BasicRecycleTree treeData={treeData} height={500} resolveChildren={resolveTestChildren} />
       )}
     </div>
   );
