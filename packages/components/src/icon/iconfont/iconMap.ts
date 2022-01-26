@@ -51,6 +51,7 @@ export const defaultIconfont = {
   'deactivate-breakpoints': 'deactivate-breakpoints',
   'debug': 'debug',
   'debug-restart-frame': 'debug-restart-frame',
+  'debug-alt-small': 'debug-alt-small',
   'delete': 'delete',
   'deploy': 'deploy',
   'detail': 'detail',
