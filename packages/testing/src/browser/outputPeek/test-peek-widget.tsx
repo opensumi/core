@@ -9,15 +9,14 @@ import './test-peek-widget.less';
 import { AppConfig, ConfigProvider, IContextKeyService } from '@opensumi/ide-core-browser';
 import { TestingIsInPeek } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { renderMarkdown } from '@opensumi/monaco-editor-core/esm/vs/base/browser/markdownRenderer';
-import { Emitter } from '@opensumi/ide-core-common';
 import { TestMessageContainer } from './test-message-container';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 import { TestPeekMessageToken } from '../../common';
+import { TestTreeContainer } from './test-tree-container';
+import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { firstLine } from '../../common/testingStates';
 
-const firstLine = (str: string) => {
-  const index = str.indexOf('\n');
-  return index === -1 ? str : str.slice(0, index);
-};
+import styles from '../components/testing.module.less';
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
@@ -56,9 +55,10 @@ export class TestingOutputPeek extends PeekViewWidget {
     this.setCssClass('testing-output-peek-container');
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-        <div className='test-output-peek-message-container'>
+        <SplitPanel overflow='hidden' id='testing-message-horizontal' flex={1}>
           <TestMessageContainer />
-        </div>
+          <TestTreeContainer />
+        </SplitPanel>
       </ConfigProvider>,
       this._wrapper,
     );

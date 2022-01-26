@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { Emitter, formatLocalize, localize } from '@opensumi/ide-core-common';
 import { IComputedStateAccessor, refreshComputedState } from './getComputedState';
 import {
   ExtensionRunTestsRequest,
@@ -75,7 +75,27 @@ export interface ITestResultService {
   readonly results: ReadonlyArray<ITestResult>;
 }
 
+export const maxCountPriority = (counts: Readonly<TestStateCount>) => {
+  for (const state of statesInOrder) {
+    if (counts[state] > 0) {
+      return state;
+    }
+  }
+
+  return TestResultState.Unset;
+};
+
+export const resultItemParents = function* (results: ITestResult, item: TestResultItem) {
+  let i: TestResultItem | undefined = item;
+  while (i) {
+    yield i;
+    i = i.parent ? results.getStateById(i.parent) : undefined;
+  }
+};
+
 export interface ITestResult {
+  readonly counts: Readonly<TestStateCount>;
+
   readonly id: string;
 
   readonly completedAt: number | undefined;
@@ -114,7 +134,7 @@ export class TestResultImpl implements ITestResult {
 
   private _completedAt?: number;
 
-  public readonly name: string;
+  public readonly name: string = formatLocalize('test.result.runFinished', new Date().toLocaleString());
   public readonly tasks: ITestRunTaskResults[] = [];
   public readonly onChange = this.changeEmitter.event;
   public readonly onComplete = this.completeEmitter.event;
