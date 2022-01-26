@@ -17,7 +17,7 @@ export const testingStatesToIcons = new Map<TestResultState, string>([
   [TestResultState.Failed, getExternalIcon('error')],
   [TestResultState.Passed, getExternalIcon('pass')],
   [TestResultState.Queued, getExternalIcon('history')],
-  [TestResultState.Running, getExternalIcon('loading')],
+  [TestResultState.Running, getExternalIcon('loading') + ' kt-icon-loading'],
   [TestResultState.Skipped, getExternalIcon('debug-step-over')],
   [TestResultState.Unset, getExternalIcon('circle-outline')],
 ]);

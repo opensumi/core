@@ -10,7 +10,7 @@ import {
   IDisposable,
 } from '@opensumi/ide-core-browser';
 
-import { ITestController, ITestService, TestId } from '../common';
+import { AmbiguousRunTestsRequest, ITestController, ITestService, TestId } from '../common';
 import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import { ITestResultService, TestResultServiceToken } from '../common/test-result';
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
@@ -67,7 +67,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
     this.processDiffEmitter.fire(diff);
   }
 
-  runTests(req: any, token = CancellationToken.None): Promise<any> {
+  runTests(req: AmbiguousRunTestsRequest, token = CancellationToken.None): Promise<ITestResult> {
     const resolved: ResolvedTestRunRequest = {
       targets: [],
       exclude: req.exclude?.map((t) => t.item.extId),
