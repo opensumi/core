@@ -5,7 +5,11 @@
 
 import { TestResultState } from './testCollection';
 
-export interface TreeStateNode { statusNode: true; state: TestResultState; priority: number }
+export interface TreeStateNode {
+  statusNode: true;
+  state: TestResultState;
+  priority: number;
+}
 
 /**
  * List of display priorities for different run states. When tests update,
@@ -59,3 +63,8 @@ export const statesInOrder = Object.keys(statePriority)
   .sort(cmpPriority);
 
 export const isRunningState = (s: TestResultState) => s === TestResultState.Queued || s === TestResultState.Running;
+
+export const firstLine = (str: string) => {
+  const index = str.indexOf('\n');
+  return index === -1 ? str : str.slice(0, index);
+};
