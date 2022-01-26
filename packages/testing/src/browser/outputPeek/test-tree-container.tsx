@@ -79,7 +79,8 @@ export const TestTreeContainer = () => {
   }, []);
 
   const getTaskChildren = React.useCallback(
-    (result: ITestResult, test: TestResultItem, taskId: number): Iterable<ITestBaseTree<ITestMessage>> => Iterable.map(test.tasks[0].messages, (m, messageIndex) => {
+    (result: ITestResult, test: TestResultItem, taskId: number): Iterable<ITestBaseTree<ITestMessage>> =>
+      Iterable.map(test.tasks[0].messages, (m, messageIndex) => {
         const { message, location } = test.tasks[taskId].messages[messageIndex];
 
         const uri = buildTestUri({
@@ -93,6 +94,7 @@ export const TestTreeContainer = () => {
         return {
           type: ETestTreeType.MESSAGE,
           context: uri,
+          // ** 这里应该解析 markdown 转为纯文本信息 **
           label: firstLine(typeof message === 'string' ? message : message.value),
           id: uri.toString(),
           icon: '',
