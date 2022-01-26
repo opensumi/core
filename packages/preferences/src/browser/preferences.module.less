@@ -230,6 +230,23 @@
       .select_control {
         max-width: 300px;
         width: 100%;
+
+        .select_option {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+
+          &:hover .select_default_option_tips {
+            color: var(--kt-selectDropdown-foreground);
+          }
+        }
+
+        .select_default_option_tips {
+          width: auto;
+          flex: 0;
+          color: var(--kt-selectOption-activeBorder);
+          background-color: transparent;
+        }
       }
       .number_control {
         max-width: 300px;

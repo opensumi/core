@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-connection",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "files": [
     "lib"
   ],
@@ -16,8 +16,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.14.0",
-    "@opensumi/ide-core-common": "2.14.0",
+    "@opensumi/ide-components": "2.14.1",
+    "@opensumi/ide-core-common": "2.14.1",
     "@opensumi/vscode-jsonrpc": "^6.1.1-beta.1",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",
