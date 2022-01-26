@@ -2,21 +2,14 @@ import { BasicRecycleTree } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, localize } from '@opensumi/ide-core-common';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
-import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useState } from 'react';
 import { TestPeekMessageToken } from '../../common';
 import { ITestResult, maxCountPriority, resultItemParents, TestResultServiceToken } from '../../common/test-result';
-import {
-  ITestMessage,
-  ITestTaskState,
-  TestItemExpandState,
-  TestResultItem,
-  TestResultState,
-} from '../../common/testCollection';
+import { ITestMessage, ITestTaskState, TestResultItem, TestResultState } from '../../common/testCollection';
 import { firstLine } from '../../common/testingStates';
 import { buildTestUri, TestUriType } from '../../common/testingUri';
 import { ITestTreeData } from '../../common/tree-view.model';
-import { getIconWithColor, testingStatesToIcons, testStatesToIconColors } from '../icons/icons';
+import { getIconWithColor } from '../icons/icons';
 import { TestResultServiceImpl } from '../test.result.service';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
@@ -44,16 +37,6 @@ export const TestTreeContainer = () => {
   const [treeData, setTreeData] = useState<ITestBaseTree<ITestResult>[]>([]);
 
   useEffect(() => {
-    disposer.addDispose(
-      testResultService.onTestChanged((e) => {
-        console.log('testResultService.onTestChanged', e);
-      }),
-    );
-    disposer.addDispose(
-      testResultService.onResultsChanged((e) => {
-        console.log('testResultService.onResultsChanged', e);
-      }),
-    );
     disposer.addDispose(testingPeekMessageService.onDidReveal((dto) => {}));
 
     const toTreeResult = testResultService.results.map((e) => getRootChildren(e));
@@ -66,7 +49,6 @@ export const TestTreeContainer = () => {
     if (!node) {
       return null;
     }
-    console.log(node);
     if (node.children && node.children.length > 0) {
       return node.children;
     }
