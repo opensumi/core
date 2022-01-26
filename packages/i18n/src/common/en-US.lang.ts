@@ -862,6 +862,7 @@ export const localizationBundle = {
     // #region Testing
     'test.title': 'Testing',
     'test.result.runFinished': 'Test run at {0}',
+    'test.task.unnamed': 'Unnamed Task',
     // #endregion
   },
 };

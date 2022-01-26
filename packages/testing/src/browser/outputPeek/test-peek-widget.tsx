@@ -14,11 +14,7 @@ import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 import { TestPeekMessageToken } from '../../common';
 import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
-
-const firstLine = (str: string) => {
-  const index = str.indexOf('\n');
-  return index === -1 ? str : str.slice(0, index);
-};
+import { firstLine } from '../../common/testingStates';
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
