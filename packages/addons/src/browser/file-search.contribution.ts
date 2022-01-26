@@ -539,7 +539,9 @@ export class FileSearchQuickCommandHandler {
 
         // If the alphabetical comparison is equal, call `compareItems` recursively using the `URI` member instead.
         if (comparison === 0) {
-          return this.compareItems(a, b, 'getUri');
+          return member === 'getUri'
+            ? 0 // Avoid infinite recursion if we have already compared by `uri`.
+            : this.compareItems(a, b, 'getUri');
         }
 
         return itemB.localeCompare(itemA);
