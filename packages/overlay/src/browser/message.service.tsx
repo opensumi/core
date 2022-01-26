@@ -1,5 +1,5 @@
 import React, { RefObject, useEffect, useRef } from 'react';
-import marked from 'marked';
+import { marked } from 'marked';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@opensumi/ide-components';
@@ -119,7 +119,6 @@ const toMarkdown = (message: string | React.ReactNode, opener: IOpenerService) =
         new DOMParser().parseFromString(
           marked(message, {
             gfm: true,
-            tables: true,
             breaks: false,
             pedantic: false,
             sanitize: true,

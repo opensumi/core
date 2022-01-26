@@ -67,7 +67,6 @@
     "mini-css-extract-plugin": "^0.6.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
-    "node-notifier": "^5.4.0",
     "npm-run": "^5.0.1",
     "npm-run-all": "^4.1.5",
     "react-dom": "^16.8.6",
