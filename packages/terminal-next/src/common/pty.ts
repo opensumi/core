@@ -283,6 +283,8 @@ export interface IExternlTerminalService {
   getProcessId(id: string): Promise<number>;
 }
 
+export type TerminalIcon = Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
+
 export type ITerminalLocationOptions = TerminalLocation | { splitActiveTerminal: boolean };
 
 export interface IShellLaunchConfig {
@@ -402,7 +404,7 @@ export interface IShellLaunchConfig {
   /**
    * The icon for the terminal, used primarily in the terminal tab.
    */
-  // icon?: TerminalIcon;
+  icon?: TerminalIcon;
 
   /**
    * The color ID to use for this terminal. If not specified it will use the default fallback

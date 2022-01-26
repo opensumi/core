@@ -12,6 +12,8 @@ import {
   ITerminalProfileService,
   IResolveDefaultProfileOptions,
   ITerminalProfileProvider,
+  IExtensionTerminalProfile,
+  IRegisterContributedProfileArgs,
 } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
@@ -329,6 +331,15 @@ export class MockErrorService {
 /** End */
 
 export class MockProfileService implements ITerminalProfileService {
+  contributedProfiles: IExtensionTerminalProfile[];
+  async getContributedDefaultProfile(
+    shellLaunchConfig: IShellLaunchConfig,
+  ): Promise<IExtensionTerminalProfile | undefined> {
+    return undefined;
+  }
+  async registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void> {
+    // do nothing
+  }
   availableProfiles: ITerminalProfile[] = [
     {
       isDefault: true,
@@ -355,11 +366,5 @@ export class MockProfileService implements ITerminalProfileService {
     profileProvider: ITerminalProfileProvider,
   ): IDisposable {
     return new Disposable();
-  }
-  resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
-    return Promise.resolve(this.availableProfiles[0]);
-  }
-  resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
-    return this.resolveDefaultProfile();
   }
 }

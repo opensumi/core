@@ -4,6 +4,7 @@ import {
   IShellLaunchConfig,
   ITerminalEnvironment,
   ITerminalProfileProvider,
+  TerminalIcon,
 } from '..';
 import type vscode from 'vscode';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
@@ -16,19 +17,23 @@ export interface IResolveDefaultProfileOptions {
 export const ITerminalProfileService = Symbol('ITerminalProfileService');
 export interface ITerminalProfileService {
   readonly availableProfiles: ITerminalProfile[];
-  getDefaultProfileName(): string | undefined;
   readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
-  refreshAvailableProfiles(): void;
   onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
+  getDefaultProfileName(): string | undefined;
   getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
-  registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined;
+  refreshAvailableProfiles(): void;
+  registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
   registerTerminalProfileProvider(
     extensionIdentifier: string,
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable;
+}
+
+export const ITerminalProfileInternalService = Symbol('ITerminalProfileInternalService');
+export interface ITerminalProfileInternalService {
   resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined>;
   resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined>;
 }
@@ -42,14 +47,14 @@ export interface ITerminalProfile {
   env?: ITerminalEnvironment;
   overrideName?: boolean;
   color?: string;
-  icon?: vscode.ThemeIcon | URI | { light: URI; dark: URI };
+  icon?: TerminalIcon;
 }
 
 export interface IBaseUnresolvedTerminalProfile {
   args?: string | string[] | undefined;
   isAutoDetected?: boolean;
   overrideName?: boolean;
-  icon?: string | vscode.ThemeIcon | URI | { light: URI; dark: URI };
+  icon?: string | TerminalIcon;
   color?: string;
   env?: ITerminalEnvironment;
 }

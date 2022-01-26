@@ -1,4 +1,5 @@
 import { observable } from 'mobx';
+import type vscode from 'vscode';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
@@ -14,6 +15,8 @@ import {
   IReporter,
   REPORT_NAME,
   Uri,
+  withNullAsUndefined,
+  IThemeColor,
 } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
@@ -38,6 +41,8 @@ import {
   ITerminalProfileService,
   ITerminalProfile,
   IShellLaunchConfig,
+  ITerminalProfileInternalService,
+  TerminalIcon,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
@@ -45,6 +50,7 @@ import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { XTerm } from './xterm';
+import { ThemeColor } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
@@ -119,6 +125,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
+
+  @Autowired(ITerminalProfileService)
+  terminalProfileService: ITerminalProfileService;
+
+  @Autowired(ITerminalProfileInternalService)
+  terminalProfileInternalService: ITerminalProfileInternalService;
 
   @Autowired(IVariableResolverService)
   variableResolver: IVariableResolverService;
@@ -223,49 +235,37 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
+  convertTerminalOptionsToLaunchConfig(options: TerminalOptions = {}) {
+    const shellLaunchConfig: IShellLaunchConfig = {
+      name: options.name,
+      executable: withNullAsUndefined(options.shellPath),
+      args: withNullAsUndefined(options.shellArgs),
+      cwd: withNullAsUndefined(options.cwd),
+      env: withNullAsUndefined(options.env),
+      icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
+      // color: ThemeColor.isThemeColor(options.color) ? options.color.id : undefined,
+      initialText: withNullAsUndefined(options.message),
+      strictEnv: withNullAsUndefined(options.strictEnv),
+      hideFromUser: withNullAsUndefined(options.hideFromUser),
+      // isFeatureTerminal: withNullAsUndefined(internalOptions?.isFeatureTerminal),
+      isExtensionOwnedTerminal: true,
+      // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
+      // location:
+      // internalOptions?.location ||
+      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
+      // disablePersistence: withNullAsUndefined(options.disablePersistence),
+    };
+    return shellLaunchConfig;
+  }
+
   /**
    * @deprecated Please use `init2` instead.
    */
-  async init(widget: IWidget, options?: TerminalOptions) {
-    this._uid = widget.id;
-    this.setupWidget(widget);
-
-    if (await this._checkWorkspace()) {
-      const terminalOptions = options || {};
-      this.name = terminalOptions.name || '';
-
-      this._prepare();
-
-      if (terminalOptions.message) {
-        this.xterm.raw.writeln(terminalOptions.message);
-      }
-
-      // 可能存在 env 为 undefined 的情况，做一下初始化
-      if (!terminalOptions.env) {
-        terminalOptions.env = {};
-      }
-
-      this.environmentService.mergedCollection?.applyToProcessEnvironment(
-        terminalOptions.env,
-        this.applicationService.backendOS,
-        this.variableResolver.resolve.bind(this.variableResolver),
-      );
-      this._terminalOptions = terminalOptions;
-
-      this.addDispose(
-        this.environmentService.onDidChangeCollections((collection) => {
-          // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-          collection.applyToProcessEnvironment(
-            terminalOptions.env || {},
-            this.applicationService.backendOS,
-            this.variableResolver.resolve.bind(this.variableResolver),
-          );
-        }),
-      );
-
-      this._attachXterm();
-      this._attachAfterRender();
-    }
+  async init(widget: IWidget, options: TerminalOptions = {}) {
+    this._terminalOptions = options;
+    await this.init2(widget, {
+      config: this.convertTerminalOptionsToLaunchConfig(options),
+    });
   }
 
   convertProfileToLaunchConfig(
@@ -298,9 +298,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return shellLaunchConfigOrProfile;
   }
 
-  async init2(widget: IWidget, options: ICreateTerminalOptions) {
+  async init2(widget: IWidget, options?: ICreateTerminalOptions) {
     this._uid = widget.id;
     this.setupWidget(widget);
+
+    if (!options || Object.keys(options).length === 0) {
+      // 应该是必定能 resolve 到 profile 的
+      const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
+      options = {
+        config: defaultProfile,
+      };
+    }
 
     if (await this._checkWorkspace()) {
       const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
@@ -438,28 +446,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._onLinksReady.fire(this);
   }
 
-  private async _doAttach() {
-    this.logger.log('_doAttach');
-    const sessionId = this.id;
-    const type = this.preference.get<string>('type');
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
-
-    let connection: ITerminalConnection | undefined;
-
-    const finalOptions = {
-      ...this._terminalOptions,
-      cwd: this._terminalOptions?.cwd || this._workspacePath,
-    };
-
-    try {
-      connection = await this.internalService.attach(sessionId, this.xterm.raw, cols, rows, finalOptions, type);
-    } catch (e) {
-      this.logger.error(`attach ${sessionId} terminal failed, type: ${type}`, JSON.stringify(finalOptions), e);
-    }
-
-    this.resolveConnection(connection);
-  }
-
   _doResize() {
     this.internalService.resize(this.id, this.xterm.raw.cols, this.xterm.raw.rows);
   }
@@ -534,13 +520,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async attach() {
     if (!this._ready) {
-      if (this._terminalOptions) {
-        return this._doAttach();
-      } else {
-        return this._doAttach2();
-      }
+      return this._doAttach2();
     }
   }
+
   private async _doAttach2() {
     const sessionId = this.id;
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
@@ -681,6 +664,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._terminalOptions = { ...this._terminalOptions, ...options };
+    this._launchConfig = this.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
+
     this._widget.name = options.name || this.name;
   }
 
@@ -737,29 +722,7 @@ export class TerminalClientFactory {
       },
     ]);
 
-    const logger = injector.get(ILogger) as ILogger;
-
     const client = child.get(TerminalClient);
-    const profileService = injector.get(ITerminalProfileService) as ITerminalProfileService;
-    if (!options || Object.keys(options).length === 0) {
-      options = options ?? {};
-      // 没有 options，获取默认 profile
-      const defaultProfile = await profileService.resolveDefaultProfile();
-      if (!defaultProfile) {
-        // 其实应该是必定能 resolve 到 profile 的
-        logger.log('cannot get default profile, use old resolve options');
-        // TODO: 没有获取到 profile，是提示用户失败呢？还是按以前的逻辑来
-        await client.init(widget, {});
-      } else {
-        logger.log('get default profile: ', defaultProfile);
-        options = {
-          config: defaultProfile,
-        };
-        await client.init2(widget, options);
-      }
-      return client;
-    }
-
     await client.init2(widget, options);
     return client;
   }
@@ -771,3 +734,18 @@ export const createTerminalClientFactory = (injector: Injector) => (widget: IWid
 export const createTerminalClientFactory2 =
   (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
     TerminalClientFactory.createClient2(injector, widget, options);
+
+function asTerminalIcon(iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon): TerminalIcon | undefined {
+  if (!iconPath || typeof iconPath === 'string') {
+    return undefined;
+  }
+
+  if (!('id' in iconPath)) {
+    return iconPath;
+  }
+
+  return {
+    id: iconPath.id,
+    color: iconPath.color as IThemeColor,
+  };
+}

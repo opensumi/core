@@ -12,7 +12,6 @@ import {
 import {
   IExtensionTerminalProfile,
   IRegisterContributedProfileArgs,
-  IResolveDefaultProfileOptions,
   IShellLaunchConfig,
   ITerminalContributionService,
   ITerminalProfile,
@@ -23,12 +22,8 @@ import {
   terminalProfileArgsMatch,
 } from '../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import * as path from '@opensumi/ide-core-common/lib/path';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-
-const generatedProfileName = 'Generated Profile';
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
@@ -179,45 +174,6 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       PreferenceScope.User,
     );
     return;
-  }
-
-  async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
-    await this.profilesReady;
-    let profile = await this.resolveRealDefaultProfile();
-    if (!profile) {
-      profile = await this._resolvedFallbackDefaultProfile(options);
-    }
-    return profile;
-  }
-
-  async resolveRealDefaultProfile() {
-    await this.profilesReady;
-    const defaultProfileName = this.getDefaultProfileName();
-    if (!defaultProfileName) {
-      return undefined;
-    }
-    return this.availableProfiles.find((v) => v.profileName === defaultProfileName);
-  }
-
-  private async _resolvedFallbackDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile> {
-    const executable = await this.terminalService.getDefaultSystemShell();
-    // Finally fallback to a generated profile
-    let args: string | string[] | undefined;
-    const os = options?.os ?? (await this.terminalService.getOs());
-    if (os === OperatingSystem.Macintosh && path.parse(executable).name.match(/(zsh|bash)/)) {
-      // macOS should launch a login shell by default
-      args = ['--login'];
-    } else {
-      // Resolve undefined to []
-      args = [];
-    }
-
-    return {
-      profileName: generatedProfileName,
-      path: executable,
-      args,
-      isDefault: false,
-    };
   }
 }
 

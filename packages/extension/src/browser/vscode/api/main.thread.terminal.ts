@@ -14,6 +14,7 @@ import {
   ITerminalExternalLinkProvider,
   ITerminalClient,
   ITerminalLink,
+  ITerminalProfileInternalService,
 } from '@opensumi/ide-terminal-next';
 import {
   IEnvironmentVariableService,
@@ -49,6 +50,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(ITerminalProfileService)
   private profileSerivce: ITerminalProfileService;
+
+  @Autowired(ITerminalProfileInternalService)
+  private profileInternalSerivce: ITerminalProfileInternalService;
 
   @Autowired(ITerminalGroupViewService)
   private terminalGroupViewService: ITerminalGroupViewService;
@@ -234,7 +238,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   private async _updateDefaultProfile() {
-    const defaultProfile = await this.profileSerivce.resolveDefaultProfile({});
+    const defaultProfile = await this.profileInternalSerivce.resolveDefaultProfile();
     if (defaultProfile) {
       this.proxy.$acceptDefaultProfile(defaultProfile);
     }
