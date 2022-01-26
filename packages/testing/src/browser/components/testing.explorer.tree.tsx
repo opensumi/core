@@ -5,7 +5,7 @@ import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/l
 
 import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
-import { GoToTestCommand, RuntTestCommand } from '../../common/commands';
+import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
 import { getIconWithColor } from '../icons/icons';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
@@ -76,6 +76,12 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
         testService.runTests({
           tests: rawItem.tests,
           group: TestRunProfileBitset.Run,
+        });
+        break;
+      case DebugTestCommand.id:
+        testService.runTests({
+          tests: rawItem.tests,
+          group: TestRunProfileBitset.Debug,
         });
         break;
       case GoToTestCommand.id:
