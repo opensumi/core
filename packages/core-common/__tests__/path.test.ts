@@ -31,6 +31,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as path from '../src/path';
+import { Path } from '../src/path';
 import { isWindows } from '../src/platform';
 
 describe('Paths (Node Implementation)', () => {
@@ -717,5 +718,37 @@ describe('Paths (Node Implementation)', () => {
     expect(path.win32.delimiter).toBe(';');
     // posix
     expect(path.posix.delimiter).toBe(':');
+  });
+});
+
+describe('Path.join', () => {
+  // Windows
+  test('join common path in Windows', () => {
+    const path = new Path('/c:/a/b');
+    expect(path.join('c', 'd').toString()).toBe('/c:/a/b/c/d');
+    expect(path.join('e/f').toString()).toBe('/c:/a/b/e/f');
+  });
+
+  test('join relative path in Windows', () => {
+    const path = new Path('/c:/a/b');
+    expect(path.join('./').toString()).toBe('/c:/a/b/');
+    expect(path.join('./././', '././').toString()).toBe('/c:/a/b/');
+    expect(path.join('../', './b/', './', '../', '../', './a').toString()).toBe('/c:/a');
+  });
+
+  // POSIX
+
+  test('join common path in POSIX', () => {
+    const path = new Path('/a/b/');
+    expect(path.join('c', 'd').toString()).toBe('/a/b/c/d');
+    expect(path.join('e/f').toString()).toBe('/a/b/e/f');
+    expect(path.join('l/m', '/n/', 'o/', 'p').toString()).toBe('/a/b/l/m/n/o/p');
+  });
+
+  test('join relative path in POSIX', () => {
+    const path = new Path('/a/b');
+    expect(path.join('./').toString()).toBe('/a/b/');
+    expect(path.join('./././', '././').toString()).toBe('/a/b/');
+    expect(path.join('../', './b/', './', '../', '../', './a').toString()).toBe('/a');
   });
 });
