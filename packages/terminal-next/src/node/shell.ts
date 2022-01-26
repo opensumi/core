@@ -7,10 +7,10 @@
 // - https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalEnvironment.ts
 // - https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/base/node/shell.ts
 
-import os from 'os';
+import { userInfo, release } from 'os';
 import fs from 'fs';
 
-import { IProcessEnvironment, isLinux, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
+import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-node';
 
@@ -133,7 +133,7 @@ export async function findExecutable(
 }
 
 export function getWindowsBuildNumber(): number {
-  const osVersion = /(\d+)\.(\d+)\.(\d+)/g.exec(os.release());
+  const osVersion = /(\d+)\.(\d+)\.(\d+)/g.exec(release());
   let buildNumber = 0;
   if (osVersion && osVersion.length === 4) {
     buildNumber = parseInt(osVersion[3], 10);
@@ -146,18 +146,21 @@ export function getWindowsBuildNumber(): number {
  * shell that the terminal uses by default.
  * @param os The platform to detect the shell of.
  */
-export async function getSystemShell(): Promise<string> {
-  if (isWindows) {
-    return getSystemShellWindows();
+export async function getSystemShell(os: OperatingSystem): Promise<string> {
+  if (os === OperatingSystem.Windows) {
+    if (isWindows) {
+      return getSystemShellWindows();
+    }
+    // Don't detect Windows shell when not on Windows
+    return getWindowsShell();
   }
-
-  return getSystemShellUnixLike();
+  return getSystemShellUnixLike(os);
 }
 
 let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null;
-function getSystemShellUnixLike(env = process.env): string {
+function getSystemShellUnixLike(os: OperatingSystem, env = process.env): string {
   // Only use $SHELL for the current OS
-  if (isMacintosh || isLinux) {
+  if ((isLinux && os === OperatingSystem.Macintosh) || (isMacintosh && os === OperatingSystem.Linux)) {
     return '/bin/bash';
   }
 
@@ -170,7 +173,7 @@ function getSystemShellUnixLike(env = process.env): string {
       try {
         // It's possible for $SHELL to be unset, this API reads /etc/passwd. See https://github.com/github/codespaces/issues/1639
         // Node docs: "Throws a SystemError if a user has no username or homedir."
-        unixLikeTerminal = os.userInfo().shell;
+        unixLikeTerminal = userInfo().shell;
       } catch (err) {}
     }
 
@@ -195,7 +198,7 @@ export function getWindowsShell(env = process.env): string {
 let _TERMINAL_DEFAULT_SHELL_WINDOWS: string | null = null;
 async function getSystemShellWindows(env = process.env): Promise<string> {
   if (!_TERMINAL_DEFAULT_SHELL_WINDOWS) {
-    const isAtLeastWindows10 = isWindows && parseFloat(os.release()) >= 10;
+    const isAtLeastWindows10 = isWindows && parseFloat(release()) >= 10;
     const is32ProcessOn64Windows = env.hasOwnProperty('PROCESSOR_ARCHITEW6432');
     const powerShellPath = `${env['windir']}\\${
       is32ProcessOn64Windows ? 'Sysnative' : 'System32'

@@ -280,7 +280,7 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getDefaultSystemShell(): Promise<string> {
-    return await this.serviceClientRPC.getDefaultSystemShell();
+    return await this.serviceClientRPC.getDefaultSystemShell(await this.getOs());
   }
 
   dispose() {

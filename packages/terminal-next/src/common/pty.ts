@@ -225,7 +225,7 @@ export interface ITerminalServiceClient {
   $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
   detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]>;
-  getDefaultSystemShell(): Promise<string>;
+  getDefaultSystemShell(os: OperatingSystem): Promise<string>;
   getOs(): OperatingSystem;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
 }

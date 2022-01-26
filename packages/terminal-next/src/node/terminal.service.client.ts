@@ -164,8 +164,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.getOs() === OperatingSystem.Macintosh ? 'osx' : OS === OperatingSystem.Windows ? 'windows' : 'linux';
   }
 
-  async getDefaultSystemShell() {
-    return await getSystemShell();
+  async getDefaultSystemShell(os: OperatingSystem) {
+    return await getSystemShell(os);
   }
 
   onMessage(id: string, msg: string): void {
