@@ -3,6 +3,7 @@ import { RPCProtocol } from '@opensumi/ide-connection';
 import {
   ITerminalApiService,
   ITerminalController,
+  ITerminalProfileInternalService,
   ITerminalProfileService,
   ITerminalService,
   ITerminalServicePath,
@@ -22,6 +23,11 @@ import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/
 import { NodePtyTerminalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { TerminalProfileInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile.internal';
+import {
+  MockProfileService,
+  MockTerminalProfileInternalService,
+} from '../../../../../terminal-next/__tests__/browser/mock.service';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -60,7 +66,11 @@ describe(__filename, () => {
     },
     {
       token: ITerminalProfileService,
-      useClass: TerminalProfileService,
+      useValue: new MockProfileService(),
+    },
+    {
+      token: ITerminalProfileInternalService,
+      useValue: new MockTerminalProfileInternalService(),
     },
     {
       token: ITerminalService,

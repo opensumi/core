@@ -29,6 +29,7 @@ import {
   ITerminalNetwork,
   ITerminalErrorService,
   ITerminalProfileService,
+  ITerminalProfileInternalService,
   ITerminalServicePath,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
@@ -42,6 +43,7 @@ import {
   MockEditorService,
   MockErrorService,
   MockProfileService,
+  MockTerminalProfileInternalService,
 } from './mock.service';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
@@ -157,6 +159,10 @@ export const injector = new Injector([
   {
     token: ITerminalProfileService,
     useValue: new MockProfileService(),
+  },
+  {
+    token: ITerminalProfileInternalService,
+    useValue: new MockTerminalProfileInternalService(),
   },
   {
     token: ITerminalServicePath,

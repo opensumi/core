@@ -14,6 +14,7 @@ import {
   ITerminalProfileProvider,
   IExtensionTerminalProfile,
   IRegisterContributedProfileArgs,
+  ITerminalProfileInternalService,
 } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
@@ -366,5 +367,18 @@ export class MockProfileService implements ITerminalProfileService {
     profileProvider: ITerminalProfileProvider,
   ): IDisposable {
     return new Disposable();
+  }
+}
+
+export class MockTerminalProfileInternalService implements ITerminalProfileInternalService {
+  async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+    return {
+      path: '/bin/sh',
+      isDefault: false,
+      profileName: 'default',
+    };
+  }
+  async resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
+    return undefined;
   }
 }
