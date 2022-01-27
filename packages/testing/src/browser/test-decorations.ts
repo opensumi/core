@@ -189,10 +189,18 @@ abstract class RunTestDecoration extends Disposable {
     const menuNodes = generateMergedCtxMenu({ menus: actions });
 
     actions.dispose();
-    this.ctxMenuRenderer.show({
-      anchor: e.event.browserEvent,
-      menuNodes,
-      args: this.getContextMenuArgs(),
+
+    /**
+     * 这里有个小坑，之所以加个延时处理是因为
+     * 我们对 monacoEditor 做了 onContextMenu 和 onMouseDown 的监听，当触发鼠标右键的时候是先走 onMouseDown 再走 onContextMenu
+     * 此时 onMouseDown 里已经显示了右键菜单，正准备走 onContextMenu 的时候，焦点已经不是在 monaco 的 glyph margin 处，而是菜单项的 dom 上，那么就会触发浏览器自带的右键菜单
+     */
+    setTimeout(() => {
+      this.ctxMenuRenderer.show({
+        anchor: e.event.browserEvent,
+        menuNodes,
+        args: this.getContextMenuArgs(),
+      });
     });
   }
 
