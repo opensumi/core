@@ -16,8 +16,6 @@ import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { firstLine } from '../../common/testingStates';
 
-import styles from '../components/testing.module.less';
-
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
   @Autowired(IContextKeyService)
@@ -81,6 +79,7 @@ export class TestingOutputPeek extends PeekViewWidget {
       dto.test.label,
     );
     setTimeout(() => {
+      console.log(dto, 'fire dtodtodtodto');
       this.testingPeekMessageService._didReveal.fire(dto);
       this.testingPeekMessageService._visibilityChange.fire(true);
     });
@@ -88,6 +87,7 @@ export class TestingOutputPeek extends PeekViewWidget {
 
   public hide(): void {
     super.dispose();
+    ReactDOM.unmountComponentAtNode(this._wrapper);
   }
 
   public setModel(dto: TestDto): Promise<void> {

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { TestPeekMessageToken } from '../../common';
 import { ITestResult, maxCountPriority, resultItemParents, TestResultServiceToken } from '../../common/test-result';
 import { ITestMessage, ITestTaskState, TestResultItem, TestResultState } from '../../common/testCollection';
-import { firstLine } from '../../common/testingStates';
+import { firstLine, parseMarkdownText } from '../../common/testingStates';
 import { buildTestUri, TestUriType } from '../../common/testingUri';
 import { ITestTreeData } from '../../common/tree-view.model';
 import { getIconWithColor } from '../icons/icons';
@@ -79,7 +79,7 @@ export const TestTreeContainer = () => {
           type: ETestTreeType.MESSAGE,
           context: uri,
           // ** 这里应该解析 markdown 转为纯文本信息 **
-          label: firstLine(typeof message === 'string' ? message : message.value),
+          label: firstLine(typeof message === 'string' ? message : parseMarkdownText(message.value)),
           id: uri.toString(),
           icon: '',
           notExpandable: false,

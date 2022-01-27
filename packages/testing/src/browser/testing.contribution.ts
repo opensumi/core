@@ -21,6 +21,8 @@ import {
   Event,
   FileType,
   getIcon,
+  KeybindingContribution,
+  KeybindingRegistry,
   localize,
   MaybePromise,
   SlotLocation,
@@ -67,14 +69,22 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
 }
 
 @Injectable()
-@Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution, MenuContribution)
+@Domain(
+  ClientAppContribution,
+  ComponentContribution,
+  CommandContribution,
+  BrowserEditorContribution,
+  MenuContribution,
+  KeybindingContribution,
+)
 export class TestingContribution
   implements
     ClientAppContribution,
     ComponentContribution,
     CommandContribution,
     BrowserEditorContribution,
-    MenuContribution
+    MenuContribution,
+    KeybindingContribution
 {
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
@@ -191,7 +201,9 @@ export class TestingContribution
     });
 
     commands.registerCommand(ClosePeekTest, {
-      execute: async (uri: string) => {
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
         if (!uri) {
           return;
         }
@@ -236,6 +248,14 @@ export class TestingContribution
         }
       }
     };
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: ClosePeekTest.id,
+      keybinding: 'esc',
+      // when: `!${CONTEXT_IN_DEBUG_MODE.raw}`,
+    });
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {

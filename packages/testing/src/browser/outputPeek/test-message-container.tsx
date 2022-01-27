@@ -142,15 +142,17 @@ const DiffContentProvider = React.memo((props: { dto: TestDto | undefined }) => 
 });
 
 export const TestMessageContainer = () => {
-  const disposer: Disposable = new Disposable();
   const testingPeekMessageService: TestingPeekMessageServiceImpl = useInjectable(TestPeekMessageToken);
 
   const [type, setType] = useState<EContainerType>();
   const [dto, setDto] = useState<TestDto>();
 
   useEffect(() => {
+    const disposer: Disposable = new Disposable();
+
     disposer.addDispose(
       testingPeekMessageService.onDidReveal(async (dto: TestDto) => {
+        console.log(dto, 'dtodtodtodto');
         setDto(dto);
         const message = getMessage(dto);
         if (dto.isDiffable) {

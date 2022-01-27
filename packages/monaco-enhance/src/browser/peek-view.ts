@@ -10,6 +10,8 @@ export abstract class PeekViewWidget extends ZoneWidget {
   private readonly _onDidClose = new Emitter<PeekViewWidget>();
   readonly onDidClose = this._onDidClose.event;
 
+  private isDisposed?: true;
+
   protected _headElement?: HTMLDivElement;
   protected _primaryHeading?: HTMLElement;
   protected _secondaryHeading?: HTMLElement;
@@ -23,7 +25,8 @@ export abstract class PeekViewWidget extends ZoneWidget {
   }
 
   public override dispose(): void {
-    if (!this.disposed) {
+    if (!this.isDisposed) {
+      this.isDisposed = true;
       super.dispose();
       this._onDidClose.fire(this);
     }
