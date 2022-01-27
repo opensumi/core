@@ -62,6 +62,8 @@ export enum MenuId {
   KTToolbarLocationContext = 'kt/toolbar/context',
   // 插件市场未搜索到结果
   MarketplaceNoResultsContext = 'marketplace/noResults/context',
+  // Testing glyph margin
+  TestingGlyphMarginContext = 'testing/glyphMargin/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {
