@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import marked from 'marked';
+import { marked } from 'marked';
 import { markdownCss } from './markdown.style';
 import styles from './comments.module.less';
 
@@ -24,6 +24,7 @@ export const CommentsBody: React.FC<{
       }
     }
   }, []);
+
   return (
     <div ref={shadowRootRef} className={styles.comment_shadow_box}>
       {shadowRoot && (
@@ -33,7 +34,6 @@ export const CommentsBody: React.FC<{
             dangerouslySetInnerHTML={{
               __html: marked(body, {
                 gfm: true,
-                tables: true,
                 breaks: false,
                 pedantic: false,
                 sanitize: true,
