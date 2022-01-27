@@ -13,7 +13,7 @@ import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-c
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { TestServiceToken } from '../common';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { Event, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
+import { Event, IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 import {
   IncrementalTestCollectionItem,
   InternalTestItem,
@@ -38,6 +38,13 @@ import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.overr
 import { buildTestUri, TestUriType } from '../common/testingUri';
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
+import {
+  AbstractMenuService,
+  generateMergedCtxMenu,
+  ICtxMenuRenderer,
+  IMenu,
+  MenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 
 interface ITestDecoration extends IDisposable {
   id: string;
@@ -122,6 +129,15 @@ const createRunTestDecoration = (
 };
 
 abstract class RunTestDecoration extends Disposable {
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
   public id = '';
 
   public get line() {
@@ -155,25 +171,32 @@ abstract class RunTestDecoration extends Disposable {
     resultItem: TestResultItem | undefined,
   ): RunTestDecoration;
 
-  /**
-   * 装饰器右键菜单
-   */
-  protected abstract getContextMenuActions(e: monaco.editor.IEditorMouseEvent): void;
-
   protected abstract defaultRun(): void;
 
   protected abstract defaultDebug(): void;
 
-  private showContextMenu(e: monaco.editor.IEditorMouseEvent) {}
-
-  private getGutterLabel() {}
+  protected abstract getContextMenuArgs(): string[];
 
   /**
-   * 获取与单个测试相关的上下文菜单操作
+   * 装饰器右键菜单
    */
-  protected getTestContextMenuActions(test: InternalTestItem, resultItem?: TestResultItem): void {}
+  protected getContextMenuActions(e: monaco.editor.IEditorMouseEvent): IMenu {
+    return this.menuService.createMenu(MenuId.TestingGlyphMarginContext, this.contextKeyService);
+  }
 
-  private getContributedTestActions(test: InternalTestItem, capabilities: number): void {}
+  private showContextMenu(e: monaco.editor.IEditorMouseEvent) {
+    const actions = this.getContextMenuActions(e);
+    const menuNodes = generateMergedCtxMenu({ menus: actions });
+
+    actions.dispose();
+    this.ctxMenuRenderer.show({
+      anchor: e.event.browserEvent,
+      menuNodes,
+      args: this.getContextMenuArgs(),
+    });
+  }
+
+  private getGutterLabel() {}
 }
 
 class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoration {
@@ -208,8 +231,8 @@ class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoratio
     return this;
   }
 
-  protected override getContextMenuActions() {
-    throw new Error('Method not implemented.');
+  protected getContextMenuArgs() {
+    return this.tests.map((t) => t.test.item.extId);
   }
 
   protected override defaultRun() {
@@ -220,7 +243,10 @@ class MultiRunTestDecoration extends RunTestDecoration implements ITestDecoratio
   }
 
   protected override defaultDebug() {
-    throw new Error('Method not implemented.');
+    return this.testService.runTests({
+      tests: this.tests.map(({ test }) => test),
+      group: TestRunProfileBitset.Debug,
+    });
   }
 }
 
@@ -253,8 +279,8 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
     ]);
   }
 
-  protected override getContextMenuActions(e: monaco.editor.IEditorMouseEvent) {
-    return this.getTestContextMenuActions(this.test, this.resultItem);
+  protected getContextMenuArgs() {
+    return [this.test.item.extId];
   }
 
   protected override defaultRun() {
@@ -265,7 +291,10 @@ class RunSingleTestDecoration extends RunTestDecoration implements ITestDecorati
   }
 
   protected override defaultDebug() {
-    throw new Error('Method not implemented.');
+    return this.testService.runTests({
+      tests: [this.test],
+      group: TestRunProfileBitset.Debug,
+    });
   }
 }
 

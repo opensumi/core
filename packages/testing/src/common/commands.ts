@@ -1,4 +1,4 @@
-import { Command, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
+import { Command } from '@opensumi/ide-core-browser';
 
 export const RuntTestCommand: Command = {
   id: 'testing.run.test',
@@ -16,12 +16,12 @@ export const GoToTestCommand: Command = {
 };
 
 export const TestingRunCurrentFile: Command = {
-  id: 'testing.run.currentFile',
+  id: 'testing.runCurrentFile',
   label: 'Run Tests in Current File',
 };
 
 export const TestingDebugCurrentFile: Command = {
-  id: 'testing.run.debugCurrentFile',
+  id: 'testing.debugCurrentFile',
   label: 'Debug Tests in Current File',
 };
 

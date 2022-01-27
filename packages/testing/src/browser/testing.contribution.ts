@@ -28,8 +28,10 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   ClosePeekTest,
+  DebugTestCommand,
   GoToTestCommand,
   PeekTestError,
+  RuntTestCommand,
   TestingDebugCurrentFile,
   TestingRunCurrentFile,
 } from '../common/commands';
@@ -45,6 +47,7 @@ import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.serv
 import { TestServiceImpl } from './test.service';
 import { TestServiceToken } from '../common';
 import { TestRunProfileBitset } from '../common/testCollection';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -64,9 +67,14 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
 }
 
 @Injectable()
-@Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution)
+@Domain(ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution, MenuContribution)
 export class TestingContribution
-  implements ClientAppContribution, ComponentContribution, CommandContribution, BrowserEditorContribution
+  implements
+    ClientAppContribution,
+    ComponentContribution,
+    CommandContribution,
+    BrowserEditorContribution,
+    MenuContribution
 {
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
@@ -113,6 +121,18 @@ export class TestingContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(RuntTestCommand, {
+      execute: async (extId: string) => {
+        console.log('RuntTestCommand', extId);
+      },
+    });
+
+    commands.registerCommand(DebugTestCommand, {
+      execute: async (extId: string) => {
+        console.log('DebugTestCommand', extId);
+      },
+    });
+
     commands.registerCommand(GoToTestCommand, {
       execute: async (extId: string) => {
         const test = this.testTreeViewModel.getTestItem(extId);
@@ -200,6 +220,19 @@ export class TestingContribution
         }
       }
     };
+  }
+
+  registerMenus(menuRegistry: IMenuRegistry) {
+    menuRegistry.registerMenuItem(MenuId.TestingGlyphMarginContext, {
+      command: RuntTestCommand.id,
+      group: '1_has_decoration',
+      order: 1,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestingGlyphMarginContext, {
+      command: DebugTestCommand.id,
+      group: '1_has_decoration',
+      order: 2,
+    });
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
