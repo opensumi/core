@@ -438,6 +438,14 @@ export class TestDecorationsContribution implements IEditorFeatureContribution {
     );
 
     this.disposer.addDispose(
+      this.editor.monacoEditor.onContextMenu((e) => {
+        e.event.preventDefault();
+        e.event.stopPropagation();
+        return false;
+      }),
+    );
+
+    this.disposer.addDispose(
       this.editor.monacoEditor.onMouseDown((e) => {
         for (const decoration of this.lastDecorations) {
           if (decoration.click(e)) {

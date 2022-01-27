@@ -123,13 +123,29 @@ export class TestingContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(RuntTestCommand, {
       execute: async (extId: string) => {
-        console.log('RuntTestCommand', extId);
+        const test = this.testTreeViewModel.getTestItem(extId);
+        if (!test) {
+          return;
+        }
+
+        await this.testService.runTests({
+          group: TestRunProfileBitset.Run,
+          tests: [test],
+        });
       },
     });
 
     commands.registerCommand(DebugTestCommand, {
       execute: async (extId: string) => {
-        console.log('DebugTestCommand', extId);
+        const test = this.testTreeViewModel.getTestItem(extId);
+        if (!test) {
+          return;
+        }
+
+        await this.testService.runTests({
+          group: TestRunProfileBitset.Debug,
+          tests: [test],
+        });
       },
     });
 
