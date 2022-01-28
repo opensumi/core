@@ -254,7 +254,6 @@ export class TestingContribution
     keybindings.registerKeybinding({
       command: ClosePeekTest.id,
       keybinding: 'esc',
-      // when: `!${CONTEXT_IN_DEBUG_MODE.raw}`,
     });
   }
 
