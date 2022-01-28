@@ -3,7 +3,7 @@ import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
-import { maxPriority } from './../common/testingStates';
+import { maxPriority, parseMarkdownText } from './../common/testingStates';
 import { labelForTestInState, testMessageSeverityColors } from './../common/constants';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
@@ -335,7 +335,9 @@ class TestMessageDecoration implements ITestDecoration {
 
     const severity = testMessage.type;
     const message =
-      typeof testMessage.message === 'string' ? removeAnsiEscapeCodes(testMessage.message) : testMessage.message.value;
+      typeof testMessage.message === 'string'
+        ? removeAnsiEscapeCodes(testMessage.message)
+        : parseMarkdownText(testMessage.message.value);
     this.codeEditorService.registerDecorationType(
       'test-message-decoration',
       this.decorationId,
