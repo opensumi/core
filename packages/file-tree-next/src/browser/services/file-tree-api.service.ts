@@ -151,13 +151,22 @@ export class FileTreeAPI implements IFileTreeAPI {
         return;
       }
     }
+    // 合并具有包含关系的文件移动
+    const sortedFiles = fromFiles.sort((a, b) => a.toString().length - b.toString().length);
+    const mergeFiles: URI[] = [];
+    for (const file of sortedFiles) {
+      if (mergeFiles.length > 0 && mergeFiles.find((exist) => exist.isEqualOrParent(file))) {
+        continue;
+      }
+      mergeFiles.push(file);
+    }
     if (this.corePreferences['explorer.confirmMove']) {
       const ok = localize('file.confirm.move.ok');
       const cancel = localize('file.confirm.move.cancel');
       const confirm = await this.dialogService.warning(
         formatLocalize(
           'file.confirm.move',
-          `[ ${fromFiles.map((uri) => uri.displayName).join(',')} ]`,
+          `[ ${mergeFiles.map((uri) => uri.displayName).join(',')} ]`,
           targetDir.displayName,
         ),
         [cancel, ok],
@@ -166,7 +175,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         return;
       }
     }
-    for (const from of fromFiles) {
+    for (const from of mergeFiles) {
       const filestat = this.cacheFileStat.get(from.toString());
       const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
       if (res) {
