@@ -15,6 +15,8 @@ import { TestPeekMessageToken } from '../../common';
 import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { firstLine, hintMessagePeekHeight } from '../../common/testingStates';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
@@ -23,6 +25,9 @@ export class TestingOutputPeek extends PeekViewWidget {
 
   @Autowired(TestPeekMessageToken)
   private readonly testingPeekMessageService: TestingPeekMessageServiceImpl;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
@@ -52,6 +57,17 @@ export class TestingOutputPeek extends PeekViewWidget {
           <TestMessageContainer />
           <TestTreeContainer />
         </SplitPanel>
+      </ConfigProvider>,
+      container,
+    );
+  }
+
+  protected _fillActionBarOptions(container: HTMLElement): void {
+    const menus = this.menuService.createMenu(MenuId.TestPeekTitleContext, this.contextKeyService);
+
+    ReactDOM.render(
+      <ConfigProvider value={this.configContext}>
+        <InlineActionBar menus={menus} separator='inline' type='icon' />
       </ConfigProvider>,
       container,
     );

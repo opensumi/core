@@ -34,3 +34,15 @@ export const ClosePeekTest: Command = {
   id: 'testing.peek.test.close',
   label: 'Close Peek Output',
 };
+
+export const GoToPreviousMessage: Command = {
+  id: 'testing.goToPreviousMessage',
+  label: 'Go to Previous Test Failure',
+  iconClass: 'arrowup',
+};
+
+export const GoToNextMessage: Command = {
+  id: 'testing.goToNextMessage',
+  label: 'Go to Next Test Failure',
+  iconClass: 'arrowdown',
+};

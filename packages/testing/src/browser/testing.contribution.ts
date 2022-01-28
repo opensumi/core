@@ -31,6 +31,8 @@ import {
 import {
   ClosePeekTest,
   DebugTestCommand,
+  GoToNextMessage,
+  GoToPreviousMessage,
   GoToTestCommand,
   PeekTestError,
   RuntTestCommand,
@@ -258,6 +260,7 @@ export class TestingContribution
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
+    /** glyph margin start */
     menuRegistry.registerMenuItem(MenuId.TestingGlyphMarginContext, {
       command: RuntTestCommand.id,
       group: '1_has_decoration',
@@ -268,6 +271,22 @@ export class TestingContribution
       group: '1_has_decoration',
       order: 2,
     });
+    /** glyph margin end */
+
+    /** output peek view actions start */
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: GoToPreviousMessage.id,
+      group: '1_has_left',
+      iconClass: GoToPreviousMessage.iconClass,
+      order: 1,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: GoToNextMessage.id,
+      group: '1_has_left',
+      iconClass: GoToNextMessage.iconClass,
+      order: 2,
+    });
+    /** output peek view actions end */
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {

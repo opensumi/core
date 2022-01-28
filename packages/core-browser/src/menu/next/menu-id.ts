@@ -64,6 +64,7 @@ export enum MenuId {
   MarketplaceNoResultsContext = 'marketplace/noResults/context',
   // Testing glyph margin
   TestingGlyphMarginContext = 'testing/glyphMargin/context',
+  TestPeekTitleContext = 'testing/outputPeek/title/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {

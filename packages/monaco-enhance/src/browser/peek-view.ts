@@ -1,4 +1,6 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IOptions, ZoneWidget } from './zone-widget';
 
@@ -16,8 +18,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
   protected _primaryHeading?: HTMLElement;
   protected _secondaryHeading?: HTMLElement;
   protected _metaHeading?: HTMLElement;
-  // 👇待定
-  // protected _actionbarWidget?: IMenuAction;
+  protected _actionbarElement?: HTMLDivElement;
   protected _bodyElement?: HTMLDivElement;
 
   constructor(protected readonly editor: ICodeEditor, readonly options: IPeekViewOptions = {}) {
@@ -71,13 +72,30 @@ export abstract class PeekViewWidget extends ZoneWidget {
 
     titleElement.append(this._primaryHeading, this._secondaryHeading, this._metaHeading);
 
-    const actionsContainer = document.createElement('div');
-    actionsContainer.classList.add('peekview-actions');
+    this._actionbarElement = document.createElement('div');
+    this._actionbarElement.classList.add('peekview-actions');
 
-    this._headElement!.append(actionsContainer);
+    this._fillActionBarOptions(this._actionbarElement);
+
+    const closeIcon = document.createElement('span');
+    closeIcon.className = `action-item ${getExternalIcon('chrome-close')}`;
+    const listenCloseClick = () => this.dispose();
+
+    closeIcon.addEventListener('click', listenCloseClick);
+    this.addDispose(
+      Disposable.create(() => {
+        closeIcon.removeEventListener('click', listenCloseClick);
+      }),
+    );
+
+    this._actionbarElement.append(closeIcon);
+
+    this._headElement!.append(this._actionbarElement);
   }
 
   protected _fillTitleIcon(container: HTMLElement): void {}
+
+  protected abstract _fillActionBarOptions(container: HTMLElement): void;
 
   protected abstract _fillBody(container: HTMLElement): void;
 
