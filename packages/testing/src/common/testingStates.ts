@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TestResultState } from './testCollection';
+import marked from 'marked';
 
 export interface TreeStateNode {
   statusNode: true;
@@ -68,3 +69,7 @@ export const firstLine = (str: string) => {
   const index = str.indexOf('\n');
   return index === -1 ? str : str.slice(0, index);
 };
+
+const domParser = new DOMParser();
+
+export const parseMarkdownText = (value: string) => domParser.parseFromString(marked.parse(value), 'text/html').documentElement.outerText;

@@ -216,7 +216,6 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
   }
 
   public initTreeModel(): Promise<void> {
-    // console.log('do initTreeModel');
     return Promise.resolve();
   }
 
