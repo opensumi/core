@@ -28,15 +28,11 @@ export class TestingOutputPeek extends PeekViewWidget {
   private configContext: AppConfig;
 
   public current?: TestDto;
-  private _wrapper: HTMLDivElement;
 
   constructor(public readonly editor: ICodeEditor) {
     super(editor);
 
     TestingIsInPeek.bind(this.contextKeyService);
-
-    this._wrapper = document.createElement('div');
-    this._wrapper.classList.add('test-output-peek-wrapper');
   }
 
   /**
@@ -49,7 +45,6 @@ export class TestingOutputPeek extends PeekViewWidget {
    *  - tree
    */
   protected _fillBody(container: HTMLElement): void {
-    container.appendChild(this._wrapper);
     this.setCssClass('testing-output-peek-container');
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
@@ -58,7 +53,7 @@ export class TestingOutputPeek extends PeekViewWidget {
           <TestTreeContainer />
         </SplitPanel>
       </ConfigProvider>,
-      this._wrapper,
+      container,
     );
   }
 
@@ -79,7 +74,6 @@ export class TestingOutputPeek extends PeekViewWidget {
       dto.test.label,
     );
     setTimeout(() => {
-      console.log(dto, 'fire dtodtodtodto');
       this.testingPeekMessageService._didReveal.fire(dto);
       this.testingPeekMessageService._visibilityChange.fire(true);
     });
@@ -87,7 +81,9 @@ export class TestingOutputPeek extends PeekViewWidget {
 
   public hide(): void {
     super.dispose();
-    ReactDOM.unmountComponentAtNode(this._wrapper);
+    if (this._bodyElement) {
+      ReactDOM.unmountComponentAtNode(this._bodyElement);
+    }
   }
 
   public setModel(dto: TestDto): Promise<void> {

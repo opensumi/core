@@ -32,19 +32,19 @@ interface ITestBaseTree<T> extends ITestTreeData<T> {
 }
 
 export const TestTreeContainer = () => {
-  const disposer: Disposable = new Disposable();
   const testResultService: TestResultServiceImpl = useInjectable(TestResultServiceToken);
   const testingPeekMessageService: TestingPeekMessageServiceImpl = useInjectable(TestPeekMessageToken);
 
   const [treeData, setTreeData] = useState<ITestBaseTree<ITestResult>[]>([]);
 
   useEffect(() => {
+    const disposer: Disposable = new Disposable();
     disposer.addDispose(testingPeekMessageService.onDidReveal((dto) => {}));
 
     const toTreeResult = testResultService.results.map((e) => getRootChildren(e));
     setTreeData(toTreeResult);
 
-    return disposer.dispose;
+    return disposer.dispose.bind(disposer);
   }, []);
 
   const resolveTestChildren = React.useCallback((node?: ITestBaseTree<unknown>) => {
