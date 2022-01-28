@@ -1,8 +1,8 @@
 import { Emitter } from '@opensumi/ide-core-common';
 import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { ZoneWidget } from './zone-widget';
+import { IOptions, ZoneWidget } from './zone-widget';
 
-export interface IPeekViewOptions {
+export interface IPeekViewOptions extends IOptions {
   supportOnTitleClick?: boolean;
 }
 
@@ -20,7 +20,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
   // protected _actionbarWidget?: IMenuAction;
   protected _bodyElement?: HTMLDivElement;
 
-  constructor(protected readonly editor: ICodeEditor, protected readonly options: IPeekViewOptions = {}) {
+  constructor(protected readonly editor: ICodeEditor, readonly options: IPeekViewOptions = {}) {
     super(editor);
   }
 

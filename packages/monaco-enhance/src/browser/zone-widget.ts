@@ -1,8 +1,15 @@
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@opensumi/ide-core-common';
 import { DomListener } from '@opensumi/ide-core-browser';
-// import styles from './styles.module.less';
+import {
+  Sash,
+  IHorizontalSashLayoutProvider,
+  Orientation,
+  SashState,
+  ISashEvent,
+} from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/sash/sash';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;
@@ -59,15 +66,18 @@ export class OverlayWidgetDelegate extends Disposable implements monaco.editor.I
   }
 }
 
+export interface IOptions {
+  isResizeable?: boolean;
+}
+
 /**
  * 构造函数负责 dom 结构，
  * show 负责 class 注入，
  * render 负责 style 动态注入，
  * dispose 负责回收。
  */
-export abstract class ZoneWidget extends Disposable {
+export abstract class ZoneWidget extends Disposable implements IHorizontalSashLayoutProvider {
   protected _container: HTMLDivElement;
-
   // 宽度和左定位不需要继承下去，完全交给父容器控制
   private width = 0;
   private left = 0;
@@ -75,11 +85,12 @@ export abstract class ZoneWidget extends Disposable {
   private _viewZone: ViewZoneDelegate | null;
   private _current: monaco.IRange;
   private _linesCount: number;
+  private _resizeSash: Sash | null = null;
 
   private _onDomNodeTop = new Emitter<number>();
   protected onDomNodeTop = this._onDomNodeTop.event;
 
-  constructor(protected readonly editor: IMonacoCodeEditor) {
+  constructor(protected readonly editor: IMonacoCodeEditor, readonly options?: IOptions) {
     super();
     this._container = document.createElement('div');
     this._listenEvents();
@@ -140,6 +151,8 @@ export abstract class ZoneWidget extends Disposable {
 
   create(): void {
     this._fillContainer(this._container);
+    this._initSash();
+    this.applyStyle();
   }
 
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {
@@ -161,6 +174,10 @@ export abstract class ZoneWidget extends Disposable {
 
   protected _onViewZoneHeight(height: number): void {
     this._container.style.height = `${height}px`;
+
+    if (this._resizeSash) {
+      this._resizeSash.layout();
+    }
   }
 
   protected setCssClass(className: string, classToReplace?: string): void {
@@ -203,6 +220,59 @@ export abstract class ZoneWidget extends Disposable {
     this.editor.onDidLayoutChange((event) => {
       this.layout(event);
     });
+  }
+
+  private _initSash(): void {
+    if (this._resizeSash) {
+      return;
+    }
+    this._resizeSash = new Sash(this._container, this, { orientation: Orientation.HORIZONTAL });
+    this.addDispose(this._resizeSash);
+
+    if (!this.options!.isResizeable) {
+      this._resizeSash.hide();
+      this._resizeSash.state = SashState.Disabled;
+    }
+
+    let data: { startY: number; heightInLines: number } | undefined;
+    this.addDispose(
+      this._resizeSash.onDidStart((e: ISashEvent) => {
+        if (this._viewZone) {
+          data = {
+            startY: e.startY,
+            heightInLines: this._viewZone.heightInLines,
+          };
+        }
+      }),
+    );
+
+    this.addDispose(
+      this._resizeSash.onDidEnd(() => {
+        data = undefined;
+      }),
+    );
+
+    this.addDispose(
+      this._resizeSash.onDidChange((evt: ISashEvent) => {
+        if (data) {
+          let lineDelta = (evt.currentY - data.startY) / this.editor.getOption(EditorOption.lineHeight);
+          let roundedLineDelta = lineDelta < 0 ? Math.ceil(lineDelta) : Math.floor(lineDelta);
+          let newHeightInLines = data.heightInLines + roundedLineDelta;
+
+          if (newHeightInLines > 5 && newHeightInLines < 35) {
+            this._relayout(newHeightInLines);
+          }
+        }
+      }),
+    );
+  }
+
+  getHorizontalSashLeft() {
+    return 0;
+  }
+
+  getHorizontalSashTop(): number {
+    return this._container.style.height === null ? 0 : parseInt(this._container.style.height, 10);
   }
 
   dispose() {
