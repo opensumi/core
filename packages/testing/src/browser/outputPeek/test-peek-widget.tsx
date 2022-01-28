@@ -14,7 +14,7 @@ import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 import { TestPeekMessageToken } from '../../common';
 import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
-import { firstLine } from '../../common/testingStates';
+import { firstLine, hintMessagePeekHeight } from '../../common/testingStates';
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
@@ -30,7 +30,7 @@ export class TestingOutputPeek extends PeekViewWidget {
   public current?: TestDto;
 
   constructor(public readonly editor: ICodeEditor) {
-    super(editor);
+    super(editor, { isResizeable: true });
 
     TestingIsInPeek.bind(this.contextKeyService);
   }
@@ -103,7 +103,7 @@ export class TestingOutputPeek extends PeekViewWidget {
       return this.showInPlace(dto);
     }
 
-    this.show(dto.revealLocation!.range, message.location?.range.startLineNumber!);
+    this.show(dto.revealLocation!.range, hintMessagePeekHeight(message));
     this.editor.focus();
 
     return this.showInPlace(dto);

@@ -19,11 +19,8 @@ import { TestResultServiceImpl } from '../test.result.service';
 import { TestResultServiceToken } from '../../common/test-result';
 import { TestingPeekOpenerServiceToken } from '../../common/testingPeekOpener';
 import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
+import { isDiffable } from '../../common/testingStates';
 
-const isDiffable = (
-  message: ITestErrorMessage,
-): message is ITestErrorMessage & { actualOutput: string; expectedOutput: string } =>
-  message.actual !== undefined && message.expected !== undefined;
 export class TestDto {
   public readonly test: ITestItem;
   public readonly messages: ITestMessage[];
