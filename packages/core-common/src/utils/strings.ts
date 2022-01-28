@@ -102,6 +102,17 @@ export function escapeRegExpCharacters(value: string): string {
   return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, '\\$&');
 }
 
+export function count(value: string, character: string): number {
+  let result = 0;
+  const ch = character.charCodeAt(0);
+  for (let i = value.length - 1; i >= 0; i--) {
+    if (value.charCodeAt(i) === ch) {
+      result++;
+    }
+  }
+  return result;
+}
+
 /**
  * Removes all occurrences of needle from the beginning and end of haystack.
  * @param haystack string to trim
