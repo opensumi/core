@@ -54,9 +54,7 @@ const getMessage = (dto?: TestDto) =>
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
-const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined }) => {
-  const { dto } = props;
-
+const MarkdownContentProvider = (props: { dto: TestDto | undefined }) => {
   const openerService: IOpenerService = useInjectable(IOpenerService);
 
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
@@ -71,6 +69,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
 
   React.useEffect(() => {
     if (shadowRootRef.current) {
+      const { dto } = props;
       const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
       if (!shadowRoot) {
         setShadowRoot(shadowRootElement);
@@ -92,7 +91,7 @@ const MarkdownContentProvider = React.memo((props: { dto: TestDto | undefined })
       )}
     </div>
   );
-});
+};
 
 const DiffContentProvider = React.memo((props: { dto: TestDto | undefined }) => {
   const { dto } = props;
@@ -142,13 +141,14 @@ const DiffContentProvider = React.memo((props: { dto: TestDto | undefined }) => 
 });
 
 export const TestMessageContainer = () => {
-  const disposer: Disposable = new Disposable();
   const testingPeekMessageService: TestingPeekMessageServiceImpl = useInjectable(TestPeekMessageToken);
 
   const [type, setType] = useState<EContainerType>();
   const [dto, setDto] = useState<TestDto>();
 
   useEffect(() => {
+    const disposer: Disposable = new Disposable();
+
     disposer.addDispose(
       testingPeekMessageService.onDidReveal(async (dto: TestDto) => {
         setDto(dto);
@@ -174,9 +174,9 @@ export const TestMessageContainer = () => {
         <DiffContentProvider dto={dto} />
       ) : type === EContainerType.MARKDOWN ? (
         <MarkdownContentProvider dto={dto} />
-      ) : (
+      ) : type === EContainerType.PLANTTEXT ? (
         getMessage(dto).message
-      )}
+      ) : null}
     </div>
   );
 };
