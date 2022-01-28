@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TestResultState } from './testCollection';
+import { ITestErrorMessage, TestResultState } from './testCollection';
 import marked from 'marked';
+import { count } from '@opensumi/ide-core-common';
 
 export interface TreeStateNode {
   statusNode: true;
@@ -72,4 +73,17 @@ export const firstLine = (str: string) => {
 
 const domParser = new DOMParser();
 
-export const parseMarkdownText = (value: string) => domParser.parseFromString(marked.parse(value), 'text/html').documentElement.outerText;
+export const parseMarkdownText = (value: string) =>
+  domParser.parseFromString(marked.parse(value), 'text/html').documentElement.outerText;
+
+export const isDiffable = (
+  message: ITestErrorMessage,
+): message is ITestErrorMessage & { actualOutput: string; expectedOutput: string } =>
+  message.actual !== undefined && message.expected !== undefined;
+
+const hintPeekStrHeight = (str: string | undefined) => Math.min(Math.max(count(str || '', '\n') + 3, 8), 20);
+
+export const hintMessagePeekHeight = (msg: ITestErrorMessage) =>
+  isDiffable(msg)
+    ? Math.max(hintPeekStrHeight(msg.actual), hintPeekStrHeight(msg.expected))
+    : hintPeekStrHeight(typeof msg.message === 'string' ? msg.message : msg.message.value);
