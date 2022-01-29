@@ -1,9 +1,9 @@
 import { TestingIsInPeek } from '@opensumi/ide-core-browser/lib/contextkey/testing';
-import { IContextKey, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, IContextKey, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { buildTestUri, parseTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
+import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import {
@@ -16,7 +16,7 @@ import {
 } from '../../common/testCollection';
 import { TestingOutputPeek } from './test-peek-widget';
 import { TestResultServiceImpl } from '../test.result.service';
-import { TestResultServiceToken } from '../../common/test-result';
+import { ITestResult, TestResultServiceToken } from '../../common/test-result';
 import { TestingPeekOpenerServiceToken } from '../../common/testingPeekOpener';
 import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
 import { isDiffable } from '../../common/testingStates';
@@ -70,6 +70,9 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
   private readonly disposer: Disposable = new Disposable();
 
   private readonly peekView = new MutableDisposable<TestingOutputPeek>();
@@ -79,6 +82,32 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
   constructor(@Optional() private readonly editor: IEditor) {
     this.visible = TestingIsInPeek.bind(this.contextKeyService);
+  }
+
+  private allMessages(results: readonly ITestResult[]): {
+    result: ITestResult;
+    test: TestResultItem;
+    taskIndex: number;
+    messageIndex: number;
+  }[] {
+    const messages: {
+      result: ITestResult;
+      test: TestResultItem;
+      taskIndex: number;
+      messageIndex: number;
+    }[] = [];
+
+    for (const result of results) {
+      for (const test of result.tests) {
+        for (let taskIndex = 0; taskIndex < test.tasks.length; taskIndex++) {
+          for (let messageIndex = 0; messageIndex < test.tasks[taskIndex].messages.length; messageIndex++) {
+            messages.push({ result, test, taskIndex, messageIndex });
+          }
+        }
+      }
+    }
+
+    return messages;
   }
 
   private retrieveTest(uri: URI): TestDto | undefined {
@@ -152,5 +181,100 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
     this.peekView.value.setModel(dto);
     this.currentPeekUri = uri;
+  }
+
+  public async openAndShow(uri: URI) {
+    const dto = this.retrieveTest(uri);
+    if (!dto) {
+      return;
+    }
+
+    if (!dto.revealLocation || dto.revealLocation.uri.toString() === this.editor.currentUri?.toString()) {
+      return this.show(uri);
+    }
+
+    const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri.toString());
+
+    if (!ctor) {
+      return;
+    }
+
+    this.removePeek();
+
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, URI.parse(uri.toString()), {
+      preview: true,
+      focus: true,
+    });
+
+    ctor.show(uri);
+  }
+
+  public next() {
+    const dto = this.peekView.value?.current;
+    if (!dto) {
+      return;
+    }
+
+    let found = false;
+    const getAllMessage = this.allMessages(this.testResultService.results);
+
+    for (const { messageIndex, taskIndex, result, test } of getAllMessage) {
+      if (found) {
+        this.openAndShow(
+          buildTestUri({
+            type: TestUriType.ResultMessage,
+            messageIndex,
+            taskIndex,
+            resultId: result.id,
+            testExtId: test.item.extId,
+          }),
+        );
+        return;
+      } else if (
+        dto.test.extId === test.item.extId &&
+        dto.messageIndex === messageIndex &&
+        dto.taskIndex === taskIndex &&
+        dto.resultId === result.id
+      ) {
+        found = true;
+      }
+    }
+  }
+
+  public previous() {
+    const dto = this.peekView.value?.current;
+    if (!dto) {
+      return;
+    }
+
+    let previous: { messageIndex: number; taskIndex: number; result: ITestResult; test: TestResultItem } | undefined;
+
+    const getAllMessage = this.allMessages(this.testResultService.results);
+
+    for (const m of getAllMessage) {
+      if (
+        dto.test.extId === m.test.item.extId &&
+        dto.messageIndex === m.messageIndex &&
+        dto.taskIndex === m.taskIndex &&
+        dto.resultId === m.result.id
+      ) {
+        if (!previous) {
+          return;
+        }
+
+        this.openAndShow(
+          buildTestUri({
+            type: TestUriType.ResultMessage,
+            messageIndex: previous.messageIndex,
+            taskIndex: previous.taskIndex,
+            resultId: previous.result.id,
+            testExtId: previous.test.item.extId,
+          }),
+        );
+        return;
+      }
+
+      previous = m;
+    }
   }
 }

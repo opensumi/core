@@ -67,7 +67,7 @@ export class TestingOutputPeek extends PeekViewWidget {
     return new Promise((res) => {
       ReactDOM.render(
         <ConfigProvider value={this.configContext}>
-          <InlineActionBar menus={menus} type='icon' />
+          <InlineActionBar menus={menus} type='icon' context={[this.editor.getModel()?.uri.toString()!]} />
         </ConfigProvider>,
         container,
         res,

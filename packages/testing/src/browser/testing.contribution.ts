@@ -29,11 +29,13 @@ import {
   URI,
 } from '@opensumi/ide-core-browser';
 import {
+  ClearTestResults,
   ClosePeekTest,
   DebugTestCommand,
   GoToNextMessage,
   GoToPreviousMessage,
   GoToTestCommand,
+  OpenMessageInEditor,
   PeekTestError,
   RuntTestCommand,
   TestingDebugCurrentFile,
@@ -252,14 +254,44 @@ export class TestingContribution
     };
 
     commands.registerCommand(GoToPreviousMessage, {
-      execute: async () => {
-        console.log('GoToPreviousMessage');
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.previous();
+        }
       },
     });
 
     commands.registerCommand(GoToNextMessage, {
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.next();
+        }
+      },
+    });
+
+    commands.registerCommand(ClearTestResults, {
       execute: async () => {
-        console.log('GoToNextMessage');
+        console.log('ClearTestResults');
+      },
+    });
+
+    commands.registerCommand(OpenMessageInEditor, {
+      execute: async () => {
+        console.log('OpenMessageInEditor');
       },
     });
   }
@@ -297,6 +329,18 @@ export class TestingContribution
       iconClass: GoToNextMessage.iconClass,
       group: 'navigation',
       order: 6,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: ClearTestResults.id,
+      iconClass: ClearTestResults.iconClass,
+      group: 'navigation',
+      order: 7,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: OpenMessageInEditor.id,
+      iconClass: OpenMessageInEditor.iconClass,
+      group: 'navigation',
+      order: 9,
     });
     /** output peek view actions end */
   }
