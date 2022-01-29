@@ -152,4 +152,22 @@ export class TestResultServiceImpl implements ITestResultService {
     }
     return undefined;
   }
+
+  public clear() {
+    const keep: ITestResult[] = [];
+    const removed: ITestResult[] = [];
+    for (const result of this.results) {
+      if (result.completedAt !== undefined) {
+        removed.push(result);
+      } else {
+        keep.push(result);
+      }
+    }
+
+    this._results = keep;
+    if (keep.length === 0) {
+      this.hasAnyResults.set(false);
+    }
+    this.changeResultEmitter.fire({ removed });
+  }
 }

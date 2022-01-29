@@ -54,6 +54,8 @@ import { TestServiceImpl } from './test.service';
 import { TestServiceToken } from '../common';
 import { TestRunProfileBitset } from '../common/testCollection';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TestResultServiceImpl } from './test.result.service';
+import { TestResultServiceToken } from '../common/test-result';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -113,6 +115,9 @@ export class TestingContribution
 
   @Autowired(TestServiceToken)
   private readonly testService: TestServiceImpl;
+
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -284,8 +289,9 @@ export class TestingContribution
     });
 
     commands.registerCommand(ClearTestResults, {
-      execute: async () => {
-        console.log('ClearTestResults');
+      execute: async (uri: string | undefined) => {
+        this.testResultService.clear();
+        this.commandService.executeCommand(ClosePeekTest.id, uri);
       },
     });
 
