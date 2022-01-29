@@ -4,7 +4,7 @@ import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { buildTestUri, parseTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
-import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { IEditor, IEditorFeatureContribution, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import {
   IRichLocation,
@@ -72,6 +72,9 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorService;
 
   private readonly disposer: Disposable = new Disposable();
 
@@ -151,6 +154,29 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
       this.peekView.clear();
     } else {
       this.show(uri);
+    }
+  }
+
+  public openCurrentInEditor() {
+    const current = this.peekView.value?.current;
+    if (!current) {
+      return;
+    }
+
+    const options = { pinned: false, revealIfOpened: true };
+
+    if (current.isDiffable) {
+      this.commandService.executeCommand(
+        EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID,
+        current.expectedUri,
+        current.actualUri,
+        'Expected <-> Actual',
+      );
+    } else {
+      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, current.messageUri, {
+        preview: true,
+        focus: true,
+      });
     }
   }
 

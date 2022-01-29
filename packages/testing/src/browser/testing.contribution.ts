@@ -7,6 +7,7 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
   WorkbenchEditorService,
+  EditorCollectionService,
 } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -21,10 +22,13 @@ import {
   Event,
   FileType,
   getIcon,
+  IOpener,
+  IOpenerService,
   KeybindingContribution,
   KeybindingRegistry,
   localize,
   MaybePromise,
+  OpenerContribution,
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
@@ -58,17 +62,38 @@ import { TestResultServiceImpl } from './test.result.service';
 import { TestResultServiceToken } from '../common/test-result';
 
 @Injectable()
+export class TestingOpenerProvider implements IOpener {
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(EditorCollectionService)
+  private readonly editorCollectionService: EditorCollectionService;
+
+  async open(uri: URI): Promise<boolean> {
+    console.log(uri, 'TestingOpenerProviderTestingOpenerProviderTestingOpenerProviderTestingOpenerProvider');
+    return true;
+  }
+
+  handleScheme(scheme: string): MaybePromise<boolean> {
+    return scheme === TEST_DATA_SCHEME;
+  }
+}
+
+@Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
   private _onDidChangeContent = new Emitter<URI>();
 
   onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
+    console.log('provideEditorDocumentModelContent', uri);
     return Promise.resolve('');
   }
+
   isReadonly(uri: URI): MaybePromise<boolean> {
     return true;
   }
+
   handlesScheme(scheme: string) {
     return scheme === TEST_DATA_SCHEME;
   }
@@ -82,6 +107,7 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   BrowserEditorContribution,
   MenuContribution,
   KeybindingContribution,
+  OpenerContribution,
 )
 export class TestingContribution
   implements
@@ -90,7 +116,8 @@ export class TestingContribution
     CommandContribution,
     BrowserEditorContribution,
     MenuContribution,
-    KeybindingContribution
+    KeybindingContribution,
+    OpenerContribution
 {
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
@@ -109,6 +136,9 @@ export class TestingContribution
 
   @Autowired()
   private readonly testingOutputPeekDocumentProvider: TestingOutputPeekDocumentProvider;
+
+  @Autowired()
+  private readonly testingOpenerProvider: TestingOpenerProvider;
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
@@ -296,8 +326,17 @@ export class TestingContribution
     });
 
     commands.registerCommand(OpenMessageInEditor, {
-      execute: async () => {
-        console.log('OpenMessageInEditor');
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.openCurrentInEditor();
+        }
       },
     });
   }
@@ -362,5 +401,9 @@ export class TestingContribution
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     registry.registerEditorDocumentModelContentProvider(this.testingOutputPeekDocumentProvider);
+  }
+
+  registerOpener(registry: IOpenerService): void {
+    registry.registerOpener(this.testingOpenerProvider);
   }
 }
