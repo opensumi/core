@@ -1,9 +1,9 @@
 import type vscode from 'vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import { Event } from '@opensumi/ide-core-common';
-import { LanguageSelector } from '../../../../common/vscode/model.api';
 import { Uri } from '@opensumi/ide-core-common';
 import { match as matchGlobPattern } from '../../../../common/vscode/glob';
+import { LanguageSelector } from '@opensumi/ide-editor';
 
 // tslint:disable-next-line:no-any
 export function createToken(): any {

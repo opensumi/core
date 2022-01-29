@@ -21,11 +21,10 @@ import { ReferenceAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/
 import { Adapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.language';
 
 import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService, LanguageSelector } from '@opensumi/ide-editor/lib/browser';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { fromLanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { MonacoModelIdentifier, testGlob } from '@opensumi/ide-extension/lib/common/vscode';
-import { LanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/model.api';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()

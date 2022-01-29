@@ -160,21 +160,6 @@ export interface SerializedLanguageConfiguration {
   onEnterRules?: SerializedOnEnterRule[];
 }
 
-export interface RelativePattern {
-  base: string;
-  pattern: string;
-  pathToRelative(from: string, to: string): string;
-}
-
-export interface LanguageFilter {
-  language?: string;
-  scheme?: string;
-  pattern?: string | RelativePattern;
-  hasAccessToAllModels?: boolean;
-}
-
-export type LanguageSelector = string | LanguageFilter | (string | LanguageFilter)[];
-
 /**
  * Represents a location inside a resource, such as a line
  * inside a text file.

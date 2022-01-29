@@ -21,6 +21,7 @@ import {
   ICompareService,
   IBreadCrumbService,
   IEditorFeatureRegistry,
+  ILanguageStatusService,
 } from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
@@ -53,6 +54,8 @@ import {
 } from './monaco-contrib/command/command.service';
 import { TextmateService } from './monaco-contrib/tokenizer/textmate.service';
 import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { LanguageStatusService } from './language/language-status.service';
+import { LanguageStatusContribution } from './language/language-status.contribution';
 export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';
@@ -143,6 +146,10 @@ export class EditorModule extends BrowserModule {
       token: ITextmateTokenizer,
       useClass: TextmateService,
     },
+    {
+      token: ILanguageStatusService,
+      useClass: LanguageStatusService,
+    },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
@@ -153,6 +160,7 @@ export class EditorModule extends BrowserModule {
     SaveParticipantsContribution,
     FileSystemResourceContribution,
     CallHierarchyContribution,
+    LanguageStatusContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

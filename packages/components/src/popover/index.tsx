@@ -80,21 +80,26 @@ export const Popover: React.FC<{
     }
     clearTimeout(hideContentTimer);
     contentEl.current.style.display = 'block';
-    setTimeout(() => {
+    window.requestAnimationFrame(() => {
       if (!childEl.current || !contentEl.current) {
         return;
       }
       const { left, top, width, height } = childEl.current.getBoundingClientRect() as ClientRect;
       const contentRect = contentEl.current.getBoundingClientRect() as ClientRect;
-
       if (position === PopoverPosition.top) {
-        const contentLeft = left - contentRect.width / 2 + width / 2;
+        const contentLeft =
+          contentRect.right - window.innerWidth > 0
+            ? window.innerWidth - contentRect.width
+            : left - contentRect.width / 2 + width / 2;
         const contentTop = top - contentRect.height - 7;
         contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       } else if (position === PopoverPosition.bottom) {
-        const contentLeft = left - contentRect.width / 2 + width / 2;
+        const contentLeft =
+          contentRect.right - window.innerWidth > 0
+            ? window.innerWidth - contentRect.width
+            : left - contentRect.width / 2 + width / 2;
         const contentTop = top + height + 7;
         contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
         contentEl.current!.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
@@ -121,7 +126,7 @@ export const Popover: React.FC<{
     }
     hideContentTimer = setTimeout(() => {
       contentEl.current!.style.display = 'none';
-    }, 500);
+    }, delay);
   }
 
   React.useEffect(() => {

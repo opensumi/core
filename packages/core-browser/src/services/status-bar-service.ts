@@ -1,4 +1,4 @@
-import { IDisposable, IThemeColor } from '@opensumi/ide-core-common';
+import { IDisposable, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
 import { IMenu } from '../menu/next';
 
 export const IStatusBarService = Symbol('IStatusBarService');
@@ -18,6 +18,12 @@ export interface IStatusBarService {
   contextMenu: IMenu;
   leftEntries: StatusBarEntry[];
   rightEntries: StatusBarEntry[];
+}
+
+export interface StatusBarHoverContent {
+  title: string;
+  name?: string;
+  command?: StatusBarHoverCommand;
 }
 
 export interface StatusBarEntry {
@@ -57,6 +63,10 @@ export interface StatusBarEntry {
    * 是否默认展示，可以通过右键菜单控制
    */
   hidden?: boolean;
+  /**
+   * 鼠标移上去 Content 的内容
+   */
+  hoverContents?: StatusBarHoverContent[];
   onClick?: (e: any) => void;
 }
 

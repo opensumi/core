@@ -8,6 +8,7 @@ import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser'
 import {
   DisposableCollection,
   Emitter,
+  IDisposable,
   IMarkerData,
   IRange,
   LRUMap,
@@ -37,7 +38,6 @@ import { IExtensionDescription } from '../../../common/vscode/extension';
 import {
   ILink,
   ISerializedSignatureHelpProviderMetadata,
-  LanguageSelector,
   SemanticTokensLegend,
   SerializedDocumentFilter,
   SerializedLanguageConfiguration,
@@ -53,7 +53,12 @@ import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from '../../../common/vscode/model.api';
 import { ILanguageService } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelService,
+  ILanguageStatus,
+  ILanguageStatusService,
+  LanguageSelector,
+} from '@opensumi/ide-editor/lib/browser';
 import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
@@ -87,6 +92,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(IEditorDocumentModelService)
   private readonly documentModelManager: IEditorDocumentModelService;
+
+  @Autowired(ILanguageStatusService)
+  private readonly languageStatusService: ILanguageStatusService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
@@ -1463,4 +1471,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
   }
   // #endregion InlayHints
+
+  // #region LanguageStatus
+  private readonly _status = new Map<number, IDisposable>();
+  $setLanguageStatus(handle: number, status: ILanguageStatus): void {
+    this._status.get(handle)?.dispose();
+    this._status.set(handle, this.languageStatusService.addStatus(status));
+  }
+  $removeLanguageStatus(handle: number): void {
+    this._status.get(handle)?.dispose();
+  }
+  // #endregion LanguageStatus
 }
