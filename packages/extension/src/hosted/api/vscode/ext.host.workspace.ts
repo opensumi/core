@@ -50,6 +50,7 @@ export function createWorkspaceApiFactory(
     get isTrusted() {
       return true;
     },
+    requestWorkspaceTrust: (_options?: vscode.WorkspaceTrustRequestOptions) => true,
     onDidGrantWorkspaceTrust: Event.None,
     openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
     onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
