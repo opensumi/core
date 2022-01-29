@@ -57,7 +57,8 @@ export class LanguageStatusContribution extends WithEventBus implements ClientAp
             name: status.name,
             command: status.command,
           })),
-          command: undefined,
+          // 添加个空的执行函数以便点击状态栏有相应态
+          onClick: () => {},
         });
       }
     }
