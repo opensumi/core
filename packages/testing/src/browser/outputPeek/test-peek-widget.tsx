@@ -62,15 +62,17 @@ export class TestingOutputPeek extends PeekViewWidget {
     );
   }
 
-  protected _fillActionBarOptions(container: HTMLElement): void {
+  protected async _fillActionBarOptions(container: HTMLElement): Promise<void> {
     const menus = this.menuService.createMenu(MenuId.TestPeekTitleContext, this.contextKeyService);
-
-    ReactDOM.render(
-      <ConfigProvider value={this.configContext}>
-        <InlineActionBar menus={menus} separator='inline' type='icon' />
-      </ConfigProvider>,
-      container,
-    );
+    return new Promise((res) => {
+      ReactDOM.render(
+        <ConfigProvider value={this.configContext}>
+          <InlineActionBar menus={menus} type='icon' />
+        </ConfigProvider>,
+        container,
+        res,
+      );
+    });
   }
 
   protected applyClass(): void {

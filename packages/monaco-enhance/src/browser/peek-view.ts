@@ -49,7 +49,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
     container.appendChild(this._bodyElement);
   }
 
-  protected _fillHead(container: HTMLElement, noCloseAction?: boolean): void {
+  protected async _fillHead(container: HTMLElement, noCloseAction?: boolean): Promise<void> {
     const titleElement = document.createElement('div');
     titleElement.classList.add('peekview-title');
 
@@ -75,7 +75,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
     this._actionbarElement = document.createElement('div');
     this._actionbarElement.classList.add('peekview-actions');
 
-    this._fillActionBarOptions(this._actionbarElement);
+    await this._fillActionBarOptions(this._actionbarElement);
 
     const closeIcon = document.createElement('span');
     closeIcon.className = `action-item ${getExternalIcon('chrome-close')}`;
@@ -95,7 +95,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
 
   protected _fillTitleIcon(container: HTMLElement): void {}
 
-  protected abstract _fillActionBarOptions(container: HTMLElement): void;
+  protected abstract _fillActionBarOptions(container: HTMLElement): Promise<void>;
 
   protected abstract _fillBody(container: HTMLElement): void;
 

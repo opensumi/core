@@ -1,4 +1,4 @@
-import { Command } from '@opensumi/ide-core-browser';
+import { Command, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 
 export const RuntTestCommand: Command = {
   id: 'testing.run.test',
@@ -38,11 +38,17 @@ export const ClosePeekTest: Command = {
 export const GoToPreviousMessage: Command = {
   id: 'testing.goToPreviousMessage',
   label: 'Go to Previous Test Failure',
-  iconClass: 'arrowup',
+  iconClass: getIcon('arrowup'),
 };
 
 export const GoToNextMessage: Command = {
   id: 'testing.goToNextMessage',
   label: 'Go to Next Test Failure',
-  iconClass: 'arrowdown',
+  iconClass: getIcon('arrowdown'),
+};
+
+export const ClearTestResults: Command = {
+  id: 'testing.clearTestResults',
+  label: 'Clear All Results',
+  iconClass: getIcon('arrowdown'),
 };

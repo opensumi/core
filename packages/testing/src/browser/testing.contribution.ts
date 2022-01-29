@@ -250,6 +250,18 @@ export class TestingContribution
         }
       }
     };
+
+    commands.registerCommand(GoToPreviousMessage, {
+      execute: async () => {
+        console.log('GoToPreviousMessage');
+      },
+    });
+
+    commands.registerCommand(GoToNextMessage, {
+      execute: async () => {
+        console.log('GoToNextMessage');
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -276,15 +288,15 @@ export class TestingContribution
     /** output peek view actions start */
     menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
       command: GoToPreviousMessage.id,
-      group: '1_has_left',
       iconClass: GoToPreviousMessage.iconClass,
-      order: 1,
+      group: 'navigation',
+      order: 5,
     });
     menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
       command: GoToNextMessage.id,
-      group: '1_has_left',
       iconClass: GoToNextMessage.iconClass,
-      order: 2,
+      group: 'navigation',
+      order: 6,
     });
     /** output peek view actions end */
   }
