@@ -18,7 +18,8 @@
   "dependencies": {
     "@opensumi/ide-core-common": "2.14.1",
     "@opensumi/ide-core-node": "2.14.1",
-    "@opensumi/ide-theme": "2.14.1"
+    "@opensumi/ide-theme": "2.14.1",
+    "@opensumi/ide-components": "2.14.1"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "2.14.1",

@@ -1,4 +1,10 @@
-import { IAccessibilityInformation, IDisposable, Severity, Event } from '@opensumi/ide-core-common';
+import {
+  IAccessibilityInformation,
+  IDisposable,
+  Severity,
+  Event,
+  StatusBarHoverCommand,
+} from '@opensumi/ide-core-common';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { LanguageSelector } from './language';
 
