@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/remote-cli/src",
+    "outDir": "../../../packages/remote-cli/lib"
+  },
+  "include": ["../../../packages/remote-cli/src"]
+}
