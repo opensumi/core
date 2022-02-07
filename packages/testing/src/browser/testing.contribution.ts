@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { Emitter, Schemas } from '@opensumi/ide-core-common';
 import { TEST_DATA_SCHEME } from './../common/testingUri';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import {
@@ -7,6 +7,11 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
   WorkbenchEditorService,
+  EditorCollectionService,
+  EditorComponentRegistry,
+  ResourceService,
+  IResource,
+  IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -21,17 +26,24 @@ import {
   Event,
   FileType,
   getIcon,
+  IOpener,
+  IOpenerService,
   KeybindingContribution,
   KeybindingRegistry,
   localize,
   MaybePromise,
+  OpenerContribution,
   SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
 import {
+  ClearTestResults,
   ClosePeekTest,
   DebugTestCommand,
+  GoToNextMessage,
+  GoToPreviousMessage,
   GoToTestCommand,
+  OpenMessageInEditor,
   PeekTestError,
   RuntTestCommand,
   TestingDebugCurrentFile,
@@ -50,19 +62,42 @@ import { TestServiceImpl } from './test.service';
 import { TestServiceToken } from '../common';
 import { TestRunProfileBitset } from '../common/testCollection';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TestResultServiceImpl } from './test.result.service';
+import { TestResultServiceToken } from '../common/test-result';
+import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
+import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
+
   private _onDidChangeContent = new Emitter<URI>();
 
   onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
-    return Promise.resolve('');
+    const dto = this.testResultService.retrieveTest(uri);
+    if (!dto) {
+      return '';
+    }
+
+    const message = dto.messages[dto.messageIndex];
+
+    if (dto.isDiffable || typeof message.message === 'string') {
+      return '';
+    }
+
+    const mdStr = message.message;
+    const content = mdStr ? (mdStr as IMarkdownString).value.replace(/\t/g, '') : '';
+
+    return content;
   }
+
   isReadonly(uri: URI): MaybePromise<boolean> {
     return true;
   }
+
   handlesScheme(scheme: string) {
     return scheme === TEST_DATA_SCHEME;
   }
@@ -76,6 +111,7 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   BrowserEditorContribution,
   MenuContribution,
   KeybindingContribution,
+  OpenerContribution,
 )
 export class TestingContribution
   implements
@@ -109,6 +145,9 @@ export class TestingContribution
 
   @Autowired(TestServiceToken)
   private readonly testService: TestServiceImpl;
+
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
 
   initialize(): void {
     this.testTreeViewModel.initTreeModel();
@@ -248,6 +287,58 @@ export class TestingContribution
         }
       }
     };
+
+    commands.registerCommand(GoToPreviousMessage, {
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.previous();
+        }
+      },
+    });
+
+    commands.registerCommand(GoToNextMessage, {
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.next();
+        }
+      },
+    });
+
+    commands.registerCommand(ClearTestResults, {
+      execute: async (uri: string | undefined) => {
+        this.testResultService.clear();
+        this.commandService.executeCommand(ClosePeekTest.id, uri);
+      },
+    });
+
+    commands.registerCommand(OpenMessageInEditor, {
+      execute: async (uri: string | undefined) => {
+        uri = uri ?? this.editorService.currentEditor?.currentUri?.toString();
+
+        if (!uri) {
+          return;
+        }
+
+        const ctor = this.testingPeekOpenerService.peekControllerMap.get(uri);
+        if (ctor) {
+          ctor.openCurrentInEditor();
+        }
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -258,6 +349,7 @@ export class TestingContribution
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
+    /** glyph margin start */
     menuRegistry.registerMenuItem(MenuId.TestingGlyphMarginContext, {
       command: RuntTestCommand.id,
       group: '1_has_decoration',
@@ -268,6 +360,34 @@ export class TestingContribution
       group: '1_has_decoration',
       order: 2,
     });
+    /** glyph margin end */
+
+    /** output peek view actions start */
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: GoToPreviousMessage.id,
+      iconClass: GoToPreviousMessage.iconClass,
+      group: 'navigation',
+      order: 5,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: GoToNextMessage.id,
+      iconClass: GoToNextMessage.iconClass,
+      group: 'navigation',
+      order: 6,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: ClearTestResults.id,
+      iconClass: ClearTestResults.iconClass,
+      group: 'navigation',
+      order: 7,
+    });
+    menuRegistry.registerMenuItem(MenuId.TestPeekTitleContext, {
+      command: OpenMessageInEditor.id,
+      iconClass: OpenMessageInEditor.iconClass,
+      group: 'navigation',
+      order: 9,
+    });
+    /** output peek view actions end */
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
@@ -281,5 +401,32 @@ export class TestingContribution
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     registry.registerEditorDocumentModelContentProvider(this.testingOutputPeekDocumentProvider);
+  }
+
+  registerEditorComponent(componentRegistry: EditorComponentRegistry) {
+    componentRegistry.registerEditorComponent({
+      uid: MARKDOWN_EDITOR_COMPONENT_ID,
+      component: MarkdownEditorComponent,
+      scheme: TEST_DATA_SCHEME,
+    });
+
+    componentRegistry.registerEditorComponentResolver(TEST_DATA_SCHEME, (resource, results) => {
+      results.push({
+        type: 'component',
+        componentId: MARKDOWN_EDITOR_COMPONENT_ID,
+        weight: 10,
+      });
+    });
+  }
+
+  registerResource(service: ResourceService) {
+    service.registerResourceProvider({
+      scheme: TEST_DATA_SCHEME,
+      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
+          uri,
+          icon: getIcon('file-text'),
+          name: `Preview ${uri.displayName}`,
+        }),
+    });
   }
 }
