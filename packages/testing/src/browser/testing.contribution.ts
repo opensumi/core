@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { Emitter, Schemas } from '@opensumi/ide-core-common';
 import { TEST_DATA_SCHEME } from './../common/testingUri';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import {
@@ -8,6 +8,10 @@ import {
   IEditorDocumentModelContentProvider,
   WorkbenchEditorService,
   EditorCollectionService,
+  EditorComponentRegistry,
+  ResourceService,
+  IResource,
+  IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -60,34 +64,34 @@ import { TestRunProfileBitset } from '../common/testCollection';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { TestResultServiceImpl } from './test.result.service';
 import { TestResultServiceToken } from '../common/test-result';
-
-@Injectable()
-export class TestingOpenerProvider implements IOpener {
-  @Autowired(WorkbenchEditorService)
-  private readonly workbenchEditorService: WorkbenchEditorService;
-
-  @Autowired(EditorCollectionService)
-  private readonly editorCollectionService: EditorCollectionService;
-
-  async open(uri: URI): Promise<boolean> {
-    console.log(uri, 'TestingOpenerProviderTestingOpenerProviderTestingOpenerProviderTestingOpenerProvider');
-    return true;
-  }
-
-  handleScheme(scheme: string): MaybePromise<boolean> {
-    return scheme === TEST_DATA_SCHEME;
-  }
-}
+import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
+import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
+  @Autowired(TestResultServiceToken)
+  private readonly testResultService: TestResultServiceImpl;
+
   private _onDidChangeContent = new Emitter<URI>();
 
   onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
-    console.log('provideEditorDocumentModelContent', uri);
-    return Promise.resolve('');
+    const dto = this.testResultService.retrieveTest(uri);
+    if (!dto) {
+      return '';
+    }
+
+    const message = dto.messages[dto.messageIndex];
+
+    if (dto.isDiffable || typeof message.message === 'string') {
+      return '';
+    }
+
+    const mdStr = message.message;
+    const content = mdStr ? (mdStr as IMarkdownString).value.replace(/\t/g, '') : '';
+
+    return content;
   }
 
   isReadonly(uri: URI): MaybePromise<boolean> {
@@ -116,8 +120,7 @@ export class TestingContribution
     CommandContribution,
     BrowserEditorContribution,
     MenuContribution,
-    KeybindingContribution,
-    OpenerContribution
+    KeybindingContribution
 {
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
@@ -136,9 +139,6 @@ export class TestingContribution
 
   @Autowired()
   private readonly testingOutputPeekDocumentProvider: TestingOutputPeekDocumentProvider;
-
-  @Autowired()
-  private readonly testingOpenerProvider: TestingOpenerProvider;
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
@@ -403,7 +403,30 @@ export class TestingContribution
     registry.registerEditorDocumentModelContentProvider(this.testingOutputPeekDocumentProvider);
   }
 
-  registerOpener(registry: IOpenerService): void {
-    registry.registerOpener(this.testingOpenerProvider);
+  registerEditorComponent(componentRegistry: EditorComponentRegistry) {
+    componentRegistry.registerEditorComponent({
+      uid: MARKDOWN_EDITOR_COMPONENT_ID,
+      component: MarkdownEditorComponent,
+      scheme: TEST_DATA_SCHEME,
+    });
+
+    componentRegistry.registerEditorComponentResolver(TEST_DATA_SCHEME, (resource, results) => {
+      results.push({
+        type: 'component',
+        componentId: MARKDOWN_EDITOR_COMPONENT_ID,
+        weight: 10,
+      });
+    });
+  }
+
+  registerResource(service: ResourceService) {
+    service.registerResourceProvider({
+      scheme: TEST_DATA_SCHEME,
+      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
+          uri,
+          icon: getIcon('file-text'),
+          name: `Preview ${uri.displayName}`,
+        }),
+    });
   }
 }

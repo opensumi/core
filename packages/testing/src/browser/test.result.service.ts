@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, IContextKey, IContextKeyService, uuid } from '@opensumi/ide-core-browser';
+import { Emitter, IContextKey, IContextKeyService, URI, uuid } from '@opensumi/ide-core-browser';
 import { TestingHasAnyResults, TestingIsRunning } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { findFirstInSorted } from '@opensumi/ide-core-common/lib/arrays';
 import { ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
@@ -17,6 +17,8 @@ import {
   TestResultItem,
   TestResultState,
 } from '../common/testCollection';
+import { parseTestUri } from '../common/testingUri';
+import { TestDto } from './outputPeek/test-output-peek';
 
 export type ResultChangeEvent =
   | { completed: ITestResult }
@@ -68,6 +70,21 @@ export class TestResultServiceImpl implements ITestResultService {
 
   private updateIsRunning() {
     this.isRunning.set(isRunningTests(this));
+  }
+
+  public retrieveTest(uri: URI): TestDto | undefined {
+    const parts = parseTestUri(uri);
+    if (!parts) {
+      return undefined;
+    }
+
+    const { resultId, testExtId, taskIndex, messageIndex } = parts;
+    const test = this.getResult(parts.resultId)?.getStateById(testExtId);
+    if (!test || !test.tasks[parts.taskIndex]) {
+      return;
+    }
+
+    return new TestDto(resultId, test, taskIndex, messageIndex);
   }
 
   public createTestResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest): ITestResult {

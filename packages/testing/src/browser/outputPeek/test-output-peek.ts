@@ -113,21 +113,6 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
     return messages;
   }
 
-  private retrieveTest(uri: URI): TestDto | undefined {
-    const parts = parseTestUri(uri);
-    if (!parts) {
-      return undefined;
-    }
-
-    const { resultId, testExtId, taskIndex, messageIndex } = parts;
-    const test = this.testResultService.getResult(parts.resultId)?.getStateById(testExtId);
-    if (!test || !test.tasks[parts.taskIndex]) {
-      return;
-    }
-
-    return new TestDto(resultId, test, taskIndex, messageIndex);
-  }
-
   public contribute(): IDisposable {
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
@@ -163,8 +148,6 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
       return;
     }
 
-    const options = { pinned: false, revealIfOpened: true };
-
     if (current.isDiffable) {
       this.commandService.executeCommand(
         EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID,
@@ -174,7 +157,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
       );
     } else {
       this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, current.messageUri, {
-        preview: true,
+        preview: false,
         focus: true,
       });
     }
@@ -186,7 +169,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   }
 
   public async show(uri: URI): Promise<void> {
-    const dto = this.retrieveTest(uri);
+    const dto = this.testResultService.retrieveTest(uri);
     if (!dto) {
       return;
     }
@@ -210,7 +193,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   }
 
   public async openAndShow(uri: URI) {
-    const dto = this.retrieveTest(uri);
+    const dto = this.testResultService.retrieveTest(uri);
     if (!dto) {
       return;
     }
