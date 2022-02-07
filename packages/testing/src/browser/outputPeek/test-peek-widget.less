@@ -44,18 +44,14 @@
 }
 
 .peekview-widget .head .peekview-actions {
-  flex: 1;
-  text-align: right;
-  padding-right: 2px;
-}
+  display: flex;
+  justify-content: right;
 
-.peekview-widget .head .peekview-actions > .monaco-action-bar {
-  display: inline-block;
-}
-
-.peekview-widget .head .peekview-actions > .monaco-action-bar,
-.peekview-widget .head .peekview-actions > .monaco-action-bar > .actions-container {
-  height: 100%;
+  .action-item {
+    line-height: inherit;
+    cursor: pointer;
+    margin-left: 6px;
+  }
 }
 
 .peekview-widget > .body {
