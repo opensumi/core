@@ -10,7 +10,7 @@ import styles from './testing.module.less';
 export const TestingView = () => (
   <div className={styles.testing_container}>
     <TitleBar title={localize('test.title')} menubar={null} />
-    <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} />
+    {/* <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} /> */}
     <TestingExplorerTree />
   </div>
 );
