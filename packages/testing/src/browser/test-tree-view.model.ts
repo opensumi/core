@@ -178,7 +178,6 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           item.ownState = result.ownComputedState;
           item.ownDuration = result.ownDuration;
           const explicitComputed = item.children.size ? undefined : result.computedState;
-          const model = this.treeHandlerApi.getModel();
           refreshComputedState(computedStateAccessor, item, explicitComputed);
           model.dispatchChange();
           this.revealTreeById(result.item.extId, false, false);
@@ -186,7 +185,18 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
       );
       this.addDispose(
         this.testResultService.onResultsChanged((evt: ResultChangeEvent) => {
-          console.error('Not Implement onResultsChanged case');
+          if (!('removed' in evt)) {
+            return;
+          }
+
+          for (const inTree of [...this.items.values()].sort((a, b) => b.depth - a.depth)) {
+            const lookup = this.testResultService.getStateById(inTree.test.item.extId)?.[1];
+            inTree.ownDuration = lookup?.ownDuration;
+            refreshComputedState(computedStateAccessor, inTree, lookup?.ownComputedState ?? TestResultState.Unset);
+            model.dispatchChange();
+          }
+
+          this.updateEmitter.fire();
         }),
       );
     }

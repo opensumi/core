@@ -15,6 +15,8 @@ import { TestPeekMessageToken } from '../../common';
 import { TestTreeContainer } from './test-tree-container';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { firstLine, hintMessagePeekHeight } from '../../common/testingStates';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
@@ -23,6 +25,9 @@ export class TestingOutputPeek extends PeekViewWidget {
 
   @Autowired(TestPeekMessageToken)
   private readonly testingPeekMessageService: TestingPeekMessageServiceImpl;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
@@ -55,6 +60,19 @@ export class TestingOutputPeek extends PeekViewWidget {
       </ConfigProvider>,
       container,
     );
+  }
+
+  protected async _fillActionBarOptions(container: HTMLElement): Promise<void> {
+    const menus = this.menuService.createMenu(MenuId.TestPeekTitleContext, this.contextKeyService);
+    return new Promise((res) => {
+      ReactDOM.render(
+        <ConfigProvider value={this.configContext}>
+          <InlineActionBar menus={menus} type='icon' context={[this.editor.getModel()?.uri.toString()!]} />
+        </ConfigProvider>,
+        container,
+        res,
+      );
+    });
   }
 
   protected applyClass(): void {
