@@ -1,4 +1,4 @@
-import { Emitter, Schemas } from '@opensumi/ide-core-common';
+import { Emitter } from '@opensumi/ide-core-common';
 import { TEST_DATA_SCHEME } from './../common/testingUri';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import {
@@ -7,7 +7,6 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
   WorkbenchEditorService,
-  EditorCollectionService,
   EditorComponentRegistry,
   ResourceService,
   IResource,
@@ -26,14 +25,10 @@ import {
   Event,
   FileType,
   getIcon,
-  IOpener,
-  IOpenerService,
   KeybindingContribution,
   KeybindingRegistry,
-  localize,
   MaybePromise,
   OpenerContribution,
-  SlotLocation,
   URI,
 } from '@opensumi/ide-core-browser';
 import {
@@ -50,9 +45,7 @@ import {
   TestingRunCurrentFile,
 } from '../common/commands';
 
-import { TestingContainerId, TestingViewId } from '../common/testing-view';
 import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
-import { TestingView } from './components/testing.view';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { TestDecorationsContribution } from './test-decorations';
 import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
@@ -153,21 +146,7 @@ export class TestingContribution
     this.testTreeViewModel.initTreeModel();
   }
 
-  registerComponent(registry: ComponentRegistry): void {
-    registry.register(
-      TestingViewId,
-      [],
-      {
-        iconClass: getIcon('test'),
-        title: localize('test.title'),
-        priority: 1,
-        containerId: TestingContainerId,
-        component: TestingView,
-        activateKeyBinding: 'ctrlcmd+shift+t',
-      },
-      SlotLocation.left,
-    );
-  }
+  registerComponent(registry: ComponentRegistry): void {}
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(RuntTestCommand, {
@@ -423,10 +402,10 @@ export class TestingContribution
     service.registerResourceProvider({
       scheme: TEST_DATA_SCHEME,
       provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
-          uri,
-          icon: getIcon('file-text'),
-          name: `Preview ${uri.displayName}`,
-        }),
+        uri,
+        icon: getIcon('file-text'),
+        name: `Preview ${uri.displayName}`,
+      }),
     });
   }
 }

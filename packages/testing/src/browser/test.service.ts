@@ -1,3 +1,4 @@
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ITestResult } from './../common/test-result';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
@@ -7,13 +8,18 @@ import {
   CancellationTokenSource,
   Disposable,
   Emitter,
+  getIcon,
   IDisposable,
+  localize,
+  SlotLocation,
 } from '@opensumi/ide-core-browser';
 
 import { AmbiguousRunTestsRequest, ITestController, ITestService, TestId } from '../common';
 import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import { ITestResultService, TestResultServiceToken } from '../common/test-result';
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
+import { TestingView } from './components/testing.view';
+import { TestingContainerId } from '../common/testing-view';
 
 @Injectable()
 export class TestServiceImpl extends Disposable implements ITestService {
@@ -21,9 +27,13 @@ export class TestServiceImpl extends Disposable implements ITestService {
   private controllerCount: IContextKey<number>;
 
   private readonly processDiffEmitter = new Emitter<TestsDiff>();
+  private viewId = '';
 
   readonly collection = new MainThreadTestCollection(this.expandTest.bind(this));
   readonly onDidProcessDiff = this.processDiffEmitter.event;
+
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
 
   @Autowired(TestResultServiceToken)
   protected readonly resultService: ITestResultService;
@@ -39,9 +49,28 @@ export class TestServiceImpl extends Disposable implements ITestService {
     this.controllerCount = TestingServiceProviderCount.bind(this.contextKeyService);
   }
 
+  private registerTestingExplorerView(): string {
+    return this.mainlayoutService.collectTabbarComponent(
+      [],
+      {
+        iconClass: getIcon('test'),
+        title: localize('test.title'),
+        priority: 1,
+        containerId: TestingContainerId,
+        component: TestingView,
+        activateKeyBinding: 'ctrlcmd+shift+t',
+      },
+      SlotLocation.left,
+    );
+  }
+
   registerTestController(id: string, testController: ITestController): IDisposable {
     this.controllers.set(id, testController);
     this.controllerCount.set(this.controllers.size);
+
+    if (this.controllers.size > 0 && !this.viewId) {
+      this.viewId = this.registerTestingExplorerView();
+    }
 
     return Disposable.create(() => {
       const diff: TestsDiff = [];
@@ -54,6 +83,9 @@ export class TestServiceImpl extends Disposable implements ITestService {
 
       if (this.controllers.delete(id)) {
         this.controllerCount.set(this.controllers.size);
+        if (this.controllers.size === 0 && this.viewId) {
+          this.mainlayoutService.disposeContainer(this.viewId);
+        }
       }
     });
   }
