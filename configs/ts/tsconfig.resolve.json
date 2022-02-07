@@ -3,354 +3,118 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-      "@opensumi/ide-core-common": [
-        "../packages/core-common/src/index.ts"
-      ],
-      "@opensumi/ide-core-common/lib/*": [
-        "../packages/core-common/src/*"
-      ],
-      "@opensumi/ide-core-browser": [
-        "../packages/core-browser/src/index.ts"
-      ],
-      "@opensumi/ide-core-browser/lib/*": [
-        "../packages/core-browser/src/*"
-      ],
-      "@opensumi/ide-core-node": [
-        "../packages/core-node/src/index.ts"
-      ],
-      "@opensumi/ide-core-node/lib/*": [
-        "../packages/core-node/src/*"
-      ],
-      "@opensumi/ide-components": [
-        "../packages/components/src/index.ts"
-      ],
-      "@opensumi/ide-components/lib/*": [
-        "../packages/components/src/*"
-      ],
-      "@opensumi/ide-logs": [
-        "../packages/logs-core/src/index.ts"
-      ],
-      "@opensumi/ide-logs/lib/*": [
-        "../packages/logs-core/src/*"
-      ],
-      "@opensumi/ide-doc-model": [
-        "../packages/doc-model/src/index.ts"
-      ],
-      "@opensumi/ide-doc-model/lib/*": [
-        "../packages/doc-model/src/*"
-      ],
-      "@opensumi/ide-file-service": [
-        "../packages/file-service/src/index.ts"
-      ],
-      "@opensumi/ide-file-service/lib/*": [
-        "../packages/file-service/src/*"
-      ],
-      "@opensumi/ide-main-layout": [
-        "../packages/main-layout/src/index.ts"
-      ],
-      "@opensumi/ide-main-layout/lib/*": [
-        "../packages/main-layout/src/*"
-      ],
-      "@opensumi/ide-menu-bar": [
-        "../packages/menu-bar/src/index.ts"
-      ],
-      "@opensumi/ide-menu-bar/lib/*": [
-        "../packages/menu-bar/src/*"
-      ],
-      "@opensumi/ide-monaco": [
-        "../packages/monaco/src/index.ts"
-      ],
-      "@opensumi/ide-monaco/lib/*": [
-        "../packages/monaco/src/*"
-      ],
-      "@opensumi/ide-editor": [
-        "../packages/editor/src/index.ts"
-      ],
-      "@opensumi/ide-editor/lib/*": [
-        "../packages/editor/src/*"
-      ],
-      "@opensumi/ide-connection": [
-        "../packages/connection/src/index.ts"
-      ],
-      "@opensumi/ide-connection/lib/*": [
-        "../packages/connection/src/*"
-      ],
-      "@opensumi/ide-i18n": [
-        "../packages/i18n/src/index.ts"
-      ],
-      "@opensumi/ide-i18n/lib/*": [
-        "../packages/i18n/src/*"
-      ],
-      "@opensumi/ide-status-bar": [
-        "../packages/status-bar/src/index.ts"
-      ],
-      "@opensumi/ide-status-bar/lib/*": [
-        "../packages/status-bar/src/*"
-      ],
-      "@opensumi/ide-static-resource": [
-        "../packages/static-resource/src/index.ts"
-      ],
-      "@opensumi/ide-static-resource/lib/*": [
-        "../packages/static-resource/src/*"
-      ],
-      "@opensumi/ide-express-file-server": [
-        "../packages/express-file-server/src/index.ts"
-      ],
-      "@opensumi/ide-express-file-server/lib/*": [
-        "../packages/express-file-server/src/*"
-      ],
-      "@opensumi/ide-language": [
-        "../packages/language/src/index.ts"
-      ],
-      "@opensumi/ide-language/lib/*": [
-        "../packages/language/src/*"
-      ],
-      "@opensumi/ide-file-search": [
-        "../packages/file-search/src/index.ts"
-      ],
-      "@opensumi/ide-file-search/lib/*": [
-        "../packages/file-search/src/*"
-      ],
-      "@opensumi/ide-search": [
-        "../packages/search/src/index.ts"
-      ],
-      "@opensumi/ide-search/lib/*": [
-        "../packages/search/src/*"
-      ],
-      "@opensumi/ide-language-server": [
-        "../packages/language-server/src/index.ts"
-      ],
-      "@opensumi/ide-language-server/lib/*": [
-        "../packages/language-server/src/*"
-      ],
-      "@opensumi/ide-file-scheme": [
-        "../packages/file-scheme/src/index.ts"
-      ],
-      "@opensumi/ide-file-scheme/lib/*": [
-        "../packages/file-scheme/src/*"
-      ],
-      "@opensumi/ide-output": [
-        "../packages/output/src/index.ts"
-      ],
-      "@opensumi/ide-output/lib/*": [
-        "../packages/output/src/*"
-      ],
-      "@opensumi/ide-explorer": [
-        "../packages/explorer/src/index.ts"
-      ],
-      "@opensumi/ide-explorer/lib/*": [
-        "../packages/explorer/src/*"
-      ],
-      "@opensumi/ide-quick-open": [
-        "../packages/quick-open/src/index.ts"
-      ],
-      "@opensumi/ide-quick-open/lib/*": [
-        "../packages/quick-open/src/*"
-      ],
-      "@opensumi/ide-vscode-extension": [
-        "../packages/vscode-extension/src/index.ts"
-      ],
-      "@opensumi/ide-vscode-extension/lib/*": [
-        "../packages/vscode-extension/src/*"
-      ],
-      "@opensumi/ide-theme": [
-        "../packages/theme/src/index.ts"
-      ],
-      "@opensumi/ide-theme/lib/*": [
-        "../packages/theme/src/*"
-      ],
-      "@opensumi/ide-process": [
-        "../packages/process/src/index.ts"
-      ],
-      "@opensumi/ide-process/lib/*": [
-        "../packages/process/src/*"
-      ],
-      "@opensumi/ide-preferences": [
-        "../packages/preferences/src/index.ts"
-      ],
-      "@opensumi/ide-preferences/lib/*": [
-        "../packages/preferences/src/*"
-      ],
-      "@opensumi/ide-variable": [
-        "../packages/variable/src/index.ts"
-      ],
-      "@opensumi/ide-variable/lib/*": [
-        "../packages/variable/src/*"
-      ],
-      "@opensumi/ide-workspace": [
-        "../packages/workspace/src/index.ts"
-      ],
-      "@opensumi/ide-workspace/lib/*": [
-        "../packages/workspace/src/*"
-      ],
-      "@opensumi/ide-userstorage": [
-        "../packages/userstorage/src/index.ts"
-      ],
-      "@opensumi/ide-userstorage/lib/*": [
-        "../packages/userstorage/src/*"
-      ],
-      "@opensumi/ide-core-electron-main": [
-        "../packages/core-electron-main/src/index.ts"
-      ],
-      "@opensumi/ide-core-electron-main/lib/*": [
-        "../packages/core-electron-main/src/*"
-      ],
-      "@opensumi/ide-electron-basic": [
-        "../packages/electron-basic/src/index.ts"
-      ],
-      "@opensumi/ide-electron-basic/lib/*": [
-        "../packages/electron-basic/src/*"
-      ],
-      "@opensumi/ide-toolbar": [
-        "../packages/toolbar/src/index.ts"
-      ],
-      "@opensumi/ide-toolbar/lib/*": [
-        "../packages/toolbar/src/*"
-      ],
-      "@opensumi/ide-markers": [
-        "../packages/markers/src/index.ts"
-      ],
-      "@opensumi/ide-markers/lib/*": [
-        "../packages/markers/src/*"
-      ],
-      "@opensumi/ide-startup": [
-        "../packages/startup/src/index.ts"
-      ],
-      "@opensumi/ide-startup/lib/*": [
-        "../packages/startup/src/*"
-      ],
-      "@opensumi/ide-overlay": [
-        "../packages/overlay/src/index.ts"
-      ],
-      "@opensumi/ide-overlay/lib/*": [
-        "../packages/overlay/src/*"
-      ],
-      "@opensumi/ide-extension-storage": [
-        "../packages/extension-storage/src/index.ts"
-      ],
-      "@opensumi/ide-extension-storage/lib/*": [
-        "../packages/extension-storage/src/*"
-      ],
-      "@opensumi/ide-storage": [
-        "../packages/storage/src/index.ts"
-      ],
-      "@opensumi/ide-storage/lib/*": [
-        "../packages/storage/src/*"
-      ],
-      "@opensumi/ide-webview": [
-        "../packages/webview/src/index.ts"
-      ],
-      "@opensumi/ide-webview/lib/*": [
-        "../packages/webview/src/*"
-      ],
-      "@opensumi/ide-opened-editor": [
-        "../packages/opened-editor/src/index.ts"
-      ],
-      "@opensumi/ide-opened-editor/lib/*": [
-        "../packages/opened-editor/src/*"
-      ],
-      "@opensumi/ide-markdown": [
-        "../packages/markdown/src/index.ts"
-      ],
-      "@opensumi/ide-markdown/lib/*": [
-        "../packages/markdown/src/*"
-      ],
-      "@opensumi/ide-workspace-edit": [
-        "../packages/workspace-edit/src/index.ts"
-      ],
-      "@opensumi/ide-workspace-edit/lib/*": [
-        "../packages/workspace-edit/src/*"
-      ],
-      "@opensumi/ide-extension": [
-        "../packages/extension/src/index.ts"
-      ],
-      "@opensumi/ide-extension/lib/*": [
-        "../packages/extension/src/*"
-      ],
-      "@opensumi/ide-monaco-enhance": [
-        "../packages/monaco-enhance/src/index.ts"
-      ],
-      "@opensumi/ide-monaco-enhance/lib/*": [
-        "../packages/monaco-enhance/src/*"
-      ],
-      "@opensumi/ide-decoration": [
-        "../packages/decoration/src/index.ts"
-      ],
-      "@opensumi/ide-decoration/lib/*": [
-        "../packages/decoration/src/*"
-      ],
-      "@opensumi/ide-scm": [
-        "../packages/scm/src/index.ts"
-      ],
-      "@opensumi/ide-scm/lib/*": [
-        "../packages/scm/src/*"
-      ],
-      "@opensumi/ide-debug": [
-        "../packages/debug/src/index.ts"
-      ],
-      "@opensumi/ide-debug/lib/*": [
-        "../packages/debug/src/*"
-      ],
-      "@opensumi/ide-extension-manager": [
-        "../packages/extension-manager/src/index.ts"
-      ],
-      "@opensumi/ide-extension-manager/lib/*": [
-        "../packages/extension-manager/src/*"
-      ],
-      "@opensumi/ide-keymaps": [
-        "../packages/keymaps/src/index.ts"
-      ],
-      "@opensumi/ide-keymaps/lib/*": [
-        "../packages/keymaps/src/*"
-      ],
-      "@opensumi/ide-outline": [
-        "../packages/outline/src/index.ts"
-      ],
-      "@opensumi/ide-outline/lib/*": [
-        "../packages/outline/src/*"
-      ],
-      "@opensumi/ide-terminal-next": [
-        "../packages/terminal-next/src/index.ts"
-      ],
-      "@opensumi/ide-terminal-next/lib/*": [
-        "../packages/terminal-next/src/*"
-      ],
-      "@opensumi/ide-addons": [
-        "../packages/addons/src/index.ts"
-      ],
-      "@opensumi/ide-addons/lib/*": [
-        "../packages/addons/src/*"
-      ],
-      "@opensumi/ide-comments": [
-        "../packages/comments/src/index.ts"
-      ],
-      "@opensumi/ide-comments/lib/*": [
-        "../packages/comments/src/*"
-      ],
-      "@opensumi/ide-file-tree-next": [
-        "../packages/file-tree-next/src/index.ts"
-      ],
-      "@opensumi/ide-file-tree-next/lib/*": [
-        "../packages/file-tree-next/src/*"
-      ],
-      "@opensumi/ide-task": [
-        "../packages/task/src/index.ts"
-      ],
-      "@opensumi/ide-task/lib/*": [
-        "../packages/task/src/*"
-      ],
-      "@opensumi/ide-testing": [
-        "../packages/testing/src/index.ts"
-      ],
-      "@opensumi/ide-testing/lib/*": [
-        "../packages/testing/src/*"
-      ],
-      "@opensumi/ide-remote-opener": [
-        "../packages/remote-opener/src/index.ts"
-      ],
-      "@opensumi/ide-remote-opener/lib/*": [
-        "../packages/remote-opener/src/*"
-      ]
+      "@opensumi/ide-components": ["../packages/components/src/index.ts"],
+      "@opensumi/ide-components/lib/*": ["../packages/components/src/*"],
+      "@opensumi/ide-core-browser": ["../packages/core-browser/src/index.ts"],
+      "@opensumi/ide-core-browser/lib/*": ["../packages/core-browser/src/*"],
+      "@opensumi/ide-connection": ["../packages/connection/src/index.ts"],
+      "@opensumi/ide-connection/lib/*": ["../packages/connection/src/*"],
+      "@opensumi/ide-addons": ["../packages/addons/src/index.ts"],
+      "@opensumi/ide-addons/lib/*": ["../packages/addons/src/*"],
+      "@opensumi/ide-core-electron-main": ["../packages/core-electron-main/src/index.ts"],
+      "@opensumi/ide-core-electron-main/lib/*": ["../packages/core-electron-main/src/*"],
+      "@opensumi/ide-core-common": ["../packages/core-common/src/index.ts"],
+      "@opensumi/ide-core-common/lib/*": ["../packages/core-common/src/*"],
+      "@opensumi/ide-editor": ["../packages/editor/src/index.ts"],
+      "@opensumi/ide-editor/lib/*": ["../packages/editor/src/*"],
+      "@opensumi/ide-core-node": ["../packages/core-node/src/index.ts"],
+      "@opensumi/ide-core-node/lib/*": ["../packages/core-node/src/*"],
+      "@opensumi/ide-decoration": ["../packages/decoration/src/index.ts"],
+      "@opensumi/ide-decoration/lib/*": ["../packages/decoration/src/*"],
+      "@opensumi/ide-explorer": ["../packages/explorer/src/index.ts"],
+      "@opensumi/ide-explorer/lib/*": ["../packages/explorer/src/*"],
+      "@opensumi/ide-extension-manager": ["../packages/extension-manager/src/index.ts"],
+      "@opensumi/ide-extension-manager/lib/*": ["../packages/extension-manager/src/*"],
+      "@opensumi/ide-comments": ["../packages/comments/src/index.ts"],
+      "@opensumi/ide-comments/lib/*": ["../packages/comments/src/*"],
+      "@opensumi/ide-extension-storage": ["../packages/extension-storage/src/index.ts"],
+      "@opensumi/ide-extension-storage/lib/*": ["../packages/extension-storage/src/*"],
+      "@opensumi/ide-file-search": ["../packages/file-search/src/index.ts"],
+      "@opensumi/ide-file-search/lib/*": ["../packages/file-search/src/*"],
+      "@opensumi/ide-debug": ["../packages/debug/src/index.ts"],
+      "@opensumi/ide-debug/lib/*": ["../packages/debug/src/*"],
+      "@opensumi/ide-file-service": ["../packages/file-service/src/index.ts"],
+      "@opensumi/ide-file-service/lib/*": ["../packages/file-service/src/*"],
+      "@opensumi/ide-file-scheme": ["../packages/file-scheme/src/index.ts"],
+      "@opensumi/ide-file-scheme/lib/*": ["../packages/file-scheme/src/*"],
+      "@opensumi/ide-electron-basic": ["../packages/electron-basic/src/index.ts"],
+      "@opensumi/ide-electron-basic/lib/*": ["../packages/electron-basic/src/*"],
+      "@opensumi/ide-i18n": ["../packages/i18n/src/index.ts"],
+      "@opensumi/ide-i18n/lib/*": ["../packages/i18n/src/*"],
+      "@opensumi/ide-file-tree-next": ["../packages/file-tree-next/src/index.ts"],
+      "@opensumi/ide-file-tree-next/lib/*": ["../packages/file-tree-next/src/*"],
+      "@opensumi/ide-keymaps": ["../packages/keymaps/src/index.ts"],
+      "@opensumi/ide-keymaps/lib/*": ["../packages/keymaps/src/*"],
+      "@opensumi/ide-markdown": ["../packages/markdown/src/index.ts"],
+      "@opensumi/ide-markdown/lib/*": ["../packages/markdown/src/*"],
+      "@opensumi/ide-logs": ["../packages/logs-core/src/index.ts"],
+      "@opensumi/ide-logs/lib/*": ["../packages/logs-core/src/*"],
+      "@opensumi/ide-main-layout": ["../packages/main-layout/src/index.ts"],
+      "@opensumi/ide-main-layout/lib/*": ["../packages/main-layout/src/*"],
+      "@opensumi/ide-markers": ["../packages/markers/src/index.ts"],
+      "@opensumi/ide-markers/lib/*": ["../packages/markers/src/*"],
+      "@opensumi/ide-opened-editor": ["../packages/opened-editor/src/index.ts"],
+      "@opensumi/ide-opened-editor/lib/*": ["../packages/opened-editor/src/*"],
+      "@opensumi/ide-monaco": ["../packages/monaco/src/index.ts"],
+      "@opensumi/ide-monaco/lib/*": ["../packages/monaco/src/*"],
+      "@opensumi/ide-output": ["../packages/output/src/index.ts"],
+      "@opensumi/ide-output/lib/*": ["../packages/output/src/*"],
+      "@opensumi/ide-menu-bar": ["../packages/menu-bar/src/index.ts"],
+      "@opensumi/ide-menu-bar/lib/*": ["../packages/menu-bar/src/*"],
+      "@opensumi/ide-outline": ["../packages/outline/src/index.ts"],
+      "@opensumi/ide-outline/lib/*": ["../packages/outline/src/*"],
+      "@opensumi/ide-overlay": ["../packages/overlay/src/index.ts"],
+      "@opensumi/ide-overlay/lib/*": ["../packages/overlay/src/*"],
+      "@opensumi/ide-process": ["../packages/process/src/index.ts"],
+      "@opensumi/ide-process/lib/*": ["../packages/process/src/*"],
+      "@opensumi/ide-monaco-enhance": ["../packages/monaco-enhance/src/index.ts"],
+      "@opensumi/ide-monaco-enhance/lib/*": ["../packages/monaco-enhance/src/*"],
+      "@opensumi/ide-express-file-server": ["../packages/express-file-server/src/index.ts"],
+      "@opensumi/ide-express-file-server/lib/*": ["../packages/express-file-server/src/*"],
+      "@opensumi/ide-quick-open": ["../packages/quick-open/src/index.ts"],
+      "@opensumi/ide-quick-open/lib/*": ["../packages/quick-open/src/*"],
+      "@opensumi/ide-remote-opener": ["../packages/remote-opener/src/index.ts"],
+      "@opensumi/ide-remote-opener/lib/*": ["../packages/remote-opener/src/*"],
+      "@opensumi/remote-cli": ["../packages/remote-cli/src/index.ts"],
+      "@opensumi/remote-cli/lib/*": ["../packages/remote-cli/src/*"],
+      "@opensumi/ide-scm": ["../packages/scm/src/index.ts"],
+      "@opensumi/ide-scm/lib/*": ["../packages/scm/src/*"],
+      "@opensumi/ide-status-bar": ["../packages/status-bar/src/index.ts"],
+      "@opensumi/ide-status-bar/lib/*": ["../packages/status-bar/src/*"],
+      "@opensumi/ide-startup": ["../packages/startup/src/index.ts"],
+      "@opensumi/ide-startup/lib/*": ["../packages/startup/src/*"],
+      "@opensumi/ide-storage": ["../packages/storage/src/index.ts"],
+      "@opensumi/ide-storage/lib/*": ["../packages/storage/src/*"],
+      "@opensumi/ide-testing": ["../packages/testing/src/index.ts"],
+      "@opensumi/ide-testing/lib/*": ["../packages/testing/src/*"],
+      "@opensumi/ide-search": ["../packages/search/src/index.ts"],
+      "@opensumi/ide-search/lib/*": ["../packages/search/src/*"],
+      "@opensumi/ide-terminal-next": ["../packages/terminal-next/src/index.ts"],
+      "@opensumi/ide-terminal-next/lib/*": ["../packages/terminal-next/src/*"],
+      "@opensumi/ide-task": ["../packages/task/src/index.ts"],
+      "@opensumi/ide-task/lib/*": ["../packages/task/src/*"],
+      "@opensumi/ide-theme": ["../packages/theme/src/index.ts"],
+      "@opensumi/ide-theme/lib/*": ["../packages/theme/src/*"],
+      "@opensumi/ide-static-resource": ["../packages/static-resource/src/index.ts"],
+      "@opensumi/ide-static-resource/lib/*": ["../packages/static-resource/src/*"],
+      "@opensumi/ide-variable": ["../packages/variable/src/index.ts"],
+      "@opensumi/ide-variable/lib/*": ["../packages/variable/src/*"],
+      "@opensumi/ide-webview": ["../packages/webview/src/index.ts"],
+      "@opensumi/ide-webview/lib/*": ["../packages/webview/src/*"],
+      "@opensumi/ide-workspace": ["../packages/workspace/src/index.ts"],
+      "@opensumi/ide-workspace/lib/*": ["../packages/workspace/src/*"],
+      "@opensumi/ide-extension": ["../packages/extension/src/index.ts"],
+      "@opensumi/ide-extension/lib/*": ["../packages/extension/src/*"],
+      "@opensumi/sumi": ["../packages/types/src/index.ts"],
+      "@opensumi/sumi/lib/*": ["../packages/types/src/*"],
+      "@opensumi/ide-workspace-edit": ["../packages/workspace-edit/src/index.ts"],
+      "@opensumi/ide-workspace-edit/lib/*": ["../packages/workspace-edit/src/*"],
+      "@opensumi/ide-userstorage": ["../packages/userstorage/src/index.ts"],
+      "@opensumi/ide-userstorage/lib/*": ["../packages/userstorage/src/*"],
+      "@opensumi/ide-preferences": ["../packages/preferences/src/index.ts"],
+      "@opensumi/ide-preferences/lib/*": ["../packages/preferences/src/*"],
+      "@opensumi/ide-toolbar": ["../packages/toolbar/src/index.ts"],
+      "@opensumi/ide-toolbar/lib/*": ["../packages/toolbar/src/*"]
     }
   }
 }

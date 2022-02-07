@@ -17,7 +17,7 @@ import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/l
 import { useInjectable, localize, IContextKeyService, isUndefined } from '@opensumi/ide-core-browser';
 import { Button } from '@opensumi/ide-components';
 import { CommentsBody } from './comments-body';
-import marked from 'marked';
+import { marked } from 'marked';
 import { CommentReactions, CommentReactionSwitcher } from './comment-reactions.view';
 
 const useCommentContext = (

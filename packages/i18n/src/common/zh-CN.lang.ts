@@ -385,6 +385,9 @@ export const localizationBundle = {
     'preference.stringArray.operate.editTip': '按回车确认',
     'preference.stringArray.none': '暂无可选值',
 
+    // 设置中枚举选项的默认值提示信息
+    'preference.enum.default': '默认值',
+
     // 终端
     'preference.terminal.type': '默认终端类型',
     'preference.terminal.typeDesc': '控制打开终端所使用的默认 Shell 类型。',
