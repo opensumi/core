@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ITestErrorMessage, TestResultState } from './testCollection';
-import marked from 'marked';
+import { marked } from 'marked';
 import { count } from '@opensumi/ide-core-common';
 
 export interface TreeStateNode {
