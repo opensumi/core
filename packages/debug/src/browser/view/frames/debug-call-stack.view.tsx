@@ -11,7 +11,7 @@ export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildr
   const [sessions, setSessions] = React.useState<DebugSession[]>([]);
 
   React.useEffect(() => {
-    const createDispose = manager.onDidCreateDebugSession((session) => {
+    const createDispose = manager.onDidStartDebugSession((session) => {
       sessions.push(session);
       setSessions([...sessions]);
     });
