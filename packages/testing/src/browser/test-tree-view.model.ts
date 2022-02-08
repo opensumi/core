@@ -24,11 +24,9 @@ const computedStateAccessor: IComputedStateAndDurationAccessor<ITestTreeItem> = 
   getOwnState: (i) => (i instanceof TestTreeItem ? i.ownState : TestResultState.Unset),
   getCurrentComputedState: (i) => i.state,
   setComputedState: (i, s) => (i.state = s),
-
   getCurrentComputedDuration: (i) => i.duration,
   getOwnDuration: (i) => (i instanceof TestTreeItem ? i.ownDuration : undefined),
   setComputedDuration: (i, d) => (i.duration = d),
-
   getChildren: (i) => Iterable.filter(i.children.values(), (t): t is TestTreeItem => t instanceof TestTreeItem),
   *getParents(i) {
     for (let parent = i.parent; parent; parent = parent.parent) {
@@ -85,6 +83,10 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
   constructor() {
     super();
     this.addDispose(this.testService.onDidProcessDiff((diff) => this.applyDiff(diff)));
+
+    for (const test of this.testService.collection.all) {
+      this.didUpdateItem(this.createItem(test));
+    }
   }
 
   get roots(): Iterable<TestTreeItem> {
@@ -182,6 +184,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           refreshComputedState(computedStateAccessor, item, explicitComputed);
           model.dispatchChange();
           this.revealTreeById(result.item.extId, false, false);
+          this.updateEmitter.fire();
         }),
       );
       this.addDispose(
