@@ -74,9 +74,9 @@ export interface IBasicTreeData {
    */
   expanded?: boolean;
   /**
-   * 是否不可展开，若为 true 则不显示展开收起图标
+   * 是否可展开，若为 false 则不显示展开收起图标
    */
-  notExpandable?: boolean;
+  expandable?: boolean;
   /**
    * 其他属性
    */

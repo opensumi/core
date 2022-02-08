@@ -241,11 +241,9 @@ export class TestResultImpl implements ITestResult {
   }
 
   getOutput(): Promise<string> {
-    console.error('##TestResult## getOutput: >> ');
     throw new Error('Method not implemented.');
   }
   toJSON(): ISerializedTestResults | undefined {
-    console.error('##TestResult## toJSON: >> ');
     throw new Error('Method not implemented.');
   }
   updateState(testId: string, taskId: string, state: TestResultState, duration?: number): void {
@@ -277,7 +275,6 @@ export class TestResultImpl implements ITestResult {
     });
   }
   appendOutput(output: string, taskId: string, location?: IRichLocation, testId?: string): void {
-    console.error('##TestResult## appendOutput: >> ', output, taskId, location, testId);
     throw new Error('Method not implemented.');
   }
   addTestChainToRun(controllerId: string, chain: readonly ITestItem[]): void {

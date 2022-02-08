@@ -129,6 +129,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Remove: {
+          // not implemented
           break;
         }
       }

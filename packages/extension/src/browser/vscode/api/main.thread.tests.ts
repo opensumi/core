@@ -6,7 +6,6 @@ import {
   CancellationToken,
   Disposable,
   DisposableStore,
-  getDebugLogger,
   IDisposable,
   URI,
 } from '@opensumi/ide-core-common';
@@ -32,6 +31,7 @@ import {
   TestResultImpl,
   TestResultServiceToken,
 } from '@opensumi/ide-testing/lib/common/test-result';
+import { Logger } from '@opensumi/ide-core-browser';
 
 const reviveDiff = (diff: TestsDiff) => {
   for (const entry of diff) {
@@ -49,6 +49,9 @@ const reviveDiff = (diff: TestsDiff) => {
 
 @Injectable({ multiple: true })
 export class MainThreadTestsImpl extends Disposable implements IMainThreadTesting {
+  @Autowired()
+  private logger: Logger;
+
   private proxy: IExtHostTests;
 
   private readonly testProviderRegistrations = new Map<
@@ -68,8 +71,6 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
 
   @Autowired(TestResultServiceToken)
   protected readonly resultService: ITestResultService;
-
-  private readonly debug = getDebugLogger();
 
   constructor(@Optional(Symbol()) rpcProtocol: IRPCProtocol) {
     super();
@@ -97,19 +98,19 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $updateControllerLabel(controllerId: string, label: string): void {
-    this.debug.log('test: updateControllerLabel>>', controllerId, label);
+    this.logger.warn('test: updateControllerLabel>>', controllerId, label);
   }
 
   $unregisterTestController(controllerId: string): void {
-    this.debug.log('test: unregisterTestController>>', controllerId);
+    this.logger.warn('test: unregisterTestController>>', controllerId);
   }
 
   $subscribeToDiffs(): void {
-    this.debug.log('test: subscribeToDiffs>>');
+    this.logger.warn('test: subscribeToDiffs>>');
   }
 
   $unsubscribeFromDiffs(): void {
-    this.debug.log('test: unsubscribeFromDiffs>>');
+    this.logger.warn('test: unsubscribeFromDiffs>>');
   }
 
   $publishDiff(controllerId: string, diff: TestsDiff): void {
@@ -125,7 +126,7 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $updateTestRunConfig(controllerId: string, configId: number, update: Partial<ITestRunProfile>): void {
-    this.debug.log('Method not implemented.');
+    this.logger.warn('Method not implemented.');
   }
   $removeTestProfile(controllerId: string, configId: number): void {
     this.testProfiles.removeProfile(controllerId, configId);
@@ -170,7 +171,6 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $appendOutputToRun(runId: string, taskId: string, output: string, locationDto?: ILocationDto, testId?: string): void {
-    console.log('$appendOutputToRun', runId, taskId, output, locationDto);
     const location = locationDto && {
       uri: URI.revive(locationDto.uri),
       range: Range.lift(locationDto.range),
@@ -179,7 +179,7 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $signalCoverageAvailable(runId: string, taskId: string): void {
-    this.debug.log('$signalCoverageAvailable', runId, taskId);
+    this.logger.warn('$signalCoverageAvailable', runId, taskId);
   }
 
   $startedTestRunTask(runId: string, task: ITestRunTask): void {

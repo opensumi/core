@@ -149,7 +149,6 @@ export const TestTreeContainer = () => {
       get icon() {
         return getItemIcon(item);
       },
-      notExpandable: false,
       rawItem: item,
       get children() {
         return Array.from(getResultChildren(item));

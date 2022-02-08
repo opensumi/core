@@ -159,7 +159,7 @@ export const BasicTreeNodeRenderer: React.FC<
   };
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if ((item as BasicCompositeTreeNode).notExpandable) {
+    if (!(item as BasicCompositeTreeNode).expandable) {
       return <div className={cls('segment', 'expansion_toggle')}></div>;
     }
 

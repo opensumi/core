@@ -60,8 +60,8 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this._raw;
   }
 
-  get notExpandable() {
-    return !!this._raw.notExpandable;
+  get expandable() {
+    return !!this._raw.expandable;
   }
 }
 
