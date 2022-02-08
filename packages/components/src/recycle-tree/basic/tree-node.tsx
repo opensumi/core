@@ -76,9 +76,11 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <div style={{ paddingRight: '5px', display: 'flex' }}>
-        <span className={node.icon} />
-      </div>
+      <Icon
+        icon={node.icon}
+        className={cls('icon', node.iconClassName)}
+        style={{ height: itemHeight, lineHeight: `${itemHeight}px` }}
+      />
     ),
     [],
   );

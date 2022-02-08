@@ -61,6 +61,7 @@ export interface IBasicTreeData {
    * 图标
    */
   icon: string;
+  iconClassName?: string;
   /**
    * 描述
    */

@@ -146,7 +146,8 @@ export const TestTreeContainer = () => {
       context: item.id,
       id: item.id,
       label: item.name,
-      get icon() {
+      icon: '',
+      get iconClassName() {
         return getItemIcon(item);
       },
       rawItem: item,

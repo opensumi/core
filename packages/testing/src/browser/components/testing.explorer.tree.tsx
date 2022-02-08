@@ -25,7 +25,8 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const asTreeData = React.useCallback(
     (item: ITestTreeItem): ITestTreeData => ({
       label: item.label,
-      get icon() {
+      icon: '',
+      get iconClassName() {
         return getItemIcon(item);
       },
       expandable: item.test.expand !== TestItemExpandState.NotExpandable,
