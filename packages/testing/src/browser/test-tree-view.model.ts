@@ -129,7 +129,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Remove: {
-          console.log('remove item>>>', op[1]);
+          // not implemented
           break;
         }
       }

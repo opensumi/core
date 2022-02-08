@@ -76,11 +76,11 @@ export class TestingOutputPeek extends PeekViewWidget {
   }
 
   protected applyClass(): void {
-    console.log('applyClass Method not implemented.');
+    // not implemented
   }
 
   protected applyStyle(): void {
-    console.log('applyStyle Method not implemented.');
+    // not implemented
   }
 
   public async showInPlace(dto: TestDto) {

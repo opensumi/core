@@ -28,7 +28,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
       get icon() {
         return getItemIcon(item);
       },
-      notExpandable: item.test.expand === TestItemExpandState.NotExpandable,
+      expandable: item.test.expand !== TestItemExpandState.NotExpandable,
       rawItem: item,
       get children() {
         if (item.test.expand === TestItemExpandState.Expandable || item.children) {
