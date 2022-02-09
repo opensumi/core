@@ -268,7 +268,11 @@ export abstract class AbstractLineMatcher {
       }
     }
     if (result === null || result === Severity.Ignore) {
-      result = Severity.fromValue(this.matcher.severity as string) || Severity.Error;
+      if (typeof this.matcher.severity === 'string') {
+        result = Severity.fromValue(this.matcher.severity) || Severity.Error;
+      } else {
+        result = this.matcher.severity || Severity.Error;
+      }
     }
     return Severity.toDiagnosticSeverity(result as Severity);
   }
