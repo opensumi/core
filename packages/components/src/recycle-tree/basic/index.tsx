@@ -71,6 +71,10 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   );
 
   useEffect(() => {
+    treeService.current.updateRaw(treeData);
+  }, [treeData]);
+
+  useEffect(() => {
     ensureLoaded();
     const disposable = treeService.current.onDidUpdateTreeModel(async (model?: BasicTreeModel) => {
       await model?.root.ensureLoaded();

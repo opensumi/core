@@ -131,7 +131,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     }
   }
 
-  private applyDiff(diff: TestsDiff) {
+  private async applyDiff(diff: TestsDiff) {
     for (const op of diff) {
       switch (op[0]) {
         case TestDiffOpType.Add: {
@@ -160,6 +160,16 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             break;
           }
 
+          const findTreeItemByExtId = model.root.flattenedBranch!.find(
+            (id) =>
+              ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item
+                .extId === toRemove.test.item.extId,
+          );
+          const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
+          if (treeItem) {
+            (treeItem.parent as CompositeTreeNode).unlinkItem(treeItem);
+          }
+
           const queue: Iterable<TestTreeItem>[] = [[toRemove]];
           while (queue.length) {
             for (const item of queue.pop()!) {
@@ -169,14 +179,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             }
           }
 
-          const findTreeItemByExtId = model.root.flattenedBranch!.find((id) => (
-              ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item
-                .extId === toRemove.test.item.extId
-            ));
-          const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
-          if (treeItem) {
-            treeItem.refresh();
-          }
+          model.dispatchChange();
 
           break;
         }
@@ -201,7 +204,6 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             }
 
             await this.expandElement(raw.rawItem, raw.rawItem.depth);
-            this.updateEmitter.fire();
             await node.refresh();
           }
         }),
@@ -259,6 +261,10 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
 
   public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {
     return this.testService.collection.getNodeById(extId);
+  }
+
+  public getTestTreeItem(extId: string): TestTreeItem | undefined {
+    return this.items.get(extId);
   }
 
   public expandElement(element: ITestTreeItem, depth: number): Promise<void> {

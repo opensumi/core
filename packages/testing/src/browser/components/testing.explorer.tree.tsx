@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 
-import { ITestTreeData, ITestTreeItem, ITestTreeViewModel, TestTreeViewModelToken } from '../../common/tree-view.model';
+import { ITestTreeData, ITestTreeItem, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
 import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from '../../common/commands';
 import { ITestService, TestServiceToken } from '../../common';
@@ -12,9 +12,10 @@ import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tre
 import { TestingExplorerInlineMenus } from '../../common/testing-view';
 
 import styles from './testing.module.less';
+import { TestTreeViewModelImpl } from '../test-tree-view.model';
 
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
-  const testViewModel = useInjectable<ITestTreeViewModel>(TestTreeViewModelToken);
+  const testViewModel = useInjectable<TestTreeViewModelImpl>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
   const commandService = useInjectable<CommandService>(CommandService);
 
@@ -33,7 +34,8 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
       rawItem: item,
       get children() {
         if (item.test.expand === TestItemExpandState.Expandable || item.children) {
-          return Array.from(map(item.children, asTreeData)) || [];
+          const testTree = testViewModel.getTestTreeItem(item.test.item.extId);
+          return Array.from(map(testTree?.children || [], asTreeData));
         }
         return null;
       },
@@ -54,6 +56,13 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
             result.push(asTreeData(child));
           }
           setTreeData(result);
+        }
+      }
+
+      if (testViewModel.treeHandlerApi) {
+        const model = testViewModel.treeHandlerApi.getModel();
+        if (model.root.children?.length === 0) {
+          model.root.hardReloadChildren();
         }
       }
     });

@@ -20,6 +20,10 @@ export class BasicTreeRoot extends CompositeTreeNode {
   get expanded() {
     return true;
   }
+
+  updateRaw(newData: IBasicTreeData) {
+    this._raw = newData;
+  }
 }
 
 export class BasicCompositeTreeNode extends CompositeTreeNode {
