@@ -32,7 +32,7 @@ import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
 import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './models';
-import marked from 'marked';
+import { marked } from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -219,7 +219,7 @@ export namespace MarkdownString {
     };
     const renderer = new marked.Renderer();
     renderer.link = collectUri;
-    renderer.image = (href) => collectUri(parseHrefAndDimensions(href).href);
+    renderer.image = (href) => (href ? collectUri(parseHrefAndDimensions(href).href) : '');
 
     marked(res.value, { renderer });
 

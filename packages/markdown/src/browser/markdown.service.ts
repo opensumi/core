@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IMarkdownService } from '../common';
-import marked from 'marked';
+import { marked } from 'marked';
 import { markdownCss } from './mardown.style';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@opensumi/ide-core-browser';

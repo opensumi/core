@@ -704,18 +704,23 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     webviewView.addDispose(addMapElement(this._webviewViews, id, webviewView));
     webviewView.addDispose(webview);
 
+    // 如果当前 view container 变化时触发 webview 的显隐
+    const changeWebviewViewVisibility = () => {
+      const isVisible = this.mainLayout.isViewVisible(viewType);
+      this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+      if (!options?.retainContextWhenHidden) {
+        if (isVisible) {
+          webview.appendTo(container);
+        } else {
+          webview.remove();
+        }
+      }
+    };
+
     disposer.addDispose(
       this.eventBus.on(ViewCollapseChangedEvent, (e) => {
         if (e.payload.viewId === viewType) {
-          const isVisible = this.mainLayout.isViewVisible(viewType);
-          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
-          if (!options?.retainContextWhenHidden) {
-            if (isVisible) {
-              webview.appendTo(container);
-            } else {
-              webview.remove();
-            }
-          }
+          changeWebviewViewVisibility();
         }
       }),
     );
@@ -723,14 +728,12 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     if (tabbarHandler) {
       disposer.addDispose(
         tabbarHandler?.onActivate(() => {
-          const isVisible = this.mainLayout.isViewVisible(viewType);
-          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+          changeWebviewViewVisibility();
         }),
       );
       disposer.addDispose(
         tabbarHandler?.onInActivate(() => {
-          const isVisible = this.mainLayout.isViewVisible(viewType);
-          this.proxy.$onDidChangeWebviewViewVisibility(id, isVisible);
+          changeWebviewViewVisibility();
         }),
       );
     }

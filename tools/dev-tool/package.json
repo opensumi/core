@@ -26,7 +26,7 @@
     "mini-css-extract-plugin": "^0.6.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
-    "node-notifier": "^5.4.0",
+    "node-notifier": "^8.0.1",
     "null-loader": "^4.0.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "react-dom": "^16.8.6",

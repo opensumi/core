@@ -1,6 +1,9 @@
 # Kaitian IDE Electron 实践层
 
 ## Electron 版本运行步骤
+
+> 注意从外部的 `npm run start:electron` 执行后不要再次执行，否则会花很多的时间进行再次依赖安装和编译，直接在 `tools/electron` 执行 `npm run start` 即可。
+
 ```shell
 cd ../../
 npm i
