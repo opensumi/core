@@ -20,6 +20,7 @@ import { ITestResultService, TestResultServiceToken } from '../common/test-resul
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
 import { TestingView } from './components/testing.view';
 import { TestingContainerId } from '../common/testing-view';
+import { Testing } from '../common/constants';
 
 @Injectable()
 export class TestServiceImpl extends Disposable implements ITestService {
@@ -50,13 +51,14 @@ export class TestServiceImpl extends Disposable implements ITestService {
   }
 
   private registerTestingExplorerView(): string {
+    this.mainlayoutService.collectViewComponent;
     return this.mainlayoutService.collectTabbarComponent(
-      [],
+      [{ id: TestingContainerId }],
       {
         iconClass: getIcon('test'),
         title: localize('test.title'),
         priority: 1,
-        containerId: TestingContainerId,
+        containerId: Testing.ExplorerViewId,
         component: TestingView,
         activateKeyBinding: 'ctrlcmd+shift+t',
       },

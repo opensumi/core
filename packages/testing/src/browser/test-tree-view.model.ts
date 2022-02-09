@@ -14,7 +14,7 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
-import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
+import { CompositeTreeNode, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { TestResultServiceToken } from '../common/test-result';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
@@ -103,12 +103,31 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     return new TestTreeItem(item, parent);
   }
 
+  private didUnStoreItem(items: Map<string, TestTreeItem>, item: TestTreeItem) {
+    const parent = item.parent;
+    parent?.children.delete(item);
+    items.delete(item.test.item.extId);
+    if (parent instanceof TestTreeItem) {
+      refreshComputedState(computedStateAccessor, parent);
+    }
+
+    return item.children;
+  }
+
   private didUpdateItem(item: TestTreeItem) {
     item.parent?.children.add(item);
     this.items.set(item.test.item.extId, item);
     const reveal = this.getRevealDepth(item);
     if (reveal !== undefined) {
       this.expandElement(item, reveal);
+    }
+
+    const prevState = this.testResultService.getStateById(item.test.item.extId)?.[1];
+    if (prevState) {
+      item.retired = prevState.retired;
+      item.ownState = prevState.computedState;
+      item.ownDuration = prevState.ownDuration;
+      refreshComputedState(computedStateAccessor, item);
     }
   }
 
@@ -131,7 +150,34 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Remove: {
-          // not implemented
+          const toRemove = this.items.get(op[1]);
+          if (!toRemove) {
+            break;
+          }
+
+          const model = this.treeHandlerApi.getModel();
+          if (!model) {
+            break;
+          }
+
+          const queue: Iterable<TestTreeItem>[] = [[toRemove]];
+          while (queue.length) {
+            for (const item of queue.pop()!) {
+              if (item instanceof TestTreeItem) {
+                queue.push(this.didUnStoreItem(this.items, item));
+              }
+            }
+          }
+
+          const findTreeItemByExtId = model.root.flattenedBranch!.find((id) => (
+              ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item
+                .extId === toRemove.test.item.extId
+            ));
+          const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
+          if (treeItem) {
+            treeItem.refresh();
+          }
+
           break;
         }
       }
@@ -150,10 +196,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           if (node.expanded) {
             const raw = node.raw as ITestTreeData;
             const rawTest = raw.rawItem.test;
-            if (
-              rawTest.expand === TestItemExpandState.Expanded ||
-              rawTest.expand === TestItemExpandState.NotExpandable
-            ) {
+            if (rawTest.expand === TestItemExpandState.NotExpandable) {
               return;
             }
 
