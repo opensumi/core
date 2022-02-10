@@ -22,6 +22,10 @@ export class RemoteOpenerServiceImpl extends RPCService implements IRemoteOpener
     this.remoteOpenerClient.setRemoteOpenerServiceInstance(clientId, this);
   }
 
+  removeConnectionClientId(clientId: string): void {
+    this.remoteOpenerClient.removeRemoteOpenerServiceInstance(clientId);
+  }
+
   async openExternal(args: IExternalFileArgs | IExternalUrlArgs): Promise<void> {
     if (args.clientId !== this.clientId) {
       throw new Error(`Unknown client id ${args.clientId}`);

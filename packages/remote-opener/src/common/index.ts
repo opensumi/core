@@ -16,11 +16,14 @@ export const RemoteOpenerServiceToken = Symbol('RemoteOpenerServiceToken');
 
 export interface IRemoteOpenerService {
   openExternal(args: IExternalFileArgs | IExternalUrlArgs): Promise<void>;
+  removeConnectionClientId(clientId: string): void;
+  setConnectionClientId(clientId: string): void;
 }
 
 export const RemoteOpenerClientToken = Symbol('RemoteOpenerClientToken');
 
 export interface IRemoteOpenerClient {
+  removeRemoteOpenerServiceInstance(clientId: string): void;
   setRemoteOpenerServiceInstance(clientId: string, service: IRemoteOpenerService): void;
   openExternal(args: IExternalFileArgs | IExternalUrlArgs, clientId: string): Promise<void>;
 }
