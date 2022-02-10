@@ -14,7 +14,7 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
-import { IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
+import { CompositeTreeNode, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { TestResultServiceToken } from '../common/test-result';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
@@ -103,21 +103,64 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     return new TestTreeItem(item, parent);
   }
 
-  private didUpdateItem(item: TestTreeItem) {
+  private findTestTreeItemByExtId(extId: string | undefined): CompositeTreeNode | undefined {
+    if (!this.treeHandlerApi || !extId) {
+      return;
+    }
+
+    const model = this.treeHandlerApi.getModel();
+    if (!model) {
+      return;
+    }
+
+    const findTreeItemByExtId = model.root.flattenedBranch!.find(
+      (id) =>
+        ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item.extId ===
+        extId,
+    );
+    const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
+    return treeItem;
+  }
+
+  private didUnStoreItem(items: Map<string, TestTreeItem>, item: TestTreeItem) {
+    const parent = item.parent;
+    parent?.children.delete(item);
+    items.delete(item.test.item.extId);
+    if (parent instanceof TestTreeItem) {
+      refreshComputedState(computedStateAccessor, parent);
+    }
+
+    return item.children;
+  }
+
+  private async didUpdateItem(item: TestTreeItem) {
     item.parent?.children.add(item);
     this.items.set(item.test.item.extId, item);
     const reveal = this.getRevealDepth(item);
     if (reveal !== undefined) {
-      this.expandElement(item, reveal);
+      await this.expandElement(item, reveal);
+    }
+
+    const prevState = this.testResultService.getStateById(item.test.item.extId)?.[1];
+    if (prevState) {
+      item.retired = prevState.retired;
+      item.ownState = prevState.computedState;
+      item.ownDuration = prevState.ownDuration;
+      refreshComputedState(computedStateAccessor, item);
     }
   }
 
-  private applyDiff(diff: TestsDiff) {
+  private async applyDiff(diff: TestsDiff) {
     for (const op of diff) {
       switch (op[0]) {
         case TestDiffOpType.Add: {
           const item = this.createItem(op[1]);
-          this.didUpdateItem(item);
+          await this.didUpdateItem(item);
+
+          const treeItem = this.findTestTreeItemByExtId(item.parent?.test.item.extId);
+          if (treeItem) {
+            treeItem.refresh();
+          }
           break;
         }
         case TestDiffOpType.Update: {
@@ -131,7 +174,25 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Remove: {
-          // not implemented
+          const toRemove = this.items.get(op[1]);
+          if (!toRemove) {
+            break;
+          }
+
+          const treeItem = this.findTestTreeItemByExtId(toRemove.test.item.extId);
+          if (treeItem) {
+            (treeItem.parent as CompositeTreeNode).unlinkItem(treeItem);
+          }
+
+          const queue: Iterable<TestTreeItem>[] = [[toRemove]];
+          while (queue.length) {
+            for (const item of queue.pop()!) {
+              if (item instanceof TestTreeItem) {
+                queue.push(this.didUnStoreItem(this.items, item));
+              }
+            }
+          }
+
           break;
         }
       }
@@ -150,15 +211,11 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           if (node.expanded) {
             const raw = node.raw as ITestTreeData;
             const rawTest = raw.rawItem.test;
-            if (
-              rawTest.expand === TestItemExpandState.Expanded ||
-              rawTest.expand === TestItemExpandState.NotExpandable
-            ) {
+            if (rawTest.expand === TestItemExpandState.NotExpandable) {
               return;
             }
 
             await this.expandElement(raw.rawItem, raw.rawItem.depth);
-            this.updateEmitter.fire();
             await node.refresh();
           }
         }),
@@ -197,9 +254,9 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             const lookup = this.testResultService.getStateById(inTree.test.item.extId)?.[1];
             inTree.ownDuration = lookup?.ownDuration;
             refreshComputedState(computedStateAccessor, inTree, lookup?.ownComputedState ?? TestResultState.Unset);
-            model.dispatchChange();
           }
 
+          model.dispatchChange();
           this.updateEmitter.fire();
         }),
       );
@@ -216,6 +273,10 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
 
   public getTestItem(extId: string): IncrementalTestCollectionItem | undefined {
     return this.testService.collection.getNodeById(extId);
+  }
+
+  public getTestTreeItem(extId: string): TestTreeItem | undefined {
+    return this.items.get(extId);
   }
 
   public expandElement(element: ITestTreeItem, depth: number): Promise<void> {
