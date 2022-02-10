@@ -103,6 +103,25 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     return new TestTreeItem(item, parent);
   }
 
+  private findTestTreeItemByExtId(extId: string | undefined): CompositeTreeNode | undefined {
+    if (!this.treeHandlerApi || !extId) {
+      return;
+    }
+
+    const model = this.treeHandlerApi.getModel();
+    if (!model) {
+      return;
+    }
+
+    const findTreeItemByExtId = model.root.flattenedBranch!.find(
+      (id) =>
+        ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item.extId ===
+        extId,
+    );
+    const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
+    return treeItem;
+  }
+
   private didUnStoreItem(items: Map<string, TestTreeItem>, item: TestTreeItem) {
     const parent = item.parent;
     parent?.children.delete(item);
@@ -114,12 +133,12 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
     return item.children;
   }
 
-  private didUpdateItem(item: TestTreeItem) {
+  private async didUpdateItem(item: TestTreeItem) {
     item.parent?.children.add(item);
     this.items.set(item.test.item.extId, item);
     const reveal = this.getRevealDepth(item);
     if (reveal !== undefined) {
-      this.expandElement(item, reveal);
+      await this.expandElement(item, reveal);
     }
 
     const prevState = this.testResultService.getStateById(item.test.item.extId)?.[1];
@@ -136,7 +155,12 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
       switch (op[0]) {
         case TestDiffOpType.Add: {
           const item = this.createItem(op[1]);
-          this.didUpdateItem(item);
+          await this.didUpdateItem(item);
+
+          const treeItem = this.findTestTreeItemByExtId(item.parent?.test.item.extId);
+          if (treeItem) {
+            treeItem.refresh();
+          }
           break;
         }
         case TestDiffOpType.Update: {
@@ -155,17 +179,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             break;
           }
 
-          const model = this.treeHandlerApi.getModel();
-          if (!model) {
-            break;
-          }
-
-          const findTreeItemByExtId = model.root.flattenedBranch!.find(
-            (id) =>
-              ((model.root.getTreeNodeById(id) as BasicCompositeTreeNode).raw as ITestTreeData).rawItem.test.item
-                .extId === toRemove.test.item.extId,
-          );
-          const treeItem = model.root.getTreeNodeById(findTreeItemByExtId!) as CompositeTreeNode;
+          const treeItem = this.findTestTreeItemByExtId(toRemove.test.item.extId);
           if (treeItem) {
             (treeItem.parent as CompositeTreeNode).unlinkItem(treeItem);
           }
@@ -178,8 +192,6 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
               }
             }
           }
-
-          model.dispatchChange();
 
           break;
         }
@@ -242,9 +254,9 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
             const lookup = this.testResultService.getStateById(inTree.test.item.extId)?.[1];
             inTree.ownDuration = lookup?.ownDuration;
             refreshComputedState(computedStateAccessor, inTree, lookup?.ownComputedState ?? TestResultState.Unset);
-            model.dispatchChange();
           }
 
+          model.dispatchChange();
           this.updateEmitter.fire();
         }),
       );

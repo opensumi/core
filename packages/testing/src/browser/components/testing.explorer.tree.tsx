@@ -58,16 +58,19 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
           setTreeData(result);
         }
       }
-
-      if (testViewModel.treeHandlerApi) {
-        const model = testViewModel.treeHandlerApi.getModel();
-        if (model.root.children?.length === 0) {
-          model.root.hardReloadChildren();
-        }
-      }
     });
+
     return disposable.dispose;
   }, [testViewModel]);
+
+  useEffect(() => {
+    if (testViewModel.treeHandlerApi) {
+      const model = testViewModel.treeHandlerApi.getModel();
+      if (model.root.children?.length === 0) {
+        model.root.hardReloadChildren();
+      }
+    }
+  }, [treeData]);
 
   const resolveTestChildren = React.useCallback((node?: ITestTreeData) => {
     if (!node) {
