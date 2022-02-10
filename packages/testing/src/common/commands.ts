@@ -50,11 +50,23 @@ export const GoToNextMessage: Command = {
 export const ClearTestResults: Command = {
   id: 'testing.clearTestResults',
   label: 'Clear All Results',
-  iconClass: getIcon('delete'),
+  iconClass: getExternalIcon('clear-all'),
 };
 
 export const OpenMessageInEditor: Command = {
   id: 'testing.openMessageInEditor',
   label: 'Open in Editor',
   iconClass: getExternalIcon('link-external'),
+};
+
+export const RuntAllTestCommand: Command = {
+  id: 'testing.runAll',
+  label: 'Run All Test',
+  iconClass: getExternalIcon('run-all'),
+};
+
+export const DebugAllTestCommand: Command = {
+  id: 'testing.debugAll',
+  label: 'Debug All Test',
+  iconClass: getIcon('debug-alt-small'),
 };
