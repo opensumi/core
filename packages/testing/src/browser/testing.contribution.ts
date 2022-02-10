@@ -29,17 +29,21 @@ import {
   KeybindingRegistry,
   MaybePromise,
   OpenerContribution,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
   URI,
 } from '@opensumi/ide-core-browser';
 import {
   ClearTestResults,
   ClosePeekTest,
+  DebugAllTestCommand,
   DebugTestCommand,
   GoToNextMessage,
   GoToPreviousMessage,
   GoToTestCommand,
   OpenMessageInEditor,
   PeekTestError,
+  RuntAllTestCommand,
   RuntTestCommand,
   TestingDebugCurrentFile,
   TestingRunCurrentFile,
@@ -59,6 +63,7 @@ import { TestResultServiceImpl } from './test.result.service';
 import { TestResultServiceToken } from '../common/test-result';
 import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
 import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
+import { Testing } from '../common/constants';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -105,6 +110,7 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   MenuContribution,
   KeybindingContribution,
   OpenerContribution,
+  TabBarToolbarContribution,
 )
 export class TestingContribution
   implements
@@ -113,7 +119,8 @@ export class TestingContribution
     CommandContribution,
     BrowserEditorContribution,
     MenuContribution,
-    KeybindingContribution
+    KeybindingContribution,
+    TabBarToolbarContribution
 {
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
@@ -318,6 +325,27 @@ export class TestingContribution
         }
       },
     });
+
+    const runOrDebugAllTestsAction = async (group: TestRunProfileBitset) => {
+      const roots = [...this.testService.collection.rootItems];
+      if (!roots.length) {
+        return;
+      }
+
+      await this.testService.runTests({ tests: roots, group });
+    };
+
+    commands.registerCommand(RuntAllTestCommand, {
+      execute: async () => {
+        await runOrDebugAllTestsAction(TestRunProfileBitset.Run);
+      },
+    });
+
+    commands.registerCommand(DebugAllTestCommand, {
+      execute: async () => {
+        await runOrDebugAllTestsAction(TestRunProfileBitset.Debug);
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -369,6 +397,24 @@ export class TestingContribution
     /** output peek view actions end */
   }
 
+  registerToolbarItems(registry: ToolbarRegistry): void {
+    registry.registerItem({
+      id: RuntAllTestCommand.id,
+      command: RuntAllTestCommand.id,
+      viewId: Testing.ExplorerViewId,
+    });
+    registry.registerItem({
+      id: DebugAllTestCommand.id,
+      command: DebugAllTestCommand.id,
+      viewId: Testing.ExplorerViewId,
+    });
+    registry.registerItem({
+      id: ClearTestResults.id,
+      command: ClearTestResults.id,
+      viewId: Testing.ExplorerViewId,
+    });
+  }
+
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => this.injector.get(TestDecorationsContribution, [editor]).contribute(),
@@ -389,7 +435,7 @@ export class TestingContribution
       scheme: TEST_DATA_SCHEME,
     });
 
-    componentRegistry.registerEditorComponentResolver(TEST_DATA_SCHEME, (resource, results) => {
+    componentRegistry.registerEditorComponentResolver(TEST_DATA_SCHEME, (_, results) => {
       results.push({
         type: 'component',
         componentId: MARKDOWN_EDITOR_COMPONENT_ID,
