@@ -37,14 +37,6 @@ export class BasicTreeService extends Tree {
     this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
   }
 
-  updateRaw(newData: IBasicTreeData[]) {
-    (this._root as BasicTreeRoot).updateRaw({
-      children: newData,
-      label: '',
-      icon: '',
-    });
-  }
-
   get onDidUpdateTreeModel() {
     return this.onDidUpdateTreeModelEmitter.event;
   }

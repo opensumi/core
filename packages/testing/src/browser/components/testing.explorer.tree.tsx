@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
-import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
+import { BasicRecycleTree, IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
 
 import { ITestTreeData, ITestTreeItem, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
@@ -67,7 +67,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     if (testViewModel.treeHandlerApi) {
       const model = testViewModel.treeHandlerApi.getModel();
       if (model.root.children?.length === 0) {
-        model.root.hardReloadChildren();
+        model.root.refresh();
       }
     }
   }, [treeData]);
