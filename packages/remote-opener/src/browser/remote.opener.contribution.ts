@@ -1,11 +1,14 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Domain, ContributionProvider } from '@opensumi/ide-core-common';
+import { ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
-import { ClientAppContribution } from '../common/common.define';
-import { IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken, RemoteOpenerConverterContribution } from '.';
-import { IRemoteOpenerService, RemoteOpenerServicePath } from '@opensumi/ide-remote-opener/lib/common';
+import { IRemoteOpenerService, RemoteOpenerServicePath } from '../common';
+import {
+  IRemoteOpenerBrowserService,
+  RemoteOpenerBrowserServiceToken,
+  RemoteOpenerConverterContribution,
+} from '../common';
 
-import { AppConfig, electronEnv } from '@opensumi/ide-core-browser';
+import { AppConfig, ClientAppContribution, electronEnv } from '@opensumi/ide-core-browser';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 // 从extension.contribution.ts中Copy过来，因为直接引入会有一定概率触发IDE初始化问题
 const getClientId = (injector: Injector) => {
@@ -24,18 +27,18 @@ const getClientId = (injector: Injector) => {
 };
 
 @Domain(ClientAppContribution)
-export class RemoteOpenerConverterContributionClient implements ClientAppContribution {
+export class RemoteOpenerContributionClient implements ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(RemoteOpenerServicePath)
+  private readonly remoteOpenerNodeService: IRemoteOpenerService;
 
   @Autowired(RemoteOpenerConverterContribution)
   private readonly contributionProvider: ContributionProvider<RemoteOpenerConverterContribution>;
 
   @Autowired(RemoteOpenerBrowserServiceToken)
   private readonly remoteOpenerService: IRemoteOpenerBrowserService;
-
-  @Autowired(RemoteOpenerServicePath)
-  private readonly remoteOpenerNodeService: IRemoteOpenerService;
 
   onStart() {
     const contributions = this.contributionProvider.getContributions();
