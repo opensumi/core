@@ -21,6 +21,8 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
   it('setRemoteOpenerServiceInstance should be work', () => {
     const service: IRemoteOpenerService = {
       openExternal: jest.fn(),
+      removeConnectionClientId: jest.fn(),
+      setConnectionClientId: jest.fn(),
     };
     remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId', service);
     expect(remoteOpenerClient['remoteOpenerServices'].has('mock_clientId')).toBeTruthy();
@@ -33,6 +35,8 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
   it('openExternal should be work', async (done) => {
     const service: IRemoteOpenerService = {
       openExternal: jest.fn(),
+      removeConnectionClientId: jest.fn(),
+      setConnectionClientId: jest.fn(),
     };
 
     remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId_2', service);
