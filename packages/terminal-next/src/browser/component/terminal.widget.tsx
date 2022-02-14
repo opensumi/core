@@ -58,7 +58,7 @@ export default ({ widget, error, show }: IProps) => {
 
   React.useEffect(() => {
     widget.error = !!error;
-  }, [!!error]);
+  }, [error]);
 
   const onFocus = () => {
     view.selectWidget(widget.id);

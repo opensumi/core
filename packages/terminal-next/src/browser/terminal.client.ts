@@ -221,7 +221,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           // 但是实际上是设置为 display none 了，所以手动 resize 一下
           // this._term.resize(1, 1);
         } else {
-          this._error.resolve();
+          this._error?.resolve();
           this._layout();
         }
       }),
