@@ -61,17 +61,11 @@ Note: The default `opensumi/core` also contains a lot of GitHub Actions. If you 
 
 ### Build
 
-Enter the local project path, install dependencies through `npm` and initialize the dependencies. Due to the domestic wall, the download and installation of some packages will be slow. It is recommended to switch your npm mirror to the domestic Taobao mirror address before starting, or install one The npm mirror switching tool is used for quick switching, such as [nrm](https://www.npmjs.com/package/nrm), the manual setting method is as follows:
-
-```bash
-$ npm config set registry https://registry.npm.taobao.org
-```
-
-Because `canvas` relies on GitHub Release resources, it is easy to time out in the domestic network environment, so please add the corresponding mirror address when installing the dependency as follows:
+Build project as follows:
 
 ```bash
 $ cd core
-$ npm install --canvas_binary_host_mirror=https://npm.taobao.org/mirrors/node-canvas-prebuilt/
+$ npm install
 $ npm run init
 ```
 
