@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/storage/src",
     "outDir": "../../../packages/storage/lib"
   },
-  "include": [
-    "../../../packages/storage/src"
-  ]
+  "include": ["../../../packages/storage/src"],
+  "exclude": ["../../../packages/storage/__mocks__"]
 }

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/workspace/src",
     "outDir": "../../../packages/workspace/lib"
   },
-  "include": [
-    "../../../packages/workspace/src"
-  ]
+  "include": ["../../../packages/workspace/src"],
+  "exclude": ["../../../packages/workspace/__mocks__"]
 }

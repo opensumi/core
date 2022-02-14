@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/markers/src",
     "outDir": "../../../packages/markers/lib"
   },
-  "include": [
-    "../../../packages/markers/src"
-  ]
+  "include": ["../../../packages/markers/src"],
+  "exclude": ["../../../packages/markers/__mocks__"]
 }

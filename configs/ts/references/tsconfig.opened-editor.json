@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/opened-editor/src",
     "outDir": "../../../packages/opened-editor/lib"
   },
-  "include": [
-    "../../../packages/opened-editor/src"
-  ]
+  "include": ["../../../packages/opened-editor/src"],
+  "exclude": ["../../../packages/opened-editor/__mocks__"]
 }

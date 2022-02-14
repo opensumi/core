@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/startup/src",
     "outDir": "../../../packages/startup/lib"
   },
-  "include": [
-    "../../../packages/startup/src"
-  ]
+  "include": ["../../../packages/startup/src"],
+  "exclude": ["../../../packages/startup/__mocks__"]
 }

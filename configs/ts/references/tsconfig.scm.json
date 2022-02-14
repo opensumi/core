@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/scm/src",
     "outDir": "../../../packages/scm/lib"
   },
-  "include": [
-    "../../../packages/scm/src"
-  ]
+  "include": ["../../../packages/scm/src"],
+  "exclude": ["../../../packages/scm/__mocks__"]
 }

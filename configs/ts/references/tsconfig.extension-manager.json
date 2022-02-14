@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/extension-manager/src",
     "outDir": "../../../packages/extension-manager/lib"
   },
-  "include": [
-    "../../../packages/extension-manager/src"
-  ]
+  "include": ["../../../packages/extension-manager/src"],
+  "exclude": ["../../../packages/extension-manager/__mocks__"]
 }

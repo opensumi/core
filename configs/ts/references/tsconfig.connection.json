@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/connection/src",
     "outDir": "../../../packages/connection/lib"
   },
-  "include": [
-    "../../../packages/connection/src"
-  ]
+  "include": ["../../../packages/connection/src"],
+  "exclude": ["../../../packages/connection/__mocks__"]
 }

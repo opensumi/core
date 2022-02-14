@@ -2,13 +2,8 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../../../packages/extension/src",
-    "outDir": "../../../packages/extension/lib",
-    "target": "es6"
+    "outDir": "../../../packages/extension/lib"
   },
-  "include": [
-    "../../../packages/extension/src"
-  ],
-  "exclude": [
-    "../../../packages/extension/__mocks__"
-  ]
+  "include": ["../../../packages/extension/src"],
+  "exclude": ["../../../packages/extension/__mocks__"]
 }

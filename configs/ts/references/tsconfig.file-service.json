@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/file-service/src",
     "outDir": "../../../packages/file-service/lib"
   },
-  "include": [
-    "../../../packages/file-service/src"
-  ]
+  "include": ["../../../packages/file-service/src"],
+  "exclude": ["../../../packages/file-service/__mocks__"]
 }

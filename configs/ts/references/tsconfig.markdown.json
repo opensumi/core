@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/markdown/src",
     "outDir": "../../../packages/markdown/lib"
   },
-  "include": [
-    "../../../packages/markdown/src"
-  ]
+  "include": ["../../../packages/markdown/src"],
+  "exclude": ["../../../packages/markdown/__mocks__"]
 }

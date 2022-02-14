@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/file-tree-next/src",
     "outDir": "../../../packages/file-tree-next/lib"
   },
-  "include": [
-    "../../../packages/file-tree-next/src"
-  ]
+  "include": ["../../../packages/file-tree-next/src"],
+  "exclude": ["../../../packages/file-tree-next/__mocks__"]
 }

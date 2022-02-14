@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/keymaps/src",
     "outDir": "../../../packages/keymaps/lib"
   },
-  "include": [
-    "../../../packages/keymaps/src"
-  ]
+  "include": ["../../../packages/keymaps/src"],
+  "exclude": ["../../../packages/keymaps/__mocks__"]
 }

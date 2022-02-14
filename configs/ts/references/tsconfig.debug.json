@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/debug/src",
     "outDir": "../../../packages/debug/lib"
   },
-  "include": [
-    "../../../packages/debug/src"
-  ]
+  "include": ["../../../packages/debug/src"],
+  "exclude": ["../../../packages/debug/__mocks__"]
 }

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/terminal-next/src",
     "outDir": "../../../packages/terminal-next/lib"
   },
-  "include": [
-    "../../../packages/terminal-next/src"
-  ]
+  "include": ["../../../packages/terminal-next/src"],
+  "exclude": ["../../../packages/terminal-next/__mocks__"]
 }

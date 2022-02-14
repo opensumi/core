@@ -4,5 +4,6 @@
     "rootDir": "../../../packages/remote-cli/src",
     "outDir": "../../../packages/remote-cli/lib"
   },
-  "include": ["../../../packages/remote-cli/src"]
+  "include": ["../../../packages/remote-cli/src"],
+  "exclude": ["../../../packages/remote-cli/__mocks__"]
 }
