@@ -1,6 +1,12 @@
 import React from 'react';
 import { useInjectable, localize } from '@opensumi/ide-core-browser';
-import { ITerminalGroupViewService, IWidget, ITerminalError, ITerminalErrorService } from '../../common';
+import {
+  ITerminalGroupViewService,
+  IWidget,
+  ITerminalError,
+  ITerminalErrorService,
+  ETerminalErrorType,
+} from '../../common';
 
 import styles from './terminal.module.less';
 
@@ -19,8 +25,21 @@ function renderError(error: ITerminalError, eService: ITerminalErrorService, vie
     eService.fix(error.id);
   };
 
-  // TODO: 展示要打开的地址不存在等错误情况 + Terminal 之前的最后几行信息
-  // 比如说 TerminalError 有几个已知的错误 code
+  if (error?.type === ETerminalErrorType.CREATE_FAIL) {
+    return (
+      <div className={styles.terminalCover}>
+        <div>
+          {localize('terminal.can.not.create')}: {error.message}
+        </div>
+        <div>
+          <a onClick={onRemoveClick}>{localize('terminal.stop')}</a>
+          {localize('terminal.or')}
+          <a onClick={onRetryClick}>{localize('terminal.try.recreate')}</a>
+        </div>
+      </div>
+    );
+  }
+
   return error.stopped ? (
     <div className={styles.terminalCover}>
       <div>{localize('terminal.disconnected')}</div>

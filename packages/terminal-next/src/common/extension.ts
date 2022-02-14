@@ -100,7 +100,6 @@ export interface ITerminalLinkDto {
 
 export interface ITerminalLaunchError {
   message: string;
-  code?: number;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { PtyService } from './pty';
 import { IShellLaunchConfig } from '../common/pty';
-import { ITerminalNodeService, ITerminalServiceClient } from '../common';
+import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
 
 // ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
@@ -150,14 +150,17 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       }
       this.clientTerminalMap.get(clientId)?.set(id, ptyService);
     } catch (error) {
-      this.logger.error(`${id} create terminal error: ${error}, options: ${JSON.stringify(launchConfig)}`);
+      this.logger.error(
+        `${id} create terminal error: ${JSON.stringify(error)}, options: ${JSON.stringify(launchConfig)}`,
+      );
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.closeClient(id, {
           id,
-          code: error?.code,
           message: error?.message,
+          type: ETerminalErrorType.CREATE_FAIL,
           stopped: true,
+          launchConfig,
         });
       }
     }

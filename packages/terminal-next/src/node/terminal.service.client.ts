@@ -76,7 +76,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   ): Promise<INodePtyInstance | undefined> {
     try {
       const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
-      this.logger.log(`create2 ${id} ${cols} ${rows} `, launchConfig, pty);
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
         this.logger.log(`client ${id} create ${pty} with options `, launchConfig);
@@ -88,9 +87,11 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
           name: pty.parsedName,
           shellPath: pty.launchConfig.executable,
         };
+      } else {
+        this.logger.log(`cannot create pty instance ${id} `, launchConfig);
       }
     } catch (error) {
-      this.logger.error(`create2 ${id} ${cols} ${rows} `, launchConfig, error);
+      this.logger.error(`create pty instance error ${id}`, launchConfig, error);
     }
   }
 

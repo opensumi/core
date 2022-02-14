@@ -246,6 +246,8 @@ export class NodePtyTerminalService implements ITerminalService {
   closeClient(id: string, code?: number, signal?: number): void;
   closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }): void;
   closeClient(sessionId: string, data?: ITerminalError | { code?: number; signal?: number } | number, signal?: number) {
+    this.logger.log(`${sessionId} was closed, error: ${data}`);
+
     if (isTerminalError(data)) {
       this._onError.fire(data);
     } else if (typeof data === 'number') {
@@ -269,10 +271,7 @@ export class NodePtyTerminalService implements ITerminalService {
       `${CodeTerminalSettingPrefix.Profiles}${platformKey}`,
       {},
     );
-    this.logger.log(
-      '🚀 ~ file: terminal.service.ts ~ line 266 ~ NodePtyTerminalService ~ getProfiles ~ terminalPreferences',
-      terminalPreferences,
-    );
+
     return await this.serviceClientRPC.detectAvailableProfiles({
       autoDetect,
       preference: terminalPreferences,

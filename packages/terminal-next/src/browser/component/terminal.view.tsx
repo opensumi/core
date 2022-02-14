@@ -9,6 +9,7 @@ import {
   IWidget,
   ITerminalErrorService,
   ITerminalNetwork,
+  ITerminalError,
 } from '../../common';
 import TerminalWidget from './terminal.widget';
 
@@ -38,7 +39,12 @@ export default observer(() => {
 
   const renderWidget = (widget: IWidget, index: number) => {
     const client = controller.findClientFromWidgetId(widget.id);
-    const error = client && !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
+    let error: ITerminalError | undefined;
+    if (client) {
+      error = !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
+    } else {
+      error = errors.get(widget.id);
+    }
     return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
   };
 

@@ -177,12 +177,22 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
+        if (error.launchConfig) {
+          this.updateOptions({
+            name: 'error: ' + error.launchConfig.executable,
+          });
+        } else {
+          this.updateOptions({
+            name: 'error',
+          });
+        }
       }),
     );
   }
 
   async setupWidget(widget: IWidget) {
     this._widget = widget;
+    this._prepare();
 
     this.addDispose(
       Disposable.create(() => {
@@ -314,8 +324,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       this.logger.log('init2: ', launchConfig);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
-
-      this._prepare();
 
       if (launchConfig.initialText) {
         this.xterm.raw.writeln(launchConfig.initialText);
