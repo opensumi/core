@@ -18,7 +18,7 @@
     "@opensumi/ide-file-service": "2.14.2",
     "@opensumi/ide-theme": "2.14.2",
     "@opensumi/ide-workspace": "2.14.2",
-    "@opensumi/monaco-editor-core": "0.29.1-patch.1",
+    "@opensumi/monaco-editor-core": "0.29.1-patch.4",
     "vscode-oniguruma": "1.5.1"
   },
   "devDependencies": {
