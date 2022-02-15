@@ -12,7 +12,7 @@
     "start:electron": "cd tools/electron && rimraf ./node_modules && npm i && npm run link-local && npm run rebuild-native && npm run build && npm run start",
     "build:components": "cd packages/components && npm run build:dist",
     "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
-    "prod:lite": "ts-node ./scripts/start --script=prod:lite",
+    "bundle:lite": "ts-node ./scripts/start --script=bundle:lite",
     "create": "ts-node ./scripts/create",
     "add:node": "ts-node ./scripts/add-node",
     "add:browser": "ts-node ./scripts/add-browser",

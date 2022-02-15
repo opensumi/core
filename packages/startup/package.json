@@ -26,16 +26,14 @@
     "bundle:standard:analysis": "cross-env analysis=1 npm run bundle:standard",
     "bundle:lite": "cross-env NODE_ENV=production webpack --config webpack.lite.config.js",
     "bundle:lite:stats": "cross-env NODE_ENV=production webpack --profile --config webpack.lite.config.js --json > stats.json",
-    "bundle:lite:analysis": "cross-env analysis=1 npm run bundle:lite",
-    "prod": "node prod-server.js",
-    "prod:lite": "npm run bundle:lite && npm run prod"
+    "bundle:lite:analysis": "cross-env analysis=1 npm run bundle:lite"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-addons": "2.14.2",
+   "@opensumi/ide-addons": "2.14.2",
     "@opensumi/ide-comments": "2.14.2",
     "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
@@ -82,7 +80,9 @@
     "@opensumi/ide-variable": "2.14.2",
     "@opensumi/ide-webview": "2.14.2",
     "@opensumi/ide-workspace": "2.14.2",
-    "@opensumi/ide-workspace-edit": "2.14.2"
+    "@opensumi/ide-workspace-edit": "2.14.2",
+    "@opensumi/textmate-languages": "^2.6.1",
+    "md5": "^2.3.0"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "^1.3.1",
