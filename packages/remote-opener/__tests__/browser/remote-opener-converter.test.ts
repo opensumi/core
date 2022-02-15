@@ -1,8 +1,8 @@
-import { IRemoteHostConverter } from '@opensumi/ide-core-browser/lib/remote-opener';
+import { IRemoteHostConverter } from '../../src/common';
 import { Disposable } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { RemoteOpenerBrowserServiceImpl } from '../../../remote-opener/lib/browser';
-import { IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken } from '../../lib/remote-opener';
+import { IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken } from '../../src/common';
 
 describe('packages/core-browser/src/remote-opener/converter.contribution.ts', () => {
   let remoteOpenerService: IRemoteOpenerBrowserService;
