@@ -459,6 +459,7 @@ function SelectPreferenceItem({
           className={styles.select_control}
           description={description}
           onMouseEnter={handleDescriptionChange}
+          showNotMatchAsWarning={hasValueInScope}
         >
           {options}
         </Select>

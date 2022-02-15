@@ -7,6 +7,7 @@ import { Icon, getKaitianIcon } from '../icon';
 export interface IDataOption<T> {
   iconClass?: string;
   label?: string;
+  notMatch?: boolean;
   value: T;
 }
 
@@ -41,6 +42,7 @@ export interface ISelectProps<T = string> {
    * 点击时是否启用搜索
    */
   showSearch?: boolean;
+  showNotMatchAsWarning?: boolean;
   /**
    * 搜索 placeholder
    */
@@ -150,9 +152,7 @@ function getLabelWithChildrenProps<T = string>(
     }
     return null;
   });
-  return currentOption
-    ? currentOption.props?.label || currentOption.props?.value
-    : nodes[0].props?.label || nodes[0].props?.value;
+  return currentOption?.props?.label || currentOption?.props?.value;
 }
 
 export function isDataOptions<T = any>(
@@ -250,6 +250,7 @@ export function Select<T = string>({
   allowOptionsOverflow,
   dropdownRenderType = 'fixed',
   description,
+  showNotMatchAsWarning,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -270,13 +271,17 @@ export function Select<T = string>({
   if (!open && searchInput) {
     setSearchInput('');
   }
+  const selected = getSelectedValue();
 
   const optionsContainerClasses = classNames('kt-select-options', {
     ['kt-select-options-visible']: open,
     [`kt-select-options-${size}`]: size,
   });
 
+  const showWarning = showNotMatchAsWarning && selected.notMatch;
+
   const selectClasses = classNames('kt-select-value', {
+    ['kt-select-warning']: showWarning,
     ['kt-select-disabled']: disabled,
     ['kt-select-value-active']: open,
     [`kt-select-value-${size}`]: size,
@@ -393,9 +398,11 @@ export function Select<T = string>({
         };
       }
     }
+    // 如果当前 value 和任何一个 option 都不匹配，返回当前 value
     return {
-      label: '',
-      value: '',
+      label: value as any,
+      value: value as any,
+      notMatch: true,
     };
   }
 
@@ -421,12 +428,11 @@ export function Select<T = string>({
   }
 
   const renderSelected = () => {
-    const selected = getSelectedValue();
-    const SC = selectedRenderer;
+    const CustomSC = selectedRenderer;
     return (
       <React.Fragment>
-        {SC ? (
-          <SC data={selected} />
+        {CustomSC ? (
+          <CustomSC data={selected} />
         ) : (
           <React.Fragment>
             {selected.iconClass ? (
@@ -457,6 +463,7 @@ export function Select<T = string>({
       <p className={selectClasses} onClick={toggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
       </p>
+      {showWarning && <div className='kt-select-warning-text'>{selected.value} is not a valid option</div>}
 
       {open &&
         (isDataOptions(options) || isDataOptionGroups(options) ? (

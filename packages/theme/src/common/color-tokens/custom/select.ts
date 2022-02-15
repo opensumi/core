@@ -34,6 +34,11 @@ export const ktSelectDisableForeground = registerColor(
   { dark: '#5F656B', light: '#5F656B', hc: null },
   localize('ktSelectDisableForeground', 'Select Disable Foreground color.'),
 );
+export const ktSelectWarningColor = registerColor(
+  'kt.select.warningColor',
+  { dark: '#D77915', light: '#D77915', hc: null },
+  localize('ktSelectWarningColor', 'Select Warning Color.'),
+);
 
 export const ktSelectOptionActiveBackground = registerColor(
   'selectOption.activeBackground',
