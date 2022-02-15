@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/main-layout/src",
     "outDir": "../../../packages/main-layout/lib"
   },
-  "include": [
-    "../../../packages/main-layout/src"
-  ]
+  "include": ["../../../packages/main-layout/src"],
+  "exclude": ["../../../packages/main-layout/__mocks__"]
 }

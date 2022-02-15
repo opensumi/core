@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/core-electron-main/src",
     "outDir": "../../../packages/core-electron-main/lib"
   },
-  "include": [
-    "../../../packages/core-electron-main/src"
-  ]
+  "include": ["../../../packages/core-electron-main/src"],
+  "exclude": ["../../../packages/core-electron-main/__mocks__"]
 }

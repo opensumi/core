@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/editor/src",
     "outDir": "../../../packages/editor/lib"
   },
-  "include": [
-    "../../../packages/editor/src"
-  ]
+  "include": ["../../../packages/editor/src"],
+  "exclude": ["../../../packages/editor/__mocks__"]
 }

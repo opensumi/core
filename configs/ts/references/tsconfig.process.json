@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/process/src",
     "outDir": "../../../packages/process/lib"
   },
-  "include": [
-    "../../../packages/process/src"
-  ]
+  "include": ["../../../packages/process/src"],
+  "exclude": ["../../../packages/process/__mocks__"]
 }

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/task/src",
     "outDir": "../../../packages/task/lib"
   },
-  "include": [
-    "../../../packages/task/src"
-  ]
+  "include": ["../../../packages/task/src"],
+  "exclude": ["../../../packages/task/__mocks__"]
 }

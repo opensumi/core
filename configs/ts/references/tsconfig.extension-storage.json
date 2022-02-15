@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/extension-storage/src",
     "outDir": "../../../packages/extension-storage/lib"
   },
-  "include": [
-    "../../../packages/extension-storage/src"
-  ]
+  "include": ["../../../packages/extension-storage/src"],
+  "exclude": ["../../../packages/extension-storage/__mocks__"]
 }

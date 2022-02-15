@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/comments/src",
     "outDir": "../../../packages/comments/lib"
   },
-  "include": [
-    "../../../packages/comments/src"
-  ]
+  "include": ["../../../packages/comments/src"],
+  "exclude": ["../../../packages/comments/__mocks__"]
 }

@@ -4,5 +4,6 @@
     "rootDir": "../../../packages/remote-opener/src",
     "outDir": "../../../packages/remote-opener/lib"
   },
-  "include": ["../../../packages/remote-opener/src"]
+  "include": ["../../../packages/remote-opener/src"],
+  "exclude": ["../../../packages/remote-opener/__mocks__"]
 }

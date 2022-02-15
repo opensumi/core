@@ -19,7 +19,7 @@
       "path": "./references/tsconfig.core-electron-main.json"
     },
     {
-      "path": "./references/tsconfig.logs.json"
+      "path": "./references/tsconfig.logs-core.json"
     },
     {
       "path": "./references/tsconfig.file-service.json"

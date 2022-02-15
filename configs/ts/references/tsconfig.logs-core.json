@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/logs-core/src",
     "outDir": "../../../packages/logs-core/lib"
   },
-  "include": [
-    "../../../packages/logs-core/src"
-  ]
+  "include": ["../../../packages/logs-core/src"],
+  "exclude": ["../../../packages/logs-core/__mocks__"]
 }

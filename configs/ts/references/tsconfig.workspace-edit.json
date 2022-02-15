@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/workspace-edit/src",
     "outDir": "../../../packages/workspace-edit/lib"
   },
-  "include": [
-    "../../../packages/workspace-edit/src"
-  ]
+  "include": ["../../../packages/workspace-edit/src"],
+  "exclude": ["../../../packages/workspace-edit/__mocks__"]
 }

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/electron-basic/src",
     "outDir": "../../../packages/electron-basic/lib"
   },
-  "include": [
-    "../../../packages/electron-basic/src"
-  ]
+  "include": ["../../../packages/electron-basic/src"],
+  "exclude": ["../../../packages/electron-basic/__mocks__"]
 }

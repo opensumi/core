@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/outline/src",
     "outDir": "../../../packages/outline/lib"
   },
-  "include": [
-    "../../../packages/outline/src"
-  ]
+  "include": ["../../../packages/outline/src"],
+  "exclude": ["../../../packages/outline/__mocks__"]
 }

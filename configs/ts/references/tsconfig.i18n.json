@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/i18n/src",
     "outDir": "../../../packages/i18n/lib"
   },
-  "include": [
-    "../../../packages/i18n/src"
-  ]
+  "include": ["../../../packages/i18n/src"],
+  "exclude": ["../../../packages/i18n/__mocks__"]
 }

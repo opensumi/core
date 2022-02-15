@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/file-search/src",
     "outDir": "../../../packages/file-search/lib"
   },
-  "include": [
-    "../../../packages/file-search/src"
-  ]
+  "include": ["../../../packages/file-search/src"],
+  "exclude": ["../../../packages/file-search/__mocks__"]
 }
