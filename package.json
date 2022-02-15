@@ -4,7 +4,6 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
-    "clean:cache": "rimraf .cache",
     "clean": "rimraf ./packages/*/lib",
     "check:dep": "ts-node ./scripts/depcheck",
     "init:deps": "ts-node ./scripts/bootstrap",
