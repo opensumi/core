@@ -170,7 +170,7 @@ export const PreferenceSections = ({
       .filter((s) => s.title)
       .map((section, idx) => (
         <div key={`${section.title}-${idx}`} onClick={() => navigateTo(section)}>
-          {section.title!}
+          {section.title}
         </div>
       ))}
   </div>
@@ -213,7 +213,7 @@ export const PreferencesIndexes = ({
                 </div>
                 {preferenceService.currentGroup === id ? (
                   <div>
-                    <PreferenceSections preferenceSections={sections} navigateTo={navigateTo}></PreferenceSections>
+                    <PreferenceSections preferenceSections={sections} navigateTo={navigateTo} />
                   </div>
                 ) : (
                   <div></div>
