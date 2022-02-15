@@ -246,8 +246,11 @@ export class TabbarService extends WithEventBus {
     this.sortedContainers.splice(insertIndex, 0, componentInfo);
     for (let i = insertIndex; i < this.sortedContainers.length; i++) {
       const info = this.sortedContainers[i];
-      const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
-      this.state.set(info.options!.containerId, { hidden: prevState.hidden, priority: i });
+      const containerId = info.options?.containerId;
+      if (containerId) {
+        const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+        this.state.set(containerId, { hidden: prevState.hidden, priority: i });
+      }
     }
     disposables.push(this.registerSideEffects(componentInfo));
     this.eventBus.fire(new TabBarRegistrationEvent({ tabBarId: containerId }));
