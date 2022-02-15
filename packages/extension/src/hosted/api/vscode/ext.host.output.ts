@@ -10,10 +10,19 @@ export class ExtHostOutput implements IExtHostOutput {
   }
 }
 
+// 批处理字符最大长度
+const OUTPUT_BATCH_MAX_SIZE = 20 * 1024;
+// 批处理延时
+const OUTPUT_BATCH_DURATION_MS = 5;
+
 export class OutputChannelImpl implements types.OutputChannel {
   private disposed: boolean;
 
   private proxy: IMainThreadOutput;
+
+  private batchedOutputLine = '';
+
+  private batchedTimer: NodeJS.Timeout | null = null;
 
   constructor(readonly name: string, private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
@@ -29,7 +38,16 @@ export class OutputChannelImpl implements types.OutputChannel {
 
   append(value: string): void {
     this.validate();
-    this.proxy.$append(this.name, value);
+    const data = this.batchedOutputLine + value;
+    this.batchedOutputLine = data;
+
+    if (this.batchedOutputLine.length >= OUTPUT_BATCH_MAX_SIZE) {
+      this.flushOutputString();
+    }
+
+    if (!this.batchedTimer) {
+      this.batchedTimer = global.setTimeout(() => this.flushOutputString(), OUTPUT_BATCH_DURATION_MS);
+    }
   }
 
   appendLine(value: string): void {
@@ -40,6 +58,15 @@ export class OutputChannelImpl implements types.OutputChannel {
   clear(): void {
     this.validate();
     this.proxy.$clear(this.name);
+  }
+
+  private flushOutputString() {
+    this.proxy.$append(this.name, this.batchedOutputLine);
+    this.batchedOutputLine = '';
+    if (this.batchedTimer) {
+      global.clearTimeout(this.batchedTimer);
+      this.batchedTimer = null;
+    }
   }
 
   show(preserveFocus: boolean | undefined): void {
