@@ -13,9 +13,9 @@
     "start": "run-p start:client:open start:server start:webview",
     "start:webview": "webpack-dev-server --config ./webpack.webview.js",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "cross-env IS_DEV=1 NODE_ENV=development EXT_MODE=js KTLOG_SHOW_DEBUG=1 node --inspect=9999 -r ts-node/register ./entry/web/server.ts",
+    "start:server": "cross-env IS_DEV=1 NODE_ENV=development EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon --inspect=9999 ./entry/web/server.ts",
     "start:no-inspect:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:no-inspect:server": "cross-env EXT_MODE=js KTLOG_SHOW_DEBUG=1 node -r ts-node/register ./entry/web/server.ts",
+    "start:no-inspect:server": "cross-env EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon ./entry/web/server.ts",
     "start:client:open": "cross-env SUMI_DEV_OPEN_BROWSER=1 webpack-dev-server --config ./webpack.config.js",
     "start:server:extjs": "cross-env EXT_MODE=js NODE_ENV=development KTLOG_SHOW_DEBUG=1 node --inspect=9999 -r ts-node/register ./entry/web/server.ts",
     "start:electron": "node ./scripts/start.js ",
@@ -32,8 +32,27 @@
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
+  "nodemonConfig": {
+    "restartable": "rs",
+    "ignore": [
+      ".git",
+      "**/lib/**",
+      "**/node_modules/**",
+      "**/__tests__/**",
+      "**/src/browser/**"
+    ],
+    "verbose": true,
+    "execMap": {
+      "ts": "node --require ts-node/register"
+    },
+    "watch": [
+      "../../packages",
+      "../../tools"
+    ],
+    "ext": "js,json,ts"
+  },
   "dependencies": {
-   "@opensumi/ide-addons": "2.14.2",
+    "@opensumi/ide-addons": "2.14.2",
     "@opensumi/ide-comments": "2.14.2",
     "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
@@ -103,6 +122,7 @@
     "mini-css-extract-plugin": "^0.6.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
+    "nodemon": "^2.0.15",
     "npm-run": "^5.0.1",
     "npm-run-all": "^4.1.5",
     "react-dom": "^16.8.6",
