@@ -13,11 +13,13 @@ import {
   ReporterService,
   IReporter,
   IExtensionLogger,
+  enumValueToArray,
 } from '@opensumi/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
+import { createAPIFactory as createTelemetryAPIFactory } from './api/telemetry/ext.host.api.impl';
 import {
   ExtHostAPIIdentifier,
   MainThreadAPIIdentifier,
@@ -42,21 +44,83 @@ export function getNodeRequire() {
   return typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require;
 }
 
+enum EInternalModule {
+  VSCODE = 'vscode',
+  KAITIAN = 'kaitian',
+  SUMI = 'sumi',
+  TELEMETRY = 'vscode-extension-telemetry-wrapper',
+}
+
+const __interceptModule = enumValueToArray(EInternalModule);
+
+abstract class ApiImplFactory {
+  private apiFactory: any;
+  private extAPIImpl: Map<string, any>;
+
+  constructor(readonly rpcProtocol: RPCProtocol, readonly extHost: IExtensionHostService, readonly injector: Injector) {
+    this.apiFactory = this.createAPIFactory(rpcProtocol, extHost, injector);
+    this.extAPIImpl = new Map();
+  }
+
+  abstract createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector): any;
+
+  public load(extension: IExtensionDescription | undefined, addonImpl?: any[]) {
+    if (!extension) {
+      return;
+    }
+
+    let apiImpl = this.extAPIImpl.get(extension.id);
+    if (!apiImpl) {
+      try {
+        apiImpl = this.apiFactory(extension);
+        this.extAPIImpl.set(extension.id, apiImpl);
+      } catch (e) {}
+    }
+
+    if (Array.isArray(addonImpl)) {
+      return [...addonImpl, ...apiImpl];
+    }
+
+    return apiImpl;
+  }
+}
+
+class VSCodeAPIImpl extends ApiImplFactory {
+  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+    return createVSCodeAPIFactory(
+      rpcProtocol,
+      extHost,
+      rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
+      injector.get(AppConfig),
+    );
+  }
+}
+
+class OpenSumiAPIImpl extends ApiImplFactory {
+  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter));
+  }
+}
+
+class TelemetryAPIImpl extends ApiImplFactory {
+  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+    return createTelemetryAPIFactory(rpcProtocol, extHost, 'node');
+  }
+}
+
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private extensions: IExtensionDescription[];
   private rpcProtocol: RPCProtocol;
-
-  private vscodeAPIFactory: any;
-  private vscodeExtAPIImpl: Map<string, any>;
-
-  private sumiAPIFactory: any;
-  private sumiAPIImpl: Map<string, any>;
 
   public extensionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
   public secret: ExtHostSecret;
 
   readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
+
+  private vscodeAPIImpl: VSCodeAPIImpl;
+  private openSumiAPIImpl: OpenSumiAPIImpl;
+  private telemetryAPIImpl: TelemetryAPIImpl;
 
   private reporterService: IReporterService;
 
@@ -67,16 +131,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
     const reporter = injector.get(IReporter);
-    this.vscodeAPIFactory = createVSCodeAPIFactory(
-      this.rpcProtocol,
-      this as any,
-      this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
-      this.injector.get(AppConfig),
-    );
-    this.sumiAPIFactory = createSumiAPIFactory(this.rpcProtocol, this, 'node', reporter);
 
-    this.vscodeExtAPIImpl = new Map();
-    this.sumiAPIImpl = new Map();
+    this.vscodeAPIImpl = new VSCodeAPIImpl(rpcProtocol, this, injector);
+    this.openSumiAPIImpl = new OpenSumiAPIImpl(rpcProtocol, this, injector);
+    this.telemetryAPIImpl = new TelemetryAPIImpl(rpcProtocol, this, injector);
+
     this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });
@@ -233,14 +292,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const module = getNodeRequire()('module');
     const originalLoad = module._load;
 
-    const vscodeExtAPIImpl = this.vscodeExtAPIImpl;
-    const vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
-
-    const sumiExtAPIImpl = this.sumiAPIImpl;
-    const sumiAPIFactory = this.sumiAPIFactory.bind(this);
     const that = this;
     module._load = function load(request: string, parent: any, isMain: any) {
-      if (request !== 'vscode' && request !== 'kaitian' && request !== 'sumi') {
+      if (!__interceptModule.some((m) => m === request)) {
         return originalLoad.apply(this, arguments);
       }
 
@@ -255,31 +309,18 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       if (!extension) {
         return;
       }
-      if (request === 'vscode') {
-        let vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id);
-        if (!vscodeAPIImpl) {
-          try {
-            vscodeAPIImpl = vscodeAPIFactory(extension);
-            vscodeExtAPIImpl.set(extension.id, vscodeAPIImpl);
-          } catch (e) {
-            that.logger.error(e);
-          }
-        }
+      switch (request) {
+        case EInternalModule.VSCODE:
+          return that.vscodeAPIImpl.load(extension);
 
-        return vscodeAPIImpl;
-      } else if (request === 'kaitian' || request === 'sumi') {
-        let sumiAPIImpl = sumiExtAPIImpl.get(extension.id);
-        const vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id) || vscodeAPIFactory(extension);
-        if (!sumiAPIImpl) {
-          try {
-            sumiAPIImpl = sumiAPIFactory(extension);
-            sumiExtAPIImpl.set(extension.id, sumiAPIImpl);
-          } catch (e) {
-            that.logger.error(e);
-          }
-        }
+        case EInternalModule.KAITIAN || EInternalModule.SUMI:
+          return that.openSumiAPIImpl.load(extension, that.vscodeAPIImpl.load(extension));
 
-        return { ...vscodeAPIImpl, ...sumiAPIImpl };
+        case EInternalModule.TELEMETRY:
+          return that.telemetryAPIImpl.load(extension);
+
+        default:
+          break;
       }
     };
   }
