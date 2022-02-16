@@ -48,7 +48,6 @@
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
-    "canvas": "2.6.1",
     "commitizen": "^4.2.4",
     "commitlint": "^15.0.0",
     "cz-conventional-changelog": "^2.1.0",
@@ -84,12 +83,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "resolutions": {
-    "canvas": "2.6.1",
     "y18n": "4.0.0",
     "shelljs": "0.8.4",
     "webpack": "4.39.3"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^0.1.20",
     "@types/classnames": "2.2.6",
     "@types/execa": "^0.9.0",
     "@types/fs-extra": "^5.1.0",

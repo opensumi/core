@@ -42,7 +42,6 @@
     "@opensumi/vscode-ripgrep": "^1.4.0"
   },
   "resolutions": {
-    "canvas": "2.6.1",
     "y18n": "4.0.0"
   },
   "devDependencies": {
