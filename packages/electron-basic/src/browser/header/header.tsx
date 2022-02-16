@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import cls from 'classnames';
 import styles from './header.module.less';
 import {
@@ -117,7 +116,7 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
     );
   };
 
-  // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
+  // in Mac, hide the header bar if it is in full screen mode
   if (isOSX && isFullScreen) {
     return (
       <div>
@@ -149,10 +148,10 @@ declare const ResizeObserver: any;
 export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
   const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
-  const ref = useRef<HTMLDivElement>();
-  const spanRef = useRef<HTMLSpanElement>();
+  const ref = useRef<HTMLDivElement>(null);
+  const spanRef = useRef<HTMLSpanElement>(null);
   const appConfig: AppConfig = useInjectable(AppConfig);
-  const [appTitle, setAppTile] = useState<string>();
+  const [appTitle, setAppTitle] = useState<string>();
 
   useEffect(() => {
     setPosition();
@@ -201,7 +200,8 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   const title =
     (currentResource ? currentResource.name + ' — ' : '') +
     (dirname ? dirname + ' — ' : '') +
-    replaceLocalizePlaceholder(appConfig.appName);
+    replaceLocalizePlaceholder(appConfig.appName) +
+    (appConfig.isRemote ? ` [${localize('common.remoteMode')}]` : '');
 
   // 同时更新 Html Title
   useEffect(() => {
@@ -210,7 +210,7 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
       documentTitle = `[${localize('workspace.development.title')}] ${title}`;
     }
     document.title = documentTitle;
-    setAppTile(documentTitle);
+    setAppTitle(documentTitle);
   }, [title]);
 
   if (hidden) {
@@ -218,8 +218,8 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   }
 
   return (
-    <div className={styles.title_info} ref={ref as any}>
-      <span ref={spanRef as any}>{appTitle}</span>
+    <div className={styles.title_info} ref={ref}>
+      <span ref={spanRef}>{appTitle}</span>
     </div>
   );
 });
