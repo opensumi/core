@@ -209,15 +209,16 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   async execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }> {
     this.taskStatus = TaskStatus.PROCESS_READY;
+
     await this.createTerminal(reuse);
 
     this.terminalClient?.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;
 
     // extensionTerminal 由插件自身接管，不需要执行和输出 Command
-    if (!this.terminalOptions.isExtensionTerminal) {
+    if (!this.terminalOptions.isExtensionTerminal && shellArgs) {
       this.terminalClient?.term.writeln(
-        `\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`,
+        `\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs[1]} <\x1b[0m\n`,
       );
     }
 
@@ -331,7 +332,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return { shellArgs: ['-c', `${result.join(' ')}`] };
   }
 
-  private findAvaiableExecutor(): TerminalTaskExecutor | undefined {
+  private findAvailableExecutor(): TerminalTaskExecutor | undefined {
     return this.taskExecutors.find((e) => e.taskStatus === TaskStatus.PROCESS_EXITED);
   }
 
@@ -353,7 +354,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
         : await this.resolveVariable('${workspaceFolder}'),
     };
 
-    let executor: TerminalTaskExecutor | undefined = this.findAvaiableExecutor();
+    let executor: TerminalTaskExecutor | undefined = this.findAvailableExecutor();
     let reuse = false;
     if (!executor) {
       executor = this.injector.get(TerminalTaskExecutor, [terminalOptions, collector, this.executorId]);

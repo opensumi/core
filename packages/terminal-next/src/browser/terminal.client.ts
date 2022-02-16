@@ -50,6 +50,7 @@ import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { XTerm } from './xterm';
+import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
@@ -256,7 +257,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       initialText: withNullAsUndefined(options.message),
       strictEnv: withNullAsUndefined(options.strictEnv),
       hideFromUser: withNullAsUndefined(options.hideFromUser),
-      // isFeatureTerminal: withNullAsUndefined(internalOptions?.isFeatureTerminal),
+      // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
       isExtensionOwnedTerminal: true,
       // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
       // location:
@@ -264,6 +265,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
       // disablePersistence: withNullAsUndefined(options.disablePersistence),
     };
+
+    if (options.isExtensionTerminal) {
+      shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
+        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+    }
     return shellLaunchConfig;
   }
 
@@ -321,7 +327,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     if (await this._checkWorkspace()) {
       const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
-      this.logger.log('init2: ', launchConfig);
+      this.logger.log('init terminal client with: ', launchConfig);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
 
