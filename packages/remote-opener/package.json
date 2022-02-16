@@ -17,9 +17,11 @@
   },
   "dependencies": {
     "@opensumi/ide-connection": "2.14.2",
-    "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
-    "@opensumi/ide-core-node": "2.14.2",
+    "@opensumi/ide-core-node": "2.14.2"
+  },
+  "devDependencies": {
+    "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-editor": "2.14.2"
   }
 }
