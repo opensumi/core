@@ -22,7 +22,7 @@ import {
   IEventBus,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { ElectronHeaderBar } from './header';
+import { ElectronHeaderBar } from './header/header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';

@@ -237,7 +237,7 @@ export const localizationBundle = {
     'dialog.file.saveLabel': 'Save File:',
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
-    'menu-bar.file.pref': 'prefrence',
+    'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
@@ -419,6 +419,7 @@ export const localizationBundle = {
     'common.about': 'About',
     'common.find': 'Find',
     'common.replace': 'Replace',
+    'common.remoteMode': 'Remote Mode',
 
     'component.message.origin': 'Origin',
 
