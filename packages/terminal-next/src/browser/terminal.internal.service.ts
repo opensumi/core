@@ -8,6 +8,9 @@ import {
   IPtyExitEvent,
   ITerminalController,
   TerminalOptions,
+  ITerminalProfile,
+  IShellLaunchConfig,
+  ITerminalConnection,
 } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
@@ -107,5 +110,22 @@ export class TerminalInternalService implements ITerminalInternalService {
 
   async getOs(): Promise<OperatingSystem> {
     return await this.service.getOs();
+  }
+  async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
+    return await this.service.getProfiles(autoDetect);
+  }
+  async getDefaultSystemShell(): Promise<string> {
+    return await this.service.getDefaultSystemShell();
+  }
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return await this.service.getCodePlatformKey();
+  }
+  async attachByLaunchConfig(
+    sessionId: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<ITerminalConnection | undefined> {
+    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
   }
 }

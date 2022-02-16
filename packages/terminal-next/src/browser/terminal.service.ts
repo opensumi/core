@@ -3,7 +3,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
-import { CorePreferences, AppConfig, electronEnv } from '@opensumi/ide-core-browser';
+import { AppConfig, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generateSessionId,
@@ -13,12 +13,15 @@ import {
   ITerminalServicePath,
   ITerminalConnection,
   IPtyExitEvent,
-  IShellLaunchConfig,
   INodePtyInstance,
   isTerminalError,
   TerminalOptions,
+  ITerminalProfile,
+  IShellLaunchConfig,
+  IDetectProfileOptionsPreference,
 } from '../common';
 import { ShellType, WindowsShellType } from '../common/shell';
+import { CodeTerminalSettingPrefix } from '../common/preference';
 
 export interface EventMessage {
   data: string;
@@ -36,8 +39,8 @@ export class NodePtyTerminalService implements ITerminalService {
   @Autowired(ITerminalServicePath)
   protected readonly serviceClientRPC: ITerminalServiceClient;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
@@ -109,7 +112,7 @@ export class NodePtyTerminalService implements ITerminalService {
   ) {
     let shellPath = options.shellPath;
     const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
-    const platformKey = await this.getPlatformKey();
+    const platformKey = await this.getCodePlatformKey();
     const terminalOs = await this.getOs();
     if (!shellPath) {
       // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
@@ -152,7 +155,11 @@ export class NodePtyTerminalService implements ITerminalService {
         shellPath = shellType;
       }
 
-      const platformSpecificArgs = this.corePreferences.get(`terminal.integrated.shellArgs.${platformKey}`);
+      const platformSpecificArgs = this.preferenceService.get<string[]>(
+        `${CodeTerminalSettingPrefix.ShellArgs}${platformKey}`,
+        [],
+      );
+
       shellArgs.push(...platformSpecificArgs);
 
       if (shellType === WindowsShellType['git-bash']) {
@@ -161,25 +168,27 @@ export class NodePtyTerminalService implements ITerminalService {
     }
 
     const launchConfig: IShellLaunchConfig = {
-      shellPath,
+      executable: shellPath,
       cwd: options.cwd,
       args: shellArgs,
-      cols,
-      rows,
-      os: terminalOs,
       env: options.env,
       name: options.name,
       strictEnv: options.strictEnv,
     };
+    return this.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
+  }
 
-    this.logger.log(`attach ${sessionId} with options ${JSON.stringify(launchConfig)}`);
+  async attachByLaunchConfig(sessionId: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
+    this.logger.log(`attachByLaunchConfig ${sessionId} with launchConfig `, launchConfig);
 
-    const ptyInstance = await this.serviceClientRPC.create2(sessionId, launchConfig);
+    const ptyInstance = await this.serviceClientRPC.create2(sessionId, cols, rows, launchConfig);
     if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {
+      this.logger.log(`${sessionId} attach success, pid: ${ptyInstance.pid}, name: ${ptyInstance.name}`);
       // 有 pid 或者 name 的才视为创建成功
       // 创建不成功的时候会被通过 closeClient 把错误信息传递回来
       return this._createCustomWebSocket(sessionId, ptyInstance);
     }
+    this.logger.error(`${sessionId} cannot create ptyInstance`, ptyInstance);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
@@ -207,13 +216,8 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
-  async getPlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
-    // follow vscode
-    return (await this.getOs()) === OperatingSystem.Macintosh
-      ? 'osx'
-      : OS === OperatingSystem.Windows
-      ? 'windows'
-      : 'linux';
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return await this.serviceClientRPC.getCodePlatformKey();
   }
 
   disposeById(sessionId: string) {
@@ -242,6 +246,8 @@ export class NodePtyTerminalService implements ITerminalService {
   closeClient(id: string, code?: number, signal?: number): void;
   closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }): void;
   closeClient(sessionId: string, data?: ITerminalError | { code?: number; signal?: number } | number, signal?: number) {
+    this.logger.log(`${sessionId} was closed, error: ${data}`);
+
     if (isTerminalError(data)) {
       this._onError.fire(data);
     } else if (typeof data === 'number') {
@@ -256,8 +262,24 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getOs() {
-    // is this right to check WebIDE Terminal OS type?
-    return OS;
+    return this.serviceClientRPC.getOs();
+  }
+
+  async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
+    const platformKey = await this.getCodePlatformKey();
+    const terminalPreferences = this.preferenceService.get<IDetectProfileOptionsPreference>(
+      `${CodeTerminalSettingPrefix.Profiles}${platformKey}`,
+      {},
+    );
+
+    return await this.serviceClientRPC.detectAvailableProfiles({
+      autoDetect,
+      preference: terminalPreferences,
+    });
+  }
+
+  async getDefaultSystemShell(): Promise<string> {
+    return await this.serviceClientRPC.getDefaultSystemShell(await this.getOs());
   }
 
   dispose() {

@@ -22,11 +22,10 @@ import {
   WebviewViewProvider,
 } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@opensumi/ide-core-common';
-
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import * as types from '../../../common/vscode/ext-types';
-import { Uri, Disposable } from '../../../common/vscode/ext-types';
+import { Uri } from '../../../common/vscode/ext-types';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError, IExtensionDescription } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -283,6 +282,9 @@ export function createWindowApiFactory(
     registerTerminalLinkProvider(handler: vscode.TerminalLinkProvider): vscode.Disposable {
       return extHostTerminal.registerLinkProvider(handler);
     },
+    registerTerminalProfileProvider(id: string, provider: vscode.TerminalProfileProvider): vscode.Disposable {
+      return extHostTerminal.registerTerminalProfileProvider(extension, id, provider);
+    },
     registerWebviewViewProvider(
       viewId: string,
       provider: WebviewViewProvider,
@@ -312,7 +314,7 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   openDialog(options: IExtOpenDialogOptions): Promise<types.Uri[] | undefined> {
-    return new Promise<types.Uri[] | undefined>((resolve, reject) => {
+    return new Promise<types.Uri[] | undefined>((resolve) => {
       const id = (this.id++).toString();
       this.proxy.$showOpenDialog(id, options);
       const disposer = this._onOpenedResult.event((res) => {
@@ -325,7 +327,7 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   showSaveDialog(options: IExtSaveDialogOptions): Promise<types.Uri | undefined> {
-    return new Promise<types.Uri | undefined>((resolve, reject) => {
+    return new Promise<types.Uri | undefined>((resolve) => {
       const id = (this.id++).toString();
       this.proxy.$showSaveDialog(id, options);
       const disposer = this._onSavedResult.event((res) => {

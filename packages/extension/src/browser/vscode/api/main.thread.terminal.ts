@@ -14,6 +14,7 @@ import {
   ITerminalExternalLinkProvider,
   ITerminalClient,
   ITerminalLink,
+  ITerminalProfileInternalService,
 } from '@opensumi/ide-terminal-next';
 import {
   IEnvironmentVariableService,
@@ -22,11 +23,13 @@ import {
 } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { deserializeEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { ITerminalProfileService } from '@opensumi/ide-terminal-next/lib/common/profile';
 
 @Injectable({ multiple: true })
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
   private readonly _terminalProcessProxies = new Map<string, ITerminalProcessExtHostProxy>();
+  private readonly _profileProviders = new Map<string, IDisposable>();
 
   /**
    * A single shared terminal link provider for the exthost. When an ext registers a link
@@ -44,6 +47,12 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(ITerminalController)
   private controller: ITerminalController;
+
+  @Autowired(ITerminalProfileService)
+  private profileSerivce: ITerminalProfileService;
+
+  @Autowired(ITerminalProfileInternalService)
+  private profileInternalSerivce: ITerminalProfileInternalService;
 
   @Autowired(ITerminalGroupViewService)
   private terminalGroupViewService: ITerminalGroupViewService;
@@ -85,6 +94,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.disposable.addDispose(
       this.controller.onInstanceRequestStartExtensionTerminal((e) => this._onRequestStartExtensionTerminal(e)),
     );
+    this.disposable.addDispose(
+      this.profileSerivce.onDidChangeAvailableProfiles(() => {
+        this._updateDefaultProfile();
+      }),
+    );
   }
 
   private initData() {
@@ -100,10 +114,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     });
 
     this.proxy.$setTerminals(infoList);
-    const shellType = this.preference.get<string>('terminal.type');
-    if (shellType) {
-      this.proxy.$acceptDefaultShell(shellType);
-    }
+
+    this._updateDefaultProfile();
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
@@ -208,6 +220,28 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   public $stopLinkProvider() {
     this._linkProvider?.dispose();
     this._linkProvider = undefined;
+  }
+
+  public $registerProfileProvider(id: string, extensionIdentifier: string): void {
+    // Proxy profile provider requests through the extension host
+    this._profileProviders.set(
+      id,
+      this.profileSerivce.registerTerminalProfileProvider(extensionIdentifier, id, {
+        createContributedTerminalProfile: async (options) => this.proxy.$createContributedProfileTerminal(id, options),
+      }),
+    );
+  }
+
+  public $unregisterProfileProvider(id: string): void {
+    this._profileProviders.get(id)?.dispose();
+    this._profileProviders.delete(id);
+  }
+
+  private async _updateDefaultProfile() {
+    const defaultProfile = await this.profileInternalSerivce.resolveDefaultProfile();
+    if (defaultProfile) {
+      this.proxy.$acceptDefaultProfile(defaultProfile);
+    }
   }
 
   $setEnvironmentVariableCollection(

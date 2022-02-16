@@ -371,6 +371,34 @@ declare module 'vscode' {
   }
 
   /**
+   * Provides a terminal profile for the contributed terminal profile when launched via the UI or
+   * command.
+   */
+   export interface TerminalProfileProvider {
+    /**
+     * Provide the terminal profile.
+     * @param token A cancellation token that indicates the result is no longer needed.
+     * @returns The terminal profile.
+     */
+    provideTerminalProfile(token: CancellationToken): ProviderResult<TerminalProfile>;
+  }
+
+  /**
+   * A terminal profile defines how a terminal will be launched.
+   */
+  export class TerminalProfile {
+    /**
+     * The options that the terminal will launch with.
+     */
+    options: TerminalOptions | ExtensionTerminalOptions;
+    /**
+     * Creates a new terminal profile.
+     * @param options The options that the terminal will launch with.
+     */
+    constructor(options: TerminalOptions | ExtensionTerminalOptions);
+  }
+
+  /**
    * Class used to execute an extension callback as a task.
    */
   export class CustomExecution {

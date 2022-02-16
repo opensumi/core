@@ -77,6 +77,9 @@ export interface PreferenceItem {
   additionalProperties?: object;
   [name: string]: any;
   overridable?: boolean;
+
+  deprecationMessage?: string;
+  markdownDeprecationMessage?: string;
 }
 
 export interface PreferenceSchemaProperty extends PreferenceItem {

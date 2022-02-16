@@ -310,6 +310,24 @@ export class Barrier {
   }
 }
 
+/**
+ * A barrier that is initially closed and then becomes opened permanently after a certain period of
+ * time or when open is called explicitly
+ */
+export class AutoOpenBarrier extends Barrier {
+  private readonly _timeout: any;
+
+  constructor(autoOpenTimeMs: number) {
+    super();
+    this._timeout = setTimeout(() => this.open(), autoOpenTimeMs);
+  }
+
+  override open(): void {
+    clearTimeout(this._timeout);
+    super.open();
+  }
+}
+
 export function isThenable<T>(obj: any): obj is Promise<T> {
   return obj && typeof (obj as Promise<any>).then === 'function';
 }

@@ -1,4 +1,4 @@
-import { Event, IDisposable } from '@opensumi/ide-core-common';
+import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 
 export interface IProcessDataEvent {
@@ -29,7 +29,6 @@ export class TerminalDataBufferer implements IDisposable {
       let buffer = this._terminalBufferMap.get(id);
       if (buffer) {
         buffer.data.push(data);
-
         return;
       }
 
@@ -101,7 +100,6 @@ export interface ITerminalLinkDto {
 
 export interface ITerminalLaunchError {
   message: string;
-  code?: number;
 }
 
 /**
@@ -164,4 +162,28 @@ export interface IStartExtensionTerminalRequest {
   cols: number;
   rows: number;
   callback: (error: ITerminalLaunchError | undefined) => void;
+}
+
+export interface ITerminalProfileProvider {
+  createContributedTerminalProfile(options: ICreateContributedTerminalProfileOptions): Promise<void>;
+}
+
+export interface ICreateContributedTerminalProfileOptions {
+  icon?: URI | string | { light: URI; dark: URI };
+  color?: string;
+  location?: TerminalLocation | { viewColumn: number; preserveState?: boolean } | { splitActiveTerminal: boolean };
+}
+
+export enum TerminalLocation {
+  Panel = 1,
+  Editor = 2,
+}
+
+export const enum TerminalLocationString {
+  TerminalView = 'view',
+  Editor = 'editor',
+}
+
+export interface ITerminalEnvironment {
+  [key: string]: string | null | undefined;
 }

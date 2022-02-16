@@ -13,7 +13,7 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { TerminalController } from '../../src/browser/terminal.controller';
-import { TerminalClientFactory } from '../../src/browser/terminal.client';
+import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
@@ -22,12 +22,15 @@ import {
   ITerminalService,
   ITerminalTheme,
   ITerminalClientFactory,
+  ITerminalClientFactory2,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
-  IWidget,
   ITerminalNetwork,
   ITerminalErrorService,
+  ITerminalProfileService,
+  ITerminalProfileInternalService,
+  ITerminalServicePath,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 import {
@@ -39,11 +42,15 @@ import {
   MockFileService,
   MockEditorService,
   MockErrorService,
+  MockProfileService,
+  MockTerminalProfileInternalService,
 } from './mock.service';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { TerminalProfileService } from '../../lib/browser/terminal.profile';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -111,10 +118,11 @@ export const injector = new Injector([
   },
   {
     token: ITerminalClientFactory,
-    useFactory:
-      (injector) =>
-      (widget: IWidget, options = {}) =>
-        TerminalClientFactory.createClient(injector, widget, options),
+    useFactory: createTerminalClientFactory,
+  },
+  {
+    token: ITerminalClientFactory2,
+    useFactory: createTerminalClientFactory2,
   },
   {
     token: CommandService,
@@ -146,6 +154,41 @@ export const injector = new Injector([
     token: EnvironmentVariableServiceToken,
     useValue: {
       onDidChangeCollections: () => Disposable.create(() => {}),
+    },
+  },
+  {
+    token: ITerminalProfileService,
+    useValue: new MockProfileService(),
+  },
+  {
+    token: ITerminalProfileInternalService,
+    useValue: new MockTerminalProfileInternalService(),
+  },
+  {
+    token: ITerminalServicePath,
+    useValue: {
+      getCodePlatformKey() {
+        return 'osx';
+      },
+      getDefaultSystemShell() {
+        return '/bin/sh';
+      },
+      getOs() {
+        return OperatingSystem.Macintosh;
+      },
+      detectAvailableProfiles() {
+        return [];
+      },
+      create2: (sessionId, cols, rows, launchConfig) => ({
+        pid: 0,
+        name: '123',
+      }),
+      $resolveUnixShellPath(p) {
+        return p;
+      },
+      $resolvePotentialUnixShellPath() {
+        return 'detectedBash';
+      },
     },
   },
 ]);

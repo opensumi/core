@@ -14,6 +14,7 @@ import {
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
+  ITerminalProfileService,
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
@@ -53,6 +54,7 @@ import { TerminalPreference } from '@opensumi/ide-terminal-next/lib/browser/term
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
+import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
 
 const extension = mockExtensionProps;
 
@@ -99,6 +101,10 @@ describe('ExtHostTask API', () => {
     {
       token: ITerminalInternalService,
       useClass: TerminalInternalService,
+    },
+    {
+      token: ITerminalProfileService,
+      useClass: TerminalProfileService,
     },
     {
       token: StorageProvider,

@@ -1,12 +1,24 @@
 import WebSocket from 'ws';
 import { Terminal } from 'xterm';
-import { uuid, URI, Emitter } from '@opensumi/ide-core-common';
+import { uuid, URI, Emitter, IDisposable, PreferenceScope } from '@opensumi/ide-core-common';
 import { OS } from '@opensumi/ide-core-common/lib/platform';
-import { Disposable } from '@opensumi/ide-core-browser';
-import { ITerminalService, ITerminalConnection, ITerminalError } from '../../src/common';
+import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
+import {
+  ITerminalService,
+  ITerminalConnection,
+  ITerminalError,
+  IShellLaunchConfig,
+  ITerminalProfile,
+  ITerminalProfileService,
+  IResolveDefaultProfileOptions,
+  ITerminalProfileProvider,
+  IExtensionTerminalProfile,
+  IRegisterContributedProfileArgs,
+  ITerminalProfileInternalService,
+} from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
-
+import { PreferenceService } from '@opensumi/ide-core-browser';
 // Ref: https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -33,6 +45,39 @@ export class MockSocketService implements ITerminalService {
   constructor() {
     this._socks = new Map();
     this._response = new Map();
+  }
+  async attachByLaunchConfig(
+    sessionId: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<ITerminalConnection | undefined> {
+    const sock = new WebSocket(localhost(getPort()));
+    this._socks.set(sessionId, sock);
+
+    await delay(1000);
+
+    this._handleMethod(sessionId);
+
+    await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols, rows });
+
+    return this._customConnection(sessionId);
+  }
+
+  async getProfiles(_: boolean): Promise<ITerminalProfile[]> {
+    return [
+      {
+        profileName: 'bash',
+        path: '/bin/bash',
+        isDefault: true,
+      },
+    ];
+  }
+  async getDefaultSystemShell(): Promise<string> {
+    return (await this.getProfiles(true))[0].path;
+  }
+  getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    return Promise.resolve('osx');
   }
 
   makeId() {
@@ -68,7 +113,7 @@ export class MockSocketService implements ITerminalService {
     });
   }
 
-  private _custommConnection(sessionId: string): ITerminalConnection {
+  private _customConnection(sessionId: string): ITerminalConnection {
     return {
       onData: (handler: (json: any) => void) => {
         this._handleStdoutMessage(sessionId, handler);
@@ -128,16 +173,7 @@ export class MockSocketService implements ITerminalService {
   }
 
   async attach(sessionId: string, term: Terminal) {
-    const sock = new WebSocket(localhost(getPort()));
-    this._socks.set(sessionId, sock);
-
-    await delay(1000);
-
-    this._handleMethod(sessionId);
-
-    await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols: term.cols, rows: term.rows });
-
-    return this._custommConnection(sessionId);
+    return this.attachByLaunchConfig(sessionId, term.cols, term.rows, {});
   }
 
   async sendText(sessionId: string, data: string) {
@@ -221,9 +257,57 @@ export class MockTerminalThemeService {
 /** End */
 
 /** Mock Preference Service */
-export class MockPreferenceService {
-  get() {
-    return undefined;
+export class MockPreferenceService implements PreferenceService {
+  ready: Promise<void> = Promise.resolve();
+  hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean {
+    return false;
+  }
+  async set(
+    preferenceName: string,
+    value: any,
+    scope?: PreferenceScope,
+    resourceUri?: string,
+    overrideIdentifier?: string,
+  ): Promise<void> {}
+  onPreferencesChanged() {
+    return Disposable.NULL;
+  }
+  onLanguagePreferencesChanged() {
+    return Disposable.NULL;
+  }
+  inspect<T>(
+    preferenceName: string,
+    resourceUri?: string,
+    language?: string,
+  ):
+    | {
+        preferenceName: string;
+        defaultValue: T | undefined;
+        globalValue: T | undefined;
+        workspaceValue: T | undefined;
+        workspaceFolderValue: T | undefined;
+      }
+    | undefined {
+    return;
+  }
+  getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
+    return;
+  }
+  resolve<T>(
+    preferenceName: string,
+    defaultValue?: T,
+    resourceUri?: string,
+    language?: string,
+    untilScope?: PreferenceScope,
+  ): PreferenceResolveResult<T> {
+    throw new Error('Method not implemented.');
+  }
+  onSpecificPreferenceChange() {
+    return Disposable.NULL;
+  }
+  dispose(): void {}
+  get(key: string, defaultValue?: any) {
+    return defaultValue;
   }
   onPreferenceChanged() {
     return new Disposable();
@@ -246,3 +330,55 @@ export class MockErrorService {
   async fix(_sessionId: string) {}
 }
 /** End */
+
+export class MockProfileService implements ITerminalProfileService {
+  contributedProfiles: IExtensionTerminalProfile[];
+  async getContributedDefaultProfile(
+    shellLaunchConfig: IShellLaunchConfig,
+  ): Promise<IExtensionTerminalProfile | undefined> {
+    return undefined;
+  }
+  async registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void> {
+    // do nothing
+  }
+  availableProfiles: ITerminalProfile[] = [
+    {
+      isDefault: true,
+      path: '/bin/sh',
+      profileName: 'default',
+    },
+  ];
+  getDefaultProfileName(): string | undefined {
+    return 'default';
+  }
+  profilesReady: Promise<void> = Promise.resolve();
+  refreshAvailableProfiles(): void {
+    return;
+  }
+  onDidChangeAvailableProfiles() {
+    return new Disposable();
+  }
+  getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined {
+    return;
+  }
+  registerTerminalProfileProvider(
+    extensionIdentifier: string,
+    id: string,
+    profileProvider: ITerminalProfileProvider,
+  ): IDisposable {
+    return new Disposable();
+  }
+}
+
+export class MockTerminalProfileInternalService implements ITerminalProfileInternalService {
+  async resolveDefaultProfile(options?: IResolveDefaultProfileOptions): Promise<ITerminalProfile | undefined> {
+    return {
+      path: '/bin/sh',
+      isDefault: false,
+      profileName: 'default',
+    };
+  }
+  async resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
+    return undefined;
+  }
+}

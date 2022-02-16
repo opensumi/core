@@ -1,6 +1,14 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@opensumi/ide-core-common';
+import {
+  WithEventBus,
+  Emitter,
+  Deferred,
+  Event,
+  IDisposable,
+  DisposableStore,
+  ILogger,
+} from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@opensumi/ide-theme';
@@ -23,6 +31,9 @@ import {
   IStartExtensionTerminalRequest,
   ITerminalExitEvent,
   ITerminalExternalLinkProvider,
+  ICreateTerminalOptions,
+  ITerminalClientFactory2,
+  ICreateClientWithWidgetOptions,
 } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
@@ -71,6 +82,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ITerminalClientFactory)
   protected readonly clientFactory: ITerminalClientFactory;
 
+  @Autowired(ITerminalClientFactory2)
+  protected readonly clientFactory2: ITerminalClientFactory2;
+
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
 
@@ -82,6 +96,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(AppConfig)
   config: AppConfig;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
@@ -118,17 +135,29 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createClientOrIgnore(widget: IWidget, options = {}) {
+  private async _createClientOrIgnore(widget: IWidget) {
     if (this._clients.has(widget.id)) {
-      return;
+      return this._clients.get(widget.id)!;
     }
-    return this._createClient(widget, options);
+    return await this._createClient(widget);
   }
 
-  private _createClient(widget: IWidget, options: TerminalOptions = {}) {
-    const client = this.clientFactory(widget, options);
-    this._clients.set(client.id, client);
+  private async _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
+    let client: ITerminalClient;
 
+    if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
+      client = await this.clientFactory2(widget, options);
+      this.logger.log('create client with clientFactory2', client);
+    } else {
+      client = await this.clientFactory(widget, options);
+      this.logger.log('create client with clientFactory', client);
+    }
+    return this.setupClient(widget, client);
+  }
+
+  setupClient(widget: IWidget, client: ITerminalClient) {
+    this._clients.set(client.id, client);
+    this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
@@ -214,7 +243,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId,
         );
-        const client = this.clientFactory(widget, {});
+        const client = await this.clientFactory(widget, {});
         this._clients.set(client.id, client);
 
         if (current === client.id) {
@@ -253,12 +282,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId)!;
+    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(
       this.terminalView.onWidgetCreated((widget) => {
-        this._createClientOrIgnore(widget, {});
+        this._createClientOrIgnore(widget);
       }),
     );
 
@@ -413,7 +442,23 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._clients.get(widgetId);
   }
 
-  createClientWithWidget(options: TerminalOptions) {
+  /**
+   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.17.0
+   */
+  async createClientWithWidget(options: TerminalOptions) {
+    return await this.createClientWithWidget2({
+      terminalOptions: options,
+      args: options.args,
+      beforeCreate: options.beforeCreate,
+      closeWhenExited: options.closeWhenExited,
+    });
+  }
+
+  /**
+   * @param options
+   * @returns
+   */
+  async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
@@ -422,7 +467,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       options.beforeCreate(widgetId);
     }
 
-    return this._createClient(widget, options);
+    return await this._createClient(widget, options.terminalOptions);
   }
 
   clearCurrentGroup() {

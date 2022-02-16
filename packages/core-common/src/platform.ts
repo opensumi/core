@@ -17,7 +17,7 @@ interface NLSConfig {
 }
 
 export interface IProcessEnvironment {
-  [key: string]: string | null;
+  [key: string]: string | null | undefined;
 }
 
 interface INodeProcess {

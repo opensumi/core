@@ -1,6 +1,6 @@
 import { Terminal } from 'xterm';
 import { IDisposable, Disposable, Event, Deferred } from '@opensumi/ide-core-common';
-import { INodePtyInstance, TerminalOptions } from './pty';
+import { INodePtyInstance, TerminalOptions, ICreateTerminalOptions } from './pty';
 import { IWidget } from './resize';
 
 export interface ITerminalDataEvent {
@@ -163,7 +163,14 @@ export type ITerminalClientFactory = (
   widget: IWidget,
   options?: TerminalOptions,
   disposable?: IDisposable,
-) => ITerminalClient;
+) => Promise<ITerminalClient>;
+
+export const ITerminalClientFactory2 = Symbol('ITerminalClientFactory2');
+export type ITerminalClientFactory2 = (
+  widget: IWidget,
+  options?: ICreateTerminalOptions,
+  disposable?: IDisposable,
+) => Promise<ITerminalClient>;
 
 export interface ITerminalConnection {
   name: string;
@@ -171,7 +178,6 @@ export interface ITerminalConnection {
   sendData(data: string | ArrayBuffer): void;
   onData: Event<string | ArrayBuffer>;
   onExit?: Event<number | undefined>;
-
   ptyInstance?: INodePtyInstance;
 }
 

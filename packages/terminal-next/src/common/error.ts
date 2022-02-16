@@ -1,3 +1,9 @@
+import { IShellLaunchConfig } from '..';
+
+export enum ETerminalErrorType {
+  CREATE_FAIL = 0,
+}
+
 export interface ITerminalError {
   /**
    * 终端客户端的唯一标别
@@ -7,6 +13,9 @@ export interface ITerminalError {
    * 是否已经中断
    */
   stopped: boolean;
+  /**
+   */
+  type?: ETerminalErrorType;
   /**
    * 是否需要继续重连，默认为 true
    */
@@ -21,6 +30,7 @@ export interface ITerminalError {
    * 这个字段语义不太正确，而且框架层并没有用到，后面尽量不要使用
    */
   reconnected?: boolean;
+  launchConfig?: IShellLaunchConfig;
 }
 
 export function isTerminalError(data: any): data is ITerminalError {

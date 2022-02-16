@@ -38,6 +38,7 @@ import { ViewsWelcomeContributionPoint } from './views-welcome';
 import { SemanticTokenModifiersContributionPoint } from './semanticTokenModifiers';
 import { SemanticTokenScopesContributionPoint } from './semanticTokenScopes';
 import { SemanticTokenTypesContributionPoint } from './semanticTokenTypes';
+import { TerminalContributionPoint } from './terminal';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$';
 
@@ -423,6 +424,7 @@ export class VSCodeContributeRunner extends WithEventBus {
     SemanticTokenTypesContributionPoint,
     SemanticTokenModifiersContributionPoint,
     SemanticTokenScopesContributionPoint,
+    TerminalContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

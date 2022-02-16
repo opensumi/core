@@ -2,7 +2,7 @@ import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
-import { IPty } from '../../src/common/pty';
+import { IPtyProcess } from '../../src/common/pty';
 import os from 'os';
 
 describe('TerminalServiceClientImpl', () => {
@@ -39,7 +39,7 @@ describe('TerminalServiceClientImpl', () => {
     };
 
     terminalServiceClient.setConnectionClientId(mockId);
-    const pty = await terminalServiceClient.create2(mockId, { name: 'test', cols: 200, rows: 200 });
+    const pty = await terminalServiceClient.create2(mockId, 200, 200, { name: 'test' });
     expect(pty).toBeUndefined();
     expect(closeClientId).toEqual(mockId);
     expect(closeClientData).not.toBeUndefined();
@@ -49,13 +49,11 @@ describe('TerminalServiceClientImpl', () => {
     const mockId = '1';
     terminalServiceClient.setConnectionClientId(mockId);
 
-    await terminalServiceClient.create2(mockId, {
+    await terminalServiceClient.create2(mockId, 200, 200, {
       name: 'test',
-      shellPath,
-      cols: 200,
-      rows: 200,
+      executable: shellPath,
     });
-    const terminal: IPty = (terminalService as any).getTerminal(mockId);
+    const terminal: IPtyProcess = (terminalService as any).getTerminal(mockId);
     let receiveData = '';
 
     terminal.on('data', (data: any) => {
@@ -82,11 +80,9 @@ describe('TerminalServiceClientImpl', () => {
   it.only('Should be disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
-    await terminalServiceClient.create2(mockId, {
+    await terminalServiceClient.create2(mockId, 200, 200, {
       name: 'test',
-      shellPath,
-      cols: 200,
-      rows: 200,
+      executable: shellPath,
     });
 
     terminalServiceClient.disposeById(mockId);
