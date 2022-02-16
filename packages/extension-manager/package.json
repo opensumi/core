@@ -11,18 +11,12 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.extension-manager.json"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.14.2",
-    "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
     "@opensumi/ide-core-node": "2.14.2",
-    "@opensumi/ide-editor": "2.14.2",
     "@opensumi/ide-extension": "2.14.2",
-    "@opensumi/ide-main-layout": "2.14.2",
-    "@opensumi/ide-markdown": "2.14.2",
-    "@opensumi/ide-overlay": "2.14.2",
     "@opensumi/ide-static-resource": "2.14.2",
-    "@opensumi/ide-theme": "2.14.2",
     "fs-extra": "^8.1.0",
+    "node-fetch": "^2.6.1",
     "requestretry": "^5.0.0",
     "uuid": "^8.3.2",
     "yauzl": "^2.10.0"
@@ -30,6 +24,12 @@
   "devDependencies": {
     "@types/node-fetch": "^2.5.12",
     "@types/requestretry": "^1.12.7",
-    "node-fetch": "^2.6.1"
+    "@opensumi/ide-components": "2.14.2",
+    "@opensumi/ide-core-browser": "2.14.2",
+    "@opensumi/ide-editor": "2.14.2",
+    "@opensumi/ide-main-layout": "2.14.2",
+    "@opensumi/ide-markdown": "2.14.2",
+    "@opensumi/ide-overlay": "2.14.2",
+    "@opensumi/ide-theme": "2.14.2"
   }
 }

@@ -23,15 +23,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.14.2",
     "@opensumi/ide-connection": "2.14.2",
     "@opensumi/ide-core-node": "2.14.2",
     "@opensumi/ide-debug": "2.14.2",
     "@opensumi/ide-file-search": "2.14.2",
     "@opensumi/ide-file-service": "2.14.2",
     "@opensumi/ide-logs": "2.14.2",
-    "@opensumi/ide-quick-open": "2.14.2",
-    "@opensumi/ide-scm": "2.14.2",
     "@opensumi/ide-static-resource": "2.14.2",
     "@opensumi/ide-task": "2.14.2",
     "@opensumi/ide-terminal-next": "2.14.2",
@@ -46,6 +43,7 @@
     "v8-inspect-profiler": "^0.0.20"
   },
   "devDependencies": {
+    "@opensumi/ide-components": "2.14.2",
     "@opensumi/ide-comments": "2.14.2",
     "@opensumi/ide-core-browser": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
@@ -54,6 +52,8 @@
     "@opensumi/ide-editor": "2.14.2",
     "@opensumi/ide-extension-storage": "2.14.2",
     "@opensumi/ide-i18n": "2.14.2",
+    "@opensumi/ide-quick-open": "2.14.2",
+    "@opensumi/ide-scm": "2.14.2",
     "@opensumi/ide-main-layout": "2.14.2",
     "@opensumi/ide-monaco": "2.14.2",
     "@opensumi/ide-output": "2.14.2",
