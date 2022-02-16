@@ -46,8 +46,7 @@
       "ts": "node --require ts-node/register"
     },
     "watch": [
-      "../../packages",
-      "../../tools"
+      "../../packages"
     ],
     "ext": "js,json,ts"
   },
