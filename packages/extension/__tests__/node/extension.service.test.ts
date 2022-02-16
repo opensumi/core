@@ -2,7 +2,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
 import { Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger, IReporterService } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, IReporterService, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -52,10 +52,7 @@ describe('Extension Serivce', () => {
       },
       {
         token: INodeLogger,
-        useValue: {
-          log: console.log,
-          error: console.error,
-        },
+        useValue: getDebugLogger(),
       },
       {
         token: IActivationEventService,
@@ -130,8 +127,6 @@ describe('Extension Serivce', () => {
       const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
 
-      // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
-      console.log('enable extension host process port');
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
       expect(res).toBeTruthy();
 

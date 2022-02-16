@@ -231,7 +231,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       {
         errorCallback: (error: any) => {
           // see https://github.com/atom/github/issues/342
-          // tslint:disable-next-line
+          // eslint-disable-next-line no-console
           console.warn(`Failed to watch "${basePath}":`, error);
           this.unwatchFileChanges(watcherId);
         },

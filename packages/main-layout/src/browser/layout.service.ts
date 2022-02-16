@@ -34,7 +34,7 @@ import {
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, getDebugLogger } from '@opensumi/ide-core-common';
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 @Injectable()
@@ -89,6 +89,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   } = {};
 
   private customViews = new Map<string, View>();
+
+  private debug = getDebugLogger();
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -223,8 +225,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
-      // tslint:disable-next-line no-console
-      console.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
+      this.debug.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
       return;
     }
     if (show === true) {
@@ -279,8 +280,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (!handler) {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
-        // tslint:disable-next-line no-console
-        console.warn(`${viewOrContainerId} view tabbar not found.`);
+        this.debug.warn(`${viewOrContainerId} view tabbar not found.`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
     }
@@ -315,8 +315,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
-      // tslint:disable-next-line no-console
-      console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
+      this.debug.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
     if (options.hideIfEmpty && !views.length && !options.component) {
       this.holdTabbarComponent.set(options.containerId, { views, options, side });
@@ -424,8 +423,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   replaceViewComponent(view: View, props?: any) {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
-      // tslint:disable-next-line no-console
-      console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
+      this.debug.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
     const contributedView = this.customViews.get(view.id);
@@ -447,8 +445,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
-      // tslint:disable-next-line no-console
-      console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      this.debug.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
 
@@ -460,8 +457,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   revealView(viewId: string) {
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
-      // tslint:disable-next-line no-console
-      console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      this.debug.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
     const accordionService: AccordionService = this.getAccordionService(containerId);
@@ -480,8 +476,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const tabbarService = this.getTabbarService(location);
       tabbarService.disposeContainer(containerId);
     } else {
-      // tslint:disable-next-line no-console
-      console.warn('没有找到containerId所属Tabbar!');
+      this.debug.warn('没有找到containerId所属Tabbar!');
     }
   }
 

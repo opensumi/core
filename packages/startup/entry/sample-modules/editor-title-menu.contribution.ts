@@ -1,4 +1,4 @@
-// tslint:disable:no-console
+// eslint-disable-next-line no-console
 import { Autowired } from '@opensumi/di';
 import { Disposable, IEventBus } from '@opensumi/ide-core-common';
 import {
@@ -92,12 +92,14 @@ export class EditorTitleMenuContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(WebSCMCommands.Edit, {
       execute: async (...args) => {
+        // eslint-disable-next-line no-console
         console.log(args, 'args');
       },
     });
 
     commands.registerCommand(WebSCMCommands.Save, {
       execute: async (...args) => {
+        // eslint-disable-next-line no-console
         console.log(args, 'args');
         this.toggledCtxKey.set(!this.toggledCtxKey.get());
       },

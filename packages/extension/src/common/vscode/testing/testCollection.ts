@@ -1,4 +1,4 @@
-import { Barrier, RunOnceScheduler, Emitter, isThenable, Disposable } from '@opensumi/ide-core-common';
+import { Barrier, RunOnceScheduler, Emitter, isThenable, Disposable, getDebugLogger } from '@opensumi/ide-core-common';
 import {
   TestItemExpandState,
   TestsDiff,
@@ -48,6 +48,8 @@ export class SingleUseTestCollection extends Disposable {
   public readonly root = new TestItemRootImpl(this.controllerId, this.controllerId);
   public readonly tree = new Map</* full test id */ string, OwnedCollectionTestItem>();
   private readonly tags = new Map<string, { label?: string; refCount: number }>();
+
+  private readonly debug = getDebugLogger();
 
   protected diff: TestsDiff = [];
 
@@ -424,7 +426,7 @@ export class SingleUseTestCollection extends Disposable {
 
     const barrier = (internal.resolveBarrier = new Barrier());
     const applyError = (err: Error) => {
-      console.error(`Unhandled error in resolveHandler of test controller '${this.controllerId}'`);
+      this.debug.error(`Unhandled error in resolveHandler of test controller '${this.controllerId}'`);
       if (internal.actual !== this.root) {
         internal.actual.error = err.stack || err.message || String(err);
       }

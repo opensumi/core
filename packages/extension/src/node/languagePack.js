@@ -140,6 +140,7 @@ function factory(nodeRequire, path, fs) {
       const config = fs.readFileSync(configFile);
       return JSON.parse(config.toString());
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.log(err.message || 'failed');
       // Do nothing. If we can't read the file we have no
       // language pack config.
@@ -166,6 +167,7 @@ function factory(nodeRequire, path, fs) {
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Resolving language pack configuration failed.', err);
     }
     return undefined;
@@ -264,6 +266,7 @@ function factory(nodeRequire, path, fs) {
                 })
                 .then(() => result)
                 .catch((err) => {
+                  // eslint-disable-next-line no-console
                   console.error('Generating translation files failed.', err);
                   return defaultResult(locale);
                 });
@@ -272,6 +275,7 @@ function factory(nodeRequire, path, fs) {
         });
       });
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Generating translation files failed.', err);
       return defaultResult(locale);
     }

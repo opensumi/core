@@ -1,4 +1,4 @@
-// tslint:disable no-console
+// eslint-disable-next-line no-console
 console.time('Render');
 import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
@@ -23,7 +23,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.layoutComponent = ToolbarActionBasedLayout;
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
-    // tslint:disable no-console
+    // eslint-disable-next-line no-console
     console.timeEnd('Render');
   };
 

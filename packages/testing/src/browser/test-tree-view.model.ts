@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-components/lib/utils';
-import { Disposable, isDefined, filter, map } from '@opensumi/ide-core-browser';
+import { Disposable, isDefined, filter, map, getDebugLogger } from '@opensumi/ide-core-browser';
 
 import { ITestService, TestServiceToken } from '../common';
 import {
@@ -36,6 +36,8 @@ export class TestTreeItem implements ITestTreeItem {
 export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewModel {
   @Autowired(TestServiceToken)
   private readonly testService: ITestService;
+
+  private readonly debug = getDebugLogger();
 
   protected readonly items = new Map<string, TestTreeItem>();
 
@@ -79,11 +81,11 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
           break;
         }
         case TestDiffOpType.Update: {
-          console.log('update item>>>', op[1]);
+          this.debug.log('update item>>>', op[1]);
           break;
         }
         case TestDiffOpType.Remove: {
-          console.log('remove item>>>', op[1]);
+          this.debug.log('remove item>>>', op[1]);
           break;
         }
       }
@@ -105,7 +107,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
   }
 
   initTreeModel(): Promise<void> {
-    // console.log('do initTreeModel');
+    // this.debug.log('do initTreeModel');
     return Promise.resolve();
   }
 }

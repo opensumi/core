@@ -170,10 +170,12 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
 }
 
 function getErrorLogger() {
+  // eslint-disable-next-line no-console
   return (logger && logger.error.bind(logger)) || console.error.bind(console);
 }
 
 function getWarnLogger() {
+  // eslint-disable-next-line no-console
   return (logger && logger.warn.bind(logger)) || console.warn.bind(console);
 }
 

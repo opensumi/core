@@ -2,7 +2,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import os from 'os';
 import { Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
@@ -35,11 +35,7 @@ describe('Extension Client Serivce', () => {
       },
       {
         token: INodeLogger,
-        useValue: {
-          log: console.log,
-          error: console.error,
-          warn: console.warn,
-        },
+        useValue: getDebugLogger(),
       },
       {
         token: IFileService,

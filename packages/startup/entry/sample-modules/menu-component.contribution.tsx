@@ -1,4 +1,4 @@
-// tslint:disable:no-console
+// eslint-disable-next-line no-console
 import { Domain } from '@opensumi/ide-core-browser';
 import {
   MenuContribution,
@@ -10,6 +10,7 @@ import React from 'react';
 
 const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
   const handleClick = () => {
+    // eslint-disable-next-line no-console
     console.log(props.getExecuteArgs(), 'get exec args here');
   };
 

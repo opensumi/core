@@ -39,6 +39,7 @@ export function createMemoizer() {
       fn = descriptor.value;
 
       if (fn!.length !== 0) {
+        // eslint-disable-next-line no-console
         console.warn('Memoize should only be used in functions with zero parameters');
       }
     } else if (typeof descriptor.get === 'function') {

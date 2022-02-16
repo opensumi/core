@@ -53,6 +53,7 @@ export class DisposableStore implements IDisposable {
 
     markTracked(t);
     if (this._isDisposed) {
+      // eslint-disable-next-line no-console
       console.warn(new Error('Registering disposable on object that has already been disposed of').stack);
       t.dispose();
     } else {
@@ -155,6 +156,7 @@ export class Disposable implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
       }
     }
@@ -233,6 +235,7 @@ export class DisposableCollection implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
       }
     }
@@ -296,6 +299,7 @@ function trackDisposable<T extends IDisposable>(x: T): T {
   const stack = new Error('Potentially leaked disposable').stack!;
   setTimeout(() => {
     if (!(x as any)[__is_disposable_tracked__]) {
+      // eslint-disable-next-line no-console
       console.log(stack);
     }
   }, 3000);

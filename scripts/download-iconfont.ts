@@ -1,4 +1,4 @@
-// tslint:disable:no-console
+// eslint-disable-next-line no-console
 
 import path from 'path';
 import fs from 'fs';
@@ -17,7 +17,7 @@ const targetDir = path.resolve(__dirname, '../packages/components/src/icon/iconf
 
 const filename = 'iconfont';
 
-const classNameRegexp = /\.kticon\-(.+)::?before/ig;
+const classNameRegexp = /\.kticon\-(.+)::?before/gi;
 
 const fsReadFile = promisify(fs.readFile);
 const fsWriteFile = promisify(fs.writeFile);
@@ -53,7 +53,7 @@ async function diagnosis() {
   const iconNameList: string[] = [];
 
   let matched;
-  while (matched = classNameRegexp.exec(cssContent)) {
+  while ((matched = classNameRegexp.exec(cssContent))) {
     const [, iconName] = matched;
     iconNameList.push(iconName);
   }
@@ -77,13 +77,13 @@ async function diagnosis() {
 
   await fsWriteFile(
     path.join(targetDir, 'iconMap.ts'),
-    '// GENERATE BY ./scripts/download-iconfont.ts\n// DON NOT EDIT IT MANUALLY\n'
-    + 'export const defaultIconfont = {\n'
-    + iconNameList
-      .map((iconName) => `  '${iconName}': '${iconName}'`)
-      .sort()
-      .join(',\n')
-    + ',\n};\n',
+    '// GENERATE BY ./scripts/download-iconfont.ts\n// DON NOT EDIT IT MANUALLY\n' +
+      'export const defaultIconfont = {\n' +
+      iconNameList
+        .map((iconName) => `  '${iconName}': '${iconName}'`)
+        .sort()
+        .join(',\n') +
+      ',\n};\n',
     { encoding: 'utf8' },
   );
   return iconNameList;

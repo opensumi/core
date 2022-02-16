@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Injector } from '@opensumi/di';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';

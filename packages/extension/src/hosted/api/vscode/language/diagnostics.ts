@@ -294,7 +294,7 @@ export class Diagnostics {
         name = Diagnostics.GENERATED_DIAGNOSTIC_COLLECTION_NAME_PREFIX + this.getNextId();
       } while (this.diagnosticCollections.has(name));
     } else if (this.diagnosticCollections.has(name)) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn(`Diagnostic collection with name '${name}' already exist.`);
     }
 

@@ -182,7 +182,7 @@ export class OutputChannel extends Disposable {
     );
     this.doAppend(removeAnsiEscapeCodes(value));
     if (this.shouldLogToBrowser) {
-      // tslint:disable no-console
+      // eslint-disable-next-line no-console
       console.log(
         `%c[${this.name}]` + `%c ${line}}`,
         'background:rgb(50, 150, 250); color: #fff',

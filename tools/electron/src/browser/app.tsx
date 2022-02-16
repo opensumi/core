@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 console.time('Render');
 import type { Socket } from 'net';
 import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';

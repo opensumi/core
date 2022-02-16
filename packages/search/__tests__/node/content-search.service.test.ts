@@ -206,7 +206,7 @@ afterAll(() => {
   try {
     track.cleanupSync();
   } catch (ex) {
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.log("Couldn't cleanup search-in-workspace temp directory.", ex);
   }
 });

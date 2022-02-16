@@ -189,6 +189,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.CodeLens(new types.Range(0, 0, 0, 0), { command: 'id', title: 'Title' })];
           }
           resolveCodeLens(): any {
+            // eslint-disable-next-line no-console
             console.warn('do not resolve');
           }
         })(),

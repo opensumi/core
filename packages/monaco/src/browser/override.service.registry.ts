@@ -7,7 +7,7 @@ export class MonacoOverrideServiceRegistryImpl implements MonacoOverrideServiceR
 
   registerOverrideService(serviceId: ServiceNames, service: any): void {
     if (this.overrideServices[serviceId]) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn(`service ${serviceId} is already registered.`);
       return;
     }

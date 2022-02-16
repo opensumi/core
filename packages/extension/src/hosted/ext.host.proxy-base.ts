@@ -17,7 +17,7 @@ import {
   EXT_SERVER_IDENTIFIER,
   EXT_HOST_PROXY_SERVER_PROT,
 } from '../common/ext.host.proxy';
-import { Emitter, Disposable, IDisposable } from '@opensumi/ide-core-node';
+import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 import { IExtensionHostManager } from '../common';
 import type { ForkOptions } from 'child_process';
@@ -101,6 +101,8 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private connectedEmitter = new Emitter<void>();
 
+  private readonly debug = getDebugLogger();
+
   public readonly onConnected = this.connectedEmitter.event;
 
   constructor(options?: IExtHostProxyOptions) {
@@ -156,13 +158,13 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private reconnectOnEvent = () => {
     global.clearTimeout(this.reconnectingTimer);
     this.reconnectingTimer = global.setTimeout(() => {
-      console.warn('reconnecting ext host server');
+      this.debug.warn('reconnecting ext host server');
       this.createSocket();
     }, this.options.retryTime!);
   };
 
   private connectOnEvent = () => {
-    console.info('connect success');
+    this.debug.info('connect success');
     // this.previouslyConnected = true;
     global.clearTimeout(this.reconnectingTimer);
     this.setConnection();

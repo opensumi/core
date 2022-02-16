@@ -1,4 +1,4 @@
-// tslint:disable:no-console
+// eslint-disable-next-line no-console
 import { join } from 'path';
 import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
@@ -63,7 +63,7 @@ function updatePackVersion(version: string) {
 /**
  * 生成对应版本号的 manifest.json，包括:
  * * packages 字段，包含所有包名和对应的版本号
-*/
+ */
 const localManifest = join(__dirname, '../packages/types/manifest.json');
 
 async function generateManifestFile(pkgList: Package[], version: string) {
@@ -114,7 +114,9 @@ function askVersion() {
     return;
   }
 
-  const desc = `Current version: ${chalk.greenBright(pkg.version)}\nWrite ${argv.versionOnly ? 'Update' : 'Publish'} Version:`;
+  const desc = `Current version: ${chalk.greenBright(pkg.version)}\nWrite ${
+    argv.versionOnly ? 'Update' : 'Publish'
+  } Version:`;
   rl.question(desc, (version) => {
     publish(version);
   });
@@ -128,7 +130,9 @@ function publish(version, distTag = 'latest') {
     return;
   } else {
     try {
-      const desc = `Ensure ${argv.versionOnly ? 'Update' : 'Publish'} Version: ${chalk.green(semverVersion)}\ndistTag: ${chalk.green(distTag)} \nplease press any key to continue`;
+      const desc = `Ensure ${argv.versionOnly ? 'Update' : 'Publish'} Version: ${chalk.green(
+        semverVersion,
+      )}\ndistTag: ${chalk.green(distTag)} \nplease press any key to continue`;
       rl.question(desc, async () => {
         await publishMainPacks(semverVersion, distTag);
         console.log('[SUCCESS] Done');

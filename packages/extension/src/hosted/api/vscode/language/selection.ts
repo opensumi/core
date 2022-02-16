@@ -28,7 +28,7 @@ export class SelectionRangeAdapter {
       return [];
     }
     if (allProviderRanges.length !== zeroBasedPositions.length) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn('BAD selection ranges, provider must return ranges for each position');
       return [];
     }
