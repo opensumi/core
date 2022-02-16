@@ -101,7 +101,7 @@ export class PtyService extends Disposable {
     const options = this.shellLaunchConfig;
     if (!options.executable) {
       return {
-        message: 'IShellLaunchConfig.shellPath not set',
+        message: 'IShellLaunchConfig.executable not set',
       };
     }
     try {
@@ -122,7 +122,7 @@ export class PtyService extends Disposable {
             message: `Path to shell executable "${options.executable}" does not exist`,
           };
         }
-        // Set the shellPath explicitly here so that node-pty doesn't need to search the
+        // Set the executable explicitly here so that node-pty doesn't need to search the
         // $PATH too.
         options.executable = executable;
       }

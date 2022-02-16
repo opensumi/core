@@ -310,6 +310,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
       this.proxy.$unregisterProfileProvider(id);
     });
   }
+  /**
+   * @deprecated this function is useless, will removed in 2.17.0
+   */
+  $acceptDefaultShell(shellPath: string) {
+    // will remove
+  }
 
   public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void {
     this._defaultProfile = profile;
