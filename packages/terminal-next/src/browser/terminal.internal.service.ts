@@ -126,6 +126,21 @@ export class TerminalInternalService implements ITerminalInternalService {
     rows: number,
     launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
+    if (launchConfig.customPtyImplementation) {
+      const proxy = launchConfig.customPtyImplementation(sessionId, cols, rows) as TerminalProcessExtHostProxy;
+      proxy.start();
+      proxy.onProcessExit(() => {
+        this._processExtHostProxies.delete(sessionId);
+      });
+      this._processExtHostProxies.set(sessionId, proxy);
+      return {
+        name: launchConfig.name || 'ExtensionTerminal-' + sessionId,
+        readonly: false,
+        onData: proxy.onProcessData.bind(proxy),
+        sendData: proxy.input.bind(proxy),
+        onExit: proxy.onProcessExit.bind(proxy),
+      };
+    }
     return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
   }
 }
