@@ -277,7 +277,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
       regexp = getWordDefinitionFor(this._languageId);
     } else if (regExpLeadsToEndlessLoop(regexp)) {
       // use default when custom-regexp is bad
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn(
         `[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`,
       );

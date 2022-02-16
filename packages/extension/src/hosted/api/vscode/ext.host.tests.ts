@@ -19,7 +19,7 @@ import type {
   TestRunResult,
 } from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
 import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common/lib/cancellation';
 import { hash } from '@opensumi/ide-core-common/lib/utils/hash';
@@ -66,6 +66,8 @@ export class ExtHostTestsImpl implements IExtHostTests {
   private readonly runTracker: TestRunCoordinator;
   private readonly observer: TestObservers;
 
+  private readonly debug = getDebugLogger();
+
   public onResultsChanged = this.resultsChangedEmitter.event;
   public results: ReadonlyArray<TestRunResult> = [];
 
@@ -76,10 +78,10 @@ export class ExtHostTestsImpl implements IExtHostTests {
 
   // #region API for main thread
   async $runControllerTests(req: RunTestForControllerRequest, token: CancellationToken): Promise<void> {
-    console.log('do run controller test', req.controllerId, req.profileId, req.testIds);
+    this.debug.log('do run controller test', req.controllerId, req.profileId, req.testIds);
     const lookup = this.controllers.get(req.controllerId);
     if (!lookup) {
-      console.log('can not find any controller', req.controllerId);
+      this.debug.log('can not find any controller', req.controllerId);
       return;
     }
     const { collection, profiles } = lookup;
@@ -251,7 +253,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
 
     disposable.add(
       collection.onDidGenerateDiff((diff) => {
-        console.log('ext host test collection did generate diff>>', diff);
+        this.debug.log('ext host test collection did generate diff>>', diff);
         proxy.$publishDiff(controllerId, diff);
       }),
     );
@@ -431,12 +433,13 @@ class TestRunTracker extends Disposable {
     const ctrlId = this.dto.controllerId;
     const taskId = uuid();
     const coverage = new TestRunCoverageBearer(this.proxy, runId, taskId);
+    const debug = getDebugLogger();
 
     const guardTestMutation =
       <Args extends unknown[]>(fn: (test: TestItem, ...args: Args) => void) =>
       (test: TestItem, ...args: Args) => {
         if (ended) {
-          console.warn(`Setting the state of test "${test.id}" is a no-op after the run ends.`);
+          debug.warn(`Setting the state of test "${test.id}" is a no-op after the run ends.`);
           return;
         }
 

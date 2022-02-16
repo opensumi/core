@@ -161,6 +161,7 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
    */
   register(matcher: ProblemMatcherContribution): IDisposable {
     if (!matcher.name) {
+      // eslint-disable-next-line no-console
       console.error('Only named Problem Matchers can be registered.');
       return Disposable.NULL;
     }

@@ -60,7 +60,7 @@ export function createWorkspaceApiFactory(
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
     registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: (type, provider) => {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
       return extHostTasks.registerTaskProvider(type, provider, extension);
     },

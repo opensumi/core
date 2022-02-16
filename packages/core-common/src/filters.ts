@@ -674,8 +674,11 @@ export function fuzzyScore(
   }
 
   if (_debug) {
+    // eslint-disable-next-line no-console
     console.log(printTable(_table, pattern, patternLen, word, wordLen));
+    // eslint-disable-next-line no-console
     console.log(printTable(_arrows, pattern, patternLen, word, wordLen));
+    // eslint-disable-next-line no-console
     console.log(printTable(_scores, pattern, patternLen, word, wordLen));
   }
 

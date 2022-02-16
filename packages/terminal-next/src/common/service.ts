@@ -1,9 +1,10 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { ITerminalOptions, Terminal } from 'xterm';
+import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
-import { TerminalOptions } from './pty';
+import { IShellLaunchConfig, TerminalOptions } from './pty';
 import { ITerminalConnection } from './client';
+import { ITerminalProfile } from './profile';
 
 export interface IPtyExitEvent {
   sessionId: string;
@@ -21,7 +22,7 @@ export interface ITerminalService {
    * Xterm 终端的构造选项，
    * 默认返回为 {}
    */
-  getOptions?(): ITerminalOptions;
+  getOptions?(): IXtermTerminalOptions;
   /**
    * 检测还在会话中的终端后台是否还处于保活状态，
    * 默认返回为 true
@@ -41,10 +42,16 @@ export interface ITerminalService {
   attach(
     sessionId: string,
     xterm: Terminal,
-    rows: number,
     cols: number,
+    rows: number,
     options?: TerminalOptions,
     shellType?: string,
+  ): Promise<ITerminalConnection | undefined>;
+  attachByLaunchConfig(
+    sessionId: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined>;
   /**
    *
@@ -87,11 +94,14 @@ export interface ITerminalService {
    * 返回终端环境的 OS
    */
   getOs(): Promise<OperatingSystem>;
+  getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
+  getDefaultSystemShell(): Promise<string>;
+  getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');
 export interface ITerminalInternalService extends ITerminalService {
   generateSessionId(): string;
-  getOptions(): ITerminalOptions;
+  getOptions(): IXtermTerminalOptions;
   check(sessionIds: string[]): Promise<boolean>;
 }

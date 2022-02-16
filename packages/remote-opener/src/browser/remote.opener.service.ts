@@ -84,6 +84,7 @@ export class RemoteOpenerBrowserServiceImpl extends RPCService implements IRemot
         this.workbenchEditorService.open(URI.parse(revivedUri.toString()), { preview: false, focus: true });
         break;
       default:
+        // eslint-disable-next-line no-console
         console.warn(`Unsupported ${type}.`);
         break;
     }

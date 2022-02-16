@@ -60,8 +60,9 @@ export class TerminalApiService implements ITerminalApiService {
   }
 
   async createTerminal(options: vscode.TerminalOptions): Promise<ITerminalExternalClient> {
-    const self = this;
-    const client = this.controller.createClientWithWidget(options);
+    const client = await this.controller.createClientWithWidget2({
+      terminalOptions: options,
+    });
 
     const external = {
       get id() {
@@ -73,21 +74,21 @@ export class TerminalApiService implements ITerminalApiService {
       get processId() {
         return client.pid;
       },
-      show(preserveFocus = true) {
+      show: (preserveFocus = true) => {
         const widget = client.widget;
-        self.view.selectWidget(widget.id);
-        self.controller.showTerminalPanel();
+        this.view.selectWidget(widget.id);
+        this.controller.showTerminalPanel();
 
         if (!preserveFocus) {
           setTimeout(() => client.focus());
         }
       },
-      hide() {
-        self.controller.hideTerminalPanel();
+      hide: () => {
+        this.controller.hideTerminalPanel();
       },
-      dispose() {
-        self.view.removeWidget(client.widget.id);
-        self._entries.delete(client.id);
+      dispose: () => {
+        this.view.removeWidget(client.widget.id);
+        this._entries.delete(client.id);
       },
     };
 

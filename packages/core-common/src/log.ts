@@ -1,5 +1,5 @@
+/* eslint-disable no-console */
 import { Event } from './event';
-import { isUndefined } from './utils';
 
 export enum LogLevel {
   Verbose,

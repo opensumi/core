@@ -134,7 +134,7 @@ export class MonacoClientContribution
     for (const contribution of this.monacoContributionProvider.getContributions()) {
       // onMonacoLoaded 待废弃, 暂时也会触发 onMonacoLoaded 事件，待集成方改造以后去除
       if (contribution.onMonacoLoaded) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.warn(!!contribution.onMonacoLoaded, 'MonacoContribution#onMonacoLoaded was deprecated.');
         contribution.onMonacoLoaded(this.monacoService);
       }
@@ -151,7 +151,7 @@ export class MonacoClientContribution
 
       // onContextKeyServiceReady 待废弃, 暂时也会触发 onContextKeyServiceReady 事件，待集成方改造以后去除
       if (contribution.onContextKeyServiceReady) {
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.warn(
           !!contribution.onContextKeyServiceReady,
           'MonacoContribution#onContextKeyServiceReady was deprecated.',

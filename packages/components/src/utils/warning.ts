@@ -3,6 +3,7 @@ let warned: Record<string, boolean> = {};
 export function warning(valid: boolean, message: string) {
   // Support uglify
   if (process.env.NODE_ENV !== 'production' && !valid && console !== undefined) {
+    // eslint-disable-next-line no-console
     console.error(`Warning: ${message}`);
   }
 }
@@ -10,6 +11,7 @@ export function warning(valid: boolean, message: string) {
 export function note(valid: boolean, message: string) {
   // Support uglify
   if (process.env.NODE_ENV !== 'production' && !valid && console !== undefined) {
+    // eslint-disable-next-line no-console
     console.warn(`Note: ${message}`);
   }
 }

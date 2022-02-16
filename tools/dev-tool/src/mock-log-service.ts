@@ -1,5 +1,5 @@
-import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
-import { ILogService, ILogServiceOptions, LogLevel } from '@opensumi/ide-core-common';
+/* eslint-disable no-console */
+import { ILogServiceOptions } from '@opensumi/ide-core-common';
 
 export default class LogServiceClass {
   constructor(args: ILogServiceOptions) {

@@ -1,5 +1,5 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { ContributionProvider, Domain } from '@opensumi/ide-core-common';
+import { ContributionProvider, Domain, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IRemoteOpenerService, RemoteOpenerServicePath } from '../common';
 import {
@@ -40,6 +40,8 @@ export class RemoteOpenerContributionClient implements ClientAppContribution {
   @Autowired(RemoteOpenerBrowserServiceToken)
   private readonly remoteOpenerService: IRemoteOpenerBrowserService;
 
+  private readonly debug = getDebugLogger();
+
   onStart() {
     const contributions = this.contributionProvider.getContributions();
     for (const contribution of contributions) {
@@ -52,7 +54,7 @@ export class RemoteOpenerContributionClient implements ClientAppContribution {
       const clientId = getClientId(this.injector);
       this.remoteOpenerNodeService.removeConnectionClientId(clientId);
     } catch (e) {
-      console.error(e);
+      this.debug.error(e);
     }
   }
 }

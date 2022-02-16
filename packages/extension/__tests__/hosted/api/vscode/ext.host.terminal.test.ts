@@ -1,6 +1,13 @@
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
+import { Emitter, Disposable, ILogger } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { ITerminalApiService, ITerminalController } from '@opensumi/ide-terminal-next';
+import {
+  ITerminalApiService,
+  ITerminalController,
+  ITerminalProfileInternalService,
+  ITerminalProfileService,
+  ITerminalService,
+  ITerminalServicePath,
+} from '@opensumi/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import {
@@ -12,6 +19,15 @@ import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thre
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { IExtension } from '@opensumi/ide-extension';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
+import { NodePtyTerminalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { TerminalProfileInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile.internal';
+import {
+  MockProfileService,
+  MockTerminalProfileInternalService,
+} from '../../../../../terminal-next/__tests__/browser/mock.service';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -33,7 +49,8 @@ let mainThread: MainThreadTerminal;
 
 describe(__filename, () => {
   const injector = createBrowserInjector([]);
-
+  injector.mockService(PreferenceService, {});
+  injector.mockService(ILogger, {});
   injector.addProviders(
     {
       token: ITerminalApiService,
@@ -46,6 +63,35 @@ describe(__filename, () => {
           id: options.name,
         }),
       }),
+    },
+    {
+      token: ITerminalProfileService,
+      useValue: new MockProfileService(),
+    },
+    {
+      token: ITerminalProfileInternalService,
+      useValue: new MockTerminalProfileInternalService(),
+    },
+    {
+      token: ITerminalService,
+      useClass: NodePtyTerminalService,
+    },
+    {
+      token: ITerminalServicePath,
+      useValue: {
+        getCodePlatformKey() {
+          return 'osx';
+        },
+        getDefaultSystemShell() {
+          return '/bin/sh';
+        },
+        getOs() {
+          return OperatingSystem.Macintosh;
+        },
+        detectAvailableProfiles() {
+          return [];
+        },
+      },
     },
     {
       token: ITerminalController,

@@ -50,6 +50,7 @@ export class Disposable implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
       }
     }
@@ -128,6 +129,7 @@ export class DisposableCollection implements IDisposable {
       try {
         this.disposables.pop()!.dispose();
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
       }
     }

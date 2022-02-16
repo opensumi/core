@@ -378,6 +378,7 @@ export class ProblemPatternRegistryImpl implements IProblemPatternRegistry {
       return toDispose;
     }
     if (!value.name) {
+      // eslint-disable-next-line no-console
       console.error('Only named Problem Patterns can be registered.');
       return Disposable.NULL;
     }

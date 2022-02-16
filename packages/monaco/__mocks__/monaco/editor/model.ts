@@ -1,6 +1,4 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
-// tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
@@ -429,6 +427,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     newDecorations: monaco.editor.IModelDeltaDecoration[],
     ownerId?: number | undefined,
   ): string[] {
+    // eslint-disable-next-line no-console
     console.log('deltaDecorations was called');
     if (oldDecorations.length === 0 && newDecorations.length === 0) {
       // nothing to do

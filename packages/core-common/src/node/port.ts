@@ -126,6 +126,7 @@ function dispose(socket: net.Socket): void {
     socket.destroy();
     socket.unref();
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error); // otherwise this error would get lost in the callback chain
   }
 }

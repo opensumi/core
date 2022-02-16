@@ -7,10 +7,13 @@ import {
   ExtensionMessageWriter,
 } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 
 export class ExtHostConnection implements IExtHostConnectionService {
   private proxy: IMainThreadConnection;
   private connections = new Map<string, ExtensionConnection>();
+
+  private readonly debug = getDebugLogger();
 
   constructor(private rpcProtocol: IRPCProtocol) {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadConnection);
@@ -23,9 +26,9 @@ export class ExtHostConnection implements IExtHostConnectionService {
    */
   async $sendMessage(id: string, message: string): Promise<void> {
     if (this.connections.has(id)) {
-      this.connections.get(id)!.reader.readMessage(message);
+      this.connections.get(id)?.reader.readMessage(message);
     } else {
-      console.warn(`链接 ${id} 不存在`);
+      this.debug.warn(`connect id[${id}] does exist`);
     }
   }
 

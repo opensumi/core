@@ -1,4 +1,4 @@
-import { Uri as URI } from '@opensumi/ide-core-common';
+import { getDebugLogger, Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as model from '../../../../common/vscode/model.api';
@@ -10,6 +10,8 @@ export class RenameAdapter {
   static supportsResolving(provider: vscode.RenameProvider): boolean {
     return typeof provider.prepareRename === 'function';
   }
+
+  private readonly debug = getDebugLogger();
 
   constructor(
     private readonly provider: vscode.RenameProvider,
@@ -86,7 +88,7 @@ export class RenameAdapter {
         }
 
         if (range.start.line > pos.line || range.end.line < pos.line) {
-          console.warn('INVALID rename location: position line must be within range start/end lines');
+          this.debug.warn('INVALID rename location: position line must be within range start/end lines');
           return undefined;
         }
         return {

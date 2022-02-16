@@ -1,7 +1,6 @@
 import { observable } from 'mobx';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { SearchAddon } from 'xterm-addon-search';
+import type vscode from 'vscode';
+
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   Disposable,
@@ -15,6 +14,9 @@ import {
   IApplicationService,
   IReporter,
   REPORT_NAME,
+  Uri,
+  withNullAsUndefined,
+  IThemeColor,
 } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
@@ -35,33 +37,30 @@ import {
   ITerminalExitEvent,
   ITerminalConnection,
   ITerminalExternalLinkProvider,
+  ICreateTerminalOptions,
+  ITerminalProfileService,
+  ITerminalProfile,
+  IShellLaunchConfig,
+  ITerminalProfileInternalService,
+  TerminalIcon,
 } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { IMessageService } from '@opensumi/ide-overlay';
-
-import styles from './component/terminal.module.less';
+import { XTerm } from './xterm';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
   static WORKSPACE_PATH_CACHED: Map<string, string> = new Map();
 
   /** properties */
-  private _container: HTMLDivElement;
-  private _term: Terminal;
   private _uid: string;
-  private _options: TerminalOptions;
+  private _terminalOptions: TerminalOptions;
   private _widget: IWidget;
   private _workspacePath: string;
   private _linkManager: TerminalLinkManager;
-  /** end */
-
-  /** addons */
-  private _fitAddon: FitAddon;
-  private _attachAddon: AttachAddon;
-  private _searchAddon: SearchAddon;
   /** end */
 
   /** status */
@@ -126,6 +125,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
+  @Autowired(ITerminalProfileService)
+  terminalProfileService: ITerminalProfileService;
+
+  @Autowired(ITerminalProfileInternalService)
+  terminalProfileInternalService: ITerminalProfileInternalService;
+
   @Autowired(IVariableResolverService)
   variableResolver: IVariableResolverService;
 
@@ -143,52 +148,51 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private readonly _onResponseTime = new Emitter<number>();
   onResponseTime: Event<number> = this._onResponseTime.event;
+  private _attachAddon: AttachAddon;
 
-  async init(widget: IWidget, options: TerminalOptions = {}) {
-    this._uid = widget.id;
-    this._options = options || {};
-    this.name = this._options.name || '';
-    this._container = document.createElement('div');
-    this._container.className = styles.terminalInstance;
-    this._prepare();
+  xterm: XTerm;
+  private _launchConfig: IShellLaunchConfig;
 
-    this._term = new Terminal({
-      theme: this.theme.terminalTheme,
-      ...this.preference.toJSON(),
-      ...this.internalService.getOptions(),
-    });
+  constructor() {
+    super();
 
-    if (options.message) {
-      this._term.writeln(options.message);
-    }
+    this.xterm = this.injector.get(XTerm, [
+      {
+        xtermOptions: {
+          theme: this.theme.terminalTheme,
+          ...this.preference.toJSON(),
+          ...this.internalService.getOptions(),
+        },
+      },
+    ]);
 
-    // 可能存在 env 为 undefined 的情况，做一下初始化
-    if (!this._options.env) {
-      this._options.env = {};
-    }
-
-    this.environmentService.mergedCollection?.applyToProcessEnvironment(
-      this._options.env,
-      this.applicationService.backendOS,
-      this.variableResolver.resolve.bind(this.variableResolver),
-    );
+    this.addDispose(this.xterm);
 
     this.addDispose(
-      this.environmentService.onDidChangeCollections((collection) => {
-        // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-        collection.applyToProcessEnvironment(
-          this._options.env || {},
-          this.applicationService.backendOS,
-          this.variableResolver.resolve.bind(this.variableResolver),
-        );
-      }),
-    );
-
-    this.addDispose(
-      this._term.onTitleChange((e) => {
+      this.xterm.raw.onTitleChange((e) => {
         this.updateOptions({ name: e });
       }),
     );
+
+    this.addDispose(
+      this.internalService.onError((error) => {
+        this.messageService.error(error.message);
+        if (error.launchConfig) {
+          this.updateOptions({
+            name: 'error: ' + error.launchConfig.executable,
+          });
+        } else {
+          this.updateOptions({
+            name: 'error',
+          });
+        }
+      }),
+    );
+  }
+
+  async setupWidget(widget: IWidget) {
+    this._widget = widget;
+    this._prepare();
 
     this.addDispose(
       Disposable.create(() => {
@@ -227,20 +231,120 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           // 但是实际上是设置为 display none 了，所以手动 resize 一下
           // this._term.resize(1, 1);
         } else {
-          this._error.resolve();
+          this._error?.resolve();
           this._layout();
         }
       }),
     );
 
     this.addDispose(
-      this.internalService.onError((error) => {
-        this.messageService.error(error.message);
+      widget.onResize(async () => {
+        this._debounceResize();
       }),
     );
+  }
 
-    this._apply(widget);
+  convertTerminalOptionsToLaunchConfig(options: TerminalOptions = {}) {
+    const shellLaunchConfig: IShellLaunchConfig = {
+      name: options.name,
+      executable: withNullAsUndefined(options.shellPath),
+      args: withNullAsUndefined(options.shellArgs),
+      cwd: withNullAsUndefined(options.cwd),
+      env: withNullAsUndefined(options.env),
+      icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
+      // color: ThemeColor.isThemeColor(options.color) ? options.color.id : undefined,
+      initialText: withNullAsUndefined(options.message),
+      strictEnv: withNullAsUndefined(options.strictEnv),
+      hideFromUser: withNullAsUndefined(options.hideFromUser),
+      // isFeatureTerminal: withNullAsUndefined(internalOptions?.isFeatureTerminal),
+      isExtensionOwnedTerminal: true,
+      // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
+      // location:
+      // internalOptions?.location ||
+      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
+      // disablePersistence: withNullAsUndefined(options.disablePersistence),
+    };
+    return shellLaunchConfig;
+  }
+
+  /**
+   * @deprecated Please use `init2` instead.
+   */
+  async init(widget: IWidget, options: TerminalOptions = {}) {
+    this._terminalOptions = options;
+    await this.init2(widget, {
+      config: this.convertTerminalOptionsToLaunchConfig(options),
+    });
+  }
+
+  convertProfileToLaunchConfig(
+    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
+    cwd?: Uri | string,
+  ): IShellLaunchConfig {
+    if (!shellLaunchConfigOrProfile) {
+      return {};
+    }
+    // Profile was provided
+    if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
+      const profile = shellLaunchConfigOrProfile;
+      if (!profile.path) {
+        return shellLaunchConfigOrProfile;
+      }
+      return {
+        executable: profile.path,
+        args: profile.args,
+        env: profile.env,
+        // icon: profile.icon,
+        color: profile.color,
+        name: profile.overrideName ? profile.profileName : undefined,
+        cwd,
+      };
+    }
+
+    if (cwd) {
+      shellLaunchConfigOrProfile.cwd = cwd;
+    }
+    return shellLaunchConfigOrProfile;
+  }
+
+  async init2(widget: IWidget, options?: ICreateTerminalOptions) {
+    this._uid = widget.id;
+    this.setupWidget(widget);
+
+    if (!options || Object.keys(options).length === 0) {
+      // 应该是必定能 resolve 到 profile 的
+      const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
+      options = {
+        config: defaultProfile,
+      };
+    }
+
     if (await this._checkWorkspace()) {
+      const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
+      this.logger.log('init2: ', launchConfig);
+      this._launchConfig = launchConfig;
+      this.name = launchConfig.name || '';
+
+      if (launchConfig.initialText) {
+        this.xterm.raw.writeln(launchConfig.initialText);
+      }
+
+      this.environmentService.mergedCollection?.applyToProcessEnvironment(
+        launchConfig.env || {},
+        this.applicationService.backendOS,
+        this.variableResolver.resolve.bind(this.variableResolver),
+      );
+
+      this.addDispose(
+        this.environmentService.onDidChangeCollections((collection) => {
+          // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+          collection.applyToProcessEnvironment(
+            launchConfig.env || {},
+            this.applicationService.backendOS,
+            this.variableResolver.resolve.bind(this.variableResolver),
+          );
+        }),
+      );
       this._attachXterm();
       this._attachAfterRender();
     }
@@ -250,7 +354,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   name = '';
 
   get term() {
-    return this._term;
+    return this.xterm.raw;
   }
 
   get pid() {
@@ -258,11 +362,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   get options() {
-    return this._options;
+    return this._terminalOptions;
+  }
+
+  get createOptions() {
+    return;
   }
 
   get container() {
-    return this._container;
+    return this.xterm.container;
   }
 
   get id() {
@@ -299,12 +407,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
-    this._searchAddon = new SearchAddon();
-    this._fitAddon = new FitAddon();
     this.addDispose([
       this._attachAddon,
-      this._searchAddon,
-      this._fitAddon,
       this._attachAddon.onData((data) => {
         this._onOutput.fire({ id: this.id, data });
       }),
@@ -326,17 +430,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         });
       }),
     ]);
-  }
-
-  private _loadAddons() {
-    this._term.loadAddon(this._attachAddon);
-    this._term.loadAddon(this._fitAddon);
-    this._term.loadAddon(this._searchAddon);
+    this.xterm.raw.loadAddon(this._attachAddon);
   }
 
   private _xtermEvents() {
     this.addDispose(
-      this._term.onResize((_event) => {
+      this.xterm.raw.onResize((_event) => {
         if (this._hasOutput) {
           this._doResize();
         }
@@ -346,52 +445,16 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _attachXterm() {
     this._prepareAddons();
-    this._loadAddons();
     this._xtermEvents();
-    this._linkManager = this.injector.get(TerminalLinkManager, [this._term, this]);
+    this._linkManager = this.injector.get(TerminalLinkManager, [this.xterm.raw, this]);
     this._linkManager.processCwd = this._workspacePath;
     this.addDispose(this._linkManager);
-    this.addDispose(this._term);
     this._areLinksReady = true;
     this._onLinksReady.fire(this);
   }
 
-  private async _doAttach() {
-    const sessionId = this.id;
-    const type = this.preference.get<string>('type');
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
-
-    let connection: ITerminalConnection | undefined;
-
-    const finalOptions = {
-      ...this._options,
-      cwd: this._options?.cwd || this._workspacePath,
-    };
-
-    try {
-      connection = await this.internalService.attach(sessionId, this._term, rows, cols, finalOptions, type);
-    } catch (e) {
-      this.logger.error(`attach ${sessionId} terminal failed, type: ${type}`, JSON.stringify(finalOptions), e);
-    }
-
-    if (!connection) {
-      this._attached.resolve();
-      return;
-    }
-
-    this._attachAddon.setConnection(connection);
-    this.name = this.name || connection.name || 'shell';
-    this._ready = true;
-    this._attached.resolve();
-    this._widget.name = this.name;
-
-    this._firstStdout.promise.then(() => {
-      this._doResize();
-    });
-  }
-
   _doResize() {
-    this.internalService.resize(this.id, this._term.cols, this._term.rows);
+    this.internalService.resize(this.id, this.xterm.raw.cols, this.xterm.raw.rows);
   }
 
   _prepare() {
@@ -464,8 +527,48 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async attach() {
     if (!this._ready) {
-      return this._doAttach();
+      return this._doAttach2();
     }
+  }
+
+  private async _doAttach2() {
+    const sessionId = this.id;
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
+
+    let connection: ITerminalConnection | undefined;
+
+    const finalLaunchConfig = {
+      ...this._launchConfig,
+      cwd: this._launchConfig?.cwd || this._workspacePath,
+    };
+    this.logger.log('_doAttach2 with', finalLaunchConfig);
+
+    this._launchConfig = finalLaunchConfig;
+
+    try {
+      connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);
+    } catch (e) {
+      this.logger.error(`attach ${sessionId} terminal failed, _launchConfig`, JSON.stringify(this._launchConfig), e);
+    }
+
+    this.resolveConnection(connection);
+  }
+
+  resolveConnection(connection: ITerminalConnection | undefined) {
+    if (!connection) {
+      this._attached.resolve();
+      return;
+    }
+
+    this._attachAddon.setConnection(connection);
+    this.name = this.name || connection.name || 'shell';
+    this._ready = true;
+    this._attached.resolve();
+    this._widget.name = this.name;
+
+    this._firstStdout.promise.then(() => {
+      this._doResize();
+    });
   }
 
   private _setOption(name: string, value: string | number | boolean) {
@@ -474,7 +577,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
      * 这种情况可能会报错
      */
     try {
-      this._term.setOption(name, value);
+      this.xterm.raw.setOption(name, value);
       this._layout();
     } catch {
       /** nothing */
@@ -490,9 +593,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _layout() {
     // 如果 xterm 视图还没初始化，则先尝试初始化
     this._renderOnDemand();
-    if (this._term.element) {
+    if (this.xterm.raw.element) {
       try {
-        this._fitAddon.fit();
+        this.xterm.fit();
       } catch {
         // noop
       }
@@ -501,7 +604,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _renderOnDemand() {
     // 避免重复创建 xterm 视图，后果是终端实例和视图不匹配，表现为整个卡住
-    if (this._term.element) {
+    if (this.xterm.raw.element) {
       return;
     }
     // xterm 视图容器没准备好，取消渲染 xterm 视图
@@ -512,8 +615,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!this._workspacePath) {
       return;
     }
-    this._widget.element.appendChild(this._container);
-    this._term.open(this._container);
+    this._widget.element.appendChild(this.xterm.container);
+    this.xterm.open();
     // 首次渲染且为当前选中的 client 时，聚焦
     // 等待数据更新、terminal 渲染完成，但是无需等待连接成功，体验上会更快一些
     setTimeout(() => {
@@ -528,43 +631,34 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._layout();
   }
 
-  private _apply(widget: IWidget) {
-    this._widget = widget;
-    this.addDispose(
-      widget.onResize(async () => {
-        this._debounceResize();
-      }),
-    );
-  }
-
   focus() {
-    return this._term.focus();
+    return this.xterm.raw.focus();
   }
 
   clear() {
     this._checkReady();
-    return this._term.clear();
+    return this.xterm.raw.clear();
   }
 
   selectAll() {
     this._checkReady();
-    return this._term.selectAll();
+    return this.xterm.raw.selectAll();
   }
 
   paste(text: string) {
     this._checkReady();
-    return this._term.paste(text);
+    return this.xterm.raw.paste(text);
   }
 
   findNext(text: string) {
     this._checkReady();
-    return this._searchAddon.findNext(text);
+    return this.xterm.findNext(text);
   }
 
   getSelection() {
     this._checkReady();
-    if (this._term.hasSelection()) {
-      return this._term.getSelection();
+    if (this.xterm.raw.hasSelection()) {
+      return this.xterm.raw.getSelection();
     } else {
       this.logger.warn('The terminal has no selection to copy');
       return '';
@@ -572,11 +666,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   updateTheme() {
-    return this._term.setOption('theme', this.theme.terminalTheme);
+    return this.xterm.updateTheme(this.theme.terminalTheme);
   }
 
   updateOptions(options: TerminalOptions) {
-    this._options = { ...this._options, ...options };
+    this._terminalOptions = { ...this._terminalOptions, ...options };
+    this._launchConfig = this.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
+
     this._widget.name = options.name || this.name;
   }
 
@@ -593,7 +689,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   dispose(clear = true) {
-    this._container.remove();
     super.dispose();
 
     if (clear) {
@@ -604,15 +699,60 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
 @Injectable()
 export class TerminalClientFactory {
-  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
+  /**
+   * 创建 terminal 实例最终都会调用该方法
+   */
+  static async createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
+    // 每一个 widget.id 对应一个 TerminalClient
+    // 但是 TerminalClient 内部又依赖了一堆的其他要注入的，所以这里新创建一个 child injector
+    // 让 TerminalClient 依赖的所有类都重新初始化一遍
+
     const child = injector.createChild([
       {
         token: TerminalClient,
         useClass: TerminalClient,
       },
     ]);
+
     const client = child.get(TerminalClient);
-    client.init(widget, options);
+    await client.init(widget, options);
     return client;
   }
+  /**
+   * 创建 terminal 实例最终都会调用该方法
+   */
+  static async createClient2(injector: Injector, widget: IWidget, options?: ICreateTerminalOptions) {
+    const child = injector.createChild([
+      {
+        token: TerminalClient,
+        useClass: TerminalClient,
+      },
+    ]);
+
+    const client = child.get(TerminalClient);
+    await client.init2(widget, options);
+    return client;
+  }
+}
+
+export const createTerminalClientFactory = (injector: Injector) => (widget: IWidget, options?: TerminalOptions) =>
+  TerminalClientFactory.createClient(injector, widget, options);
+
+export const createTerminalClientFactory2 =
+  (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
+    TerminalClientFactory.createClient2(injector, widget, options);
+
+function asTerminalIcon(iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon): TerminalIcon | undefined {
+  if (!iconPath || typeof iconPath === 'string') {
+    return undefined;
+  }
+
+  if (!('id' in iconPath)) {
+    return iconPath;
+  }
+
+  return {
+    id: iconPath.id,
+    color: iconPath.color as IThemeColor,
+  };
 }

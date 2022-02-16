@@ -116,7 +116,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         }
       },
     });
-    timer = setTimeout(() => {
+    timer = window.setTimeout(() => {
       disposer.dispose();
       timer = null;
       if (this._modelsToDispose.has(uri.toString())) {

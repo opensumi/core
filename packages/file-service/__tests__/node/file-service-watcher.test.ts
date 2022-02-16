@@ -277,6 +277,6 @@ describe('测试重命名、移动、新建相关', () => {
 
 // tslint:disable-next-line:no-any
 process.on('unhandledRejection', (reason: any) => {
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   console.error('Unhandled promise rejection: ' + reason);
 });

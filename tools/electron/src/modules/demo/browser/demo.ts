@@ -13,6 +13,7 @@ export class DemoContribution implements ClientAppContribution {
 
   initialize() {
     this.helloService.on('hello-event', (payload) => {
+      // eslint-disable-next-line no-console
       console.log('Got payload from Main Process:', payload);
     });
 

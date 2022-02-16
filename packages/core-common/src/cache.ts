@@ -31,6 +31,7 @@ export class Cache<T> {
     if (!Cache.enableDebugLogging) {
       return;
     }
+    // eslint-disable-next-line no-console
     console.log(`${this.id} cache size — ${this._data.size}`);
   }
 }

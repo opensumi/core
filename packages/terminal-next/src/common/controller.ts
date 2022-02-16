@@ -1,5 +1,10 @@
 import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
-import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
+import {
+  ITerminalLaunchError,
+  ITerminalProcessExtHostProxy,
+  IStartExtensionTerminalRequest,
+  ITerminalProfileProvider,
+} from './extension';
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
@@ -20,6 +25,21 @@ export interface IBoundSize {
   height: number;
 }
 
+export interface ICreateClientWithWidgetOptions {
+  terminalOptions: TerminalOptions;
+  /**
+   * pty 进程退出后是否自动关闭 terminal 控件
+   */
+  closeWhenExited?: boolean;
+
+  /**
+   * 自定义的参数，由上层集成方自行控制
+   */
+  args?: any;
+
+  beforeCreate?: (terminalId: string) => void;
+}
+
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController extends Disposable {
   ready: Deferred<void>;
@@ -36,7 +56,11 @@ export interface ITerminalController extends Disposable {
   blur(): void;
   onContextMenu(e: React.MouseEvent<HTMLElement>): void;
   findClientFromWidgetId(widgetId: string): ITerminalClient | undefined;
-  createClientWithWidget(options: TerminalOptions): ITerminalClient;
+  /**
+   * @deprecated 请使用 `createClientWithWidget2` Will removed in 2.17.0
+   */
+  createClientWithWidget(options: TerminalOptions): Promise<ITerminalClient>;
+  createClientWithWidget2(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;

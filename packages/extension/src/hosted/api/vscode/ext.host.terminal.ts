@@ -20,8 +20,15 @@ import {
   ITerminalLaunchError,
   ITerminalExitEvent,
   ITerminalLinkDto,
+  ICreateContributedTerminalProfileOptions,
+  ITerminalProfile,
 } from '@opensumi/ide-terminal-next';
-import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
+import {
+  IMainThreadTerminal,
+  MainThreadAPIIdentifier,
+  IExtHostTerminal,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { userInfo } from 'os';
 import { IExtension } from '../../../common';
 import {
@@ -48,12 +55,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
   private readonly _terminalLinkCache: Map<string, Map<number, ICachedLinkEntry>> = new Map();
   private readonly _terminalLinkCancellationSource: Map<string, CancellationTokenSource> = new Map();
+  private readonly _profileProviders: Map<string, vscode.TerminalProfileProvider> = new Map();
+
+  private _defaultProfile: ITerminalProfile | undefined;
+  private _defaultAutomationProfile: ITerminalProfile | undefined;
 
   private environmentVariableCollections: Map<string, EnvironmentVariableCollection> = new Map();
 
   private disposables: DisposableStore = new DisposableStore();
-
-  private _shellPath: string;
 
   private readonly _bufferer: TerminalDataBufferer;
   protected _terminalProcesses: Map<string, ITerminalChildProcess> = new Map();
@@ -74,8 +83,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   $onDidChangeActiveTerminal(id: string) {
     const terminal = this.terminalsMap.get(id);
-    this.activeTerminal = terminal!;
-    this.changeActiveTerminalEvent.fire(terminal);
+    if (terminal) {
+      this.activeTerminal = terminal;
+      this.changeActiveTerminalEvent.fire(terminal);
+    } else {
+      debugLog.error('[onDidChangeActiveTerminal] cannot find terminal with id: ' + id);
+    }
   }
 
   get onDidChangeActiveTerminal(): Event<Terminal | undefined> {
@@ -114,12 +127,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.openTerminalEvent.event;
   }
 
-  $acceptDefaultShell(shellPath: string) {
-    this._shellPath = shellPath;
-  }
-
   get shellPath() {
-    return process.env.SHELL || userInfo().shell;
+    return this._defaultProfile?.path || process.env.SHELL || userInfo().shell;
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
@@ -286,6 +295,56 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.disposables.dispose();
   }
 
+  registerTerminalProfileProvider(
+    extension: IExtensionDescription,
+    id: string,
+    provider: vscode.TerminalProfileProvider,
+  ): IDisposable {
+    if (this._profileProviders.has(id)) {
+      throw new Error(`Terminal profile provider "${id}" already registered`);
+    }
+    this._profileProviders.set(id, provider);
+    this.proxy.$registerProfileProvider(id, extension.identifier.value);
+    return Disposable.create(() => {
+      this._profileProviders.delete(id);
+      this.proxy.$unregisterProfileProvider(id);
+    });
+  }
+
+  public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void {
+    this._defaultProfile = profile;
+    // 还不知道这个 automation 有啥用
+    this._defaultAutomationProfile = automationProfile;
+  }
+
+  public async $createContributedProfileTerminal(
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void> {
+    const token = new CancellationTokenSource().token;
+    let profile = await this._profileProviders.get(id)?.provideTerminalProfile(token);
+    if (token.isCancellationRequested) {
+      return;
+    }
+    if (profile && !('options' in profile)) {
+      profile = { options: profile };
+    }
+
+    if (!profile || !('options' in profile)) {
+      throw new Error(`No terminal profile options provided for id "${id}"`);
+    }
+
+    if ('pty' in profile.options) {
+      // TODO: 传入第二个参数
+      // this.createExtensionTerminal(profile.options, options);
+      this.createExtensionTerminal(profile.options);
+      return;
+    }
+    // TODO: 传入第二个参数
+    // this.createTerminalFromOptions(profile.options, options);
+    this.createTerminalFromOptions(profile.options);
+  }
+
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
     let terminal = this.terminalsMap.get(id);
     if (!terminal) {
@@ -429,7 +488,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
       // following calls to createTerminal will be created with the new environment. It will
       // result in more noise by sending multiple updates when called but collections are
       // expected to be small.
-      this.syncEnvironmentVariableCollection(extensionIdentifier, collection!);
+      this.syncEnvironmentVariableCollection(extensionIdentifier, collection);
     });
   }
 }

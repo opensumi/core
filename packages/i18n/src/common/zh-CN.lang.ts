@@ -600,9 +600,11 @@ export const localizationBundle = {
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',
+    'terminal.can.not.create': '创建终端失败',
     'terminal.can.not.reconnect': '终端不可用，请',
     'terminal.stop': '终止终端',
     'terminal.try.reconnect': '重新连接终端',
+    'terminal.try.recreate': '重新启动终端',
     'terminal.new': '新建终端',
     'terminal.split': '拆分终端',
     'terminal.clear': '终止所有终端',

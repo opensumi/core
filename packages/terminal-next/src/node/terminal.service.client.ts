@@ -7,10 +7,13 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
-import { IPty } from '../common/pty';
+import { IPtyProcess } from '../common/pty';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
-import { findExecutable, findShellExecutableAsync, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
+import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
+import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 
 /**
  * this RPC target: NodePtyTerminalService
@@ -26,10 +29,13 @@ interface IRPCTerminalService {
  */
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> implements ITerminalServiceClient {
-  private terminalMap: Map<string, IPty> = new Map();
+  private terminalMap: Map<string, IPtyProcess> = new Map();
 
   @Autowired(ITerminalNodeService)
   private terminalService: ITerminalNodeService;
+
+  @Autowired(ITerminalProfileServiceNode)
+  private terminalProfileService: TerminalProfileServiceNode;
 
   private clientId: string;
 
@@ -62,19 +68,30 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
-  async create2(id: string, options: IShellLaunchConfig): Promise<INodePtyInstance | undefined> {
-    const pty = await this.terminalService.create2(id, options);
-    if (pty) {
-      this.terminalService.setClient(this.clientId, this);
-      this.logger.log(`client ${id} create ${pty} with options ${JSON.stringify(options)}`);
-      this.terminalMap.set(id, pty);
-      return {
-        id,
-        pid: pty.pid,
-        proess: pty.process,
-        name: pty.parsedName,
-        shellPath: pty.launchConfig.shellPath,
-      };
+  async create2(
+    id: string,
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<INodePtyInstance | undefined> {
+    try {
+      const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
+      if (pty) {
+        this.terminalService.setClient(this.clientId, this);
+        this.logger.log(`client ${id} create ${pty} with options `, launchConfig);
+        this.terminalMap.set(id, pty);
+        return {
+          id,
+          pid: pty.pid,
+          proess: pty.process,
+          name: pty.parsedName,
+          shellPath: pty.launchConfig.executable,
+        };
+      } else {
+        this.logger.log(`cannot create pty instance ${id} `, launchConfig);
+      }
+    } catch (error) {
+      this.logger.error(`create pty instance error ${id}`, launchConfig, error);
     }
   }
 
@@ -139,6 +156,19 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     };
   }
 
+  async detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]> {
+    return await this.terminalProfileService.detectAvailableProfiles(options);
+  }
+
+  async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
+    // follow vscode
+    return this.getOs() === OperatingSystem.Macintosh ? 'osx' : OS === OperatingSystem.Windows ? 'windows' : 'linux';
+  }
+
+  async getDefaultSystemShell(os: OperatingSystem) {
+    return await getSystemShell(os);
+  }
+
   onMessage(id: string, msg: string): void {
     const { data, params, method } = JSON.parse(msg);
 
@@ -163,6 +193,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   getShellName(id: string): string {
     return this.terminalService.getShellName(id);
+  }
+
+  getOs(): OperatingSystem {
+    return OS;
   }
 
   dispose() {

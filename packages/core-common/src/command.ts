@@ -251,6 +251,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     InterceptorFunction[]
   >();
 
+  private readonly logger = getDebugLogger();
+
   /**
    * 命令执行方法
    * @param commandId 命令执行方法
@@ -309,7 +311,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    */
   registerCommand<T>(command: Command, handler?: CommandHandler<T>): IDisposable {
     if (this._commands[command.id]) {
-      console.warn(`A command ${command.id} is already registered.`);
+      this.logger.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
     }
     const toDispose = new Disposable();

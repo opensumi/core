@@ -17,6 +17,7 @@ import {
   URI,
   IReporterService,
   REPORT_NAME,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
@@ -76,6 +77,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
+
+  private readonly debugLogger = getDebugLogger();
 
   private extensions: IExtension[] = [];
 
@@ -144,7 +147,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
         const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${
           error.message || ''
         }${stackTraceMessage}`;
-        console.log('get error', traceMessage);
+        this.debugLogger.log('get error', traceMessage);
         this.reportRuntimeError(error, extension, traceMessage);
         return traceMessage;
       }
@@ -235,7 +238,14 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
           }
           if (this.appConfig.useExperimentalShadowDom) {
             const shadowComponent = (props) =>
-              getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead, this.appConfig.componentCDNType);
+              getShadowRoot(
+                popoverComponent,
+                extension,
+                props,
+                action.popoverComponent,
+                proxiedHead,
+                this.appConfig.componentCDNType,
+              );
             this.toolbarPopoverRegistry.registerComponent(
               `${extension.id}:${action.popoverComponent}`,
               shadowComponent,
@@ -420,7 +430,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       return () => ExtensionNoExportsView(extension.id, id);
     }
     if (this.appConfig.useExperimentalShadowDom) {
-      return (props) => getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
+      return (props) =>
+        getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
     }
     return moduleExports[id];
   }
@@ -507,7 +518,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
               ...other,
               id,
-              component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
+              component: (props) =>
+                getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
             })),
           };
           return pre;

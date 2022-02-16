@@ -90,12 +90,12 @@ export class CodeActionAdapter {
         } else {
           if (codeActionContext.only) {
             if (!candidate.kind) {
-              // tslint:disable-next-line:no-console
+              // eslint-disable-next-line no-console
               console.warn(
                 `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
               );
             } else if (!codeActionContext.only.contains(candidate.kind)) {
-              // tslint:disable-next-line:no-console
+              // eslint-disable-next-line no-console
               console.warn(
                 `Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`,
               );

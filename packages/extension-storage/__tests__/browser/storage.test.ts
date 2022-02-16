@@ -13,7 +13,7 @@ import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-s
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
 process.on('unhandledRejection', (reason) => {
-  // tslint:disable-next-line:no-console
+  // eslint-disable-next-line no-console
   console.error(reason);
 });
 

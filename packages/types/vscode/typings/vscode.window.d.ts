@@ -287,14 +287,14 @@ declare module 'vscode' {
     export function createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
 
     /**
-		 * Creates a status bar {@link StatusBarItem item}.
-		 *
-		 * @param id The unique identifier of the item.
-		 * @param alignment The alignment of the item.
-		 * @param priority The priority of the item. Higher values mean the item should be shown more to the left.
-		 * @return A new status bar item.
-		 */
-		export function createStatusBarItem(id: string, alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
+     * Creates a status bar {@link StatusBarItem item}.
+     *
+     * @param id The unique identifier of the item.
+     * @param alignment The alignment of the item.
+     * @param priority The priority of the item. Higher values mean the item should be shown more to the left.
+     * @return A new status bar item.
+     */
+    export function createStatusBarItem(id: string, alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
 
     /**
      * Creates a new [output channel](#OutputChannel) with the given name.
@@ -454,6 +454,12 @@ declare module 'vscode' {
      * @return Disposable that unregisters the provider.
      */
     export function registerTerminalLinkProvider(provider: TerminalLinkProvider): Disposable;
+    /**
+     * Registers a provider for a contributed terminal profile.
+     * @param id The ID of the contributed terminal profile.
+     * @param provider The terminal profile provider.
+     */
+    export function registerTerminalProfileProvider(id: string, provider: TerminalProfileProvider): Disposable;
     /**
      * ~~Show progress in the Source Control viewlet while running the given callback and while
      * its returned promise isn't resolve or rejected.~~

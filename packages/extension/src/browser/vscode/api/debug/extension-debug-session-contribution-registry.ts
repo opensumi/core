@@ -1,5 +1,5 @@
 import { DebugSessionContribution, DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
-import { IDisposable, ContributionProvider, Disposable } from '@opensumi/ide-core-browser';
+import { IDisposable, ContributionProvider, Disposable, getDebugLogger } from '@opensumi/ide-core-browser';
 import { Injectable, Autowired } from '@opensumi/di';
 
 export interface ExtensionDebugSessionContributionRegistrator {
@@ -25,6 +25,8 @@ export class ExtensionDebugSessionContributionRegistry
   @Autowired(DebugSessionContribution)
   protected readonly contributions: ContributionProvider<DebugSessionContribution>;
 
+  protected readonly debug = getDebugLogger();
+
   constructor() {
     this.init();
   }
@@ -43,7 +45,7 @@ export class ExtensionDebugSessionContributionRegistry
     const { debugType } = contrib;
 
     if (this.contribs.has(debugType)) {
-      console.warn(`Debug session contribution already registered for ${debugType}`);
+      this.debug.warn(`Debug session contribution already registered for ${debugType}`);
       return Disposable.NULL;
     }
 

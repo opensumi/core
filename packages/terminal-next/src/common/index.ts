@@ -13,5 +13,7 @@ export * from './render';
 export * from './extension';
 export * from './network';
 export * from './link-computer';
+export * from './profile';
+export * from './process';
 
 export const TerminalContainerId = 'terminal';

@@ -8,6 +8,7 @@ export class TopbarService extends Disposable implements ITopbarService {
   topbarNodeServer: ITopbarNodeServer;
 
   sayHelloFromNode() {
+    // eslint-disable-next-line no-console
     console.log('browser hello!');
     this.topbarNodeServer.topbarHello();
   }

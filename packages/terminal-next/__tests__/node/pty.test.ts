@@ -1,13 +1,12 @@
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { TerminalNodePtyModule } from '../../src/node';
-import { IPtyService, PtyService } from '../../src/node/pty';
+import { PtyService } from '../../src/node/pty';
 import os from 'os';
 
 describe('PtyService function should be valid', () => {
   jest.setTimeout(10000);
 
-  let ptyService: PtyService;
   let injector: Injector;
   let shellPath = '';
 
@@ -19,35 +18,47 @@ describe('PtyService function should be valid', () => {
 
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
-    ptyService = injector.get(IPtyService);
   });
 
   it('cannot create a invalid shell case1', async () => {
-    await expect(ptyService.create2({ cols: 200, rows: 200, shellPath: '' })).rejects.toThrowError(
-      'IShellLaunchConfig.shellPath not set',
-    );
+    const ptyService = injector.get(PtyService, ['0', { executable: '' }, 200, 200]);
+    const error = await ptyService.start();
+    expect(error?.message).toEqual('IShellLaunchConfig.shellPath not set');
   });
 
   it('cannot create a invalid shell case2', async () => {
-    await expect(
-      ptyService.create2({ cols: 200, rows: 200, shellPath, cwd: '/this/path/not/exists' }),
-    ).rejects.toThrowError();
+    const ptyService = injector.get(PtyService, [
+      '0',
+      { executable: shellPath, cwd: '/this/path/not/exists' },
+      200,
+      200,
+    ]);
+    const error = await ptyService.start();
+    expect(error).toBeTruthy();
   });
 
   it('can create a valid pty instance', async () => {
-    const instance = await ptyService.create2({ cols: 200, rows: 200, shellPath });
+    const ptyService = injector.get(PtyService, ['0', { executable: shellPath }, 200, 200]);
+    const error = await ptyService.start();
+    const instance = ptyService.pty;
+    expect(error).toBeUndefined();
     expect(instance).toBeDefined();
-    expect(instance.pid).toBeDefined();
-    expect(instance.launchConfig).toBeDefined();
+    expect(instance?.pid).toBeDefined();
+    expect(instance?.launchConfig).toBeDefined();
   });
 
   it('cwd is user home dir if not set', async () => {
-    const instance = await ptyService.create2({ cols: 200, rows: 200, shellPath, args: ['-c', 'pwd'] });
+    const ptyService = injector.get(PtyService, ['0', { executable: shellPath, args: ['-c', 'pwd'] }, 200, 200]);
+    const error = await ptyService.start();
+    const instance = ptyService.pty;
+
+    expect(error).toBeUndefined();
+
     let result = '';
 
     if (os.platform() !== 'win32') {
       await new Promise<void>((resolve) => {
-        instance.onData((data) => {
+        instance?.onData((data) => {
           result += data;
           resolve(undefined);
         });

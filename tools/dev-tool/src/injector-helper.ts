@@ -1,6 +1,6 @@
 import { ConstructorOf, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { Injector, Injectable } from '@opensumi/di';
-import { BrowserModule, ClientApp } from '@opensumi/ide-core-browser';
+import { BrowserModule, ClientApp, getDebugLogger } from '@opensumi/ide-core-browser';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
@@ -52,14 +52,7 @@ export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>
   // Mock logger
   injector.addProviders({
     token: INodeLogger,
-    useValue: {
-      log() {},
-      error() {},
-      warn() {},
-      verbose() {},
-      critical() {},
-      debug() {},
-    },
+    useValue: getDebugLogger(),
   });
 
   for (const item of constructors) {
