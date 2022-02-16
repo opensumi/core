@@ -61,6 +61,7 @@ export interface IBasicTreeData {
    * 图标
    */
   icon: string;
+  iconClassName?: string;
   /**
    * 描述
    */
@@ -73,6 +74,10 @@ export interface IBasicTreeData {
    * 是否默认展开
    */
   expanded?: boolean;
+  /**
+   * 是否可展开，若为 false 则不显示展开收起图标
+   */
+  expandable?: boolean;
   /**
    * 其他属性
    */

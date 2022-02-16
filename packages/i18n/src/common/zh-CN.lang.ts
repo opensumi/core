@@ -506,6 +506,7 @@ export const localizationBundle = {
     'common.about': '关于',
     'common.find': '查找',
     'common.replace': '替换',
+    'common.remoteMode': '远程模式',
 
     'component.message.origin': '来源',
 
@@ -926,6 +927,8 @@ export const localizationBundle = {
 
     // #region Testing
     'test.title': '测试管理器',
+    'test.result.runFinished': '测试运行完成于 {0}',
+    'test.task.unnamed': '未命名任务',
     // #endregion
   },
 };

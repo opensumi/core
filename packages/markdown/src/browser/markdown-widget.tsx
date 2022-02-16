@@ -1,8 +1,16 @@
 import React from 'react';
-import { useInjectable, Disposable, CancellationTokenSource } from '@opensumi/ide-core-browser';
+import { useInjectable, Disposable, CancellationTokenSource, URI } from '@opensumi/ide-core-browser';
 import { IMarkdownService } from '../common';
 
-export const Markdown = ({ content, onLoaded }: { content: string; onLoaded?: () => void }) => {
+export const Markdown = ({
+  content,
+  onLoaded,
+  onLinkClick,
+}: {
+  content: string;
+  onLoaded?: () => void;
+  onLinkClick?: (uri: URI) => void;
+}) => {
   let container: HTMLElement | null = null;
   const markdownService: IMarkdownService = useInjectable(IMarkdownService);
 
@@ -15,12 +23,14 @@ export const Markdown = ({ content, onLoaded }: { content: string; onLoaded?: ()
           cancellation.cancel();
         },
       });
-      markdownService.previewMarkdownInContainer(content, container!, cancellation.token).then((r) => {
-        disposer.addDispose(r);
-        if (onLoaded) {
-          onLoaded();
-        }
-      });
+      markdownService
+        .previewMarkdownInContainer(content, container!, cancellation.token, undefined, onLinkClick)
+        .then((r) => {
+          disposer.addDispose(r);
+          if (onLoaded) {
+            onLoaded();
+          }
+        });
 
       return () => {
         disposer.dispose();

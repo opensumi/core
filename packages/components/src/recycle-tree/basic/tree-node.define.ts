@@ -52,12 +52,20 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this.raw.icon;
   }
 
+  get iconClassName() {
+    return this.raw.iconClassName;
+  }
+
   get description() {
     return this.raw.description;
   }
 
   get raw() {
     return this._raw;
+  }
+
+  get expandable() {
+    return !!this._raw.expandable;
   }
 }
 
@@ -85,6 +93,10 @@ export class BasicTreeNode extends TreeNode {
 
   get icon() {
     return this.raw.icon;
+  }
+
+  get iconClassName() {
+    return this.raw.iconClassName;
   }
 
   get raw() {

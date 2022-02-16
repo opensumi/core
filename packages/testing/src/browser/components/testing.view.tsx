@@ -1,16 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
-import { localize } from '@opensumi/ide-core-browser';
-import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { Input } from '@opensumi/ide-components/lib/input/Input';
+import { localize, useInjectable, ViewContextKeyRegistry } from '@opensumi/ide-core-browser';
 
 import { TestingExplorerTree } from './testing.explorer.tree';
 import styles from './testing.module.less';
+import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { Testing } from '../../common/constants';
 
-export const TestingView = () => (
-  <div className={styles.testing_container}>
-    <TitleBar title={localize('test.title')} menubar={null} />
-    <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} />
-    <TestingExplorerTree />
-  </div>
-);
+export const TestingView = () => {
+  const menuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const viewContextKeyRegistry = useInjectable<ViewContextKeyRegistry>(ViewContextKeyRegistry);
+
+  const [menus, setMenus] = useState<IContextMenu>();
+
+  useEffect(() => {
+    const menu = menuService.createMenu({
+      id: MenuId.ViewTitle,
+      contextKeyService: viewContextKeyRegistry.getContextKeyService(Testing.ExplorerViewId),
+    });
+    setMenus(menu);
+  }, []);
+
+  return (
+    <div className={styles.testing_container}>
+      <TitleBar title={localize('test.title')} menubar={menus ? <InlineMenuBar menus={menus}></InlineMenuBar> : null} />
+      {/* 筛选器暂时先不搞 */}
+      {/* <Input placeholder={'Filter (e.g. text, !exclude, @tag)'} addonAfter={<Icon icon='filter' />} /> */}
+      <TestingExplorerTree />
+    </div>
+  );
+};

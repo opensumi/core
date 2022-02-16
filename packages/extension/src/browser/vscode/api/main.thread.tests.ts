@@ -6,7 +6,6 @@ import {
   CancellationToken,
   Disposable,
   DisposableStore,
-  getDebugLogger,
   IDisposable,
   URI,
 } from '@opensumi/ide-core-common';
@@ -32,6 +31,7 @@ import {
   TestResultImpl,
   TestResultServiceToken,
 } from '@opensumi/ide-testing/lib/common/test-result';
+import { Logger } from '@opensumi/ide-core-browser';
 
 const reviveDiff = (diff: TestsDiff) => {
   for (const entry of diff) {
@@ -49,6 +49,9 @@ const reviveDiff = (diff: TestsDiff) => {
 
 @Injectable({ multiple: true })
 export class MainThreadTestsImpl extends Disposable implements IMainThreadTesting {
+  @Autowired()
+  private logger: Logger;
+
   private proxy: IExtHostTests;
 
   private readonly testProviderRegistrations = new Map<
@@ -68,8 +71,6 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
 
   @Autowired(TestResultServiceToken)
   protected readonly resultService: ITestResultService;
-
-  private readonly debug = getDebugLogger();
 
   constructor(@Optional(Symbol()) rpcProtocol: IRPCProtocol) {
     super();
@@ -97,19 +98,19 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $updateControllerLabel(controllerId: string, label: string): void {
-    this.debug.log('test: updateControllerLabel>>', controllerId, label);
+    this.logger.warn('test: updateControllerLabel>>', controllerId, label);
   }
 
   $unregisterTestController(controllerId: string): void {
-    this.debug.log('test: unregisterTestController>>', controllerId);
+    this.logger.warn('test: unregisterTestController>>', controllerId);
   }
 
   $subscribeToDiffs(): void {
-    this.debug.log('test: subscribeToDiffs>>');
+    this.logger.warn('test: subscribeToDiffs>>');
   }
 
   $unsubscribeFromDiffs(): void {
-    this.debug.log('test: unsubscribeFromDiffs>>');
+    this.logger.warn('test: unsubscribeFromDiffs>>');
   }
 
   $publishDiff(controllerId: string, diff: TestsDiff): void {
@@ -125,14 +126,14 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
   }
 
   $updateTestRunConfig(controllerId: string, configId: number, update: Partial<ITestRunProfile>): void {
-    this.debug.log('Method not implemented.');
+    this.logger.warn('Method not implemented.');
   }
   $removeTestProfile(controllerId: string, configId: number): void {
-    this.debug.log('Method not implemented.');
+    this.testProfiles.removeProfile(controllerId, configId);
   }
-  $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
-    this.debug.log('Method not implemented.');
-    return Promise.resolve('');
+  async $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
+    const result = await this.testService.runResolvedTests(req, token);
+    return result.id;
   }
 
   $addTestsToRun(controllerId: string, runId: string, tests: ITestItem[]): void {
@@ -152,36 +153,49 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     state: TestResultState,
     duration?: number,
   ): void {
-    this.debug.log('$updateTestStateInRun', runId, taskId, testId, state, duration);
     this.withTestResult(runId, (r) => r.updateState(testId, taskId, state, duration));
   }
 
   $appendTestMessagesInRun(runId: string, taskId: string, testId: string, messages: SerializedTestMessage[]): void {
-    this.debug.log('$appendTestMessagesInRun', runId, taskId, testId, messages);
+    const r = this.resultService.getResult(runId);
+    if (r && r instanceof TestResultImpl) {
+      for (const message of messages) {
+        if (message.location) {
+          message.location.uri = URI.revive(message.location.uri);
+          message.location.range = Range.lift(message.location.range);
+        }
+
+        r.appendMessage(testId, taskId, message);
+      }
+    }
   }
 
-  $appendOutputToRun(runId: string, taskId: string, output: string, location?: ILocationDto, testId?: string): void {
-    this.debug.log('$appendOutputToRun', runId, taskId, output, location);
+  $appendOutputToRun(runId: string, taskId: string, output: string, locationDto?: ILocationDto, testId?: string): void {
+    const location = locationDto && {
+      uri: URI.revive(locationDto.uri),
+      range: Range.lift(locationDto.range),
+    };
+    this.withTestResult(runId, (r) => r.appendOutput(output, taskId, location, testId));
   }
 
   $signalCoverageAvailable(runId: string, taskId: string): void {
-    this.debug.log('$signalCoverageAvailable', runId, taskId);
+    this.logger.warn('$signalCoverageAvailable', runId, taskId);
   }
 
   $startedTestRunTask(runId: string, task: ITestRunTask): void {
-    this.debug.log('$startedTestRunTask', runId, task);
+    this.withTestResult(runId, (r) => r.addTask(task));
   }
 
   $finishedTestRunTask(runId: string, taskId: string): void {
-    this.debug.log('$finishedTestRunTask', runId, taskId);
+    this.withTestResult(runId, (r) => r.markTaskComplete(taskId));
   }
 
   $startedExtensionTestRun(req: ExtensionRunTestsRequest): void {
-    this.debug.log('Method not implemented.');
+    this.resultService.createTestResult(req);
   }
 
   $finishedExtensionTestRun(runId: string): void {
-    this.debug.log('Method not implemented.');
+    this.withTestResult(runId, (r) => r.markComplete());
   }
 
   private withTestResult<T>(runId: string, fn: (run: ITestResult) => T): T | undefined {

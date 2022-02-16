@@ -31,7 +31,7 @@ export interface ITerminalService {
    */
   check?(sessionIds: string[]): Promise<boolean>;
   /**
-   *
+   * @deprecated will remove on 2.17.0, please use `attachByLaunchConfig` instead
    * @param sessionId 会话唯一标识
    * @param xterm 返回的 Xterm 终端实例
    * @param rows 终端初始化使用的列数

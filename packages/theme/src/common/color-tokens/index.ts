@@ -31,5 +31,6 @@ export * from './debug';
 export * from './debugToolbar';
 export * from './charts';
 export * from './minimap';
+export * from './testing';
 
 export * from './custom';

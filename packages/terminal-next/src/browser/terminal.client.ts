@@ -50,6 +50,7 @@ import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { XTerm } from './xterm';
+import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
@@ -256,7 +257,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       initialText: withNullAsUndefined(options.message),
       strictEnv: withNullAsUndefined(options.strictEnv),
       hideFromUser: withNullAsUndefined(options.hideFromUser),
-      // isFeatureTerminal: withNullAsUndefined(internalOptions?.isFeatureTerminal),
+      // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
       isExtensionOwnedTerminal: true,
       // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
       // location:
@@ -264,6 +265,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
       // disablePersistence: withNullAsUndefined(options.disablePersistence),
     };
+
+    if (options.isExtensionTerminal) {
+      shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
+        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+    }
     return shellLaunchConfig;
   }
 
@@ -321,16 +327,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     if (await this._checkWorkspace()) {
       const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
-      this.logger.log('init2: ', launchConfig);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
 
       if (launchConfig.initialText) {
         this.xterm.raw.writeln(launchConfig.initialText);
       }
-
+      if (!launchConfig.env) {
+        launchConfig.env = {};
+      }
       this.environmentService.mergedCollection?.applyToProcessEnvironment(
-        launchConfig.env || {},
+        launchConfig.env,
         this.applicationService.backendOS,
         this.variableResolver.resolve.bind(this.variableResolver),
       );
@@ -339,7 +346,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this.environmentService.onDidChangeCollections((collection) => {
           // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
           collection.applyToProcessEnvironment(
-            launchConfig.env || {},
+            launchConfig.env!,
             this.applicationService.backendOS,
             this.variableResolver.resolve.bind(this.variableResolver),
           );
@@ -541,9 +548,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._launchConfig,
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
-    this.logger.log('_doAttach2 with', finalLaunchConfig);
 
     this._launchConfig = finalLaunchConfig;
+    this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 
     try {
       connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);

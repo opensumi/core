@@ -43,6 +43,7 @@ describe('Debug Model', () => {
       })),
       onDidChangeModel: () => Disposable.create(() => {}),
       onDidChangeModelContent: () => Disposable.create(() => {}),
+      getLineDecorations: jest.fn((line: number) => []),
       onKeyDown: jest.fn(() => Disposable.create(() => {})),
       getPosition: jest.fn(() => ({ lineNumber: 2, column: 1 })),
       deltaDecorations: jest.fn(() => []),
