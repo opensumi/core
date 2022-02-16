@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { PtyService } from './pty';
-import { IShellLaunchConfig } from '../common/pty';
+import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
 
@@ -83,9 +83,32 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     serviceClient.clientMessage(sessionId, ptyData);
   }
 
-  public async create2(id: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
+  public async create2(id: string, cols: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
+  public async create2(
+    id: string,
+    cols: number,
+    rows: number,
+    options: IShellLaunchConfig,
+  ): Promise<IPtyProcess | undefined>;
+  public async create2(
+    id: string,
+    _cols: unknown,
+    _rows?: unknown,
+    _launchConfig?: unknown,
+  ): Promise<IPtyProcess | undefined> {
     const clientId = id.split('|')[0];
     let ptyService: PtyService | undefined;
+    let cols = _cols as number;
+    let rows = _rows as number;
+    let launchConfig = _launchConfig as IShellLaunchConfig;
+    if (!(typeof cols === 'number')) {
+      launchConfig = cols as IShellLaunchConfig;
+      cols = (launchConfig as any).cols;
+      rows = (launchConfig as any).rows;
+      if ((launchConfig as any).shellPath) {
+        launchConfig.executable = (launchConfig as any).shellPath;
+      }
+    }
 
     try {
       ptyService = this.injector.get(PtyService, [id, launchConfig, cols, rows]);

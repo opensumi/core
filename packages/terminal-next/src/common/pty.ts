@@ -166,6 +166,10 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
+  /**
+   * @deprecated this overload signature will be removed in 2.17.0
+   */
+  create2(id: string, launchConfig: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
   create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
