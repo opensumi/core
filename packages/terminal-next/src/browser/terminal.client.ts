@@ -327,16 +327,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     if (await this._checkWorkspace()) {
       const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
-      this.logger.log('init terminal client with: ', launchConfig);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
 
       if (launchConfig.initialText) {
         this.xterm.raw.writeln(launchConfig.initialText);
       }
-
+      if (!launchConfig.env) {
+        launchConfig.env = {};
+      }
       this.environmentService.mergedCollection?.applyToProcessEnvironment(
-        launchConfig.env || {},
+        launchConfig.env,
         this.applicationService.backendOS,
         this.variableResolver.resolve.bind(this.variableResolver),
       );
@@ -345,7 +346,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this.environmentService.onDidChangeCollections((collection) => {
           // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
           collection.applyToProcessEnvironment(
-            launchConfig.env || {},
+            launchConfig.env!,
             this.applicationService.backendOS,
             this.variableResolver.resolve.bind(this.variableResolver),
           );
@@ -547,9 +548,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._launchConfig,
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
-    this.logger.log('_doAttach2 with', finalLaunchConfig);
 
     this._launchConfig = finalLaunchConfig;
+    this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 
     try {
       connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);
