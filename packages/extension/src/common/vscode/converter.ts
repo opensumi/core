@@ -18,6 +18,8 @@ import {
   cloneAndChange,
   IThemeColor,
   isDefined,
+  coalesce,
+  asArray,
 } from '@opensumi/ide-core-common';
 import {
   IDecorationRenderOptions,
@@ -25,6 +27,8 @@ import {
   IContentDecorationRenderOptions,
   TrackedRangeStickiness,
   EditorGroupColumn,
+  LanguageSelector,
+  LanguageFilter,
 } from '@opensumi/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
@@ -53,6 +57,7 @@ import {
 } from '@opensumi/ide-testing/lib/common/testCollection';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
 import { TestId } from '@opensumi/ide-testing/lib/common';
+import { IRelativePattern } from './glob';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;
@@ -299,11 +304,11 @@ export function fromHover(hover: vscode.Hover): model.Hover {
   } as model.Hover;
 }
 
-export function fromLanguageSelector(selector: vscode.DocumentSelector): model.LanguageSelector | undefined {
+export function fromLanguageSelector(selector: vscode.DocumentSelector): LanguageSelector | undefined {
   if (!selector) {
     return undefined;
   } else if (Array.isArray(selector)) {
-    return selector.map(fromLanguageSelector) as model.LanguageSelector;
+    return selector.map(fromLanguageSelector) as LanguageSelector;
   } else if (typeof selector === 'string') {
     return selector;
   } else {
@@ -311,11 +316,11 @@ export function fromLanguageSelector(selector: vscode.DocumentSelector): model.L
       language: (selector as vscode.DocumentFilter).language,
       scheme: (selector as vscode.DocumentFilter).scheme,
       pattern: fromGlobPattern((selector as vscode.DocumentFilter).pattern!),
-    } as model.LanguageFilter;
+    } as LanguageFilter;
   }
 }
 
-export function fromGlobPattern(pattern: vscode.GlobPattern): string | model.RelativePattern {
+export function fromGlobPattern(pattern: vscode.GlobPattern): string | IRelativePattern {
   if (typeof pattern === 'string') {
     return pattern;
   }
@@ -1721,3 +1726,53 @@ export namespace TestCoverage {
   }
 }
 // #endregion
+
+export interface IURITransformer {
+  transformIncoming(uri: UriComponents): UriComponents;
+  transformOutgoing(uri: UriComponents): UriComponents;
+  transformOutgoingURI(uri: URI): URI;
+  transformOutgoingScheme(scheme: string): string;
+}
+
+export interface IDocumentFilterDto {
+  $serialized: true;
+  language?: string;
+  scheme?: string;
+  pattern?: string | IRelativePattern;
+  exclusive?: boolean;
+}
+
+export namespace DocumentSelector {
+
+  export function from(value: vscode.DocumentSelector, uriTransformer?: IURITransformer): IDocumentFilterDto[] {
+    return coalesce(asArray(value).map((sel) => _doTransformDocumentSelector(sel, uriTransformer)));
+  }
+
+  function _doTransformDocumentSelector(selector: string | vscode.DocumentFilter, uriTransformer: IURITransformer | undefined): IDocumentFilterDto | undefined {
+    if (typeof selector === 'string') {
+      return {
+        $serialized: true,
+        language: selector,
+      };
+    }
+
+    if (selector) {
+      return {
+        $serialized: true,
+        language: selector.language,
+        scheme: _transformScheme(selector.scheme, uriTransformer),
+        pattern: typeof selector.pattern === 'undefined' ? undefined : GlobPattern.from(selector.pattern),
+        exclusive: selector.exclusive,
+      };
+    }
+
+    return undefined;
+  }
+
+  function _transformScheme(scheme: string | undefined, uriTransformer: IURITransformer | undefined): string | undefined {
+    if (uriTransformer && typeof scheme === 'string') {
+      return uriTransformer.transformOutgoingScheme(scheme);
+    }
+    return scheme;
+  }
+}

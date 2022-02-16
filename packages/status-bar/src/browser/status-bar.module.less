@@ -69,5 +69,16 @@
 .element {
   span.icon {
     font-size: 1em;
+    &::before {
+      vertical-align: middle;
+    }
   }
+}
+
+.popover_content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: @statusBar-font-size;
+  white-space: nowrap;
 }

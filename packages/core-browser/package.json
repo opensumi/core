@@ -21,6 +21,7 @@
     "@opensumi/ide-connection": "2.14.2",
     "@opensumi/ide-core-common": "2.14.2",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
+    "@vscode/codicons": "^0.0.27",
     "ajv": "^6.10.0",
     "classnames": "2.2.6",
     "clsx": "^1.0.4",
@@ -48,7 +49,6 @@
     "react-window": "^1.8.5",
     "reconnecting-websocket": "^4.2.0",
     "resize-observer-polyfill": "1.5.1",
-    "vscode-codicons": "0.0.12",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "5.4.0"
   }

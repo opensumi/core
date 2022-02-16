@@ -1,5 +1,5 @@
 import { CancellationToken, CancellationTokenSource } from './cancellation';
-import { IDisposable } from './disposable';
+import { IDisposable, toDisposable } from './disposable';
 import { canceled } from './errors';
 import { getDebugLogger } from './log';
 
@@ -576,4 +576,9 @@ export class RunOnceScheduler {
       this.runner();
     }
   }
+}
+
+export function disposableTimeout(handler: () => void, timeout = 0): IDisposable {
+  const timer = setTimeout(handler, timeout);
+  return toDisposable(() => clearTimeout(timer));
 }

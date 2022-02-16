@@ -9,7 +9,7 @@ import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { fromLanguageSelector } from '../../../common/vscode/converter';
+import * as typeConvert from '../../../common/vscode/converter';
 import {
   DocumentSelector,
   HoverProvider,
@@ -99,8 +99,8 @@ import {
   ILinkedEditingRangesDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@opensumi/ide-core-common';
-import { CancellationError, Disposable } from '../../../common/vscode/ext-types';
+import { DisposableStore, disposableTimeout, IDisposable, IExtensionLogger, Severity, Uri, UriComponents } from '@opensumi/ide-core-common';
+import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
 import { DeclarationAdapter } from './language/declaration';
@@ -172,7 +172,7 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerReferenceProvider(selector, provider);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
-      return score(fromLanguageSelector(selector), document.uri, document.languageId, true);
+      return score(typeConvert.fromLanguageSelector(selector), document.uri, document.languageId, true);
     },
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
@@ -290,6 +290,9 @@ export function createLanguagesApiFactory(
       provider: vscode.InlayHintsProvider,
     ): vscode.Disposable {
       return extHostLanguages.registerInlayHintsProvider(extension, selector, provider);
+    },
+    createLanguageStatusItem(id: string, selector: vscode.DocumentSelector): vscode.LanguageStatusItem {
+      return extHostLanguages.createLanguageStatusItem(extension, id, selector);
     },
   };
 }
@@ -1225,5 +1228,117 @@ export class ExtHostLanguages implements IExtHostLanguages {
       (adapter) => adapter.provideInlayHints(Uri.revive(resource), range, token),
       undefined,
     );
+  }
+
+  private _handlePool = 0;
+	private _ids = new Set<string>();
+
+  createLanguageStatusItem(extension: IExtensionDescription, id: string, selector: vscode.DocumentSelector): vscode.LanguageStatusItem {
+
+    const handle = this._handlePool++;
+    const proxy = this.proxy;
+    const ids = this._ids;
+
+    // enforce extension unique identifier
+    const fullyQualifiedId = `${extension.identifier.value}/${id}`;
+    if (ids.has(fullyQualifiedId)) {
+      throw new Error(`LanguageStatusItem with id '${id}' ALREADY exists`);
+    }
+    ids.add(fullyQualifiedId);
+
+    const data: Omit<vscode.LanguageStatusItem, 'dispose'> = {
+      selector,
+      id,
+      name: extension.displayName ?? extension.name,
+      severity: LanguageStatusSeverity.Information,
+      command: undefined,
+      text: '',
+      detail: '',
+    };
+
+    let soonHandle: IDisposable | undefined;
+    let commandDisposables = new DisposableStore();
+    const updateAsync = () => {
+      soonHandle?.dispose();
+      soonHandle = disposableTimeout(() => {
+        commandDisposables.clear();
+        this.proxy.$setLanguageStatus(handle, {
+          id: fullyQualifiedId,
+          name: data.name ?? extension.displayName ?? extension.name,
+          source: extension.displayName ?? extension.name,
+          // TODO：缺少 uriTransformer，先不传递
+          // selector: typeConvert.DocumentSelector.from(data.selector, this._uriTransformer),
+          selector: typeConvert.DocumentSelector.from(data.selector),
+          label: data.text,
+          detail: data.detail ?? '',
+          severity: data.severity === LanguageStatusSeverity.Error ? Severity.Error : data.severity === LanguageStatusSeverity.Warning ? Severity.Warning : Severity.Info,
+          command: data.command && this.commands.converter.toInternal(data.command, commandDisposables),
+          accessibilityInfo: data.accessibilityInformation,
+        });
+      }, 0);
+    };
+
+    const result: vscode.LanguageStatusItem = {
+      dispose() {
+        commandDisposables.dispose();
+        soonHandle?.dispose();
+        proxy.$removeLanguageStatus(handle);
+        ids.delete(fullyQualifiedId);
+      },
+      get id() {
+        return data.id;
+      },
+      get name() {
+        return data.name;
+      },
+      set name(value) {
+        data.name = value;
+        updateAsync();
+      },
+      get selector() {
+        return data.selector;
+      },
+      set selector(value) {
+        data.selector = value;
+        updateAsync();
+      },
+      get text() {
+        return data.text;
+      },
+      set text(value) {
+        data.text = value;
+        updateAsync();
+      },
+      get detail() {
+        return data.detail;
+      },
+      set detail(value) {
+        data.detail = value;
+        updateAsync();
+      },
+      get severity() {
+        return data.severity;
+      },
+      set severity(value) {
+        data.severity = value;
+        updateAsync();
+      },
+      get accessibilityInformation() {
+        return data.accessibilityInformation;
+      },
+      set accessibilityInformation(value) {
+        data.accessibilityInformation = value;
+        updateAsync();
+      },
+      get command() {
+        return data.command;
+      },
+      set command(value) {
+        data.command = value;
+        updateAsync();
+      },
+    };
+    updateAsync();
+    return result;
   }
 }

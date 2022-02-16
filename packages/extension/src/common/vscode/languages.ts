@@ -66,7 +66,7 @@ import { IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-comm
 import { CompletionContext } from './model.api';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import { ISingleEditOperation } from '@opensumi/ide-editor';
+import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 import { IExtensionDescription } from './extension';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
@@ -162,6 +162,8 @@ export interface IMainThreadLanguages {
     eventHandle: number | undefined,
   ): void;
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
+  $setLanguageStatus(handle: number, status: ILanguageStatus): void;
+  $removeLanguageStatus(handle: number): void;
 }
 
 export interface IExtHostLanguages {

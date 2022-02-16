@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-console
+/* eslint-disable no-console */
 import { join } from 'path';
 import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { execSync } from 'child_process';

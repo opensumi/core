@@ -8,7 +8,7 @@ import { renderApp } from './render-app';
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';
 
-import { WebLiteModule }  from './lite-module';
+import { WebLiteModule } from './lite-module';
 
 import { SampleModule } from '../sample-modules';
 
@@ -43,7 +43,7 @@ const layoutConfig = {
 // serviceWorker.register();
 
 renderApp({
-  modules: [ WebLiteModule, ...CommonBrowserModules, SampleModule ],
+  modules: [WebLiteModule, ...CommonBrowserModules, SampleModule],
   layoutConfig,
   useCdnIcon: true,
   noExtHost: true,
@@ -57,7 +57,11 @@ renderApp({
     'general.language': 'en-US',
   },
   workspaceDir: '/test',
-  extraContextProvider: (props) => <div id='#hi' style={{ width: '100%', height: '100%' }}>{props.children}</div>,
+  extraContextProvider: (props) => (
+    <div id='#hi' style={{ width: '100%', height: '100%' }}>
+      {props.children}
+    </div>
+  ),
   iconStyleSheets: [
     {
       iconMap: {

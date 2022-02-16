@@ -10,3 +10,4 @@ export * from './common';
 export * from './application';
 export * from './authentication';
 export * from './accessibility';
+export * from './statusbar';

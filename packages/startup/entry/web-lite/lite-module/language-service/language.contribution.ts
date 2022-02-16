@@ -27,54 +27,63 @@ export class LanguageServiceContribution extends Disposable implements ClientApp
   onStart() {
     // lsif registration
     this.addDispose(
-      this.simpleLanguageService.registerHoverProvider({ pattern: '**/*.{js,jsx,ts,tsx,java,go}' }, {
-        provideHover: async (document: vscode.TextDocument, position: Position) => {
-          const rootUri = this.workspaceUri;
-          const info = new URI(document.uri);
-          const payload = {
-            repository: '/ide-s/TypeScript-Node-Starter',
-            commit: 'test',
-            path: rootUri.relative(info)?.toString()!,
-            line: position.line,
-            character: position.character,
-          };
-          return await this.lsifService.fetchLsifHover(payload);
+      this.simpleLanguageService.registerHoverProvider(
+        { pattern: '**/*.{js,jsx,ts,tsx,java,go}' },
+        {
+          provideHover: async (document: vscode.TextDocument, position: Position) => {
+            const rootUri = this.workspaceUri;
+            const info = new URI(document.uri);
+            const payload = {
+              repository: '/ide-s/TypeScript-Node-Starter',
+              commit: 'test',
+              path: rootUri.relative(info)?.toString()!,
+              line: position.line,
+              character: position.character,
+            };
+            return await this.lsifService.fetchLsifHover(payload);
+          },
         },
-      }),
+      ),
     );
 
     this.addDispose(
-      this.simpleLanguageService.registerDefinitionProvider({ pattern: '**/*.{js,jsx,ts,tsx,java,go}' }, {
-        provideDefinition: async (document: vscode.TextDocument, position: Position) => {
-          const rootUri = this.workspaceUri;
-          const info = new URI(document.uri);
-          const payload = {
-            repository: '/ide-s/TypeScript-Node-Starter',
-            commit: 'test',
-            path: rootUri.relative(info)?.toString()!,
-            line: position.line,
-            character: position.character,
-          };
-          return await this.lsifService.fetchLsifDefinition(payload);
+      this.simpleLanguageService.registerDefinitionProvider(
+        { pattern: '**/*.{js,jsx,ts,tsx,java,go}' },
+        {
+          provideDefinition: async (document: vscode.TextDocument, position: Position) => {
+            const rootUri = this.workspaceUri;
+            const info = new URI(document.uri);
+            const payload = {
+              repository: '/ide-s/TypeScript-Node-Starter',
+              commit: 'test',
+              path: rootUri.relative(info)?.toString()!,
+              line: position.line,
+              character: position.character,
+            };
+            return await this.lsifService.fetchLsifDefinition(payload);
+          },
         },
-      }),
+      ),
     );
 
     this.addDispose(
-      this.simpleLanguageService.registerReferenceProvider({ pattern: '**/*.{js,jsx,ts,tsx,java,go}' }, {
-        provideReferences: async (document: vscode.TextDocument, position: Position) => {
-          const rootUri = this.workspaceUri;
-          const info = new URI(document.uri);
-          const payload = {
-            repository: '/ide-s/TypeScript-Node-Starter',
-            commit: 'test',
-            path: rootUri.relative(info)?.toString()!,
-            line: position.line,
-            character: position.character,
-          };
-          return await this.lsifService.fetchLsifReferences(payload);
+      this.simpleLanguageService.registerReferenceProvider(
+        { pattern: '**/*.{js,jsx,ts,tsx,java,go}' },
+        {
+          provideReferences: async (document: vscode.TextDocument, position: Position) => {
+            const rootUri = this.workspaceUri;
+            const info = new URI(document.uri);
+            const payload = {
+              repository: '/ide-s/TypeScript-Node-Starter',
+              commit: 'test',
+              path: rootUri.relative(info)?.toString()!,
+              line: position.line,
+              character: position.character,
+            };
+            return await this.lsifService.fetchLsifReferences(payload);
+          },
         },
-      }),
+      ),
     );
   }
 }

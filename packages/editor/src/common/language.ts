@@ -1,9 +1,10 @@
 import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import type { IRelatedInformation } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, Command, IAccessibilityInformation, Severity } from '@opensumi/ide-core-common';
 import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { IDisposable, MarkerSeverity } from '@opensumi/ide-core-common';
 import LSTypes from 'vscode-languageserver-types';
+import { IRelativePattern } from '@opensumi/ide-core-common/lib/utils/glob';
 
 export const ILanguageService = Symbol('ILanguageService');
 
@@ -170,3 +171,12 @@ export interface Language {
   readonly extensions: Set<string>;
   readonly filenames: Set<string>;
 }
+
+export interface LanguageFilter {
+  language?: string;
+  scheme?: string;
+  pattern?: string | IRelativePattern;
+  hasAccessToAllModels?: boolean;
+}
+
+export type LanguageSelector = string | LanguageFilter | (string | LanguageFilter)[];
