@@ -34,6 +34,7 @@ export class RemoteOpenerServiceImpl extends RPCService implements IRemoteOpener
     try {
       await this.client.$openExternal(args.type, args.type === 'file' ? Uri.file(args.file) : Uri.parse(args.url));
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.log(`Error opening external error: ${err.message || err}`);
     }
   }

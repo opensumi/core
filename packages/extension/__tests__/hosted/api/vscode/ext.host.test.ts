@@ -64,6 +64,7 @@ describe('Extension process test', () => {
               (await fn)(raw);
             }
           } else {
+            // eslint-disable-next-line no-console
             console.log(`lost proxy ${message.proxyId} - ${message.method}`);
           }
         },

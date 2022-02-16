@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import {

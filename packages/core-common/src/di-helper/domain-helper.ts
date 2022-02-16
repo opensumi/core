@@ -39,6 +39,7 @@ export function getDomainConstructors(...domains: Domain[]) {
     if (constructor) {
       constructorSet.add(constructor);
     } else {
+      // eslint-disable-next-line no-console
       console.error(`没有获取到 ${String(domain)} 对应的Constructor！`);
     }
   }

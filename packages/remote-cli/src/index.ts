@@ -35,6 +35,7 @@ program
   .description('file path or url')
   .action((pathOrUrl) => {
     if (!CLIENT_ID) {
+      // eslint-disable-next-line no-console
       console.error(red(`${PRODUCTION_NAME} Client id is undefined!`));
       process.exit(0);
     }
@@ -49,11 +50,13 @@ program
 
     if (type === OpenType.file) {
       if (!existsSync(fullPathOrUrl)) {
+        // eslint-disable-next-line no-console
         console.error(red(`The file path ${fullPathOrUrl} is not exist!`));
         process.exit(0);
       }
 
       if (statSync(fullPathOrUrl).isDirectory()) {
+        // eslint-disable-next-line no-console
         console.error(red('Directory is unsupported'));
         process.exit(0);
       }
@@ -61,6 +64,7 @@ program
 
     const query = `?type=${type}&${type}=${encodeURIComponent(fullPathOrUrl)}&clientId=${CLIENT_ID}`;
     got(`${SUMI_SERVER_HOST}/${OPENER_ROUTE}${query}`).catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(red(`Open ${type} ${fullPathOrUrl} error: \n ${err.message}`));
       process.exit(1);
     });

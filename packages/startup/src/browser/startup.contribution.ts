@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
 import {

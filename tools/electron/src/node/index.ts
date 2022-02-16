@@ -37,6 +37,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
 startServer({
   modules: [...CommonNodeModules],
 }).then(() => {
+  // eslint-disable-next-line no-console
   console.log('ready');
   if (process.send) {
     process.send('ready');

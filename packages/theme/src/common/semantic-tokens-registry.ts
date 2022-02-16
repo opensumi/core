@@ -234,6 +234,7 @@ export function createMatchers<T>(
           priority = -1;
           break;
         default:
+          // eslint-disable-next-line no-console
           console.log(`Unknown priority ${token} in scope selector`);
       }
       token = tokenizer.next();

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Autowired } from '@opensumi/di';
 import { Disposable, Domain } from '@opensumi/ide-core-common';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
@@ -32,7 +33,6 @@ export class TextmateLanguageGrammarContribution extends Disposable implements C
               );
             })
             .catch((err) => {
-              // tslint:disable:no-console
               console.log(err.message);
               console.warn(lang, 'cannot load language');
             });

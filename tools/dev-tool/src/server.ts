@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'tsconfig-paths/register';
 import { Injector } from '@opensumi/di';
 import path from 'path';

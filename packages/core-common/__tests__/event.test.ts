@@ -398,6 +398,7 @@ describe('AsyncEmitter', () => {
         expect(globalState).toBe(3);
       })
       .catch((e) => {
+        // eslint-disable-next-line no-console
         console.log(e);
         expect(false).toBeTruthy();
       });

@@ -86,7 +86,7 @@ module.exports = {
     'no-bitwise': 'off',
     'no-caller': 'error',
     'no-cond-assign': 'off',
-    'no-console': 'off',
+    'no-console': 'error',
     'no-debugger': 'error',
     'no-constant-condition': ['error', { checkLoops: false }],
     // We strongly recommend that you do not use the no-undef lint rule on TypeScript projects.

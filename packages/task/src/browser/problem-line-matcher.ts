@@ -59,7 +59,7 @@ export abstract class AbstractLineMatcher {
     this.cachedProblemData = this.getEmptyProblemData();
 
     if (this.patterns.slice(0, this.patternCount - 1).some((p) => !!p.loop)) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.error('Problem Matcher: Only the last pattern can loop');
     }
   }
@@ -166,7 +166,7 @@ export abstract class AbstractLineMatcher {
         description: this.matcher,
       };
     } catch (err) {
-      // tslint:disable-next-line:no-console
+      // eslint-disable-next-line no-console
       console.error(`Failed to convert problem data into match: ${JSON.stringify(data)}`);
     }
     return undefined;

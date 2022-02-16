@@ -125,6 +125,7 @@ export class URI {
      * 但是 vscode-uri 对 constructor 属性加了 protected 保护，因此增加了 `ts-ignore`
      */
     if (process.env.NODE_ENV !== 'production' && console !== undefined) {
+      // eslint-disable-next-line no-console
       console.warn(
         'Warning: `Uri.withoutScheme` is deprecated, ' +
           'If you want to get `fsPath` by `withoutScheme` method, ' +

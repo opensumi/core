@@ -92,7 +92,7 @@ export class FileSearchService implements IFileSearchService {
             token,
           );
         } catch (e) {
-          // tslint:disable-next-line:no-console
+          // eslint-disable-next-line no-console
           console.error('Failed to search:', root, e);
         }
       }),

@@ -427,7 +427,7 @@ class LeakageMonitor {
       this._warnCountdown = threshold * 0.5;
 
       // find most frequent listener and print warning
-      let topStack: string;
+      let topStack = '';
       let topCount = 0;
       this._stacks.forEach((count, stack) => {
         if (!topStack || topCount < count) {
@@ -435,10 +435,12 @@ class LeakageMonitor {
           topCount = count;
         }
       });
+      // eslint-disable-next-line no-console
       console.warn(
         `[${this.name}] potential listener LEAK detected, having ${listenerCount} listeners already. MOST frequent listener (${topCount}):`,
       );
-      console.warn(topStack!);
+      // eslint-disable-next-line no-console
+      console.warn(topStack);
     }
 
     return () => {

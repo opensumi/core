@@ -23,7 +23,7 @@ export class ElectronWebviewChannel implements IWebviewChannel {
       if (handler) {
         handler(e, e.data.data);
       } else {
-        // tslint:disable-next-line: no-console
+        // eslint-disable-next-line no-console
         console.warn('no handler for ', e);
       }
     });
