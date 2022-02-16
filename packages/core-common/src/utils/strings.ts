@@ -102,6 +102,9 @@ export function escapeRegExpCharacters(value: string): string {
   return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, '\\$&');
 }
 
+/**
+ * Counts how often `character` occurs inside `value`.
+ */
 export function count(value: string, character: string): number {
   let result = 0;
   const ch = character.charCodeAt(0);
