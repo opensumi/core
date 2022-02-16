@@ -19,6 +19,8 @@ import { ICSSStyleService } from '@opensumi/ide-theme';
 
 @Injectable({ multiple: true })
 export class DebugBreakpointZoneWidget extends ZoneWidget {
+  protected _fillContainer(container: HTMLElement): void {}
+
   static INPUT_PLACEHOLDER_AFTER = styles.input_placeholder + '::after';
 
   @Autowired(DebugBreakpointsService)

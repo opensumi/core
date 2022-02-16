@@ -1,3 +1,5 @@
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { ITestResult } from './../common/test-result';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { TestingServiceProviderCount } from '@opensumi/ide-core-browser/lib/contextkey/testing';
@@ -6,13 +8,19 @@ import {
   CancellationTokenSource,
   Disposable,
   Emitter,
+  getIcon,
   IDisposable,
+  localize,
+  SlotLocation,
 } from '@opensumi/ide-core-browser';
 
-import { ITestController, ITestService, TestId } from '../common';
+import { AmbiguousRunTestsRequest, ITestController, ITestService, TestId } from '../common';
 import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import { ITestResultService, TestResultServiceToken } from '../common/test-result';
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
+import { TestingView } from './components/testing.view';
+import { TestingContainerId } from '../common/testing-view';
+import { Testing } from '../common/constants';
 
 @Injectable()
 export class TestServiceImpl extends Disposable implements ITestService {
@@ -20,9 +28,13 @@ export class TestServiceImpl extends Disposable implements ITestService {
   private controllerCount: IContextKey<number>;
 
   private readonly processDiffEmitter = new Emitter<TestsDiff>();
+  private viewId = '';
 
   readonly collection = new MainThreadTestCollection(this.expandTest.bind(this));
   readonly onDidProcessDiff = this.processDiffEmitter.event;
+
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
 
   @Autowired(TestResultServiceToken)
   protected readonly resultService: ITestResultService;
@@ -38,9 +50,29 @@ export class TestServiceImpl extends Disposable implements ITestService {
     this.controllerCount = TestingServiceProviderCount.bind(this.contextKeyService);
   }
 
+  private registerTestingExplorerView(): string {
+    this.mainlayoutService.collectViewComponent;
+    return this.mainlayoutService.collectTabbarComponent(
+      [{ id: TestingContainerId }],
+      {
+        iconClass: getIcon('test'),
+        title: localize('test.title'),
+        priority: 1,
+        containerId: Testing.ExplorerViewId,
+        component: TestingView,
+        activateKeyBinding: 'ctrlcmd+shift+t',
+      },
+      SlotLocation.left,
+    );
+  }
+
   registerTestController(id: string, testController: ITestController): IDisposable {
     this.controllers.set(id, testController);
     this.controllerCount.set(this.controllers.size);
+
+    if (this.controllers.size > 0 && !this.viewId) {
+      this.viewId = this.registerTestingExplorerView();
+    }
 
     return Disposable.create(() => {
       const diff: TestsDiff = [];
@@ -53,6 +85,9 @@ export class TestServiceImpl extends Disposable implements ITestService {
 
       if (this.controllers.delete(id)) {
         this.controllerCount.set(this.controllers.size);
+        if (this.controllers.size === 0 && this.viewId) {
+          this.mainlayoutService.disposeContainer(this.viewId);
+        }
       }
     });
   }
@@ -66,7 +101,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
     this.processDiffEmitter.fire(diff);
   }
 
-  runTests(req: any, token = CancellationToken.None): Promise<any> {
+  runTests(req: AmbiguousRunTestsRequest, token = CancellationToken.None): Promise<ITestResult> {
     const resolved: ResolvedTestRunRequest = {
       targets: [],
       exclude: req.exclude?.map((t) => t.item.extId),
@@ -86,7 +121,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
     return this.runResolvedTests(resolved, token);
   }
 
-  async runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<any> {
+  async runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<ITestResult> {
     if (!req.exclude) {
       // default exclude
       req.exclude = [];
@@ -113,6 +148,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
           }),
       );
       await Promise.all(requests);
+      return result;
     } finally {
       result.markComplete();
     }

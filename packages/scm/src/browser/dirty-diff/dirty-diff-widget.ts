@@ -15,6 +15,7 @@ export enum DirtyDiffWidgetActionType {
 }
 
 export class DirtyDiffWidget extends ZoneWidget {
+  protected _fillContainer(container: HTMLElement): void {}
   private _wrapper: HTMLDivElement;
   private _head: HTMLDivElement;
   private _content: HTMLDivElement;
