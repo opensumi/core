@@ -23,7 +23,7 @@ describe('PtyService function should be valid', () => {
   it('cannot create a invalid shell case1', async () => {
     const ptyService = injector.get(PtyService, ['0', { executable: '' }, 200, 200]);
     const error = await ptyService.start();
-    expect(error?.message).toEqual('IShellLaunchConfig.shellPath not set');
+    expect(error?.message).toEqual('IShellLaunchConfig.executable not set');
   });
 
   it('cannot create a invalid shell case2', async () => {
