@@ -4,10 +4,6 @@
     "rootDir": "../../../packages/monaco/src",
     "outDir": "../../../packages/monaco/lib"
   },
-  "include": [
-    "../../../packages/monaco/src"
-  ],
-  "exclude": [
-    "../../../../../../monaco/__mocks__"
-  ],
+  "include": ["../../../packages/monaco/src"],
+  "exclude": ["../../../packages/monaco/__mocks__"]
 }

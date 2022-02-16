@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/core-common/src",
     "outDir": "../../../packages/core-common/lib"
   },
-  "include": [
-    "../../../packages/core-common/src",
-  ]
+  "include": ["../../../packages/core-common/src"],
+  "exclude": ["../../../packages/core-common/__mocks__"]
 }

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/toolbar/src",
     "outDir": "../../../packages/toolbar/lib"
   },
-  "include": [
-    "../../../packages/toolbar/src"
-  ]
+  "include": ["../../../packages/toolbar/src"],
+  "exclude": ["../../../packages/toolbar/__mocks__"]
 }

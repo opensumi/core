@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/addons/src",
     "outDir": "../../../packages/addons/lib"
   },
-  "include": [
-    "../../../packages/addons/src"
-  ]
+  "include": ["../../../packages/addons/src"],
+  "exclude": ["../../../packages/addons/__mocks__"]
 }

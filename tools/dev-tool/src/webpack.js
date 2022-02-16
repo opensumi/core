@@ -215,7 +215,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         }),
       ],
       devServer: {
-        contentBase: dir + '/public',
+        contentBase: dir + '/dist',
         port: PORT,
         disableHostCheck: true,
         host: '0.0.0.0',

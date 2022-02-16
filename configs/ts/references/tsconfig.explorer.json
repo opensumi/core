@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/explorer/src",
     "outDir": "../../../packages/explorer/lib"
   },
-  "include": [
-    "../../../packages/explorer/src"
-  ]
+  "include": ["../../../packages/explorer/src"],
+  "exclude": ["../../../packages/explorer/__mocks__"]
 }

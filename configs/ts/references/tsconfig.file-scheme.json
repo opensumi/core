@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/file-scheme/src",
     "outDir": "../../../packages/file-scheme/lib"
   },
-  "include": [
-    "../../../packages/file-scheme/src"
-  ]
+  "include": ["../../../packages/file-scheme/src"],
+  "exclude": ["../../../packages/file-scheme/__mocks__"]
 }

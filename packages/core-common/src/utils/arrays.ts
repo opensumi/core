@@ -287,3 +287,13 @@ export class StaleLRUMap<K, V> extends LRUMap<K, V> {
     return value[NOW] + this.maxAge <= Date.now();
   }
 }
+
+type NonFunctional<T> = T extends Function ? never : T;
+
+// 枚举 value 转数组值
+export function enumValueToArray<T>(enumeration: T): NonFunctional<T[keyof T]>[] {
+  return Object.keys(enumeration)
+    .filter((key) => isNaN(Number(key)))
+    .map((key) => enumeration[key])
+    .filter((val) => typeof val === 'number' || typeof val === 'string');
+}

@@ -5,7 +5,7 @@ import { RPCService } from '@opensumi/ide-connection/lib/common/proxy';
 
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
-import { IRemoteHostConverter, IRemoteOpenerBrowserService } from '@opensumi/ide-core-browser/lib/remote-opener';
+import { IRemoteHostConverter, IRemoteOpenerBrowserService } from '../common';
 
 const SUPPORT_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
 

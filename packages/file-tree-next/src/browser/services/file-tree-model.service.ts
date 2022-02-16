@@ -623,9 +623,9 @@ export class FileTreeModelService {
       node = file;
       if (this._isMutiSelected) {
         if (this.selectedFiles.indexOf(node) >= 0) {
-          nodes = this._isMutiSelected ? this.selectedFiles : [node];
+          nodes = this.selectedFiles;
         } else {
-          nodes = this._isMutiSelected ? this.selectedFiles.concat([node]) : [node];
+          nodes = [node];
         }
       } else {
         nodes = [node];

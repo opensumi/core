@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/userstorage/src",
     "outDir": "../../../packages/userstorage/lib"
   },
-  "include": [
-    "../../../packages/userstorage/src"
-  ]
+  "include": ["../../../packages/userstorage/src"],
+  "exclude": ["../../../packages/userstorage/__mocks__"]
 }

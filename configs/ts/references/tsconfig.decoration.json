@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/decoration/src",
     "outDir": "../../../packages/decoration/lib"
   },
-  "include": [
-    "../../../packages/decoration/src"
-  ]
+  "include": ["../../../packages/decoration/src"],
+  "exclude": ["../../../packages/decoration/__mocks__"]
 }

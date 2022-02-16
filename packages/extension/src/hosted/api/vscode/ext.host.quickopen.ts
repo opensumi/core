@@ -214,12 +214,12 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private _activeItems: T[];
   private _placeholder: string | undefined;
   private disposableCollection: DisposableCollection;
-  private readonly onDidHideEmitter: Emitter<void>;
-  private readonly onDidAcceptEmitter: Emitter<void>;
-  private readonly onDidChangeActiveEmitter: Emitter<T[]>;
-  private readonly onDidChangeSelectionEmitter: Emitter<T[]>;
-  private readonly onDidChangeValueEmitter: Emitter<string>;
-  private readonly onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  private readonly _onDidHideEmitter: Emitter<void>;
+  private readonly _onDidAcceptEmitter: Emitter<void>;
+  private readonly _onDidChangeActiveEmitter: Emitter<T[]>;
+  private readonly _onDidChangeSelectionEmitter: Emitter<T[]>;
+  private readonly _onDidChangeValueEmitter: Emitter<string>;
+  private readonly _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
 
   private didShow = false;
 
@@ -233,12 +233,12 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this._buttons = [];
     this.value = '';
     this.disposableCollection = new DisposableCollection();
-    this.disposableCollection.push((this.onDidHideEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidAcceptEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidChangeActiveEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidChangeSelectionEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidChangeValueEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidTriggerButtonEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidHideEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidChangeActiveEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidChangeSelectionEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidTriggerButtonEmitter = new Emitter()));
   }
 
   get items(): T[] {
@@ -262,7 +262,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 
   get onDidAccept(): Event<void> {
-    return this.onDidAcceptEmitter.event;
+    return this._onDidAcceptEmitter.event;
   }
 
   get placeholder(): string | undefined {
@@ -273,15 +273,15 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 
   get onDidChangeActive(): Event<T[]> {
-    return this.onDidChangeActiveEmitter.event;
+    return this._onDidChangeActiveEmitter.event;
   }
 
   get onDidChangeSelection(): Event<T[]> {
-    return this.onDidChangeSelectionEmitter.event;
+    return this._onDidChangeSelectionEmitter.event;
   }
 
   get onDidChangeValue(): Event<string> {
-    return this.onDidChangeValueEmitter.event;
+    return this._onDidChangeValueEmitter.event;
   }
 
   get buttons() {
@@ -293,16 +293,16 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 
   get onDidTriggerButton(): Event<vscode.QuickInputButton> {
-    return this.onDidTriggerButtonEmitter.event;
+    return this._onDidTriggerButtonEmitter.event;
   }
 
   _fireDidChangeValue(value: string) {
     this.value = value;
-    this.onDidChangeValueEmitter.fire(value);
+    this._onDidChangeValueEmitter.fire(value);
   }
 
   get onDidHide(): Event<void> {
-    return this.onDidHideEmitter.event;
+    return this._onDidHideEmitter.event;
   }
 
   dispose(): void {
@@ -311,7 +311,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   attachBtn(btnHandler: number): void {
     const btn = this.buttons[btnHandler];
-    return this.onDidTriggerButtonEmitter.fire(btn);
+    return this._onDidTriggerButtonEmitter.fire(btn);
   }
 
   hide(): void {
@@ -321,13 +321,13 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   show(): void {
     this.didShow = true;
     const hide = () => {
-      this.onDidHideEmitter.fire(undefined);
+      this._onDidHideEmitter.fire(undefined);
     };
     const selectItem = (item: T | T[]) => {
       const selectedItems = Array.isArray(item) ? item : [item];
       this.selectedItems = this.activeItems = selectedItems;
-      this.onDidAcceptEmitter.fire(undefined);
-      this.onDidChangeSelectionEmitter.fire(selectedItems);
+      this._onDidAcceptEmitter.fire(undefined);
+      this._onDidChangeSelectionEmitter.fire(selectedItems);
     };
 
     this.quickOpen
@@ -371,10 +371,10 @@ class QuickInputExt implements vscode.InputBox {
 
   readonly quickInputIndex: number;
 
-  onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
-  onDidChangeValueEmitter: Emitter<string>;
-  onDidAcceptEmitter: Emitter<void>;
-  onDidHideEmitter: Emitter<void>;
+  _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  _onDidChangeValueEmitter: Emitter<string>;
+  _onDidAcceptEmitter: Emitter<void>;
+  _onDidHideEmitter: Emitter<void>;
 
   constructor(readonly quickOpen: IExtHostQuickOpen, quickInputIndex: number) {
     this.buttons = [];
@@ -388,31 +388,31 @@ class QuickInputExt implements vscode.InputBox {
     this.ignoreFocusOut = false;
     this.quickInputIndex = quickInputIndex;
     this.disposableCollection = new DisposableCollection();
-    this.disposableCollection.push((this.onDidAcceptEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidChangeValueEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidTriggerButtonEmitter = new Emitter()));
-    this.disposableCollection.push((this.onDidHideEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidTriggerButtonEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidHideEmitter = new Emitter()));
   }
 
   _fireDidChangeValue(value: string) {
     this.value = value;
-    this.onDidChangeValueEmitter.fire(value);
+    this._onDidChangeValueEmitter.fire(value);
   }
 
   get onDidChangeValue(): Event<string> {
-    return this.onDidChangeValueEmitter.event;
+    return this._onDidChangeValueEmitter.event;
   }
 
   get onDidAccept(): Event<void> {
-    return this.onDidAcceptEmitter.event;
+    return this._onDidAcceptEmitter.event;
   }
 
   get onDidTriggerButton(): Event<vscode.QuickInputButton> {
-    return this.onDidTriggerButtonEmitter.event;
+    return this._onDidTriggerButtonEmitter.event;
   }
 
   get onDidHide(): Event<void> {
-    return this.onDidHideEmitter.event;
+    return this._onDidHideEmitter.event;
   }
 
   show(): void {
@@ -431,7 +431,7 @@ class QuickInputExt implements vscode.InputBox {
         if (item) {
           this.value = item;
         }
-        this.onDidAcceptEmitter.fire();
+        this._onDidAcceptEmitter.fire();
       });
   }
   hide(): void {

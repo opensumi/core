@@ -18,7 +18,6 @@ import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
 import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
 import { MenuBarModule } from '@opensumi/ide-menu-bar/lib/browser';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
-import { SCMModule } from '@opensumi/ide-scm/lib/browser';
 import { StaticResourceModule } from '@opensumi/ide-static-resource/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
 import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
@@ -26,8 +25,8 @@ import { ExtensionModule } from '@opensumi/ide-extension/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
 import { WebviewModule } from '@opensumi/ide-webview/lib/browser';
 import { OutputModule } from '@opensumi/ide-output/lib/browser';
-
-import { BrowserFileSchemeModule } from './overrides/browser-file-scheme';
+import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
+import { BrowserFileSchemeModule } from './lite-module/overrides/browser-file-scheme';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   FileServiceClientModule,
@@ -50,13 +49,12 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   PreferencesModule,
   OpenedEditorModule,
   DecorationModule,
-  SCMModule,
   StaticResourceModule,
   WorkspaceEditModule,
   CommentsModule,
   WebviewModule,
   OutputModule,
-  // browser custom modules
   BrowserFileSchemeModule,
+  OutlineModule,
   ExtensionModule,
 ];

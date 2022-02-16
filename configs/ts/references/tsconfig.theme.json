@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/theme/src",
     "outDir": "../../../packages/theme/lib"
   },
-  "include": [
-    "../../../packages/theme/src"
-  ]
+  "include": ["../../../packages/theme/src"],
+  "exclude": ["../../../packages/theme/__mocks__"]
 }

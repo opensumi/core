@@ -6,7 +6,6 @@ node_modules
 tools/cli-engine/src/browser/worker-host.js
 
 **/typings/**
-**/scripts/**
 packages/*/lib/**
 packages/*/dist/**
 

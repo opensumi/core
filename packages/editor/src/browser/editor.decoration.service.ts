@@ -175,6 +175,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       content = `url('${URI.from(styles.contentIconPath).toString(true).replace(/'/g, '%27')}')`;
     }
     return {
+      display: 'block',
       content,
       border: styles.border,
       borderColor: this.themeService.getColorVar(styles.borderColor),

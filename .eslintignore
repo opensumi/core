@@ -9,7 +9,7 @@ tools/cli-engine/src/browser/worker-host.js
 **/typings/**
 **/scripts/**
 packages/*/lib/**
-packages/*/dist/**
+packages/**/dist/**
 
 packages/components/src/icon/iconfont
 packages/core-browser/src/style/octicons

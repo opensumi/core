@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/variable/src",
     "outDir": "../../../packages/variable/lib"
   },
-  "include": [
-    "../../../packages/variable/src"
-  ]
+  "include": ["../../../packages/variable/src"],
+  "exclude": ["../../../packages/variable/__mocks__"]
 }

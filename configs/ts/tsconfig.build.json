@@ -19,7 +19,7 @@
       "path": "./references/tsconfig.core-electron-main.json"
     },
     {
-      "path": "./references/tsconfig.logs.json"
+      "path": "./references/tsconfig.logs-core.json"
     },
     {
       "path": "./references/tsconfig.file-service.json"
@@ -59,6 +59,9 @@
     },
     {
       "path": "./references/tsconfig.remote-opener.json"
+    },
+    {
+      "path": "./references/tsconfig.remote-cli.json"
     },
     {
       "path": "./references/tsconfig.monaco-enhance.json"

@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/core-node/src",
     "outDir": "../../../packages/core-node/lib"
   },
-  "include": [
-    "../../../packages/core-node/src"
-  ]
+  "include": ["../../../packages/core-node/src"],
+  "exclude": ["../../../packages/core-node/__mocks__"]
 }

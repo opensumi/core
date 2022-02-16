@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React from 'react';
 export * from './styles.less';
 
-// Nativa Select
+// Native Select
 export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => {
   props = {
     ...props,

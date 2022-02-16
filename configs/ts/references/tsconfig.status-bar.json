@@ -4,7 +4,6 @@
     "rootDir": "../../../packages/status-bar/src",
     "outDir": "../../../packages/status-bar/lib"
   },
-  "include": [
-    "../../../packages/status-bar/src"
-  ]
+  "include": ["../../../packages/status-bar/src"],
+  "exclude": ["../../../packages/status-bar/__mocks__"]
 }

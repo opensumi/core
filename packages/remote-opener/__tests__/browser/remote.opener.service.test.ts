@@ -1,9 +1,5 @@
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
-import {
-  IRemoteHostConverter,
-  IRemoteOpenerBrowserService,
-  RemoteOpenerBrowserServiceToken,
-} from '@opensumi/ide-core-browser/lib/remote-opener';
+import { IRemoteHostConverter, IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken } from '../../src/common';
 import { Disposable } from '@opensumi/ide-core-common';
 import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
