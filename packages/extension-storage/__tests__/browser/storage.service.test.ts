@@ -44,12 +44,11 @@ describe('ExtensionStorage service should be work', () => {
     injector.disposeAll();
   });
 
-  it('01 #Init', async (done) => {
+  it('01 #Init', async () => {
     expect(mockInit).toBeCalledTimes(1);
-    done();
   });
 
-  it('02 #Set', async (done) => {
+  it('02 #Set', async () => {
     const mockSet = jest.fn();
     const key = 'key';
     const value = { hello: 'world' };
@@ -57,31 +56,27 @@ describe('ExtensionStorage service should be work', () => {
     injector.mock(IExtensionStorageServer, 'set', mockSet);
     extensionStorageService.set(key, value, isGlobal);
     expect(mockSet).toBeCalledWith(key, value, isGlobal);
-    done();
   });
 
-  it('03 #Get', async (done) => {
+  it('03 #Get', async () => {
     const mockGet = jest.fn();
     const key = 'key';
     const isGlobal = false;
     injector.mock(IExtensionStorageServer, 'get', mockGet);
     await extensionStorageService.get(key, isGlobal);
     expect(mockGet).toBeCalledWith(key, isGlobal);
-    done();
   });
 
-  it('04 #GetAll', async (done) => {
+  it('04 #GetAll', async () => {
     const mockGetAll = jest.fn();
     const isGlobal = false;
     injector.mock(IExtensionStorageServer, 'getAll', mockGetAll);
     await extensionStorageService.getAll(isGlobal);
     expect(mockGetAll).toBeCalledWith(isGlobal);
-    done();
   });
 
-  it('05 #ReConnectInit', async (done) => {
+  it('05 #ReConnectInit', async () => {
     await extensionStorageService.reConnectInit();
     expect(mockInit).toBeCalledTimes(2);
-    done();
   });
 });

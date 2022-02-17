@@ -211,7 +211,7 @@ describe('PreferenceService should be work', () => {
       expect(typeof preferenceService.onSpecificPreferenceChange).toBe('function');
     });
 
-    it('preferenceChanged event should emit once while setting preference', async (done) => {
+    it('preferenceChanged event should emit once while setting preference', (done) => {
       const testPreferenceName = 'editor.fontSize';
       const dispose = preferenceService.onPreferenceChanged((change) => {
         // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
@@ -220,12 +220,10 @@ describe('PreferenceService should be work', () => {
           done();
         }
       });
-      await preferenceService.set(testPreferenceName, 28);
+      preferenceService.set(testPreferenceName, 28);
     });
-
-    it('onPreferencesChanged/onSpecificPreferenceChange event should be worked', async (done) => {
+    it('onPreferencesChanged event should be worked', (done) => {
       const testPreferenceName = 'editor.fontSize';
-      await preferenceService.ready;
       const dispose1 = preferenceService.onPreferencesChanged((changes) => {
         for (const preferenceName of Object.keys(changes)) {
           if (preferenceName === testPreferenceName && changes[preferenceName].scope === PreferenceScope.Workspace) {
@@ -234,6 +232,11 @@ describe('PreferenceService should be work', () => {
           }
         }
       });
+
+      preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
+    });
+    it('onSpecificPreferenceChange event should be worked', (done) => {
+      const testPreferenceName = 'editor.fontSize';
       const dispose2 = preferenceService.onSpecificPreferenceChange(testPreferenceName, (change) => {
         // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
         if (change.newValue === 30) {
@@ -241,9 +244,8 @@ describe('PreferenceService should be work', () => {
           done();
         }
       });
-      await preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
+      preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
     });
-
     it('setting multiple value once should be worked', async () => {
       const preferences = {
         'java.config.xxx': false,

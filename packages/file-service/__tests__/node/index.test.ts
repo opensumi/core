@@ -669,11 +669,10 @@ describe('FileService', () => {
   });
 
   describe('getFileType', () => {
-    it('Should return file type', async (done) => {
+    it('Should return file type', async () => {
       const uri = root.resolve('foo1111.txt');
       fs.writeFileSync(FileUri.fsPath(uri), 'getFileType', { encoding: 'utf8' });
       expect(await fileService.getFileType(uri.toString())).toEqual('text');
-      done();
     });
   });
 

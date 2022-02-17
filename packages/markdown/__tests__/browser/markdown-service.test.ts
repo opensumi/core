@@ -13,7 +13,7 @@ describe('markdown test', () => {
     useValue: {},
   });
 
-  it('markdown service test', async (done) => {
+  it('markdown service test', async () => {
     const webview = new MockedWebviewElement();
     injector.mock(IWebviewService, 'createWebview', () => webview);
 
@@ -39,8 +39,6 @@ describe('markdown test', () => {
 
     await updateEvent.fireAndAwait('## h2Content');
     expect(webview.content).toContain('h2Content');
-
-    done();
   });
 });
 

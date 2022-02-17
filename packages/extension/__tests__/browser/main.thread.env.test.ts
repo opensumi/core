@@ -157,19 +157,17 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     done();
   });
 
-  it('can read/write text via clipboard', async (done) => {
+  it('can read/write text via clipboard', async () => {
     const text = 'test for env';
     await extHostEnvAPI.clipboard.writeText(text);
     expect(global.navigator.clipboard.readText()).toBe(text);
     const target = await extHostEnvAPI.clipboard.readText();
     expect(target).toBe(text);
-    done();
   });
 
-  it.skip('can get loglevel', async (done) => {
+  it.skip('can get loglevel', async () => {
     const logManager = injector.get(ILoggerManagerClient);
     logManager.onDidLogLevelChanged(LogLevel.Error);
     expect(extHostEnvAPI.logLevel).toBe(await logManager.getGlobalLogLevel());
-    done();
   });
 });

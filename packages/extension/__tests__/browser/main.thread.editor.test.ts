@@ -123,7 +123,7 @@ describe('MainThreadEditor Test Suites', () => {
   let monacoservice: MonacoService;
 
   const disposables: types.OutputChannel[] = [];
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     injector = createBrowserInjector([EditorModule]);
     injector.addProviders(
       ...[
@@ -260,7 +260,6 @@ describe('MainThreadEditor Test Suites', () => {
 
     // IApplicationService 不知道从哪里引入的，没法 overrideProvider 一个 mock 的实现..
     await injector.get(IApplicationService).initializeData();
-    done();
   });
 
   afterAll(() => {
@@ -399,25 +398,23 @@ describe('MainThreadEditor Test Suites', () => {
     });
   });
 
-  it('should be able to insert snippet', async (done) => {
+  it('should be able to insert snippet', async () => {
     const snippetString = new types.SnippetString(`
       import React from 'react';
     `);
     await extEditor.activeEditor?.textEditor.insertSnippet(snippetString);
-    done();
   });
 
-  it('should be able to edit document', async (done) => {
+  it('should be able to edit document', async () => {
     await extEditor.activeEditor?.textEditor.edit((builder) => {
       builder.insert(new types.Position(1, 1), 'hello');
     });
     expect(extEditor.activeEditor?.textEditor.document.getText()).toBe(
       workbenchEditorService.currentEditor?.monacoEditor.getValue(),
     );
-    done();
   });
 
-  it('should receive undefined when close all editor', async (done) => {
+  it('should receive undefined when close all editor', (done) => {
     extEditor.onDidChangeVisibleTextEditors((e) => {
       expect(e.length).toBe(0);
     });
@@ -425,6 +422,6 @@ describe('MainThreadEditor Test Suites', () => {
       expect(e).toBeUndefined();
       done();
     });
-    await workbenchEditorService.closeAll();
+    workbenchEditorService.closeAll();
   });
 });

@@ -215,7 +215,7 @@ describe('workbench editor service tests', () => {
     });
   });
 
-  it('should be able to open uri', async (done) => {
+  it('should be able to open uri', async () => {
     const testCodeUri = new URI('test://testUri1');
     const listener = jest.fn();
     const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupTabChanged(listener);
@@ -228,7 +228,6 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
     disposer.dispose();
-    done();
   });
 
   it('should be able to fire loading state for big resources', async (done) => {
@@ -252,7 +251,7 @@ describe('workbench editor service tests', () => {
     expect(listener).toBeCalledTimes(1);
   });
 
-  it('should be able to open component ', async (done) => {
+  it('should be able to open component ', async () => {
     const testComponentUri = new URI('test://component');
     const listener = jest.fn();
     const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupBodyChanged(listener);
@@ -278,10 +277,9 @@ describe('workbench editor service tests', () => {
     await editorService.closeAll();
 
     disposer.dispose();
-    done();
   });
 
-  it('should be able to split', async (done) => {
+  it('should be able to split', async () => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri);
     await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Right });
@@ -289,10 +287,9 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups.length).toBe(3);
 
     await editorService.closeAll();
-    done();
   });
 
-  it('should focus editor', async (done) => {
+  it('should focus editor', async () => {
     const testCodeUri = new URI('test:///testuri1');
     const focused = jest.fn();
     editorService.currentEditorGroup.codeEditor.monacoEditor.onDidFocusEditorText(focused);
@@ -308,10 +305,9 @@ describe('workbench editor service tests', () => {
     expect(focused).toBeCalled();
 
     await editorService.closeAll();
-    done();
   });
 
-  it('preview mode should work', async (done) => {
+  it('preview mode should work', async () => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri, { preview: true });
     const testCodeUri2 = new URI('test://testUri2');
@@ -319,10 +315,9 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].resources.length).toBe(1);
 
     await editorService.closeAll();
-    done();
   });
 
-  it('pined mode should work', async (done) => {
+  it('pined mode should work', async () => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://testUri2');
@@ -330,10 +325,9 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].resources.length).toBe(2);
 
     await editorService.closeAll();
-    done();
   });
 
-  it('pined uri should be empty after close all', async (done) => {
+  it('pined uri should be empty after close all', async () => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri, { preview: true });
     await editorService.closeAll();
@@ -342,10 +336,9 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].resources.length).toBe(1);
 
     await editorService.closeAll();
-    done();
   });
 
-  it('replace should work properly', async (done) => {
+  it('replace should work properly', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://a/testUri2');
@@ -387,10 +380,9 @@ describe('workbench editor service tests', () => {
 
     doNotClose.splice(0, doNotClose.length);
     await editorService.closeAll();
-    done();
   });
 
-  it('closeOthers should notify tab changed', async (done) => {
+  it('closeOthers should notify tab changed', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://a/testUri2');
@@ -407,10 +399,9 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
     disposer.dispose();
-    done();
   });
 
-  it('close all tabs should emit EditorGroupChangeEvent', async (done) => {
+  it('close all tabs should emit EditorGroupChangeEvent', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://a/testUri2');
@@ -434,10 +425,9 @@ describe('workbench editor service tests', () => {
       }),
     );
     disposer.dispose();
-    done();
   });
 
-  it('close last tabs should emit EditorGroupChangeEvent', async (done) => {
+  it('close last tabs should emit EditorGroupChangeEvent', async () => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });
 
@@ -457,7 +447,6 @@ describe('workbench editor service tests', () => {
       }),
     );
     disposer.dispose();
-    done();
   });
 
   it('side widget registration should be ok', () => {
@@ -489,7 +478,7 @@ describe('utils test', () => {
     expect(isEOLStack({} as any)).toBeFalsy();
   });
 
-  it('save task', async (done) => {
+  it('save task', async () => {
     const service: any = {
       saveEditorDocumentModel: jest.fn((uri, content) => {
         if (content.indexOf('fail') > -1) {
@@ -511,6 +500,5 @@ describe('utils test', () => {
     const res2 = await saveTask2.run(service, 'test begin', []);
 
     expect(res2.state).toBe('error');
-    done();
   });
 });

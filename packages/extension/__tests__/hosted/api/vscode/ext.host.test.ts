@@ -82,18 +82,16 @@ describe('Extension process test', () => {
       proxyMaps.clear();
     });
 
-    it('should init extensions', async (done) => {
+    it('should init extensions', async () => {
       await extHostImpl.$updateExtHostData();
       const extensions = extHostImpl.$getExtensions();
       const ext = extHostImpl.getExtension(mockExtensionProps.id);
       expect(extensions[0].id).toBe(mockExtensionProps.id);
       expect(extensions[1].id).toBe(mockExtensionProps2.id);
       expect(ext?.id).toBe(mockExtensionProps.id);
-
-      done();
     });
 
-    it('should activate extension', async (done) => {
+    it('should activate extension', async () => {
       const id = mockExtensionProps.id;
       try {
         await extHostImpl.$activateExtension(id);
@@ -103,7 +101,6 @@ describe('Extension process test', () => {
       expect(extHostImpl.isActivated(id)).toBe(true);
       expect(extHostImpl.getExtendExports(id)).toEqual({});
       expect(extHostImpl.getExtensionExports(id)).toEqual({});
-      done();
     });
 
     it('should caught runtime error', async (done) => {
@@ -122,7 +119,7 @@ describe('Extension process test', () => {
       }).rejects.toThrow('Test caught exception');
     });
 
-    it('should caught runtime unexpected error', async (done) => {
+    it('should caught runtime unexpected error', (done) => {
       const reporter = injector.get(IReporter);
 
       jest.spyOn(extHostImpl as any, 'findExtension').mockImplementation(() => mockExtensionProps2);

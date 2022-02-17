@@ -162,7 +162,7 @@ describe('VSCodeContributeRunner', () => {
     done();
   });
 
-  it('ExtensionWillContributeEvent', async (done) => {
+  it('ExtensionWillContributeEvent', (done) => {
     eventBus.on(ExtensionWillContributeEvent, (target) => {
       expect(target.payload.packageJSON.name).toBe(mockExtensionProps.packageJSON.name);
       done();
@@ -170,34 +170,30 @@ describe('VSCodeContributeRunner', () => {
     runner.run();
   });
 
-  it('register localization contribution', async (done) => {
+  it('register localization contribution', async () => {
     await runner.run();
     expect(process.env['TEST_KAITIAN_LANGUAGE_ID']?.toLowerCase()).toBe('zh-cn');
-    done();
   });
 
-  it('register command contribution', async (done) => {
+  it('register command contribution', async () => {
     const commandRegistry = injector.get(CommandRegistry);
     await runner.run();
     const command = commandRegistry.getCommand('test-command');
     expect(command).toBeDefined();
     expect(command?.label).toBe('测试命令');
     expect(command?.category).toBe('Test');
-    done();
   });
 
-  it('register theme contribution', async (done) => {
+  it('register theme contribution', async () => {
     await runner.run();
     const themeService = injector.get(IThemeService);
     const availableThemes = themeService.getAvailableThemeInfos();
     expect(availableThemes.length).toBe(1);
-    done();
   });
 
-  it('register language contribution', async (done) => {
+  it('register language contribution', async () => {
     await runner.run();
     const languages = monaco.languages.getLanguages();
     expect(languages.map((l) => l.id)).toContain('javascript');
-    done();
   });
 });

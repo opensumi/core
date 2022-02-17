@@ -345,7 +345,7 @@ describe('main layout test', () => {
 
   // view api test start
 
-  it('should be able to collect view into existing container and replace & dispose existing view', async (done) => {
+  it('should be able to collect view into existing container and replace & dispose existing view', async () => {
     const tmpViewId = 'test-view-id5';
     const tmpDomId = 'test-dom-5';
     service.collectViewComponent(
@@ -380,7 +380,6 @@ describe('main layout test', () => {
       jest.advanceTimersByTime(10);
     });
     expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
-    done();
   });
 
   it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {

@@ -44,7 +44,7 @@ describe('EditorDocumentModelService', () => {
     editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
   });
 
-  it('chooseEncoding', async (done) => {
+  it('chooseEncoding', async () => {
     monaco.languages.register({
       id: 'javascript',
       aliases: ['JavaScript'],
@@ -58,11 +58,9 @@ describe('EditorDocumentModelService', () => {
     await editorDocModelService.changeModelOptions(testCodeUri, { encoding: 'gbk', languageId: 'javascript' });
     expect(testDoc1.instance.encoding).toBe('gbk');
     expect(testDoc1.instance.languageId).toBe('javascript');
-
-    done();
   });
 
-  it('create doc', async (done) => {
+  it('create doc', async () => {
     const createFn = jest.fn();
     const disposer = injector.get<IEventBus>(IEventBus).on(EditorDocumentModelCreationEvent, createFn);
 
@@ -73,6 +71,5 @@ describe('EditorDocumentModelService', () => {
     expect(createFn).toBeCalledTimes(1);
 
     disposer.dispose();
-    done();
   });
 });

@@ -89,7 +89,7 @@ describe('MainThreadTreeView API Test Suite', () => {
     mainThreadTreeView.$unregisterTreeDataProvider(testTreeViewId);
   });
 
-  it('should able to $registerTreeDataProvider', async (done) => {
+  it('should able to $registerTreeDataProvider', async () => {
     expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(1);
     expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(0);
 
@@ -99,31 +99,26 @@ describe('MainThreadTreeView API Test Suite', () => {
     expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(2);
     expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(1);
     mainThreadTreeView.$unregisterTreeDataProvider('testView1');
-    done();
   });
 
-  it('should able to $refresh', async (done) => {
+  it('should able to $refresh', async () => {
     await mainThreadTreeView.$refresh(testTreeViewId);
-    done();
   });
 
-  it('should able to $reveal', async (done) => {
+  it('should able to $reveal', async () => {
     await mainThreadTreeView.$reveal(testTreeViewId, 'treeItemId', {});
     expect(mockMainLayoutService.revealView).toBeCalledTimes(1);
-    done();
   });
 
-  it('status listener should be work', (done) => {
+  it('status listener should be work', () => {
     mockActiveEmitter.fire();
     expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(1);
     mockInActiveEmitter.fire();
     expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(2);
-    done();
   });
 
-  it('should able to $unregisterTreeDataProvider', (done) => {
+  it('should able to $unregisterTreeDataProvider', () => {
     mainThreadTreeView.$unregisterTreeDataProvider(testTreeViewId);
     expect(mockTabbarHandler.disposeView).toBeCalledTimes(1);
-    done();
   });
 });

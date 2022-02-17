@@ -141,7 +141,7 @@ describe('MainThread CustomEditor Test', () => {
     done();
   });
 
-  it('resolve custom editor', async (done) => {
+  it('resolve custom editor', async () => {
     const viewType = 'test viewType 2';
     const testExtInfo = {
       id: 'test-extension',
@@ -268,7 +268,5 @@ describe('MainThread CustomEditor Test', () => {
         },
       }),
     );
-
-    done();
   });
 });

@@ -138,11 +138,11 @@ describe('DebugSessionConnection', () => {
     expect(mockConnection.send).toBeCalledTimes(1);
   });
 
-  it('handle request message', async (done) => {
+  it('handle request message', (done) => {
     debugSessionConnection.onRequest('abc', () => {
       done();
     });
-    await messageEmitter.fire(
+    messageEmitter.fire(
       JSON.stringify({
         type: 'request',
         command: 'abc',

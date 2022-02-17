@@ -198,7 +198,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     await extHostDebug.$terminateDebugSession(sessionId);
   });
 
-  it('convertToDto method should be work', async (done) => {
+  it('convertToDto method should be work', async () => {
     const execDADescriptor = async (id: string, adDescriptor) => {
       extHostDebug.registerDebugAdapterDescriptorFactory(id, {
         createDebugAdapterDescriptor: (() => adDescriptor) as any,
@@ -239,7 +239,5 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     );
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorI);
     expect(adapterDescriptor.type).toBe('implementation');
-
-    done();
   });
 });

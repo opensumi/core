@@ -222,7 +222,7 @@ describe(__filename, () => {
     }, 0);
   });
 
-  it('should change terminal name', async (done) => {
+  it('should change terminal name', (done) => {
     const terminalName = 'terminal-should-change-name';
     const changedName = 'changed-name';
     const changeNameEmitter = new Emitter<string>();
@@ -299,7 +299,7 @@ describe(__filename, () => {
     expect(value).toEqual({ value: 'BAR3', type: 3 });
   });
 
-  it('EnvironmentVariableCollection#forEach', async (done) => {
+  it('EnvironmentVariableCollection#forEach', async () => {
     collection.append('ENV1', 'VALUE1');
     collection.append('ENV2', 'VALUE2');
     collection.append('ENV3', 'VALUE3');
@@ -314,7 +314,6 @@ describe(__filename, () => {
 
     expect(variableSet).toEqual(['FOO', 'ENV1', 'ENV2', 'ENV3']);
     expect(valueSet).toEqual(['BAR3', 'VALUE1', 'VALUE2', 'VALUE3']);
-    done();
   });
 
   it('EnvironmentVariableCollection#delete', () => {

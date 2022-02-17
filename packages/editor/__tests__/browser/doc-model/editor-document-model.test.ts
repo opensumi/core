@@ -23,7 +23,7 @@ describe('EditorDocumentModel', () => {
   let injector: MockInjector;
   let hashCalculateService: IHashCalculateService;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
     injector.addProviders({
       token: IDocPersistentCacheProvider,
@@ -32,7 +32,6 @@ describe('EditorDocumentModel', () => {
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
     (global as any).monaco = createMockedMonaco() as any;
-    done();
   });
 
   afterEach(() => {

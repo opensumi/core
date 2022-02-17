@@ -57,7 +57,7 @@ describe('vscode extHostTheming Test', () => {
     done();
   });
 
-  it('ext host vscode theming test', async (done) => {
+  it('ext host vscode theming test', (done) => {
     extHost.onDidChangeActiveColorTheme((e) => {
       expect(e.kind).toEqual(ColorThemeKind.HighContrast);
       done();

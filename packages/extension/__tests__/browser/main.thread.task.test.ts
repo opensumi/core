@@ -245,7 +245,7 @@ describe('MainThreadTask Test Suite', () => {
       expect(Array.isArray(extHostTaskApi.taskExecutions)).toBeTruthy();
     });
 
-    it('registerTaskProvider should be work', async (done) => {
+    it('registerTaskProvider should be work', async () => {
       await workspaceService.setWorkspace({
         uri: rootUri,
         isDirectory: true,
@@ -253,17 +253,15 @@ describe('MainThreadTask Test Suite', () => {
       });
       const disposable = extHostTaskApi.registerTaskProvider('test-taskprovider', testProvider);
       expect(typeof disposable.dispose).toBe('function');
-      done();
     });
 
-    it('fetchTasks should be work', async (done) => {
+    it('fetchTasks should be work', async () => {
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       expect(tasks.length).toBe(1);
       expect(tasks[0].name).toBe('Echo Task');
-      done();
     });
 
-    it.skip('executeTask should be work', async (done) => {
+    it.skip('executeTask should be work', async () => {
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       const execution = await extHostTaskApi.executeTask(tasks[0]);
       expect(execution.task.name).toBe('Echo Task');

@@ -10,10 +10,9 @@ describe('Extension service', () => {
   let workerService: WorkerExtProcessService;
   let injector: MockInjector;
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     injector = setupExtensionServiceInjector();
     workerService = injector.get(WorkerExtProcessService);
-    done();
   });
 
   it('initExtension should be work', async () => {

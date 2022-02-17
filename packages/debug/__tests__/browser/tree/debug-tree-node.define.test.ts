@@ -176,12 +176,11 @@ describe('DebugVariableRoot —— DebugVariable —— DebugVariableContainer',
     expect(DebugVariableContainer.is(containerNode)).toBeTruthy();
   });
 
-  it('setValue method should be work', async (done) => {
+  it('setValue method should be work', async () => {
     await containerNode.setValue('value_1');
     expect(mockSession.sendRequest).toBeCalledTimes(1);
     await node.setValue('value_2');
     expect(mockSession.sendRequest).toBeCalledTimes(2);
-    done();
   });
 });
 
@@ -237,16 +236,14 @@ describe('DebugWatchRoot —— DebugWatchNode', () => {
     expect(root.expanded).toBeTruthy();
   });
 
-  it('evaluate method should be work', async (done) => {
+  it('evaluate method should be work', async () => {
     await node.evaluate();
     expect(mockSession.evaluate).toBeCalledTimes(1);
-    done();
   });
 
-  it('getClipboardValue method should be work', async (done) => {
+  it('getClipboardValue method should be work', async () => {
     await node.getClipboardValue();
     expect(mockSession.evaluate).toBeCalledTimes(2);
-    done();
   });
 
   it('updatePresetChildren method should be work', () => {
@@ -311,16 +308,14 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
     expect(DebugConsoleRoot.is(root)).toBeTruthy();
   });
 
-  it('setValue method should be work', async (done) => {
+  it('setValue method should be work', async () => {
     await containerNode.setValue('test');
     expect(mockSession.sendRequest).toBeCalledTimes(1);
-    done();
   });
 
-  it('evaluate method should be work', async (done) => {
+  it('evaluate method should be work', async () => {
     await node.evaluate();
     expect(mockSession.evaluate).toBeCalledTimes(1);
-    done();
   });
 
   it('updatePresetChildren method should be work', () => {
@@ -349,9 +344,8 @@ describe('DebugHoverVariableRoot', () => {
     expect(root.available).toBeFalsy();
   });
 
-  it('evaluate method should be work', async (done) => {
+  it('evaluate method should be work', async () => {
     await root.evaluate();
     expect(mockSession.evaluate).toBeCalledTimes(1);
-    done();
   });
 });

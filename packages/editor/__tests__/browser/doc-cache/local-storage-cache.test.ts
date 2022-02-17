@@ -17,7 +17,7 @@ describe('LocalStorageDocCacheImpl', () => {
   let injector: MockInjector;
   let hashCalculateService: IHashCalculateService;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
     injector.addProviders(
       {
@@ -47,7 +47,6 @@ describe('LocalStorageDocCacheImpl', () => {
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
     content = uniqueId('content');
-    done();
   });
 
   it('get undefined from storageService', async () => {
