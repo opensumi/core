@@ -69,7 +69,7 @@ describe('TerminalServiceClientImpl', () => {
       setTimeout(() => {
         resolve();
       }, 500);
-    }).then();
+    });
 
     expect(typeof terminalServiceClient.getProcessId(mockId)).toEqual('number');
     expect(typeof terminalServiceClient.getShellName(mockId)).toEqual('string');
@@ -94,7 +94,7 @@ describe('TerminalServiceClientImpl', () => {
       setTimeout(() => {
         resolve();
       }, 20);
-    }).then();
+    });
 
     expect((terminalService as any).clientTerminalMap.get(mockClientId)).toBeUndefined();
   });
