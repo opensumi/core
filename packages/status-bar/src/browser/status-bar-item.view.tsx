@@ -105,34 +105,36 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
         delay={200}
         position={PopoverPosition.top}
       >
-        {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
-        {items.map((item, key) => {
-          if (!(typeof item === 'string') && LabelIcon.is(item)) {
-            hasIcon = true;
-            return (
-              <span
-                key={key}
-                className={cls(
-                  styles.icon,
-                  getExternalIcon(item.name),
-                  `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
-                )}
-              ></span>
-            );
-          } else {
-            // 22px高度限制用于解决文本超长时文本折叠问题
-            return (
-              <span
-                style={{ marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }}
-                key={key}
-                aria-label={ariaLabel}
-                role={role}
-              >
-                {replaceLocalizePlaceholder(item)}
-              </span>
-            );
-          }
-        })}
+        <div className={styles.popover_item}>
+          {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
+          {items.map((item, key) => {
+            if (!(typeof item === 'string') && LabelIcon.is(item)) {
+              hasIcon = true;
+              return (
+                <span
+                  key={key}
+                  className={cls(
+                    styles.icon,
+                    getExternalIcon(item.name),
+                    `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
+                  )}
+                ></span>
+              );
+            } else {
+              // 22px高度限制用于解决文本超长时文本折叠问题
+              return (
+                <span
+                  style={{ marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }}
+                  key={key}
+                  aria-label={ariaLabel}
+                  role={role}
+                >
+                  {replaceLocalizePlaceholder(item)}
+                </span>
+              );
+            }
+          })}
+        </div>
       </Popover>
     </div>
   );
