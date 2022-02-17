@@ -12,7 +12,7 @@ export interface IExternalUriService {
   resolveExternalUri(uri: URI): URI;
 }
 
-interface ILocation {
+export interface ILocation {
   address: string;
   port: number;
 }
