@@ -56,7 +56,7 @@ describe('Tree', () => {
     expect(file.name).toBe('file_1');
   });
 
-  it("add new key to Folder's metadata", async (done) => {
+  it("add new key to Folder's metadata", (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);
@@ -69,7 +69,7 @@ describe('Tree', () => {
     folder.addMetadata('other', 'hello');
   });
 
-  it("add new key to File's metadata", async (done) => {
+  it("add new key to File's metadata", (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);

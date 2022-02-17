@@ -7,7 +7,7 @@ describe('reference Manager Test', () => {
     refManager = new ReferenceManager<TestClass>(async (id: string) => new TestClass(id));
   });
 
-  it('can create ref', async (done) => {
+  it('can create ref', async () => {
     const ref1 = await refManager.getReference('test1', 'ref1');
     const ref2 = await refManager.getReference('test1', 'ref2');
 
@@ -34,11 +34,9 @@ describe('reference Manager Test', () => {
     ref3.dispose();
 
     expect(refManager.getReferenceIfHasInstance('tes1')).toBeNull();
-
-    done();
   });
 
-  it('events', async (done) => {
+  it('events', async () => {
     const createdListener = jest.fn();
     const disposedListener = jest.fn();
 
@@ -57,11 +55,9 @@ describe('reference Manager Test', () => {
 
     d1.dispose();
     d2.dispose();
-
-    done();
   });
 
-  it('edge cases', async (done) => {
+  it('edge cases', async () => {
     // 创建时回调获取并销毁ref
     const d1 = refManager.onInstanceCreated((testClass) => {
       const tempRef = refManager.getReferenceIfHasInstance(testClass.id);
@@ -82,7 +78,6 @@ describe('reference Manager Test', () => {
 
     d1.dispose();
     d2.dispose();
-    done();
   });
 });
 

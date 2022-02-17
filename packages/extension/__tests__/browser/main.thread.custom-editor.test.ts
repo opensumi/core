@@ -68,7 +68,7 @@ describe('MainThread CustomEditor Test', () => {
     injector.disposeAll();
   });
 
-  it('resolve text editor', async (done) => {
+  it('resolve text editor', (done) => {
     const viewType = 'test viewType';
     const testExtInfo = {
       id: 'test-extension',

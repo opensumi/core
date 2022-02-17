@@ -5,7 +5,7 @@ import { stringify, parse } from '../../src/common/utils';
 (global as any).WebSocket = WebSocket;
 
 describe('connection browser', () => {
-  it('init connection', async (done) => {
+  it('init connection', async () => {
     jest.setTimeout(20000);
 
     const fakeWSURL = 'ws://localhost:8089';
@@ -60,6 +60,5 @@ describe('connection browser', () => {
 
     mockServer.close();
     wsChannelHandler.dispose();
-    done();
   });
 });

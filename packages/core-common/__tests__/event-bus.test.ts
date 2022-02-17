@@ -25,7 +25,7 @@ describe('event-bus', () => {
     expect(spyB).toBeCalledWith(bEvent);
   });
 
-  it('event bus fireAndAwait能够正常执行', async (done) => {
+  it('event bus fireAndAwait能够正常执行', async () => {
     const eventBus = new EventBusImpl();
     const spyA = jest.fn();
     eventBus.on(AEvent, spyA);
@@ -48,8 +48,6 @@ describe('event-bus', () => {
     expect(res[1].err).toBeUndefined();
     expect(res[2].err).toBe(error);
     expect(res[2].result).toBeUndefined;
-
-    done();
   });
 
   it('event bus 能够多次触发', () => {

@@ -25,7 +25,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     eventBus = injector.get(IEventBus);
   });
 
-  it('handle WebSocket BrowserConnectionErrorEvent event', async (done) => {
+  it('handle WebSocket BrowserConnectionErrorEvent event', async () => {
     const fakeWSURL = 'ws://localhost:8089';
     const mockServer = new Server(fakeWSURL);
     eventBus.on(BrowserConnectionErrorEvent, () => {
@@ -44,6 +44,5 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     expect(isError).toBe(true);
 
     mockServer.close();
-    done();
   });
 });

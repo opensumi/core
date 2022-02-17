@@ -1059,7 +1059,7 @@ An error case:
     }, 0);
   });
 
-  it('provideEvaluatableExpression should be work', async (done) => {
+  it('provideEvaluatableExpression should be work', async () => {
     const providers = evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(textModel);
 
     expect(providers.length).toBe(1);
@@ -1079,7 +1079,6 @@ An error case:
       endColumn: 7,
     });
     expect(expression?.expression).toBe('this is a expression for test');
-    done();
   });
   // #endregion EvaluatableExpressionProvider
 
