@@ -109,7 +109,6 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   BrowserEditorContribution,
   MenuContribution,
   KeybindingContribution,
-  OpenerContribution,
   TabBarToolbarContribution,
 )
 export class TestingContribution
