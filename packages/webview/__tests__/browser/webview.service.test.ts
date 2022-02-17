@@ -61,7 +61,7 @@ describe('web platform webview service test suite', () => {
     injector.addProviders(...providers);
   });
 
-  it('should be able to create iframe webview', async (done) => {
+  it('should be able to create iframe webview', async () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createWebview();
     expect(webview).toBeDefined();
@@ -69,10 +69,9 @@ describe('web platform webview service test suite', () => {
     const html = '<HTML> TEST <HTML>';
     await webview.setContent(html);
     expect(webview.getContent()).toBe(html);
-    done();
   });
 
-  it('should be able to create plain iframe webview', async (done) => {
+  it('should be able to create plain iframe webview', (done) => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createPlainWebview();
     expect(webview).toBeDefined();
@@ -88,7 +87,7 @@ describe('web platform webview service test suite', () => {
     }, 100);
   });
 
-  it('should be able to create electron webview webviewComponent', async (done) => {
+  it('should be able to create electron webview webviewComponent', async () => {
     const registerFn = jest.fn(() => new Disposable());
     const registerFn2 = jest.fn(() => new Disposable());
     injector.mock(EditorComponentRegistry, 'registerEditorComponent', registerFn);
@@ -98,7 +97,6 @@ describe('web platform webview service test suite', () => {
     expect(webview).toBeDefined();
     expect(registerFn).toBeCalled();
     expect(registerFn2).toBeCalled();
-    done();
   });
 });
 
@@ -109,7 +107,7 @@ describe('electron platform webview service test suite', () => {
     injector.addProviders(...providers);
   });
 
-  it('should be able to create electron webview', async (done) => {
+  it('should be able to create electron webview', async () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createWebview();
     expect(webview).toBeDefined();
@@ -117,20 +115,18 @@ describe('electron platform webview service test suite', () => {
     const html = '<HTML> TEST <HTML>';
     await webview.setContent(html);
     expect(webview.getContent()).toBe(html);
-    done();
   });
 
-  it('should be able to create electron plain webview', async (done) => {
+  it('should be able to create electron plain webview', async () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createPlainWebview();
     expect(webview).toBeDefined();
     webview.appendTo(document.createElement('div'));
     await webview.loadURL('http://example.test.com');
     expect(webview.url).toBe('http://example.test.com');
-    done();
   });
 
-  it('should be able to create electron webview webviewComponent', async (done) => {
+  it('should be able to create electron webview webviewComponent', async () => {
     const registerFn = jest.fn(() => new Disposable());
     const registerFn2 = jest.fn(() => new Disposable());
     injector.mock(EditorComponentRegistry, 'registerEditorComponent', registerFn);
@@ -140,7 +136,6 @@ describe('electron platform webview service test suite', () => {
     expect(webview).toBeDefined();
     expect(registerFn).toBeCalled();
     expect(registerFn2).toBeCalled();
-    done();
   });
 
   afterAll(() => {

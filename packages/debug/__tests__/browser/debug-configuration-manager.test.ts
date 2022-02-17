@@ -118,7 +118,7 @@ describe('Debug Configuration Manager', () => {
     'preference.debug.allowBreakpointsEverywhere': true,
   };
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     mockInjector.overrideProviders({
       token: IContextKeyService,
       useClass: MockContextKeyService,
@@ -167,8 +167,6 @@ describe('Debug Configuration Manager', () => {
     debugConfigurationManager = mockInjector.get(DebugConfigurationManager);
 
     await debugConfigurationManager.whenReady;
-
-    done();
   });
 
   afterAll(() => {});
@@ -199,37 +197,32 @@ describe('Debug Configuration Manager', () => {
     expect(configuration!.workspaceFolderUri).toBe(root.toString());
   });
 
-  it('getSupported method should be work', async (done) => {
+  it('getSupported method should be work', async () => {
     const support = await debugConfigurationManager.supported;
     expect(support).toBeDefined();
     expect(support.length).toBe(1);
-    done();
   });
 
-  it('openConfiguration method should be work', async (done) => {
+  it('openConfiguration method should be work', async () => {
     await debugConfigurationManager.openConfiguration();
     expect(mockWorkbenchEditorService.open).toBeCalledTimes(1);
-    done();
   });
 
-  it('addConfiguration method should be work', async (done) => {
+  it('addConfiguration method should be work', async () => {
     await debugConfigurationManager.addConfiguration();
     expect(mockMonacoEditorModel.getLineLastNonWhitespaceColumn).toBeCalledTimes(2);
     expect(mockMonacoEditor.setPosition).toBeCalledTimes(1);
     expect(mockMonacoEditor.trigger).toBeCalledTimes(2);
-    done();
   });
 
-  it('load method should be work', async (done) => {
+  it('load method should be work', async () => {
     await debugConfigurationManager.load();
     expect(mockDebugStorage.get).toBeCalledTimes(1);
-    done();
   });
 
-  it('save method should be work', async (done) => {
+  it('save method should be work', async () => {
     await debugConfigurationManager.save();
     expect(mockDebugStorage.set).toBeCalledTimes(1);
-    done();
   });
 
   it('canSetBreakpointsIn method should be work', () => {

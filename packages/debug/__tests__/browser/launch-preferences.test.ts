@@ -526,15 +526,13 @@ describe('Launch Preferences', () => {
         toTearDown.push(Disposable.create(() => injector.disposeAll()));
       };
 
-      beforeEach(async (done) => {
+      beforeEach(async () => {
         await initializeInjector();
-        done();
       });
 
-      afterEach(async (done) => {
+      afterEach(async () => {
         toTearDown.dispose();
         await fs.remove(rootPath);
-        done();
       });
 
       const settingsLaunch = settings ? settings.launch : undefined;
@@ -593,7 +591,7 @@ describe('Launch Preferences', () => {
         expect(JSON.parse(JSON.stringify(inspect))).toEqual(expected);
       });
 
-      it('update launch', async (done) => {
+      it('update launch', async () => {
         await preferences.set('launch', validLaunch);
 
         const inspect = preferences.inspect('launch');
@@ -601,7 +599,6 @@ describe('Launch Preferences', () => {
         const expected =
           settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
         expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
-        done();
       });
 
       it('update launch Global', async () => {

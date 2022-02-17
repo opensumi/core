@@ -178,7 +178,7 @@ describe('DebugSessionConnection', () => {
     );
   });
 
-  it('handle cancel request', async (done) => {
+  it('handle cancel request', async () => {
     jest.setTimeout(20000);
     const threadId = 10086;
     const delayDebugSessionConnection = injector.get(DebugSessionConnection, [
@@ -245,6 +245,5 @@ describe('DebugSessionConnection', () => {
 
     cancellationRequestMap.forEach((c) => c.forEach((t) => t.cancel()));
     cancellationRequestMap.clear();
-    done();
   });
 });

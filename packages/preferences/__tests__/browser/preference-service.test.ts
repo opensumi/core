@@ -66,7 +66,7 @@ describe('PreferenceService should be work', () => {
 
   let mockWorkspaceService;
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
     await fs.ensureDir(root.path.toString());
@@ -185,8 +185,6 @@ describe('PreferenceService should be work', () => {
     await userStorageContribution.initialize();
 
     await preferenceService.ready;
-
-    done();
   });
 
   afterAll(async () => {
@@ -246,7 +244,7 @@ describe('PreferenceService should be work', () => {
       await preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
     });
 
-    it('setting multiple value once should be worked', async (done) => {
+    it('setting multiple value once should be worked', async () => {
       const preferences = {
         'java.config.xxx': false,
         'java.config.yyy': true,
@@ -256,10 +254,9 @@ describe('PreferenceService should be work', () => {
         const value = preferenceService.get(key);
         expect(value).toBe(preferences[key]);
       }
-      done();
     });
 
-    it('inspect preference with preferenceName should be worked', async (done) => {
+    it('inspect preference with preferenceName should be worked', async () => {
       const testPreferenceName = 'editor.fontSize';
       await preferenceService.set(testPreferenceName, 12, PreferenceScope.User);
       await preferenceService.set(testPreferenceName, 14, PreferenceScope.Workspace);
@@ -267,7 +264,6 @@ describe('PreferenceService should be work', () => {
       expect(value?.preferenceName).toBe(testPreferenceName);
       expect(value?.globalValue).toBe(12);
       expect(value?.workspaceValue).toBe(14);
-      done();
     });
 
     it('getProvider method should be worked', () => {
@@ -275,14 +271,13 @@ describe('PreferenceService should be work', () => {
       expect(preferenceService.getProvider(PreferenceScope.Workspace)).toBeDefined();
     });
 
-    it('resolve method should be work', async (done) => {
+    it('resolve method should be work', async () => {
       const testPreferenceName = 'editor.fontSize';
       await preferenceService.set(testPreferenceName, 20, PreferenceScope.Workspace);
       const unknownPreferenceName = 'editor.unknown';
       expect(preferenceService.resolve(testPreferenceName).value).toBe(20);
       expect(preferenceService.resolve(unknownPreferenceName).value).toBeUndefined();
       expect(preferenceService.resolve(unknownPreferenceName, 'default').value).toBe('default');
-      done();
     });
   });
 });

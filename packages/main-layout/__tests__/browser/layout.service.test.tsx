@@ -230,13 +230,12 @@ describe('main layout test', () => {
     expect(service.getTabbarHandler('container-before-render')).toBeDefined();
   });
 
-  it('should be able to init layout state storage & restore state & register toggle commands', async (done) => {
+  it('should be able to init layout state storage & restore state & register toggle commands', async () => {
     const layoutState = injector.get(LayoutState);
     await layoutState.initStorage();
     const contribution: MainLayoutModuleContribution = injector.get(MainLayoutModuleContribution);
     const registry = injector.get(CommandRegistry);
     contribution.registerCommands(registry);
-    done();
   });
 
   it('should be able to collect component as side container & get handler & manualy dispose', () => {

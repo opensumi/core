@@ -138,14 +138,13 @@ describe('color theme service test', () => {
     );
   });
 
-  it('should be able to apply default theme', async (done) => {
+  it('should be able to apply default theme', async () => {
     service = injector.get(IThemeService);
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(0);
     await service.applyTheme('ide-dark');
     expect(service.getCurrentThemeSync()).toBeDefined();
     expect(service.getCurrentThemeSync().themeData.id).toBe('Default Dark+');
-    done();
   });
 
   it('should be able to register json theme', () => {
@@ -180,13 +179,12 @@ describe('color theme service test', () => {
     expect(availableThemes.length).toEqual(2);
   });
 
-  it('should be able to toggle theme', async (done) => {
+  it('should be able to toggle theme', async () => {
     expect(service.getCurrentThemeSync().themeData.name).toEqual('Dark+ (default dark)');
     await service.applyTheme('test-theme');
     expect(service.getCurrentThemeSync().themeData.name).toEqual('Dark Default Colors');
     await service.applyTheme('test-theme-plist');
     expect(service.getCurrentThemeSync().themeData.name).toEqual('Dracula');
-    done();
   });
 
   it('should be able to get current worked theme', () => {
@@ -259,7 +257,7 @@ describe('color theme service test', () => {
     expect(semanticTokenRule[0].style).toEqual(tokenStyle);
   });
 
-  it('semanticTokenColorIndex', async (done) => {
+  it('semanticTokenColorIndex', async () => {
     await service.applyTheme('test-theme');
     const currentTheme = service.getCurrentThemeSync();
 
@@ -285,7 +283,5 @@ describe('color theme service test', () => {
     expect(Array.isArray(colorIdxArray)).toBeTruthy();
     expect(colorIdxArray[idx]).toBe('#FF004F');
     expect(colorIdxArray[added]).toBe('#CCCCCC');
-
-    done();
   });
 });

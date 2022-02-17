@@ -51,24 +51,21 @@ describe('VariableResolverService should be work', () => {
   });
 
   describe('02 #API should be worked.', () => {
-    it('should resolve known variables in a text', async (done) => {
+    it('should resolve known variables in a text', async () => {
       const resolved = await variableResolverService.resolve<string>('root: ${root}');
       expect(resolved).toBe(`root: ${workspaceRoot}`);
-      done();
     });
 
-    it('should resolve known variables in a array', async (done) => {
+    it('should resolve known variables in a array', async () => {
       const variableArray = ['root: ${root}'];
       const resolved = await variableResolverService.resolve(variableArray);
       expect(resolved[0]).toBe(`root: ${workspaceRoot}`);
-      done();
     });
 
-    it('should resolve known variables in a object', async (done) => {
+    it('should resolve known variables in a object', async () => {
       const variableObject = { root: '${root}' };
       const resolved = await variableResolverService.resolve(variableObject);
       expect(resolved.root).toBe(`${workspaceRoot}`);
-      done();
     });
 
     it('should resolve known variables in a string array', async () => {

@@ -67,62 +67,55 @@ describe('DebugThread Model', () => {
       expect(typeof debugThread.currentFrame).toBe('undefined');
     });
 
-    it('terminate method should be work', async (done) => {
+    it('terminate method should be work', async () => {
       debugThread.terminate();
       expect(session.sendRequest).toBeCalledWith('terminateThreads', {
         threadIds: [raw.id],
       });
-      done();
     });
 
-    it('fetchFrames method should be work', async (done) => {
+    it('fetchFrames method should be work', async () => {
       await debugThread.fetchFrames();
       expect(session.sendRequest).toBeCalledWith('stackTrace', {
         threadId: raw.id,
         startFrame: 0,
         levels: 20,
       });
-      done();
     });
 
-    it('continue method should be work', async (done) => {
+    it('continue method should be work', async () => {
       debugThread.continue();
       expect(session.sendRequest).toBeCalledWith('continue', {
         threadId: raw.id,
       });
-      done();
     });
 
-    it('stepOver method should be work', async (done) => {
+    it('stepOver method should be work', async () => {
       debugThread.stepOver();
       expect(session.sendRequest).toBeCalledWith('next', {
         threadId: raw.id,
       });
-      done();
     });
 
-    it('stepIn method should be work', async (done) => {
+    it('stepIn method should be work', async () => {
       debugThread.stepIn();
       expect(session.sendRequest).toBeCalledWith('stepIn', {
         threadId: raw.id,
       });
-      done();
     });
 
-    it('stepOut method should be work', async (done) => {
+    it('stepOut method should be work', async () => {
       debugThread.stepOut();
       expect(session.sendRequest).toBeCalledWith('stepOut', {
         threadId: raw.id,
       });
-      done();
     });
 
-    it('pause method should be work', async (done) => {
+    it('pause method should be work', async () => {
       debugThread.pause();
       expect(session.sendRequest).toBeCalledWith('pause', {
         threadId: raw.id,
       });
-      done();
     });
   });
 });

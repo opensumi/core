@@ -10,7 +10,6 @@ import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
 
-
 describe('template test', () => {
   let server: http.Server;
   const resPath = path.join(__dirname, '../res');
@@ -38,30 +37,25 @@ describe('template test', () => {
     server = app.listen(50118);
   });
 
-  it('can get png if path in whitelist', async (done) => {
+  it('can get png if path in whitelist', async () => {
     const res = await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.png')}`);
     expect(res.status === 200);
-    done();
   });
 
-  it('response 403 if not in whitelist', async (done) => {
+  it('response 403 if not in whitelist', async () => {
     try {
       await superagent.get('http://0.0.0.0:50118/assets/test');
     } catch (err) {
       expect(err.status === 403);
     }
-
-    done();
   });
 
-  it('response 403 if not allowed mime', async (done) => {
+  it('response 403 if not allowed mime', async () => {
     try {
       await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.exe')}`);
     } catch (err) {
       expect(err.status === 403);
     }
-
-    done();
   });
 
   afterAll(() => {

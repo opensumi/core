@@ -50,7 +50,7 @@ describe('VariableQuickOpenService should be work', () => {
   });
 
   describe('02 #API should be worked.', () => {
-    it('open api should be work', async (done) => {
+    it('open api should be work', async () => {
       try {
         variableQuickOpenService.open();
       } catch (e) {}
@@ -58,7 +58,6 @@ describe('VariableQuickOpenService should be work', () => {
       const mockAcceptor = jest.fn();
       variableQuickOpenService.onType('', mockAcceptor);
       expect(mockAcceptor).toBeCalledTimes(1);
-      done();
     });
 
     it('VariableQuickOpenItem should be right', () => {

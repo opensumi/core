@@ -61,26 +61,23 @@ describe('DebugStackFrame Model', () => {
       expect(typeof debugStackFrame.source).toBe('object');
     });
 
-    it('restart method should be work', async (done) => {
+    it('restart method should be work', async () => {
       await debugStackFrame.restart();
       expect(debugStackFrame.session.sendRequest).toBeCalledWith('restartFrame', {
         frameId: raw.id,
       });
-      done();
     });
 
-    it('getScopes method should be work', async (done) => {
+    it('getScopes method should be work', async () => {
       await debugStackFrame.getScopes();
       expect(session.sendRequest).toBeCalledWith('scopes', {
         frameId: raw.id,
       });
-      done();
     });
 
-    it('open method should be work', async (done) => {
+    it('open method should be work', async () => {
       await debugStackFrame.open({});
       expect(openSource).toBeCalledTimes(1);
-      done();
     });
   });
 });
