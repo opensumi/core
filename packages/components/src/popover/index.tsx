@@ -133,7 +133,7 @@ export const Popover: React.FC<{
     if (!contentEl.current) {
       return;
     }
-    const oldEl = document.body.querySelector(`body > #${id}`);
+    const oldEl = document.body.querySelector(`body > #${CSS.escape(id)}`);
     if (oldEl) {
       document.body.removeChild(oldEl);
     }
@@ -143,7 +143,7 @@ export const Popover: React.FC<{
       showContent();
     }
     return () => {
-      const oldEl = document.body.querySelector(`body > #${id}`);
+      const oldEl = document.body.querySelector(`body > #${CSS.escape(id)}`);
       if (oldEl) {
         document.body.removeChild(oldEl);
       }
