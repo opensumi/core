@@ -582,9 +582,9 @@ export class FileTreeModelService {
       this._focusedFile = undefined;
       this.onDidFocusedFileChangeEmitter.fire();
     }
+    // 失去焦点状态时，仅清理右键菜单的选中态
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = undefined;
     }
     this.treeModel?.dispatchChange();
   };
@@ -710,9 +710,6 @@ export class FileTreeModelService {
     }
     this.contextKey?.filesExplorerFocused.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
-    if (this.contextMenuFile) {
-      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-    }
     // 清空焦点状态
     this.deactivateFileDecoration();
     // 失去焦点默认 explorerResourceIsFolder 的值都为 false
