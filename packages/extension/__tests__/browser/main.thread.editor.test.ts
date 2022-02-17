@@ -268,57 +268,66 @@ describe('MainThreadEditor Test Suites', () => {
     }
   });
 
-  it('should be able to get activeTextEditor and receive texteditor changed event', async (done) => {
-    const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
-    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-    const resource: IResource = {
-      name: 'test-file',
-      uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-      icon: 'file',
-    };
-    const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
-      if (e) {
-        expect(extEditor.activeEditor?.textEditor).toBeDefined();
-        expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(
-          path.join(__dirname, 'main.thread.output.test.ts'),
-        );
-        expect(e).toBeDefined();
-        done();
-        disposer.dispose();
-      }
-    });
-    await group.createEditor(document.createElement('div'));
-    const ref = await editorDocModelService.createModelReference(
-      URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-    );
-    await group.codeEditor.open(ref);
-    const openType: IEditorOpenType = {
-      type: 'code',
-      componentId: 'test-v-component',
-      title: 'test-file',
-    };
-    (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
-    group._currentOpenType = openType;
-    group._currentResource = resource;
-    eventBus.fire(
-      new EditorGroupChangeEvent({
-        group,
-        newOpenType: group.currentOpenType,
-        newResource: group.currentResource,
-        oldOpenType: null,
-        oldResource: null,
-      }),
-    );
-    group._onDidEditorGroupBodyChanged.fire();
-    group._onDidEditorFocusChange.fire();
-  });
+  it('should be able to get activeTextEditor and receive texteditor changed event', () =>
+    new Promise<void>(async (done) => {
+      const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
+      const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+      const resource: IResource = {
+        name: 'test-file',
+        uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
+        icon: 'file',
+      };
+      const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
+        if (e) {
+          expect(extEditor.activeEditor?.textEditor).toBeDefined();
+          expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(
+            path.join(__dirname, 'main.thread.output.test.ts'),
+          );
+          expect(e).toBeDefined();
+          done();
+          disposer.dispose();
+        }
+      });
+      await group.createEditor(document.createElement('div'));
+      const ref = await editorDocModelService.createModelReference(
+        URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
+      );
+      await group.codeEditor.open(ref);
+      const openType: IEditorOpenType = {
+        type: 'code',
+        componentId: 'test-v-component',
+        title: 'test-file',
+      };
+      (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
+      group._currentOpenType = openType;
+      group._currentResource = resource;
+      eventBus.fire(
+        new EditorGroupChangeEvent({
+          group,
+          newOpenType: group.currentOpenType,
+          newResource: group.currentResource,
+          oldOpenType: null,
+          oldResource: null,
+        }),
+      );
+      group._onDidEditorGroupBodyChanged.fire();
+      group._onDidEditorFocusChange.fire();
+    }));
 
   it('should be able to get visibleTextEditors', async () => {
     const visibleTextEditors = extEditor.visibleEditors;
     expect(visibleTextEditors.length).toBe(1);
   });
 
-  it('should receive Selectionchanged event when editor selection is changed', async (done) => {
+  it('should receive Selectionchanged event when editor selection is changed', (done) => {
+    const disposer = extEditor.onDidChangeTextEditorSelection((e) => {
+      disposer.dispose();
+      expect(e.selections.length).toBe(1);
+      expect(e.selections[0]).toBeDefined();
+      expect(isEqual(TypeConverts.Selection.from(e.selections[0]), selection)).toBeTruthy();
+      done();
+    });
+
     const resource: IResource = {
       name: 'test-file',
       uri: URI.file(path.join(__dirname, 'main.thread.output.test1.ts')),
@@ -339,21 +348,21 @@ describe('MainThreadEditor Test Suites', () => {
         editorUri: resource.uri,
       }),
     );
-    const disposer = extEditor.onDidChangeTextEditorSelection((e) => {
-      disposer.dispose();
-      expect(e.selections.length).toBe(1);
-      expect(e.selections[0]).toBeDefined();
-      expect(isEqual(TypeConverts.Selection.from(e.selections[0]), selection)).toBeTruthy();
-      done();
-    });
   });
 
-  it('should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed', async (done) => {
+  it('should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed', (done) => {
     const resource: IResource = {
       name: 'test-file',
       uri: URI.file(path.join(__dirname, 'main.thread.output.test2.ts')),
       icon: 'file',
     };
+    const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
+      disposer.dispose();
+      const converted = e.visibleRanges.map((v) => TypeConverts.Range.from(v));
+      expect(converted.length).toBe(1);
+      expect(converted[0]).toEqual(range);
+      done();
+    });
     const range = {
       startLineNumber: 1,
       startColumn: 12,
@@ -368,34 +377,27 @@ describe('MainThreadEditor Test Suites', () => {
         editorUri: workbenchEditorService.currentResource!.uri!,
       }),
     );
-    const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
-      disposer.dispose();
-      const converted = e.visibleRanges.map((v) => TypeConverts.Range.from(v));
-      expect(converted.length).toBe(1);
-      expect(converted[0]).toEqual(range);
-      done();
-    });
   });
 
-  it.skip('should receive onDidChangeTextEditorViewColumn event when editor view column has changed', async (done) => {
-    eventBus.fire(new EditorGroupIndexChangedEvent({ group: workbenchEditorService.currentEditorGroup, index: 1 }));
+  it.skip('should receive onDidChangeTextEditorViewColumn event when editor view column has changed', (done) => {
     extEditor.onDidChangeTextEditorViewColumn((e) => {
       expect(e.viewColumn).toBe(2);
       done();
     });
+    eventBus.fire(new EditorGroupIndexChangedEvent({ group: workbenchEditorService.currentEditorGroup, index: 1 }));
   });
 
-  it.skip('should receive TextEditorOptions changed event.', async (done) => {
+  it.skip('should receive TextEditorOptions changed event.', (done) => {
     const modelOptions: monaco.editor.ITextModelUpdateOptions = {
       tabSize: 8,
       indentSize: 8,
       insertSpaces: true,
     };
-    workbenchEditorService.currentEditor?.updateOptions({}, modelOptions);
     extEditor.onDidChangeTextEditorOptions((e) => {
       expect(e.options).toBeDefined();
       done();
     });
+    workbenchEditorService.currentEditor?.updateOptions({}, modelOptions);
   });
 
   it('should be able to insert snippet', async () => {

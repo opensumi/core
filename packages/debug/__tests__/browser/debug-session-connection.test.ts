@@ -115,23 +115,24 @@ describe('DebugSessionConnection', () => {
     mockConnection.send.mockClear();
   });
 
-  it('send continue command', async (done) => {
-    debugSessionConnection.on('continued', (event) => {
-      expect(event.event).toBe('continued');
-      done();
-    });
-    await debugSessionConnection.sendRequest(
-      'continue',
-      { threadId: 1000001 },
-      {
-        type: 'node',
-        name: 'test',
-        request: 'node-debug',
-      },
-    );
-    expect(mockConnection.send).toBeCalledTimes(1);
-    mockConnection.send.mockClear();
-  });
+  it('send continue command', () =>
+    new Promise<void>(async (done) => {
+      debugSessionConnection.on('continued', (event) => {
+        expect(event.event).toBe('continued');
+        done();
+      });
+      await debugSessionConnection.sendRequest(
+        'continue',
+        { threadId: 1000001 },
+        {
+          type: 'node',
+          name: 'test',
+          request: 'node-debug',
+        },
+      );
+      expect(mockConnection.send).toBeCalledTimes(1);
+      mockConnection.send.mockClear();
+    }));
 
   it('send custom request', async () => {
     await debugSessionConnection.sendCustomRequest('abc', {});

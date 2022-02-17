@@ -184,29 +184,30 @@ describe('resource service tests', () => {
     disposer2.dispose();
   });
 
-  it('should fire need didUpdateEvent', async (done) => {
-    const service: ResourceService = injector.get(ResourceService);
-    const disposer = service.registerResourceProvider(TestResourceProvider1);
+  it('should fire need didUpdateEvent', () =>
+    new Promise<void>(async (done) => {
+      const service: ResourceService = injector.get(ResourceService);
+      const disposer = service.registerResourceProvider(TestResourceProvider1);
 
-    const resUri = new URI('test://testResource1');
-    const resource = await service.getResource(resUri);
+      const resUri = new URI('test://testResource1');
+      const resource = await service.getResource(resUri);
 
-    expect(resource!.metadata!.data).toBe(0);
+      expect(resource!.metadata!.data).toBe(0);
 
-    const eventBus: IEventBus = injector.get(IEventBus);
+      const eventBus: IEventBus = injector.get(IEventBus);
 
-    data++;
-    eventBus.fire(new ResourceNeedUpdateEvent(resUri));
+      data++;
+      eventBus.fire(new ResourceNeedUpdateEvent(resUri));
 
-    eventBus.on(ResourceDidUpdateEvent, async (e) => {
-      expect(e.payload.toString()).toEqual(resUri.toString());
-      const newResource = await service.getResource(resUri);
-      expect(newResource!.metadata!.data).toBe(1);
-      done();
-    });
+      eventBus.on(ResourceDidUpdateEvent, async (e) => {
+        expect(e.payload.toString()).toEqual(resUri.toString());
+        const newResource = await service.getResource(resUri);
+        expect(newResource!.metadata!.data).toBe(1);
+        done();
+      });
 
-    disposer.dispose();
-  });
+      disposer.dispose();
+    }));
 
   it('untitled resource test', async () => {
     injector.mockService(IEditorDocumentModelService);

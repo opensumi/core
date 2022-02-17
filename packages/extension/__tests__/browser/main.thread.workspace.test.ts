@@ -18,7 +18,6 @@ import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
   Uri as vscodeUri,
   Emitter,
-  IFileServiceClient,
   URI,
   Uri,
   IEventBus,
@@ -29,6 +28,7 @@ import {
   OS,
   IApplicationService,
   DisposableCollection,
+  IFileServiceClient,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -536,14 +536,15 @@ describe('MainThreadWorkspace API Test Suite', () => {
     expect(onDidRename?.files[0].newUri.toString()).toEqual(newUri.toString());
   });
 
-  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', async (done) => {
-    extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
-      expect(e.added.length).toBe(1);
-      expect(e.added[0].name).toBe(path.basename(__dirname));
-      done();
-    });
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
-    const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
-    workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
-  });
+  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', () =>
+    new Promise<void>(async (done) => {
+      extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
+        expect(e.added.length).toBe(1);
+        expect(e.added[0].name).toBe(path.basename(__dirname));
+        done();
+      });
+      const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+      const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
+      workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
+    }));
 });

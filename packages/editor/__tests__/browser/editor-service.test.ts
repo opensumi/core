@@ -160,7 +160,7 @@ injector.overrideProviders({
 createContributionProvider(injector, BrowserEditorContribution);
 
 describe('editor collection service tests', () => {
-  it('should be able to create and dispose editors', async (done) => {
+  it('should be able to create and dispose editors', async () => {
     const editorService: EditorCollectionService = injector.get(EditorCollectionService);
     const editor = await editorService.createCodeEditor(document.createElement('div'));
     expect(editor).toBeDefined();
@@ -178,8 +178,6 @@ describe('editor collection service tests', () => {
 
     expect(editorService.listEditors().length).toBe(0);
     expect(editorService.listDiffEditors().length).toBe(0);
-
-    done();
   });
 });
 
@@ -230,26 +228,27 @@ describe('workbench editor service tests', () => {
     disposer.dispose();
   });
 
-  it('should be able to fire loading state for big resources', async (done) => {
-    const listener = jest.fn();
-    const testLoadingCodeUri = new URI('test://test/loading');
-    const testCodeUri = new URI('test://testUri1');
+  it('should be able to fire loading state for big resources', () =>
+    new Promise<void>(async (done) => {
+      const listener = jest.fn();
+      const testLoadingCodeUri = new URI('test://test/loading');
+      const testCodeUri = new URI('test://testUri1');
 
-    const disposer = editorService.currentEditorGroup.onDidEditorGroupContentLoading((resource) => {
-      listener();
-      const status = editorService.currentEditorGroup.resourceStatus.get(resource);
-      expect(status).toBeDefined();
-      status?.finally(async () => {
-        disposer.dispose();
-        await editorService.closeAll();
-        done();
+      const disposer = editorService.currentEditorGroup.onDidEditorGroupContentLoading((resource) => {
+        listener();
+        const status = editorService.currentEditorGroup.resourceStatus.get(resource);
+        expect(status).toBeDefined();
+        status?.finally(async () => {
+          disposer.dispose();
+          await editorService.closeAll();
+          done();
+        });
       });
-    });
 
-    await editorService.open(testCodeUri);
-    await editorService.open(testLoadingCodeUri);
-    expect(listener).toBeCalledTimes(1);
-  });
+      await editorService.open(testCodeUri);
+      await editorService.open(testLoadingCodeUri);
+      expect(listener).toBeCalledTimes(1);
+    }));
 
   it('should be able to open component ', async () => {
     const testComponentUri = new URI('test://component');

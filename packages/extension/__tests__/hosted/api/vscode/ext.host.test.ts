@@ -103,21 +103,22 @@ describe('Extension process test', () => {
       expect(extHostImpl.getExtensionExports(id)).toEqual({});
     });
 
-    it('should caught runtime error', async (done) => {
-      const id = mockExtensionProps2.id;
-      const reporter = injector.get(IReporter);
-      jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
-        if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
-          expect(typeof data.extra.error).toBeTruthy();
-          expect(data.extra.stackTraceMessage).toMatch(/Test caught exception/);
-          done();
-        }
-      });
+    it('should caught runtime error', () =>
+      new Promise<void>(async (done) => {
+        const id = mockExtensionProps2.id;
+        const reporter = injector.get(IReporter);
+        jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
+          if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
+            expect(typeof data.extra.error).toBeTruthy();
+            expect(data.extra.stackTraceMessage).toMatch(/Test caught exception/);
+            done();
+          }
+        });
 
-      await expect(async () => {
-        await extHostImpl.$activateExtension(id);
-      }).rejects.toThrow('Test caught exception');
-    });
+        await expect(async () => {
+          await extHostImpl.$activateExtension(id);
+        }).rejects.toThrow('Test caught exception');
+      }));
 
     it('should caught runtime unexpected error', (done) => {
       const reporter = injector.get(IReporter);

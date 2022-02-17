@@ -176,27 +176,28 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     ).toBe('function');
   });
 
-  it('RPC methods all should be work', async (done) => {
-    const sessionId = await extHostDebug.$createDebugSession({
-      configuration: {
-        type: 'node',
-        name: 'test',
-        request: '',
-      },
-      id: 1000,
-      index: 1,
-    });
-    expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
-    await extHostDebug.$onSessionCustomEvent(sessionId, 'event');
-    await extHostDebug.$sessionDidStart(sessionId);
-    await extHostDebug.$sessionDidDestroy(sessionId);
-    await extHostDebug.$sessionDidChange(sessionId);
-    await extHostDebug.$breakpointsDidChange([], [], [], []);
-    extHostDebug.onDidTerminateDebugSession(() => {
-      done();
-    });
-    await extHostDebug.$terminateDebugSession(sessionId);
-  });
+  it('RPC methods all should be work', () =>
+    new Promise<void>(async (done) => {
+      const sessionId = await extHostDebug.$createDebugSession({
+        configuration: {
+          type: 'node',
+          name: 'test',
+          request: '',
+        },
+        id: 1000,
+        index: 1,
+      });
+      expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
+      await extHostDebug.$onSessionCustomEvent(sessionId, 'event');
+      await extHostDebug.$sessionDidStart(sessionId);
+      await extHostDebug.$sessionDidDestroy(sessionId);
+      await extHostDebug.$sessionDidChange(sessionId);
+      await extHostDebug.$breakpointsDidChange([], [], [], []);
+      extHostDebug.onDidTerminateDebugSession(() => {
+        done();
+      });
+      await extHostDebug.$terminateDebugSession(sessionId);
+    }));
 
   it('convertToDto method should be work', async () => {
     const execDADescriptor = async (id: string, adDescriptor) => {

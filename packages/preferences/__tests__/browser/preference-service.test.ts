@@ -239,12 +239,12 @@ describe('PreferenceService should be work', () => {
       const testPreferenceName = 'editor.fontSize';
       const dispose2 = preferenceService.onSpecificPreferenceChange(testPreferenceName, (change) => {
         // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
-        if (change.newValue === 30) {
+        if (change.newValue === 60) {
           dispose2.dispose();
           done();
         }
       });
-      preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
+      preferenceService.set(testPreferenceName, 60, PreferenceScope.Workspace);
     });
     it('setting multiple value once should be worked', async () => {
       const preferences = {

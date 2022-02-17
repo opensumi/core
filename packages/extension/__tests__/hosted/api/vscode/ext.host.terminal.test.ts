@@ -127,23 +127,23 @@ describe(__filename, () => {
     const terminal1 = extHost.createTerminal('terminal-1');
     expect(terminal1.name).toBe('terminal-1');
   });
+  it('didCloseTerminal should be work', () =>
+    new Promise<void>(async (done) => {
+      const terminal1 = extHost.createTerminal('terminal-1.1');
+      await mainThread['proxy'].$onDidOpenTerminal({ id: 'test-id', name: 'terminal-1.1', isActive: true });
+      expect(terminal1.name).toBe('terminal-1.1');
+      const proxyFn = jest.spyOn(extHost, '$onDidCloseTerminal');
 
-  it('didCloseTerminal should be work', async (done) => {
-    const terminal1 = extHost.createTerminal('terminal-1.1');
-    await mainThread['proxy'].$onDidOpenTerminal({ id: 'test-id', name: 'terminal-1.1', isActive: true });
-    expect(terminal1.name).toBe('terminal-1.1');
-    const proxyFn = jest.spyOn(extHost, '$onDidCloseTerminal');
+      extHost.onDidCloseTerminal((e) => {
+        expect(e['id']).toBe('test-id');
+        expect(e['exitStatus']).toBeDefined();
+        expect(e['exitStatus']?.code).toBe(-1);
+        done();
+      });
 
-    extHost.onDidCloseTerminal((e) => {
-      expect(e['id']).toBe('test-id');
-      expect(e['exitStatus']).toBeDefined();
-      expect(e['exitStatus']?.code).toBe(-1);
-      done();
-    });
-
-    await mainThread['proxy'].$onDidCloseTerminal({ id: 'test-id', code: -1 });
-    expect(proxyFn).toBeCalled();
-  });
+      await mainThread['proxy'].$onDidCloseTerminal({ id: 'test-id', code: -1 });
+      expect(proxyFn).toBeCalled();
+    }));
 
   it('should create terminal with options', async () => {
     const terminal2 = extHost.createTerminalFromOptions({
@@ -166,61 +166,62 @@ describe(__filename, () => {
     expect(terminal3.name).toBe('terminal-3');
   });
 
-  it('extension terminal exit status should defined', async (done) => {
-    mainThread['$createTerminal'] = () => Promise.resolve('fake-id-1');
+  it('extension terminal exit status should defined', () =>
+    new Promise<void>(async (done) => {
+      mainThread['$createTerminal'] = () => Promise.resolve('fake-id-1');
 
-    mainThread['$sendProcessExit'] = () => {
-      //
-    };
+      mainThread['$sendProcessExit'] = () => {
+        //
+      };
 
-    const mockCreateTerminal = jest.spyOn(mainThread, '$createTerminal');
+      const mockCreateTerminal = jest.spyOn(mainThread, '$createTerminal');
 
-    const mockTerminalExit = jest.spyOn(mainThread, '$sendProcessExit');
+      const mockTerminalExit = jest.spyOn(mainThread, '$sendProcessExit');
 
-    const emitter4 = new Emitter<string>();
-    const closeEmitter = new Emitter<void | number>();
+      const emitter4 = new Emitter<string>();
+      const closeEmitter = new Emitter<void | number>();
 
-    const terminal4 = extHost.createExtensionTerminal({
-      name: 'terminal-4',
-      pty: {
-        onDidWrite: emitter4.event,
-        onDidClose: closeEmitter.event,
-        open: () => {},
-        close: () => {},
-      },
-    });
+      const terminal4 = extHost.createExtensionTerminal({
+        name: 'terminal-4',
+        pty: {
+          onDidWrite: emitter4.event,
+          onDidClose: closeEmitter.event,
+          open: () => {},
+          close: () => {},
+        },
+      });
 
-    extHost['terminalsMap'].set('fake-id-1', terminal4);
-    mainThread['_terminalProcessProxies'].set('fake-id-1', {} as any);
+      extHost['terminalsMap'].set('fake-id-1', terminal4);
+      mainThread['_terminalProcessProxies'].set('fake-id-1', {} as any);
 
-    expect(terminal4).toBeInstanceOf(Terminal);
-    expect(terminal4.name).toBe('terminal-4');
+      expect(terminal4).toBeInstanceOf(Terminal);
+      expect(terminal4.name).toBe('terminal-4');
 
-    mainThread['$sendProcessReady'] = jest.fn(() => {});
+      mainThread['$sendProcessReady'] = jest.fn(() => {});
 
-    await mainThread['proxy'].$startExtensionTerminal('fake-id-1', {
-      columns: 80,
-      rows: 30,
-    });
+      await mainThread['proxy'].$startExtensionTerminal('fake-id-1', {
+        columns: 80,
+        rows: 30,
+      });
 
-    expect(mockCreateTerminal).toBeCalled();
+      expect(mockCreateTerminal).toBeCalled();
 
-    const mockSetStatus = jest.spyOn(terminal4, 'setExitCode');
+      const mockSetStatus = jest.spyOn(terminal4, 'setExitCode');
 
-    // 要等待前台创建完 terminal 示例后，pty 事件绑定完再 fire
-    setTimeout(() => {
-      closeEmitter.fire(2);
-
-      // 要等待事件 fire 后能监听到
+      // 要等待前台创建完 terminal 示例后，pty 事件绑定完再 fire
       setTimeout(() => {
-        expect(mockTerminalExit).toBeCalledWith('fake-id-1', 2);
-        expect(mockSetStatus).toBeCalled();
-        expect(terminal4.exitStatus).toBeDefined();
-        expect(terminal4.exitStatus?.code).toBe(2);
-        done();
+        closeEmitter.fire(2);
+
+        // 要等待事件 fire 后能监听到
+        setTimeout(() => {
+          expect(mockTerminalExit).toBeCalledWith('fake-id-1', 2);
+          expect(mockSetStatus).toBeCalled();
+          expect(terminal4.exitStatus).toBeDefined();
+          expect(terminal4.exitStatus?.code).toBe(2);
+          done();
+        }, 0);
       }, 0);
-    }, 0);
-  });
+    }));
 
   it('should change terminal name', (done) => {
     const terminalName = 'terminal-should-change-name';

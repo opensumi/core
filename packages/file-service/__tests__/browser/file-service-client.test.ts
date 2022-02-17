@@ -126,19 +126,20 @@ describe('FileServiceClient should be work', () => {
     expect(fsPath).toBe(tempDir.codeUri.fsPath);
   });
 
-  it('watch file change', async (done) => {
-    const watcher = await fileServiceClient.watchFileChanges(tempDir);
-    const targetDir = tempDir.resolve('temp-dir5');
-    watcher.onFilesChanged(async (event) => {
-      expect(event[0].uri).toBe(targetDir.toString());
-      await fileServiceClient.unwatchFileChanges(watcher.watchId);
-      watcher.dispose();
-      done();
-    });
-    setTimeout(async () => {
-      await fileServiceClient.createFolder(targetDir.toString());
-    }, 200);
-  });
+  it('watch file change', () =>
+    new Promise<void>(async (done) => {
+      const watcher = await fileServiceClient.watchFileChanges(tempDir);
+      const targetDir = tempDir.resolve('temp-dir5');
+      watcher.onFilesChanged(async (event) => {
+        expect(event[0].uri).toBe(targetDir.toString());
+        await fileServiceClient.unwatchFileChanges(watcher.watchId);
+        watcher.dispose();
+        done();
+      });
+      setTimeout(async () => {
+        await fileServiceClient.createFolder(targetDir.toString());
+      }, 200);
+    }));
 
   it('set fileExcludes', async () => {
     const targetDir = tempDir.resolve('watch-file-exclude-temp-dir');
@@ -149,23 +150,24 @@ describe('FileServiceClient should be work', () => {
     expect(stat?.children?.length === 0).toBeTruthy();
   });
 
-  it('set watchExcludes', async (done) => {
-    const targetDir = tempDir.resolve('watch-exclude-temp-dir');
-    await fs.ensureDir(targetDir.codeUri.fsPath);
-    await fileServiceClient.setWatchFileExcludes(['**/test/**']);
-    const watcher = await fileServiceClient.watchFileChanges(targetDir);
-    watcher.onFilesChanged(async (event) => {
-      expect(!!event.find((e) => e.uri === targetDir.resolve('abc.js').toString())).toBeTruthy();
-      expect(!!event.find((e) => e.uri === targetDir.resolve('test').toString())).toBeFalsy();
-      await fileServiceClient.unwatchFileChanges(watcher.watchId);
-      watcher.dispose();
-      done();
-    });
-    setTimeout(async () => {
-      await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
-      await fs.ensureDir(targetDir.resolve('abc.js').codeUri.fsPath);
-    }, 200);
-  });
+  it('set watchExcludes', () =>
+    new Promise<void>(async (done) => {
+      const targetDir = tempDir.resolve('watch-exclude-temp-dir');
+      await fs.ensureDir(targetDir.codeUri.fsPath);
+      await fileServiceClient.setWatchFileExcludes(['**/test/**']);
+      const watcher = await fileServiceClient.watchFileChanges(targetDir);
+      watcher.onFilesChanged(async (event) => {
+        expect(!!event.find((e) => e.uri === targetDir.resolve('abc.js').toString())).toBeTruthy();
+        expect(!!event.find((e) => e.uri === targetDir.resolve('test').toString())).toBeFalsy();
+        await fileServiceClient.unwatchFileChanges(watcher.watchId);
+        watcher.dispose();
+        done();
+      });
+      setTimeout(async () => {
+        await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
+        await fs.ensureDir(targetDir.resolve('abc.js').codeUri.fsPath);
+      }, 200);
+    }));
 
   it('delete file', async () => {
     const targetDir = tempDir.resolve('delete-temp-dir');

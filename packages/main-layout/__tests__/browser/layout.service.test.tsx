@@ -44,158 +44,161 @@ describe('main layout test', () => {
 
   const timeoutIds: Set<NodeJS.Timer> = new Set();
 
-  beforeAll(async (done) => {
-    let timeCount = 0;
-    window.requestAnimationFrame = (cb) => {
-      const cancelToken = 111;
-      const timeoutId = global.setTimeout(() => {
-        timeCount += 30;
-        cb(timeCount);
-        timeoutIds.delete(timeoutId);
-      }, 30);
-      timeoutIds.add(timeoutId);
-      return cancelToken;
-    };
-    window.cancelAnimationFrame = () => {
-      // mock cancelAnimationFrame
-    };
-    // tslint:disable-next-line: only-arrow-functions
-    (window as any).ResizeObserver = function () {
-      this.observe = () => {};
-      this.disconnect = () => {};
-      this.unobserve = () => {};
-      return this;
-    };
+  beforeAll(
+    () =>
+      new Promise<void>(async (done) => {
+        let timeCount = 0;
+        window.requestAnimationFrame = (cb) => {
+          const cancelToken = 111;
+          const timeoutId = global.setTimeout(() => {
+            timeCount += 30;
+            cb(timeCount);
+            timeoutIds.delete(timeoutId);
+          }, 30);
+          timeoutIds.add(timeoutId);
+          return cancelToken;
+        };
+        window.cancelAnimationFrame = () => {
+          // mock cancelAnimationFrame
+        };
+        // tslint:disable-next-line: only-arrow-functions
+        (window as any).ResizeObserver = function () {
+          this.observe = () => {};
+          this.disconnect = () => {};
+          this.unobserve = () => {};
+          return this;
+        };
 
-    injector = new MockInjector();
+        injector = new MockInjector();
 
-    const config: Partial<AppConfig> = {
-      layoutConfig: {
-        [SlotLocation.main]: {
-          modules: [testToken],
-        },
-        [SlotLocation.top]: {
-          modules: [testToken],
-        },
-        [SlotLocation.left]: {
-          modules: [testToken],
-        },
-        [SlotLocation.right]: {
-          modules: [uniqueToken],
-        },
-        [SlotLocation.bottom]: {
-          modules: [testToken],
-        },
-        [SlotLocation.statusBar]: {
-          modules: [testToken],
-        },
-      },
-    };
-
-    injector.overrideProviders(
-      {
-        token: IMainLayoutService,
-        useClass: LayoutService,
-      },
-      {
-        token: ComponentRegistry,
-        useClass: ComponentRegistryImpl,
-      },
-      {
-        token: IContextKeyService,
-        useClass: MockContextKeyService,
-      },
-      {
-        token: IWorkspaceService,
-        useClass: MockWorkspaceService,
-      },
-      {
-        token: PreferenceService,
-        useValue: {
-          ready: Promise.resolve(),
-          get: () => undefined,
-          onPreferenceChanged: () => Disposable.create(() => {}),
-          onSpecificPreferenceChange: (func: any) => Disposable.create(() => {}),
-        },
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
-      },
-      {
-        token: CommonServerPath,
-        useValue: {
-          async getBackendOS() {
-            return Promise.resolve(OS.type());
+        const config: Partial<AppConfig> = {
+          layoutConfig: {
+            [SlotLocation.main]: {
+              modules: [testToken],
+            },
+            [SlotLocation.top]: {
+              modules: [testToken],
+            },
+            [SlotLocation.left]: {
+              modules: [testToken],
+            },
+            [SlotLocation.right]: {
+              modules: [uniqueToken],
+            },
+            [SlotLocation.bottom]: {
+              modules: [testToken],
+            },
+            [SlotLocation.statusBar]: {
+              modules: [testToken],
+            },
           },
-        },
-      },
-      MainLayoutModuleContribution,
-    );
-    useMockStorage(injector);
-    const registry: ComponentRegistry = injector.get(ComponentRegistry);
-    registry.register(
-      testToken,
-      [
-        {
-          component: MockView,
-          id: 'test-view-id',
-        },
-      ],
-      {
-        containerId: 'containerId',
-        iconClass: 'testicon iconfont',
-        priority: 10,
-        title: 'test title',
-        expanded: false,
-        size: 300,
-        initialProps: {},
-        activateKeyBinding: 'ctrlcmd+1',
-        hidden: false,
-      },
-    );
-    registry.register(
-      uniqueToken,
-      [
-        {
-          component: MockView,
-          id: 'test-view-id1',
-        },
-        {
-          component: MockView,
-          id: 'test-view-id2',
-        },
-      ],
-      {
-        containerId: testContainerId,
-        iconClass: 'testicon iconfont',
-        priority: 10,
-        title: 'test title',
-        expanded: false,
-        size: 300,
-        activateKeyBinding: 'ctrlcmd+1',
-        hidden: false,
-      },
-    );
-    await act(async () => {
-      const app = new ClientApp({
-        modules: [MainLayoutModule],
-        injector,
-        didRendered: () => rendered.resolve(),
-        ...config,
-      });
-      app.start(document.getElementById('main')!).then(async () => {
-        await rendered.promise;
-        await service.viewReady.promise;
-        done();
-      });
-      service = injector.get(IMainLayoutService);
-      // 测试环境下，readDom 的 render 回调的时候不知道为啥 render 还没执行到 tabbarRenderer，需要兼容下，先初始化好tababrService
-      service.getTabbarService('left');
-      service.getTabbarService('right');
-      service.getTabbarService('bottom');
-    });
-  });
+        };
+
+        injector.overrideProviders(
+          {
+            token: IMainLayoutService,
+            useClass: LayoutService,
+          },
+          {
+            token: ComponentRegistry,
+            useClass: ComponentRegistryImpl,
+          },
+          {
+            token: IContextKeyService,
+            useClass: MockContextKeyService,
+          },
+          {
+            token: IWorkspaceService,
+            useClass: MockWorkspaceService,
+          },
+          {
+            token: PreferenceService,
+            useValue: {
+              ready: Promise.resolve(),
+              get: () => undefined,
+              onPreferenceChanged: () => Disposable.create(() => {}),
+              onSpecificPreferenceChange: (func: any) => Disposable.create(() => {}),
+            },
+          },
+          {
+            token: ILoggerManagerClient,
+            useClass: MockLoggerManageClient,
+          },
+          {
+            token: CommonServerPath,
+            useValue: {
+              async getBackendOS() {
+                return Promise.resolve(OS.type());
+              },
+            },
+          },
+          MainLayoutModuleContribution,
+        );
+        useMockStorage(injector);
+        const registry: ComponentRegistry = injector.get(ComponentRegistry);
+        registry.register(
+          testToken,
+          [
+            {
+              component: MockView,
+              id: 'test-view-id',
+            },
+          ],
+          {
+            containerId: 'containerId',
+            iconClass: 'testicon iconfont',
+            priority: 10,
+            title: 'test title',
+            expanded: false,
+            size: 300,
+            initialProps: {},
+            activateKeyBinding: 'ctrlcmd+1',
+            hidden: false,
+          },
+        );
+        registry.register(
+          uniqueToken,
+          [
+            {
+              component: MockView,
+              id: 'test-view-id1',
+            },
+            {
+              component: MockView,
+              id: 'test-view-id2',
+            },
+          ],
+          {
+            containerId: testContainerId,
+            iconClass: 'testicon iconfont',
+            priority: 10,
+            title: 'test title',
+            expanded: false,
+            size: 300,
+            activateKeyBinding: 'ctrlcmd+1',
+            hidden: false,
+          },
+        );
+        await act(async () => {
+          const app = new ClientApp({
+            modules: [MainLayoutModule],
+            injector,
+            didRendered: () => rendered.resolve(),
+            ...config,
+          });
+          app.start(document.getElementById('main')!).then(async () => {
+            await rendered.promise;
+            await service.viewReady.promise;
+            done();
+          });
+          service = injector.get(IMainLayoutService);
+          // 测试环境下，readDom 的 render 回调的时候不知道为啥 render 还没执行到 tabbarRenderer，需要兼容下，先初始化好tababrService
+          service.getTabbarService('left');
+          service.getTabbarService('right');
+          service.getTabbarService('bottom');
+        });
+      }),
+  );
   afterAll(() => {
     if (timeoutIds.size > 0) {
       timeoutIds.forEach((t) => clearTimeout(t));

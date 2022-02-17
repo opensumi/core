@@ -256,13 +256,14 @@ describe('ExtHostTask API', () => {
     expect(taskSet?.tasks.length).toBe(6);
   });
 
-  it('run custombuild task', async (done) => {
-    const taskSet = await taskService['getGroupedTasks']();
-    taskService.run(taskSet[0].tasks[0]);
-    extHostTask.onDidStartTask((e) => {
-      expect(e.execution.task.definition.type).toBe('custombuildscript');
-      expect(e.execution.task.name).toBe('32 watch incremental');
-      done();
-    });
-  }, 5000);
+  it('run custombuild task', () =>
+    new Promise<void>(async (done) => {
+      const taskSet = await taskService['getGroupedTasks']();
+      taskService.run(taskSet[0].tasks[0]);
+      extHostTask.onDidStartTask((e) => {
+        expect(e.execution.task.definition.type).toBe('custombuildscript');
+        expect(e.execution.task.name).toBe('32 watch incremental');
+        done();
+      });
+    }));
 });

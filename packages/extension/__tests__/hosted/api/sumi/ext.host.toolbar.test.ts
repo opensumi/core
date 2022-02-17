@@ -121,16 +121,16 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     expect(hostAction).toBeDefined();
   });
 
-  it('toolbarAPI#registerToolbarAction button setState should be work', (done) => {
-    const id = `${extension.id}-toolbar`;
-    const hostAction = await toolbarAPI.getToolbarActionButtonHandle(id);
-    hostAction.onStateChanged((e) => {
-      expect(e.from).toBe('hover');
-      done();
-    });
-
-    hostAction.setState('hover');
-  });
+  it('toolbarAPI#registerToolbarAction button setState should be work', () =>
+    new Promise<void>(async (done) => {
+      const id = `${extension.id}-toolbar`;
+      const hostAction = await toolbarAPI.getToolbarActionButtonHandle(id);
+      hostAction.onStateChanged((e) => {
+        expect(e.from).toBe('hover');
+        done();
+      });
+      hostAction.setState('hover');
+    }));
 
   it('toolbarAPI#registerToolbarAction select should be work', async () => {
     const id = `${extension.id}-toolbar-select`;
@@ -159,14 +159,15 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     expect(hostAction).toBeDefined();
   });
 
-  it('toolbarAPI#registerToolbarAction select setState should be work', async (done) => {
-    const id = `${extension.id}-toolbar-select`;
-    const hostAction = await toolbarAPI.getToolbarActionSelectHandle(id);
-    hostAction.onStateChanged((e) => {
-      expect(e.from).toBe('selected');
-      done();
-    });
+  it('toolbarAPI#registerToolbarAction select setState should be work', () =>
+    new Promise<void>(async (done) => {
+      const id = `${extension.id}-toolbar-select`;
+      const hostAction = await toolbarAPI.getToolbarActionSelectHandle(id);
+      hostAction.onStateChanged((e) => {
+        expect(e.from).toBe('selected');
+        done();
+      });
 
-    await hostAction.setState('selected');
-  });
+      await hostAction.setState('selected');
+    }));
 });
