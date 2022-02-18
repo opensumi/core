@@ -99,7 +99,6 @@ export class DebugConsoleContribution
       execute: () => {
         this.debugConsoleModelService.clear();
       },
-      isEnabled: () => this.debugContextKey.contextInDebugConsole.get() === true,
     });
     registry.registerCommand(DEBUG_COMMANDS.COPY_CONSOLE_ITEM, {
       execute: (node: DebugConsoleNode) => {
