@@ -28,7 +28,6 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   MaybePromise,
-  OpenerContribution,
   TabBarToolbarContribution,
   ToolbarRegistry,
   URI,
@@ -109,7 +108,6 @@ export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelCo
   BrowserEditorContribution,
   MenuContribution,
   KeybindingContribution,
-  OpenerContribution,
   TabBarToolbarContribution,
 )
 export class TestingContribution
