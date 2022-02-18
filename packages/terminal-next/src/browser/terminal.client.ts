@@ -178,7 +178,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
-        if (error.launchConfig) {
+        if (error.launchConfig?.executable) {
           this.updateOptions({
             name: 'error: ' + error.launchConfig.executable,
           });
@@ -245,7 +245,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  convertTerminalOptionsToLaunchConfig(options: TerminalOptions = {}) {
+  convertTerminalOptionsToLaunchConfig() {
+    const options = this._terminalOptions;
     const shellLaunchConfig: IShellLaunchConfig = {
       name: options.name,
       executable: withNullAsUndefined(options.shellPath),
@@ -279,7 +280,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._terminalOptions = options;
     await this.init2(widget, {
-      config: this.convertTerminalOptionsToLaunchConfig(options),
+      config: this.convertTerminalOptionsToLaunchConfig(),
     });
   }
 
@@ -326,7 +327,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     if (await this._checkWorkspace()) {
-      const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
+      const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
+      const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
 
@@ -476,6 +478,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._error = new Deferred<void>();
     this._firstStdout = new Deferred<void>();
     this._attachAddon?.setConnection(undefined);
+    this.internalService.getOs().then((os) => {
+      this._os = os;
+    });
     const { dispose } = this.onOutput(() => {
       dispose();
       this._hasOutput = true;
@@ -488,9 +493,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     // requestAnimationFrame 在不可见状态下会丢失，所以一定要用 queueMicrotask
     queueMicrotask(() => {
       this._layout();
-      this.internalService.getOs().then((os) => {
-        this._os = os;
-      });
       this.attach();
       if (!this.widget.show) {
         this._show?.promise.then(async () => {
@@ -678,7 +680,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
+    this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
 
     this._widget.name = options.name || this.name;
   }
