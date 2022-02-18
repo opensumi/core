@@ -26,11 +26,6 @@ jobs:
     # issue label 包含 'pre-release'
     if: |
       github.event_name == 'issue_comment' &&
-      (
-        github.event.issue.author_association == 'MEMBER' ||
-        github.event.issue.author_association == 'OWNER' ||
-        github.event.issue.author_association == 'CONTRIBUTOR'
-      ) &&
       contains(github.event.issue.body, 'Pre-Release Summary') &&
       contains(github.event.issue.labels.*.name, 'pre-release') &&
       contains(github.event.issue.title, 'OpenSumi Pre-Release') &&
@@ -41,6 +36,14 @@ jobs:
         node-version: [12.x]
 
     steps:
+      # 判断用户是否有管理员权限
+      - name: "Check if user has admin access"
+        uses: "lannonbr/repo-permission-check-action@2.0.0"
+        with:
+          permission: "admin"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # 评论正在发布
       - name: Update status for current issue
         uses: actions/github-script@v4
