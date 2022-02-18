@@ -8,6 +8,8 @@ on:
       version:
         description: "The version you want to release, eg: 1.0.0"
         required: true
+      release_branch: "The release branch, eg: v/2.14, if run on main, please make sure the release_branch is set"
+        required: false
 
 jobs:
   release:
@@ -50,15 +52,6 @@ jobs:
           npm i
           npm run init
 
-      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
-      - name: Create release log
-        if: steps.checkTag.outputs.exists == 'false'
-        id: release-log
-        run: |
-          npm run changelog -- --remote
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # 发布正式版本
       - name: Publish prod version
         if: steps.checkTag.outputs.exists == 'false'
@@ -78,6 +71,15 @@ jobs:
           git_commit_sha: ${{ github.sha }}
           git_tag_prefix: "v"
 
+      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
+      - name: Create release log
+        if: steps.checkTag.outputs.exists == 'false'
+        id: release-log
+        run: |
+          npm run changelog -- --remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         id: create_release
         if: steps.checkTag.outputs.exists == 'false'
@@ -86,19 +88,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ github.event.inputs.version }}
-          release_name: OpenSumi Release v${{ github.event.inputs.version }}
+          release_name: Release v${{ github.event.inputs.version }}
           body_path: ./releaselog.md
           draft: false
           prerelease: false
 
+      # 在 main 分支运行时，自动切下一个 release 分支
       - name: Create and push release branch
-        if: github.event.ref == 'refs/heads/main'
+        if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
         run: |
-          git checkout -b v${{ github.event.inputs.version }}
-          git push origin v${{ github.event.inputs.version }}
+          git checkout -b v${{ github.event.inputs.release_branch }}
+          git push origin v${{ github.event.inputs.release_branch }}
 
+      # 在 main 分支运行时，自动提交 release 分支的回源 Pull Request
       - name: Create pull request
-        if: github.event.ref == 'refs/heads/main'
+        if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
