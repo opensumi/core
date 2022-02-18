@@ -64,7 +64,7 @@ abstract class ApiImplFactory {
 
   abstract createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector): any;
 
-  public load(extension: IExtensionDescription | undefined, addonImpl?: any[]) {
+  public load(extension: IExtensionDescription | undefined, addonImpl?: any) {
     if (!extension) {
       return;
     }
@@ -77,10 +77,12 @@ abstract class ApiImplFactory {
       } catch (e) {}
     }
 
-    if (Array.isArray(addonImpl)) {
-      return [...addonImpl, ...apiImpl];
+    if (addonImpl) {
+      return {
+        ...addonImpl,
+        ...apiImpl,
+      };
     }
-
     return apiImpl;
   }
 }
