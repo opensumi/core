@@ -28,7 +28,6 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   MaybePromise,
-  OpenerContribution,
   TabBarToolbarContribution,
   ToolbarRegistry,
   URI,
