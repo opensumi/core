@@ -39,7 +39,8 @@
       "**/lib/**",
       "**/node_modules/**",
       "**/__tests__/**",
-      "**/src/browser/**"
+      "**/src/browser/**",
+      "**/core-browser/**"
     ],
     "verbose": true,
     "execMap": {
