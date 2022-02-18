@@ -173,14 +173,6 @@
   }
 }
 
-.debug_console_output {
-  flex: 1;
-  background-color: var(--kt-panelTitle-background);
-  :global(.kt-recycle-tree) {
-    width: 100% !important;
-  }
-}
-
 .debug_console_node_content {
   position: relative;
   display: flex;
@@ -316,5 +308,91 @@
     margin-right: 8px;
     height: inherit;
     height: 24px;
+  }
+}
+
+.debug_console_output {
+  flex: 1;
+  background-color: var(--kt-panelTitle-background);
+  :global(.kt-recycle-tree) {
+    width: 100% !important;
+  }
+
+  .code-bold {
+    font-weight: bold;
+  }
+  .code-italic {
+    font-style: italic;
+  }
+  .code-underline {
+    text-decoration: underline;
+    text-decoration-style: solid;
+  }
+  .code-double-underline {
+    text-decoration: underline;
+    text-decoration-style: double;
+  }
+  .code-strike-through {
+    text-decoration: line-through;
+    text-decoration-style: solid;
+  }
+  .code-overline {
+    text-decoration: overline;
+    text-decoration-style: solid;
+  }
+  .code-overline.code-underline.code-strike-through {
+    text-decoration: overline underline line-through;
+    text-decoration-style: solid;
+  }
+  .code-overline.code-underline {
+    text-decoration: overline underline;
+    text-decoration-style: solid;
+  }
+  .code-overline.code-strike-through {
+    text-decoration: overline line-through;
+    text-decoration-style: solid;
+  }
+  .code-underline.code-strike-through {
+    text-decoration: underline line-through;
+    text-decoration-style: solid;
+  }
+  .code-overline.code-double-underline.code-strike-through {
+    text-decoration: overline underline line-through;
+    text-decoration-style: double;
+  }
+  .code-overline.code-double-underline {
+    text-decoration: overline underline;
+    text-decoration-style: double;
+  }
+  .code-double-underline.code-strike-through {
+    text-decoration: underline line-through;
+    text-decoration-style: double;
+  }
+  .code-dim {
+    opacity: 0.4;
+  }
+  .code-hidden {
+    opacity: 0;
+  }
+  .code-blink {
+    animation: code-blink-key 1s cubic-bezier(1, 0, 0, 1) infinite alternate;
+  }
+  .code-rapid-blink {
+    animation: code-blink-key 0.3s cubic-bezier(1, 0, 0, 1) infinite alternate;
+  }
+  @keyframes code-blink-key {
+    to {
+      opacity: 0.4;
+    }
+  }
+  .code-subscript {
+    vertical-align: sub;
+    font-size: smaller;
+    line-height: normal;
+  }
+  .code-superscript {
+    vertical-align: super;
+    font-size: smaller;
+    line-height: normal;
   }
 }

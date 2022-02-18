@@ -8,6 +8,7 @@ import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/w
 import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
 import { LinkDetector } from './debug-link-detector';
 import { ansiColorIdentifiers } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
+import styles from './view/console/debug-console.module.less';
 
 /**
  * @param text
@@ -182,38 +183,40 @@ export async function handleANSIOutput(
         }
         case 1: {
           // 变粗
-          styleNames = styleNames.filter((style) => style !== 'code-bold');
-          styleNames.push('code-bold');
+          styleNames = styleNames.filter((style) => style !== styles['code-bold']);
+          styleNames.push(styles['code-bold']);
           break;
         }
         case 2: {
           // 降低透明度
-          styleNames = styleNames.filter((style) => style !== 'code-dim');
-          styleNames.push('code-dim');
+          styleNames = styleNames.filter((style) => style !== styles['code-dim']);
+          styleNames.push(styles['code-dim']);
           break;
         }
         case 3: {
           // 斜体
-          styleNames = styleNames.filter((style) => style !== 'code-italic');
-          styleNames.push('code-italic');
+          styleNames = styleNames.filter((style) => style !== styles['code-italic']);
+          styleNames.push(styles['code-italic']);
           break;
         }
         case 4: {
           // 下划线
-          styleNames = styleNames.filter((style) => style !== 'code-underline' && style !== 'code-double-underline');
-          styleNames.push('code-underline');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-underline'] && style !== styles['code-double-underline'],
+          );
+          styleNames.push(styles['code-underline']);
           break;
         }
         case 5: {
           // 缓慢闪烁
-          styleNames = styleNames.filter((style) => style !== 'code-blink');
-          styleNames.push('code-blink');
+          styleNames = styleNames.filter((style) => style !== styles['code-blink']);
+          styleNames.push(styles['code-blink']);
           break;
         }
         case 6: {
           // 快速闪烁
-          styleNames = styleNames.filter((style) => style !== 'code-rapid-blink');
-          styleNames.push('code-rapid-blink');
+          styleNames = styleNames.filter((style) => style !== styles['code-rapid-blink']);
+          styleNames.push(styles['code-rapid-blink']);
           break;
         }
         case 7: {
@@ -226,19 +229,19 @@ export async function handleANSIOutput(
         }
         case 8: {
           // 隐藏
-          styleNames = styleNames.filter((style) => style !== 'code-hidden');
-          styleNames.push('code-hidden');
+          styleNames = styleNames.filter((style) => style !== styles['code-hidden']);
+          styleNames.push(styles['code-hidden']);
           break;
         }
         case 9: {
           // 划除，在字符中间增加横线
-          styleNames = styleNames.filter((style) => style !== 'code-strike-through');
-          styleNames.push('code-strike-through');
+          styleNames = styleNames.filter((style) => style !== styles['code-strike-through']);
+          styleNames.push(styles['code-strike-through']);
           break;
         }
         case 10: {
           // 默认字体
-          styleNames = styleNames.filter((style) => !style.startsWith('code-font'));
+          styleNames = styleNames.filter((style) => !style.startsWith(styles['code-font']));
           break;
         }
         case 11:
@@ -252,34 +255,42 @@ export async function handleANSIOutput(
         case 19:
         case 20: {
           // 字体代码
-          styleNames = styleNames.filter((style) => !style.startsWith('code-font'));
-          styleNames.push(`code-font-${code - 10}`);
+          styleNames = styleNames.filter((style) => !style.startsWith(styles['code-font']));
+          styleNames.push(styles[`code-font-${code - 10}`]);
           break;
         }
         case 21: {
           // 双下划线
-          styleNames = styleNames.filter((style) => style !== 'code-underline' && style !== 'code-double-underline');
-          styleNames.push('code-double-underline');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-underline'] && style !== styles['code-double-underline'],
+          );
+          styleNames.push(styles['code-double-underline']);
           break;
         }
         case 22: {
           // 正常强度的字体（不强不弱）
-          styleNames = styleNames.filter((style) => style !== 'code-bold' && style !== 'code-dim');
+          styleNames = styleNames.filter((style) => style !== styles['code-bold'] && style !== styles['code-dim']);
           break;
         }
         case 23: {
           // 既不是斜体也不是黑体（字体 10）
-          styleNames = styleNames.filter((style) => style !== 'code-italic' && style !== 'code-font-10');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-italic'] && style !== styles['code-font-10'],
+          );
           break;
         }
         case 24: {
           // 去除下划线
-          styleNames = styleNames.filter((style) => style !== 'code-underline' && style !== 'code-double-underline');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-underline'] && style !== styles['code-double-underline'],
+          );
           break;
         }
         case 25: {
           // 关闭闪烁
-          styleNames = styleNames.filter((style) => style !== 'code-blink' && style !== 'code-rapid-blink');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-blink'] && style !== styles['code-rapid-blink'],
+          );
           break;
         }
         case 27: {
@@ -292,23 +303,23 @@ export async function handleANSIOutput(
         }
         case 28: {
           // 不隐藏
-          styleNames = styleNames.filter((style) => style !== 'code-hidden');
+          styleNames = styleNames.filter((style) => style !== styles['code-hidden']);
           break;
         }
         case 29: {
           // 关闭划除
-          styleNames = styleNames.filter((style) => style !== 'code-strike-through');
+          styleNames = styleNames.filter((style) => style !== styles['code-strike-through']);
           break;
         }
         case 53: {
           // 上划线
-          styleNames = styleNames.filter((style) => style !== 'code-overline');
-          styleNames.push('code-overline');
+          styleNames = styleNames.filter((style) => style !== styles['code-overline']);
+          styleNames.push(styles['code-overline']);
           break;
         }
         case 55: {
           // 关闭上划线
-          styleNames = styleNames.filter((style) => style !== 'code-overline');
+          styleNames = styleNames.filter((style) => style !== styles['code-overline']);
           break;
         }
         case 39: {
@@ -328,18 +339,24 @@ export async function handleANSIOutput(
         }
         case 73: {
           // 上标（向上靠）
-          styleNames = styleNames.filter((style) => style !== 'code-superscript' && style !== 'code-subscript');
-          styleNames.push('code-superscript');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-superscript'] && style !== styles['code-subscript'],
+          );
+          styleNames.push(styles['code-superscript']);
           break;
         }
         case 74: {
           // 下标（向下靠）
-          styleNames = styleNames.filter((style) => style !== 'code-superscript' && style !== 'code-subscript');
-          styleNames.push('code-subscript');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-superscript'] && style !== styles['code-subscript'],
+          );
+          styleNames.push(styles['code-subscript']);
           break;
         }
         case 75: {
-          styleNames = styleNames.filter((style) => style !== 'code-superscript' && style !== 'code-subscript');
+          styleNames = styleNames.filter(
+            (style) => style !== styles['code-superscript'] && style !== styles['code-subscript'],
+          );
           break;
         }
         default: {
