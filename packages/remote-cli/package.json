@@ -1,10 +1,11 @@
 {
   "name": "@opensumi/remote-cli",
-  "version": "2.14.2",
+  "version": "2.14.3",
   "files": [
     "lib"
   ],
   "preview": true,
+  "private": true,
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
