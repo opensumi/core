@@ -30,6 +30,8 @@ export interface EventMessage {
 export class NodePtyTerminalService implements ITerminalService {
   static countId = 1;
 
+  private backendOs: OperatingSystem | undefined;
+
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
@@ -179,6 +181,12 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async attachByLaunchConfig(sessionId: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
+    // If code runs to here, it means that we want to create a real terminal.
+    // So if `launchConfig.executable` is not set, we should use the default shell.
+    if (!launchConfig.executable) {
+      launchConfig.executable = await this.getDefaultSystemShell();
+    }
+
     this.logger.log(`attachByLaunchConfig ${sessionId} with launchConfig `, launchConfig);
 
     const ptyInstance = await this.serviceClientRPC.create2(sessionId, cols, rows, launchConfig);
@@ -262,7 +270,10 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getOs() {
-    return this.serviceClientRPC.getOs();
+    if (this.backendOs) {
+      return this.backendOs;
+    }
+    return (this.backendOs = this.serviceClientRPC.getOs());
   }
 
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {

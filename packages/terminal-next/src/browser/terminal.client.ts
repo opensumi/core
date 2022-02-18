@@ -178,7 +178,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
-        if (error.launchConfig) {
+        if (error.launchConfig?.executable) {
           this.updateOptions({
             name: 'error: ' + error.launchConfig.executable,
           });
@@ -476,6 +476,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._error = new Deferred<void>();
     this._firstStdout = new Deferred<void>();
     this._attachAddon?.setConnection(undefined);
+    this.internalService.getOs().then((os) => {
+      this._os = os;
+    });
     const { dispose } = this.onOutput(() => {
       dispose();
       this._hasOutput = true;
@@ -488,9 +491,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     // requestAnimationFrame 在不可见状态下会丢失，所以一定要用 queueMicrotask
     queueMicrotask(() => {
       this._layout();
-      this.internalService.getOs().then((os) => {
-        this._os = os;
-      });
       this.attach();
       if (!this.widget.show) {
         this._show?.promise.then(async () => {
