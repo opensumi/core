@@ -21,6 +21,14 @@ jobs:
         node-version: [12.x]
 
     steps:
+      # 判断用户是否有管理员权限
+      - name: "Check if user has admin access"
+        uses: "lannonbr/repo-permission-check-action@2.0.0"
+        with:
+          permission: "admin"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Checkout
         uses: actions/checkout@v2
 
