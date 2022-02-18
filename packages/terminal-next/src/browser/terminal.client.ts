@@ -245,7 +245,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  convertTerminalOptionsToLaunchConfig(options: TerminalOptions = {}) {
+  convertTerminalOptionsToLaunchConfig() {
+    const options = this._terminalOptions;
     const shellLaunchConfig: IShellLaunchConfig = {
       name: options.name,
       executable: withNullAsUndefined(options.shellPath),
@@ -279,7 +280,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._terminalOptions = options;
     await this.init2(widget, {
-      config: this.convertTerminalOptionsToLaunchConfig(options),
+      config: this.convertTerminalOptionsToLaunchConfig(),
     });
   }
 
@@ -326,7 +327,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     if (await this._checkWorkspace()) {
-      const launchConfig = this.convertProfileToLaunchConfig(options.config, this._workspacePath);
+      const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
+      const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
       this._launchConfig = launchConfig;
       this.name = launchConfig.name || '';
 
@@ -678,7 +680,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
+    this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
 
     this._widget.name = options.name || this.name;
   }
