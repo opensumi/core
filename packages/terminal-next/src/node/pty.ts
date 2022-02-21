@@ -73,8 +73,6 @@ export class PtyService extends Disposable {
         this._ptyProcess.kill();
       }
     } catch (ex) {}
-
-    this.dispose();
   }
 
   async _validateCwd(): Promise<ITerminalLaunchError | undefined> {
@@ -187,13 +185,18 @@ export class PtyService extends Disposable {
     const args = options.args || [];
     const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
 
-    ptyProcess.onData((e) => {
-      this._onData.fire(e);
-    });
+    this.addDispose(
+      ptyProcess.onData((e) => {
+        this._onData.fire(e);
+      }),
+    );
 
-    ptyProcess.onExit((e) => {
-      this._onExit.fire(e);
-    });
+    this.addDispose(
+      ptyProcess.onExit((e) => {
+        this._onExit.fire(e);
+        this.dispose();
+      }),
+    );
 
     (ptyProcess as IPtyProcess).bin = options.executable as string;
     (ptyProcess as IPtyProcess).launchConfig = options;
