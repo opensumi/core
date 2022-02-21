@@ -64,7 +64,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
     if (hoverContents) {
       return <StatusBarPopover contents={hoverContents} />;
     }
-    return <div>{tooltip || name}</div>;
+    return <div>{tooltip}</div>;
   }, []);
 
   const getColor = (color: string | IThemeColor | undefined): string => {
@@ -90,7 +90,6 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       className={cls(styles.element, className, {
         [styles.hasCommand]: command || onClick,
       })}
-      title={tooltip}
       onClick={onClick}
       style={{
         color: getColor(propsColor),
@@ -104,6 +103,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
         trigger={PopoverTriggerType.hover}
         delay={200}
         position={PopoverPosition.top}
+        disable={!tooltip && !hoverContents}
       >
         <div className={styles.popover_item}>
           {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
