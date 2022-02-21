@@ -598,6 +598,9 @@ export const localizationBundle = {
     'terminal.launchFail.cwdDoesNotExist': 'Starting directory (cwd) "{0}" does not exist',
     'terminal.launchFail.executableIsNotFileOrSymlink': 'Path to shell executable "{0}" is not a file or a symlink',
     'terminal.launchFail.executableDoesNotExist': 'Path to shell executable "{0}" does not exist',
+    'terminal.openFile': 'Open file in editor',
+    'terminal.focusFolder': 'Focus folder in explorer',
+    'terminal.openFolder': 'Open folder in new window',
 
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',

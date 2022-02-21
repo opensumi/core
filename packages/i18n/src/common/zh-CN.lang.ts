@@ -640,6 +640,9 @@ export const localizationBundle = {
     'terminal.launchFail.cwdDoesNotExist': '终端启动目录 (cwd) "{0}" 不存在',
     'terminal.launchFail.executableIsNotFileOrSymlink': '终端启动的可执行文件 "{0}" 的路径非文件或符号链接',
     'terminal.launchFail.executableDoesNotExist': '终端启动的可执行文件 "{0}" 的路径不存在',
+    'terminal.openFile': '打开文件',
+    'terminal.focusFolder': '聚焦资源管理器中的文件夹',
+    'terminal.openFolder': '在新窗口中打开文件夹',
 
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',

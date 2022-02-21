@@ -16,9 +16,9 @@ import { convertBufferRangeToViewport } from './helpers';
 // default delay time (ms) for showing tooltip when mouse is over a link
 const DEFAULT_HOVER_DELAY = 500;
 
-export const OPEN_FILE_LABEL = localize('openFile', 'Open file in editor');
-export const FOLDER_IN_WORKSPACE_LABEL = localize('focusFolder', 'Focus folder in explorer');
-export const FOLDER_NOT_IN_WORKSPACE_LABEL = localize('openFolder', 'Open folder in new window');
+export const OPEN_FILE_LABEL = localize('terminal.openFile', 'Open file in editor');
+export const FOLDER_IN_WORKSPACE_LABEL = localize('terminal.focusFolder', 'Focus folder in explorer');
+export const FOLDER_NOT_IN_WORKSPACE_LABEL = localize('terminal.openFolder', 'Open folder in new window');
 
 @Injectable({ multiple: true })
 export class TerminalLink extends Disposable implements ILink {
