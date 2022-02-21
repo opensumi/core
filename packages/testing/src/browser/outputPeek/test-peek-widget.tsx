@@ -7,7 +7,6 @@ import { TestDto } from './test-output-peek';
 import { TestMessageType } from '../../common/testCollection';
 import './test-peek-widget.less';
 import { AppConfig, ConfigProvider, IContextKeyService } from '@opensumi/ide-core-browser';
-import { TestingIsInPeek } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { renderMarkdown } from '@opensumi/monaco-editor-core/esm/vs/base/browser/markdownRenderer';
 import { TestMessageContainer } from './test-message-container';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
@@ -20,9 +19,6 @@ import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   @Autowired(TestPeekMessageToken)
   private readonly testingPeekMessageService: TestingPeekMessageServiceImpl;
 
@@ -34,10 +30,8 @@ export class TestingOutputPeek extends PeekViewWidget {
 
   public current?: TestDto;
 
-  constructor(public readonly editor: ICodeEditor) {
+  constructor(public readonly editor: ICodeEditor, private readonly contextKeyService: IContextKeyService) {
     super(editor, { isResizeable: true });
-
-    TestingIsInPeek.bind(this.contextKeyService);
   }
 
   /**

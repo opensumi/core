@@ -1,25 +1,18 @@
-import { TestingIsInPeek } from '@opensumi/ide-core-browser/lib/contextkey/testing';
-import { EDITOR_COMMANDS, IContextKey, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { buildTestUri, parseTestUri, TestUriType } from './../../common/testingUri';
+import { buildTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
-import { IEditor, IEditorFeatureContribution, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import {
-  IRichLocation,
-  ITestErrorMessage,
-  ITestItem,
-  ITestMessage,
-  TestMessageType,
-  TestResultItem,
-} from '../../common/testCollection';
+import { IRichLocation, ITestItem, ITestMessage, TestMessageType, TestResultItem } from '../../common/testCollection';
 import { TestingOutputPeek } from './test-peek-widget';
 import { TestResultServiceImpl } from '../test.result.service';
 import { ITestResult, TestResultServiceToken } from '../../common/test-result';
 import { TestingPeekOpenerServiceToken } from '../../common/testingPeekOpener';
 import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
 import { isDiffable } from '../../common/testingStates';
+import { TestContextKey } from '../test-contextkey.service';
 
 export class TestDto {
   public readonly test: ITestItem;
@@ -73,18 +66,16 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorService;
+  private readonly testContextKey: TestContextKey;
 
   private readonly disposer: Disposable = new Disposable();
 
   private readonly peekView = new MutableDisposable<TestingOutputPeek>();
-  private readonly visible: IContextKey<boolean>;
 
   private currentPeekUri: URI | undefined;
 
   constructor(@Optional() private readonly editor: IEditor) {
-    this.visible = TestingIsInPeek.bind(this.contextKeyService);
+    this.testContextKey = this.injector.get(TestContextKey, [this.editor.monacoEditor.getContainerDomNode()]);
   }
 
   private allMessages(results: readonly ITestResult[]): {
@@ -175,16 +166,16 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
     }
 
     if (!this.peekView.value) {
-      this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor]);
+      this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor, this.contextKeyService]);
       this.disposer.addDispose(
         this.peekView.value.onDidClose(() => {
-          this.visible.set(false);
+          this.testContextKey.contextTestingIsPeekVisible.set(false);
           this.currentPeekUri = undefined;
           this.peekView.value = undefined;
         }),
       );
 
-      this.visible.set(true);
+      this.testContextKey.contextTestingIsPeekVisible.set(true);
       this.peekView.value.create();
     }
 
