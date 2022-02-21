@@ -32,6 +32,7 @@ export const Popover: React.FC<{
   title?: string;
   titleClassName?: string;
   action?: string;
+  disable?: boolean;
   onClickAction?: (args: any) => void;
 }> = ({
   delay,
@@ -47,6 +48,7 @@ export const Popover: React.FC<{
   titleClassName,
   action,
   onClickAction,
+  disable,
   ...restProps
 }) => {
   const childEl = React.useRef<HTMLSpanElement | null>(null);
@@ -75,7 +77,7 @@ export const Popover: React.FC<{
   }
 
   function showContent() {
-    if (!contentEl.current || !childEl.current) {
+    if (!contentEl.current || !childEl.current || disable) {
       return;
     }
     clearTimeout(hideContentTimer);
