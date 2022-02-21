@@ -254,7 +254,7 @@ export class NodePtyTerminalService implements ITerminalService {
   closeClient(id: string, code?: number, signal?: number): void;
   closeClient(sessionId: string, data: ITerminalError | { code?: number; signal?: number }): void;
   closeClient(sessionId: string, data?: ITerminalError | { code?: number; signal?: number } | number, signal?: number) {
-    this.logger.log(`${sessionId} was closed, error: ${data}`);
+    this.logger.log(`${sessionId} was closed, error:`, data);
 
     if (isTerminalError(data)) {
       this._onError.fire(data);
