@@ -18,9 +18,6 @@ export class WindowService implements IWindowService {
   private readonly appConfig: AppConfig;
 
   openNewWindow(url: string, options?: NewWindowOptions): Window | undefined {
-    if (options?.external) {
-      url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
-    }
     if (this.appConfig.isElectronRenderer) {
       // Electron 环境下使用 shell.openExternal 方法打开外部 Uri
       const electronMainUIService: IElectronMainUIService = this.injector.get(IElectronMainUIService);
@@ -29,6 +26,9 @@ export class WindowService implements IWindowService {
       electronMainUIService.openExternal(url);
       return undefined;
     } else {
+      if (options?.external) {
+        url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
+      }
       const newWindow = window.open(url);
       if (newWindow === null) {
         throw new Error('Cannot open a new window for URL: ' + url);
