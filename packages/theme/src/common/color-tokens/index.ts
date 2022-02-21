@@ -5,7 +5,6 @@ export * from './breadcrumb';
 export * from './button';
 export * from './dropdown';
 export * from './editor';
-export * from './index';
 export * from './input';
 export * from './checkbox';
 export * from './list-tree';
