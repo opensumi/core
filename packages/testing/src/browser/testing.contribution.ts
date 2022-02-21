@@ -27,6 +27,8 @@ import {
   getIcon,
   KeybindingContribution,
   KeybindingRegistry,
+  KeybindingScope,
+  KeybindingWeight,
   MaybePromise,
   TabBarToolbarContribution,
   ToolbarRegistry,
@@ -63,6 +65,7 @@ import { TestResultServiceToken } from '../common/test-result';
 import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
 import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
 import { Testing } from '../common/constants';
+import { TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -350,6 +353,7 @@ export class TestingContribution
     keybindings.registerKeybinding({
       command: ClosePeekTest.id,
       keybinding: 'esc',
+      when: TestingIsPeekVisible.equalsTo(true),
     });
   }
 
