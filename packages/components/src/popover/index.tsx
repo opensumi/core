@@ -76,45 +76,6 @@ export const Popover: React.FC<{
     }
   }
 
-  function resizeContent() {
-    if (!contentEl.current || !childEl.current || disable) {
-      return;
-    }
-    const { left, top, width, height } = childEl.current.getBoundingClientRect() as ClientRect;
-    const contentRect = contentEl.current.getBoundingClientRect() as ClientRect;
-    if (position === PopoverPosition.top) {
-      const contentLeft =
-        contentRect.right - window.innerWidth > 0
-          ? window.innerWidth - contentRect.width
-          : left - contentRect.width / 2 + width / 2;
-      const contentTop = top - contentRect.height - 7;
-      contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
-      contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
-      contentEl.current.style.visibility = 'visible';
-    } else if (position === PopoverPosition.bottom) {
-      const contentLeft =
-        contentRect.right - window.innerWidth > 0
-          ? window.innerWidth - contentRect.width
-          : left - contentRect.width / 2 + width / 2;
-      const contentTop = top + height + 7;
-      contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
-      contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
-      contentEl.current.style.visibility = 'visible';
-    } else if (position === PopoverPosition.left) {
-      const contentLeft = left - contentRect.width - 7;
-      const contentTop = top - contentRect.height / 2 + height / 2;
-      contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
-      contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
-      contentEl.current.style.visibility = 'visible';
-    } else if (position === PopoverPosition.right) {
-      const contentLeft = left + width + 7;
-      const contentTop = top - contentRect.height / 2 + height / 2;
-      contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
-      contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
-      contentEl.current.style.visibility = 'visible';
-    }
-  }
-
   function showContent() {
     if (!contentEl.current || !childEl.current || disable) {
       return;
@@ -125,12 +86,39 @@ export const Popover: React.FC<{
       if (!childEl.current || !contentEl.current) {
         return;
       }
-      resizeContent();
-      // 因为 content 是挂在到 Body 上的，第一次渲染后，无法判断是否到达了右边界，需要再加一个补偿逻辑
-      window.requestAnimationFrame(() => {
-        resizeContent();
-        contentEl.current!.style.visibility = 'visible';
-      });
+      const { left, top, width, height } = childEl.current.getBoundingClientRect() as ClientRect;
+      const contentRect = contentEl.current.getBoundingClientRect() as ClientRect;
+      if (position === PopoverPosition.top) {
+        const contentLeft =
+          contentRect.right - window.innerWidth > 0
+            ? window.innerWidth - contentRect.width
+            : left - contentRect.width / 2 + width / 2;
+        const contentTop = top - contentRect.height - 7;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      } else if (position === PopoverPosition.bottom) {
+        const contentLeft =
+          contentRect.right - window.innerWidth > 0
+            ? window.innerWidth - contentRect.width
+            : left - contentRect.width / 2 + width / 2;
+        const contentTop = top + height + 7;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
+        contentEl.current!.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      } else if (position === PopoverPosition.left) {
+        const contentLeft = left - contentRect.width - 7;
+        const contentTop = top - contentRect.height / 2 + height / 2;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      } else if (position === PopoverPosition.right) {
+        const contentLeft = left + width + 7;
+        const contentTop = top - contentRect.height / 2 + height / 2;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      }
     });
   }
 
@@ -140,7 +128,6 @@ export const Popover: React.FC<{
     }
     hideContentTimer = setTimeout(() => {
       contentEl.current!.style.display = 'none';
-      contentEl.current!.style.visibility = 'hidden';
     }, delay);
   }
 
