@@ -149,10 +149,13 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
 
   hide() {}
 
-  create(): void {
+  create<T>(ctxKeyFactory?: (domNode: HTMLElement) => T): void {
     this._fillContainer(this._container);
     this._initSash();
     this.applyStyle();
+    if (ctxKeyFactory) {
+      ctxKeyFactory(this._container);
+    }
   }
 
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {

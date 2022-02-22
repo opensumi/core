@@ -66,7 +66,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  private readonly testContextKey: TestContextKey;
+  private testContextKey?: TestContextKey;
 
   private readonly disposer: Disposable = new Disposable();
 
@@ -74,9 +74,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
   private currentPeekUri: URI | undefined;
 
-  constructor(@Optional() private readonly editor: IEditor) {
-    this.testContextKey = this.injector.get(TestContextKey, [this.editor.monacoEditor.getContainerDomNode()]);
-  }
+  constructor(@Optional() private readonly editor: IEditor) {}
 
   private allMessages(results: readonly ITestResult[]): {
     result: ITestResult;
@@ -167,16 +165,19 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
 
     if (!this.peekView.value) {
       this.peekView.value = this.injector.get(TestingOutputPeek, [this.editor.monacoEditor, this.contextKeyService]);
+
+      this.peekView.value.create<TestContextKey>(
+        (domNode: HTMLElement) => (this.testContextKey = this.injector.get(TestContextKey, [domNode])),
+      );
+      this.testContextKey?.contextTestingIsPeekVisible.set(true);
+
       this.disposer.addDispose(
         this.peekView.value.onDidClose(() => {
-          this.testContextKey.contextTestingIsPeekVisible.set(false);
+          this.testContextKey?.contextTestingIsPeekVisible.set(false);
           this.currentPeekUri = undefined;
           this.peekView.value = undefined;
         }),
       );
-
-      this.testContextKey.contextTestingIsPeekVisible.set(true);
-      this.peekView.value.create();
     }
 
     this.peekView.value.setModel(dto);
