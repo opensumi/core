@@ -19,6 +19,13 @@
 
 .outer_drag_over {
   background: var(--list-dropBackground);
+  outline: 1px solid var(--list-focusOutline);
+  outline-offset: -1px;
+}
+
+.outer_active {
+  outline: 1px solid var(--list-focusOutline) !important;
+  outline-offset: -1px;
 }
 
 .empty_view {

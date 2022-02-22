@@ -150,23 +150,28 @@ export class FileTreeModelService {
   private locationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
   private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
   private labelChangedDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LABEL_CHANGED_DELAY);
-  private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
+  private onDidFocusedFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
+  private onDidContextMenuFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
   private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
 
   private locationQueueDeferred: Deferred<void> | null = new Deferred<void>();
   private isPatchingLocation = false;
   private _locationDispatchQueue: (URI | string)[] = [];
-  private collapsedAllDeferred: Deferred<void> | null;
+  private collapsedAllDeferred: Deferred<undefined> | null;
 
   private treeStateWatcher: TreeStateWatcher;
   private willSelectedNodePath: string | null;
 
-  get onDidFocusedFileChange(): Event<URI | void> {
+  get onDidFocusedFileChange() {
     return this.onDidFocusedFileChangeEmitter.event;
   }
 
-  get onDidSelectedFileChange(): Event<URI[]> {
+  get onDidContextMenuFileChange() {
+    return this.onDidContextMenuFileChangeEmitter.event;
+  }
+
+  get onDidSelectedFileChange() {
     return this.onDidSelectedFileChangeEmitter.event;
   }
 
@@ -199,15 +204,31 @@ export class FileTreeModelService {
     return this._focusedFile;
   }
 
+  set focusedFile(value: File | Directory | undefined) {
+    this.onDidFocusedFileChangeEmitter.fire(value ? value.uri : undefined);
+    this._focusedFile = value;
+  }
+
   // 右键菜单选中的节点
   get contextMenuFile() {
     return this._contextMenuFile;
+  }
+
+  set contextMenuFile(value: File | Directory | undefined) {
+    this.onDidContextMenuFileChangeEmitter.fire(value ? value.uri : undefined);
+    this._contextMenuFile = value;
   }
 
   // 是选中态，非焦点态节点
   get selectedFiles() {
     return this._selectedFiles;
   }
+
+  set selectedFiles(value: (File | Directory)[]) {
+    this.onDidSelectedFileChangeEmitter.fire(value ? value.map((v) => v.uri) : []);
+    this._selectedFiles = value;
+  }
+
   // 获取当前激活的文件URI，仅在压缩目录模式下可用
   get activeUri() {
     return this._activeUri;
@@ -312,7 +333,7 @@ export class FileTreeModelService {
       }),
     );
     this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel?.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.willSelectedNodePath) {
           const node = this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath);
@@ -416,19 +437,13 @@ export class FileTreeModelService {
       this.selectedDecoration.removeTarget(file);
     });
     this._selectedFiles = [];
-    this.onDidSelectedFileChangeEmitter.fire([]);
   };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeFileDecoration = (target: File | Directory, dispatchChange = true) => {
-    if (target === this.treeModel.root) {
-      // 根节点不能选中
-      return;
-    }
-
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = undefined;
+      this.contextMenuFile = undefined;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -443,11 +458,8 @@ export class FileTreeModelService {
       }
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
-      this._focusedFile = target;
-      this._selectedFiles = [target];
-      // 选中及焦点文件变化
-      this.onDidFocusedFileChangeEmitter.fire(target.uri);
-      this.onDidSelectedFileChangeEmitter.fire([target.uri]);
+      this.focusedFile = target;
+      this.selectedFiles = [target];
       // 通知视图更新
       if (dispatchChange) {
         this.treeModel.dispatchChange();
@@ -464,7 +476,7 @@ export class FileTreeModelService {
 
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = undefined;
+      this.contextMenuFile = undefined;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -477,8 +489,6 @@ export class FileTreeModelService {
       }
       this.selectedDecoration.addTarget(target);
       this._selectedFiles = [target];
-      // 选中及焦点文件变化
-      this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
       if (dispatchChange) {
         this.treeModel.dispatchChange();
@@ -493,10 +503,10 @@ export class FileTreeModelService {
     }
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
-      this._focusedFile = undefined;
+      this.focusedFile = undefined;
     }
     this.contextMenuDecoration.addTarget(target);
-    this._contextMenuFile = target;
+    this.contextMenuFile = target;
     this.treeModel.dispatchChange();
   };
 
@@ -514,9 +524,9 @@ export class FileTreeModelService {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedFile);
         }
-        this._contextMenuFile = target;
+        this.contextMenuFile = target;
       } else if (this.focusedFile) {
-        this._contextMenuFile = undefined;
+        this.contextMenuFile = undefined;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
       if (target) {
@@ -527,8 +537,7 @@ export class FileTreeModelService {
           this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
         }
         this.focusedDecoration.addTarget(target);
-        this._focusedFile = target;
-        this.onDidFocusedFileChangeEmitter.fire(target.uri);
+        this.focusedFile = target;
       }
     }
     // 通知视图更新
@@ -541,7 +550,7 @@ export class FileTreeModelService {
     if (index > -1) {
       if (this.focusedFile === target) {
         this.focusedDecoration.removeTarget(this.focusedFile);
-        this._focusedFile = undefined;
+        this.focusedFile = undefined;
       }
       this._selectedFiles.splice(index, 1);
       this.selectedDecoration.removeTarget(target);
@@ -551,9 +560,11 @@ export class FileTreeModelService {
       if (this.focusedFile) {
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
-      this._focusedFile = target;
+      this.focusedFile = target;
       this.focusedDecoration.addTarget(target);
     }
+    // 选中状态变化
+    this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
   };
@@ -561,7 +572,7 @@ export class FileTreeModelService {
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
     this.clearFileSelectedDecoration();
-    this._contextMenuFile = undefined;
+    this.contextMenuFile = undefined;
     for (; begin <= end; begin++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(begin);
       if (file) {
@@ -579,8 +590,7 @@ export class FileTreeModelService {
   deactivateFileDecoration = () => {
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
-      this._focusedFile = undefined;
-      this.onDidFocusedFileChangeEmitter.fire();
+      this.focusedFile = undefined;
     }
     // 失去焦点状态时，仅清理右键菜单的选中态
     if (this.contextMenuFile) {
@@ -617,8 +627,6 @@ export class FileTreeModelService {
       // 空白区域右键菜单
       nodes = [this.treeModel.root as Directory];
       node = this.treeModel.root as Directory;
-
-      this.deactivateFileDecoration();
     } else {
       node = file;
       if (this._isMutiSelected) {
@@ -630,9 +638,9 @@ export class FileTreeModelService {
       } else {
         nodes = [node];
       }
-
-      this.activateFileActivedDecoration(file);
     }
+
+    this.activateFileActivedDecoration(node);
 
     this.setFileTreeContextKey(node);
 
@@ -746,7 +754,25 @@ export class FileTreeModelService {
     this.toggleFileSelectedDecoration(item);
   };
 
-  handleItemClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  /**
+   * 当传入的 `item` 为 `undefined` 时，默认为目录类型的选择
+   * 工作区模式下 `type` 为 `TreeNodeType.TreeNode`
+   * 目录模式下 `type` 为 `TreeNodeType.CompositeTreeNode`
+   *
+   * @param item 节点
+   * @param type 节点类型
+   * @param activeUri 焦点路径
+   */
+  handleItemClick = (
+    item?: File | Directory,
+    type: TreeNodeType = this.fileTreeService.isMultipleWorkspace
+      ? TreeNodeType.TreeNode
+      : TreeNodeType.CompositeTreeNode,
+    activeUri?: URI,
+  ) => {
+    if (!item) {
+      item = this.treeModel.root as Directory | File;
+    }
     // 更新压缩节点对应的Contextkey
     this.setExplorerCompressedContextKey(item, activeUri);
 
