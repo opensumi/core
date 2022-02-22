@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-markers",
-  "version": "2.14.3",
+  "version": "2.14.4",
   "files": [
     "lib"
   ],
@@ -16,14 +16,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.14.3",
-    "@opensumi/ide-core-common": "2.14.3",
-    "@opensumi/ide-editor": "2.14.3",
-    "@opensumi/ide-main-layout": "2.14.3",
-    "@opensumi/ide-theme": "2.14.3"
+    "@opensumi/ide-components": "2.14.4",
+    "@opensumi/ide-core-common": "2.14.4",
+    "@opensumi/ide-editor": "2.14.4",
+    "@opensumi/ide-main-layout": "2.14.4",
+    "@opensumi/ide-theme": "2.14.4"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.14.3",
+    "@opensumi/ide-core-browser": "2.14.4",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
