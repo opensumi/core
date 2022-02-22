@@ -387,6 +387,9 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
+      if (!value && item === config.default) {
+        setValue(String(item));
+      }
 
       return (
         <Option
@@ -403,21 +406,16 @@ function SelectPreferenceItem({
       );
     });
 
-  const renderNoneOptions = () =>
-    isElectronRenderer() ? (
-      <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>
-        {localize('preference.stringArray.none')}
-      </option>
-    ) : (
-      <Option
-        value={localize('preference.stringArray.none')}
-        key={NONE_SELECT_OPTION}
-        label={localize('preference.stringArray.none')}
-        disabled
-      >
-        {localize('preference.stringArray.none')}
-      </Option>
-    );
+  const renderNoneOptions = () => (
+    <Option
+      value={localize('preference.stringArray.none')}
+      key={NONE_SELECT_OPTION}
+      label={localize('preference.stringArray.none')}
+      disabled
+    >
+      {localize('preference.stringArray.none')}
+    </Option>
+  );
 
   const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
 
