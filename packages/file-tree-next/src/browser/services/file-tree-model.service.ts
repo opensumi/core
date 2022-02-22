@@ -378,11 +378,6 @@ export class FileTreeModelService {
     this._decorations.addDecoration(this.loadingDecoration);
   }
 
-  // 在文件树完成刷新操作后再进行下一步动作
-  private async ensurePerformedEffect() {
-    await this.fileTreeService?.willRefreshPromise;
-  }
-
   /**
    * 多选情况下，焦点节点只要一个，选中节点有多个
    * 单选情况下，焦点节点与选中节点均只有一个
@@ -590,7 +585,6 @@ export class FileTreeModelService {
   };
 
   toggleDirectory = async (item: Directory) => {
-    await this.ensurePerformedEffect();
     if (item.expanded) {
       this.fileTreeHandle.collapseNode(item);
     } else {
@@ -881,7 +875,6 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    await this.ensurePerformedEffect();
     this.collapsedAllDeferred = new Deferred();
     await this.treeModel.root.collapsedAll();
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
@@ -901,7 +894,6 @@ export class FileTreeModelService {
 
   // 展开所有缓存目录
   public expandAllCacheDirectory = async () => {
-    await this.ensurePerformedEffect();
     const size = this.treeModel.root.branchSize;
     for (let index = 0; index < size; index++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
@@ -1157,7 +1149,6 @@ export class FileTreeModelService {
         let error;
         const isEmptyDirectory = !parent.children || parent.children.length === 0;
         promptHandle.addAddonAfter('loading_indicator');
-        await this.ensurePerformedEffect();
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
             this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
@@ -1364,7 +1355,6 @@ export class FileTreeModelService {
   };
 
   private async getPromptTarget(uri: URI, isCreatingFile?: boolean) {
-    await this.ensurePerformedEffect();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
@@ -1427,7 +1417,6 @@ export class FileTreeModelService {
   }
 
   async newFilePrompt(uri: URI) {
-    await this.ensurePerformedEffect();
     const targetNode = await this.getPromptTarget(uri, true);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetNode as Directory));
@@ -1435,7 +1424,6 @@ export class FileTreeModelService {
   }
 
   async newDirectoryPrompt(uri: URI) {
-    await this.ensurePerformedEffect();
     const targetNode = await this.getPromptTarget(uri, true);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetNode as Directory));
@@ -1443,7 +1431,6 @@ export class FileTreeModelService {
   }
 
   async renamePrompt(uri: URI) {
-    await this.ensurePerformedEffect();
     const targetNode = await this.getPromptTarget(uri);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptRename(targetNode, uri.displayName));
@@ -1582,8 +1569,6 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    // 确保在刷新等动作执行完后进行定位
-    await this.ensurePerformedEffect();
     return this.queueLocation(pathOrUri);
   };
 
