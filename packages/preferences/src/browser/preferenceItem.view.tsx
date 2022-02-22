@@ -128,7 +128,7 @@ export const NextPreferenceItem = ({
           if (renderSchema.enum) {
             return <SelectPreferenceItem {...props} />;
           } else {
-            return <InputPreferenceItem {...props} />;
+            return <InputPreferenceItem {...props} isNumber={true} />;
           }
         case 'string':
           if (renderSchema.enum) {
@@ -243,12 +243,11 @@ function InputPreferenceItem({
   }, [currentValue]);
 
   const handleValueChange = (value) => {
-    if (hasValidateError(value)) {
-      // scheme校验失败
+    if (hasValidateError(isNumber && /^[0-9]+$/.test(value) ? Number(value) : value)) {
       return;
     }
+
     preferenceService.set(preferenceName, value, scope);
-    setValue(value);
   };
 
   function hasValidateError(value): ValidateMessage | undefined {
@@ -282,9 +281,11 @@ function InputPreferenceItem({
           <ValidateInput
             type={isNumber ? 'number' : 'text'}
             validate={hasValidateError}
-            onBlur={(event) => {
-              const value = isNumber ? event.target.valueAsNumber : event.target.value;
+            onBlur={() => {
               handleValueChange(value);
+            }}
+            onValueChange={(value) => {
+              setValue(value);
             }}
             value={value}
           />
