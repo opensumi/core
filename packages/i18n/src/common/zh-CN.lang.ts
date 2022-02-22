@@ -485,6 +485,8 @@ export const localizationBundle = {
     'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
+    'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
+
     'editor.configuration.largeFileSize': '控制超大文件的自定义体积。',
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
 

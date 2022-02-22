@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   DisposableCollection,
   getIcon,
@@ -366,7 +366,6 @@ function SelectPreferenceItem({
     if (optionEnumDescriptions && optionEnum) {
       return optionEnumDescriptions[optionEnum.indexOf(currentValue)] || '';
     }
-
     return '';
   }, [schema]);
   const [description, setDescription] = React.useState<string>(defaultDescription);
@@ -375,37 +374,43 @@ function SelectPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
-  const handlerValueChange = (value) => {
-    setValue(value);
-    preferenceService.set(preferenceName, value, scope);
-  };
+  const handlerValueChange = useCallback(
+    (val) => {
+      preferenceService.set(preferenceName, val, scope);
+      setValue(val);
+    },
+    [value, preferenceService],
+  );
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
 
-  const renderEnumOptions = () =>
-    optionEnum?.map((item, idx) => {
-      if (typeof item === 'boolean') {
-        item = String(item);
-      }
-      if (!value && item === config.default) {
-        setValue(String(item));
-      }
+  const renderEnumOptions = useCallback(
+    () =>
+      optionEnum?.map((item, idx) => {
+        if (typeof item === 'boolean') {
+          item = String(item);
+        }
+        if (!value && item === config.default) {
+          setValue(String(item));
+        }
 
-      return (
-        <Option
-          value={item}
-          label={replaceLocalizePlaceholder((labels[item] || item).toString())}
-          key={`${idx} - ${item}`}
-          className={styles.select_option}
-        >
-          {replaceLocalizePlaceholder((labels[item] || item).toString())}
-          {item === config.default && (
-            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
-          )}
-        </Option>
-      );
-    });
+        return (
+          <Option
+            value={item}
+            label={replaceLocalizePlaceholder((labels[item] || item).toString())}
+            key={`${idx} - ${item}`}
+            className={styles.select_option}
+          >
+            {replaceLocalizePlaceholder((labels[item] || item).toString())}
+            {item === config.default && (
+              <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+            )}
+          </Option>
+        );
+      }),
+    [optionEnum],
+  );
 
   const renderNoneOptions = () => (
     <Option
@@ -459,7 +464,7 @@ function SelectPreferenceItem({
           className={styles.select_control}
           description={description}
           onMouseEnter={handleDescriptionChange}
-          notMatchWarnning={hasValueInScope ? formatLocalize('preference.item.notValid', value) : ''}
+          notMatchWarning={hasValueInScope ? formatLocalize('preference.item.notValid', value) : ''}
         >
           {options}
         </Select>

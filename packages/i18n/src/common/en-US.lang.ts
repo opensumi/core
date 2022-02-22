@@ -502,6 +502,7 @@ export const localizationBundle = {
     'preference.editor.autoSaveDelay': 'Auto Save Delay',
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
     'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
+    'preference.editor.fontWeight': 'Font Weight',
 
     'preference.item.notValid': '{0} is not a valid option',
 
@@ -519,6 +520,8 @@ export const localizationBundle = {
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
+    'editor.configuration.fontWeight':
+      'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
 
     'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.largeFile.prevent.stillOpen': 'Still open it.',

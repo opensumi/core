@@ -46,7 +46,7 @@ export interface ISelectProps<T = string> {
   /**
    * 展示选择框提示
    */
-  notMatchWarnning?: string;
+  notMatchWarning?: string;
   /**
    * 搜索 placeholder
    */
@@ -253,7 +253,7 @@ export function Select<T = string>({
   allowOptionsOverflow,
   dropdownRenderType = 'fixed',
   description,
-  notMatchWarnning,
+  notMatchWarning,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -319,7 +319,7 @@ export function Select<T = string>({
       value: value as any,
       notMatch: true,
     };
-  }, [options]);
+  }, [options, value]);
 
   const selected = getSelectedValue();
 
@@ -328,7 +328,7 @@ export function Select<T = string>({
     [`kt-select-options-${size}`]: size,
   });
 
-  const showWarning = notMatchWarnning && selected.notMatch;
+  const showWarning = notMatchWarning && selected.notMatch;
 
   const selectClasses = classNames('kt-select-value', {
     ['kt-select-warning']: showWarning,
@@ -469,7 +469,7 @@ export function Select<T = string>({
       <p className={selectClasses} onClick={toggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
       </p>
-      {showWarning && <div className='kt-select-warning-text'>{notMatchWarnning}</div>}
+      {showWarning && <div className='kt-select-warning-text'>{notMatchWarning}</div>}
 
       {open &&
         (isDataOptions(options) || isDataOptionGroups(options) ? (
@@ -551,7 +551,6 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
     footerComponent: FC,
     emptyComponent: EC,
   } = props;
-
   const optionsContainerClasses = classNames(
     'kt-select-options',
     {
@@ -600,6 +599,7 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
       })
     );
   }
+
   let isEmpty: boolean;
   if (isDataOptionGroups(options)) {
     isEmpty = options.filter((group) => group.options.length > 0).length === 0;
@@ -626,12 +626,3 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
     </div>
   );
 });
-
-// @ts-ignore
-function usePrevious(value) {
-  const ref = React.useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
