@@ -24,6 +24,7 @@ import {
   ProgressLocation,
   IProgress,
   IProgressStep,
+  Deferred,
 } from '@opensumi/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
@@ -82,6 +83,8 @@ export class KeymapService implements IKeymapService {
   private searchDelayer = new ThrottledDelayer(KeymapService.DEFAULT_SEARCH_DELAY);
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
+  private _whenReadyDeferred: Deferred<void> = new Deferred();
+
   /**
    * fuzzy搜索参数，pre及post用于包裹搜索结果
    * @protected
@@ -112,6 +115,10 @@ export class KeymapService implements IKeymapService {
   @observable.shallow
   keybindings: KeybindingItem[] = [];
 
+  get whenReady() {
+    return this._whenReadyDeferred.promise;
+  }
+
   async init() {
     const keymapUrl = KeymapService.KEYMAP_FILE_URI.toString();
     this.resource = await this.filesystem.getFileStat(keymapUrl);
@@ -129,6 +136,7 @@ export class KeymapService implements IKeymapService {
       // 快捷键绑定文件内容变化，重新更新快捷键信息
       this.reconcile();
     });
+    this._whenReadyDeferred.resolve();
   }
 
   async openResource() {

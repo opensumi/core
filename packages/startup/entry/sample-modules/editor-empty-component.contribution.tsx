@@ -6,6 +6,7 @@ import {
   ComponentRegistry,
   EDITOR_COMMANDS,
   SEARCH_COMMANDS,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
@@ -68,8 +69,8 @@ export const EditorEmptyComponent = () => {
 
   const keybindingRegistry = useInjectable<KeybindingRegistry>(KeybindingRegistry);
   const keymapService = useInjectable<IKeymapService>(IKeymapService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
-  const keymapChangeDelayer = new ThrottledDelayer<void>(DEFAULT_CHANGE_DELAY);
   const getKeybinding = (commandId: string) => {
     const bindings = keybindingRegistry.getKeybindingsForCommand(commandId);
     if (!bindings.length) {
@@ -82,20 +83,13 @@ export const EditorEmptyComponent = () => {
     return primaryKeybinding || keyBindings[0];
   };
 
-  const init = () =>
-    // 监听快捷键是否有更新
-    keymapService.onDidKeymapChanges(() => {
-      keymapChangeDelayer.trigger(async () => {
-        setKeyMapLoaded(true);
-      });
-    });
-  React.useEffect(() => {
-    const disposer = new Disposable();
-    disposer.addDispose(init());
+  const init = async () => {
+    await keymapService.whenReady;
+    setKeyMapLoaded(true);
+  };
 
-    return () => {
-      disposer.dispose();
-    };
+  React.useEffect(() => {
+    init();
   }, []);
 
   const ShortcutView = useMemo(() => {
@@ -135,10 +129,9 @@ export const EditorEmptyComponent = () => {
     );
   }, [imgLoaded, keyMapLoaded]);
 
-  const logoUri = 'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';
   return (
     <div className={styles.empty_component}>
-      <img src={logoUri} onLoad={() => setImgLoaded(true)} />
+      <img src={appConfig.editorBackgroundImage} onLoad={() => setImgLoaded(true)} />
       {ShortcutView}
     </div>
   );

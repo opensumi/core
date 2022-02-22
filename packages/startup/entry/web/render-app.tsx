@@ -19,7 +19,7 @@ export async function renderApp(opts: IClientAppOpts) {
     process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost');
   opts.webviewEndpoint = `http://${anotherHostName}:8899`;
   opts.editorBackgroundImage =
-    'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';
+    'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
   opts.layoutComponent = ToolbarActionBasedLayout;
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
