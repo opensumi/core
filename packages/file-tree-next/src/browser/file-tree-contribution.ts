@@ -436,23 +436,31 @@ export class FileTreeContribution
         }
         this.fileTreeModelService.deleteFileByUris(uris);
       },
-      isVisible: () => !!this.fileTreeModelService.contextMenuFile,
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile &&
+        !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+          (this.fileTreeModelService.treeModel.root as Directory).uri,
+        ),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
       execute: (uri) => {
         if (!uri) {
           if (this.fileTreeModelService.contextMenuFile) {
-            uri = this.fileTreeModelService.contextMenuFile!.uri;
+            uri = this.fileTreeModelService.contextMenuFile.uri;
           } else if (this.fileTreeModelService.focusedFile) {
-            uri = this.fileTreeModelService.focusedFile!.uri;
+            uri = this.fileTreeModelService.focusedFile.uri;
           } else {
             return;
           }
         }
         this.fileTreeModelService.renamePrompt(uri);
       },
-      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile &&
+        !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+          (this.fileTreeModelService.treeModel.root as Directory).uri,
+        ),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
@@ -585,7 +593,15 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
+      isVisible: () =>
+        (!!this.fileTreeModelService.contextMenuFile &&
+          !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )) ||
+        (!!this.fileTreeModelService.focusedFile &&
+          !this.fileTreeModelService.focusedFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
@@ -599,7 +615,15 @@ export class FileTreeContribution
           }
         }
       },
-      isVisible: () => !!this.fileTreeModelService.contextMenuFile || !!this.fileTreeModelService.focusedFile,
+      isVisible: () =>
+        (!!this.fileTreeModelService.contextMenuFile &&
+          !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )) ||
+        (!!this.fileTreeModelService.focusedFile &&
+          !this.fileTreeModelService.focusedFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )),
     });
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
@@ -616,9 +640,6 @@ export class FileTreeContribution
           this.fileTreeModelService.pasteFile(uri);
         }
       },
-      isVisible: () =>
-        (!!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile)) ||
-        (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile)),
       isEnabled: () =>
         this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
     });

@@ -1,4 +1,15 @@
-import React from 'react';
+import React, {
+  createRef,
+  useRef,
+  useEffect,
+  useCallback,
+  useState,
+  memo,
+  RefObject,
+  PropsWithChildren,
+  MouseEvent,
+  DragEvent,
+} from 'react';
 import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@opensumi/ide-core-browser';
 import {
   RecycleTreeFilterDecorator,
@@ -23,13 +34,14 @@ export const FILE_TREE_FILTER_DELAY = 500;
 
 const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
 
-export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const [isReady, setIsReady] = React.useState<boolean>(false);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
-  const [model, setModel] = React.useState<TreeModel>();
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
-  const disposableRef: React.RefObject<DisposableCollection> = React.useRef(new DisposableCollection());
+export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
+  const [isReady, setIsReady] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [outerActive, setOuterActive] = useState<boolean>(false);
+  const [outerDragOver, setOuterDragOver] = useState<boolean>(false);
+  const [model, setModel] = useState<TreeModel>();
+  const wrapperRef: RefObject<HTMLDivElement> = createRef();
+  const disposableRef: RefObject<DisposableCollection> = useRef(new DisposableCollection());
 
   const { height } = viewState;
   const fileTreeService = useInjectable<FileTreeService>(IFileTreeService);
@@ -42,12 +54,12 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
   } = fileTreeService;
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
-  const [treeIndent, setTreeIndent] = React.useState<ITreeIndent>({
+  const [treeIndent, setTreeIndent] = useState<ITreeIndent>({
     indent: defaultIndent,
     baseIndent: defaultBaseIndent,
   });
-  const [filterMode, setFilterMode] = React.useState<boolean>(defaultFilterMode);
-  const [iconTheme, setIconTheme] = React.useState<{
+  const [filterMode, setFilterMode] = useState<boolean>(defaultFilterMode);
+  const [iconTheme, setIconTheme] = useState<{
     hasFolderIcons: boolean;
     hasFileIcons: boolean;
     hidesExplorerArrows: boolean;
@@ -59,7 +71,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     },
   );
 
-  const hasShiftMask = React.useCallback((event): boolean => {
+  const hasShiftMask = useCallback((event): boolean => {
     // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
       return false;
@@ -67,13 +79,13 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     return event.shiftKey;
   }, []);
 
-  const hasCtrlCmdMask = React.useCallback((event): boolean => {
+  const hasCtrlCmdMask = useCallback((event): boolean => {
     const { metaKey, ctrlKey } = event;
     return (isOSX && metaKey) || ctrlKey;
   }, []);
 
-  const handleItemClicked = React.useCallback(
-    (event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  const handleItemClicked = useCallback(
+    (event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
       // 阻止点击事件冒泡
       event.stopPropagation();
 
@@ -94,8 +106,8 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     [],
   );
 
-  const handleItemDoubleClicked = React.useCallback(
-    (event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  const handleItemDoubleClicked = useCallback(
+    (event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
       // 阻止点击事件冒泡
       event.stopPropagation();
 
@@ -108,7 +120,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     [],
   );
 
-  const handleTwistierClick = React.useCallback((ev: React.MouseEvent, item: Directory) => {
+  const handleTwistierClick = useCallback((ev: MouseEvent, item: Directory) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -117,7 +129,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     toggleDirectory(item);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isReady) {
       // 首次初始化完成时，设置当前TreeModel，同时监听后续变化，适配工作区变化事件
       setModel(fileTreeModelService.treeModel);
@@ -134,7 +146,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     }
   }, [isReady]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     ensureIsReady();
     disposableRef.current?.push(
       iconService.onThemeChange((theme) => {
@@ -157,8 +169,9 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleBlur = () => {
+      setOuterActive(false);
       fileTreeModelService.handleTreeBlur();
     };
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
@@ -171,7 +184,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     };
   }, [wrapperRef.current]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!filterMode) {
       if (fileTreeModelService.fileTreeHandle) {
         fileTreeModelService.fileTreeHandle.clearFilter();
@@ -183,12 +196,59 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     }
   }, [filterMode]);
 
-  const beforeFilterValueChange = React.useCallback(async () => {
+  useEffect(() => {
+    const disposeCollection = new DisposableCollection();
+    if (model) {
+      disposeCollection.push(
+        fileTreeModelService.onDidFocusedFileChange((e) => {
+          if (e) {
+            if (e.isEqual((model?.root as Directory).uri)) {
+              if (!outerActive) {
+                setOuterActive(!outerActive);
+              }
+            } else {
+              if (outerActive) {
+                setOuterActive(!outerActive);
+              }
+            }
+          } else if (!e) {
+            if (outerActive) {
+              setOuterActive(!outerActive);
+            }
+          }
+        }),
+      );
+      disposeCollection.push(
+        fileTreeModelService.onDidContextMenuFileChange((e) => {
+          if (e) {
+            if (e.isEqual((model?.root as Directory).uri)) {
+              if (!outerActive) {
+                setOuterActive(!outerActive);
+              }
+            } else {
+              if (outerActive) {
+                setOuterActive(!outerActive);
+              }
+            }
+          } else if (!e) {
+            if (outerActive) {
+              setOuterActive(!outerActive);
+            }
+          }
+        }),
+      );
+    }
+    return () => {
+      disposeCollection.dispose();
+    };
+  }, [model, outerActive]);
+
+  const beforeFilterValueChange = useCallback(async () => {
     const { expandAllCacheDirectory } = fileTreeModelService;
     await expandAllCacheDirectory();
   }, [fileTreeModelService]);
 
-  const ensureIsReady = React.useCallback(async () => {
+  const ensureIsReady = useCallback(async () => {
     await fileTreeModelService.whenReady;
     if (fileTreeModelService.treeModel) {
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
@@ -200,7 +260,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     }
   }, [fileTreeModelService, disposableRef.current]);
 
-  const handleTreeReady = React.useCallback(
+  const handleTreeReady = useCallback(
     (handle: IRecycleTreeFilterHandle) => {
       fileTreeModelService.handleTreeHandler({
         ...handle,
@@ -211,46 +271,46 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
     [wrapperRef.current, model],
   );
 
-  const handleOuterClick = React.useCallback(() => {
+  const handleOuterClick = useCallback(() => {
     // 空白区域点击，取消焦点状态
-    const { deactivateFileDecoration } = fileTreeModelService;
-    deactivateFileDecoration();
+    const { handleItemClick } = fileTreeModelService;
+    handleItemClick();
   }, []);
 
-  const handleFocus = React.useCallback(() => {
+  const handleFocus = useCallback(() => {
     // 文件树焦点
     const { handleTreeFocus } = fileTreeModelService;
     handleTreeFocus();
   }, []);
 
-  const handleOuterContextMenu = React.useCallback((ev: React.MouseEvent) => {
+  const handleOuterContextMenu = useCallback((ev: MouseEvent) => {
     const { handleContextMenu } = fileTreeModelService;
     // 空白区域右键菜单
     handleContextMenu(ev);
   }, []);
 
-  const handleOuterDragStart = React.useCallback((ev: React.DragEvent) => {
+  const handleOuterDragStart = useCallback((ev: DragEvent) => {
     ev.stopPropagation();
     ev.preventDefault();
   }, []);
 
-  const handleOuterDragOver = React.useCallback((ev: React.DragEvent) => {
+  const handleOuterDragOver = useCallback((ev: DragEvent) => {
     ev.preventDefault();
     setOuterDragOver(true);
   }, []);
 
-  const handleOuterDragLeave = React.useCallback(() => {
+  const handleOuterDragLeave = useCallback(() => {
     setOuterDragOver(false);
   }, []);
 
-  const handleOuterDrop = React.useCallback((ev: React.DragEvent) => {
+  const handleOuterDrop = useCallback((ev: DragEvent) => {
     const { handleDrop } = fileTreeModelService.dndService;
     setOuterDragOver(false);
     handleDrop(ev);
   }, []);
 
-  const handlerContextMenu = React.useCallback(
-    (ev: React.MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  const handleContextMenu = useCallback(
+    (ev: MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI) => {
       const { handleContextMenu } = fileTreeModelService;
       handleContextMenu(ev, node, activeUri);
     },
@@ -259,7 +319,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
 
   return (
     <div
-      className={cls(styles.file_tree, outerDragOver && styles.outer_drag_over)}
+      className={cls(styles.file_tree, outerDragOver && styles.outer_drag_over, outerActive && styles.outer_active)}
       tabIndex={-1}
       ref={wrapperRef}
       onClick={handleOuterClick}
@@ -282,7 +342,7 @@ export const FileTree = ({ viewState }: React.PropsWithChildren<{ viewState: Vie
         locationToCurrentFile={locationToCurrentFile}
         beforeFilterValueChange={beforeFilterValueChange}
         onTreeReady={handleTreeReady}
-        onContextMenu={handlerContextMenu}
+        onContextMenu={handleContextMenu}
         onItemClick={handleItemClicked}
         onItemDoubleClick={handleItemDoubleClicked}
         onTwistierClick={handleTwistierClick}
@@ -306,13 +366,13 @@ interface FileTreeViewProps {
   onTreeReady: (handle: IRecycleTreeFilterHandle) => void;
   beforeFilterValueChange: () => Promise<void>;
   locationToCurrentFile: (location: string) => void;
-  onItemClick(event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
-  onItemDoubleClick(event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
-  onContextMenu(ev: React.MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI): void;
-  onTwistierClick(ev: React.MouseEvent, item: Directory): void;
+  onItemClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onItemDoubleClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onContextMenu(ev: MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI): void;
+  onTwistierClick(ev: MouseEvent, item: Directory): void;
 }
 
-const FileTreeView = React.memo(
+const FileTreeView = memo(
   ({
     isReady,
     isLoading,
@@ -335,7 +395,7 @@ const FileTreeView = React.memo(
     // 直接渲染节点不建议通过 Inline 的方式进行渲染
     // 否则每次更新时均会带来比较大的重绘成本
     // 参考：https://github.com/bvaughn/react-window/issues/413#issuecomment-848597993
-    const renderFileTreeNode = React.useCallback(
+    const renderFileTreeNode = useCallback(
       (props: INodeRendererWrapProps) => (
         <FileTreeNode
           item={props.item}
