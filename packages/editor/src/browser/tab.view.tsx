@@ -347,12 +347,9 @@ export const Tabs = ({ group }: ITabsProps) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
           >
-            <div className={classnames(resource.icon, { [styles.small]: tabsLoadingMap[resource.uri.toString()] })}>
+            <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
               {' '}
             </div>
-            {tabsLoadingMap[resource.uri.toString()] && (
-              <Icon icon='refresh' loading={true} className={styles.tab_loading} />
-            )}
             <div>{resource.name}</div>
             {subname ? <div className={styles.subname}>{subname}</div> : null}
             <div className={styles.tab_right}>
