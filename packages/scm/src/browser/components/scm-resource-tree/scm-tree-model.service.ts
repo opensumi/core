@@ -676,13 +676,7 @@ export class SCMTreeModelService {
 
   private openFile = (item: SCMResourceFile) => {
     const scmResource = item.resource as ISCMResource;
-    if (scmResource.command) {
-      scmResource.open(true /* preverseFocus 应该从 editorOptions 中取 */);
-    } else if (scmResource.sourceUri) {
-      this.workbenchEditorService.open(URI.from(scmResource.sourceUri), {
-        focus: true,
-      });
-    }
+    scmResource.open(true /* preverseFocus 应该从 editorOptions 中取 */);
   };
 
   public toggleDirectory = (item: SCMResourceGroup | SCMResourceFolder) => {
