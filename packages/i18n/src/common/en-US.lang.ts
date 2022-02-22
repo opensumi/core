@@ -503,6 +503,8 @@ export const localizationBundle = {
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
     'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
 
+    'preference.item.notValid': '{0} is not a valid option',
+
     'editor.configuration.wrapTab':
       'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',

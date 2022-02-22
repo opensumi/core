@@ -13,6 +13,7 @@ import {
   PreferenceService,
   replaceLocalizePlaceholder,
   useInjectable,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
@@ -459,7 +460,7 @@ function SelectPreferenceItem({
           className={styles.select_control}
           description={description}
           onMouseEnter={handleDescriptionChange}
-          showNotMatchAsWarning={hasValueInScope}
+          notMatchWarnning={hasValueInScope ? formatLocalize('preference.item.notValid', value) : ''}
         >
           {options}
         </Select>
