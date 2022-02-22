@@ -617,8 +617,7 @@ export class FileTreeContribution
         }
       },
       isVisible: () =>
-        (!!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile)) ||
-        (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile)),
+        this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
       isEnabled: () =>
         this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
     });
