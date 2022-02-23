@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useState, useEffect } from 'react';
 import classNames from 'classnames';
 
 import './style.less';
 import { Icon, getKaitianIcon } from '../icon';
+
 export interface IDataOption<T> {
   iconClass?: string;
   label?: string;
@@ -42,7 +43,10 @@ export interface ISelectProps<T = string> {
    * 点击时是否启用搜索
    */
   showSearch?: boolean;
-  showNotMatchAsWarning?: boolean;
+  /**
+   * 展示选择框提示
+   */
+  notMatchWarning?: string;
   /**
    * 搜索 placeholder
    */
@@ -240,7 +244,6 @@ export function Select<T = string>({
   groupTitleRenderer,
   footerComponent,
   headerComponent,
-  setSelectHandle,
   showSearch = false,
   filterOption = defaultFilterOption,
   searchPlaceholder = '',
@@ -250,7 +253,7 @@ export function Select<T = string>({
   allowOptionsOverflow,
   dropdownRenderType = 'fixed',
   description,
-  showNotMatchAsWarning,
+  notMatchWarning,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -258,7 +261,7 @@ export function Select<T = string>({
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
-  function toggleOpen() {
+  const toggleOpen = useCallback(() => {
     const target = !open;
     if (target) {
       if (onBeforeShowOptions && onBeforeShowOptions()) {
@@ -266,11 +269,58 @@ export function Select<T = string>({
       }
     }
     setOpen(target);
-  }
+  }, [open, onBeforeShowOptions, onBeforeShowOptions]);
 
-  if (!open && searchInput) {
-    setSearchInput('');
-  }
+  const getSelectedValue = useCallback(() => {
+    if (options && isDataOptions(options)) {
+      for (const option of options) {
+        if (equals(value, option.value)) {
+          return {
+            iconClass: option.iconClass,
+            label: option.label,
+            value: option.value,
+          };
+        }
+      }
+      return {
+        iconClass: options[0]?.iconClass,
+        label: options[0]?.label,
+        value: options[0]?.value,
+      };
+    } else if (options && isDataOptionGroups(options)) {
+      for (const group of options) {
+        for (const option of group.options) {
+          if (equals(value, option.value)) {
+            return {
+              iconClass: option.iconClass,
+              label: option.label,
+              value: option.value,
+            };
+          }
+        }
+      }
+      return {
+        iconClass: options[0]?.options[0]?.iconClass,
+        label: options[0]?.options[0]?.label,
+        value: options[0]?.options[0]?.value,
+      };
+    } else {
+      const text = children && getLabelWithChildrenProps<T>(value, children);
+      if (text) {
+        return {
+          label: text,
+          value: text,
+        };
+      }
+    }
+    // 如果当前 value 和任何一个 option 都不匹配，返回当前 value
+    return {
+      label: value as any,
+      value: value as any,
+      notMatch: true,
+    };
+  }, [options, value]);
+
   const selected = getSelectedValue();
 
   const optionsContainerClasses = classNames('kt-select-options', {
@@ -278,7 +328,7 @@ export function Select<T = string>({
     [`kt-select-options-${size}`]: size,
   });
 
-  const showWarning = showNotMatchAsWarning && selected.notMatch;
+  const showWarning = notMatchWarning && selected.notMatch;
 
   const selectClasses = classNames('kt-select-value', {
     ['kt-select-warning']: showWarning,
@@ -327,6 +377,12 @@ export function Select<T = string>({
   }
 
   useEffect(() => {
+    if (!open && searchInput) {
+      setSearchInput('');
+    }
+  }, []);
+
+  useEffect(() => {
     if (selectRef.current && overlayRef.current) {
       const boxRect = selectRef.current.getBoundingClientRect();
       if (allowOptionsOverflow) {
@@ -355,56 +411,6 @@ export function Select<T = string>({
       };
     }
   }, [open]);
-
-  function getSelectedValue() {
-    if (options && isDataOptions(options)) {
-      for (const option of options) {
-        if (equals(value, option.value)) {
-          return {
-            iconClass: option.iconClass,
-            label: option.label,
-            value: option.value,
-          };
-        }
-      }
-      return {
-        iconClass: options[0]?.iconClass,
-        label: options[0]?.label,
-        value: options[0]?.value,
-      };
-    } else if (options && isDataOptionGroups(options)) {
-      for (const group of options) {
-        for (const option of group.options) {
-          if (equals(value, option.value)) {
-            return {
-              iconClass: option.iconClass,
-              label: option.label,
-              value: option.value,
-            };
-          }
-        }
-      }
-      return {
-        iconClass: options[0]?.options[0]?.iconClass,
-        label: options[0]?.options[0]?.label,
-        value: options[0]?.options[0]?.value,
-      };
-    } else {
-      const text = children && getLabelWithChildrenProps<T>(value, children);
-      if (text) {
-        return {
-          label: text,
-          value: text,
-        };
-      }
-    }
-    // 如果当前 value 和任何一个 option 都不匹配，返回当前 value
-    return {
-      label: value as any,
-      value: value as any,
-      notMatch: true,
-    };
-  }
 
   // 根据搜索输入过滤 options
   if (searchInput) {
@@ -463,7 +469,7 @@ export function Select<T = string>({
       <p className={selectClasses} onClick={toggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
       </p>
-      {showWarning && <div className='kt-select-warning-text'>{selected.value} is not a valid option</div>}
+      {showWarning && <div className='kt-select-warning-text'>{notMatchWarning}</div>}
 
       {open &&
         (isDataOptions(options) || isDataOptionGroups(options) ? (
@@ -545,7 +551,6 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
     footerComponent: FC,
     emptyComponent: EC,
   } = props;
-
   const optionsContainerClasses = classNames(
     'kt-select-options',
     {
@@ -594,6 +599,7 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
       })
     );
   }
+
   let isEmpty: boolean;
   if (isDataOptionGroups(options)) {
     isEmpty = options.filter((group) => group.options.length > 0).length === 0;
@@ -620,12 +626,3 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
     </div>
   );
 });
-
-// @ts-ignore
-function usePrevious(value) {
-  const ref = React.useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
