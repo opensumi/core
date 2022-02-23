@@ -51,7 +51,6 @@ export interface ITreeIndent {
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
-  private static readonly EXPLORER_FILE_CHANGES_REACT_DELAY = 500;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -426,13 +425,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     });
     // 处理除了删除/添加/移动事件外的异常事件
     if (!(await this.refreshAffectedNodes(this.getAffectedUris(changes))) && this.isRootAffected(changes)) {
-      // 在文件树场景下，我们无法保证内部事件及真实响应事件的响应时机
-      // 即，如果无法保证内部事件执行完，直接再次响应真实事件，将会遇到不可预期的问题
-      // 如，渲染异常
-      // ref https://github.com/Microsoft/vscode/blob/21c0490036b6d7dfeda74c5a8e9cd40116ace1c5/src/vs/workbench/contrib/files/common/explorerService.ts#L278
-      setTimeout(() => {
-        this.refresh();
-      }, FileTreeService.EXPLORER_FILE_CHANGES_REACT_DELAY);
+      this.refresh();
     }
   }
 
@@ -755,7 +748,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: Directory = this.root as Directory, needReload = true) {
+  async refresh(node: Directory = this.root as Directory) {
     this.willRefreshDeferred = new Deferred();
     if (!node) {
       return;
