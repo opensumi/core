@@ -52,6 +52,10 @@ export interface KeybindingItem extends Omit<KeymapItem, 'key'> {
 
 export interface IKeymapService {
   /**
+   * 快捷键是否初始化完成
+   */
+  whenReady: Promise<void>;
+  /**
    * 初始化快捷键注册信息
    */
   init(): Promise<void>;
