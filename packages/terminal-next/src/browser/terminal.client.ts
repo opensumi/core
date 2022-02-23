@@ -191,6 +191,14 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
+  private onWidgetShow() {
+    if (this._show) {
+      this._show.resolve();
+      this._show = null;
+    }
+    this._layout();
+  }
+
   async setupWidget(widget: IWidget) {
     this._widget = widget;
     this._prepare();
@@ -213,17 +221,21 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     );
 
-    this.addDispose(
-      widget.onShow((status) => {
-        if (status) {
-          if (this._show) {
-            this._show.resolve();
-            this._show = null;
+    // 在拆分终端时，widget 渲染的时机会比较早
+    // 如果 widget show 已经为 true，确保
+    // Deferred 已经 resolve, 否则无法监听
+    // 到后续的事件
+    if (widget.show) {
+      this.onWidgetShow();
+    } else {
+      this.addDispose(
+        widget.onShow((status) => {
+          if (status) {
+            this.onWidgetShow();
           }
-          this._layout();
-        }
-      }),
-    );
+        }),
+      );
+    }
 
     this.addDispose(
       widget.onError((status) => {
