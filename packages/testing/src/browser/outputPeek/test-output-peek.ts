@@ -75,7 +75,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   private currentPeekUri: URI | undefined;
 
   constructor(@Optional() private readonly editor: IEditor) {
-    this.testContextKey = this.injector.get(TestContextKey, [this.editor.monacoEditor.getContainerDomNode()]);
+    this.testContextKey = this.injector.get(TestContextKey, [(this.editor.monacoEditor as any)._contextKeyService]);
   }
 
   private allMessages(results: readonly ITestResult[]): {
