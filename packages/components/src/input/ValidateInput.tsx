@@ -21,14 +21,14 @@ export interface ValidateMessage {
 export interface ValidateInputProp extends IInputBaseProps {
   // void 返回代表验证通过
   // string 代表有错误信息
-  validate?: (value: string) => ValidateMessage | undefined;
+  validate?: (value: string | number) => ValidateMessage | undefined;
   validateMessage?: ValidateMessage;
   popup?: boolean;
 }
 
 export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputProp>(
   (
-    { className, validate, onChange, onValueChange, validateMessage: validateInfo, popup = true, ...restProps },
+    { type, className, validate, onChange, onValueChange, validateMessage: validateInfo, popup = true, ...restProps },
     ref: React.MutableRefObject<HTMLInputElement>,
   ) => {
     const [validateMessage, setValidateMessage] = React.useState<ValidateMessage | undefined>();
@@ -64,7 +64,16 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
         value = event.target.value;
       }
       if (typeof validate === 'function') {
-        const message = validate(value);
+        let message;
+        if (type === 'number') {
+          if (/^[0-9]+$/.test(value)) {
+            message = validate(Number(value));
+          } else {
+            message = validate(String(value));
+          }
+        } else {
+          message = validate(value);
+        }
         setValidateMessage(message);
       }
       if (typeof onChange === 'function') {
@@ -90,4 +99,4 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
   },
 );
 
-ValidateInput.displayName = 'KTValidateInput';
+ValidateInput.displayName = 'ValidateInput';
