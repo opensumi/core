@@ -1,4 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { observable } from 'mobx';
 import {
   WorkbenchEditorService,
   EditorCollectionService,
@@ -593,6 +594,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
+  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();
