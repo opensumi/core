@@ -63,6 +63,7 @@ import {
   EditorComponentDisposeEvent,
   EditorActiveResourceStateChangedEvent,
   CodeEditorDidVisibleEvent,
+  RegisterEditorComponentEvent,
 } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
@@ -871,6 +872,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._currentOpenType = null;
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
+    }
+  }
+
+  @OnEvent(RegisterEditorComponentEvent)
+  async onRegisterEditorComponentEvent() {
+    if (this.currentResource) {
+      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(this.currentResource);
+      this.availableOpenTypes = openTypes;
+      this.cachedResourcesOpenTypes.set(this.currentResource.uri.toString(), openTypes);
     }
   }
 
