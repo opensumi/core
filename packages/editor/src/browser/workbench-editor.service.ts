@@ -1,4 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { observable } from 'mobx';
 import {
   WorkbenchEditorService,
   EditorCollectionService,
@@ -62,6 +63,7 @@ import {
   EditorComponentDisposeEvent,
   EditorActiveResourceStateChangedEvent,
   CodeEditorDidVisibleEvent,
+  RegisterEditorComponentEvent,
 } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
@@ -593,6 +595,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
+  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();
@@ -869,6 +872,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._currentOpenType = null;
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
+    }
+  }
+
+  @OnEvent(RegisterEditorComponentEvent)
+  async onRegisterEditorComponentEvent() {
+    if (this.currentResource) {
+      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(this.currentResource);
+      this.availableOpenTypes = openTypes;
+      this.cachedResourcesOpenTypes.set(this.currentResource.uri.toString(), openTypes);
     }
   }
 

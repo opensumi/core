@@ -22,6 +22,7 @@ import classnames from 'classnames';
 import React from 'react';
 import ReactIs from 'react-is';
 import ReactDOM from 'react-dom';
+import { observer } from 'mobx-react-lite';
 
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
 import { EditorComponentRegistryImpl } from './component';
@@ -229,7 +230,7 @@ const EditorEmptyComponent: React.FC<{
   );
 };
 
-export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
+export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
 
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
@@ -311,9 +312,9 @@ export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
       )}
     </div>
   );
-};
+});
 
-export function EditorGroupBody({ group }: { group: EditorGroup }) {
+export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const eventBus = useInjectable(IEventBus) as IEventBus;
@@ -469,7 +470,7 @@ export function EditorGroupBody({ group }: { group: EditorGroup }) {
       <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
     </div>
   );
-}
+});
 
 export const ComponentsWrapper = ({
   component,
@@ -544,39 +545,41 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
   );
 };
 
-export const OpenTypeSwitcher = ({
-  options,
-  current,
-  group,
-}: {
-  options: IEditorOpenType[];
-  current: MaybeNull<IEditorOpenType>;
-  group: EditorGroup;
-}) => {
-  if (options.length <= 1) {
-    return null;
-  }
+export const OpenTypeSwitcher = observer(
+  ({
+    options,
+    current,
+    group,
+  }: {
+    options: IEditorOpenType[];
+    current: MaybeNull<IEditorOpenType>;
+    group: EditorGroup;
+  }) => {
+    if (options.length <= 1) {
+      return null;
+    }
 
-  return (
-    <div className={styles.open_type_switcher}>
-      {options.map((option, i) => (
-        <div
-          className={classnames({
-            [styles.option]: true,
-            [styles.current_type]:
-              current && current.type === option.type && current.componentId === option.componentId,
-          })}
-          onClick={() => {
-            group.changeOpenType(option);
-          }}
-          key={i}
-        >
-          {option.title || option.componentId || option.type}
-        </div>
-      ))}
-    </div>
-  );
-};
+    return (
+      <div className={styles.open_type_switcher}>
+        {options.map((option, i) => (
+          <div
+            className={classnames({
+              [styles.option]: true,
+              [styles.current_type]:
+                current && current.type === option.type && current.componentId === option.componentId,
+            })}
+            onClick={() => {
+              group.changeOpenType(option);
+            }}
+            key={i}
+          >
+            {option.title || option.componentId || option.type}
+          </div>
+        ))}
+      </div>
+    );
+  },
+);
 
 function getDragOverPosition(e: DragEvent, element: HTMLElement): DragOverPosition {
   const rect = element.getBoundingClientRect();

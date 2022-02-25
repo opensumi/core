@@ -394,8 +394,14 @@
   .overlay-shadow();
   display: flex;
   > .option {
+    font-size: 12px;
     padding: 5px 10px;
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+
     &.current_type {
       color: var(--textLink-activeForeground);
     }
