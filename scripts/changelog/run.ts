@@ -55,15 +55,17 @@ function convertToEnglishType(type: string) {
 }
 
 function convertToMarkdown(logs: ICommitLogFields[]) {
-  const extendedLogs = logs.map((log) => {
-    return {
-      ...log,
-      changelog: getChangelog(log.pullRequestDescription),
-      type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
-      href: Github.getPullRequestLink(log.pullRequestId),
-      nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
-    };
-  });
+  const extendedLogs = logs
+    .map((log) => {
+      return {
+        ...log,
+        changelog: getChangelog(log.pullRequestDescription),
+        type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
+        href: Github.getPullRequestLink(log.pullRequestId),
+        nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
+      };
+    })
+    .filter((log) => !!log.changelog);
 
   const prTypedList = groupBy(extendedLogs, 'type');
 

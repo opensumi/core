@@ -43,10 +43,10 @@ export function getChangelog(message) {
 }
 
 function cleanupUselessContent(msg) {
-  msg = msg.replace('- ', '');
-  return msg.replace(/(feat|fix|chore|refactor):?/g, '').trim();
+  msg = msg.replace('- ', '').trim();
+  return msg.replace(/^(feat|fix|chore|refactor)\:?/g, '');
 }
 
 export function formatBytes(bytes: number) {
-  return `${Math.max(1, Math.round(bytes / 1024))} kB`
+  return `${Math.max(1, Math.round(bytes / 1024))} kB`;
 }
