@@ -81,13 +81,14 @@ jobs:
           git_tag_prefix: "v"
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
-      - name: Create release log
+      - name: Create Changelog
         if: steps.checkTag.outputs.exists == 'false'
         id: release-log
         run: |
           npm run changelog -- --remote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Create Release
         id: create_release
@@ -97,7 +98,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ github.event.inputs.version }}
-          release_name: Release v${{ github.event.inputs.version }}
+          release_name: v${{ github.event.inputs.version }}
           body_path: ./releaselog.md
           draft: false
           prerelease: false
