@@ -73,7 +73,7 @@ jobs:
           npm run init
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
-      - name: Create release log
+      - name: Create Changelog
         id: release-log
         run: |
           npm run changelog -- --remote

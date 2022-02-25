@@ -15,4 +15,8 @@ if (!process.env.GITHUB_TOKEN) {
 const from = argv.from as string;
 const to = argv.to as string;
 const isRemote = argv.remote as boolean;
-run(from, to, isRemote);
+const isRelease = argv.release as boolean;
+run(from, to, {
+  isRemote,
+  isRelease,
+});
