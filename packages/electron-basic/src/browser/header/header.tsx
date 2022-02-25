@@ -72,76 +72,81 @@ const useMaximize = () => {
 // Big Sur increases title bar height
 const isNewMacHeaderBar = () => isOSX && parseFloat(electronEnv.osRelease) >= 20;
 
-export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ Icon?: React.FunctionComponent }>) => {
-  const windowService: IWindowService = useInjectable(IWindowService);
-  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
+/**
+ * autoHide: Hide the HeaderBar when the macOS full screen
+ */
+export const ElectronHeaderBar = observer(
+  ({ Icon, autoHide = true }: React.PropsWithChildren<{ Icon?: React.FunctionComponent; autoHide?: boolean }>) => {
+    const windowService: IWindowService = useInjectable(IWindowService);
+    const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
-  const { isFullScreen } = useFullScreen();
-  const { maximized, getMaximized } = useMaximize();
+    const { isFullScreen } = useFullScreen();
+    const { maximized, getMaximized } = useMaximize();
 
-  const LeftComponent = () => {
-    if (isOSX) {
-      return null;
-    }
+    const LeftComponent = () => {
+      if (isOSX) {
+        return null;
+      }
 
-    const initialProps = {
-      className: 'menubarWrapper',
+      const initialProps = {
+        className: 'menubarWrapper',
+      };
+
+      return (
+        <>
+          <ComponentRenderer
+            Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!}
+            initialProps={initialProps}
+          />
+        </>
+      );
     };
 
-    return (
-      <>
-        <ComponentRenderer
-          Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!}
-          initialProps={initialProps}
-        />
-      </>
-    );
-  };
+    const RightComponent = () => {
+      if (isOSX) {
+        return null;
+      }
 
-  const RightComponent = () => {
-    if (isOSX) {
-      return null;
+      return (
+        <div className={styles.windowActions}>
+          <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+          {maximized ? (
+            <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+          ) : (
+            <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+          )}
+          <div className={getIcon('close1')} onClick={() => windowService.close()} />
+        </div>
+      );
+    };
+
+    // in Mac, hide the header bar if it is in full screen mode
+    if (isOSX && isFullScreen && autoHide) {
+      return (
+        <div>
+          <TitleInfo hidden={true} />
+        </div>
+      );
     }
 
     return (
-      <div className={styles.windowActions}>
-        <div className={getIcon('min')} onClick={() => windowService.minimize()} />
-        {maximized ? (
-          <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
-        ) : (
-          <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
-        )}
-        <div className={getIcon('close1')} onClick={() => windowService.close()} />
+      <div
+        className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)}
+        onDoubleClick={async () => {
+          if (await getMaximized()) {
+            windowService.unmaximize();
+          } else {
+            windowService.maximize();
+          }
+        }}
+      >
+        <LeftComponent />
+        <TitleInfo />
+        <RightComponent />
       </div>
     );
-  };
-
-  // in Mac, hide the header bar if it is in full screen mode
-  if (isOSX && isFullScreen) {
-    return (
-      <div>
-        <TitleInfo hidden={true} />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)}
-      onDoubleClick={async () => {
-        if (await getMaximized()) {
-          windowService.unmaximize();
-        } else {
-          windowService.maximize();
-        }
-      }}
-    >
-      <LeftComponent />
-      <TitleInfo />
-      <RightComponent />
-    </div>
-  );
-});
+  },
+);
 
 declare const ResizeObserver: any;
 
