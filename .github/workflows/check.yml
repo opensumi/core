@@ -3,9 +3,9 @@ name: CHECK
 on:
   workflow_dispatch:
   push:
-    branches: [ main, v*.*.* ]
+    branches: [ main, v*.* ]
   pull_request:
-    branches: [ main, v*.*.* ]
+    branches: [ main, v*.* ]
 
 jobs:
   build:
