@@ -7,7 +7,7 @@ import { green, yellow, red } from 'chalk';
 const CLI_NAME = process.env.CLI_NAME || 'sumi';
 const PRODUCTION_NAME = process.env.PRODUCTION_NAME || 'OpenSumi';
 const CLIENT_ID = process.env.CLIENT_ID;
-const SUMI_SERVER_HOST = process.env.SUMI_SERVER_HOST || 'http://127.0.0.1:8000';
+const SUMI_SERVER_HOST = process.env.SUMI_SERVER_HOST || 'http://0.0.0.0:8000';
 const OPENER_ROUTE = process.env.OPENER_ROUTE || 'open';
 
 const program = new Command(CLI_NAME);

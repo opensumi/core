@@ -125,7 +125,7 @@ export class WorkerExtProcessService
   }
 
   public async $getStaticServicePath() {
-    return this.appConfig.staticServicePath || 'http://127.0.0.1:8000';
+    return this.appConfig.staticServicePath || 'http://0.0.0.0:8000';
   }
 
   private async createExtProcess(ignoreCors?: boolean) {

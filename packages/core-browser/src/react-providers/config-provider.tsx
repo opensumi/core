@@ -105,7 +105,7 @@ export interface AppConfig {
   extensionCandidate?: ExtensionCandidate[];
   /**
    * 定义静态资源的加载路径
-   * 默认值为：http://127.0.0.1:8000/assets/${path}
+   * 默认值为：http://0.0.0.0:8000/assets/${path}
    */
   staticServicePath?: string;
   /**

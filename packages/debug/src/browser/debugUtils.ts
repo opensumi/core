@@ -41,7 +41,7 @@ export function isRemoteAttach(config: DebugConfiguration): boolean {
     const host = config[map[type]];
 
     if (host) {
-      return !['localhost', '127.0.0.1', '::1'].includes(host);
+      return !['localhost', '0.0.0.0', '::1'].includes(host);
     }
 
     return true;

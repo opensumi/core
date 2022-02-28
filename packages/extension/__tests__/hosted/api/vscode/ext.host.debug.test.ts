@@ -220,7 +220,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     };
     let adapterDescriptor;
 
-    const descriptorServer = await execDADescriptor('mock', new DebugAdapterServer(7017, '127.0.0.1'));
+    const descriptorServer = await execDADescriptor('mock', new DebugAdapterServer(7017, '0.0.0.0'));
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorServer);
     expect(adapterDescriptor.type).toBe('server');
 

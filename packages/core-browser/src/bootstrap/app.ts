@@ -172,7 +172,7 @@ export class ClientApp implements IClientApp, IDisposable {
         opts.extensionDir ||
         (opts.isElectronRenderer || isElectronRenderer() ? electronEnv.metadata?.extensionDir : ''),
       injector: this.injector,
-      wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
+      wsPath: opts.wsPath || 'ws://0.0.0.0:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,

@@ -22,7 +22,7 @@ describe('packages/core-browser/src/remote-opener/converter.contribution.ts', ()
       convert: (port) => `opensumi-${port}-ide.com`,
     };
     disposes.addDispose(remoteOpenerService.registerConverter(converter));
-    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '127.0.0.1', '0.0.0.0']));
+    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '0.0.0.0', '0.0.0.0']));
     expect(remoteOpenerService['converter']).toBeDefined();
     expect(remoteOpenerService['converter'].convert('3030')).toBe('opensumi-3030-ide.com');
 
@@ -38,7 +38,7 @@ describe('packages/core-browser/src/remote-opener/converter.contribution.ts', ()
 
   it('register support remote host', () => {
     const disposes = new Disposable();
-    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '127.0.0.1', '0.0.0.0']));
+    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '0.0.0.0', '0.0.0.0']));
     disposes.addDispose(remoteOpenerService.registerSupportHosts(['128.168.0.1', '0.0.0.1']));
     expect(remoteOpenerService['supportHosts'].size).toBe(5);
     expect(remoteOpenerService['supportHosts'].has('0.0.0.0')).toBeTruthy();

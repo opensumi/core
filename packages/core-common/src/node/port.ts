@@ -70,11 +70,11 @@ function doFindFreePort(startPort: number, giveUpAfter: number, clb: (port: numb
     return clb(startPort);
   });
 
-  client.connect(startPort, '127.0.0.1');
+  client.connect(startPort, '0.0.0.0');
 }
 
 /**
- * Uses listen instead of connect. Is faster, but if there is another listener on 0.0.0.0 then this will take 127.0.0.1 from that listener.
+ * Uses listen instead of connect. Is faster, but if there is another listener on 0.0.0.0 then this will take 0.0.0.0 from that listener.
  */
 export function findFreePortFaster(startPort: number, giveUpAfter: number, timeout: number): Promise<number> {
   let resolved = false;
@@ -106,7 +106,7 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
       if (err && ((err as any).code === 'EADDRINUSE' || (err as any).code === 'EACCES') && countTried < giveUpAfter) {
         startPort++;
         countTried++;
-        server.listen(startPort, '127.0.0.1');
+        server.listen(startPort, '0.0.0.0');
       } else {
         doResolve(0, resolve);
       }
@@ -114,7 +114,7 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
     server.on('close', () => {
       doResolve(0, resolve);
     });
-    server.listen(startPort, '127.0.0.1');
+    server.listen(startPort, '0.0.0.0');
   });
 }
 
