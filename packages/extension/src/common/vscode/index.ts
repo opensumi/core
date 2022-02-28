@@ -100,7 +100,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadSecret: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
   MainThreadReporter: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
   MainThreadTests: createExtHostContextProxyIdentifier<IMainThreadTesting>('MainThreadTests'),
-  MainThreadEditorTabs: createMainContextProxyIdentifier<IMainThreadEditorTabsShape>('MainThreadEditorTabs'),
+  MainThreadEditorTabs: createExtHostContextProxyIdentifier<IMainThreadEditorTabsShape>('MainThreadEditorTabs'),
 };
 
 export const ExtHostAPIIdentifier = {

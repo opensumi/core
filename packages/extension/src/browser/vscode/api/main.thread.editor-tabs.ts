@@ -16,7 +16,7 @@ export interface ITabInfo {
 }
 
 @Injectable({ multiple: true })
-export class MainThreadEditorService extends Disposable implements IMainThreadEditorTabsShape {
+export class MainThreadEditorTabsService extends Disposable implements IMainThreadEditorTabsShape {
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -26,7 +26,11 @@ export class MainThreadEditorService extends Disposable implements IMainThreadEd
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditorTabs);
 
-    this.addDispose(this.workbenchEditorService.onDidEditorGroupsChanged(this._pushEditorTabs));
+    this.addDispose(
+      this.workbenchEditorService.onDidEditorGroupsChanged(() => {
+        this._pushEditorTabs();
+      }),
+    );
   }
 
   private _pushEditorTabs(): void {
@@ -39,7 +43,7 @@ export class MainThreadEditorService extends Disposable implements IMainThreadEd
         tabs.push({
           group: group.index,
           name: group.name,
-          resource: resource.uri,
+          resource: resource.uri.toString(),
           isActive: this.workbenchEditorService.currentEditorGroup.name === group.name,
         });
       }

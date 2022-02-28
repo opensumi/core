@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, URI } from '@opensumi/ide-core-common';
+import { Emitter, Event, URI, Uri } from '@opensumi/ide-core-common';
 import { IExtHostEditorTabs, IEditorTab, IEditorTabDto } from './../../../common/vscode/editor-tabs';
 
 export class ExtHostEditorTabs implements IExtHostEditorTabs {
@@ -20,11 +20,11 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 
   $acceptEditorTabs(tabs: IEditorTabDto[]): void {
     this._tabs = tabs.map((dto) => ({
-        name: dto.name,
-        group: dto.group,
-        resource: URI.revive(dto.resource),
-        isActive: dto.isActive,
-      }));
+      name: dto.name,
+      group: dto.group,
+      resource: Uri.parse(dto.resource),
+      isActive: dto.isActive,
+    }));
     this._onDidChangeTabs.fire();
   }
 }

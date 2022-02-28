@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 export interface IEditorTabDto {
   group: number;
   name: string;
-  resource: URI;
+  resource: string;
   isActive: boolean;
 }
 
