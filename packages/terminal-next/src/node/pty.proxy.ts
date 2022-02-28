@@ -2,40 +2,35 @@
 import net from 'net';
 import * as pty from 'node-pty';
 import { RPCServiceCenter, createSocketConnection, initRPCService } from '@opensumi/ide-connection';
-
-export interface IPtyServiceProxy {
-  $spawn(
-    file: string,
-    args: string[] | string,
-    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
-  ): Promise<pty.IPty>;
-  $onData(callId: number, pid: number): void;
-  $onExit(callId: number, pid: number): void;
-  $on(callId: number, pid: number, event: any): void;
-  $resize(pid: number, columns: number, rows: number): void;
-  $write(pid: number, data: string): void;
-  $kill(pid: number, signal?: string): void;
-  $pause(pid: number): void;
-  $resume(pid: number): void;
-}
+import { getDebugLogger } from '@opensumi/ide-core-node';
+import {
+  IPtyProxyRPCService,
+  PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
+  PTY_SERVICE_PROXY_PROTOCOL,
+  PTY_SERVICE_PROXY_SERVER_PORT,
+} from '../common';
 
 // 在DEV容器中远程运行，与IDE Server通信
 class PtyServiceProxy {
   private readonly ptyServiceCenter: RPCServiceCenter;
   private ptyInstanceMap = new Map<number, pty.IPty>();
+  private readonly debugLogger = getDebugLogger();
 
   constructor() {
     this.ptyServiceCenter = new RPCServiceCenter();
     this.createSocket();
     const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
 
-    const $callback: (callId: number, ...args) => void = (getRPCService('PTY_SERVICE_Callback') as any).$callback;
+    const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
+      .$callback;
     const self = this;
-    const ptyServiceProxy: IPtyServiceProxy = {
+
+    // Pty 服务的RPC Service创建
+    const ptyServiceProxyInstance: IPtyProxyRPCService = {
       $spawn(file: string, args: string[] | string, options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions): any {
-        console.log('ptyServiceCenter: spawn', file, args, options);
         const ptyInstance = pty.spawn(file, args, options);
         self.ptyInstanceMap.set(ptyInstance.pid, ptyInstance);
+        // 走RPC序列化的部分，function不走序列化，走单独的RPC调用
         const ptyInstanceSimple = {
           pid: ptyInstance.pid,
           cols: ptyInstance.cols,
@@ -43,14 +38,13 @@ class PtyServiceProxy {
           process: ptyInstance.process,
           handleFlowControl: ptyInstance.handleFlowControl,
         };
-        console.log('ptyServiceCenter: spawn', ptyInstanceSimple);
+        self.debugLogger.log('ptyServiceProxy: spawn', ptyInstanceSimple);
         return ptyInstanceSimple;
-        // (getRPCService('PTY_SERVICE_Callback') as any).$callback('call back test');
       },
       $onData(callId: number, pid: number): void {
         const ptyInstance = self.ptyInstanceMap.get(pid);
         ptyInstance?.onData((e) => {
-          console.log('ptyServiceCenter: onData', e, 'pid:', pid);
+          self.debugLogger.debug('ptyServiceCenter: onData', e, 'pid:', pid);
           $callback(callId, e);
         });
       },
@@ -72,7 +66,7 @@ class PtyServiceProxy {
       },
       $write(pid: number, data: string): void {
         const ptyInstance = self.ptyInstanceMap.get(pid);
-        console.log('ptyServiceCenter: write', data, 'pid:', pid);
+        self.debugLogger.debug('ptyServiceCenter: write', data, 'pid:', pid);
         ptyInstance?.write(data);
       },
       $kill(pid: number, signal?: string): void {
@@ -89,17 +83,17 @@ class PtyServiceProxy {
       },
     };
 
-    createRPCService('PTY_SERVICE', ptyServiceProxy);
+    createRPCService(PTY_SERVICE_PROXY_PROTOCOL, ptyServiceProxyInstance);
   }
 
   private createSocket() {
     const server = net.createServer();
     server.on('connection', (connection) => {
-      console.log('ptyServiceCenter: new connections coming in');
+      this.debugLogger.log('ptyServiceCenter: new connections coming in');
       this.setProxyConnection(connection);
     });
-    server.listen(10111);
-    console.log('ptyServiceCenter: listening on 10111');
+    server.listen(PTY_SERVICE_PROXY_SERVER_PORT);
+    this.debugLogger.log(`ptyServiceCenter: listening on ${PTY_SERVICE_PROXY_SERVER_PORT}`);
   }
 
   private setProxyConnection(connection: net.Socket) {
