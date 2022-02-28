@@ -3,7 +3,12 @@ import net from 'net';
 import * as pty from 'node-pty';
 import { Injectable } from '@opensumi/di';
 import { RPCServiceCenter, createSocketConnection, initRPCService } from '@opensumi/ide-connection';
-import { IPtyServiceProxy } from './pty.proxy';
+import {
+  IPtyProxyRPCService,
+  PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
+  PTY_SERVICE_PROXY_PROTOCOL,
+  PTY_SERVICE_PROXY_SERVER_PORT,
+} from '../common';
 
 export const PtyServiceManagerToken = Symbol('PtyServiceManager');
 
@@ -12,7 +17,7 @@ export const PtyServiceManagerToken = Symbol('PtyServiceManager');
 export class PtyServiceManager {
   private callId = 0;
   private callbackMap = new Map<number, (...args: any[]) => void>();
-  private ptyServiceProxy: IPtyServiceProxy; // TODO: 补充interface { $method }
+  private ptyServiceProxy: IPtyProxyRPCService;
 
   constructor() {
     this.initRemoteConnection();
@@ -23,14 +28,14 @@ export class PtyServiceManager {
     const { getRPCService: clientGetRPCService, createRPCService } = initRPCService(clientCenter);
     // const self = this;
     // TODO: 思考any是否应该在这里用 亦或者做空判断
-    const getService: IPtyServiceProxy = clientGetRPCService('PTY_SERVICE') as any;
+    const getService: IPtyProxyRPCService = clientGetRPCService(PTY_SERVICE_PROXY_PROTOCOL) as any;
     this.ptyServiceProxy = getService;
 
     // 处理回调
-    createRPCService('PTY_SERVICE_Callback', {
+    createRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, {
       $callback: async (callId, ...args) => {
         const callback = this.callbackMap.get(callId);
-        console.log('PTY_SERVICE_Callback', callId, args);
+        console.log(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, callId, args);
         if (!callback) {
           return Promise.reject(new Error(`no found callback: ${callId}`));
         }
@@ -38,7 +43,7 @@ export class PtyServiceManager {
       },
     });
     const socket = new net.Socket();
-    socket.connect({ port: 10111 });
+    socket.connect({ port: PTY_SERVICE_PROXY_SERVER_PORT });
 
     // 连接绑定
     clientCenter.setConnection(createSocketConnection(socket));
