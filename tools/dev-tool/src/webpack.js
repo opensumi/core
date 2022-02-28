@@ -219,7 +219,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         contentBase: dir + '/dist',
         port: PORT,
         disableHostCheck: true,
-        host: '0.0.0.0',
         proxy: {
           '/api': {
             target: 'http://localhost:8000',
@@ -311,7 +310,6 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       contentBase: dir + '/public',
       disableHostCheck: true,
       port,
-      host: '0.0.0.0',
       quiet: true,
       overlay: true,
       open: false,
