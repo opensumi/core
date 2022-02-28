@@ -19,6 +19,7 @@ import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-common/lib/platform';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
+import { PtyServiceManager } from './pty.manager';
 
 export const IPtyService = Symbol('IPtyService');
 
@@ -36,6 +37,7 @@ export class PtyService extends Disposable {
   readonly onReady = this._onReady.event;
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
+  private readonly ptyServiceManager = new PtyServiceManager();
 
   private readonly _initialCwd: string;
 
@@ -183,7 +185,8 @@ export class PtyService extends Disposable {
     const options = this.shellLaunchConfig;
 
     const args = options.args || [];
-    const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
+    const ptyProcess = await this.ptyServiceManager.spawn(options.executable as string, args, this._ptyOptions);
+    // const ptyProcess1 = pty.spawn(options.executable as string, args, this._ptyOptions);
 
     this.addDispose(
       ptyProcess.onData((e) => {
