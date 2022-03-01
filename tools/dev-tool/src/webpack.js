@@ -9,6 +9,7 @@ const path = require('path');
 const threadLoader = require('thread-loader');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const merge = require('webpack-merge');
+const fse = require('fs-extra');
 
 threadLoader.warmup({}, ['ts-loader']);
 
@@ -19,6 +20,9 @@ const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/re
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
+
+const defaultWorkspace = path.join(__dirname, '../../workspace');
+fse.mkdirpSync(defaultWorkspace);
 
 // eslint-disable-next-line no-console
 console.log('front port', PORT);
@@ -183,9 +187,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         }),
         new webpack.DefinePlugin({
           'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
-          'process.env.WORKSPACE_DIR': JSON.stringify(
-            process.env.MY_WORKSPACE || path.join(__dirname, '../../workspace'),
-          ),
+          'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || defaultWorkspace),
           'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
           'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),

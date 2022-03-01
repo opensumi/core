@@ -20,7 +20,11 @@ import nsfw from 'nsfw';
 
   const watcher = await (nsfw as any)(cwd, (e) => {
     e.forEach((e) => {
-      if (e.action === nsfw.actions.CREATED || e.action === nsfw.actions.MODIFIED || e.action === nsfw.actions.RENAMED) {
+      if (
+        e.action === nsfw.actions.CREATED ||
+        e.action === nsfw.actions.MODIFIED ||
+        e.action === nsfw.actions.RENAMED
+      ) {
         const filePath = e.newFile ? path.join(e.directory, e.newFile!) : path.join(e.directory, e.file!);
         if (fileSet.has(filePath)) {
           console.log('non-ts change detected:', filePath);
@@ -32,13 +36,7 @@ import nsfw from 'nsfw';
 
   watcher.start();
 
-  const configFile = path.join(__dirname, 'test/jest.config.js');
-  const testFile = path.join(__dirname, 'test/build.js');
-
-  // // await run(`npx jest ${testFile} -c ${configFile}`);
-
   // build webview resources
-  // await run('cd ./packages/webview && npm run copy-resources');
   await run('npx tsc --build configs/ts/tsconfig.build.json -w');
 })().catch((e) => {
   console.trace(e);

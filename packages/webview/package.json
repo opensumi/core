@@ -2,16 +2,14 @@
   "name": "@opensumi/ide-webview",
   "version": "2.15.2",
   "files": [
-    "lib",
-    "resources"
+    "lib"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.webview.json",
-    "copy-resources": "node ./copy-resources.js"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.webview.json"
   },
   "repository": {
     "type": "git",
