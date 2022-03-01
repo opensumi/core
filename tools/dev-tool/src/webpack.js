@@ -15,7 +15,7 @@ threadLoader.warmup({}, ['ts-loader']);
 const utils = require('./utils');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
 
 // eslint-disable-next-line no-console

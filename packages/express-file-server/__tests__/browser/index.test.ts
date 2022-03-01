@@ -22,6 +22,6 @@ describe('packages/express-file-server/__tests__/browser/index.test.ts', () => {
   staticResourceClientAppContribution.initialize();
   it('express 模块提供 file schema 的 uri 转换', () => {
     const uri = staticResourceService.resolveStaticResource(URI.file('test'));
-    expect(uri.toString()).toEqual('http://127.0.0.1:8000/assets/test');
+    expect(uri.toString()).toEqual('http://0.0.0.0:8000/assets/test');
   });
 });

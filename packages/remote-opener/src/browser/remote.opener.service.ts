@@ -8,7 +8,7 @@ import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { IRemoteHostConverter, IRemoteOpenerBrowserService } from '../common';
 
 // 不预置SUPPORT_HOSTS，改为用户注册，默认走openerService来处理这部分逻辑
-// const SUPPORT_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
+// const SUPPORT_HOSTS = ['localhost', '0.0.0.0', '0.0.0.0'];
 
 @Injectable()
 export class RemoteOpenerBrowserServiceImpl extends RPCService implements IRemoteOpenerBrowserService {

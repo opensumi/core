@@ -52,7 +52,7 @@ describe('connection', () => {
       dispose: () => {},
     });
 
-    const connection = new WebSocket('ws://127.0.0.1:7788/service');
+    const connection = new WebSocket('ws://0.0.0.0:7788/service');
 
     connection.on('error', () => {
       connection.close();
@@ -105,7 +105,7 @@ describe('connection', () => {
       }),
 
       new Promise<void>((resolve) => {
-        clientConnection = new WebSocket('ws://127.0.0.1:7788/service');
+        clientConnection = new WebSocket('ws://0.0.0.0:7788/service');
         clientConnection.on('open', () => {
           resolve(undefined);
         });

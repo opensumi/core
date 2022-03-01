@@ -47,7 +47,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
       scheme: 'file',
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走 scm raw 服务
-        // https://127.0.0.1:8080/asset-service/v3/project/$repo/repository/blobs/$ref
+        // https://0.0.0.0:8080/asset-service/v3/project/$repo/repository/blobs/$ref
         // GET /api/v3/projects/{id}/repository/blobs/{sha}
         const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
         const rootUri = new URI(this.workspaceService.workspace?.uri!);

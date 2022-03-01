@@ -35,14 +35,14 @@ describe('template test', () => {
   });
 
   it('can get png if path in whitelist', async (done) => {
-    const res = await superagent.get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.png')}`);
+    const res = await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.png')}`);
     expect(res.status === 200);
     done();
   });
 
   it('response 403 if not in whitelist', async (done) => {
     try {
-      await superagent.get('http://127.0.0.1:50118/assets/test');
+      await superagent.get('http://0.0.0.0:50118/assets/test');
     } catch (err) {
       expect(err.status === 403);
     }
@@ -52,7 +52,7 @@ describe('template test', () => {
 
   it('response 403 if not allowed mime', async (done) => {
     try {
-      await superagent.get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.exe')}`);
+      await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.exe')}`);
     } catch (err) {
       expect(err.status === 403);
     }
