@@ -21,7 +21,7 @@
     "@opensumi/ide-connection": "2.15.2",
     "@opensumi/ide-core-common": "2.15.2",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
-    "@vscode/codicons": "^0.0.27",
+    "@vscode/codicons": "0.0.27",
     "ajv": "^6.10.0",
     "classnames": "2.2.6",
     "clsx": "^1.0.4",
