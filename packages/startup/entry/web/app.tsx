@@ -21,7 +21,7 @@ renderApp({
     ...defaultConfig,
     ...{
       [SlotLocation.top]: {
-        modules: ['@opensumi/ide-menu-bar', 'toolbar'],
+        modules: ['@opensumi/menu-bar-example', 'toolbar'],
       },
     },
     ...{
