@@ -100,8 +100,11 @@ export const TabbarViewBase: React.FC<{
                       dragImage.classList.add(tabClassName);
                     }
                     document.body.appendChild(dragImage);
-                    e.dataTransfer.setDragImage(dragImage, 0, 0);
-                    setTimeout(() => document.body.removeChild(dragImage), 0);
+                    e.persist();
+                    requestAnimationFrame(() => {
+                        e.dataTransfer.setDragImage(dragImage, 0, 0);
+                        document.body.removeChild(dragImage);
+                    });
                   }
                   tabbarService.handleDragStart(e, containerId);
                 }}
