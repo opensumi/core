@@ -25,7 +25,9 @@ A framework helps you quickly build Cloud or Desktop IDE products.
 
 English | [简体中文](./README-zh_CN.md)
 
-## Quickstart
+## Quick start
+
+> if you are using npm@^7 or higher，please use `npm install --legacy-peer-deps`
 
 ```bash
 $ npm install

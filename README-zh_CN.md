@@ -33,6 +33,8 @@
 $ npm config set registry https://registry.npmmirror.com
 ```
 
+> 如果你使用 npm@^7 及以上版本，请使用 `npm install --legacy-peer-deps`
+
 由于 `canvas` 依赖 GitHub Release 资源，在国内网络环境下极易超时，故安装依赖时请加上对应的镜像地址如下：
 
 ```bash
