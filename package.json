@@ -38,7 +38,7 @@
     "prepare:test": "npm run init:deps && npm run compile && npm run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 node ./node_modules/.bin/jest --coverage --forceExit --detectOpenHandles",
     "coverage": "npm run init && npm run test:cov",
-    "ci": "npm run lint && npm run coverage && npm run check:dep",
+    "ci": "npm run lint -- --quiet && npm run coverage && npm run check:dep",
     "download-extension": "cross-env DEBUG=InstallExtension node scripts/download.js",
     "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
     "changelog-old": "node scripts/changelog/index.js",
