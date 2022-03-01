@@ -14,6 +14,7 @@ threadLoader.warmup({}, ['ts-loader']);
 
 const utils = require('./utils');
 
+const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
@@ -47,6 +48,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             configFile: tsConfigPath,
           }),
         ],
+        alias: {
+          react: reactPath,
+        },
       },
       bail: true,
       mode: 'development',
