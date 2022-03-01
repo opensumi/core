@@ -9,6 +9,7 @@ const path = require('path');
 const threadLoader = require('thread-loader');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const merge = require('webpack-merge');
+const fse = require('fs-extra');
 
 threadLoader.warmup({}, ['ts-loader']);
 
@@ -17,6 +18,9 @@ const utils = require('./utils');
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
+
+const defaultWorkspace = path.join(__dirname, '../../workspace');
+fse.mkdirpSync(defaultWorkspace);
 
 // eslint-disable-next-line no-console
 console.log('front port', PORT);

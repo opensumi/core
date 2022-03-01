@@ -764,6 +764,10 @@ export class FileTreeModelService {
       : TreeNodeType.CompositeTreeNode,
     activeUri?: URI,
   ) => {
+    if (!this.treeModel) {
+      return;
+    }
+
     if (!item) {
       item = this.treeModel.root as Directory | File;
     }
