@@ -145,7 +145,7 @@ export const QuickOpenInput = observer(() => {
 
   return (
     <div className={styles.input}>
-      {widget.canSelectMany && <CheckBox checked={widget.selectAll} onChange={handleSelectAll} />}
+      {widget.canSelectMany && <CheckBox checked={widget.selectAll} wrapTabIndex={0} onChange={handleSelectAll} />}
       <ValidateInput
         validateMessage={validateMessage}
         ref={inputRef}
@@ -308,9 +308,8 @@ export const QuickOpenView = observer(() => {
 
   // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
   const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
-    // 点击 checkbox 时 relatedTarget 为 null
     if (relatedTarget === null) {
-      return true;
+      return false;
     }
 
     let node = relatedTarget.parentNode;

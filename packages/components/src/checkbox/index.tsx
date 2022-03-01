@@ -16,8 +16,11 @@ export const CheckBox: React.FC<
     label?: string;
     size?: 'default' | 'large';
     disabled?: boolean;
+    // 增加父容器的 tabIndex 属性，以便告诉浏览器这是一个可获取焦点的元素
+    // https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null
+    wrapTabIndex?: number;
   }
-> = ({ insertClass, className, label, size = 'default', disabled, checked = false, ...restProps }) => {
+> = ({ insertClass, className, label, size = 'default', disabled, checked = false, wrapTabIndex, ...restProps }) => {
   warning(!insertClass, '`insertClass` was deprecated, please use `className` instead');
 
   const cls = classNames('kt-checkbox', insertClass, className, {
@@ -26,7 +29,7 @@ export const CheckBox: React.FC<
   });
 
   return (
-    <label className={cls}>
+    <label className={cls} tabIndex={wrapTabIndex}>
       <span className='kt-checkbox-lump'>
         <input type='checkbox' disabled={disabled} checked={checked} {...restProps} />
         <span className='kt-checkbox-icon'>
