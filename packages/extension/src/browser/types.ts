@@ -28,6 +28,12 @@ export abstract class IActivationEventService {
  */
 export abstract class AbstractExtInstanceManagementService {
   abstract dispose(): void;
+
+  /**
+   * 通过路径销毁插件实例 dispose
+   */
+  abstract disposeExtensionInstancesByPath(paths: Array<string>): void;
+
   /**
    * 获取所有插件实例
    */

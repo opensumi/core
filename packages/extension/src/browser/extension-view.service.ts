@@ -79,6 +79,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   private extensions: IExtension[] = [];
 
+  // 被激活且在 contributes 中注册了 browserMain 的 kaitian 插件
+  public activatedViewExtensionMap: Map<string, IExtension> = new Map();
+
   public getExtension(extensionId: string): IExtension | undefined {
     return this.extensions.find((n) => n.id === extensionId);
   }
@@ -170,7 +173,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   public async activeExtension(extension: IExtension, protocol: IRPCProtocol) {
-    const { extendConfig, packageJSON, contributes } = extension;
+    const { extendConfig, packageJSON, contributes, path } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
     if (extendConfig?.browser?.main) {
@@ -179,12 +182,14 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
         '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead',
       );
       await this.activateExtensionByDeprecatedExtendConfig(extension as Extension);
+      this.activatedViewExtensionMap.set(path, extension);
       return;
     }
 
     // 激活 workerMain/browserMain 相关部分
     if (packageJSON.kaitianContributes && contributes?.browserMain) {
       await this.activeExtensionContributes(extension);
+      this.activatedViewExtensionMap.set(path, extension);
     }
   }
 
@@ -235,7 +240,14 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
           }
           if (this.appConfig.useExperimentalShadowDom) {
             const shadowComponent = (props) =>
-              getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead, this.appConfig.componentCDNType);
+              getShadowRoot(
+                popoverComponent,
+                extension,
+                props,
+                action.popoverComponent,
+                proxiedHead,
+                this.appConfig.componentCDNType,
+              );
             this.toolbarPopoverRegistry.registerComponent(
               `${extension.id}:${action.popoverComponent}`,
               shadowComponent,
@@ -420,7 +432,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       return () => ExtensionNoExportsView(extension.id, id);
     }
     if (this.appConfig.useExperimentalShadowDom) {
-      return (props) => getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
+      return (props) =>
+        getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
     }
     return moduleExports[id];
   }
@@ -507,7 +520,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
               ...other,
               id,
-              component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
+              component: (props) =>
+                getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
             })),
           };
           return pre;

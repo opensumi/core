@@ -49,6 +49,8 @@ export abstract class AbstractWorkerExtProcessService<T = any>
 }
 
 export abstract class AbstractViewExtProcessService {
+  activatedViewExtensionMap: Map<string, IExtension>;
+
   abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
   abstract activate(): void;
   abstract initExtension(extensions: IExtension[]): void;
