@@ -405,7 +405,9 @@ export class DebugConsoleModelService {
       menuNodes,
       args: [node],
       onHide: () => {
-        setTimeout(() => this.debugContextKey.contextInDebugConsole.set(false));
+        window.requestAnimationFrame(() => {
+          this.debugContextKey.contextInDebugConsole.set(false);
+        });
       },
     });
   };
