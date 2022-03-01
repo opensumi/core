@@ -23,7 +23,6 @@ import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actio
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
-import { Icon } from '@opensumi/ide-components';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 const pkgName = require('../../package.json').name;
