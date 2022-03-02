@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-common",
-  "version": "2.15.2",
+  "version": "2.15.3",
   "description": "@opensumi/ide-core-common",
   "files": [
     "lib"
