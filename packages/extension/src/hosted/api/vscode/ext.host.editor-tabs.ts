@@ -1,8 +1,15 @@
+import { MainThreadAPIIdentifier } from './../../../common/vscode/index';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, URI, Uri } from '@opensumi/ide-core-common';
-import { IExtHostEditorTabs, IEditorTab, IEditorTabDto } from './../../../common/vscode/editor-tabs';
+import {
+  IExtHostEditorTabs,
+  IEditorTab,
+  IEditorTabDto,
+  IMainThreadEditorTabsShape,
+} from './../../../common/vscode/editor-tabs';
 
 export class ExtHostEditorTabs implements IExtHostEditorTabs {
+  private _proxy: IMainThreadEditorTabsShape;
   readonly _serviceBrand: undefined;
 
   private readonly _onDidChangeTabs = new Emitter<void>();
@@ -15,7 +22,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
   }
 
   constructor(rpcProtocol: IRPCProtocol) {
-    // this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadDecorations);
+    this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEditorTabs);
   }
 
   $acceptEditorTabs(tabs: IEditorTabDto[]): void {

@@ -31,6 +31,14 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
         this._pushEditorTabs();
       }),
     );
+    this.addDispose(
+      this.workbenchEditorService.onActiveResourceChange(() => {
+        this._pushEditorTabs();
+      }),
+    );
+    this.workbenchEditorService.contributionsReady.promise.then(() => {
+      this._pushEditorTabs();
+    });
   }
 
   private _pushEditorTabs(): void {
@@ -42,9 +50,9 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
         }
         tabs.push({
           group: group.index,
-          name: group.name,
+          name: resource.name,
           resource: resource.uri.toString(),
-          isActive: this.workbenchEditorService.currentEditorGroup.name === group.name,
+          isActive: this.workbenchEditorService.currentResource?.uri === resource.uri,
         });
       }
     }
