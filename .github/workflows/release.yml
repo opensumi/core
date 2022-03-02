@@ -85,7 +85,7 @@ jobs:
         if: steps.checkTag.outputs.exists == 'false'
         id: release-log
         run: |
-          npm run changelog -- --remote
+          npm run changelog -- --remote --release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
