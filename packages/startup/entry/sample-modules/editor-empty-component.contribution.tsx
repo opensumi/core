@@ -40,8 +40,8 @@ export const localizationBundle = {
     contents: {
       'custom.quick_open': 'Quick Open',
       'custom.command_palette': 'Command Palette',
-      'custom.terminal_panel': 'Switch to Terminal Panel',
-      'custom.search_panel': 'Switch to Search Panel',
+      'custom.terminal_panel': 'Toggle Terminal Panel',
+      'custom.search_panel': 'Toggle Search Panel',
     },
   },
 };

@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i3/O1CN01Rkfi5j1bJrBDnqEtt_!!6000000003445-2-tps-300-300.png" width="150" /></a>
+	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg" width="150" /></a>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 A framework helps you quickly build Cloud or Desktop IDE products.
 
-![perview](https://img.alicdn.com/imgextra/i3/O1CN01uIRRRl1wmLkN9geV3_!!6000000006350-2-tps-2844-1830.png)
+![perview](https://img.alicdn.com/imgextra/i2/O1CN018JorOL1oWlLmbzGv0_!!6000000005233-2-tps-2844-1796.png)
 
 English | [简体中文](./README-zh_CN.md)
 
@@ -32,6 +32,7 @@ English | [简体中文](./README-zh_CN.md)
 ```bash
 $ npm install
 $ npm run init
+$ npm run download-extension  # Optional
 $ npm run start
 ```
 
