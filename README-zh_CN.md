@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i3/O1CN01Rkfi5j1bJrBDnqEtt_!!6000000003445-2-tps-300-300.png" width="150" /></a>
+	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg" width="150" /></a>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 一款帮助你快速搭建 CloudIDE 及 桌面端 IDE 产品的底层框架。
 
-![perview](https://img.alicdn.com/imgextra/i1/O1CN01n6girT1wJ2OmjQ15K_!!6000000006286-2-tps-2844-1830.png)
+![perview](https://img.alicdn.com/imgextra/i3/O1CN01bDhxUy1RtuCfQ1fcI_!!6000000002170-2-tps-2844-1796.png)
 
 [English](./README.md) | 简体中文
 
@@ -40,6 +40,7 @@ $ npm config set registry https://registry.npmmirror.com
 ```bash
 $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/canvas/
 $ npm run init
+$ npm run download-extension  # 可选
 $ npm run start
 ```
 
