@@ -17,7 +17,7 @@
     "@opensumi/ide-static-resource": "2.15.3",
     "fs-extra": "^8.1.0",
     "node-fetch": "^2.6.1",
-    "requestretry": "^5.0.0",
+    "requestretry": "^7.0.0",
     "uuid": "^8.3.2",
     "yauzl": "^2.10.0"
   },
