@@ -21,7 +21,6 @@ import {
   IMainThreadWebviewView,
   IMainThreadSecret,
   IMainThreadTesting,
-  IMainThreadEditorTabsShape,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -60,7 +59,6 @@ import { MainThreadCustomEditor } from './main.thread.custom-editor';
 import { MainThreadAuthentication } from './main.thread.authentication';
 import { MainThreadSecret } from './main.thread.secret';
 import { MainThreadTestsImpl } from './main.thread.tests';
-import { MainThreadEditorTabsService } from './main.thread.editor-tabs';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -103,7 +101,6 @@ export async function createApiFactory(
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [rpcProtocol]);
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [rpcProtocol]);
   const MainthreadTestAPI = injector.get(MainThreadTestsImpl, [rpcProtocol]);
-  const MainThreadEditorTabsAPI = injector.get(MainThreadEditorTabsService, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -145,7 +142,6 @@ export async function createApiFactory(
   );
   rpcProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
   rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
-  rpcProtocol.set<IMainThreadEditorTabsShape>(MainThreadAPIIdentifier.MainThreadEditorTabs, MainThreadEditorTabsAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -181,7 +177,6 @@ export async function createApiFactory(
     MainThreadAuthenticationAPI.dispose();
     MainThreadSecretAPI.dispose();
     MainthreadTestAPI.dispose();
-    MainThreadEditorTabsAPI.dispose();
   };
 }
 
