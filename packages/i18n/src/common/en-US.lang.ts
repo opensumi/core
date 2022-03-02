@@ -875,6 +875,9 @@ export const localizationBundle = {
     'keyboard.autoDetect.description': "(Current: '{0} ')",
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
 
+    'view.component.renderedError': 'View Component Rendering Exception',
+    'view.component.tryAgain': 'Refresh',
+
     // #region Testing
     'test.title': 'Testing',
     'test.result.runFinished': 'Test run at {0}',
