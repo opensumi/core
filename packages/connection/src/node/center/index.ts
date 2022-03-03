@@ -6,7 +6,7 @@ import {
 } from '@opensumi/vscode-jsonrpc/lib/node/main';
 
 export { SocketMessageReader, SocketMessageWriter };
-import { RPCProxy, NOTREGISTERMETHOD } from './proxy';
+import { RPCProxy, NOTREGISTERMETHOD } from '../../common';
 import net from 'net';
 
 export type RPCServiceMethod = (...args: any[]) => any;
