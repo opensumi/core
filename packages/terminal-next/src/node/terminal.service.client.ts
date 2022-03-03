@@ -78,7 +78,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
-        this.logger.log(`client ${id} create ${pty} with options `, launchConfig);
+        this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
         this.terminalMap.set(id, pty);
         return {
           id,
