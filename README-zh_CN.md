@@ -64,8 +64,14 @@ $ MY_WORKSPACE={local_path} npm run start
 
 同时，对于 [Issues](https://github.com/opensumi/core/issues) 中标记了 `help wanted` 或者 `good first issue` 的问题，将会比较适合作为你的第一个 PR 来提交。
 
+## 开发者交流群
+
+打开钉钉客户端进行扫码，群号：34355491
+
+![dingtalk](https://img.alicdn.com/imgextra/i4/O1CN01OgyT0Y1Sp9i7gMojz_!!6000000002295-0-tps-400-467.jpg)
+
 ## 协议
 
 Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
-Licensed under the [MIT](LICENSE) license.
+本项目采用 [MIT](LICENSE) 协议。
