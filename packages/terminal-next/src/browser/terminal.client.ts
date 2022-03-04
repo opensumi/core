@@ -337,38 +337,37 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         config: defaultProfile,
       };
     }
+    await this._checkWorkspace();
 
-    if (await this._checkWorkspace()) {
-      const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
-      const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
-      this._launchConfig = launchConfig;
-      this.name = launchConfig.name || '';
+    const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
+    const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
+    this._launchConfig = launchConfig;
+    this.name = launchConfig.name || '';
 
-      if (launchConfig.initialText) {
-        this.xterm.raw.writeln(launchConfig.initialText);
-      }
-      if (!launchConfig.env) {
-        launchConfig.env = {};
-      }
-      this.environmentService.mergedCollection?.applyToProcessEnvironment(
-        launchConfig.env,
-        this.applicationService.backendOS,
-        this.variableResolver.resolve.bind(this.variableResolver),
-      );
-
-      this.addDispose(
-        this.environmentService.onDidChangeCollections((collection) => {
-          // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
-          collection.applyToProcessEnvironment(
-            launchConfig.env!,
-            this.applicationService.backendOS,
-            this.variableResolver.resolve.bind(this.variableResolver),
-          );
-        }),
-      );
-      this._attachXterm();
-      this._attachAfterRender();
+    if (launchConfig.initialText) {
+      this.xterm.raw.writeln(launchConfig.initialText);
     }
+    if (!launchConfig.env) {
+      launchConfig.env = {};
+    }
+    this.environmentService.mergedCollection?.applyToProcessEnvironment(
+      launchConfig.env,
+      this.applicationService.backendOS,
+      this.variableResolver.resolve.bind(this.variableResolver),
+    );
+
+    this.addDispose(
+      this.environmentService.onDidChangeCollections((collection) => {
+        // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+        collection.applyToProcessEnvironment(
+          launchConfig.env!,
+          this.applicationService.backendOS,
+          this.variableResolver.resolve.bind(this.variableResolver),
+        );
+      }),
+    );
+    this._attachXterm();
+    this._attachAfterRender();
   }
 
   @observable
@@ -520,25 +519,31 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       const roots = this.workspace.tryGetRoots();
       const choose = await this.quickPick.show(roots.map((file) => new URI(file.uri).codeUri.fsPath));
       return choose;
-    } else {
+    } else if (this.workspace.workspace) {
       return new URI(this.workspace.workspace?.uri).codeUri.fsPath;
+    } else {
+      return undefined;
     }
   }
 
+  /**
+   * if we want open a terminal, we need a parameter: `cwd`
+   * we don't care whether it valid. our backend service will check it.
+   *
+   * 如果当前工作区不存在，这里就会获得空，后端的逻辑中终端会打开用户的家目录。
+   * 多工作区模式下用户没有选中任何一个工作区，也是会打开用户的家目录。
+   */
   private async _checkWorkspace() {
     const widget = this._widget;
     if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
       this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
     } else {
       const choose = await this._pickWorkspace();
-      if (!choose) {
-        this.view.removeWidget(widget.id);
-        return false;
+      if (choose) {
+        this._workspacePath = choose;
+        TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
       }
-      this._workspacePath = choose;
-      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
     }
-    return true;
   }
 
   reset() {
@@ -632,10 +637,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!this._widget.element?.clientHeight) {
       return;
     }
-    // 多 workspace 模式下，等待 workspace 选择后再渲染
-    if (!this._workspacePath) {
-      return;
-    }
+
     this._widget.element.appendChild(this.xterm.container);
     this.xterm.open();
     // 首次渲染且为当前选中的 client 时，聚焦
