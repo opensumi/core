@@ -51,7 +51,8 @@ import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-sy
 import { IMainThreadUrls, IExtHostUrls } from './urls';
 import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
 import { IExtHostSecret, IMainThreadSecret } from './secret';
-import { IExtHostTests } from './tests';
+import { IExtHostTests, IMainThreadTesting } from './tests';
+import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -99,6 +100,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadSecret: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
   MainThreadReporter: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
   MainThreadTests: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadTests'),
+  MainThreadEditorTabs: createMainContextProxyIdentifier<IMainThreadEditorTabsShape>('MainThreadEditorTabs'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -139,6 +141,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostAuthentication: createExtHostContextProxyIdentifier<IExtHostAuthentication>('ExtHostAuthentication'),
   ExtHostSecret: createExtHostContextProxyIdentifier<IExtHostSecret>('ExtHostSecret'),
   ExtHostTests: createExtHostContextProxyIdentifier<IExtHostTests>('ExtHostTests'),
+  ExtHostEditorTabs: createExtHostContextProxyIdentifier<IExtHostEditorTabs>('ExtHostEditorTabs'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -186,3 +189,4 @@ export * from './theming';
 export * from './authentication';
 export * from './secret';
 export * from './tests';
+export * from './editor-tabs';

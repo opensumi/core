@@ -1,3 +1,4 @@
+import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -49,6 +50,7 @@ import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
 import { ExtHostTestsImpl } from './ext.host.tests';
+import { ExtHostEditorTabs } from './ext.host.editor-tabs';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -173,6 +175,10 @@ export function createApiFactory(
     ExtHostAPIIdentifier.ExtHostTests,
     new ExtHostTestsImpl(rpcProtocol),
   );
+  const extHostEditorTabs = rpcProtocol.set<IExtHostEditorTabs>(
+    ExtHostAPIIdentifier.ExtHostEditorTabs,
+    new ExtHostEditorTabs(rpcProtocol),
+  ) as ExtHostEditorTabs;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
@@ -197,6 +203,7 @@ export function createApiFactory(
       extHostUrls,
       extHostTheming,
       extHostCustomEditor,
+      extHostEditorTabs,
     ),
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     workspace: createWorkspaceApiFactory(

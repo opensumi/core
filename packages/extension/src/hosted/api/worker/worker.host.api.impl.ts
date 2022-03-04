@@ -37,6 +37,7 @@ import { ExtHostTheming } from '../vscode/ext.host.theming';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
+import { ExtHostEditorTabs } from '../vscode/ext.host.editor-tabs';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -140,6 +141,10 @@ export function createAPIFactory(
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
+  const extHostEditorTabs = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostEditorTabs,
+    new ExtHostEditorTabs(rpcProtocol),
+  ) as ExtHostEditorTabs;
 
   return (extension: IExtensionDescription) => ({
     ...workerExtTypes,
@@ -185,6 +190,7 @@ export function createAPIFactory(
       extHostUrls,
       extHostTheming,
       extHostCustomEditor,
+      extHostEditorTabs,
     ),
     comments: createCommentsApiFactory(extension, extHostComments),
     // Sumi 扩展 API

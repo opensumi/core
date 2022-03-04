@@ -82,6 +82,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
         {} as any,
         {} as any,
         {} as any,
+        {} as any,
       );
       done();
     }, 0);

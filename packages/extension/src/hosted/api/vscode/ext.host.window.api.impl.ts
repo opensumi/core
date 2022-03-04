@@ -33,6 +33,7 @@ import { ExtHostProgress } from './ext.host.progress';
 import { QuickInputOptions } from '@opensumi/ide-quick-open';
 import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
+import { ExtHostEditorTabs } from './ext.host.editor-tabs';
 
 export function createWindowApiFactory(
   extension: IExtensionDescription,
@@ -52,6 +53,7 @@ export function createWindowApiFactory(
   extHostUrls: IExtHostUrls,
   extHostTheming: ExtHostTheming,
   extHostCustomEditor: ExtHostCustomEditorImpl,
+  extHostEditorTabs: ExtHostEditorTabs,
 ): typeof vscode.window {
   const extensionInfo: IExtensionInfo = {
     id: extension.id,
@@ -291,6 +293,12 @@ export function createWindowApiFactory(
       options?: { webviewOptions: { retainContextWhenHidden: boolean } },
     ) {
       return extHostWebviewView.registerWebviewViewProvider(extension, viewId, provider, options?.webviewOptions);
+    },
+    get openEditors() {
+      return extHostEditorTabs.tabs;
+    },
+    get onDidChangeOpenEditors() {
+      return extHostEditorTabs.onDidChangeTabs;
     },
   };
 }
