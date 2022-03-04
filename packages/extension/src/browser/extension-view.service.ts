@@ -79,7 +79,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   private extensions: IExtension[] = [];
 
-  // 被激活且在 contributes 中注册了 browserMain 的 kaitian 插件
+  // 被激活且在 contributes 中注册了 browserView 的 kaitian 插件
   public activatedViewExtensionMap: Map<string, IExtension> = new Map();
 
   public getExtension(extensionId: string): IExtension | undefined {
@@ -182,14 +182,12 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
         '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead',
       );
       await this.activateExtensionByDeprecatedExtendConfig(extension as Extension);
-      this.activatedViewExtensionMap.set(path, extension);
       return;
     }
 
     // 激活 workerMain/browserMain 相关部分
     if (packageJSON.kaitianContributes && contributes?.browserMain) {
       await this.activeExtensionContributes(extension);
-      this.activatedViewExtensionMap.set(path, extension);
     }
   }
 
@@ -322,6 +320,8 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   private registerBrowserComponent(browserExported: any, extension: Extension) {
+    this.activatedViewExtensionMap.set(extension.path, extension);
+
     if (browserExported.default) {
       browserExported = browserExported.default;
     }
