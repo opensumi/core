@@ -61,8 +61,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _terminalOptions: TerminalOptions;
   private _widget: IWidget;
   private _workspacePath: string;
-  // 代表是否已经检测过工作区是否存在，因为 `_workspacePath` 为空是代表没有打开工作区，无法用来判断是否检测过
-  private _resolvedWorkspace = false;
   private _linkManager: TerminalLinkManager;
   /** end */
 
@@ -546,7 +544,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
       }
     }
-    this._resolvedWorkspace = true;
   }
 
   reset() {
@@ -640,10 +637,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!this._widget.element?.clientHeight) {
       return;
     }
-    // 多 workspace 模式下，等待 workspace 选择后再渲染
-    if (!this._resolvedWorkspace) {
-      return;
-    }
+
     this._widget.element.appendChild(this.xterm.container);
     this.xterm.open();
     // 首次渲染且为当前选中的 client 时，聚焦
