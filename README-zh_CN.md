@@ -58,7 +58,7 @@ $ MY_WORKSPACE={local_path} npm run start
 
 ## 帮助我们
 
-如果你希望反馈一个 Bug, 你可以直接在 [Issues](https://github.com/opensumi/core/issues) 中直接安装格式进行创建，在提供必要的复现路径和版本信息后，我们将会有相关人员进行处理。
+如果你希望反馈一个 Bug, 你可以直接在 [Issues](https://github.com/opensumi/core/issues) 中直接按照格式进行创建，在提供必要的复现路径和版本信息后，我们将会有相关人员进行处理。
 
 如果你希望提交一些代码或者帮助我们优化文档，我们十分欢迎 ~ 你可以阅读详细的 [如何贡献代码](./CONTRIBUTING-zh_CN.md) 文档路径如何贡献。
 
