@@ -531,6 +531,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /**
    * if we want open a terminal, we need a parameter: `cwd`
    * we don't care whether it valid. our backend service will check it.
+   *
+   * 如果当前工作区不存在，这里就会获得空，后端的逻辑中终端会打开用户的家目录。
+   * 多工作区模式下用户没有选中任何一个工作区，也是会打开用户的家目录。
    */
   private async _checkWorkspace() {
     const widget = this._widget;
@@ -542,10 +545,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._workspacePath = choose;
         TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
       }
-      // else {
-      //   this.view.removeWidget(widget.id);
-      //   return false;
-      // }
     }
     this._resolvedWorkspace = true;
   }
