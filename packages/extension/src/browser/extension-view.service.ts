@@ -173,7 +173,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   public async activeExtension(extension: IExtension, protocol: IRPCProtocol) {
-    const { extendConfig, packageJSON, contributes, path } = extension;
+    const { extendConfig, packageJSON, contributes } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
     if (extendConfig?.browser?.main) {
