@@ -291,12 +291,13 @@ export class TabbarService extends WithEventBus {
 
   protected registerHideMenu(componentInfo: ComponentRegistryInfo) {
     const disposables = new DisposableCollection();
+    const containerId = componentInfo.options!.containerId;
 
     disposables.push(
       this.menuRegistry.registerMenuItem(this.menuId, {
         command: {
-          id: this.registerVisibleToggleCommand(componentInfo.options!.containerId, disposables),
-          label: componentInfo.options!.title || '',
+          id: this.registerVisibleToggleCommand(containerId, disposables),
+          label: componentInfo.options!.title || containerId,
         },
         group: '1_widgets',
       }),
