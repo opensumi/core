@@ -374,12 +374,12 @@ function SelectPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
-  const handlerValueChange = useCallback(
+  const handleValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
       setValue(val);
     },
-    [value, preferenceService],
+    [setValue, preferenceService],
   );
 
   // enum 本身为 string[] | number[]
@@ -459,7 +459,7 @@ function SelectPreferenceItem({
         <Select
           dropdownRenderType='absolute'
           maxHeight='200'
-          onChange={handlerValueChange}
+          onChange={handleValueChange}
           value={value}
           className={styles.select_control}
           description={description}
