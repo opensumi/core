@@ -65,6 +65,13 @@ export enum FileType {
   SymbolicLink = 64,
 }
 
+export enum FilePermission {
+  /**
+   * File is readonly.
+   */
+  Readonly = 1,
+}
+
 /**
  * The `FileStat`-type represents metadata about a file
  */
@@ -86,6 +93,10 @@ export interface FileStat {
    * The size in bytes.
    */
   size: number;
+  /**
+   * The file permissions.
+   */
+  readonly permissions?: FilePermission;
 }
 
 export interface SourceTargetPair {
