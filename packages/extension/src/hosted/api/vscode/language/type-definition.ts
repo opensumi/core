@@ -14,6 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+ // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/type-definition.ts
+
 import type vscode from 'vscode';
 import { Uri } from '@opensumi/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';

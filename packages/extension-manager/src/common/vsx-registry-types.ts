@@ -14,8 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { InstallState } from './index';
-
 /**
  * The possible options when performing a search.
  *
@@ -23,6 +21,9 @@ import { InstallState } from './index';
  *
  * Should be aligned with https://github.com/eclipse/openvsx/blob/b5694a712e07d266801394916bac30609e16d77b/server/src/main/java/org/eclipse/openvsx/RegistryAPI.java#L246-L266
  */
+
+// Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/dev-packages/ovsx-client/src/ovsx-types.ts
+
 export interface VSXSearchParam {
   /**
    * The query text for searching.
