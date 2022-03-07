@@ -62,10 +62,12 @@ import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { MonacoCodeService, MonacoContextViewService } from './editor.override';
 import { MonacoTextModelService } from './doc-model/override';
 import { EditorOpener } from './editor-opener';
-import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
+import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
+
 import { AUTO_SAVE_MODE } from '../common/editor';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { GoToLineQuickOpenHandler } from './quick-open/quick-open.go-to-line.service';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -143,6 +145,9 @@ export class EditorContribution
 
   @Autowired(PrefixQuickOpenService)
   private readonly prefixQuickOpenService: PrefixQuickOpenService;
+
+  @Autowired()
+  private readonly goToLineQuickOpenHandler: GoToLineQuickOpenHandler;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -1032,9 +1037,11 @@ export class EditorContribution
     commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL, {
       execute: () => this.prefixQuickOpenService.open('#'),
     });
-
     commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS, {
       execute: () => this.prefixQuickOpenService.open('##'),
+    });
+    commands.registerCommand(EDITOR_COMMANDS.GO_TO_LINE, {
+      execute: () => this.prefixQuickOpenService.open(':'),
     });
 
     commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
@@ -1131,6 +1138,11 @@ export class EditorContribution
           commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
         },
       },
+    });
+    handlers.registerHandler(this.goToLineQuickOpenHandler, {
+      title: '转到行',
+      commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
+      order: 5,
     });
   }
 }

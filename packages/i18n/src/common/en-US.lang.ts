@@ -157,8 +157,13 @@ export const localizationBundle = {
 
     'editor.tokenize.test': 'Try Tokenize First Selection',
 
+    'quickopen.goToLine.defaultMessage':
+      'Current Line: {0}, Character: {1}. Type a line number between 1 and {2} to navigate to.',
+    'quickopen.goToLine.notValid': 'Not A valid Editor',
+    'quickopen.goToLine.lineInfo': 'Go To Line {0}',
+    'quickopen.goToLine.colInfo': ' and Character {0}',
     'quickopen.command.placeholder': 'Placeholder',
-    'quickopen.command.description': 'Run Ide Command',
+    'quickopen.command.description': 'Run IDE Command',
     'quickopen.command.nohandler': 'Cannot Find Anymore',
     'quickopen.quickinput.prompt': "Press 'Enter' to confirm your input or 'Escape' to cancel",
     'quickopen.tab.file': 'File',
@@ -180,7 +185,7 @@ export const localizationBundle = {
     'search.replace.title': 'Replace',
     'search.input.checkbox': 'Display search rules',
     'file-search.command.fileOpen.description': 'Open File',
-    'file-search.command.fileOpen.placeholder': 'Search File By Name(Append @ To Locate Symbol)',
+    'file-search.command.fileOpen.placeholder': 'Search File By Name(Append : To Go to Line or @ To Go to Symbol)',
     'search.includes': 'Files to include',
     'search.includes.description': 'Enter the file name or folder name, multiple separated by ","',
     'search.excludes': 'Files to exclude',
