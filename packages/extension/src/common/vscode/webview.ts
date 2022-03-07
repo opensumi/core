@@ -14,6 +14,7 @@ export interface IWebviewPanelOptions {
 
 export interface IWebviewOptions {
   readonly enableScripts?: boolean;
+  readonly enableForms?: boolean;
   readonly enableCommandUris?: boolean;
   readonly localResourceRoots?: ReadonlyArray<vscode.Uri>;
 }

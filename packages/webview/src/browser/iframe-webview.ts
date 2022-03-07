@@ -21,10 +21,13 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
 
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('allow', 'autoplay');
-    this.iframe.setAttribute(
-      'sandbox',
-      options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin',
-    );
+
+    const sandboxRules = new Set(['allow-same-origin', 'allow-scripts']);
+
+    if (options.allowForms) {
+      sandboxRules.add('allow-forms');
+    }
+    this.iframe.setAttribute('sandbox', Array.from(sandboxRules).join(' '));
     this.iframe.setAttribute('src', `${this.config.webviewEndpoint}/index.html?id=${this.id}`);
     this.iframe.style.border = 'none';
     this.iframe.style.width = '100%';

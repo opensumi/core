@@ -75,6 +75,7 @@ export interface IWebview extends IDisposable {
 
 export interface IWebviewContentOptions {
   readonly allowScripts?: boolean;
+  readonly allowForms?: boolean;
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
   readonly longLive?: boolean;
