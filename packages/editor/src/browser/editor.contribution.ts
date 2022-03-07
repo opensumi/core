@@ -1140,7 +1140,7 @@ export class EditorContribution
       },
     });
     handlers.registerHandler(this.goToLineQuickOpenHandler, {
-      title: '转到行',
+      title: localize('editor.goToLine'),
       commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
       order: 5,
     });
