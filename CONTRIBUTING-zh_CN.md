@@ -2,7 +2,7 @@
 
 [English](./CONTRIBUTING.md) | 简体中文
 
-一般而言，你有许多方式为 `OpenSumi` 代码建设出力，例如：写下一个你发现的 Bug 的现象及复现路径到 Issue 区反馈，提交一个 PR (Pull Requests)，又或者是单纯对某个功能提交一个建议等。
+一般而言，你有许多方式为 `OpenSumi` 代码建设出力，例如：写下一个你发现的 Bug 的现象及复现路径到 Issue 区反馈，提交一个 PR (Pull Requests)，又或者是单纯对某个功能提交一个建议等。我们非常欢迎你的热心相助。  
 
 在你克隆并构建完我们的仓库代码后，检查 [Issues](https://github.com/opensumi/core/issues)，对于标注了 `PR Welcome` 的问题是提交你第一个 PR 最佳的实践案例，如果你在过程中有任何疑问，也可以随时在评论区 @ 任何一位项目成员进行咨询。
 
