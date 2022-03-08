@@ -1,7 +1,6 @@
 import { WSChannel, MessageString } from '../common/ws-channel';
 import shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
-import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
@@ -125,12 +124,5 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
-  }
-}
-
-export class WSChanneHandler extends WSChannelHandler {
-  constructor(public wsPath: string, logger: any, public protocols?: string[], clientId?: string) {
-    super(wsPath, logger, protocols, clientId);
-    warning(false, '[Deprecated warning]: WSChanneHandler was a wrong typo, please use WSChannelHandler');
   }
 }

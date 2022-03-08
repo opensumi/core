@@ -4,6 +4,8 @@ import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.m
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
+// re-install RAL in `@opensumi/vscode-jsonrpc`
+import '@opensumi/vscode-jsonrpc/lib/node/main';
 import path from 'path';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -1,14 +1,12 @@
 import http from 'http';
 import net from 'net';
 import { NodeModule } from './node-module';
-import { WSChannel } from '@opensumi/ide-connection';
+import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
-  initRPCService,
-  RPCServiceCenter,
   createSocketConnection,
 } from '@opensumi/ide-connection/lib/node';
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';

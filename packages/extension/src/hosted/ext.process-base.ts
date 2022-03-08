@@ -12,7 +12,8 @@ import {
   setLanguageId,
   ILogService,
 } from '@opensumi/ide-core-common';
-import { RPCProtocol, initRPCService, RPCServiceCenter, createSocketConnection } from '@opensumi/ide-connection';
+import { RPCProtocol, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 
 import { CommandHandler } from '../common/vscode';
 import { ExtensionLogger2 } from './extension-log2';

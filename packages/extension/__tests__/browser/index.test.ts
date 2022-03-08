@@ -1,4 +1,4 @@
-import { WSChannelHandler } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   CommandRegistry,
   CommandService,

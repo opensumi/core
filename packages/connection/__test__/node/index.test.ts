@@ -1,11 +1,5 @@
-import {
-  RPCServiceCenter,
-  initRPCService,
-  RPCMessageConnection,
-  WebSocketServerRoute,
-  CommonChannelHandler,
-  commonChannelPathHandler,
-} from '../../src/node';
+import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
+import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
 import { createWebSocketConnection } from '../../src/common/message';
 
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';

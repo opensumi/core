@@ -1,7 +1,8 @@
 import { ExtHostEnv, createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
 import { Emitter, ILoggerManagerClient, Uri, uuid } from '@opensumi/ide-core-common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';

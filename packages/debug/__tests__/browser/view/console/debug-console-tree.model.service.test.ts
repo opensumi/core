@@ -29,7 +29,7 @@ import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { QuickPickService } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { WSChannelHandler } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { ITaskService } from '@opensumi/ide-task';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';

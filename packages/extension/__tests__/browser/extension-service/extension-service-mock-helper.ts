@@ -51,7 +51,8 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { WSChanneHandler, WSChannel } from '@opensumi/ide-connection';
+import { WSChannel } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
@@ -522,7 +523,7 @@ export function setupExtensionServiceInjector() {
       useClass: MockPreferenceProvider,
     },
     {
-      token: WSChanneHandler,
+      token: WSChannelHandler,
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel() {
