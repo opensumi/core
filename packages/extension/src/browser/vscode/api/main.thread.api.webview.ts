@@ -264,7 +264,11 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     await this.activation.fireEvent('onWebviewPanel', viewType);
     const state = await this.getPersistedWebviewState(viewType, id);
     const editorWebview = this.webviewService.createEditorWebviewComponent(
-      { allowScripts: webviewOptions.enableScripts, longLive: webviewOptions.retainContextWhenHidden },
+      {
+        allowScripts: webviewOptions.enableScripts,
+        allowForms: webviewOptions.enableForms ?? webviewOptions.enableScripts,
+        longLive: webviewOptions.retainContextWhenHidden,
+      },
       id,
     );
     const viewColumn = editorWebview.group ? editorWebview.group.index + 1 : persistedWebivewPanelMeta.viewColumn;
@@ -333,7 +337,11 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     initialState?: any,
   ) {
     const editorWebview = this.webviewService.createEditorWebviewComponent(
-      { allowScripts: options.enableScripts, longLive: options.retainContextWhenHidden },
+      {
+        allowScripts: options.enableScripts,
+        allowForms: options.enableForms ?? options.enableScripts,
+        longLive: options.retainContextWhenHidden,
+      },
       id,
     );
     const webviewPanel = new WebviewPanel(
@@ -432,7 +440,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   }
 
   $setOptions(id: string, options: IWebviewOptions): void {
-    this.getWebivew(id)?.updateOptions({ allowScripts: options.enableScripts });
+    this.getWebivew(id)?.updateOptions({ allowScripts: options.enableScripts, allowForms: options.enableForms });
   }
 
   async $postMessage(id: string, value: any): Promise<boolean> {
