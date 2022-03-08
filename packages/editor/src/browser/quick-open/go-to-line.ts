@@ -6,6 +6,7 @@ import {
   formatLocalize,
   localize,
   QuickOpenHandler,
+  withNullAsUndefined,
 } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AbstractGotoLineQuickAccessProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/quickAccess/gotoLineQuickAccess';
@@ -22,6 +23,19 @@ class MonacoGoToLine extends AbstractGotoLineQuickAccessProvider {
   }
   clearDeco(editor: IMonacoCodeEditor) {
     this.clearDecorations(editor);
+  }
+  goTo(editor: IMonacoCodeEditor, range: IMonacoRange) {
+    this.gotoLocation(
+      { editor },
+      {
+        range,
+        // 该函数内部实现并没有用到这个属性
+        keyMods: {
+          alt: false,
+          ctrlCmd: false,
+        },
+      },
+    );
   }
 }
 
@@ -41,9 +55,16 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
   private readonly workbenchEditorService: WorkbenchEditorService;
 
   quickAccess: MonacoGoToLine;
+  savedViewState?: monaco.editor.ICodeEditorViewState;
 
   constructor() {
     this.quickAccess = new MonacoGoToLine();
+  }
+
+  getFirstSelection() {
+    const editor = this.workbenchEditorService.currentEditor;
+    const selections = editor?.getSelections();
+    return selections?.[0];
   }
 
   getRange(line = 1, col = 1): monaco.IRange {
@@ -55,10 +76,15 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
     };
   }
 
+  init() {
+    // 保存打开时的状态
+    this.savedViewState = withNullAsUndefined(this.workbenchEditorService.currentEditor?.monacoEditor.saveViewState());
+  }
+
   getModel(): QuickOpenModel {
     const editor = this.workbenchEditorService.currentEditor;
-    const selections = editor?.getSelections();
-    if (!editor || !selections) {
+    const firstSelection = this.getFirstSelection();
+    if (!firstSelection || !editor) {
       return {
         onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
           acceptor([
@@ -71,7 +97,6 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
       };
     }
 
-    const firstSelection = selections[0];
     const currentLine = firstSelection.positionLineNumber ?? 1;
     const currentCol = firstSelection.positionColumn ?? 1;
     const lineCount = editor.currentDocumentModel?.getMonacoModel()?.getLineCount() ?? 1;
@@ -101,9 +126,7 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
                   this.quickAccess.addDeco(editor.monacoEditor, range);
                   return false;
                 }
-
-                editor.setSelection(range);
-                editor.monacoEditor.revealRangeInCenter(range, monaco.editor.ScrollType.Smooth);
+                this.quickAccess.goTo(editor.monacoEditor, range);
                 return true;
               },
             }),
@@ -132,7 +155,12 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
 
   onClose() {
     this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-    this.workbenchEditorService.currentEditor &&
-      this.quickAccess.clearDeco(this.workbenchEditorService.currentEditor.monacoEditor);
+    const editor = this.workbenchEditorService.currentEditor;
+    if (editor) {
+      this.quickAccess.clearDeco(editor.monacoEditor);
+      if (this.savedViewState) {
+        editor.monacoEditor.restoreViewState(this.savedViewState);
+      }
+    }
   }
 }

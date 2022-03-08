@@ -67,7 +67,7 @@ import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-q
 import { AUTO_SAVE_MODE } from '../common/editor';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { GoToLineQuickOpenHandler } from './quick-open/quick-open.go-to-line.service';
+import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 
 interface ResourceArgs {
   group: EditorGroup;
