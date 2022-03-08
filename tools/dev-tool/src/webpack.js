@@ -206,10 +206,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           onErrors: utils.createNotifierCallback(),
           clearConsole: true,
         }),
-        new CopyPlugin([
-          { from: path.join(__dirname, '../vendor'), to: path.join(dir, 'dist') },
-          { from: path.join(__dirname, '../resources'), to: path.join(dir, 'dist', 'resources') },
-        ]),
         new ForkTsCheckerWebpackPlugin({
           typescript: {
             diagnosticOptions: {
