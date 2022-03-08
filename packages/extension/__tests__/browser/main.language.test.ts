@@ -64,7 +64,6 @@ let model: ITextModel;
 
 describe('ExtHostLanguageFeatures', () => {
   const injector = createBrowserInjector([]);
-  (global as any).amdLoader = { require: null };
   let monacoService: MonacoService;
 
   injector.addProviders(
@@ -102,8 +101,6 @@ describe('ExtHostLanguageFeatures', () => {
 
   const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
   editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
-
-  (global as any).amdLoader = { require: null };
 
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);

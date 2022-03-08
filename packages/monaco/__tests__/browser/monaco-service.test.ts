@@ -11,7 +11,6 @@ let injector: MockInjector;
 
 describe(' monaco service test', () => {
   injector = createBrowserInjector([]);
-  (global as any).amdLoader = { require: null };
   injector.overrideProviders(
     ...[
       {
@@ -28,8 +27,6 @@ describe(' monaco service test', () => {
       },
     ],
   );
-
-  (global as any).amdLoader = { require: null };
 
   it('should be able to create', async () => {
     const service: MonacoService = injector.get(MonacoService);

@@ -126,7 +126,6 @@ module.exports = {
       chunkFilename: '[id].css',
     }),
     new CopyPlugin([
-      { from: path.join(srcDir, './vendor'), to: distDir },
       {
         from: require.resolve('@opensumi/ide-core-electron-main/browser-preload/index.js'),
         to: path.join(distDir, 'preload.js'),

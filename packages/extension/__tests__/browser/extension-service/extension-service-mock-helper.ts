@@ -313,10 +313,6 @@ function mockGlobals() {
     text: async () => fs.readFileSync(path.join(__dirname, '../../../__mocks__/extension/browser-new.js'), 'utf8'),
   });
 
-  (global as any).amdLoader = require('../../../../../tools/dev-tool/vendor/loader.js');
-  (global as any).amdLoader.require = (global as any).amdLoader;
-  (global as any).amdLoader.require.config = (global as any).amdLoader.config;
-
   (global as any).Worker = MockWorker;
   (global as any).MessagePort = MessagePort;
 }
