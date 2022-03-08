@@ -508,6 +508,7 @@ export const localizationBundle = {
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
 
     'status.editor.chooseLanguage': '选择语言模式',
+    'status.editor.goToLineCol': '转到行/列',
     'status.editor.chooseEncoding': '选择编码',
     'status.editor.changeEol': '选择行尾序列',
 
@@ -716,7 +717,7 @@ export const localizationBundle = {
     'status-bar.editor-language': '选择语言',
     'status-bar.editor-encoding': '选择编码',
     'status-bar.editor-space': '选择空格符',
-    'status-bar.editor-eol': '选择行位字符',
+    'status-bar.editor-eol': '选择行尾字符',
     'status-bar.editor-indentation': '选择缩进',
     'status-bar.editor-langStatus': '语言服务器状态',
     saveChangesMessage: '是否要保存对 {0} 的更改?',

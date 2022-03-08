@@ -138,6 +138,7 @@ export const localizationBundle = {
     'status-bar.editor-langStatus': 'Editor Language Status',
     'editor.closeOtherEditors': 'Close Others',
     'status.editor.chooseLanguage': 'Choose Language Mode',
+    'status.editor.goToLineCol': 'Go to Line/Column',
     'status.editor.chooseEncoding': 'Choose Encoding',
     'status.editor.changeEol': 'Select End Of Line Sequence',
 

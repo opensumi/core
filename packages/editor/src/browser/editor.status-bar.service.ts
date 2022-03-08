@@ -47,6 +47,8 @@ export class EditorStatusBarService extends WithEventBus {
       }`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
+      command: EDITOR_COMMANDS.GO_TO_LINE.id,
+      tooltip: localize('status.editor.goToLineCol'),
     });
   }
 
