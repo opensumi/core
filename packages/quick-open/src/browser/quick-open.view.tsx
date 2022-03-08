@@ -229,7 +229,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
         />
       )}
-      <div className={styles.item_label_container} onClick={runQuickOpenItem}>
+      <div className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
