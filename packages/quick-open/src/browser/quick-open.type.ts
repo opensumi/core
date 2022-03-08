@@ -97,4 +97,5 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void;
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;
+  blur(): void;
 }

@@ -136,12 +136,7 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
           acceptor([
             new QuickOpenItem({
               label: formatLocalize('quickopen.goToLine.defaultMessage', currentLine, currentCol, lineCount),
-              run: (mode: Mode) => {
-                if (mode !== Mode.OPEN) {
-                  return false;
-                }
-                return false;
-              },
+              run: () => false,
             }),
           ]);
         }
