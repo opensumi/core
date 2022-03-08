@@ -130,6 +130,8 @@ export const localizationBundle = {
     'quickopen.goToLine.notValid': '请打开一个有效的编辑器。',
     'quickopen.goToLine.lineInfo': '转到行: {0}',
     'quickopen.goToLine.colInfo': '，列: {0}',
+    'quickopen.goToLine.desc': '转到行...',
+
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
     'quickopen.command.nohandler': '找不到结果',

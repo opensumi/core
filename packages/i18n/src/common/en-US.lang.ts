@@ -162,6 +162,8 @@ export const localizationBundle = {
     'quickopen.goToLine.notValid': 'Not A valid Editor',
     'quickopen.goToLine.lineInfo': 'Go To Line {0}',
     'quickopen.goToLine.colInfo': ' and Character {0}',
+    'quickopen.goToLine.desc': 'Go to Line...',
+
     'quickopen.command.placeholder': 'Placeholder',
     'quickopen.command.description': 'Run IDE Command',
     'quickopen.command.nohandler': 'Cannot Find Anymore',

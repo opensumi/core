@@ -42,7 +42,7 @@ class MonacoGoToLine extends AbstractGotoLineQuickAccessProvider {
 @Injectable()
 export class GoToLineQuickOpenHandler implements QuickOpenHandler {
   readonly prefix: string = ':';
-  readonly description: string = 'Go to line';
+  readonly description: string = localize('quickopen.goToLine.desc');
   protected items: QuickOpenItem[];
 
   @Autowired(PrefixQuickOpenService)
@@ -153,14 +153,16 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
     return {};
   }
 
-  onClose() {
+  onClose(canceled) {
     this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
     const editor = this.workbenchEditorService.currentEditor;
-    if (editor) {
-      this.quickAccess.clearDeco(editor.monacoEditor);
-      if (this.savedViewState) {
-        editor.monacoEditor.restoreViewState(this.savedViewState);
-      }
+    if (!editor) {
+      return;
+    }
+
+    this.quickAccess.clearDeco(editor.monacoEditor);
+    if (canceled && this.savedViewState) {
+      editor.monacoEditor.restoreViewState(this.savedViewState);
     }
   }
 }
