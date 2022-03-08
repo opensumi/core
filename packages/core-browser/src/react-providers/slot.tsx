@@ -101,11 +101,7 @@ export const SlotDecorator: React.FC<{ slot: string; color?: string }> = ({ slot
     }
   }, [ref]);
   return (
-    <div
-      ref={(ele) => (ref.current = ele!)}
-      className='resize-wrapper'
-      style={props.color ? { backgroundColor: props.color } : {}}
-    >
+    <div ref={(ele) => (ref.current = ele!)} className='resize-wrapper'>
       {props.children}
     </div>
   );
