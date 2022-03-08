@@ -2,14 +2,14 @@ import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor, transparent } from '../../color-registry';
 import { menuForeground } from '../menu';
-import { widgetShadow, foreground } from '../base';
+import { widgetShadow, foreground, descriptionForeground } from '../base';
 import { ACTIVITY_BAR_BORDER } from '../activity-bar';
 import { editorBackground } from '../editor';
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor(
   'kt.menu.descriptionForeground',
-  { dark: menuForeground, light: menuForeground, hc: menuForeground },
+  { dark: descriptionForeground, light: descriptionForeground, hc: descriptionForeground },
   localize('menuDescriptionForeground', 'Description foreground color of menu items.'),
 );
 
