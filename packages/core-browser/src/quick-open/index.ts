@@ -104,6 +104,7 @@ export interface QuickOpenItemOptions {
   /**
    * 点击 QuickOpen 要执行的方法
    * @param mode
+   * @returns 执行后是否要隐藏面板, mode 为 PREVIEW 时不判断该值
    */
   run?(mode: Mode): boolean;
   value?: any;

@@ -72,7 +72,7 @@ export const quickGoToSymbol: Command = {
 // support /some/file.js#L73
 // support /some/file.js:73
 // support /some/file.js:73:84
-export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?\)?/;
+export const matchLineReg = /^([^:#(]*)[:#(]?L?(\d+)?[:,]?(\d+)?\)?/;
 
 function getRangeByInput(input = ''): monaco.Range | undefined {
   const matchList = input.match(matchLineReg) || [];

@@ -95,7 +95,7 @@ export const QuickOpenHeader = observer(() => {
 });
 
 export const QuickOpenInput = observer(() => {
-  const { widget } = React.useContext(QuickOpenContext)!;
+  const { widget } = React.useContext(QuickOpenContext);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,7 +229,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
         />
       )}
-      <div className={styles.item_label_container} onClick={runQuickOpenItem}>
+      <div className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
@@ -326,15 +326,16 @@ export const QuickOpenView = observer(() => {
 
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
-      // 判断其是否在父元素内，如果在父元素内就不做处理
-      if (focusInCurrentTarget(event)) {
+      // 要判断 nativeEvent，不然可能在 React 重绘时导致判断会出错
+      // 目前遇到的一个 case 是：
+      //   GoToLineQuickOpenHandler:
+      //     按 enter 后 hide 面板，但不知道为什么这里的 onBlur 也会生效，导致二次触发 onClose
+      //     这里改成 nativeEvent 后不再有该问题
+      if (focusInCurrentTarget(event.nativeEvent)) {
+        // 判断触发事件的元素是否在父元素内，如果在父元素内就不做处理
         return;
       }
-      // 判断移出焦点后是否需要关闭组件
-      const keepShow = widget.callbacks.onFocusLost();
-      if (!keepShow) {
-        widget.hide(HideReason.FOCUS_LOST);
-      }
+      widget.blur();
     },
     [widget],
   );

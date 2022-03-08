@@ -241,6 +241,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
     'editor.action.quickCommand',
     'editor.action.quickOutline',
     'editor.action.toggleHighContrast',
+    'editor.action.gotoLine',
   ];
 
   @Autowired()

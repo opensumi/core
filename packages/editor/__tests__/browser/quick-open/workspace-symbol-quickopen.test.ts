@@ -1,7 +1,7 @@
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/language/workspace-symbol-quickopen';
+import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/quick-open/workspace-symbol-quickopen';
 import {
   ILanguageService,
   WorkspaceSymbolProvider,

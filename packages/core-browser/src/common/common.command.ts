@@ -586,6 +586,7 @@ export namespace EDITOR_COMMANDS {
 
   export const GO_TO_LINE: Command = {
     id: 'editor.action.gotoLine',
+    label: localize('editor.goToLine', 'Go to Line...'),
     category: CATEGORY,
   };
 

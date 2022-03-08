@@ -139,6 +139,18 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   }
 
   @action
+  blur() {
+    if (!this._isShow) {
+      return;
+    }
+    // 判断移出焦点后是否需要关闭组件
+    const keepShow = this.callbacks.onFocusLost();
+    if (!keepShow) {
+      this.hide(HideReason.FOCUS_LOST);
+    }
+  }
+
+  @action
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void {
     this._items = model.items;
     this._actionProvider = model.actionProvider;
