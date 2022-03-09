@@ -63,7 +63,21 @@
 .tab_panel {
   position: relative;
   flex: 1;
+  border-top: 1px solid var(--sideBar-border);
 }
+
+:global(.left-slot) {
+  .tab_panel {
+    border-right: 1px solid var(--sideBar-border);
+  }
+}
+
+:global(.right-slot) {
+  .tab_panel {
+    border-left: 1px solid var(--sideBar-border);
+  }
+}
+
 .left_tab_bar {
   height: 100%;
   display: flex;
@@ -109,13 +123,9 @@
   left: 0;
   right: 0;
   height: 100%;
-  border-top: 1px solid var(--sideBar-border);
 }
 :global(.left-slot) {
   height: 100%;
-  .panel_wrap {
-    border-right: 1px solid var(--sideBar-border);
-  }
 }
 
 :global(.bottom-slot) {
@@ -126,9 +136,6 @@
 
 :global(.right-slot) {
   height: 100%;
-  .panel_wrap {
-    border-left: 1px solid var(--sideBar-border);
-  }
 }
 
 .view_container {
