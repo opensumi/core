@@ -1,5 +1,5 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   EDITOR_COMMANDS,
   UriComponents,

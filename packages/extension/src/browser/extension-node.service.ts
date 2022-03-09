@@ -1,13 +1,12 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
-  createSocketConnection,
   initRPCService,
   IRPCProtocol,
   RPCProtocol,
   RPCServiceCenter,
-  WSChannelHandler as IWSChannelHandler,
+  createWebSocketConnection,
 } from '@opensumi/ide-connection';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
+import { createSocketConnection, WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   Deferred,

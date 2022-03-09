@@ -1,7 +1,8 @@
 import { ExtHostStatusBar } from '../../../../src/hosted/api/vscode/ext.host.statusbar';
 import { Emitter, ILoggerManagerClient, uuid } from '@opensumi/ide-core-common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
