@@ -1,3 +1,5 @@
+import { Injectable, Autowired } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   Emitter,
@@ -9,6 +11,7 @@ import {
   AutoOpenBarrier,
   PreferenceScope,
 } from '@opensumi/ide-core-common';
+
 import {
   IExtensionTerminalProfile,
   IRegisterContributedProfileArgs,
@@ -21,9 +24,8 @@ import {
   ITerminalService,
   terminalProfileArgsMatch,
 } from '../common';
-import { Injectable, Autowired } from '@opensumi/di';
 import { CodeTerminalSettingPrefix } from '../common/preference';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {

@@ -1,23 +1,24 @@
-import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@opensumi/ide-core-common';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
-import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
+import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@opensumi/ide-core-common';
+import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
   DebugPreferences,
   DebugSessionContributionRegistry,
   DebugModelManager,
 } from '@opensumi/ide-debug/lib/browser';
-import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
-import { IRPCProtocol } from '@opensumi/ide-connection';
+import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
+import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const map = new Map();
 

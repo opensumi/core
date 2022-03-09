@@ -1,6 +1,7 @@
+import { WebSocket, Server } from 'mock-socket';
+
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
-import { WebSocket, Server } from 'mock-socket';
 (global as any).WebSocket = WebSocket;
 
 describe('connection browser', () => {

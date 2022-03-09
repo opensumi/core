@@ -1,4 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { MessageType } from '@opensumi/ide-components';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   Disposable,
   URI,
@@ -10,21 +14,18 @@ import {
   formatLocalize,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
+import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { IDialogService } from '@opensumi/ide-overlay';
 import {
   IBulkEditServiceShape,
   FileOperation,
   IWorkspaceFileOperationParticipant,
   IWorkspaceFileService,
 } from '@opensumi/ide-workspace-edit';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import { IDialogService } from '@opensumi/ide-overlay';
-import { MessageType } from '@opensumi/ide-components';
 
-import { IExtHostFileSystemEvent, FileSystemEvents } from '../../../common/vscode/file-system';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { IExtHostFileSystemEvent, FileSystemEvents } from '../../../common/vscode/file-system';
+
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystemEvent extends Disposable {

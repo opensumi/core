@@ -1,6 +1,9 @@
-import React from 'react';
+import classnames from 'classnames';
+import debounce = require('lodash.debounce');
 import { observer } from 'mobx-react-lite';
-import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import React from 'react';
+
+import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@opensumi/ide-components';
 import {
   replaceLocalizePlaceholder,
   useInjectable,
@@ -15,15 +18,16 @@ import {
   URI,
   LabelService,
 } from '@opensumi/ide-core-browser';
-import { PreferenceSettingsService } from './preference-settings.service';
-import styles from './preferences.module.less';
-import classnames from 'classnames';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
-import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@opensumi/ide-components';
+
 import { ISectionItemData, toNormalCase } from '../common';
+
+import { PreferenceSettingsService } from './preference-settings.service';
 import { NextPreferenceItem } from './preferenceItem.view';
+import styles from './preferences.module.less';
+
 import './index.less';
-import debounce = require('lodash.debounce');
 
 const WorkspaceScope = {
   id: PreferenceScope.Workspace,

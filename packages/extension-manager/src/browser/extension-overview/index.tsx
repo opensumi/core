@@ -1,13 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+
 import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
-import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
-import { Markdown } from '@opensumi/ide-markdown';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { Markdown } from '@opensumi/ide-markdown';
 
-import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
+import { VSXExtensionRaw } from '../../common/vsx-registry-types';
+
 import styles from './overview.module.less';
 
 enum TabActiveKey {

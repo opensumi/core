@@ -1,3 +1,4 @@
+import { Autowired } from '@opensumi/di';
 import {
   Domain,
   localize,
@@ -8,16 +9,16 @@ import {
   FILE_COMMANDS,
   EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { Autowired } from '@opensumi/di';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+
 import { ExplorerOpenEditorPanel } from './opened-editor';
-import { OpenedEditorModelService } from './services/opened-editor-model.service';
 import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
+import { OpenedEditorModelService } from './services/opened-editor-model.service';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 

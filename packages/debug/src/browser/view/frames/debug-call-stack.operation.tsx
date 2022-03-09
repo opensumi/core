@@ -1,10 +1,13 @@
 import React from 'react';
+
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
+
 import { DebugAction } from '../../components';
-import { DebugToolbarService } from '../configuration/debug-toolbar.service';
-import styles from './debug-call-stack.module.less';
 import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
+import { DebugToolbarService } from '../configuration/debug-toolbar.service';
+
+import styles from './debug-call-stack.module.less';
 
 export interface DebugStackOperationViewProps {
   session?: DebugSession;

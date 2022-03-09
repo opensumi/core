@@ -1,6 +1,5 @@
 import React from 'react';
-import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
-import { useInjectable, localize, isOSX } from '@opensumi/ide-core-browser';
+
 import {
   Button,
   Input,
@@ -11,12 +10,17 @@ import {
   INodeRendererProps,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { FileTreeDialogModel } from './file-dialog-model.service';
-import { Directory, File } from '../../common/file-tree-node.define';
-import { FileTreeDialogNode } from './file-dialog-node';
+import { useInjectable, localize, isOSX } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import styles from './file-dialog.module.less';
 import * as path from '@opensumi/ide-core-common/lib/utils/paths';
+import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
+
+import { Directory, File } from '../../common/file-tree-node.define';
+
+import { FileTreeDialogModel } from './file-dialog-model.service';
+import { FileTreeDialogNode } from './file-dialog-node';
+import styles from './file-dialog.module.less';
+
 
 export interface IFileDialogProps {
   options: ISaveDialogOptions | IOpenDialogOptions;

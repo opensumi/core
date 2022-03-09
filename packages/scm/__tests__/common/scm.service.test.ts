@@ -1,8 +1,8 @@
 import { DisposableCollection } from '@opensumi/ide-core-common';
 
+import { SCMService, InputValidationType } from '../../src/common';
 import { MockSCMProvider } from '../scm-test-util';
 
-import { SCMService, InputValidationType } from '../../src/common';
 
 describe('scm service', () => {
   let scmService: SCMService;

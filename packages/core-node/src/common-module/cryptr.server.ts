@@ -1,6 +1,7 @@
+import crypto from 'crypto';
+
 import { Injectable } from '@opensumi/di';
 import { INativeCryptrService } from '@opensumi/ide-core-common';
-import crypto from 'crypto';
 
 @Injectable()
 export class CryptrService implements INativeCryptrService {

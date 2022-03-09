@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { useInjectable, localize } from '@opensumi/ide-core-browser';
+
 import {
   ITerminalGroupViewService,
   IWidget,

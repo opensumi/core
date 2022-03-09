@@ -1,8 +1,6 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
 
-import { CtxMenu } from './ctx-menu/ctx-menu.view';
-import { Dialog } from './dialog.view';
 import {
   ComponentRenderer,
   ComponentRegistry,
@@ -11,6 +9,9 @@ import {
   AppConfig,
   IClientApp,
 } from '@opensumi/ide-core-browser';
+
+import { CtxMenu } from './ctx-menu/ctx-menu.view';
+import { Dialog } from './dialog.view';
 import './styles.module.less';
 
 export const Overlay = observer(() => {

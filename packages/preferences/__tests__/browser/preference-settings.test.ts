@@ -5,16 +5,18 @@ import {
   PreferenceSchemaProvider,
   URI,
 } from '@opensumi/ide-core-browser';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { PreferenceSettingId } from '@opensumi/ide-preferences';
+import { PREFERENCE_COMMANDS } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
 import {
   PreferenceSettingsService,
   defaultSettingGroup,
   defaultSettingSections,
 } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { PREFERENCE_COMMANDS } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
-import { PreferenceSettingId } from '@opensumi/ide-preferences';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+
 
 describe('PreferenceSettingService should be work', () => {
   let injector: MockInjector;

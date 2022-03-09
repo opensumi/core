@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '@opensumi/ide-core-common';
+
 import { TestMessageType, TestResultState, TestRunProfileBitset } from './testCollection';
 
 export const enum Testing {

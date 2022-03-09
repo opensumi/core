@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-console
 console.time('Render');
+import { generate } from 'shortid';
+
 import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/components';
-import { generate } from 'shortid';
 
 const CLIENT_ID = 'W_' + generate();
 export async function renderApp(opts: IClientAppOpts) {

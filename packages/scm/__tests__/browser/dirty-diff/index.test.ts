@@ -1,7 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { PreferenceChange } from '@opensumi/ide-core-browser';
 import {
   DisposableCollection,
   PreferenceScope,
@@ -12,24 +10,25 @@ import {
   toDisposable,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { PreferenceChange } from '@opensumi/ide-core-browser';
 import {
   IEditorFeatureRegistry,
   IEditorFeatureContribution,
   EmptyDocCacheImpl,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/src/browser';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/src/browser/workbench-editor.service';
-import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/src/browser/workbench-editor.service';
+import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-
 import { IDirtyDiffWorkbenchController } from '../../../src';
 import { DirtyDiffWorkbenchController, DirtyDiffItem } from '../../../src/browser/dirty-diff';
-import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
+import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
 

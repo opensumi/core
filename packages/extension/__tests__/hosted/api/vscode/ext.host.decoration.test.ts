@@ -1,3 +1,5 @@
+import type vscode from 'vscode';
+
 import {
   Event,
   Uri,
@@ -7,7 +9,6 @@ import {
   CancellationTokenSource,
   CancellationToken,
 } from '@opensumi/ide-core-common';
-import type vscode from 'vscode';
 import { ExtHostDecorations } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.decoration';
 
 function URI2UriComponents(uri: URI): UriComponents {

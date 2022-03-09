@@ -1,17 +1,19 @@
-import { DebugThread } from './../../model/debug-thread';
-import { DebugStackFrame } from './../../model/debug-stack-frame';
-import { IDebugSessionManager } from './../../../common/debug-session';
-import { DebugSessionManager } from './../../debug-session-manager';
-import { CallStackContext } from './../../../common/types';
+import { Autowired } from '@opensumi/di';
+import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@opensumi/ide-core-browser';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+
+import { DEBUG_COMMANDS } from '../../debug-contribution';
+
 import {
   CONTEXT_CALLSTACK_ITEM_TYPE,
   CONTEXT_RESTART_FRAME_SUPPORTED,
   CONTEXT_STACK_FRAME_SUPPORTS_RESTART,
 } from './../../../common/constants';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Autowired } from '@opensumi/di';
-import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@opensumi/ide-core-browser';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
+import { IDebugSessionManager } from './../../../common/debug-session';
+import { CallStackContext } from './../../../common/types';
+import { DebugSessionManager } from './../../debug-session-manager';
+import { DebugStackFrame } from './../../model/debug-stack-frame';
+import { DebugThread } from './../../model/debug-thread';
 
 function isStackFrameContext(obj: any): obj is CallStackContext {
   return (

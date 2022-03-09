@@ -1,5 +1,5 @@
-import { Disposable } from './disposable';
 import { MaybePromise } from './async';
+import { Disposable } from './disposable';
 import { Emitter, Event } from './event';
 
 export interface IRef<T> {

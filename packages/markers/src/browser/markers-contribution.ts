@@ -1,7 +1,9 @@
 import { Autowired } from '@opensumi/di';
 import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@opensumi/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
+
 import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
+
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
 import { MarkerPanel } from './markers-tree.view';

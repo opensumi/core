@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { localize } from '@opensumi/ide-core-common';
+
 import {
   IExtensionOwnedEnvironmentVariableMutator,
   IMergedEnvironmentVariableCollectionDiff,

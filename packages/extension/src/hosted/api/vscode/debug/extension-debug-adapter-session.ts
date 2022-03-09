@@ -1,6 +1,8 @@
 import type vscode from 'vscode';
-import { DebugStreamConnection, DebugConfiguration } from '@opensumi/ide-debug';
+
 import { IWebSocket } from '@opensumi/ide-connection';
+import { DebugStreamConnection, DebugConfiguration } from '@opensumi/ide-debug';
+
 import { StreamDebugAdapter } from './abstract-debug-adapter-session';
 
 export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements vscode.DebugSession {

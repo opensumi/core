@@ -1,3 +1,9 @@
+import { Injectable, Autowired } from '@opensumi/di';
+import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@opensumi/ide-core-common';
+
+import { ClientAppContribution } from '../common';
+import { PreferenceService } from '../preferences';
+
 import {
   IToolbarRegistry,
   IToolbarActionGroup,
@@ -9,10 +15,6 @@ import {
   ToolbarActionGroupsChangedEvent,
   ToolbarRegistryReadyEvent,
 } from './types';
-import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/di';
-import { ClientAppContribution } from '../common';
-import { PreferenceService } from '../preferences';
 
 type LocationName = string;
 type GroupName = string;

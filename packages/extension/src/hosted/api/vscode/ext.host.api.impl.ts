@@ -1,7 +1,9 @@
-import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
-import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
+import { OverviewRulerLane } from '@opensumi/ide-editor';
+
+import { IExtensionHostService } from '../../../common';
 import {
   IExtHostConnectionService,
   IExtHostDebugService,
@@ -12,45 +14,45 @@ import {
   IExtensionDescription,
   IExtHostTests,
 } from '../../../common/vscode'; // '../../common';
-import { IExtensionHostService } from '../../../common';
-import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
-import { ExtensionDocumentDataManagerImpl } from './doc';
+import { ViewColumn } from '../../../common/vscode/enums';
 import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system';
-import { ViewColumn } from '../../../common/vscode/enums';
-import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
-import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
-import { ExtensionHostEditorService } from './editor/editor.host';
-import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
-import { ExtHostPreference } from './ext.host.preference';
-import { createExtensionsApiFactory } from './ext.host.extensions';
-import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
-import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
-import { ExtHostFileSystem } from './ext.host.file-system';
-import { OverviewRulerLane } from '@opensumi/ide-editor';
-import { ExtHostMessage } from './ext.host.message';
-import { ExtHostTreeViews } from './ext.host.treeview';
-import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
-import { ExtHostSCM } from './ext.host.scm';
-import { ExtHostWindowState } from './ext.host.window-state';
-import { ExtHostDecorations } from './ext.host.decoration';
-import { ExtHostQuickOpen } from './ext.host.quickopen';
-import { ExtHostOutput } from './ext.host.output';
-import { ExtHostStatusBar } from './ext.host.statusbar';
-import { ExtHostDebug, createDebugApiFactory } from './debug';
-import { ExtHostConnection } from './ext.host.connection';
-import { ExtHostTerminal } from './ext.host.terminal';
-import { ExtHostProgress } from './ext.host.progress';
 import { ExtHostAppConfig } from '../../ext.process-base';
-import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
-import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
-import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
-import { ExtHostUrls } from './ext.host.urls';
-import { ExtHostTheming } from './ext.host.theming';
-import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
+
+import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
+import { ExtHostDebug, createDebugApiFactory } from './debug';
+import { ExtensionDocumentDataManagerImpl } from './doc';
+import { ExtensionHostEditorService } from './editor/editor.host';
+import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
-import { ExtHostTestsImpl } from './ext.host.tests';
+import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
+import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
+import { ExtHostConnection } from './ext.host.connection';
+import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
+import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostEditorTabs } from './ext.host.editor-tabs';
+import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
+import { createExtensionsApiFactory } from './ext.host.extensions';
+import { ExtHostFileSystem } from './ext.host.file-system';
+import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
+import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
+import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
+import { ExtHostMessage } from './ext.host.message';
+import { ExtHostOutput } from './ext.host.output';
+import { ExtHostPreference } from './ext.host.preference';
+import { ExtHostProgress } from './ext.host.progress';
+import { ExtHostQuickOpen } from './ext.host.quickopen';
+import { ExtHostSCM } from './ext.host.scm';
+import { ExtHostStatusBar } from './ext.host.statusbar';
+import { ExtHostTerminal } from './ext.host.terminal';
+import { ExtHostTestsImpl } from './ext.host.tests';
+import { ExtHostTheming } from './ext.host.theming';
+import { ExtHostTreeViews } from './ext.host.treeview';
+import { ExtHostUrls } from './ext.host.urls';
+import { ExtHostWindowState } from './ext.host.window-state';
+import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
+import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
+import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,

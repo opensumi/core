@@ -1,12 +1,11 @@
+import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationTokenSource, Uri } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import {
   MainThreadAPIIdentifier,
   ExtHostAPIIdentifier,
   ExtensionDocumentDataManager,
 } from '@opensumi/ide-extension/lib/common/vscode';
-import { RPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostCustomEditorImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import {
   IMainThreadCustomEditor,
   CustomTextEditorProvider,
@@ -16,8 +15,11 @@ import {
   CustomDocumentEditEvent,
   CustomDocumentContentChangeEvent,
 } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
-import { URI } from '@opensumi/ide-core-common';
 import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import { ExtHostCustomEditorImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
+
+import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

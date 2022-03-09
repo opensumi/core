@@ -1,7 +1,9 @@
 import { Injectable } from '@opensumi/di';
 import { Disposable, getDebugLogger, Emitter, Event } from '@opensumi/ide-core-common';
-import { Process } from './process';
+
 import { IProcessManage } from '../common/index';
+
+import { Process } from './process';
 
 const logger = getDebugLogger();
 

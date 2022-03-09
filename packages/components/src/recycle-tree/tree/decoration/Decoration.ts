@@ -1,6 +1,6 @@
-import { TreeNode } from '../TreeNode';
 import { IDisposable, Disposable, Emitter } from '../../../utils';
 import { ITreeNode, ICompositeTreeNode } from '../../types';
+import { TreeNode } from '../TreeNode';
 
 export enum TargetMatchMode {
   None = 1,

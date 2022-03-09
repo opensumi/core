@@ -1,10 +1,12 @@
 import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Disposable } from '@opensumi/ide-core-browser';
+import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
+
+import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import { IMainThreadTheme } from '../../common/sumi/theme';
 import { IExtHostTheme } from '../../common/sumi/theme';
-import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
-import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
-import { Disposable } from '@opensumi/ide-core-browser';
+
 
 @Injectable({ multiple: true })
 export class MainThreadTheme extends Disposable implements IMainThreadTheme {

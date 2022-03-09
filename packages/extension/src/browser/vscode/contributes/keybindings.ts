@@ -1,7 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { Injectable, Autowired } from '@opensumi/di';
 import { KeybindingRegistry, OS, Keybinding, KeybindingWeight } from '@opensumi/ide-core-browser';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export interface ContributedKeyBinding {
   command: string;

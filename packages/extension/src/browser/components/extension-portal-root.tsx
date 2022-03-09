@@ -1,8 +1,10 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
+
+import { DisposableCollection } from '@opensumi/ide-components/lib/utils/disposable';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { getThemeTypeSelector, IThemeService, ThemeType } from '@opensumi/ide-theme/lib/common';
-import { DisposableCollection } from '@opensumi/ide-components/lib/utils/disposable';
+
 import { AbstractViewExtProcessService } from '../../common/extension.service';
 
 interface IPortalRootProps {

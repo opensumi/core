@@ -1,5 +1,5 @@
-import { IDisposable } from '../disposable';
 import { ConstructorOf } from '../declare';
+import { IDisposable } from '../disposable';
 import { IAsyncResult } from '../event';
 
 export interface IEventFireOpts {

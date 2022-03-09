@@ -1,6 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
-import { corePreferenceSchema } from '../core-preferences';
 import {
   CommandContribution,
   CommandService,
@@ -11,13 +9,17 @@ import {
   Event,
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
-import { PreferenceContribution } from '../preferences';
-import { ClientAppContribution } from './common.define';
+
 import { IContextKeyService, IContextKey } from '../context-key';
+import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
-import { AppConfig } from '../react-providers/config-provider';
-import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
+import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
+import { PreferenceContribution } from '../preferences';
+import { AppConfig } from '../react-providers/config-provider';
+
+import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
+import { ClientAppContribution } from './common.define';
 
 export const inputFocusedContextKey = 'inputFocus';
 export const locationProtocolContextKey = 'locationProtocol';

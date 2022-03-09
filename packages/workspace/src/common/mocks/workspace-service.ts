@@ -1,6 +1,7 @@
-import { FileStat } from '@opensumi/ide-file-service';
-import { Emitter, URI, Deferred } from '@opensumi/ide-core-common';
 import { Injectable } from '@opensumi/di';
+import { Emitter, URI, Deferred } from '@opensumi/ide-core-common';
+import { FileStat } from '@opensumi/ide-file-service';
+
 import { IWorkspaceService } from '../../common';
 
 @Injectable()

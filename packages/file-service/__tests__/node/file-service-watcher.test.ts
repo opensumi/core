@@ -1,11 +1,15 @@
-import temp from 'temp';
+import { execSync } from 'child_process';
+
 import * as fs from 'fs-extra';
 import mv from 'mv';
-import { execSync } from 'child_process';
+import temp from 'temp';
+
+
 import { URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
-import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
+
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
+import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
 // tslint:disable:no-unused-expression
 
 function createNsfwFileSystemWatcherServer() {

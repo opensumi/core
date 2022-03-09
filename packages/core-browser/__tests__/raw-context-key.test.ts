@@ -1,5 +1,4 @@
 import { MockContextKeyService } from '../../monaco/__mocks__/monaco.context-key.service';
-
 import { RawContextKey } from '../src/raw-context-key';
 
 const contextKeyService = new (class extends MockContextKeyService {

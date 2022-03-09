@@ -1,7 +1,8 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event } from '@opensumi/ide-core-common';
-import { ColorTheme, ColorThemeKind } from '../../../common/vscode/ext-types';
+
 import { IExtHostTheming, IMainThreadTheming, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { ColorTheme, ColorThemeKind } from '../../../common/vscode/ext-types';
 
 export class ExtHostTheming implements IExtHostTheming {
   private _proxy: IMainThreadTheming;

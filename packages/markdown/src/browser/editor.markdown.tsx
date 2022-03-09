@@ -1,6 +1,8 @@
 import React from 'react';
-import { ReactEditorComponent, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+
 import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+
 import { IMarkdownService } from '../common';
 
 export const MarkdownEditorComponent: ReactEditorComponent<any> = ({ resource }) => {

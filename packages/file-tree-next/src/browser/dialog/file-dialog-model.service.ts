@@ -8,13 +8,15 @@ import {
   TreeNodeEvent,
   Tree,
 } from '@opensumi/ide-components';
-import { FileTreeModel } from '../file-tree-model';
-import { Directory, File } from '../../common/file-tree-node.define';
 import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@opensumi/ide-core-browser';
-import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileTreeDialogService } from './file-dialog.service';
+
+import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
+import { Directory, File } from '../../common/file-tree-node.define';
+import { FileTreeModel } from '../file-tree-model';
 import styles from '../file-tree-node.module.less';
+
+import { FileTreeDialogService } from './file-dialog.service';
 
 export interface IParseStore {
   files: (File | Directory)[];

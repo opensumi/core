@@ -1,6 +1,8 @@
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import ReactIs from 'react-is';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { ButtonType } from '@opensumi/ide-components';
+import { warning } from '@opensumi/ide-components/lib/utils';
 import {
   replaceLocalizePlaceholder,
   ILogger,
@@ -14,8 +16,8 @@ import {
   ContributionProvider,
   ISumiMenuExtendInfo,
 } from '@opensumi/ide-core-common';
-import { warning } from '@opensumi/ide-components/lib/utils';
-import ReactIs from 'react-is';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
 
 import { MenuId } from './menu-id';
 

@@ -1,3 +1,7 @@
+import { Injector } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+
+import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 import {
   MainThreadAPIIdentifier,
   IMainThreadCommands,
@@ -23,44 +27,42 @@ import {
   IMainThreadTesting,
   IMainThreadEditorTabsShape,
 } from '../../../common/vscode'; // '../../common';
-import { MainThreadCommands } from './main.thread.commands';
-import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { Injector } from '@opensumi/di';
 import { VSCodeExtensionService } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadLanguages } from './main.thread.language';
-import { MainThreadStatusBar } from './main.thread.statusbar';
-import { MainThreadMessage } from './main.thread.message';
-import { MainThreadEditorService } from './main.thread.editor';
-import { MainThreadPreference } from './main.thread.preference';
-import { MainThreadWorkspace } from './main.thread.workspace';
-import { MainThreadEnv } from './main.thread.env';
-import { MainThreadQuickOpen } from './main.thread.quickopen';
-import { MainThreadStorage } from './main.thread.storage';
-import { MainThreadOutput } from './main.thread.output';
-import { MainThreadFileSystem } from './main.thread.file-system';
-import { MainThreadWebview, MainThreadWebviewView } from './main.thread.api.webview';
-import { MainThreadSCM } from './main.thread.scm';
-import { MainThreadTreeView } from './main.thread.treeview';
-import { MainThreadDecorations } from './main.thread.decoration';
-import { MainThreadWindowState } from './main.thread.window-state';
-import { MainThreadDebug } from './main.thread.debug';
-import { MainThreadConnection } from './main.thread.connection';
-import { MainThreadTerminal } from './main.thread.terminal';
-import { MainThreadWindow } from './main.thread.window';
+
 import { MainThreadProgress } from './main.thread.api.progress';
-import { MainthreadTasks } from './main.thread.tasks';
-import { MainthreadComments } from './main.thread.comments';
-import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
-import { MainThreadUrls } from './main.thread.urls';
-import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
-import { MainThreadExtensionLog } from './main.thread.log';
-import { MainThreadTheming } from './main.thread.theming';
-import { MainThreadCustomEditor } from './main.thread.custom-editor';
+import { MainThreadWebview, MainThreadWebviewView } from './main.thread.api.webview';
 import { MainThreadAuthentication } from './main.thread.authentication';
-import { MainThreadSecret } from './main.thread.secret';
-import { MainThreadTestsImpl } from './main.thread.tests';
+import { MainThreadCommands } from './main.thread.commands';
+import { MainthreadComments } from './main.thread.comments';
+import { MainThreadConnection } from './main.thread.connection';
+import { MainThreadCustomEditor } from './main.thread.custom-editor';
+import { MainThreadDebug } from './main.thread.debug';
+import { MainThreadDecorations } from './main.thread.decoration';
+import { MainThreadExtensionDocumentData } from './main.thread.doc';
+import { MainThreadEditorService } from './main.thread.editor';
 import { MainThreadEditorTabsService } from './main.thread.editor-tabs';
+import { MainThreadEnv } from './main.thread.env';
+import { MainThreadFileSystem } from './main.thread.file-system';
+import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
+import { MainThreadLanguages } from './main.thread.language';
+import { MainThreadExtensionLog } from './main.thread.log';
+import { MainThreadMessage } from './main.thread.message';
+import { MainThreadOutput } from './main.thread.output';
+import { MainThreadPreference } from './main.thread.preference';
+import { MainThreadQuickOpen } from './main.thread.quickopen';
+import { MainThreadSCM } from './main.thread.scm';
+import { MainThreadSecret } from './main.thread.secret';
+import { MainThreadStatusBar } from './main.thread.statusbar';
+import { MainThreadStorage } from './main.thread.storage';
+import { MainthreadTasks } from './main.thread.tasks';
+import { MainThreadTerminal } from './main.thread.terminal';
+import { MainThreadTestsImpl } from './main.thread.tests';
+import { MainThreadTheming } from './main.thread.theming';
+import { MainThreadTreeView } from './main.thread.treeview';
+import { MainThreadUrls } from './main.thread.urls';
+import { MainThreadWindow } from './main.thread.window';
+import { MainThreadWindowState } from './main.thread.window-state';
+import { MainThreadWorkspace } from './main.thread.workspace';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,

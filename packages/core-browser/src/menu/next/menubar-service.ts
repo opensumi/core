@@ -1,10 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter } from '@opensumi/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { Event, Emitter } from '@opensumi/ide-core-common/lib/event';
 
-import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu.interface';
 import { IMenubarItem, IMenuRegistry, MenuNode } from './base';
 import { generateMergedCtxMenu } from './menu-util';
+import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu.interface';
 
 export abstract class AbstractMenubarService extends Disposable {
   readonly onDidMenubarChange: Event<void>;

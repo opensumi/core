@@ -1,5 +1,3 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
   ILogger,
   GlobalBrowserStorageService,
@@ -10,8 +8,11 @@ import {
   ILinuxKeyboardLayoutInfo,
   isOSX,
 } from '@opensumi/ide-core-browser';
-import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockLogger } from '../../__mocks__/logger';
+import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
 
 describe('KeyboardLayoutService should be work', () => {
   let keyboardLayoutService: KeyboardLayoutService;

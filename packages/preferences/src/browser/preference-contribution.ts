@@ -1,5 +1,6 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import * as jsoncparser from 'jsonc-parser';
 
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   ClientAppContribution,
   PreferenceSchemaProvider,
@@ -29,21 +30,23 @@ import {
   isString,
   ISettingSection,
 } from '@opensumi/ide-core-browser';
-import { USER_PREFERENCE_URI } from './user-preference-provider';
-import { WorkspacePreferenceProvider } from './workspace-preference-provider';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
   IResourceOpenResult,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
-import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
 import { PREF_SCHEME, SettingContribution } from '../common';
-import { PreferenceView } from './preferences.view';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference-settings.service';
-import * as jsoncparser from 'jsonc-parser';
+import { PreferenceView } from './preferences.view';
+import { USER_PREFERENCE_URI } from './user-preference-provider';
+import { WorkspacePreferenceProvider } from './workspace-preference-provider';
+
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 

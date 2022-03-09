@@ -1,15 +1,16 @@
 // tslint:disable:no-var-requires
+const path = require('path');
+
+const CopyPlugin = require('copy-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const webpack = require('webpack');
-const path = require('path');
 const threadLoader = require('thread-loader');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const webpack = require('webpack');
 const merge = require('webpack-merge');
-const fse = require('fs-extra');
 
 threadLoader.warmup({}, ['ts-loader']);
 

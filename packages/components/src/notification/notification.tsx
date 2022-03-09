@@ -1,10 +1,10 @@
-import React from 'react';
-import Notification from 'rc-notification';
-import CloseOutlined from '@ant-design/icons/CloseOutlined';
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
 import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined';
+import CloseOutlined from '@ant-design/icons/CloseOutlined';
 import ExclamationCircleOutlined from '@ant-design/icons/ExclamationCircleOutlined';
 import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
+import Notification from 'rc-notification';
+import React from 'react';
 
 export type NotificationPlacement = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 

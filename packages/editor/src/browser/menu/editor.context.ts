@@ -1,11 +1,11 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { ContextMenuController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Disposable, Domain, IContextKeyService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { IAnchor } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/contextview/contextview';
 import * as dom from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
+import { IAnchor } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/contextview/contextview';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { ContextMenuController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';

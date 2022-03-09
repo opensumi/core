@@ -1,6 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { Color, RGBA } from '../color';
 import { registerColor } from '../color-registry';
+
 import { editorWidgetBackground, editorWidgetForeground } from './editor';
 
 export const quickInputBackground = registerColor(

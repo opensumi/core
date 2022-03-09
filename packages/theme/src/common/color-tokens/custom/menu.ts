@@ -1,10 +1,10 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor, transparent } from '../../color-registry';
-import { menuForeground } from '../menu';
-import { widgetShadow, foreground, descriptionForeground } from '../base';
 import { ACTIVITY_BAR_BORDER } from '../activity-bar';
+import { widgetShadow, foreground, descriptionForeground } from '../base';
 import { editorBackground } from '../editor';
+import { menuForeground } from '../menu';
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor(

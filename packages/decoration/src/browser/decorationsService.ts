@@ -11,10 +11,10 @@ import {
   toDisposable,
   dispose,
 } from '@opensumi/ide-core-common';
-import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
-import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
-import { LinkedList } from '@opensumi/ide-core-common/lib/linked-list';
 import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@opensumi/ide-core-common';
+import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
+import { LinkedList } from '@opensumi/ide-core-common/lib/linked-list';
+import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
 
 import {
   IDecorationsService,

@@ -1,6 +1,8 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import debounce = require('lodash.debounce');
+import flattenDeep from 'lodash.flattendeep';
+import groupBy from 'lodash.groupby';
+import { observable, computed, action } from 'mobx';
+
 import { INJECTOR_TOKEN, Injector, Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
@@ -16,6 +18,8 @@ import {
   positionToRange,
   Deferred,
 } from '@opensumi/ide-core-browser';
+import { LRUCache } from '@opensumi/ide-core-common/lib/map';
+import { dirname } from '@opensumi/ide-core-common/lib/path';
 import { IEditor } from '@opensumi/ide-editor';
 import {
   IEditorDecorationCollectionService,
@@ -23,6 +27,12 @@ import {
   ResourceService,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   ICommentsService,
   ICommentsThread,
@@ -32,16 +42,10 @@ import {
   ICommentRangeProvider,
   ICommentsThreadOptions,
 } from '../common';
-import { CommentsThread } from './comments-thread';
-import { observable, computed, action } from 'mobx';
-import flattenDeep from 'lodash.flattendeep';
-import groupBy from 'lodash.groupby';
-import { dirname } from '@opensumi/ide-core-common/lib/path';
-import { IIconService, IconType } from '@opensumi/ide-theme';
+
 import { CommentsPanel } from './comments-panel.view';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LRUCache } from '@opensumi/ide-core-common/lib/map';
-import debounce = require('lodash.debounce');
+import { CommentsThread } from './comments-thread';
+
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {

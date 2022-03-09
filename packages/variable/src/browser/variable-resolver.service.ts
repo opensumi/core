@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { isWindows, Variable, VariableRegistry } from '@opensumi/ide-core-browser';
+
 import { VariableResolveOptions, IVariableResolverService } from '../common';
 
 @Injectable()

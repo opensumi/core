@@ -1,10 +1,14 @@
-import path from 'path';
-import * as fs from 'fs-extra';
 import os from 'os';
-import { getDebugLogger, getNodeRequire, Uri } from '@opensumi/ide-core-node';
+import path from 'path';
+
+import * as fs from 'fs-extra';
 import semver from 'semver';
 
+import { getDebugLogger, getNodeRequire, Uri } from '@opensumi/ide-core-node';
+
+
 import { IExtensionMetaData, IExtraMetaData } from '../common';
+
 import { mergeContributes } from './merge-contributes';
 
 function resolvePath(path) {

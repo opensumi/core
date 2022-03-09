@@ -19,13 +19,16 @@ import {
   KeymapInfo,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
-import { KEYMAPS_SCHEME, IKeymapService } from '../common';
-import { KeymapsView } from './keymaps.view';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
+
+import { KEYMAPS_SCHEME, IKeymapService } from '../common';
+
+import { KeymapsView } from './keymaps.view';
+
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 

@@ -1,11 +1,13 @@
+import { IContextKeyService, CommandService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { URI } from '@opensumi/ide-core-common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { URI } from '@opensumi/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
-import { IContextKeyService, CommandService } from '@opensumi/ide-core-browser';
-import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
-import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+
 
 describe('WorkspaceVariableContribution should be work', () => {
   let workspaceVariableContribution: WorkspaceVariableContribution;

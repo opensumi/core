@@ -8,6 +8,7 @@ import {
   StatusBarAlignment,
   WithEventBus,
 } from '@opensumi/ide-core-browser';
+
 import { WorkbenchEditorService, IEditor, ILanguageStatusService, ILanguageStatus } from '../../common';
 import { EditorDocumentModelOptionChangedEvent } from '../doc-model/types';
 

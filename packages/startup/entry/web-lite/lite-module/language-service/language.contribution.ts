@@ -1,12 +1,12 @@
-import { Autowired } from '@opensumi/di';
-import { Disposable, Domain, URI } from '@opensumi/ide-core-common';
-import { ClientAppContribution } from '@opensumi/ide-core-browser';
-import { Position } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import type * as vscode from 'vscode';
+
+import { Autowired } from '@opensumi/di';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { Disposable, Domain, URI } from '@opensumi/ide-core-common';
+import { Position } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ILsifService } from './lsif-service/base';
-
 import { SimpleLanguageService } from './simple.service';
 
 @Domain(ClientAppContribution)

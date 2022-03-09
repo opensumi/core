@@ -1,5 +1,4 @@
 import { Injector } from '@opensumi/di';
-import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@opensumi/ide-core-common';
 import {
   AppConfig,
   IContextKeyService,
@@ -8,16 +7,24 @@ import {
   CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IThemeService } from '@opensumi/ide-theme';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { TerminalController } from '../../src/browser/terminal.controller';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { TerminalProfileService } from '../../lib/browser/terminal.profile';
 import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
-import { TerminalGroupViewService } from '../../src/browser/terminal.view';
+import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
-import { TerminalPreference } from '../../src/browser/terminal.preference';
 import { TerminalNetworkService } from '../../src/browser/terminal.network';
+import { TerminalPreference } from '../../src/browser/terminal.preference';
+import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import {
   ITerminalService,
   ITerminalTheme,
@@ -33,6 +40,7 @@ import {
   ITerminalServicePath,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
+
 import {
   MockMainLayoutService,
   MockTerminalThemeService,
@@ -45,12 +53,7 @@ import {
   MockProfileService,
   MockTerminalProfileInternalService,
 } from './mock.service';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { TerminalProfileService } from '../../lib/browser/terminal.profile';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);

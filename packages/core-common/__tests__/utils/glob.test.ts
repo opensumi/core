@@ -6,9 +6,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isWindows } from '../../src/platform';
 import * as glob from '../../src/utils/glob';
 import * as path from '../../src/utils/paths';
-import { isWindows } from '../../src/platform';
 
 describe('Glob', () => {
   // it('perf', () => {

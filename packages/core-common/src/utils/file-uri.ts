@@ -1,4 +1,5 @@
 import { URI, Uri } from '../uri';
+
 import { isWindows } from './os';
 
 export namespace FileUri {

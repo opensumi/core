@@ -1,15 +1,16 @@
 import { Injector } from '@opensumi/di';
-import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { ExtHostStatusBar } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.statusbar';
+import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { MainThreadStatusBar } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.statusbar';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { StatusBarAlignment } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ExtHostStatusBar } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.statusbar';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensionDescription } from '../../__mocks__/extensions';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 

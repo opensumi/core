@@ -1,10 +1,11 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { editorWarningForeground } from './editor';
-import { contrastBorder, errorForeground } from './base';
 import { darken, registerColor } from '../color-registry';
+
 import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from './activity-bar';
+import { contrastBorder, errorForeground } from './base';
+import { editorWarningForeground } from './editor';
 
 // < --- Status --- >
 

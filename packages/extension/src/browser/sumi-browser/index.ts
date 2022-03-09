@@ -1,16 +1,17 @@
-import { URI, localize, getIcon, IReporterService, format } from '@opensumi/ide-core-browser';
-import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
-import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
-import { PlainWebview } from '@opensumi/ide-webview';
-import { ToolBarPosition } from '@opensumi/ide-toolbar';
-import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { Injector } from '@opensumi/di';
-import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { URI, localize, getIcon, IReporterService, format } from '@opensumi/ide-core-browser';
+import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
+import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
+import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
+import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
+import { ToolBarPosition } from '@opensumi/ide-toolbar';
+import { PlainWebview } from '@opensumi/ide-webview';
+
+import { IExtension } from '../../common';
 
 import { createBrowserCommandsApiFactory } from './commands';
 import { createBrowserComponents } from './components';
-import { IExtension } from '../../common';
 
 /**
  * Browser 尽量只export视图相关的少量API

@@ -1,11 +1,13 @@
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
-import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
+import React from 'react';
+
 import { Injector } from '@opensumi/di';
 import { Command } from '@opensumi/ide-core-common';
-import React from 'react';
+import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
+import { IContextKeyService } from '../../../src/context-key';
 import {
   SeparatorMenuItemNode,
   IComponentMenuItemProps,
@@ -18,7 +20,6 @@ import {
   generateMergedCtxMenu,
   ComponentMenuItemNode,
 } from '../../../src/menu/next';
-import { IContextKeyService } from '../../../src/context-key';
 
 const contextKeyService = new (class extends MockContextKeyService {
   match(context: string) {

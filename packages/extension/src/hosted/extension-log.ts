@@ -1,6 +1,7 @@
-import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@opensumi/ide-core-common';
+
+import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
 
 export class ExtensionLogger implements IExtensionLogger {
   private rpcProtocol: RPCProtocol;

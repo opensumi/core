@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Schemas, CommandService } from '@opensumi/ide-core-common';
+
 import { IOpener } from '.';
 
 @Injectable()

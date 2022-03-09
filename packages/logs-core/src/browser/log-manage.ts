@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
-import { LogServiceClient } from './log.service';
+
 import {
   LogServiceForClientPath,
   ILogServiceForClient,
@@ -9,6 +9,8 @@ import {
   ILoggerManagerClient,
   ILogServiceClient,
 } from '../common/';
+
+import { LogServiceClient } from './log.service';
 
 @Injectable()
 export class LoggerManagerClient implements ILoggerManagerClient {

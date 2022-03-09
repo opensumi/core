@@ -1,5 +1,5 @@
-import { MenuNode } from '../../base';
 import { IContextKeyService } from '../../../../context-key';
+import { MenuNode } from '../../base';
 import { MenuId } from '../../menu-id';
 import { IMenuNodeOptions } from '../../menu.interface';
 

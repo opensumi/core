@@ -1,10 +1,13 @@
-import { Injectable } from '@opensumi/di';
-import { MaybePromise, Event, findFreePort } from '@opensumi/ide-core-common';
-import { IExtensionHostManager, Output, OutputType } from '../common';
 import assert from 'assert';
 import cp from 'child_process';
+
 import isRunning from 'is-running';
 import treeKill from 'tree-kill';
+
+import { Injectable } from '@opensumi/di';
+import { MaybePromise, Event, findFreePort } from '@opensumi/ide-core-common';
+
+import { IExtensionHostManager, Output, OutputType } from '../common';
 
 @Injectable()
 export class ExtensionHostManager implements IExtensionHostManager {

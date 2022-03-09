@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
 import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData } from '@opensumi/ide-extension';
+
 import { mockExtensions, mockExtensionProps } from './extensions';
 
 @Injectable()

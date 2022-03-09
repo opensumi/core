@@ -1,25 +1,29 @@
-import type vscode from 'vscode';
 import paths from 'path';
+
+import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { CancellationToken, Emitter, Event, MessageType } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileStat } from '@opensumi/ide-file-service';
+
+import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import {
   MainThreadAPIIdentifier,
   IMainThreadWorkspace,
   IExtHostWorkspace,
   ExtensionDocumentDataManager,
 } from '../../../common/vscode';
-import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
-import { UriComponents } from '../../../common/vscode/models';
-import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
-import { ExtHostPreference } from './ext.host.preference';
-import { CancellationToken, Emitter, Event, MessageType } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { FileStat } from '@opensumi/ide-file-service';
 import * as TypeConverts from '../../../common/vscode/converter';
-import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
+import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
+import { UriComponents } from '../../../common/vscode/models';
+import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { IExtHostTasks } from '../../../common/vscode/tasks';
+
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
+import { ExtHostPreference } from './ext.host.preference';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,

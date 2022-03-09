@@ -7,12 +7,13 @@ import {
   FileStat,
   StorageProvider,
 } from '@opensumi/ide-core-browser';
+import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugConfigurationManager, DebugPreferences } from '@opensumi/ide-debug/lib/browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IDebugServer } from '@opensumi/ide-debug';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 describe('Debug Configuration Manager', () => {

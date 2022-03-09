@@ -1,5 +1,5 @@
-import { DebugSource } from '@opensumi/ide-debug/lib/browser';
 import { URI } from '@opensumi/ide-core-browser';
+import { DebugSource } from '@opensumi/ide-debug/lib/browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 describe('DebugSource Model', () => {

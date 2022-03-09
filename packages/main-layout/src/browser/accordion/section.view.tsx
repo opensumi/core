@@ -1,13 +1,16 @@
-import React from 'react';
 import cls from 'classnames';
-import styles from './styles.module.less';
+import React from 'react';
+
+
 import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
-import { Layout, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { Layout, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+
+import styles from './styles.module.less';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题

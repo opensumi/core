@@ -1,13 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@opensumi/ide-core-browser';
+
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
 import { BrowserViewContributionPoint, KtViewsSchema } from './browser-views';
+import { MenuExtendContributionPoint } from './menu-extend';
 import { MenubarsContributionPoint } from './menubar';
 import { SubmenusContributionPoint } from './submenu';
 import { ToolbarContributionPoint } from './toolbar';
-import { MenuExtendContributionPoint } from './menu-extend';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 

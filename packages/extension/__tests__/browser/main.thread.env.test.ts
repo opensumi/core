@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { Injector, Injectable } from '@opensumi/di';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import {
   Emitter,
   ILoggerManagerClient,
@@ -7,11 +9,7 @@ import {
   LogLevel,
   getLanguageId,
 } from '@opensumi/ide-core-common';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
-import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
 import {
@@ -20,10 +18,13 @@ import {
   ExtHostAPIIdentifier,
   IMainThreadStorage,
 } from '@opensumi/ide-extension/lib/common/vscode';
+import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
+import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
 import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
-import { AppConfig } from '@opensumi/ide-core-browser';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

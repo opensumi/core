@@ -1,12 +1,14 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
+import { URI, StoragePaths } from '@opensumi/ide-core-common';
+
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import {
   ExtensionGlobalMemento,
   ExtensionMemento,
   ExtHostStorage,
 } from '../../../../src/hosted/api/vscode/ext.host.storage';
-import { URI, StoragePaths } from '@opensumi/ide-core-common';
+
 
 const cache = {
   shared: {},

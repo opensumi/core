@@ -1,3 +1,4 @@
+import { AppConfig } from '@opensumi/ide-core-browser';
 import {
   getDebugLogger,
   IStorage,
@@ -8,8 +9,8 @@ import {
   DisposableCollection,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { IStorageServer, IUpdateRequest } from '../common';
-import { AppConfig } from '@opensumi/ide-core-browser';
 
 enum StorageState {
   None,

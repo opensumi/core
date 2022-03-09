@@ -1,10 +1,10 @@
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Emitter,
   ICredentialsChangeEvent,
   INativeCredentialService,
   KeytarServicePath,
 } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/di';
 import { Event } from '@opensumi/ide-core-common';
 
 export const ICredentialsService = Symbol('ICredentialsService');

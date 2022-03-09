@@ -1,10 +1,11 @@
 /* istanbul ignore file */
-import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { Autowired } from '@opensumi/di';
 import { Domain, URI, CommandContribution, CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
 import { ResourceService, IResource } from '@opensumi/ide-editor';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+
 import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData, isWebview } from './types';
-import { Autowired } from '@opensumi/di';
 import { WebviewServiceImpl } from './webview.service';
 
 const WEBVIEW_DEVTOOLS_COMMAND = {

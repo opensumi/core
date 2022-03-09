@@ -18,13 +18,17 @@ import type {
   TestsChangeEvent,
   TestRunResult,
 } from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
-import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { mapFind } from '@opensumi/ide-core-common/lib/arrays';
 import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common/lib/cancellation';
+import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { once } from '@opensumi/ide-core-common/lib/functional';
 import { hash } from '@opensumi/ide-core-common/lib/utils/hash';
+import { deepFreeze } from '@opensumi/ide-core-common/lib/utils/objects';
+import { isDefined } from '@opensumi/ide-core-common/lib/utils/types';
 import { uuid } from '@opensumi/ide-core-common/lib/uuid';
-import { TestId, TestIdPathParts, TestPosition } from '@opensumi/ide-testing/lib/common/testId';
 import {
   AbstractIncrementalTestCollection,
   CoverageDetails,
@@ -40,17 +44,14 @@ import {
   TestRunProfileBitset,
   TestsDiff,
 } from '@opensumi/ide-testing/lib/common/testCollection';
-import { isDefined } from '@opensumi/ide-core-common/lib/utils/types';
-import { once } from '@opensumi/ide-core-common/lib/functional';
-import { deepFreeze } from '@opensumi/ide-core-common/lib/utils/objects';
-import { mapFind } from '@opensumi/ide-core-common/lib/arrays';
+import { TestId, TestIdPathParts, TestPosition } from '@opensumi/ide-testing/lib/common/testId';
 
-import { InvalidTestItemError, TestItemImpl, TestItemRootImpl } from '../../../common/vscode/testing/testApi';
-import { IExtHostTests, IMainThreadTesting } from '../../../common/vscode/tests';
+import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import * as Convert from '../../../common/vscode/converter';
 import { TestRunProfileKind, TestRunRequest } from '../../../common/vscode/ext-types';
-import { MainThreadAPIIdentifier } from '../../../common/vscode';
+import { InvalidTestItemError, TestItemImpl, TestItemRootImpl } from '../../../common/vscode/testing/testApi';
 import { SingleUseTestCollection } from '../../../common/vscode/testing/testCollection';
+import { IExtHostTests, IMainThreadTesting } from '../../../common/vscode/tests';
 
 interface ControllerInfo {
   controller: TestController;

@@ -1,18 +1,20 @@
-import { EDITOR_COMMANDS, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
-import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { buildTestUri, TestUriType } from './../../common/testingUri';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { EDITOR_COMMANDS, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
 import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { IRichLocation, ITestItem, ITestMessage, TestMessageType, TestResultItem } from '../../common/testCollection';
-import { TestingOutputPeek } from './test-peek-widget';
-import { TestResultServiceImpl } from '../test.result.service';
+import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+
 import { ITestResult, TestResultServiceToken } from '../../common/test-result';
+import { IRichLocation, ITestItem, ITestMessage, TestMessageType, TestResultItem } from '../../common/testCollection';
 import { TestingPeekOpenerServiceToken } from '../../common/testingPeekOpener';
-import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
 import { isDiffable } from '../../common/testingStates';
 import { TestContextKey } from '../test-contextkey.service';
+import { TestResultServiceImpl } from '../test.result.service';
+
+import { buildTestUri, TestUriType } from './../../common/testingUri';
+import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
+import { TestingOutputPeek } from './test-peek-widget';
 
 export class TestDto {
   public readonly test: ITestItem;

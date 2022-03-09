@@ -1,8 +1,8 @@
-import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IContextKey, IScopedContextKeyService } from '@opensumi/ide-core-browser';
 import { TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 @Injectable()
 export class TestContextKey {

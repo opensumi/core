@@ -1,7 +1,8 @@
 import { Event, Emitter, Path } from '../../../../utils';
-import { ISerializableState } from './types';
-import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
+import { CompositeTreeNode, TreeNode } from '../../TreeNode';
+
+import { ISerializableState } from './types';
 
 export enum Operation {
   SetExpanded = 1,

@@ -1,10 +1,4 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
-import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
-import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import {
   AppConfig,
   CommandRegistry,
@@ -15,23 +9,13 @@ import {
   IClientApp,
   ILogger,
 } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { Extension } from './extension';
-import { ActivatedExtension } from '../common/activator';
-import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
-import {
-  AbstractNodeExtProcessService,
-  AbstractViewExtProcessService,
-  AbstractWorkerExtProcessService,
-} from '../common/extension.service';
-import {
-  ExtensionApiReadyEvent,
-  ExtensionDidEnabledEvent,
-  ExtensionBeforeActivateEvent,
-  ExtensionDidUninstalledEvent,
-  IActivationEventService,
-  AbstractExtInstanceManagementService,
-} from './types';
 import {
   ExtensionHostType,
   ExtensionNodeServiceServerPath,
@@ -41,6 +25,24 @@ import {
   IExtensionMetaData,
   LANGUAGE_BUNDLE_FIELD,
 } from '../common';
+import { ActivatedExtension } from '../common/activator';
+import {
+  AbstractNodeExtProcessService,
+  AbstractViewExtProcessService,
+  AbstractWorkerExtProcessService,
+} from '../common/extension.service';
+import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
+
+import { Extension } from './extension';
+import {
+  ExtensionApiReadyEvent,
+  ExtensionDidEnabledEvent,
+  ExtensionBeforeActivateEvent,
+  ExtensionDidUninstalledEvent,
+  IActivationEventService,
+  AbstractExtInstanceManagementService,
+} from './types';
+
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {

@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
+
 import { IToolbarRegistry, createToolbarActionBtn } from '../../toolbar';
 import { createToolbarActionSelect } from '../../toolbar/components/select';
 

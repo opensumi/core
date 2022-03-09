@@ -1,11 +1,12 @@
+import clx from 'classnames';
 import React from 'react';
+
+import { Badge } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser';
-import { IStatusBarService } from '@opensumi/ide-status-bar';
-import clx from 'classnames';
-import { Badge } from '@opensumi/ide-components';
-import { StatusBarItem } from '@opensumi/ide-status-bar/lib/browser/status-bar-item.view';
 import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IStatusBarService } from '@opensumi/ide-status-bar';
+import { StatusBarItem } from '@opensumi/ide-status-bar/lib/browser/status-bar-item.view';
 
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';

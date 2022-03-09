@@ -1,5 +1,6 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
+
 import {
   Badge,
   TreeNode,
@@ -8,19 +9,19 @@ import {
   ClasslistComposite,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { useInjectable, URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-components';
-import { IThemeService, IIconTheme } from '@opensumi/ide-theme';
+import { useInjectable, URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IThemeService, IIconTheme } from '@opensumi/ide-theme';
 
-import { SCMResourceNotRoot, SCMResourceFolder, SCMResourceGroup, SCMResourceFile } from './scm-tree-node';
-import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { ISCMResource, ISCMResourceGroup } from '../../../common';
-
-import styles from './scm-tree-node.module.less';
 import { ViewModelContext } from '../../scm-model';
+
+import { SCMTreeDecorationService } from './scm-tree-decoration.service';
+import { SCMResourceNotRoot, SCMResourceFolder, SCMResourceGroup, SCMResourceFile } from './scm-tree-node';
+import styles from './scm-tree-node.module.less';
 
 export const SCM_TREE_NODE_HEIGHT = 22;
 export const SCM_BADGE_LIMIT = 99;

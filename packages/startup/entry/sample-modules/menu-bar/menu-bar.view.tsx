@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import { MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';

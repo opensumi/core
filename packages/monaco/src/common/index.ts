@@ -1,4 +1,5 @@
 import { URI } from '@opensumi/ide-core-common';
+
 import type {
   FoldingRules,
   IAutoClosingPair,

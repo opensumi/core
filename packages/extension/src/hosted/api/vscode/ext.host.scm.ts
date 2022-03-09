@@ -16,6 +16,8 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/scm.ts
 
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   asPromise,
   comparePaths,
@@ -32,7 +34,7 @@ import {
   IDisposable,
 } from '@opensumi/ide-core-common';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
-import { IRPCProtocol } from '@opensumi/ide-connection';
+
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
   SCMRawResourceSplices,
@@ -42,6 +44,7 @@ import {
   IExtHostSCMShape,
   CommandDto,
 } from '../../../common/vscode/scm';
+
 import { ExtHostCommands } from './ext.host.command';
 
 export type IMainContext = IRPCProtocol;

@@ -1,6 +1,7 @@
-import React from 'react';
 import cls from 'classnames';
-import styles from './outline-node.module.less';
+import React from 'react';
+
+
 import {
   TreeNode,
   CompositeTreeNode,
@@ -9,9 +10,12 @@ import {
   TreeNodeType,
 } from '@opensumi/ide-components';
 import { URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
-import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
-import { IOutlineDecorationService } from '../common';
 import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+
+import { IOutlineDecorationService } from '../common';
+
+import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
+import styles from './outline-node.module.less';
 
 export interface IOutlineNodeProps {
   item: any;

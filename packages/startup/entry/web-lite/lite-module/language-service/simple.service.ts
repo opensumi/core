@@ -1,7 +1,15 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable, ConstructorOf } from '@opensumi/di';
 import type * as vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
+import { DocumentFilter } from 'vscode-languageserver-protocol';
+
+import { Autowired, Injectable, ConstructorOf } from '@opensumi/di';
+import { Uri, URI, LRUMap, DisposableCollection } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelService, LanguageSelector } from '@opensumi/ide-editor/lib/browser';
+import { ExtensionDocumentDataManager, IExtHostLanguages } from '@opensumi/ide-extension/lib/common/vscode';
+import { MonacoModelIdentifier, testGlob } from '@opensumi/ide-extension/lib/common/vscode';
+import { fromLanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/converter';
+import { Disposable } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import {
   SerializedDocumentFilter,
   Hover,
@@ -11,20 +19,11 @@ import {
   ReferenceContext,
   Location,
 } from '@opensumi/ide-extension/lib/common/vscode/model.api';
-import { ExtensionDocumentDataManager, IExtHostLanguages } from '@opensumi/ide-extension/lib/common/vscode';
-import { Uri, URI, LRUMap, DisposableCollection } from '@opensumi/ide-core-common';
-import { Disposable } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
-
+import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
+import { Adapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.language';
 import { DefinitionAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/definition';
 import { HoverAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/hover';
 import { ReferenceAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/reference';
-import { Adapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.language';
-
-import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
-import { IEditorDocumentModelService, LanguageSelector } from '@opensumi/ide-editor/lib/browser';
-import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { fromLanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/converter';
-import { MonacoModelIdentifier, testGlob } from '@opensumi/ide-extension/lib/common/vscode';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()

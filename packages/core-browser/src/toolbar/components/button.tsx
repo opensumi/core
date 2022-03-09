@@ -1,6 +1,15 @@
+import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { Button } from '@opensumi/ide-components';
+import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
+
+import { DomListener } from '../../dom';
+import { PreferenceService } from '../../preferences';
+import { useInjectable } from '../../react-hooks';
+import { AppConfig, ConfigProvider } from '../../react-providers';
 import {
   IToolbarActionReactElement,
   IToolbarActionElementProps,
@@ -10,13 +19,6 @@ import {
   IToolbarPopoverStyle,
   IToolbarPopoverRegistry,
 } from '../types';
-import { useInjectable } from '../../react-hooks';
-import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
-import classnames from 'classnames';
-import { AppConfig, ConfigProvider } from '../../react-providers';
-import { Button } from '@opensumi/ide-components';
-import { PreferenceService } from '../../preferences';
-import { DomListener } from '../../dom';
 
 enum BUTTON_TITLE_STYLE {
   HORIZONTAL = 'horizontal',

@@ -1,4 +1,19 @@
+import path from 'path';
+
+import * as fs from 'fs-extra';
+import temp from 'temp';
+
 import { Injectable, Injector } from '@opensumi/di';
+import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@opensumi/ide-core-node';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { Storage } from '@opensumi/ide-storage/lib/browser/storage';
+import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { StorageModule } from '../../src/browser';
 import {
   IStorageServer,
   IStoragePathServer,
@@ -6,18 +21,6 @@ import {
   IWorkspaceStorageServer,
   IGlobalStorageServer,
 } from '../../src/common';
-import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@opensumi/ide-core-node';
-import temp from 'temp';
-import path from 'path';
-import * as fs from 'fs-extra';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { StorageModule } from '../../src/browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
-import { Storage } from '@opensumi/ide-storage/lib/browser/storage';
 
 const track = temp.track();
 const root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));

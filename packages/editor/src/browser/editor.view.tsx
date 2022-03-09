@@ -1,3 +1,9 @@
+import classnames from 'classnames';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactIs from 'react-is';
+
 import {
   AppConfig,
   ComponentRegistry,
@@ -18,15 +24,13 @@ import {
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import classnames from 'classnames';
-import React from 'react';
-import ReactIs from 'react-is';
-import ReactDOM from 'react-dom';
-import { observer } from 'mobx-react-lite';
+
 
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
+
 import { EditorComponentRegistryImpl } from './component';
 import { Scroll } from './component/scroll/scroll';
+import styles from './editor.module.less';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
@@ -42,7 +46,6 @@ import {
   CodeEditorDidVisibleEvent,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import styles from './editor.module.less';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();

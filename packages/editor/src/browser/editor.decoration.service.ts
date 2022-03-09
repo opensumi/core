@@ -1,8 +1,12 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@opensumi/di';
-import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
-import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
 import { URI, IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
+import { IThemeService } from '@opensumi/ide-theme';
+import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
+
+
 import {
   IEditorDecorationCollectionService,
   IBrowserTextEditorDecorationType,
@@ -13,7 +17,7 @@ import {
   EditorDecorationChangeEvent,
   EditorDecorationTypeRemovedEvent,
 } from './types';
-import { IThemeService } from '@opensumi/ide-theme';
+
 @Injectable()
 export class EditorDecorationCollectionService implements IEditorDecorationCollectionService {
   decorations: Map<string, IBrowserTextEditorDecorationType> = new Map();

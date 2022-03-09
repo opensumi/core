@@ -1,4 +1,6 @@
 import { observable } from 'mobx';
+import React from 'react';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
@@ -7,7 +9,6 @@ import {
   ToolbarActionBtnClickEvent,
 } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
-import React from 'react';
 
 import {
   IToolBarViewService,

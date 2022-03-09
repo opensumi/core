@@ -18,6 +18,7 @@ import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IResourceProvider, WorkbenchEditorService } from '../common';
+
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 
 @Injectable()

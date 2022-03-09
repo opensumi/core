@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import React = require('react');
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { MessageType, update, close } from '@opensumi/ide-components';
 import {
   localize,
   IProgressOptions,
@@ -22,15 +25,17 @@ import {
   toDisposable,
   dispose,
 } from '@opensumi/ide-core-common';
-import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
-import { timeout, IDisposable } from '..';
-import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
-import { ProgressIndicator } from './progress-indicator';
 import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
+
+import { timeout, IDisposable } from '..';
 import { open } from '../components';
-import { MessageType, update, close } from '@opensumi/ide-components';
-import React = require('react');
+import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
+
 import { ProgressBar } from './progress-bar';
+import { ProgressIndicator } from './progress-indicator';
+
+
+import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
 
 @Injectable()
 export class ProgressService implements IProgressService {

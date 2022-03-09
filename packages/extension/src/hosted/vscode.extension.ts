@@ -1,4 +1,5 @@
 import type vscode from 'vscode';
+
 import { IExtensionHostService, IExtensionHost, IExtensionWorkerHost, JSONType, IExtensionProps } from '../common';
 import { VSCodeExtensionService } from '../common/vscode';
 

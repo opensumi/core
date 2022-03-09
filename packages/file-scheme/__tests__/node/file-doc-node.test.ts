@@ -1,18 +1,21 @@
-import { IFileService, FileStat } from '@opensumi/ide-file-service';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileSchemeNodeModule } from '../../src/node';
-import { IFileSchemeDocNodeService } from '../../src/common';
-import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';
 import { tmpdir } from 'os';
 import { join, dirname } from 'path';
+
 import { ensureDir, writeFile, readFile } from 'fs-extra';
+
 import { URI } from '@opensumi/ide-core-common';
-import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IFileService, FileStat } from '@opensumi/ide-file-service';
+import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IFileSchemeDocNodeService } from '../../src/common';
+import { FileSchemeNodeModule } from '../../src/node';
+import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';
 
 describe('node file doc service test', () => {
   const injector = createNodeInjector([FileSchemeNodeModule]);

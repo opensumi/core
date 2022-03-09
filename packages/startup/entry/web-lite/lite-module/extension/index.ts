@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
 import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
+
 import { getExtension } from './utils';
 
 const extensionList = [

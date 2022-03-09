@@ -8,8 +8,8 @@ import {
   getLanguageId,
 } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import {
   VSCodeContributePoint,

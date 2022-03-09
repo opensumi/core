@@ -1,8 +1,9 @@
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { CommandRegistry, Disposable, Event, Emitter } from '@opensumi/ide-core-common';
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { CommandRegistry, Disposable, Event, Emitter } from '@opensumi/ide-core-common';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
+
 import { IMenuItem, isIMenuItem, ISubmenuItem, IComponentMenuItem, isIComponentMenuItem, IMenuRegistry } from './base';
 import { MenuId } from './menu-id';
 import {

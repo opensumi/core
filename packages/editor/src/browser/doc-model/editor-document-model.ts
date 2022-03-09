@@ -1,4 +1,5 @@
-import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import debounce = require('lodash.debounce');
+
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
@@ -16,7 +17,11 @@ import {
   REPORT_NAME,
   URI,
 } from '@opensumi/ide-core-browser';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { EOL, EndOfLineSequence, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IMessageService } from '@opensumi/ide-overlay';
+
 import {
   IDocCache,
   IDocPersistentCacheProvider,
@@ -25,7 +30,10 @@ import {
   SaveReason,
   IEditorDocumentModelContentChange,
 } from '../../common';
+import { EditorPreferences } from '../preference/schema';
+import { createEditorPreferenceProxy } from '../preference/util';
 import { CompareResult, ICompareService } from '../types';
+
 import { EditorDocumentError } from './editor-document-error';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import {
@@ -40,11 +48,6 @@ import {
   EditorDocumentModelWillSaveEvent,
 } from './types';
 
-import debounce = require('lodash.debounce');
-import { EditorPreferences } from '../preference/schema';
-import { createEditorPreferenceProxy } from '../preference/util';
-import { EOL, EndOfLineSequence, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;

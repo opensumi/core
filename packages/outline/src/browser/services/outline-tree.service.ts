@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
-import { OutlineCompositeTreeNode, OutlineTreeNode, OutlineRoot } from '../outline-node.define';
 import {
   URI,
   Emitter,
@@ -17,7 +16,10 @@ import {
   DocumentSymbolStore,
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+
 import { OutlineSortOrder } from '../../common';
+import { OutlineCompositeTreeNode, OutlineTreeNode, OutlineRoot } from '../outline-node.define';
+
 import { OutlineContextKeyService } from './outline-contextkey.service';
 
 @Injectable()

@@ -1,11 +1,15 @@
-import React from 'react';
-import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
-import ReactDOM from 'react-dom';
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import styles from './comments.module.less';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
 import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
-import { CommentItem } from './comments-item.view';
-import { CommentsTextArea } from './comments-textarea.view';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IEditor } from '@opensumi/ide-editor';
+import { ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
+
 import {
   ICommentReply,
   ICommentsZoneWidget,
@@ -13,12 +17,11 @@ import {
   ICommentsFeatureRegistry,
   ICommentsThread,
 } from '../common';
-import clx from 'classnames';
-import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
-import { IEditor } from '@opensumi/ide-editor';
+
+import { CommentItem } from './comments-item.view';
+import { CommentsTextArea } from './comments-textarea.view';
 import { CommentsZoneService } from './comments-zone.service';
-import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import styles from './comments.module.less';
 
 export interface ICommentProps {
   thread: ICommentsThread;

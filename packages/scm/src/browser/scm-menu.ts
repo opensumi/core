@@ -1,8 +1,8 @@
 import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
-import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { MenuId, AbstractContextMenuService, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 
 import {
   ISCMRepository,
@@ -13,6 +13,7 @@ import {
   ISCMRepositoryMenus,
   ISCMMenus,
 } from '../common';
+
 import { isSCMResource } from './scm-util';
 
 @Injectable({ multiple: true })

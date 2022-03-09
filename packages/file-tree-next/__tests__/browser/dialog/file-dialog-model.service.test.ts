@@ -1,12 +1,13 @@
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { TreeNodeType } from '@opensumi/ide-components';
 import { URI, CorePreferences, Disposable } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Directory, File } from '../../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@opensumi/ide-components';
+
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { FileTreeDialogModel } from '../../../src/browser/dialog/file-dialog-model.service';
-import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
 import styles from '../../../src/browser/file-tree-node.modules.less';
+import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
+import { Directory, File } from '../../../src/common/file-tree-node.define';
 
 class TempDirectory {}
 

@@ -1,6 +1,7 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
 import { Optional, Injectable } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+
+import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadWindowState {

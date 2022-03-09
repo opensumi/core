@@ -1,10 +1,11 @@
-import { IExtension } from '../..';
 import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IDisposable, Uri } from '@opensumi/ide-core-common';
-import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
+import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
+import { IExtension } from '../..';
 
 export interface ISumiBrowserContributions {
   [containerId: string]:

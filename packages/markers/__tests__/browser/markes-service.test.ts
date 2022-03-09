@@ -1,12 +1,13 @@
 import { Injector, Injectable } from '@opensumi/di';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IThemeService } from '@opensumi/ide-theme';
-import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { Uri, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
 import { EditorGroupCloseEvent, IResource } from '@opensumi/ide-editor/lib/browser';
-import { MarkerService } from '../../src/browser/markers-service';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { IThemeService } from '@opensumi/ide-theme';
+
 import { MarkerSeverity } from '../../../core-common/src/types/markers/markers';
+import { MarkerService } from '../../src/browser/markers-service';
 
 @Injectable()
 class MockMainLayoutService {

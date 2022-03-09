@@ -1,8 +1,10 @@
-import { Emitter, IEventBus, URI, CancellationTokenSource } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { Emitter, IEventBus, URI, CancellationTokenSource } from '@opensumi/ide-core-common';
+import { ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import { MainThreadWebview } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
+import { MainThreadCustomEditor } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.custom-editor';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import {
   IExtHostCustomEditor,
   CustomEditorType,
@@ -12,11 +14,10 @@ import {
   CustomEditorShouldSaveEvent,
   CustomEditorShouldRevertEvent,
 } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
-import { MainThreadWebview } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
-import { MainThreadCustomEditor } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.custom-editor';
 import { IWebviewService } from '@opensumi/ide-webview/lib/browser/types';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

@@ -1,5 +1,8 @@
 import { Terminal as XTermTerminal } from 'xterm';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+
 import {
   generateSessionId,
   ITerminalService,
@@ -12,8 +15,8 @@ import {
   IShellLaunchConfig,
   ITerminalConnection,
 } from '../common';
+
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 @Injectable()
 export class TerminalInternalService implements ITerminalInternalService {

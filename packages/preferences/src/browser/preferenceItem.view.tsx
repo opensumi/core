@@ -1,4 +1,7 @@
+import classnames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import {
   DisposableCollection,
   getIcon,
@@ -13,11 +16,12 @@ import {
   useInjectable,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
-import styles from './preferences.module.less';
-import classnames from 'classnames';
-import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
-import { PreferenceSettingsService } from './preference-settings.service';
+
 import { toPreferenceReadableName } from '../common';
+
+import { PreferenceSettingsService } from './preference-settings.service';
+import styles from './preferences.module.less';
+
 
 interface IPreferenceItemProps {
   preferenceName: string;

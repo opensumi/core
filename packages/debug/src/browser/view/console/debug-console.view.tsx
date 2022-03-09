@@ -1,9 +1,8 @@
-import React from 'react';
 import cls from 'classnames';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import styles from './debug-console.module.less';
-import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
-import { DebugConsoleService } from './debug-console.service';
+import React from 'react';
+
 import {
   RecycleTree,
   IRecycleTreeHandle,
@@ -15,15 +14,19 @@ import {
   TreeNode,
   TreeNodeEvent,
 } from '@opensumi/ide-components';
-import { IDebugConsoleModel } from './debug-console-tree.model.service';
-import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 import { Loading } from '@opensumi/ide-components';
-import { DebugConsoleFilterService } from './debug-console-filter.service';
-import { LinkDetector } from '../../debug-link-detector';
+import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
 import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
-import { debounce } from 'lodash';
+
+import { LinkDetector } from '../../debug-link-detector';
 import { CharWidthReader } from '../../debugUtils';
+import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
+
+import { DebugConsoleFilterService } from './debug-console-filter.service';
+import { IDebugConsoleModel } from './debug-console-tree.model.service';
+import styles from './debug-console.module.less';
+import { DebugConsoleService } from './debug-console.service';
 
 declare const ResizeObserver: any;
 

@@ -1,5 +1,6 @@
-import { IExtension, JSONType } from '../../../common';
 import { Disposable } from '@opensumi/ide-core-common';
+
+import { IExtension, JSONType } from '../../../common';
 
 export const CONTRIBUTE_NAME_KEY = 'contribute_name';
 export abstract class VscodeContributionPoint<T extends JSONType = JSONType> extends Disposable {

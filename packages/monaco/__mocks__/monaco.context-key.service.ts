@@ -1,6 +1,6 @@
+import { Injectable } from '@opensumi/di';
 import { ContextKeyChangeEvent, IScopedContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
 import { Event } from '@opensumi/ide-core-common';
-import { Injectable } from '@opensumi/di';
 import { isFalsyOrWhitespace } from '@opensumi/ide-core-common';
 import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 

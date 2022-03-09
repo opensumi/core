@@ -2,6 +2,7 @@ import { observable } from 'mobx';
 import type vscode from 'vscode';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   Deferred,
@@ -21,10 +22,10 @@ import {
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
-import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
-import { TerminalKeyBoardInputService } from './terminal.input';
+
 import {
   TerminalOptions,
   ITerminalController,
@@ -44,13 +45,14 @@ import {
   ITerminalProfileInternalService,
   TerminalIcon,
 } from '../common';
-import { ITerminalPreference } from '../common/preference';
-import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
-import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { XTerm } from './xterm';
+import { ITerminalPreference } from '../common/preference';
+
+import { TerminalLinkManager } from './links/link-manager';
+import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
+import { TerminalKeyBoardInputService } from './terminal.input';
+import { XTerm } from './xterm';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {

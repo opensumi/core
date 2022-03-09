@@ -1,9 +1,11 @@
-import React from 'react';
+import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { ToolbarLocation } from '@opensumi/ide-core-browser';
 
 import styles from './toolbar-action.module.less';
-import classnames from 'classnames';
+
 
 // const ActionGroup = observer(({ group, id }: { group: IToolbarActionGroup; id: string }) => {
 //   return (<div className={styles.actionGroup} key={id}>

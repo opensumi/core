@@ -2,6 +2,7 @@ import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import { VSXExtensionBackSerivceToken, VSXExtensionServicePath } from '../common';
+
 import { VSXExtensionService } from './vsx-extension.service';
 
 @Injectable()

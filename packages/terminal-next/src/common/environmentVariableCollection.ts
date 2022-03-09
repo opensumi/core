@@ -7,6 +7,7 @@
 
 import { OS } from '@opensumi/ide-core-common';
 import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
+
 import {
   IMergedEnvironmentVariableCollection,
   IExtensionOwnedEnvironmentVariableMutator,

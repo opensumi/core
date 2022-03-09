@@ -1,5 +1,6 @@
-import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 import { IDisposable } from '../../utils';
+
+import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 
 export enum TreeNodeEvent {
   WillChangeExpansionState = 1,

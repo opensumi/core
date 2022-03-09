@@ -1,6 +1,6 @@
-import { Disposable, memoize } from '@opensumi/ide-core-common';
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable, memoize } from '@opensumi/ide-core-common';
 
 import { CommentsThread } from './comments-thread';
 

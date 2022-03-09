@@ -1,8 +1,10 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor, transparent } from '../color-registry';
+
 import { Color } from '../../common/color';
-import { editorBackground } from './editor';
+import { registerColor, transparent } from '../color-registry';
+
 import { contrastBorder } from './base';
+import { editorBackground } from './editor';
 import { textLinkActiveForeground } from './text';
 
 // < --- Panels --- >

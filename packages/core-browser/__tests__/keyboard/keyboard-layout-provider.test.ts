@@ -1,5 +1,3 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
   ILogger,
   GlobalBrowserStorageService,
@@ -7,6 +5,9 @@ import {
   BrowserKeyboardLayoutImpl,
   Key,
 } from '@opensumi/ide-core-browser';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockLogger } from '../../__mocks__/logger';
 
 describe('BrowserKeyboardLayoutService should be work', () => {

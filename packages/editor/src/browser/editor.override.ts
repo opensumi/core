@@ -1,18 +1,20 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { URI, IRange } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
+import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { SimpleLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
 
 /* istanbul ignore file */
-import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
-import { URI, IRange } from '@opensumi/ide-core-common';
-import { Autowired, Injectable } from '@opensumi/di';
+
 import { BrowserCodeEditor } from './editor-collection.service';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
+
 
 @Injectable()
 export class MonacoCodeService extends CodeEditorServiceImpl {

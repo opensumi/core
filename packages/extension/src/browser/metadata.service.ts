@@ -1,10 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IExtension } from '../common';
 import { Disposable, ILogger } from '@opensumi/ide-core-browser';
-import { IActivationEventService } from './types';
 import { IEventBus, ExtensionEnabledEvent } from '@opensumi/ide-core-common';
-import { VSCodeContributeRunner } from './vscode/contributes';
+
+import { IExtension } from '../common';
+
 import { SumiContributesRunner } from './sumi/contributes';
+import { IActivationEventService } from './types';
+import { VSCodeContributeRunner } from './vscode/contributes';
 
 @Injectable({ multiple: true })
 export class ExtensionMetadataService extends Disposable {

@@ -1,7 +1,9 @@
 import type vscode from 'vscode';
+
 import { Uri, Cache } from '@opensumi/ide-core-common';
-import * as Converter from '../../../../common/vscode/converter';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import * as Converter from '../../../../common/vscode/converter';
 import { ChainedCacheId, ILink, ILinkDto, ILinksListDto } from '../../../../common/vscode/model.api';
 
 export class LinkProviderAdapter {

@@ -1,3 +1,5 @@
+import type vscode from 'vscode';
+
 import { Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-common';
 import {
   ITerminalInfo,
@@ -10,7 +12,7 @@ import {
   ICreateContributedTerminalProfileOptions,
 } from '@opensumi/ide-terminal-next';
 import { SerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
-import type vscode from 'vscode';
+
 import { IExtensionDescription } from './extension';
 
 export interface IMainThreadTerminal {

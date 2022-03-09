@@ -1,6 +1,7 @@
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { DebugConfiguration } from 'vscode';
+
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { IWebSocket } from '@opensumi/ide-connection';
 import {
   Event,
   Emitter,
@@ -10,8 +11,10 @@ import {
   Deferred,
   getDebugLogger,
 } from '@opensumi/ide-core-browser';
-import { IWebSocket } from '@opensumi/ide-connection';
+import { CancellationToken } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
 import {
   DebugEventTypes,
   DebugExitEvent,
@@ -20,7 +23,8 @@ import {
   getSequenceId,
   IDebugSessionManager,
 } from '../common';
-import { DebugConfiguration } from 'vscode';
+
+
 import { DebugSessionManager } from './debug-session-manager';
 
 export type DebugRequestHandler = (request: DebugProtocol.Request) => any;

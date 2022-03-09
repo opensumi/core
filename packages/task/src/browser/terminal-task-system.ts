@@ -14,6 +14,15 @@ import {
   ProblemMatch,
   ProblemMatchData,
 } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import {
+  TerminalOptions,
+  ITerminalController,
+  ITerminalGroupViewService,
+  ITerminalClient,
+  ITerminalService,
+} from '@opensumi/ide-terminal-next/lib/common';
+import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
   ITaskSystem,
@@ -32,17 +41,11 @@ import {
   TaskEventKind,
   RuntimeType,
 } from '../common/task';
-import {
-  TerminalOptions,
-  ITerminalController,
-  ITerminalGroupViewService,
-  ITerminalClient,
-  ITerminalService,
-} from '@opensumi/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
-import { IVariableResolverService } from '@opensumi/ide-variable';
+
+
 import { ProblemCollector } from './problem-collector';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+
 
 enum TaskStatus {
   PROCESS_INIT,

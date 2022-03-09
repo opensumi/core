@@ -1,9 +1,10 @@
 import React from 'react';
+
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
 import { isOSX, CommandService, DisposableStore } from '@opensumi/ide-core-common';
 import { format } from '@opensumi/ide-core-common/lib/utils/strings';
-import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
-import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
 import { ISCMRepository, InputValidationType, ISCMProvider, scmContainerId } from '../../common';

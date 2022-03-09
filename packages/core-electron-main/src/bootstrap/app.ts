@@ -1,3 +1,24 @@
+import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
+import { argv } from 'yargs';
+
+import { Injector, ConstructorOf } from '@opensumi/di';
+import {
+  createContributionProvider,
+  ContributionProvider,
+  URI,
+  ExtensionCandidate,
+  IEventBus,
+  EventBusImpl,
+  asExtensionCandidate,
+} from '@opensumi/ide-core-common';
+import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+
+import { ElectronMainModule } from '../electron-main-module';
+
+import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
+import { serviceProviders } from './services';
+import { WindowDestroyedEvent, WindowCreatedEvent } from './services/events';
+import { ICodeWindowOptions } from './types';
 import {
   ElectronAppConfig,
   ElectronMainApiRegistry,
@@ -8,24 +29,6 @@ import {
   ElectronURLHandlerRegistry,
 } from './types';
 import { CodeWindow } from './window';
-import { Injector, ConstructorOf } from '@opensumi/di';
-import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
-import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
-import {
-  createContributionProvider,
-  ContributionProvider,
-  URI,
-  ExtensionCandidate,
-  IEventBus,
-  EventBusImpl,
-  asExtensionCandidate,
-} from '@opensumi/ide-core-common';
-import { serviceProviders } from './services';
-import { ICodeWindowOptions } from './types';
-import { ElectronMainModule } from '../electron-main-module';
-import { argv } from 'yargs';
-import { WindowDestroyedEvent, WindowCreatedEvent } from './services/events';
-import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 export interface IWindowOpenOptions {
   windowId: number;

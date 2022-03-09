@@ -1,17 +1,18 @@
-import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Event, IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import { IDirtyDiffWorkbenchController } from '../../common';
+import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { IDirtyDiffWorkbenchController } from '../../common';
 import { SCMPreferences } from '../scm-preference';
-import { DirtyDiffModel } from './dirty-diff-model';
+
 import { DirtyDiffDecorator } from './dirty-diff-decorator';
+import { DirtyDiffModel } from './dirty-diff-model';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
 import './dirty-diff.module.less';

@@ -4,8 +4,9 @@ import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-bro
 import { StatusBarEntry, StatusBarCommand } from '@opensumi/ide-core-browser/lib/services';
 import { CommandRegistry } from '@opensumi/ide-core-common';
 
-import { StatusBarView } from './status-bar.view';
 import { IStatusBarService } from '../common';
+
+import { StatusBarView } from './status-bar.view';
 
 @Domain(ComponentContribution, CommandContribution)
 export class StatusBarContribution implements ComponentContribution, CommandContribution {

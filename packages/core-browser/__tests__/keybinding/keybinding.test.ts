@@ -1,14 +1,4 @@
 import {
-  ContextKeyDefinedExpr,
-  ContextKeyEqualsExpr,
-  ContextKeyNotEqualsExpr,
-  ContextKeyNotExpr,
-  ContextKeyRegexExpr,
-  ContextKeyExpr,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import {
   IContextKeyService,
   KeybindingContribution,
   KeybindingRegistry,
@@ -20,14 +10,25 @@ import {
   KeybindingService,
   SpecialCases,
 } from '@opensumi/ide-core-browser';
-import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
-import { KeybindingsResultCollection } from '../../src';
 import {
   KeyboardLayoutChangeNotifierService,
   KeyboardNativeLayoutService,
 } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
-import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
+import {
+  ContextKeyDefinedExpr,
+  ContextKeyEqualsExpr,
+  ContextKeyNotEqualsExpr,
+  ContextKeyNotExpr,
+  ContextKeyRegexExpr,
+  ContextKeyExpr,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockLogger } from '../../__mocks__/logger';
+import { KeybindingsResultCollection } from '../../src';
+import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
+import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
 
 describe('KeybindingRegistry', () => {
   let keybindingRegistry: KeybindingRegistry;

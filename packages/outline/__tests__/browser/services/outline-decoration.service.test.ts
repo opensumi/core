@@ -1,8 +1,9 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MarkerManager, URI, MarkerSeverity } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { OutlineRoot, OutlineCompositeTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
 import { OutlineDecorationService } from '@opensumi/ide-outline/lib/browser/services/outline-decoration.service';
 import { IThemeService } from '@opensumi/ide-theme';
+
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 
 describe('OutlineDecorationService', () => {

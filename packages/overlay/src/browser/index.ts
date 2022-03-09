@@ -1,11 +1,14 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { Overlay } from './index.view';
-import { IDialogService, IMessageService } from '../common';
-import { DialogService } from './dialog.service';
-import { MessageService } from './message.service';
-import { BrowserCtxMenuService } from './ctx-menu/ctx-menu.service';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+
+import { IDialogService, IMessageService } from '../common';
+
+import { BrowserCtxMenuService } from './ctx-menu/ctx-menu.service';
+import { DialogService } from './dialog.service';
+import { Overlay } from './index.view';
+import { MessageService } from './message.service';
+
 
 @Injectable()
 export class OverlayModule extends BrowserModule {

@@ -1,7 +1,8 @@
-import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@opensumi/ide-core-common';
-import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@opensumi/ide-core-common';
+import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import {
   IFileServiceClient,
@@ -11,7 +12,9 @@ import {
   FileSystemProvider,
   IBrowserFileSystemRegistry,
 } from '@opensumi/ide-file-service/lib/common';
+
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import {
   IExtHostFileSystemShape,
@@ -23,8 +26,6 @@ import {
   IExtHostFileSystemInfoShape,
   FilePermission,
 } from '../../../common/vscode/file-system';
-import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {

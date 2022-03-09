@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
 import { ChildProcess, spawn, fork } from 'child_process';
 import stream from 'stream';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable, Emitter } from '@opensumi/ide-core-common';
-import { DevNullStream } from './dev-null-stream';
-import { ProcessManage } from './process-manager';
+
 import {
   ProcessOptions,
   ForkOptions,
@@ -13,6 +13,9 @@ import {
   IProcessManage,
   IProcess,
 } from '../common/index';
+
+import { DevNullStream } from './dev-null-stream';
+import { ProcessManage } from './process-manager';
 
 @Injectable()
 export class ProcessFactory {

@@ -1,6 +1,6 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { SubMenu as RcSubMenu } from 'rc-menu';
+import React from 'react';
 
 interface TitleEventEntity {
   key: string;

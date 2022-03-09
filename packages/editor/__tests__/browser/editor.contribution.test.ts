@@ -1,7 +1,8 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { EditorModule } from '@opensumi/ide-editor/lib/browser';
 import { EditorContribution } from '@opensumi/ide-editor/lib/browser/editor.contribution';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('Editor contribution should be work', () => {
   let mockInjector: MockInjector;

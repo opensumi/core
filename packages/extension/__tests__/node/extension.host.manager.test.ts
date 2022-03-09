@@ -1,6 +1,7 @@
-import { extensionHostManagerTester } from './extension.host.manager.common-tester';
 import { IExtensionHostManager } from '../../src';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
+
+import { extensionHostManagerTester } from './extension.host.manager.common-tester';
 
 extensionHostManagerTester({
   providers: [

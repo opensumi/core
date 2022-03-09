@@ -1,11 +1,15 @@
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { ExpressFileServerModule } from '../../src/node';
-import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
-import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
-import Koa from 'koa';
-import superagent from 'superagent';
 import http from 'http';
 import path from 'path';
+
+import Koa from 'koa';
+import superagent from 'superagent';
+
+import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
+import { ExpressFileServerModule } from '../../src/node';
+import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
+
 
 describe('template test', () => {
   let server: http.Server;

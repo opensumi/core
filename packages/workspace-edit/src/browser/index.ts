@@ -1,9 +1,4 @@
 import { Provider, Injectable, Autowired } from '@opensumi/di';
-import type {
-  IBulkEditOptions,
-  ResourceEdit,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-
 import {
   BrowserModule,
   Domain,
@@ -18,12 +13,17 @@ import {
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
 import { CommandRegistry } from '@opensumi/ide-core-common';
+import type {
+  IBulkEditOptions,
+  ResourceEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '../common';
-import { WorkspaceEditServiceImpl } from './workspace-edit.service';
+
 import { MonacoBulkEditService } from './bulk-edit.service';
-import { WorkspaceFileService } from './workspace-file.service';
 import { IRefactorPreviewService, RefactorPreviewServiceImpl, PreviewViewId } from './refactor-preview.service';
+import { WorkspaceEditServiceImpl } from './workspace-edit.service';
+import { WorkspaceFileService } from './workspace-file.service';
 
 const ClearEditsId = 'refactor-preview.clear.edits';
 const ApplyEditsId = 'refactor-preview.apply.edits';

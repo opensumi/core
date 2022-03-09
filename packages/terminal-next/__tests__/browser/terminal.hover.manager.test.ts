@@ -1,7 +1,10 @@
 /* eslint-disable no-console */
+import { IViewportRange, Terminal } from 'xterm';
+
 import { Injector } from '@opensumi/di';
-import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { Disposable } from '@opensumi/ide-core-common';
 import { CommandService, CommandServiceImpl } from '@opensumi/ide-core-common/lib/command';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { ILogger } from '@opensumi/ide-logs/lib/common';
@@ -10,13 +13,14 @@ import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
 import { ITerminalProcessPath } from '@opensumi/ide-terminal-next';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
-import { TerminalHoverManagerService } from '../../src/browser/terminal.hover.manager';
-import { ITerminalHoverManagerService } from '../../lib/common';
-import { IViewportRange, Terminal } from 'xterm';
+
 import { TerminalLink } from '../../lib/browser/links/link';
+import { ITerminalHoverManagerService } from '../../lib/common';
 import { convertBufferRangeToViewport, convertLinkRangeToBuffer } from '../../src/browser/links/helpers';
+import { TerminalHoverManagerService } from '../../src/browser/terminal.hover.manager';
+
 import { createBufferLineArray } from './utils';
-import { Disposable } from '@opensumi/ide-core-common';
+
 
 const mockData = [
   {

@@ -1,7 +1,6 @@
-import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/progress';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   IProgressOptions,
   IProgressStep,
@@ -9,8 +8,10 @@ import {
   ProgressLocation,
   IProgressNotificationOptions,
 } from '@opensumi/ide-core-common';
-import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+
 import { IExtension } from '../../../common';
+import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/progress';
 
 @Injectable({ multiple: true })
 export class MainThreadProgress implements IMainThreadProgress {

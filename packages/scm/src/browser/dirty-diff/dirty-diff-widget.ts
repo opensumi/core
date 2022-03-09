@@ -1,10 +1,12 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
-import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
-import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { URI, CommandService } from '@opensumi/ide-core-common';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
+import { URI, CommandService } from '@opensumi/ide-core-common';
+import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
+import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
+import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
+
 
 export enum DirtyDiffWidgetActionType {
   close,

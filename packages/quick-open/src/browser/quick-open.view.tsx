@@ -1,6 +1,7 @@
-import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-import React from 'react';
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import {
   Button,
   CheckBox,
@@ -9,6 +10,7 @@ import {
   ValidateInput,
   VALIDATE_TYPE,
 } from '@opensumi/ide-components';
+import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import {
   HideReason,
   QuickOpenAction,
@@ -17,14 +19,13 @@ import {
   QuickTitleButton,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
-import clx from 'classnames';
-import styles from './styles.module.less';
+import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
 import { QuickOpenContext } from './quick-open.type';
-import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';
+import styles from './styles.module.less';
 
 interface IQuickOpenItemProps {
   data: QuickOpenItem;

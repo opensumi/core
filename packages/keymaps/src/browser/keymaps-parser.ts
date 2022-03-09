@@ -1,6 +1,8 @@
-import { Injectable } from '@opensumi/di';
 import Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
+
+import { Injectable } from '@opensumi/di';
+
 import { KeymapItem } from '../common';
 
 export const keymapsSchema = {

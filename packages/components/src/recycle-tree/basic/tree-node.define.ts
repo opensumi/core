@@ -1,5 +1,6 @@
 import { CompositeTreeNode, TreeNode } from '../tree';
 import { ITree } from '../types';
+
 import { IBasicTreeData } from './types';
 
 export class BasicTreeRoot extends CompositeTreeNode {

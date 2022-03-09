@@ -1,6 +1,7 @@
+import { join } from 'path';
+
 import { createPatch, applyPatch } from 'diff';
 import { readFile } from 'fs-extra';
-import { join } from 'path';
 
 describe('range-formatting', () => {
   it('applyPatch', async () => {

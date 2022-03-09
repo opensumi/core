@@ -1,7 +1,9 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../color-registry';
-import { editorWarningForeground, editorWarningBorder } from './editor';
+
 import { RGBA, Color } from '../color';
+import { registerColor } from '../color-registry';
+
+import { editorWarningForeground, editorWarningBorder } from './editor';
 
 export const minimapFindMatch = registerColor(
   'minimap.findMatchHighlight',

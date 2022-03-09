@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenColorizationRule, IColorMap } from './theme.service';
 import { Color } from './color';
 import * as colorRegistry from './color-registry';
+import { ITokenColorizationRule, IColorMap } from './theme.service';
 
 const settingToColorIdMapping: { [settingId: string]: string[] } = {};
 function addSettingMapping(settingId: string, colorId: string) {

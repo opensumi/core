@@ -1,11 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
-import { DebugViewModel } from '../debug-view-model';
-import { DebugSession } from '../../debug-session';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
+import { DebugSession } from '../../debug-session';
+import { DebugViewModel } from '../debug-view-model';
 
 @Injectable()
 export class DebugToolbarService {

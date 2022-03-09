@@ -13,6 +13,11 @@ import {
   TabBarToolbarContribution,
   IEventBus,
 } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IEditor } from '@opensumi/ide-editor';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+
 import {
   ICommentsService,
   CommentPanelId,
@@ -27,10 +32,6 @@ import {
   CommentReactionPayload,
   CommentReactionClick,
 } from '../common';
-import { IEditor } from '@opensumi/ide-editor';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IMenuRegistry, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 
 @Domain(
   ClientAppContribution,

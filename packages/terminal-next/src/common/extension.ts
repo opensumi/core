@@ -1,5 +1,6 @@
-import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
 
 export interface IProcessDataEvent {
   data: string;

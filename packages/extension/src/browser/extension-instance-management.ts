@@ -14,6 +14,7 @@ import {
   IExtensionMetaData,
   IExtensionNodeClientService,
 } from '../common';
+
 import { Extension } from './extension';
 import { AbstractExtInstanceManagementService } from './types';
 

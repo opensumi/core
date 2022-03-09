@@ -1,6 +1,10 @@
 import { observable, computed, action } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@opensumi/ide-core-browser';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import {
   IStatusBarService,
   StatusBarEntry,
@@ -10,9 +14,6 @@ import {
   StatusBarState,
 } from '@opensumi/ide-core-browser/lib/services';
 import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-core-common';
-import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {

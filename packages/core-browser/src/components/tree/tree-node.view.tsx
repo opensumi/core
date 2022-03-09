@@ -1,15 +1,18 @@
-import React from 'react';
-import styles from './tree.module.less';
 import cls from 'classnames';
-import { isUndefined, isString } from '@opensumi/ide-core-common';
-import { Badge, Loading } from '@opensumi/ide-components';
+import React from 'react';
 
-import { TreeViewAction, isTreeViewActionComponent } from '../../tree';
-import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
-import { TEMP_FILE_NAME } from './tree.view';
-import { getIcon } from '../../style/icon/icon';
+import { Badge, Loading } from '@opensumi/ide-components';
 import { ValidateInput, InputSelection, Icon } from '@opensumi/ide-components';
+import { isUndefined, isString } from '@opensumi/ide-core-common';
+
 import { KeyCode, Key } from '../../keyboard';
+import { getIcon } from '../../style/icon/icon';
+import { TreeViewAction, isTreeViewActionComponent } from '../../tree';
+
+import styles from './tree.module.less';
+import { TEMP_FILE_NAME } from './tree.view';
+
+import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 

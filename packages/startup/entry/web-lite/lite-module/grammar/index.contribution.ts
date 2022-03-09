@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { Autowired } from '@opensumi/di';
-import { Disposable, Domain } from '@opensumi/ide-core-common';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { Disposable, Domain } from '@opensumi/ide-core-common';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { getLanguageById } from '@opensumi/textmate-languages/es/utils';
 

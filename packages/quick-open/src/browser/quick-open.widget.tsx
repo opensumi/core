@@ -1,5 +1,9 @@
 import { observable, computed, action } from 'mobx';
+
 import { Injectable } from '@opensumi/di';
+import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
+import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+
 import {
   IAutoFocus,
   IQuickOpenCallbacks,
@@ -7,8 +11,6 @@ import {
   IQuickOpenWidget,
   QuickOpenInputOptions,
 } from './quick-open.type';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 @Injectable({ multiple: true })
 export class QuickOpenWidget implements IQuickOpenWidget {

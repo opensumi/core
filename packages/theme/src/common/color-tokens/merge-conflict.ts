@@ -1,6 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor, transparent } from '../color-registry';
+
 import { Color } from '../../common/color';
+import { registerColor, transparent } from '../color-registry';
 
 /**
  * Merge-conflict colors

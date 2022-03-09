@@ -1,5 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor, transparent, lighten, darken } from '../color-registry';
+
 import { foreground } from './base';
 import { editorBackground, editorWidgetBackground } from './editor';
 

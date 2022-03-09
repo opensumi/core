@@ -1,5 +1,6 @@
-import { URI, IChange } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { URI, IChange } from '@opensumi/ide-core-common';
 
 // explorer/context
 // 资源管理器 ctxmenu

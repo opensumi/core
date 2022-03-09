@@ -19,6 +19,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter, URI } from '@opensumi/ide-core-browser';
 import { FileChangeEvent, FileChangeType } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+
 import { Marker } from './marker';
 
 /*

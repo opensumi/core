@@ -1,16 +1,19 @@
-import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
+import path from 'path';
+
 import * as fs from 'fs-extra';
 import temp from 'temp';
-import path from 'path';
+
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
-import { ExtensionStorageModule } from '../../src/browser';
+import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
+import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { ExtensionStorageModule } from '../../src/browser';
 
 process.on('unhandledRejection', (reason) => {
   // eslint-disable-next-line no-console

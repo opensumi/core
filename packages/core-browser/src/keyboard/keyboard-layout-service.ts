@@ -23,6 +23,7 @@ import {
   KeymapInfo,
   IWindowsKeyMapping,
 } from '@opensumi/ide-core-common/lib/keyboard';
+
 import { KeyValidator } from './keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 

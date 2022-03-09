@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
+import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
 
-import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
+import { electronEnv } from '../../../../utils';
 import { MenuNode } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } from '../../menu.interface';
 import { AbstractMenubarService } from '../../menubar-service';
-import { electronEnv } from '../../../../utils';
+
+import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 
 export abstract class IElectronCtxMenuRenderer extends ICtxMenuRenderer {}
 

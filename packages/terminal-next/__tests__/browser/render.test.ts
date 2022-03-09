@@ -3,6 +3,7 @@
  */
 
 import * as puppeteer from 'puppeteer';
+
 import { getTerminalControllerState, selectTabIndex, isFocusedClientRenderedAndFit } from './utils';
 
 const APP = 'http://0.0.0.0:8080';

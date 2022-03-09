@@ -1,16 +1,15 @@
 import { IContextKeyService, URI } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DisposableCollection, Event } from '@opensumi/ide-core-common';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
-import { MockSCMProvider, MockSCMResource, MockSCMResourceGroup } from '../scm-test-util';
-
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { ISCMProvider, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../../src';
 import { SCMModule } from '../../src/browser';
 import { ResourceGroupSplicer, ViewModelContext } from '../../src/browser/scm-model';
+import { MockSCMProvider, MockSCMResource, MockSCMResourceGroup } from '../scm-test-util';
 
 describe('test for scm.store.ts', () => {
   const toTearDown = new DisposableCollection();

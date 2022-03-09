@@ -1,10 +1,10 @@
-import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
 import { Autowired, Injectable } from '@opensumi/di';
-import { IEventBus } from '@opensumi/ide-core-common';
 import { SuggestEvent, DisposableCollection } from '@opensumi/ide-core-browser';
+import { IEventBus } from '@opensumi/ide-core-common';
+import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
 
-import { IEditorFeatureContribution } from '../types';
 import { IEditor } from '../../common';
+import { IEditorFeatureContribution } from '../types';
 
 @Injectable()
 export class EditorSuggestWidgetContribution implements IEditorFeatureContribution {

@@ -1,4 +1,4 @@
-import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Event,
   URI,
@@ -9,10 +9,11 @@ import {
   MaybeNull,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { ITheme, IThemeService } from '@opensumi/ide-theme';
-import { Autowired, Injectable } from '@opensumi/di';
-import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { ITheme, IThemeService } from '@opensumi/ide-theme';
+import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
+
+import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
 
 @Injectable({ multiple: true })
 export abstract class AbstractWebviewPanel extends Disposable implements IWebview {

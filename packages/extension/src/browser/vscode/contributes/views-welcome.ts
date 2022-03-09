@@ -1,9 +1,10 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { DisposableCollection, localize } from '@opensumi/ide-core-browser';
+import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
+import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export enum ViewsWelcomeExtensionPointFields {
   view = 'view',

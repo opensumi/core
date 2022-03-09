@@ -1,7 +1,7 @@
 import { Autowired, Injectable, Injector } from '@opensumi/di';
-import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import { AppConfig, electronEnv } from '@opensumi/ide-core-browser';
+import { ExtensionCandidate } from '@opensumi/ide-core-common';
+import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 import { IMainThreadLifeCycle } from '../../common/sumi/lifecycle';
 

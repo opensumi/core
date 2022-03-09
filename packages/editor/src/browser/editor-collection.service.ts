@@ -1,9 +1,6 @@
-import type {
-  ICodeEditor as IMonacoCodeEditor,
-  IDiffEditor as IMonacoDiffEditor,
-} from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import {
   ILineChange,
   URI,
@@ -14,6 +11,14 @@ import {
   Disposable,
   removeUndefined,
 } from '@opensumi/ide-core-common';
+import { Emitter } from '@opensumi/ide-core-common';
+import type {
+  ICodeEditor as IMonacoCodeEditor,
+  IDiffEditor as IMonacoDiffEditor,
+} from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+
 import {
   ICodeEditor,
   IEditor,
@@ -26,7 +31,8 @@ import {
   EditorType,
   IResourceOpenOptions,
 } from '../common';
-import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
+
+
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import {
   IEditorDocumentModelRef,
@@ -34,12 +40,10 @@ import {
   IEditorDocumentModelService,
   IEditorDocumentModel,
 } from './doc-model/types';
-import { Emitter } from '@opensumi/ide-core-common';
-import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption, isDiffEditorOption } from './preference/converter';
-import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
-import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { IEditorFeatureRegistry } from './types';
+
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {

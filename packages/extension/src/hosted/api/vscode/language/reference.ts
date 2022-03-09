@@ -1,9 +1,11 @@
-import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Uri as URI } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import * as Converter from '../../../../common/vscode/converter';
 import { Location, Position, ReferenceContext } from '../../../../common/vscode/model.api';
 import { isLocationArray } from '../../../../common/vscode/utils';
-import * as Converter from '../../../../common/vscode/converter';
 
 export class ReferenceAdapter {
   constructor(

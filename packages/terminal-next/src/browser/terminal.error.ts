@@ -1,5 +1,7 @@
 import { observable } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
+
 import {
   ITerminalErrorService,
   ITerminalError,

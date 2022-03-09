@@ -1,13 +1,15 @@
 import path from 'path';
+
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IExtensionProps, URI } from '@opensumi/ide-core-common';
+
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+import { ExtensionMode } from '../../../../src/common/vscode/ext-types';
 import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
+import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secrets';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
 import { ExtensionWorkerHost } from '../../../../src/hosted/worker.host';
-import { ExtensionMode } from '../../../../src/common/vscode/ext-types';
-import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secrets';
 
 const staticServicePath = 'http://localhost:9999';
 

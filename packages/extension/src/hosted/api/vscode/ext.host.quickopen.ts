@@ -1,11 +1,6 @@
 import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import {
-  MainThreadAPIIdentifier,
-  IExtHostQuickOpen,
-  IMainThreadQuickOpen,
-  IExtHostWorkspace,
-} from '../../../common/vscode';
 import {
   CancellationToken,
   hookCancellationToken,
@@ -16,6 +11,13 @@ import {
   isUndefined,
 } from '@opensumi/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@opensumi/ide-quick-open';
+
+import {
+  MainThreadAPIIdentifier,
+  IExtHostQuickOpen,
+  IMainThreadQuickOpen,
+  IExtHostWorkspace,
+} from '../../../common/vscode';
 
 type Item = string | vscode.QuickPickItem;
 

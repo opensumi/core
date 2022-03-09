@@ -1,5 +1,6 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
+
 const { ProgressPlugin } = require('webpack');
 
 const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');

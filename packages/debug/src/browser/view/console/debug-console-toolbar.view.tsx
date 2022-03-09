@@ -1,8 +1,10 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, isElectronRenderer } from '@opensumi/ide-core-browser';
+import React from 'react';
+
 import { Select, Option } from '@opensumi/ide-components';
+import { localize, isElectronRenderer } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+
 import styles from './debug-console.module.less';
 
 export const DebugConsoleToolbarView = observer(() => {

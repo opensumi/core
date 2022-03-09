@@ -1,7 +1,9 @@
-import { formatLocalize, URI } from '@opensumi/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
-import { OpenedEditorService } from './services/opened-editor-tree.service';
+import { formatLocalize, URI } from '@opensumi/ide-core-browser';
 import { IEditorGroup, IResource } from '@opensumi/ide-editor';
+
+import { OpenedEditorService } from './services/opened-editor-tree.service';
+
 
 export type OpenedEditorData = IEditorGroup | IResource;
 

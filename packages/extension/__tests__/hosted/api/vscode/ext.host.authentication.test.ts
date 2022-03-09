@@ -1,14 +1,9 @@
-import {
-  ExtHostAuthentication,
-  createAuthenticationApiFactory,
-} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.authentication';
+import type vscode from 'vscode';
+
+import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import {
-  MainThreadAPIIdentifier,
-  IMainThreadAuthentication,
-  ExtHostAPIIdentifier,
-} from '@opensumi/ide-extension/lib/common/vscode';
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { IMenuRegistry, MenuId, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import {
   Emitter,
   ILoggerManagerClient,
@@ -16,17 +11,24 @@ import {
   IAuthenticationService,
   CommandRegistry,
 } from '@opensumi/ide-core-common';
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import type vscode from 'vscode';
-import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
-import { Injector } from '@opensumi/di';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { IMenuRegistry, MenuId, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
+import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadAuthentication,
+  ExtHostAPIIdentifier,
+} from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  ExtHostAuthentication,
+  createAuthenticationApiFactory,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.authentication';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { QuickPickService } from '@opensumi/ide-quick-open';
+
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts', () => {
   let injector: Injector;

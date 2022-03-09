@@ -1,4 +1,8 @@
 import { Injector } from '@opensumi/di';
+import { IWebSocket } from '@opensumi/ide-connection';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugSessionOptions } from '@opensumi/ide-debug';
 import {
   DebugSession,
   DebugSessionConnection,
@@ -7,17 +11,13 @@ import {
   DebugPreferences,
   DebugModelManager,
 } from '@opensumi/ide-debug/lib/browser';
-import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { IWebSocket } from '@opensumi/ide-connection';
-import { DebugSessionOptions } from '@opensumi/ide-debug';
-import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(

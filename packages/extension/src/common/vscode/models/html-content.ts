@@ -1,5 +1,6 @@
-import { UriComponents } from './uri';
 import { illegalArgument } from '../utils';
+
+import { UriComponents } from './uri';
 
 // TODO: edtior 中有相同interface，待统一
 export interface IMarkdownString {
