@@ -83,10 +83,23 @@ describe('OutputChannel Test Sutes', () => {
 
   it('can append text via outputChannel', () => {
     outputChannel.append('text');
-    eventBus.once(ContentChangeEvent, (e) => {
-      if (e.payload.changeType === ContentChangeType.append) {
-        expect(e.payload.channelName).toBe('test channel');
+    const disposer = eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.append && e.payload.channelName === 'test channel') {
         expect(e.payload.value).toBe('text');
+        disposer.dispose();
+      }
+    });
+  });
+
+  it('outputChannel#replace', () => {
+    const outputChannel2 = injector.get(OutputChannel, ['test channel2']);
+    outputChannel2.replace('test replace channel content');
+
+    eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.append && e.payload.channelName === 'test channel2') {
+        expect(e.payload.value).toBe('test replace channel content');
+        expect(outputChannel2['outputLines'].length).toBe(1);
+        expect(outputChannel2['outputLines'][0]).toBe('test replace channel content');
       }
     });
   });

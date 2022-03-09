@@ -29,6 +29,10 @@ export class OutputChannelImpl implements types.OutputChannel {
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
   }
 
+  replace(value: string): void {
+    this.proxy.$replace(this.name, value);
+  }
+
   dispose(): void {
     if (!this.disposed) {
       this.proxy.$dispose(this.name).then(() => {
