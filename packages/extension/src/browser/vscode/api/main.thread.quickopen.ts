@@ -82,6 +82,9 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
       inputBox.onDidAccept(() => {
         this.proxy.$onCreatedInputBoxDidAccept(id);
       });
+      inputBox.onDidHide(() => {
+        this.proxy.$onCreatedInputBoxDidHide(id);
+      });
       this.createdInputBox.set(id, inputBox);
     }
   }
@@ -90,7 +93,6 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     if (this.createdInputBox.has(id)) {
       const box = this.createdInputBox.get(id);
       box?.hide();
-      this.proxy.$onCreatedInputBoxDidHide(id);
     }
     this.createdInputBox.delete(id);
   }

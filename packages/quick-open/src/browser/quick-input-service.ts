@@ -39,6 +39,9 @@ export class QuickInputService implements IQuickInputService {
         });
       }
     });
+    inputBox.onDidHide(() => {
+      result.resolve(undefined);
+    });
     inputBox.open();
     this.inputBox = inputBox;
     return result.promise;

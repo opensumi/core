@@ -102,7 +102,8 @@ export class InputBoxImpl {
         ignoreFocusOut: this.options.ignoreFocusOut,
         enabled: this.options.enabled,
         valueSelection: this.options.valueSelection,
-        onClose: () => {
+        onClose: (canceled) => {
+          this.onDidHideEmitter.fire(canceled);
           this.quickTitleBar.hide();
         },
       },
@@ -122,5 +123,13 @@ export class InputBoxImpl {
   readonly onDidChangeValueEmitter: Emitter<string> = new Emitter();
   get onDidChangeValue(): Event<string> {
     return this.onDidChangeValueEmitter.event;
+  }
+
+  /**
+   * 回调中的布尔值代表 QuickOpen 是否被取消
+   */
+  readonly onDidHideEmitter: Emitter<boolean> = new Emitter();
+  get onDidHide(): Event<boolean> {
+    return this.onDidHideEmitter.event;
   }
 }
