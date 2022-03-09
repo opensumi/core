@@ -68,7 +68,8 @@ import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatab
 import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 import { IExtensionDescription } from './extension';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 

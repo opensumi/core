@@ -4,7 +4,8 @@ import { Uri, UriComponents } from './ext-types';
 import { FileStat } from '@opensumi/ide-file-service';
 import type * as model from './model.api';
 import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@opensumi/ide-workspace-edit';
-import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;

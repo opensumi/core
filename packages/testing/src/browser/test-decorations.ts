@@ -76,7 +76,7 @@ const createRunTestDecoration = (
   }
 
   let computedState = TestResultState.Unset;
-  let hoverMessageParts: string[] = [];
+  const hoverMessageParts: string[] = [];
   let testIdWithMessages: string | undefined;
   let retired = false;
   for (let i = 0; i < tests.length; i++) {

@@ -8,7 +8,8 @@ import {
   IResourceOpenOptions,
 } from '@opensumi/ide-editor';
 import { ViewColumn } from './enums';
-import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 export * from './custom-editor';
 export * from './enums';
 export interface IExtensionHostEditorService {
