@@ -188,8 +188,9 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
   }
 
   private static _asIStat(stat: vscode.FileStat): files.FileStat {
-    const { type, ctime, mtime, size } = stat;
-    return { type, ctime, mtime, size };
+    // permissions is proposed api
+    const { type, ctime, mtime, size, permissions } = stat;
+    return { type, ctime, mtime, size, permissions };
   }
 
   $stat(handle: number, resource: UriComponents): Promise<files.FileStat> {

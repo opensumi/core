@@ -536,7 +536,8 @@ export class FileServiceClient implements IFileServiceClient {
     try {
       const uri = new URI(uriString);
       const provider = await this.getProvider(uri.scheme);
-      return !!provider.readonly;
+      const stat = (await provider.stat(this.convertUri(uriString).codeUri)) as FileStat;
+      return !!stat.readonly;
     } catch (e) {
       // 考虑到非 readonly 变readonly 的情况，相对于 readonly 变不 readonly 来说更为严重
       return false;

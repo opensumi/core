@@ -21,6 +21,7 @@ import {
   FileSystemProviderErrorCode,
   FileOverwriteOptions,
   IExtHostFileSystemInfoShape,
+  FilePermission,
 } from '../../../common/vscode/file-system';
 import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
@@ -257,7 +258,7 @@ class RemoteFileSystemProvider implements FileSystemProvider {
 
   // --- forwarding calls
 
-  async stat(resource: Uri) {
+  async stat(resource: Uri): Promise<IFileStat> {
     const stat = await this.doGetStat(resource);
     return stat;
   }
@@ -297,6 +298,9 @@ class RemoteFileSystemProvider implements FileSystemProvider {
     if (mainStat.isDirectory) {
       mainStat.children = await this.doGetChildren(resource, depth);
     }
+    mainStat.readonly =
+      Boolean((stat.permissions ?? 0) & FilePermission.Readonly) ||
+      Boolean(this.capabilities & FileSystemProviderCapabilities.Readonly);
     return mainStat;
   }
 
