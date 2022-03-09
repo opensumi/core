@@ -7,8 +7,7 @@ import {
   QuickOpenService,
   Mode,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { Deferred, localize, Emitter, Event } from '@opensumi/ide-core-common';
-
+import { Deferred, localize, Emitter, Event, withNullAsUndefined } from '@opensumi/ide-core-common';
 import { QuickTitleBar } from './quick-title-bar';
 
 @Injectable()
@@ -33,8 +32,15 @@ export class QuickInputService implements IQuickInputService {
     this.quickOpenService.open(
       {
         onType: async (lookFor, acceptor) => {
-          this.onDidChangeValueEmitter.fire(lookFor);
-          const error = validateInput && lookFor !== undefined ? await validateInput(lookFor) : undefined;
+          let error = undefined as string | undefined;
+          if (currentText !== lookFor) {
+            // 每次都调用 validateFn 会导致用户还没开始输入就开始校验 validateFn，从而导致判断是否为空出现异常表现
+            this.onDidChangeValueEmitter.fire(lookFor);
+            error =
+              validateInput && lookFor !== undefined ? withNullAsUndefined(await validateInput(lookFor)) : undefined;
+            currentText = lookFor;
+          }
+
           label = error || prompt;
           if (error) {
             this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
@@ -55,7 +61,6 @@ export class QuickInputService implements IQuickInputService {
               },
             }),
           ]);
-          currentText = lookFor;
         },
       },
       {

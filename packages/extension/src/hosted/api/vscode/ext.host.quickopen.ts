@@ -9,6 +9,7 @@ import {
   DisposableCollection,
   MaybePromise,
   isUndefined,
+  Disposable,
 } from '@opensumi/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@opensumi/ide-quick-open';
 
@@ -27,7 +28,8 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   private proxy: IMainThreadQuickOpen;
   private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
 
-  private createdQuicks = new Map<number, QuickInputExt | QuickPickExt<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
+  private createdQuicks = new Map<number, QuickPickExt<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
+  private createdInputBoxs = new Map<number, QuickInputExt>();
   private currentQuick = 0;
 
   constructor(rpc: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
@@ -156,8 +158,10 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
 
   createInputBox(): vscode.InputBox {
     const session = ++this.currentQuick;
-    const newInputBox = new QuickInputExt(this, session);
-    this.createdQuicks.set(session, newInputBox);
+    const newInputBox = new InputBoxExt(session, this.proxy, this, () => {
+      this.createdInputBoxs.delete(session);
+    });
+    this.createdInputBoxs.set(session, newInputBox);
     return newInputBox;
   }
 
@@ -168,6 +172,30 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     }
   }
 
+  $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void {
+    const session = this.createdInputBoxs.get(sessionId);
+    if (session) {
+      session._fireDidChangeValue(value);
+    }
+  }
+  $onCreatedInputBoxDidAccept(sessionId: number): void {
+    const session = this.createdInputBoxs.get(sessionId);
+    if (session) {
+      session._fireDidAccept();
+    }
+  }
+  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number): void {
+    const session = this.createdInputBoxs.get(sessionId);
+    if (session) {
+      session._fireDidTriggerButton(btnHandler);
+    }
+  }
+  $onCreatedInputBoxDidHide(sessionId: number): void {
+    const session = this.createdInputBoxs.get(sessionId);
+    if (session) {
+      session._fireDidHide();
+    }
+  }
   $onDidTriggerButton(btnHandler: number): void {
     return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
@@ -355,14 +383,16 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 }
 
-class QuickInputExt implements vscode.InputBox {
+abstract class QuickInputExt implements vscode.InputBox {
   value: string;
-  placeholder: string | undefined;
+  private _placeholder: string | undefined;
   password: boolean;
   buttons: readonly vscode.QuickInputButton[];
-  prompt: string | undefined;
-  validationMessage: string | undefined;
-  title: string | undefined;
+  private _prompt: string | undefined;
+
+  private _validationMessage: string | undefined;
+
+  private _title: string | undefined;
   step: number | undefined;
   totalSteps: number | undefined;
   enabled: boolean;
@@ -371,34 +401,108 @@ class QuickInputExt implements vscode.InputBox {
 
   private disposableCollection: DisposableCollection;
 
-  readonly quickInputIndex: number;
-
   _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
   _onDidChangeValueEmitter: Emitter<string>;
   _onDidAcceptEmitter: Emitter<void>;
   _onDidHideEmitter: Emitter<void>;
 
-  constructor(readonly quickOpen: IExtHostQuickOpen, quickInputIndex: number) {
+  private _updateTimeout: any;
+
+  constructor(
+    readonly _id: number,
+    readonly proxy: IMainThreadQuickOpen,
+    readonly quickOpen: IExtHostQuickOpen,
+    onDispose: () => void,
+  ) {
     this.buttons = [];
     this.step = 0;
-    this.title = '';
+    this._title = '';
     this.totalSteps = 0;
     this.value = '';
-    this.prompt = '';
-    this.placeholder = '';
+    this._prompt = '';
+    this._placeholder = '';
     this.password = false;
     this.ignoreFocusOut = false;
-    this.quickInputIndex = quickInputIndex;
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidTriggerButtonEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidHideEmitter = new Emitter()));
+    this.disposableCollection.push(Disposable.create(onDispose));
+  }
+
+  get title() {
+    return this._title;
+  }
+  set title(title: string | undefined) {
+    this._title = title;
+    this.update();
+  }
+  get prompt(): string | undefined {
+    return this._prompt;
+  }
+  set prompt(value: string | undefined) {
+    this._prompt = value;
+    this.update();
+  }
+  get placeholder(): string | undefined {
+    return this._placeholder;
+  }
+  set placeholder(value: string | undefined) {
+    this._placeholder = value;
+    this.update();
+  }
+  public get validationMessage(): string | undefined {
+    return this._validationMessage;
+  }
+  public set validationMessage(value: string | undefined) {
+    this._validationMessage = value;
+    this.update();
+  }
+
+  getOptions() {
+    return {
+      value: this.value,
+      prompt: this.prompt,
+      placeHolder: this.placeholder,
+      password: this.password,
+      ignoreFocusOut: this.ignoreFocusOut,
+      title: this._title,
+      totalSteps: this.totalSteps,
+      step: this.step,
+      validationMessage: this.validationMessage,
+    };
+  }
+
+  doUpdate() {
+    this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
+  }
+
+  update() {
+    if (!this._updateTimeout) {
+      // Defer the update so that multiple changes to setters dont cause a redraw each
+      this._updateTimeout = setTimeout(() => {
+        this._updateTimeout = undefined;
+        this.doUpdate();
+      }, 0);
+    }
   }
 
   _fireDidChangeValue(value: string) {
     this.value = value;
     this._onDidChangeValueEmitter.fire(value);
+  }
+
+  _fireDidAccept() {
+    this._onDidAcceptEmitter.fire();
+  }
+
+  _fireDidTriggerButton(btnHandler: number) {
+    this._onDidTriggerButtonEmitter.fire(this.buttons[btnHandler]);
+  }
+
+  _fireDidHide() {
+    this._onDidHideEmitter.fire();
   }
 
   get onDidChangeValue(): Event<string> {
@@ -416,31 +520,20 @@ class QuickInputExt implements vscode.InputBox {
   get onDidHide(): Event<void> {
     return this._onDidHideEmitter.event;
   }
-
   show(): void {
-    this.quickOpen
-      .showInputBox({
-        value: this.value,
-        prompt: this.prompt,
-        placeHolder: this.placeholder,
-        password: this.password,
-        ignoreFocusOut: this.ignoreFocusOut,
-        title: this.title,
-        totalSteps: this.totalSteps,
-        step: this.step,
-      })
-      .then((item) => {
-        if (item) {
-          this.value = item;
-        }
-        this._onDidAcceptEmitter.fire();
-      });
+    this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
   }
   hide(): void {
-    this.quickOpen.hideInputBox();
+    this.proxy.$hideInputBox(this._id);
   }
 
   dispose(): void {
     this.disposableCollection.dispose();
+    if (this._updateTimeout) {
+      clearTimeout(this._updateTimeout);
+      this._updateTimeout = undefined;
+    }
   }
 }
+
+class InputBoxExt extends QuickInputExt {}
