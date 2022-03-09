@@ -199,6 +199,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
   const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [workerProtocol]);
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [workerProtocol]);
+  const MainThreadFileSystemEventAPI = injector.get(MainThreadFileSystemEvent, [workerProtocol]);
   const MainThreadPreferenceAPI = injector.get(MainThreadPreference, [workerProtocol]);
   const MainThreadOutputAPI = injector.get(MainThreadOutput);
   const MainThreadMessageAPI = injector.get(MainThreadMessage, [workerProtocol]);
@@ -261,6 +262,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadProgressAPI.dispose();
     MainThreadWorkspaceAPI.dispose();
     MainThreadFileSystemAPI.dispose();
+    MainThreadFileSystemEventAPI.dispose();
     MainThreadPreferenceAPI.dispose();
     MainThreadOutputAPI.dispose();
     MainThreadMessageAPI.dispose();
