@@ -45,6 +45,10 @@ export class InputBoxImpl {
 
   open() {
     let preLookFor = '';
+    this.quickTitleBar.onDidTriggerButton((e) => {
+      this.onDidTriggerButtonEmitter.fire((e as unknown as { handler: number }).handler);
+    });
+
     this.quickOpenService.open(
       {
         onType: async (lookFor, acceptor) => {
@@ -115,20 +119,25 @@ export class InputBoxImpl {
     this.quickOpenService.hide();
   }
 
-  readonly onDidAcceptEmitter: Emitter<string> = new Emitter();
+  private readonly onDidAcceptEmitter: Emitter<string> = new Emitter();
   get onDidAccept(): Event<string> {
     return this.onDidAcceptEmitter.event;
   }
 
-  readonly onDidChangeValueEmitter: Emitter<string> = new Emitter();
+  private readonly onDidChangeValueEmitter: Emitter<string> = new Emitter();
   get onDidChangeValue(): Event<string> {
     return this.onDidChangeValueEmitter.event;
+  }
+
+  private readonly onDidTriggerButtonEmitter: Emitter<number> = new Emitter();
+  get onDidTriggerButton(): Event<number> {
+    return this.onDidTriggerButtonEmitter.event;
   }
 
   /**
    * 回调中的布尔值代表 QuickOpen 是否被取消
    */
-  readonly onDidHideEmitter: Emitter<boolean> = new Emitter();
+  private readonly onDidHideEmitter: Emitter<boolean> = new Emitter();
   get onDidHide(): Event<boolean> {
     return this.onDidHideEmitter.event;
   }

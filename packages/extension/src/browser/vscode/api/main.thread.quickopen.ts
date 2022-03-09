@@ -29,9 +29,8 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
 
     this.addDispose(
-      this.quickTitleBarService.onDidTriggerButton(async (button) => {
-        // @ts-ignore
-        await this.proxy.$onDidTriggerButton(button.handler);
+      this.quickTitleBarService.onDidTriggerButton((button) => {
+        this.proxy.$onDidTriggerButton((button as unknown as { handler: number }).handler);
       }),
     );
   }
@@ -85,6 +84,9 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
       inputBox.onDidHide(() => {
         this.proxy.$onCreatedInputBoxDidHide(id);
       });
+      inputBox.onDidTriggerButton((btnHandle: number) => {
+        this.proxy.$onCreatedInputBoxDidTriggerButton(id, btnHandle);
+      });
       this.createdInputBox.set(id, inputBox);
     }
   }
@@ -97,7 +99,7 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     this.createdInputBox.delete(id);
   }
 
-  $hideQuickinput(): void {
+  $hideQuickInput(): void {
     this.quickInputService.hide();
   }
 }

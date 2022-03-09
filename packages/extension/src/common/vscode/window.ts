@@ -37,7 +37,7 @@ export interface IMainThreadQuickOpen {
   ): Promise<number | undefined>;
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
-  $hideQuickinput(): void;
+  $hideQuickInput(): void;
   $createOrUpdateInputBox(id: number, options: QuickInputOptions): void;
   $hideInputBox(id: number): void;
 }
@@ -81,6 +81,7 @@ export interface IExtHostQuickOpen {
   $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void;
   $onCreatedInputBoxDidAccept(sessionId: number): void;
   $onCreatedInputBoxDidHide(sessionId: number): void;
+  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number): void;
 }
 
 export interface QuickInputTitleButtonHandle extends QuickTitleButton {

@@ -188,13 +188,17 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     const session = this.createdInputBoxs.get(sessionId);
     if (session) {
       session._fireDidHide();
-      this.createdInputBoxs.delete(sessionId);
+    }
+  }
+  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number) {
+    const session = this.createdInputBoxs.get(sessionId);
+    if (session) {
+      session._fireDidTriggerButton(btnHandler);
     }
   }
   $onDidTriggerButton(btnHandler: number): void {
     return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
-
   showInputBox(
     options: vscode.InputBoxOptions = {},
     token: CancellationToken = CancellationToken.None,
@@ -218,7 +222,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 
   hideInputBox(): void {
-    this.proxy.$hideQuickinput();
+    this.proxy.$hideQuickInput();
   }
 }
 
@@ -399,10 +403,10 @@ abstract class QuickInputExt implements vscode.InputBox {
 
   private disposableCollection: DisposableCollection;
 
-  _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
-  _onDidChangeValueEmitter: Emitter<string>;
-  _onDidAcceptEmitter: Emitter<void>;
-  _onDidHideEmitter: Emitter<void>;
+  private _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  private _onDidChangeValueEmitter: Emitter<string>;
+  private _onDidAcceptEmitter: Emitter<void>;
+  private _onDidHideEmitter: Emitter<void>;
 
   private _updateTimeout: any;
 
