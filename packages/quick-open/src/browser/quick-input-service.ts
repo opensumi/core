@@ -33,11 +33,10 @@ export class QuickInputService implements IQuickInputService {
     inputBox.onDidChangeValue(async (v) => {
       this.onDidChangeValueEmitter.fire(v);
       const error = validateInput && v !== undefined ? withNullAsUndefined(await validateInput(v)) : undefined;
-      if (error) {
-        inputBox.updateOptions({
-          validationMessage: error,
-        });
-      }
+      // 每次都要设置一下，因为 error 为空说明没有错
+      inputBox.updateOptions({
+        validationMessage: error,
+      });
     });
     inputBox.onDidHide(() => {
       result.resolve(undefined);
