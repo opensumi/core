@@ -191,3 +191,4 @@ export * from './authentication';
 export * from './secret';
 export * from './tests';
 export * from './editor-tabs';
+export * from './scm';

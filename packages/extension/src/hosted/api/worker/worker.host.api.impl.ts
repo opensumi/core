@@ -1,3 +1,4 @@
+import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import {
@@ -38,6 +39,7 @@ import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
 import { ExtHostEditorTabs } from '../vscode/ext.host.editor-tabs';
+import { ExtHostSCM } from '../vscode/ext.host.scm';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -138,13 +140,17 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostCustomEditor,
     new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs),
   ) as ExtHostCustomEditorImpl;
-  // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
-  const reporter = new DefaultReporter();
-  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
   const extHostEditorTabs = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostEditorTabs,
     new ExtHostEditorTabs(rpcProtocol),
   ) as ExtHostEditorTabs;
+  const extHostSCM = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostSCM,
+    new ExtHostSCM(rpcProtocol, extHostCommands),
+  ) as ExtHostSCM;
+  // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
+  const reporter = new DefaultReporter();
+  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
 
   return (extension: IExtensionDescription) => ({
     ...workerExtTypes,
@@ -172,6 +178,14 @@ export function createAPIFactory(
       extHostTasks,
       extension,
     ),
+    scm: {
+      get inputBox() {
+        return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+      },
+      createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
+        return extHostSCM.createSourceControl(extension, id, label, rootUri);
+      },
+    },
     window: createWindowApiFactory(
       extension,
       extHostEditors,

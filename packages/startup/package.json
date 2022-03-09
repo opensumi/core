@@ -41,7 +41,8 @@
       "**/__tests__/**",
       "**/src/browser/**",
       "**/core-browser/**",
-      "**/theme/**"
+      "**/theme/**",
+      "**/src/hosted/**"
     ],
     "verbose": true,
     "execMap": {

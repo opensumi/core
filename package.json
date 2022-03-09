@@ -22,6 +22,7 @@
     "build:worker-host": "cd packages/extension && npm run compile:worker:slient",
     "build:ext-host": "cd packages/extension && npm run build:ext-host",
     "watch:ext-host": "cd packages/extension && npm run watch:ext-host",
+    "watch:worker-host": "cd packages/extension && npm run watch:worker",
     "watch": "npm run rebuild:node && cross-env NODE_ENV=production ts-node ./scripts/watch",
     "publish": "npm run build:all && ts-node ./scripts/publish",
     "publish:snapshot": "npm run publish -- --rollback --type=snapshot",

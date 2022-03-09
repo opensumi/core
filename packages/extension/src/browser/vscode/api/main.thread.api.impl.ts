@@ -22,6 +22,7 @@ import {
   IMainThreadSecret,
   IMainThreadTesting,
   IMainThreadEditorTabsShape,
+  IMainThreadSCMShape,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -210,6 +211,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [workerProtocol, MainThreadWebviewAPI]);
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [workerProtocol]);
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [workerProtocol]);
+  const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
 
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -245,7 +247,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAuthenticationAPI,
   );
   workerProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
-
+  workerProtocol.set<IMainThreadSCMShape>(MainThreadAPIIdentifier.MainThreadSCM, MainThreadSCMAPI);
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();
 
@@ -270,5 +272,6 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadCustomEditorAPI.dispose();
     MainThreadAuthenticationAPI.dispose();
     MainThreadSecretAPI.dispose();
+    MainThreadSCMAPI.dispose();
   };
 }
