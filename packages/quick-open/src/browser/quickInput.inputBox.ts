@@ -1,5 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { QuickInputOptions, QuickOpenItem, QuickOpenService, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
+import {
+  QuickInputOptions,
+  QuickOpenItem,
+  QuickOpenService,
+  Mode,
+  QuickOpenItemOptions,
+} from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
@@ -17,9 +23,12 @@ export class InputBoxImpl {
       ...this._options,
       ..._options,
     };
-    this.quickOpenService.refresh();
+    this.refresh();
   }
 
+  refresh() {
+    this.quickOpenService.refresh();
+  }
   get options() {
     return this._options;
   }
@@ -35,11 +44,11 @@ export class InputBoxImpl {
   protected readonly quickTitleBar: QuickTitleBar;
 
   open() {
-    let preLookfor = '';
+    let preLookFor = '';
     this.quickOpenService.open(
       {
         onType: async (lookFor, acceptor) => {
-          const prompt = this.options.prompt;
+          let label = this.options.prompt;
           const defaultPrompt = localize('quickopen.quickinput.prompt');
 
           if (
@@ -53,9 +62,9 @@ export class InputBoxImpl {
               this.options.buttons,
             );
           }
-          if (preLookfor !== lookFor) {
+          if (preLookFor !== lookFor) {
             this.onDidChangeValueEmitter.fire(lookFor);
-            preLookfor = lookFor;
+            preLookFor = lookFor;
           }
 
           const error = this.options.validationMessage;
@@ -64,20 +73,26 @@ export class InputBoxImpl {
           } else {
             this.quickOpenService.hideDecoration();
           }
-          acceptor([
-            new QuickOpenItem({
-              label: error || prompt,
-              description: defaultPrompt,
-              run: (mode) => {
-                if (!error && mode === Mode.OPEN) {
-                  this.onDidAcceptEmitter.fire();
-                  this.quickTitleBar.hide();
-                  return true;
-                }
-                return false;
-              },
-            }),
-          ]);
+
+          label = error || label;
+          const itemOptions: QuickOpenItemOptions = {
+            run: (mode) => {
+              if (!error && mode === Mode.OPEN) {
+                this.onDidAcceptEmitter.fire(lookFor);
+                this.quickTitleBar.hide();
+                return true;
+              }
+              return false;
+            },
+          };
+
+          if (label) {
+            itemOptions.label = label;
+            itemOptions.detail = defaultPrompt;
+          } else {
+            itemOptions.label = defaultPrompt;
+          }
+          acceptor([new QuickOpenItem(itemOptions)]);
         },
       },
       {
@@ -99,8 +114,8 @@ export class InputBoxImpl {
     this.quickOpenService.hide();
   }
 
-  readonly onDidAcceptEmitter: Emitter<void> = new Emitter();
-  get onDidAccept(): Event<void> {
+  readonly onDidAcceptEmitter: Emitter<string> = new Emitter();
+  get onDidAccept(): Event<string> {
     return this.onDidAcceptEmitter.event;
   }
 

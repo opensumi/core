@@ -88,7 +88,6 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
 
   $hideInputBox(id: number) {
     if (this.createdInputBox.has(id)) {
-      // 已经存在，需要更新
       const box = this.createdInputBox.get(id);
       box?.hide();
       this.proxy.$onCreatedInputBoxDidHide(id);

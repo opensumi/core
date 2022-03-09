@@ -80,7 +80,6 @@ export interface IExtHostQuickOpen {
   $onDidChangeValue(sessionId: number, value: string): void;
   $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void;
   $onCreatedInputBoxDidAccept(sessionId: number): void;
-  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number): void;
   $onCreatedInputBoxDidHide(sessionId: number): void;
 }
 

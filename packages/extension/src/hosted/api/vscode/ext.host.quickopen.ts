@@ -184,16 +184,11 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       session._fireDidAccept();
     }
   }
-  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number): void {
-    const session = this.createdInputBoxs.get(sessionId);
-    if (session) {
-      session._fireDidTriggerButton(btnHandler);
-    }
-  }
   $onCreatedInputBoxDidHide(sessionId: number): void {
     const session = this.createdInputBoxs.get(sessionId);
     if (session) {
       session._fireDidHide();
+      this.createdInputBoxs.delete(sessionId);
     }
   }
   $onDidTriggerButton(btnHandler: number): void {
@@ -383,7 +378,10 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 }
 
+type QuickInputType = 'quickPick' | 'inputBox';
+
 abstract class QuickInputExt implements vscode.InputBox {
+  abstract type: QuickInputType;
   value: string;
   private _placeholder: string | undefined;
   password: boolean;
@@ -475,7 +473,9 @@ abstract class QuickInputExt implements vscode.InputBox {
   }
 
   doUpdate() {
-    this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
+    if (this.type === 'inputBox') {
+      this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
+    }
   }
 
   update() {
@@ -520,11 +520,14 @@ abstract class QuickInputExt implements vscode.InputBox {
   get onDidHide(): Event<void> {
     return this._onDidHideEmitter.event;
   }
+
   show(): void {
-    this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
+    this.doUpdate();
   }
   hide(): void {
-    this.proxy.$hideInputBox(this._id);
+    if (this.type === 'inputBox') {
+      this.proxy.$hideInputBox(this._id);
+    }
   }
 
   dispose(): void {
@@ -536,4 +539,6 @@ abstract class QuickInputExt implements vscode.InputBox {
   }
 }
 
-class InputBoxExt extends QuickInputExt {}
+class InputBoxExt extends QuickInputExt {
+  type: QuickInputType = 'inputBox';
+}
