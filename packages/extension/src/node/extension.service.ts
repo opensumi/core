@@ -6,12 +6,8 @@ import type cp from 'child_process';
 import { Injectable, Autowired } from '@opensumi/di';
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
-import {
-  commonChannelPathHandler,
-  SocketMessageReader,
-  SocketMessageWriter,
-  WSChannel,
-} from '@opensumi/ide-connection';
+import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter } from '@opensumi/ide-connection/lib/node';
+import { WSChannel } from '@opensumi/ide-connection';
 import {
   Deferred,
   isWindows,

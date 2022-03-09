@@ -3,7 +3,7 @@ import { ContributionProvider } from '@opensumi/ide-core-browser';
 import { DebugSession } from './debug-session';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { WSChannelHandler } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugSessionManager } from './debug-session-manager';

@@ -34,7 +34,8 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection, WSChannelHandler } from '@opensumi/ide-connection';
+import { RPCMessageConnection } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   PreferenceProviderProvider,
   injectPreferenceSchemaProvider,

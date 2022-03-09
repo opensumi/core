@@ -1,17 +1,16 @@
 import http from 'http';
 import net from 'net';
 import { NodeModule } from './node-module';
-import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@opensumi/ide-connection';
-import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
-import ws from 'ws';
-
+import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
 import {
+  WebSocketServerRoute,
+  WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
-  initRPCService,
-  RPCServiceCenter,
   createSocketConnection,
-} from '@opensumi/ide-connection';
+} from '@opensumi/ide-connection/lib/node';
+import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
+import ws from 'ws';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import { INodeLogger } from './logger/node-logger';
 

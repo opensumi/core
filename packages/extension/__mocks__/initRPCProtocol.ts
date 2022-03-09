@@ -1,7 +1,7 @@
 import net from 'net';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createSocketConnection, RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { KT_PROCESS_SOCK_OPTION_KEY } from '../src/common';
 
 const argv = require('yargs').argv;

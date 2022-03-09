@@ -1,12 +1,6 @@
 import net from 'net';
-import {
-  RPCService,
-  RPCServiceCenter,
-  createSocketConnection,
-  getRPCService,
-  IRPCProtocol,
-  RPCProtocol,
-} from '@opensumi/ide-connection';
+import { RPCService, RPCServiceCenter, getRPCService, IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import {
   IExtHostProxyRPCService,
   IExtHostProxy,

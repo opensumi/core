@@ -1,5 +1,7 @@
 const { JSDOM } = require('jsdom');
-const { TextDecoder, TextEncoder } = require('util');
+// new TextDecoder('ascii') is not supported in node12
+// use TextDecoder and TextEncoder from `text-encoding`
+const { TextDecoder, TextEncoder } = require('text-encoding');
 
 const jsdom = new JSDOM('<div id="main"></div>', {
   // https://github.com/jsdom/jsdom#basic-options
