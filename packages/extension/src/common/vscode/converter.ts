@@ -39,7 +39,9 @@ import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './mod
 import { marked } from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+// eslint-disable-next-line import/no-restricted-paths
 import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
 import { IInlineValueContextDto } from './languages';
 import {
   CoverageDetails,
@@ -1743,12 +1745,14 @@ export interface IDocumentFilterDto {
 }
 
 export namespace DocumentSelector {
-
   export function from(value: vscode.DocumentSelector, uriTransformer?: IURITransformer): IDocumentFilterDto[] {
     return coalesce(asArray(value).map((sel) => _doTransformDocumentSelector(sel, uriTransformer)));
   }
 
-  function _doTransformDocumentSelector(selector: string | vscode.DocumentFilter, uriTransformer: IURITransformer | undefined): IDocumentFilterDto | undefined {
+  function _doTransformDocumentSelector(
+    selector: string | vscode.DocumentFilter,
+    uriTransformer: IURITransformer | undefined,
+  ): IDocumentFilterDto | undefined {
     if (typeof selector === 'string') {
       return {
         $serialized: true,
@@ -1769,7 +1773,10 @@ export namespace DocumentSelector {
     return undefined;
   }
 
-  function _transformScheme(scheme: string | undefined, uriTransformer: IURITransformer | undefined): string | undefined {
+  function _transformScheme(
+    scheme: string | undefined,
+    uriTransformer: IURITransformer | undefined,
+  ): string | undefined {
     if (uriTransformer && typeof scheme === 'string') {
       return uriTransformer.transformOutgoingScheme(scheme);
     }

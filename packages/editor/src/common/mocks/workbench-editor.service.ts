@@ -2,7 +2,8 @@ import { WorkbenchEditorService, IResourceOpenOptions, IUntitledOptions, IOpenRe
 import { URI, Emitter, MaybeNull, Event } from '@opensumi/ide-core-common';
 import { Injectable } from '@opensumi/di';
 import { IResource } from '../resource';
-import { IEditorGroup } from '../../browser';
+// eslint-disable-next-line import/no-restricted-paths
+import type { IEditorGroup } from '../../browser';
 
 @Injectable()
 export class MockWorkbenchEditorService extends WorkbenchEditorService {

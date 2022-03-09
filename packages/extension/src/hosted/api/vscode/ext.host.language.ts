@@ -99,7 +99,15 @@ import {
   ILinkedEditingRangesDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { DisposableStore, disposableTimeout, IDisposable, IExtensionLogger, Severity, Uri, UriComponents } from '@opensumi/ide-core-common';
+import {
+  DisposableStore,
+  disposableTimeout,
+  IDisposable,
+  IExtensionLogger,
+  Severity,
+  Uri,
+  UriComponents,
+} from '@opensumi/ide-core-common';
 import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
@@ -1231,10 +1239,13 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   private _handlePool = 0;
-	private _ids = new Set<string>();
+  private _ids = new Set<string>();
 
-  createLanguageStatusItem(extension: IExtensionDescription, id: string, selector: vscode.DocumentSelector): vscode.LanguageStatusItem {
-
+  createLanguageStatusItem(
+    extension: IExtensionDescription,
+    id: string,
+    selector: vscode.DocumentSelector,
+  ): vscode.LanguageStatusItem {
     const handle = this._handlePool++;
     const proxy = this.proxy;
     const ids = this._ids;
@@ -1257,7 +1268,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     };
 
     let soonHandle: IDisposable | undefined;
-    let commandDisposables = new DisposableStore();
+    const commandDisposables = new DisposableStore();
     const updateAsync = () => {
       soonHandle?.dispose();
       soonHandle = disposableTimeout(() => {
@@ -1271,7 +1282,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
           selector: typeConvert.DocumentSelector.from(data.selector),
           label: data.text,
           detail: data.detail ?? '',
-          severity: data.severity === LanguageStatusSeverity.Error ? Severity.Error : data.severity === LanguageStatusSeverity.Warning ? Severity.Warning : Severity.Info,
+          severity:
+            data.severity === LanguageStatusSeverity.Error
+              ? Severity.Error
+              : data.severity === LanguageStatusSeverity.Warning
+              ? Severity.Warning
+              : Severity.Info,
           command: data.command && this.commands.converter.toInternal(data.command, commandDisposables),
           accessibilityInfo: data.accessibilityInformation,
         });

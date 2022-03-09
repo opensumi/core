@@ -255,9 +255,9 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     this.addDispose(
       this._resizeSash.onDidChange((evt: ISashEvent) => {
         if (data) {
-          let lineDelta = (evt.currentY - data.startY) / this.editor.getOption(EditorOption.lineHeight);
-          let roundedLineDelta = lineDelta < 0 ? Math.ceil(lineDelta) : Math.floor(lineDelta);
-          let newHeightInLines = data.heightInLines + roundedLineDelta;
+          const lineDelta = (evt.currentY - data.startY) / this.editor.getOption(EditorOption.lineHeight);
+          const roundedLineDelta = lineDelta < 0 ? Math.ceil(lineDelta) : Math.floor(lineDelta);
+          const newHeightInLines = data.heightInLines + roundedLineDelta;
 
           if (newHeightInLines > 5 && newHeightInLines < 35) {
             this._relayout(newHeightInLines);

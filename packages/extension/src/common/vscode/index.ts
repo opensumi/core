@@ -35,7 +35,8 @@ import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWe
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
-import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
+// eslint-disable-next-line import/no-restricted-paths
+import type { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostConnection, IMainThreadConnection } from './connection';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';

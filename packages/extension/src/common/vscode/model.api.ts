@@ -16,7 +16,8 @@ import type vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { IndentAction, SymbolKind } from './ext-types';
 import { IMarkdownString } from './models/html-content';
-import { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+// eslint-disable-next-line import/no-restricted-paths
+import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
