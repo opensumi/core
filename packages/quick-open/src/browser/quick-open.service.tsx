@@ -183,9 +183,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   protected onClose(cancelled: boolean): void {
-    if (this.opts.onClose) {
-      this.opts.onClose(cancelled);
-    }
+    this.opts.onClose?.(cancelled);
   }
 
   protected async onType(lookFor: string): Promise<void> {

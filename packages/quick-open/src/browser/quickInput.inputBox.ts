@@ -107,7 +107,10 @@ export class InputBoxImpl {
         enabled: this.options.enabled,
         valueSelection: this.options.valueSelection,
         onClose: (canceled) => {
-          this.onDidHideEmitter.fire(canceled);
+          // VSCode 对于这里的表现是，如果不是用户主动取消（说明调用成功），则不会调用 onDidHide
+          if (canceled) {
+            this.onDidHideEmitter.fire(canceled);
+          }
           this.quickTitleBar.hide();
         },
       },
