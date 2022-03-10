@@ -6,7 +6,7 @@ import {
   RPCServiceCenter,
   createWebSocketConnection,
 } from '@opensumi/ide-connection';
-import { createSocketConnection, WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   Deferred,
@@ -17,6 +17,7 @@ import {
   IDisposable,
   toDisposable,
 } from '@opensumi/ide-core-browser';
+import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -159,14 +160,23 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const mainThreadCenter = new RPCServiceCenter();
 
     // Electron 环境下，未指定 isRemote 时默认使用本地连接
+    // 注意，这里要使用 node 端的 createSocketConnection
     // 否则使用 WebSocket 连接
     if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-      const connection = (window as any).createNetConnection(connectPath);
-      mainThreadCenter.setConnection(createSocketConnection(connection));
+      let connection: MessageConnection;
+      if ((window as any).getMessageConnection) {
+        connection = (window as any).getMessageConnection();
+      } else {
+        // eslint-disable-next-line import/no-restricted-paths
+        const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
+        const socket = (window as any).createNetConnection(connectPath);
+        connection = createSocketConnection(socket);
+      }
+      mainThreadCenter.setConnection(connection);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel('ExtMainThreadConnection');
