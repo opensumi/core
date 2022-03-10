@@ -18,7 +18,7 @@ export class QuickTitleBar {
   @Autowired(IIconService)
   private readonly iconService: IIconService;
 
-  public readonly onDidTriggerButtonEmitter: Emitter<QuickTitleButton> = new Emitter();
+  private readonly onDidTriggerButtonEmitter: Emitter<QuickTitleButton> = new Emitter();
 
   @observable
   private _isAttached: boolean;
@@ -42,6 +42,10 @@ export class QuickTitleBar {
 
   get onDidTriggerButton(): Event<QuickTitleButton> {
     return this.onDidTriggerButtonEmitter.event;
+  }
+
+  fireDidTriggerButton(button: QuickTitleButton): void {
+    this.onDidTriggerButtonEmitter.fire(button);
   }
 
   @computed

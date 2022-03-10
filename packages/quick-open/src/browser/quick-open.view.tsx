@@ -67,9 +67,9 @@ export const QuickOpenHeader = observer(() => {
   const onSelectButton = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {
       event.stopPropagation();
-      quickTitleBar.onDidTriggerButtonEmitter.fire(button);
+      quickTitleBar.fireDidTriggerButton(button);
     },
-    [quickTitleBar.onDidTriggerButtonEmitter],
+    [quickTitleBar.fireDidTriggerButton],
   );
 
   return quickTitleBar.isAttached ? (

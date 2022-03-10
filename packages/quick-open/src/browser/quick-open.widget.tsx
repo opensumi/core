@@ -118,6 +118,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._canSelectMany = options.canSelectMany;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
+    // 获取第一次要展示的内容
     this.callbacks.onType(prefix);
   }
 

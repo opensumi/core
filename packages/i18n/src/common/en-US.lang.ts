@@ -168,7 +168,7 @@ export const localizationBundle = {
     'quickopen.command.placeholder': 'Placeholder',
     'quickopen.command.description': 'Run IDE Command',
     'quickopen.command.nohandler': 'Cannot Find Anymore',
-    'quickopen.quickinput.prompt': "Press 'Enter' to confirm your input or 'Escape' to cancel",
+    'quickopen.quickinput.prompt': "Press 'Enter' to confirm or 'Escape' to cancel",
     'quickopen.tab.file': 'File',
     'quickopen.tab.class': 'Class',
     'quickopen.tab.symbol': 'Symbol',

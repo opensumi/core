@@ -135,7 +135,7 @@ export const localizationBundle = {
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
     'quickopen.command.nohandler': '找不到结果',
-    'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
+    'quickopen.quickinput.prompt': "请按 'Enter' 确认或 'Esc' 取消",
     'quickopen.tab.file': '文件',
     'quickopen.tab.class': '类',
     'quickopen.tab.symbol': '符号',
