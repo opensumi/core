@@ -22,19 +22,20 @@ import {
   IEventBus,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { ElectronHeaderBar } from './header/header';
-import { WelcomeContribution } from './welcome/contribution';
-import { ElectronNativeDialogService } from './dialog';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { IMessageService } from '@opensumi/ide-overlay/lib/common';
+import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import {
   EditorGroupFileDropEvent,
   DragOverPosition,
   getSplitActionFromDragDrop,
 } from '@opensumi/ide-editor/lib/browser';
-import { IResourceOpenOptions } from '@opensumi/ide-editor';
+import { IMessageService } from '@opensumi/ide-overlay/lib/common';
+
+import { ElectronNativeDialogService } from './dialog';
+import { ElectronHeaderBar } from './header/header';
+import { WelcomeContribution } from './welcome/contribution';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {

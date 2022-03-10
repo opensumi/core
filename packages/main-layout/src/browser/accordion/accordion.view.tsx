@@ -1,11 +1,12 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { View, useInjectable } from '@opensumi/ide-core-browser';
-import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
-import { Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import React from 'react';
 
-import { AccordionSection } from './section.view';
+import { View, useInjectable } from '@opensumi/ide-core-browser';
+import { Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
+import { AccordionSection } from './section.view';
 
 interface AccordionContainerProps {
   alignment?: Layout.alignment;

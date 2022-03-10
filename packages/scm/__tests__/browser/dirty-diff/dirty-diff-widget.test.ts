@@ -1,16 +1,15 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { positionToRange, URI, CommandService } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-
-import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { SCMService } from '../../../src';
+import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 
 @Injectable()

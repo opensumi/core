@@ -1,5 +1,6 @@
-import { PreferenceScope } from './preference-scope';
 import { IDisposable } from '@opensumi/ide-core-common';
+
+import { PreferenceScope } from './preference-scope';
 
 export interface IPreferenceSettingsService {
   setPreference(key: string, value: any, scope: PreferenceScope);

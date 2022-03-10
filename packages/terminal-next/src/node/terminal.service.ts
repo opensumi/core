@@ -1,8 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { PtyService } from './pty';
-import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
-import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
+
+import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
+import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
+
+import { PtyService } from './pty';
+
 
 // ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
 // 批处理字符最大长度

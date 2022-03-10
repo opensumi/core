@@ -1,7 +1,8 @@
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
-import cls from 'classnames';
-import styles from './header.module.less';
+
+
 import {
   useInjectable,
   MaybeNull,
@@ -15,11 +16,13 @@ import {
   isOSX,
   IWindowService,
 } from '@opensumi/ide-core-browser';
-import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
+import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+
+import styles from './header.module.less';
 
 const useFullScreen = () => {
   const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);

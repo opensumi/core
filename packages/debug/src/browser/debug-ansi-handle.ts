@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts
 
-import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
-import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
-import { LinkDetector } from './debug-link-detector';
 import { ansiColorIdentifiers } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
+import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
+import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
+
+import { LinkDetector } from './debug-link-detector';
 import styles from './view/console/debug-console.module.less';
 
 /**

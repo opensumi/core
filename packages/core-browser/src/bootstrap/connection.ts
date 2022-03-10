@@ -1,7 +1,7 @@
+import { Injector, Provider } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler, createSocketConnection } from '@opensumi/ide-connection/lib/browser';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
-import { Injector, Provider } from '@opensumi/di';
 import {
   getDebugLogger,
   IReporterService,

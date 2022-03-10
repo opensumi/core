@@ -1,6 +1,5 @@
-import { IDebugSessionManager } from './../../../common/debug-session';
-import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
-import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
+import pSeries from 'p-series';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   TreeModel,
@@ -28,14 +27,19 @@ import {
   IReporterService,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugWatchModel } from './debug-watch-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
+
+import { DebugSessionManager } from '../../debug-session-manager';
+import { DebugWatch } from '../../model';
 import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugWatch } from '../../model';
-import pSeries from 'p-series';
+
+import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
+import { IDebugSessionManager } from './../../../common/debug-session';
+import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
+import { DebugWatchModel } from './debug-watch-model';
 import styles from './debug-watch.module.less';
-import { DebugSessionManager } from '../../debug-session-manager';
+
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

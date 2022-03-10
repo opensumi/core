@@ -1,14 +1,17 @@
 /**
  * 参考使用 theia 的单测
  */
-import path from 'path';
-import temp from 'temp';
 import fs from 'fs';
-import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+import path from 'path';
+
+import temp from 'temp';
+
 import { isWindows } from '@opensumi/ide-core-common';
+import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { ProcessModule } from '@opensumi/ide-process';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
+import { ProcessModule } from '@opensumi/ide-process';
+
 import { SearchModule, IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
 
 // Allow creating temporary files, but remove them when we are done.

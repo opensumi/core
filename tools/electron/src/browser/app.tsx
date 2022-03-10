@@ -1,9 +1,8 @@
 /* eslint-disable no-console */
 console.time('Render');
-import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
 import { Injector, Domain } from '@opensumi/di';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/browser';
-
+import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';
 // 引入本地icon，不使用cdn版本，与useCdnIcon配套使用

@@ -1,17 +1,19 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
-import { createLayoutAPIFactory, ExtHostLayout } from './ext.host.layout';
-import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
-import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { ReporterService, REPORT_HOST, IReporter } from '@opensumi/ide-core-common';
-import { ExtHostWebview, createWebviewApi } from './ext.host.webview';
+
+import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
+import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
+import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
+
+import { createCommandsApiFactory } from './ext.host.command';
+import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
+import { createLayoutAPIFactory, ExtHostLayout } from './ext.host.layout';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';
 import { ExtHostTheme, createThemeApi } from './ext.host.theme';
-import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
-import { createCommandsApiFactory } from './ext.host.command';
-import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 import { ExtHostToolbarActionService, createToolbarAPIFactory } from './ext.host.toolbar';
+import { ExtHostWebview, createWebviewApi } from './ext.host.webview';
+import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,

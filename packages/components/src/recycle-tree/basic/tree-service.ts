@@ -1,8 +1,9 @@
-import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
-import { IBasicTreeData, DECORATIONS } from './types';
-import { TreeNodeEvent } from '../types';
 import { DisposableCollection, Emitter } from '../../utils';
+import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
+import { TreeNodeEvent } from '../types';
+
 import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
+import { IBasicTreeData, DECORATIONS } from './types';
 
 export class BasicTreeService extends Tree {
   private selectedDecoration: Decoration = new Decoration(DECORATIONS.SELECTED); // 选中态

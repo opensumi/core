@@ -1,16 +1,16 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { ILogger, localize, Deferred } from '@opensumi/ide-core-common';
+import { quickFileOpen } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   QuickOpenService,
   QuickOpenModel,
   QuickOpenOptions,
   QuickOpenItem,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { quickFileOpen } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
+import { ILogger, localize, Deferred } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 
 import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/browser/prefix-quick-open.service';
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';

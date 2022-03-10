@@ -1,9 +1,10 @@
 import vscode from 'vscode';
+
 import { CancellationToken, IRange } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { SemanticTokens, SemanticTokensEdit, SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';
 import * as TypeConverts from '../../../../common/vscode/converter';
+import { SemanticTokens, SemanticTokensEdit, SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';
 import { encodeSemanticTokensDto } from '../../../../common/vscode/semantic-tokens';
 
 class SemanticTokensPreviousResult {

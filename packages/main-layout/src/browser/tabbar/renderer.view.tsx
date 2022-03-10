@@ -1,8 +1,11 @@
-import React from 'react';
 import clsx from 'classnames';
-import styles from './styles.module.less';
-import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
+import React from 'react';
+
 import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
+import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
+import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
+
+
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
 import {
   RightTabPanelRenderer,
@@ -10,8 +13,9 @@ import {
   BottomTabPanelRenderer,
   NextBottomTabPanelRenderer,
 } from './panel.view';
+import styles from './styles.module.less';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
-import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
+
 
 // TODO 将过深的prop挪到这里
 export const TabbarConfig = React.createContext<{

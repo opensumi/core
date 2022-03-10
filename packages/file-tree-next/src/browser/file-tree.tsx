@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, {
   createRef,
   useRef,
@@ -10,7 +11,7 @@ import React, {
   MouseEvent,
   DragEvent,
 } from 'react';
-import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@opensumi/ide-core-browser';
+
 import {
   RecycleTreeFilterDecorator,
   RecycleTree,
@@ -19,15 +20,18 @@ import {
   IRecycleTreeFilterHandle,
   TreeModel,
 } from '@opensumi/ide-components';
+import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+
+import { IFileTreeService } from '../common';
+import { Directory, File } from '../common/file-tree-node.define';
+
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
+import styles from './file-tree.module.less';
 import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
-import { Directory, File } from '../common/file-tree-node.define';
-import cls from 'classnames';
-import styles from './file-tree.module.less';
-import { IFileTreeService } from '../common';
-import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FILTER_DELAY = 500;

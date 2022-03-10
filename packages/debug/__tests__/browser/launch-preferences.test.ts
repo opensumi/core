@@ -1,8 +1,9 @@
-import { Injectable } from '@opensumi/di';
-import path from 'path';
-import * as fs from 'fs-extra';
 import os from 'os';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import path from 'path';
+
+import * as fs from 'fs-extra';
+
+import { Injectable } from '@opensumi/di';
 import {
   PreferenceService,
   FileUri,
@@ -14,23 +15,26 @@ import {
   URI,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { AppConfig } from '@opensumi/ide-core-node';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
-import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
-import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
-import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
-import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
-import { UserStorageContribution, UserStorageServiceImpl } from '@opensumi/ide-preferences/lib/browser/userstorage';
-import { IUserStorageService } from '@opensumi/ide-preferences';
-import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { DebugContribution, DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
+import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IUserStorageService } from '@opensumi/ide-preferences';
+import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
+import { UserStorageContribution, UserStorageServiceImpl } from '@opensumi/ide-preferences/lib/browser/userstorage';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
+import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+
 
 @Injectable()
 export class MockLoggerManagerClient {

@@ -3,9 +3,9 @@ import {
   AbstractMessageWriter,
   createMessageConnection,
 } from '@opensumi/vscode-jsonrpc/lib/common/api';
-import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
-import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
 import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
+import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
+import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
 
 export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';

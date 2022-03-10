@@ -1,16 +1,19 @@
+import cls from 'classnames';
 import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
-import { ITreeNodeOrCompositeTreeNode } from '../types';
-import { INodeRendererWrapProps } from '../TreeNodeRendererWrap';
-import { IBasicContextMenu, IBasicRecycleTreeProps, IBasicTreeMenu } from './types';
-import { BasicTreeModel, BasicTreeService } from './tree-service';
-import { BasicTreeNodeRenderer } from './tree-node';
-import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+import CtxMenuTrigger from 'react-ctxmenu-trigger';
+
 import { ClickOutside } from '../../click-outside';
+import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
+import { INodeRendererWrapProps } from '../TreeNodeRendererWrap';
+import { ITreeNodeOrCompositeTreeNode } from '../types';
+
 import { BasicMenuItem } from './menubar-item';
 import { placements } from './placements';
-import CtxMenuTrigger from 'react-ctxmenu-trigger';
-import cls from 'classnames';
+import { BasicTreeNodeRenderer } from './tree-node';
+import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+import { BasicTreeModel, BasicTreeService } from './tree-service';
+import { IBasicContextMenu, IBasicRecycleTreeProps, IBasicTreeMenu } from './types';
+
 import './styles.less';
 import 'react-ctxmenu-trigger/assets/index.css';
 

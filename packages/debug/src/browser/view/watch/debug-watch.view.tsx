@@ -1,7 +1,7 @@
-import React from 'react';
-import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@opensumi/ide-core-browser';
+import React from 'react';
+
 import {
   INodeRendererProps,
   ClasslistComposite,
@@ -12,6 +12,10 @@ import {
   TreeModel,
   PromptHandle,
 } from '@opensumi/ide-components';
+import { Loading } from '@opensumi/ide-components';
+import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
+import { ViewState } from '@opensumi/ide-core-browser';
+
 import {
   ExpressionContainer,
   ExpressionNode,
@@ -19,10 +23,10 @@ import {
   DebugVariable,
   DebugWatchNode,
 } from '../../tree/debug-tree-node.define';
+
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
-import { Loading } from '@opensumi/ide-components';
 import styles from './debug-watch.module.less';
-import cls from 'classnames';
+
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 

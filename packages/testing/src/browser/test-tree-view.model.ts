@@ -1,11 +1,13 @@
-import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
-import { ITestTreeData } from './../common/tree-view.model';
-import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
 import { Autowired, Injectable } from '@opensumi/di';
+import { CompositeTreeNode, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
+import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { Emitter } from '@opensumi/ide-components/lib/utils';
 import { Disposable, isDefined, filter, map, getDebugLogger } from '@opensumi/ide-core-browser';
+import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import { ITestService, TestServiceToken } from '../common';
+import { IComputedStateAndDurationAccessor, refreshComputedState } from '../common/getComputedState';
+import { TestResultServiceToken } from '../common/test-result';
 import {
   InternalTestItem,
   TestDiffOpType,
@@ -14,11 +16,11 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
-import { CompositeTreeNode, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
-import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
-import { TestResultServiceToken } from '../common/test-result';
+
+
+import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
+import { ITestTreeData } from './../common/tree-view.model';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
-import { IComputedStateAndDurationAccessor, refreshComputedState } from '../common/getComputedState';
 
 const computedStateAccessor: IComputedStateAndDurationAccessor<ITestTreeItem> = {
   getOwnState: (i) => (i instanceof TestTreeItem ? i.ownState : TestResultState.Unset),

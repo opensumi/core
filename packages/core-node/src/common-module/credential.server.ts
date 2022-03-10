@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig } from '../bootstrap';
 import { IChunkedPassword, INativeCredentialService, isWindows } from '@opensumi/ide-core-common';
+
+import { AppConfig } from '../bootstrap';
 
 @Injectable()
 export class CredentialService implements INativeCredentialService {

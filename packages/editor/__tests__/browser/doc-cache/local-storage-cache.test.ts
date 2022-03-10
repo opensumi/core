@@ -1,14 +1,16 @@
-import { uniqueId } from 'lodash';
 import { promisify } from 'util';
+
+import { uniqueId } from 'lodash';
+
 import { ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
-import { LocalStorageDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { LocalStorageDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { IDocPersistentCacheProvider } from '../../../src/common';
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
+import { IDocPersistentCacheProvider } from '../../../src/common';
 
 describe('LocalStorageDocCacheImpl', () => {
   let content: string;

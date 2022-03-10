@@ -1,11 +1,12 @@
-import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@opensumi/ide-components';
-import { DisposableCollection, LabelService, useInjectable } from '@opensumi/ide-core-browser';
-import { localize, URI } from '@opensumi/ide-core-common';
-import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
 import clx from 'classnames';
 import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+
+import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@opensumi/ide-components';
+import { DisposableCollection, LabelService, useInjectable } from '@opensumi/ide-core-browser';
+import { localize, URI } from '@opensumi/ide-core-common';
+import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';

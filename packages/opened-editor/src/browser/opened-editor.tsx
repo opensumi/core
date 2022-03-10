@@ -1,13 +1,14 @@
 import React from 'react';
-import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+
+import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-browser';
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
-import { OpenedEditorModelService } from './services/opened-editor-model.service';
-import { EditorTreeNode } from './opened-editor-node';
-import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import styles from './index.module.less';
+import { EditorTreeNode } from './opened-editor-node';
+import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
+import { OpenedEditorModelService } from './services/opened-editor-model.service';
 
 export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const OPEN_EDITOR_NODE_HEIGHT = 22;

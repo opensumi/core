@@ -1,3 +1,4 @@
+import { FoldingRangeKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
   register,
   getLanguages,
@@ -27,7 +28,6 @@ import {
   registerSelectionRangeProvider,
   registerCompletionItemProvider,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLanguages';
-import { FoldingRangeKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 export function createMonacoLanguageApi() {
   return Object.freeze({

@@ -1,6 +1,4 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@opensumi/di';
-import { MonacoDiagnosticCollection } from './diagnostic-collection';
 import {
   URI,
   IDisposable,
@@ -10,6 +8,8 @@ import {
   IRelatedInformation,
   MarkerSeverity,
 } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   DiagnosticSeverity,
   DiagnosticRelatedInformation,
@@ -18,6 +18,8 @@ import {
   WorkspaceSymbolProvider,
   ILanguageService,
 } from '../../common';
+
+import { MonacoDiagnosticCollection } from './diagnostic-collection';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 

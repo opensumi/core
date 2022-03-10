@@ -3,6 +3,7 @@ import { WorkerExtProcessService } from '@opensumi/ide-extension/lib/browser/ext
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../src/common';
+
 import { MOCK_EXTENSIONS, setupExtensionServiceInjector } from './extension-service-mock-helper';
 
 describe('Extension service', () => {

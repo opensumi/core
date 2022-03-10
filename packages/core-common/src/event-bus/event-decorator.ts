@@ -1,11 +1,12 @@
-import { BasicEvent } from './basic-event';
+import { Autowired } from '@opensumi/di';
+
 import { ConstructorOf } from '../declare';
+import { Disposable } from '../disposable';
+
+import { BasicEvent } from './basic-event';
 import { IEventBus } from './event-bus-types';
 
 const EVENT_TOKEN = Symbol('EVENT_TOKEN');
-
-import { Autowired } from '@opensumi/di';
-import { Disposable } from '../disposable';
 
 export class WithEventBus extends Disposable {
   @Autowired(IEventBus)

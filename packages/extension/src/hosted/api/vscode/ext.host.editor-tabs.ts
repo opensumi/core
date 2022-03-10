@@ -1,12 +1,13 @@
-import { MainThreadAPIIdentifier } from './../../../common/vscode/index';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, URI, Uri } from '@opensumi/ide-core-common';
+
 import {
   IExtHostEditorTabs,
   IEditorTab,
   IEditorTabDto,
   IMainThreadEditorTabsShape,
 } from './../../../common/vscode/editor-tabs';
+import { MainThreadAPIIdentifier } from './../../../common/vscode/index';
 
 export class ExtHostEditorTabs implements IExtHostEditorTabs {
   private _proxy: IMainThreadEditorTabsShape;

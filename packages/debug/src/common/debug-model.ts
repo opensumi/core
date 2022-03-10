@@ -1,16 +1,18 @@
+import stream from 'stream';
+
+import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@opensumi/ide-core-common';
+import type { editor } from '@opensumi/monaco-editor-core';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   IRuntimeBreakpoint,
   ISourceBreakpoint,
   DebugBreakpointWidgetContext,
   TSourceBrekpointProperties,
 } from './debug-breakpoint';
-import { IDebugHoverWidget } from './debug-hover';
-import stream from 'stream';
-import type { editor } from '@opensumi/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
-import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@opensumi/ide-core-common';
 import { DebugEditor } from './debug-editor';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { IDebugHoverWidget } from './debug-hover';
 
 export interface IDebugBreakpointWidget extends IDisposable {
   position: monaco.Position | undefined;

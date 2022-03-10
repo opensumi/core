@@ -16,8 +16,9 @@
 
  // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/monaco/src/browser/textmate/textmate-registry.ts
 
-import { Injectable } from '@opensumi/di';
 import { IGrammarConfiguration } from 'vscode-textmate';
+
+import { Injectable } from '@opensumi/di';
 import { getDebugLogger, URI } from '@opensumi/ide-core-common';
 
 import { TokenizerOption } from './textmate-tokenizer';

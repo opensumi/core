@@ -1,11 +1,3 @@
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import {
-  CommandService,
-  CommandServiceImpl,
-  CommandRegistryImpl,
-  CommandRegistry,
-  DisposableCollection,
-} from '@opensumi/ide-core-common';
 import {
   KeybindingRegistry,
   KeybindingRegistryImpl,
@@ -13,17 +5,24 @@ import {
   ILogger,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  CommandServiceImpl,
+  CommandRegistryImpl,
+  CommandRegistry,
+  DisposableCollection,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { DocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { DocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
 import { ClientAddonModule } from '../../src/browser';
 import {
   FileSearchContribution,

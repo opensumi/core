@@ -1,8 +1,12 @@
-import type vscode from 'vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { createHash } from 'crypto';
-import { v4 } from 'uuid';
+
 import address from 'address';
+import { v4 } from 'uuid';
+import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@opensumi/ide-core-common';
+
 import {
   MainThreadAPIIdentifier,
   IMainThreadEnv,
@@ -11,7 +15,6 @@ import {
 } from '../../../common/vscode';
 import { IExtHostEnv, ExtHostEnvValues } from '../../../common/vscode';
 import { LogLevel } from '../../../common/vscode/ext-types';
-import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@opensumi/ide-core-common';
 
 export class Env {
   private macMachineId: string;

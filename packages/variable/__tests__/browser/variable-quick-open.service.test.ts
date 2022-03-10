@@ -1,12 +1,13 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { QuickOpenService, VariableRegistry, Variable, URI } from '@opensumi/ide-core-browser';
 import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
+import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import {
   VariableQuickOpenService,
   VariableQuickOpenItem,
 } from '@opensumi/ide-variable/lib/browser/variable-quick-open.service';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('VariableQuickOpenService should be work', () => {
   let variableQuickOpenService: VariableQuickOpenService;

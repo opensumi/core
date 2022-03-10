@@ -1,10 +1,11 @@
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
   IRemoteOpenerClient,
   IRemoteOpenerService,
   RemoteOpenerClientToken,
 } from '@opensumi/ide-remote-opener/lib/common';
 import { RemoteOpenerClientImpl } from '@opensumi/ide-remote-opener/lib/node/opener.client';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 describe('packages/remote-opener/src/node/opener.client.ts', () => {
   let remoteOpenerClient: IRemoteOpenerClient;

@@ -1,12 +1,14 @@
 import { uniqueId } from 'lodash';
-import { URI } from '@opensumi/ide-core-browser';
 
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { IDocPersistentCacheProvider } from '../../../src/common';
-import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
-import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
+import { URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
+
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
+import { IDocPersistentCacheProvider } from '../../../src/common';
+
 
 describe('EmptyDocCacheImpl', () => {
   let injector: MockInjector;

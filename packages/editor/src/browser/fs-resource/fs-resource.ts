@@ -1,4 +1,4 @@
-import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   OS,
   URI,
@@ -9,15 +9,17 @@ import {
   LRUMap,
   IApplicationService,
 } from '@opensumi/ide-core-browser';
-import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileChangeType } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
-import { FileTreeSet } from './file-tree-set';
-import { IEditorDocumentModelService } from '../doc-model/types';
+
+import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
 import { DIFF_SCHEME } from '../../common';
+import { IEditorDocumentModelService } from '../doc-model/types';
+
+import { FileTreeSet } from './file-tree-set';
 
 enum AskSaveResult {
   REVERT = 1,

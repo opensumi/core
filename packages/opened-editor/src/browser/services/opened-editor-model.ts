@@ -1,8 +1,10 @@
-import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
-import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
+
 import { EditorFileGroup } from '../opened-editor-node.define';
+
+import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 
 @Injectable({ multiple: true })
 export class OpenedEditorModel extends TreeModel {

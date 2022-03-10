@@ -1,5 +1,6 @@
-import { NodeModule } from '@opensumi/ide-core-node';
 import { Injectable, Injector } from '@opensumi/di';
+import { NodeModule } from '@opensumi/ide-core-node';
+
 import {
   IFileService,
   IDiskFileProvider,
@@ -9,6 +10,7 @@ import {
   FileSystemProvider,
   DiskFileServicePath,
 } from '../common';
+
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';
 

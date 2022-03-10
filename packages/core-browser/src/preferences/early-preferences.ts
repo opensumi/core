@@ -1,7 +1,9 @@
-import { PreferenceScope } from './preference-scope';
 import { PreferenceItem, Event } from '@opensumi/ide-core-common';
+
 import { IPreferences } from '../bootstrap';
+
 import { PreferenceProvider } from './preference-provider';
+import { PreferenceScope } from './preference-scope';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {

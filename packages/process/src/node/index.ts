@@ -1,8 +1,10 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
-import { ProcessManage } from './process-manager';
-import { ProcessFactory } from './process';
+
 import { IProcessManage, processManageServicePath, IProcessFactory } from '../common/';
+
+import { ProcessFactory } from './process';
+import { ProcessManage } from './process-manager';
 
 @Injectable()
 export class ProcessModule extends NodeModule {

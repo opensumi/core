@@ -8,6 +8,7 @@ import {
   isLinux,
   debounce,
 } from '@opensumi/ide-core-common';
+
 import {
   IDiskFileProvider,
   FileChangeEvent,

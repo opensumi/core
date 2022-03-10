@@ -1,3 +1,4 @@
+import { Injector } from '@opensumi/di';
 import {
   PreferenceSchema,
   PreferenceProxy,
@@ -6,7 +7,6 @@ import {
   PreferenceContribution,
   localize,
 } from '@opensumi/ide-core-browser';
-import { Injector } from '@opensumi/di';
 
 export const debugPreferencesSchema: PreferenceSchema = {
   type: 'object',

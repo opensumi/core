@@ -1,8 +1,9 @@
-import { join } from 'path';
-import got from 'got';
 import { statSync, existsSync } from 'fs';
-import { Command } from 'commander';
+import { join } from 'path';
+
 import { green, yellow, red } from 'chalk';
+import { Command } from 'commander';
+import got from 'got';
 
 const CLI_NAME = process.env.CLI_NAME || 'sumi';
 const PRODUCTION_NAME = process.env.PRODUCTION_NAME || 'OpenSumi';

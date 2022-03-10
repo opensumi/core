@@ -1,9 +1,10 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@opensumi/ide-core-browser';
-import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
-import { Range } from 'vscode-languageserver-types';
 import * as md5 from 'md5';
+import { Range } from 'vscode-languageserver-types';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@opensumi/ide-core-browser';
+import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
+import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
 
 /**
  * todo: 重写文档保存逻辑

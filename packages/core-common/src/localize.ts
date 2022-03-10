@@ -1,5 +1,5 @@
-import { format, mnemonicButtonLabel } from './utils/strings';
 import { CaseInsensitiveMap } from './map';
+import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 

@@ -1,7 +1,7 @@
-import { ITreeNodeOrCompositeTreeNode } from '../types';
-import { INodeRendererProps } from '../TreeNodeRendererWrap';
-import { ClasslistComposite } from '../tree/decoration';
 import { IRecycleTreeHandle } from '../RecycleTree';
+import { ClasslistComposite } from '../tree/decoration';
+import { INodeRendererProps } from '../TreeNodeRendererWrap';
+import { ITreeNodeOrCompositeTreeNode } from '../types';
 
 export enum IBasicInlineMenuPosition {
   TREE_NODE = 1,

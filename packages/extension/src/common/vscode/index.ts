@@ -1,9 +1,47 @@
 import type vscode from 'vscode';
-import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
-import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
+
+import { IExtension, IExtensionHostService } from '..';
+// eslint-disable-next-line import/no-restricted-paths
+import type { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
+import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
+import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
+import { ExtHostFileSystemInfo } from '../../hosted/api/vscode/ext.host.file-system-info';
+import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
+import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
+import { ISumiExtHostWebviews } from '../sumi/webview';
+
+import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
 import { IMainThreadCommands, IExtHostCommands } from './command';
+import { IExtHostComments, IMainThreadComments } from './comments';
+import { IExtHostConnection, IMainThreadConnection } from './connection';
+import { IExtHostDebug, IMainThreadDebug } from './debug';
+import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
+import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import {
+  IMainThreadEditorsService,
+  IExtensionHostEditorService,
+  IMainThreadCustomEditor,
+  IExtHostCustomEditor,
+} from './editor';
+import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
+import { IMainThreadEnv, IExtHostEnv } from './env';
+import { IMainThreadFileSystemShape } from './file-system';
+import { IMainThreadLanguages } from './languages';
+import { IMainThreadPreference, IExtHostPreference } from './preference';
+import { IExtHostProgress, IMainThreadProgress } from './progress';
+import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
+import { IExtHostSecret, IMainThreadSecret } from './secret';
+import { IMainThreadStorage, IExtHostStorage } from './storage';
+import { IExtHostTasks, IMainThreadTasks } from './tasks';
+import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
+import { IExtHostTests, IMainThreadTesting } from './tests';
+import { IExtHostTheming, IMainThreadTheming } from './theming';
+import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
+import { IMainThreadUrls, IExtHostUrls } from './urls';
+import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWebviewView } from './webview';
 import {
   IMainThreadMessage,
   IExtHostMessage,
@@ -18,42 +56,6 @@ import {
   IMainThreadWindow,
 } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
-import {
-  IMainThreadEditorsService,
-  IExtensionHostEditorService,
-  IMainThreadCustomEditor,
-  IExtHostCustomEditor,
-} from './editor';
-import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
-import { IExtension, IExtensionHostService } from '..';
-import { IMainThreadPreference, IExtHostPreference } from './preference';
-import { IMainThreadEnv, IExtHostEnv } from './env';
-import { IMainThreadStorage, IExtHostStorage } from './storage';
-import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
-import { IMainThreadLanguages } from './languages';
-import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWebviewView } from './webview';
-import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
-import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
-import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
-// eslint-disable-next-line import/no-restricted-paths
-import type { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
-import { IExtHostDebug, IMainThreadDebug } from './debug';
-import { IExtHostConnection, IMainThreadConnection } from './connection';
-import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
-import { IMainThreadFileSystemShape } from './file-system';
-import { ISumiExtHostWebviews } from '../sumi/webview';
-import { IExtHostProgress, IMainThreadProgress } from './progress';
-import { IExtHostTheming, IMainThreadTheming } from './theming';
-import { IExtHostTasks, IMainThreadTasks } from './tasks';
-import { IExtHostComments, IMainThreadComments } from './comments';
-import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
-import { ExtHostFileSystemInfo } from '../../hosted/api/vscode/ext.host.file-system-info';
-import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
-import { IMainThreadUrls, IExtHostUrls } from './urls';
-import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
-import { IExtHostSecret, IMainThreadSecret } from './secret';
-import { IExtHostTests, IMainThreadTesting } from './tests';
-import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {

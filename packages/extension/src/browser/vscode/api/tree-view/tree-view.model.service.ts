@@ -19,11 +19,6 @@ import {
   ThrottledDelayer,
   CommandService,
 } from '@opensumi/ide-core-browser';
-import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
-import styles from './tree-view-node.module.less';
-import { ExtensionTreeModel } from './tree-view.model';
-import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
-import { TreeViewDataProvider } from '../main.thread.treeview';
 import {
   AbstractMenuService,
   ICtxMenuRenderer,
@@ -31,6 +26,13 @@ import {
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { isUndefinedOrNull, isNumber } from '@opensumi/ide-core-common';
+
+import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
+import { TreeViewDataProvider } from '../main.thread.treeview';
+
+import styles from './tree-view-node.module.less';
+import { ExtensionTreeModel } from './tree-view.model';
+import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
 

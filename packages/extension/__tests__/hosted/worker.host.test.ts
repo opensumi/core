@@ -1,14 +1,15 @@
 import { Injector } from '@opensumi/di';
-import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { ProxyIdentifier } from '@opensumi/ide-connection';
-import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
-import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
-import { initMockRPCProtocol } from '../../__mocks__/initRPCProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+
+import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../__mocks__/api/mathread.storage';
-import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
+import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
+import { initMockRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MockWorker, MessagePort, MessageChannel, mockFetch } from '../../__mocks__/worker';
+import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
 
 const enum MessageType {
   Request = 1,

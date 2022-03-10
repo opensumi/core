@@ -7,7 +7,9 @@ import {
   JsonSchemaContribution,
   IJSONSchemaRegistry,
 } from '@opensumi/ide-core-browser';
+
 import { ITaskService } from '../common';
+
 import { schema, taskSchemaUri } from './task.schema';
 
 @Domain(CommandContribution, JsonSchemaContribution)

@@ -1,23 +1,25 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IThemeService } from '../../';
+import { Injectable } from '@opensumi/di';
 import {
   PreferenceSchemaProvider,
   IPreferenceSettingsService,
   ILoggerManagerClient,
   URI,
 } from '@opensumi/ide-core-browser';
+import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@opensumi/di';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
-import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { Color } from '@opensumi/ide-theme/lib/common';
+import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+
+import { IThemeService } from '../../';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
+
 
 @Injectable()
 class MockFileServiceClient {

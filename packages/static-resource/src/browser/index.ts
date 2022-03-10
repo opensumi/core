@@ -1,5 +1,6 @@
 import { Injectable, Provider, Autowired } from '@opensumi/di';
 import { BrowserModule, Domain, ContributionProvider, ClientAppContribution } from '@opensumi/ide-core-browser';
+
 import { StaticResourceService, StaticResourceContribution } from './static.definition';
 import { StaticResourceServiceImpl } from './static.service';
 export * from './static.definition';

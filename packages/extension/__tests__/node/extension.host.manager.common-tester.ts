@@ -1,9 +1,12 @@
-import { Provider } from '@opensumi/di';
-import { IExtensionHostManager } from '../../src';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { INodeLogger, MaybePromise, getDebugLogger } from '@opensumi/ide-core-node';
 import path from 'path';
+
+import { Provider } from '@opensumi/di';
+import { INodeLogger, MaybePromise, getDebugLogger } from '@opensumi/ide-core-node';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IExtensionHostManager } from '../../src';
+
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

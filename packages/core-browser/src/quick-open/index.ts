@@ -1,7 +1,9 @@
+import { observable } from 'mobx';
 import React from 'react';
+
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
 import { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
-import { observable } from 'mobx';
+
 import { Keybinding } from '../keybinding';
 
 export enum Mode {

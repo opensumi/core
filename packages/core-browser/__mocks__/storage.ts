@@ -1,3 +1,4 @@
+import { Injector } from '@opensumi/di';
 import {
   isUndefinedOrNull,
   StorageProvider,
@@ -7,7 +8,6 @@ import {
   Disposable,
   URI,
 } from '@opensumi/ide-core-common';
-import { Injector } from '@opensumi/di';
 
 let mockedStorage: MockedStorage | null = null;
 

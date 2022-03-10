@@ -1,8 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { MessageType, URI } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-browser';
+import { MessageType, URI } from '@opensumi/ide-core-common';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { ContentSearchResult, ResultTotal } from '../common/';
 
 export async function replaceAll(

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Autowired } from '@opensumi/di';
 import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';

@@ -1,5 +1,6 @@
 import { ChildProcess } from 'child_process';
 import stream from 'stream';
+
 import { Event } from '@opensumi/ide-core-common';
 
 export const IProcessFactory = Symbol('IProcessFactory');

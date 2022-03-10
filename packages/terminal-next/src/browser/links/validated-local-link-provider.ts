@@ -5,17 +5,20 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.2/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
 
 import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
 import { CommandService, IDisposable, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace-defination';
-import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+
 import type { TerminalClient } from '../terminal.client';
-import { FOLDER_IN_WORKSPACE_LABEL, FOLDER_NOT_IN_WORKSPACE_LABEL, OPEN_FILE_LABEL, TerminalLink } from './link';
-import { XtermLinkMatcherHandler } from './link-manager';
+
 import { TerminalBaseLinkProvider } from './base';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
+import { FOLDER_IN_WORKSPACE_LABEL, FOLDER_NOT_IN_WORKSPACE_LABEL, OPEN_FILE_LABEL, TerminalLink } from './link';
+import { XtermLinkMatcherHandler } from './link-manager';
 
 const pathPrefix = '(\\.\\.?|\\~)';
 const pathSeparatorClause = '\\/';

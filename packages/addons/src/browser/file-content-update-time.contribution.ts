@@ -1,15 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
+import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@opensumi/ide-core-browser';
 import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import {
   FileOperation,
   WorkspaceFileEvent,
   IWorkspaceFileOperationParticipant,
   IWorkspaceFileService,
 } from '@opensumi/ide-workspace-edit';
-import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@opensumi/ide-core-browser';
-import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 enum ContentUpdateOperation {
   /**

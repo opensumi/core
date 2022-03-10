@@ -1,6 +1,6 @@
-import { ISplice } from '../sequence';
 import { IDisposable } from '../disposable';
 import { Emitter, Event } from '../event';
+import { ISplice } from '../sequence';
 
 export function isNonEmptyArray<T>(obj: ReadonlyArray<T> | undefined | null): obj is Array<T> {
   return Array.isArray(obj) && obj.length > 0;

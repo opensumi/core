@@ -1,11 +1,11 @@
-import React from 'react';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { observer } from 'mobx-react-lite';
-import styles from './debug-hover.module.less';
 import cls from 'classnames';
-import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@opensumi/ide-components';
-import { DebugHoverModel } from './debug-hover-model';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { IDisposable } from '@opensumi/ide-core-common';
+
 import {
   ExpressionNode,
   ExpressionContainer,
@@ -13,7 +13,11 @@ import {
   DebugVariable,
 } from '../tree/debug-tree-node.define';
 import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
-import { IDisposable } from '@opensumi/ide-core-common';
+
+import { DebugHoverModel } from './debug-hover-model';
+import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
+import styles from './debug-hover.module.less';
+
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);

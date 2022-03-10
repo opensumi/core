@@ -1,9 +1,9 @@
 import { URI } from '@opensumi/ide-core-common';
-import { FileChangeType, FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
 import {
   convertToVSCFileStat,
   ExtHostFileSystem,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
+import { FileChangeType, FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
 
 describe('convertToVSCFileStat', () => {
   it('Should return normal conversion to VSCode format results.', () => {

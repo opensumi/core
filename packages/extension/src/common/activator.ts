@@ -1,5 +1,7 @@
 import type vscode from 'vscode';
+
 import { IDisposable } from '@opensumi/ide-core-common';
+
 import { ExtensionHostType } from '.';
 
 export class ExtensionActivationTimes {

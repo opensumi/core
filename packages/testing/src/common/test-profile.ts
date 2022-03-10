@@ -1,4 +1,5 @@
 import { ITestController, TestId } from '../index';
+
 import { InternalTestItem, ITestRunProfile, TestRunProfileBitset } from './testCollection';
 
 export const sorter = (a: ITestRunProfile, b: ITestRunProfile) => {

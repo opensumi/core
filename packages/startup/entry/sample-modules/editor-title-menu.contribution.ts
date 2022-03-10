@@ -1,6 +1,5 @@
 // eslint-disable-next-line no-console
 import { Autowired } from '@opensumi/di';
-import { Disposable, IEventBus } from '@opensumi/ide-core-common';
 import {
   ClientAppContribution,
   IContextKey,
@@ -11,6 +10,7 @@ import {
   getIcon,
 } from '@opensumi/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable, IEventBus } from '@opensumi/ide-core-common';
 import { EditorGroupChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 

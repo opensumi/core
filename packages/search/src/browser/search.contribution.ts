@@ -1,5 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
 import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@opensumi/ide-core-browser';
 import {
   KeybindingContribution,
@@ -9,19 +8,23 @@ import {
   ComponentContribution,
   PreferenceContribution,
 } from '@opensumi/ide-core-browser';
-import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { Search } from './search.view';
-import { ContentSearchClientService } from './search.service';
-import { searchPreferenceSchema } from './search-preferences';
-import { SEARCH_CONTAINER_ID } from '../common/content-search';
-import { SearchTreeService } from './search-tree.service';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
+import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+
+
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
+import { SEARCH_CONTAINER_ID } from '../common/content-search';
+
 import { SearchContextKey, SearchInputFocused } from './search-contextkey';
+import { searchPreferenceSchema } from './search-preferences';
+import { SearchTreeService } from './search-tree.service';
+import { ContentSearchClientService } from './search.service';
+import { Search } from './search.view';
 
 @Domain(
   ClientAppContribution,

@@ -1,8 +1,10 @@
-import { WebSocketHandler } from './ws';
 import pathMatch from 'path-match';
 import ws from 'ws';
+
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
+
+import { WebSocketHandler } from './ws';
 const route = pathMatch();
 
 export interface IPathHander {

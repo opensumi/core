@@ -1,4 +1,4 @@
-import { IEditorDocumentModelContentProvider } from '../doc-model/types';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Emitter,
   URI,
@@ -13,10 +13,11 @@ import {
   EncodingRegistry,
 } from '@opensumi/ide-core-browser';
 import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@opensumi/ide-core-common/lib/encoding';
-import { Injectable, Autowired } from '@opensumi/di';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { EditorPreferences } from '../preference/schema';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
+import { IEditorDocumentModelContentProvider } from '../doc-model/types';
+import { EditorPreferences } from '../preference/schema';
 
 export interface ReadEncodingOptions {
   /**

@@ -1,11 +1,14 @@
-import React from 'react';
-import { DeprecatedRecycleTree } from '@opensumi/ide-core-browser/lib/components';
-import { observer } from 'mobx-react-lite';
-import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@opensumi/ide-core-browser';
-import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
-import styles from './comments.module.less';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import clx from 'classnames';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@opensumi/ide-core-browser';
+import { DeprecatedRecycleTree } from '@opensumi/ide-core-browser/lib/components';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+
+import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
+
+import styles from './comments.module.less';
 
 export const CommentsPanel = observer<{ viewState: ViewState; className?: string }>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);

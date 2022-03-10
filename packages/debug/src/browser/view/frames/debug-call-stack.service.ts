@@ -1,10 +1,12 @@
-import { DebugSession } from './../../debug-session';
+import { Injectable, Autowired } from '@opensumi/di';
+import { IContextKey } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+
+import { DebugStackFrame, DebugThread } from '../../model';
+
 import { CONTEXT_STACK_FRAME_SUPPORTS_RESTART, CONTEXT_CALLSTACK_ITEM_TYPE } from './../../../common/constants';
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
-import { IContextKey } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/di';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugStackFrame, DebugThread } from '../../model';
+import { DebugSession } from './../../debug-session';
 
 @Injectable()
 export class DebugCallStackService {

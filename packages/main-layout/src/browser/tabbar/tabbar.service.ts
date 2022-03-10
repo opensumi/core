@@ -1,3 +1,7 @@
+import debounce = require('lodash.debounce');
+import { observable, action, observe, computed } from 'mobx';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   toDisposable,
   WithEventBus,
@@ -18,8 +22,8 @@ import {
   IScopedContextKeyService,
   Deferred,
 } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/di';
-import { observable, action, observe, computed } from 'mobx';
+import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   AbstractContextMenuService,
   AbstractMenuService,
@@ -30,12 +34,11 @@ import {
   IMenu,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
-import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
-import debounce = require('lodash.debounce');
-import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+
+import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
+import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
+
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {

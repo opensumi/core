@@ -1,3 +1,6 @@
+import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
+
 import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Schemas, URI } from '@opensumi/ide-core-common';
 import {
@@ -7,16 +10,16 @@ import {
   IEditorDocumentModelService,
   IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
+import { Markdown } from '@opensumi/ide-markdown';
 import { IDiffEditorOptions, IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
-import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+
 import { TestPeekMessageToken } from '../../common';
 import { ITestErrorMessage } from '../../common/testCollection';
+import styles from '../components/testing.module.less';
+
 import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
-import { Markdown } from '@opensumi/ide-markdown';
 
-import styles from '../components/testing.module.less';
 
 enum EContainerType {
   DIFF,

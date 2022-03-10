@@ -1,4 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Optional, Injectable, Autowired } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   uuid,
@@ -9,14 +10,14 @@ import {
   removeAnsiEscapeCodes,
   Schemas,
 } from '@opensumi/ide-core-common';
-import { Optional, Injectable, Autowired } from '@opensumi/di';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 
 import { OutputPreferences } from './output-preference';
-import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 const DEFAULT_MAX_CHANNEL_LINE = 50000;
 

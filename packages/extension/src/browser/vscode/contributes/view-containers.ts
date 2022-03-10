@@ -1,8 +1,9 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { DisposableCollection } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;

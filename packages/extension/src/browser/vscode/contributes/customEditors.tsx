@@ -1,12 +1,14 @@
-import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
-import { Injectable, Autowired } from '@opensumi/di';
-import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import { ICustomEditorOptions, CUSTOM_EDITOR_SCHEME } from '../../../common/vscode';
 import React = require('react');
+
+import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
-import { IActivationEventService } from '../../types';
 import { CancellationTokenSource, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
+import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
+
+import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
+import { ICustomEditorOptions, CUSTOM_EDITOR_SCHEME } from '../../../common/vscode';
 import {
   CustomEditorScheme,
   CustomEditorShouldDisplayEvent,
@@ -16,8 +18,8 @@ import {
   CustomEditorShouldRevertEvent,
   CustomEditorShouldEditEvent,
 } from '../../../common/vscode/custom-editor';
-import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 import { match } from '../../../common/vscode/glob';
+import { IActivationEventService } from '../../types';
 
 @Injectable()
 @Contributes('customEditors')

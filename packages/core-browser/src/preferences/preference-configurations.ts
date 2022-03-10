@@ -1,6 +1,7 @@
 import { Injectable, Autowired, Injector } from '@opensumi/di';
 import { URI, createContributionProvider } from '@opensumi/ide-core-common';
 import { ContributionProvider, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@opensumi/ide-core-common';
+
 import { AppConfig } from '../react-providers';
 
 export const PreferenceConfiguration = Symbol('PreferenceConfiguration');

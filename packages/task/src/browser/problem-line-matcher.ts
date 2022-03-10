@@ -16,6 +16,8 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-abstract-line-matcher.ts
 
+import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
+
 import {
   isWindows,
   ProblemLocationKind,
@@ -28,7 +30,6 @@ import {
   URI,
   WatchingPattern,
 } from '@opensumi/ide-core-common';
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
 
 const endOfLine: string = isWindows ? '\r\n' : '\n';
 

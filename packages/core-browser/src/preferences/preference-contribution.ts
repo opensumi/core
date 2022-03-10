@@ -1,4 +1,5 @@
 import Ajv from 'ajv';
+
 import { Injectable, Autowired, Injector } from '@opensumi/di';
 import {
   Mutable,
@@ -9,8 +10,6 @@ import {
   Disposable,
   IDisposable,
 } from '@opensumi/ide-core-common';
-import { PreferenceScope } from './preference-scope';
-import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
 import {
   PreferenceSchema,
   PreferenceSchemaProperties,
@@ -20,8 +19,12 @@ import {
   PreferenceDataProperty,
   JsonType,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
-import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
+
 import { AppConfig } from '../react-providers';
+
+import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
+import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
+import { PreferenceScope } from './preference-scope';
 
 export {
   PreferenceSchema,

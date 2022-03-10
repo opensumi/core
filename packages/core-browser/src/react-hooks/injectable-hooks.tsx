@@ -1,7 +1,9 @@
 import React from 'react';
-import { Disposable } from '@opensumi/ide-core-common';
-import { ConfigContext } from '../react-providers';
+
 import { Token, Injector } from '@opensumi/di';
+import { Disposable } from '@opensumi/ide-core-common';
+
+import { ConfigContext } from '../react-providers';
 
 function isDisposable(target: any): target is Disposable {
   return target && (target as any).dispose;

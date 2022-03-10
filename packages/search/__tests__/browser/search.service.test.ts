@@ -1,13 +1,17 @@
 import path from 'path';
+
 import { Injector, Injectable } from '@opensumi/di';
+import { CorePreferences } from '@opensumi/ide-core-browser';
 import { ILoggerManagerClient, Uri } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { SearchModule } from '../../src/browser/';
+import { SearchPreferences } from '../../src/browser/search-preferences';
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
   IContentSearchClientService,
@@ -18,9 +22,6 @@ import {
   ContentSearchResult,
   IUIState,
 } from '../../src/common';
-import { SearchModule } from '../../src/browser/';
-import { SearchPreferences } from '../../src/browser/search-preferences';
-import { CorePreferences } from '@opensumi/ide-core-browser';
 
 const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
 

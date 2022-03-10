@@ -1,4 +1,5 @@
 import { IDisposable, IJSONSchema, IJSONSchemaSnippet, ApplicationError, Event } from '@opensumi/ide-core-common';
+
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
 

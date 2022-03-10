@@ -1,8 +1,9 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
+import { DisposableCollection } from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
-import { DisposableCollection } from '@opensumi/ide-core-browser';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { ExtensionWebviewView } from '../../components/extension-webview-view';
 
 export interface ViewsContribution {

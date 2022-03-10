@@ -1,18 +1,20 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { DebugConfigurationManager } from '../../debug-configuration-manager';
 import { observable, action } from 'mobx';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import {
   DebugSessionOptions,
   DEFAULT_ADD_CONFIGURATION_KEY,
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
 } from '../../../common';
-import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
-import { DebugSessionManager } from '../../debug-session-manager';
-import { DebugViewModel } from '../debug-view-model';
 import { IDebugSessionManager } from '../../../common/debug-session';
+import { DebugConfigurationManager } from '../../debug-configuration-manager';
+import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleService } from '../console/debug-console.service';
+import { DebugViewModel } from '../debug-view-model';
 
 @Injectable()
 export class DebugConfigurationService {

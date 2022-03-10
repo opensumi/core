@@ -10,7 +10,9 @@ import {
   KeymapInfo,
   getKeyboardLayoutId,
 } from '@opensumi/ide-core-common/lib/keyboard';
+
 import { GlobalBrowserStorageService } from '../services';
+
 import { KeyCode } from './keys';
 import { KeyboardLayoutContribution, requireRegister } from './layouts/layout.contribution';
 

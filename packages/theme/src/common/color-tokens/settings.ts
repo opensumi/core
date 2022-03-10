@@ -1,8 +1,10 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../color-registry';
+
 import { Color, RGBA } from '../../common/color';
-import { editorWidgetBorder } from './editor';
+import { registerColor } from '../color-registry';
+
 import { dropdownBackground, dropdownForeground, dropdownBorder } from './dropdown';
+import { editorWidgetBorder } from './editor';
 import { inputBackground, inputForeground, inputBorder } from './input';
 
 // Enum control colors

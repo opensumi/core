@@ -1,12 +1,13 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { Disposable } from '@opensumi/ide-core-common';
-import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { DebugWatchNode } from '@opensumi/ide-debug/lib/browser/tree';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugWatchModelService } from '@opensumi/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
 import { IContextKeyService, StorageProvider } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common';
+import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
+import { DebugWatchNode } from '@opensumi/ide-debug/lib/browser/tree';
+import { DebugWatchModelService } from '@opensumi/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import styles from '../../../../src/browser/view/watch/debug-watch.module.less';
 
 describe('Debug Watch Tree Model', () => {

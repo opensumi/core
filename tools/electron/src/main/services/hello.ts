@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { IHelloService } from 'common/types';
+
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
 import {
@@ -6,7 +8,6 @@ import {
   ElectronMainApiRegistry,
   ElectronMainContribution,
 } from '@opensumi/ide-core-electron-main/lib/bootstrap/types';
-import { IHelloService } from 'common/types';
 
 @Injectable()
 export class HelloService extends ElectronMainApiProvider implements IHelloService {

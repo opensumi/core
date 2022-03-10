@@ -1,14 +1,7 @@
-import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
-import {
-  EXTENSION_EXTEND_SERVICE_PREFIX,
-  IBrowserRequireInterceptorArgs,
-  IExtension,
-  IRequireInterceptorService,
-  MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
-  RequireInterceptorContribution,
-} from '../common';
+import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import {
   ContributionProvider,
   IExtensionProps,
@@ -19,24 +12,32 @@ import {
   REPORT_NAME,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
-import { getShadowRoot } from './shadowRoot';
 import { Path, posix } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
-import { createProxiedWindow, createProxiedDocument } from './proxies';
-import { retargetEvents } from './retargetEvents';
-import { KtViewLocation } from './sumi/contributes/browser-views';
-import { ExtensionNoExportsView } from './components';
-import { ISumiBrowserContributions } from './sumi-browser/types';
-import { Extension } from './extension';
-import { SumiBrowserContributionRunner } from './sumi-browser/contribution';
+import {
+  EXTENSION_EXTEND_SERVICE_PREFIX,
+  IBrowserRequireInterceptorArgs,
+  IExtension,
+  IRequireInterceptorService,
+  MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
+  RequireInterceptorContribution,
+} from '../common';
+import { ActivatedExtensionJSON } from '../common/activator';
 import {
   AbstractNodeExtProcessService,
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../common/extension.service';
-import { ActivatedExtensionJSON } from '../common/activator';
+
+import { ExtensionNoExportsView } from './components';
+import { Extension } from './extension';
+import { createProxiedWindow, createProxiedDocument } from './proxies';
+import { retargetEvents } from './retargetEvents';
+import { getShadowRoot } from './shadowRoot';
+import { SumiBrowserContributionRunner } from './sumi-browser/contribution';
+import { ISumiBrowserContributions } from './sumi-browser/types';
+import { KtViewLocation } from './sumi/contributes/browser-views';
 
 const LOAD_FAILED_CODE = 'load';
 

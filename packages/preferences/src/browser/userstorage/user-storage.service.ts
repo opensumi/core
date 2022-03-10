@@ -1,5 +1,5 @@
-import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
 
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   DisposableCollection,
   ILogger,
@@ -10,10 +10,11 @@ import {
   FileType,
   FileChangeEvent,
 } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/di';
-import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
+import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
 import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
+import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.sumi';
 

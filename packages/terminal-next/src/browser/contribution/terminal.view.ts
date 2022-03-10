@@ -6,9 +6,10 @@ import {
   ComponentContribution,
   TabBarToolbarContribution,
 } from '@opensumi/ide-core-browser';
+
 import { TERMINAL_COMMANDS, TerminalContainerId } from '../../common';
-import TerminalView from '../component/terminal.view';
 import TerminalTabs from '../component/tab.view';
+import TerminalView from '../component/terminal.view';
 
 @Domain(ComponentContribution, TabBarToolbarContribution)
 export class TerminalRenderContribution implements ComponentContribution, TabBarToolbarContribution {

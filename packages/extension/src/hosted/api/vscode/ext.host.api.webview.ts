@@ -1,3 +1,12 @@
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import {
+  Emitter,
+  Event,
+  IExtensionInfo,
+  Disposable as IDEDisposable,
+  CancellationToken,
+} from '@opensumi/ide-core-common';
+
 import {
   IMainThreadWebview,
   IExtHostWebview,
@@ -17,15 +26,8 @@ import {
   IExtensionDescription,
   WebviewViewProvider,
 } from '../../../common/vscode';
-import {
-  Emitter,
-  Event,
-  IExtensionInfo,
-  Disposable as IDEDisposable,
-  CancellationToken,
-} from '@opensumi/ide-core-common';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
-import { IRPCProtocol } from '@opensumi/ide-connection';
+
 
 type IconPath = Uri | { light: Uri; dark: Uri };
 

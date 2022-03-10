@@ -1,4 +1,3 @@
-import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   ILogger,
@@ -13,9 +12,11 @@ import {
   CommandService,
   isUndefined,
 } from '@opensumi/ide-core-common';
-import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
-import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
+import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
 import { IContextKeyService } from '../context-key';
+import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
+import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
 import { StatusBarAlignment, IStatusBarService } from '../services';
 
 export enum KeybindingScope {

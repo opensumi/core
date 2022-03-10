@@ -1,7 +1,8 @@
-import { TAB_BORDER } from '../tab';
-import { registerColor } from '../../color-registry';
 import { localize } from '@opensumi/ide-core-common';
+
+import { registerColor } from '../../color-registry';
 import { foreground } from '../base';
+import { TAB_BORDER } from '../tab';
 
 export const ktEditorBreadcrumbBorderDown = registerColor(
   'kt.editorBreadcrumb.borderDown',

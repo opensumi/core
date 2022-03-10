@@ -1,16 +1,16 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { StorageProvider } from '@opensumi/ide-core-common';
-import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { OutlineSortOrder } from '@opensumi/ide-outline';
 import {
   OutlineRoot,
   OutlineCompositeTreeNode,
   OutlineTreeNode,
 } from '@opensumi/ide-outline/lib/browser/outline-node.define';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 
 describe('OutlineTreeService', () => {
   let outlineTreeService: OutlineTreeService;

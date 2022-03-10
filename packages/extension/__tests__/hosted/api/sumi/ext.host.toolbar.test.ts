@@ -1,16 +1,17 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Emitter } from '@opensumi/ide-core-common';
-import { ExtHostSumiAPIIdentifier, MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
-import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
-import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-
+import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
 import {
   createToolbarAPIFactory,
   ExtHostToolbarActionService,
 } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
-import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
+
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensions } from '../../../../__mocks__/extensions';
+import { ExtHostSumiAPIIdentifier, MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
+import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
+import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+
 
 const actionMaps: Map<string, any> = new Map();
 

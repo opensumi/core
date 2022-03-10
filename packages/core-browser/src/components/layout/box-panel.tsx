@@ -1,7 +1,8 @@
-import React from 'react';
 import clsx from 'classnames';
-import styles from './styles.module.less';
+import React from 'react';
+
 import { Layout } from './layout';
+import styles from './styles.module.less';
 
 export interface IChildComponentProps {
   flex?: number;

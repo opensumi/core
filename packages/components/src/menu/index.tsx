@@ -1,13 +1,15 @@
-import React from 'react';
-import RcMenu, { Divider, ItemGroup } from 'rc-menu';
 import classNames from 'classnames';
+import RcMenu, { Divider, ItemGroup } from 'rc-menu';
+import React from 'react';
 import { polyfill } from 'react-lifecycles-compat';
-import SubMenu from './SubMenu';
-import Item from './MenuItem';
-import { warning } from '../utils/warning';
-import raf from '../utils/raf';
+
 import collapseMotion from '../utils/motion';
+import raf from '../utils/raf';
+import { warning } from '../utils/warning';
+
 import MenuContext from './MenuContext';
+import Item from './MenuItem';
+import SubMenu from './SubMenu';
 import './style.less';
 
 export interface SelectParam {

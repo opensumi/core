@@ -1,4 +1,7 @@
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, IDisposable } from '@opensumi/ide-core-common';
+import { ExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
+
 import {
   IMainThreadStorage,
   IExtHostStorage,
@@ -6,8 +9,6 @@ import {
   KeysToKeysToAnyValue,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
-import { ExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Memento } from '../../../common/vscode/ext-types';
 
 export interface IStorageChangeEvent {

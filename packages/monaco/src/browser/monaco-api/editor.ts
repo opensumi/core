@@ -1,3 +1,43 @@
+import { ScrollbarVisibility } from '@opensumi/monaco-editor-core/esm/vs/base/common/scrollable';
+import {
+  ContentWidgetPositionPreference,
+  MouseTargetType,
+  OverlayWidgetPositionPreference,
+  ICodeEditor,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import {
+  EditorAutoIndentStrategy,
+  EditorOption,
+  RenderLineNumbersType,
+  RenderMinimap,
+  TextEditorCursorBlinkingStyle,
+  TextEditorCursorStyle,
+  WrappingIndent,
+  IEditorOptions,
+  IDiffEditorOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import {
+  ConfigurationChangedEvent,
+  EditorOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { BareFontInfo, FontInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
+import { CursorChangeReason } from '@opensumi/monaco-editor-core/esm/vs/editor/common/controller/cursorEvents';
+import { EditorType, ScrollType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+import { FindMatch, TextModelResolvedOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import {
+  DefaultEndOfLine,
+  EndOfLinePreference,
+  EndOfLineSequence,
+  MinimapPosition,
+  OverviewRulerLane,
+  TrackedRangeStickiness,
+  ITextModelUpdateOptions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type {
+  IDecorationOptions,
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import {
   create,
   createDiffEditor,
@@ -22,46 +62,6 @@ import {
   remeasureFonts,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import { AccessibilitySupport } from '@opensumi/monaco-editor-core/esm/vs/platform/accessibility/common/accessibility';
-import {
-  ContentWidgetPositionPreference,
-  MouseTargetType,
-  OverlayWidgetPositionPreference,
-  ICodeEditor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { CursorChangeReason } from '@opensumi/monaco-editor-core/esm/vs/editor/common/controller/cursorEvents';
-import {
-  DefaultEndOfLine,
-  EndOfLinePreference,
-  EndOfLineSequence,
-  MinimapPosition,
-  OverviewRulerLane,
-  TrackedRangeStickiness,
-  ITextModelUpdateOptions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import {
-  EditorAutoIndentStrategy,
-  EditorOption,
-  RenderLineNumbersType,
-  RenderMinimap,
-  TextEditorCursorBlinkingStyle,
-  TextEditorCursorStyle,
-  WrappingIndent,
-  IEditorOptions,
-  IDiffEditorOptions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { ScrollbarVisibility } from '@opensumi/monaco-editor-core/esm/vs/base/common/scrollable';
-import {
-  ConfigurationChangedEvent,
-  EditorOptions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { BareFontInfo, FontInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
-import { FindMatch, TextModelResolvedOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { EditorType, ScrollType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import type {
-  IDecorationOptions,
-  IModelDecorationOptions,
-  IModelDeltaDecoration,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IMarkerData } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 export function createMonacoEditorApi() {

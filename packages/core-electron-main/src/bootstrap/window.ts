@@ -1,12 +1,16 @@
-import semver from 'semver';
-import qs from 'querystring';
-import treeKill from 'tree-kill';
-import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, IpcMainEvent } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
+import qs from 'querystring';
+
+import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, IpcMainEvent } from 'electron';
+import semver from 'semver';
+import treeKill from 'tree-kill';
+
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { ExtensionCandidate } from '@opensumi/ide-core-common';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 
 const DEFAULT_WINDOW_HEIGHT = 700;

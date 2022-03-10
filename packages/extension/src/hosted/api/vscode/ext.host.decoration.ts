@@ -1,11 +1,13 @@
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Uri } from '@opensumi/ide-core-common';
 import { CancellationToken } from '@opensumi/ide-core-common';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 import { toDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { asArray } from '@opensumi/ide-core-common/lib/utils/arrays';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { getDebugLogger } from '@opensumi/ide-core-common';
 
+import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
   IMainThreadDecorationsShape,
   DecorationRequest,
@@ -13,7 +15,6 @@ import {
   DecorationData,
   IExtHostDecorationsShape,
 } from '../../../common/vscode/decoration';
-import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import { FileDecoration } from '../../../common/vscode/ext-types';
 
 interface ProviderData {

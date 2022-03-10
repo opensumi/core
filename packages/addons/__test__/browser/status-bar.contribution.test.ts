@@ -8,7 +8,6 @@ import {
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
 import { ClientAddonModule } from '../../src/browser';
 import { StatusBarContribution } from '../../src/browser/status-bar-contribution';
 

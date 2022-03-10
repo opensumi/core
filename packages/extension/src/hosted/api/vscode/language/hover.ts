@@ -1,9 +1,11 @@
 import type vscode from 'vscode';
+
 import { Uri } from '@opensumi/ide-core-common';
-import * as Converter from '../../../../common/vscode/converter';
 import { IPosition } from '@opensumi/ide-core-common';
-import { Range } from '../../../../common/vscode/ext-types';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import * as Converter from '../../../../common/vscode/converter';
+import { Range } from '../../../../common/vscode/ext-types';
 
 export class HoverAdapter {
   constructor(

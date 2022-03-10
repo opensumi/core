@@ -1,9 +1,12 @@
-import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { Domain, localize } from '@opensumi/ide-core-common';
 import { Autowired } from '@opensumi/di';
-import { IMarkdownService } from '../common';
-import { MarkdownEditorComponent } from './editor.markdown';
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Domain, localize } from '@opensumi/ide-core-common';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+
+import { IMarkdownService } from '../common';
+
+import { MarkdownEditorComponent } from './editor.markdown';
+
 
 export const MARKDOWN_EDITOR_COMPONENT_ID = 'MARKDOWN_EDITOR_COMPONENT_ID';
 

@@ -1,4 +1,5 @@
 import { CompositeTreeNode } from '../tree/TreeNode';
+
 import { ITreeNodeOrCompositeTreeNode, ICompositeTreeNode } from './tree-node';
 
 export interface ITree {

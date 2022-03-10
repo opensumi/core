@@ -1,5 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { IWorkspaceService } from '../common';
 import {
   VariableContribution,
   VariableRegistry,
@@ -9,6 +8,8 @@ import {
   EDITOR_COMMANDS,
   COMMON_COMMANDS,
 } from '@opensumi/ide-core-browser';
+
+import { IWorkspaceService } from '../common';
 
 @Domain(VariableContribution)
 export class WorkspaceVariableContribution implements VariableContribution {

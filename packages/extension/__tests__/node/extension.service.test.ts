@@ -1,16 +1,19 @@
-import path from 'path';
-import * as fs from 'fs-extra';
 import os from 'os';
+import path from 'path';
+
+import * as fs from 'fs-extra';
+
 import { Injector } from '@opensumi/di';
 import { AppConfig, INodeLogger, IReporterService, getDebugLogger } from '@opensumi/ide-core-node';
+import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
+import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 
-import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
-import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
-import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
-import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
+import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
+import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
+
 
 describe('Extension Serivce', () => {
   let injector: Injector;

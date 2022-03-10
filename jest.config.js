@@ -1,6 +1,8 @@
-const { pathsToModuleNameMapper } = require('ts-jest');
-const tsconfig = require('./configs/ts/tsconfig.resolve.json');
 const os = require('os');
+
+const { pathsToModuleNameMapper } = require('ts-jest');
+
+const tsconfig = require('./configs/ts/tsconfig.resolve.json');
 
 const tsModuleNameMapper = pathsToModuleNameMapper(tsconfig.compilerOptions.paths, { prefix: '<rootDir>/configs/' });
 

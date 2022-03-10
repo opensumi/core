@@ -3,12 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  MainThreadAPIIdentifier,
-  IExtHostProgress,
-  IMainThreadProgress,
-  IExtensionDescription,
-} from '../../../common/vscode';
+import { ProgressOptions } from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   formatLocalize,
@@ -18,8 +14,15 @@ import {
   throttle,
   CancellationTokenSource,
 } from '@opensumi/ide-core-common';
+
+import {
+  MainThreadAPIIdentifier,
+  IExtHostProgress,
+  IMainThreadProgress,
+  IExtensionDescription,
+} from '../../../common/vscode';
 import { ProgressLocation } from '../../../common/vscode/converter';
-import { ProgressOptions } from 'vscode';
+
 
 export class ExtHostProgress implements IExtHostProgress {
   private _handles = 0;

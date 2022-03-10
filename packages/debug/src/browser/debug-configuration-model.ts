@@ -1,4 +1,5 @@
 import { URI, Emitter, Event, IDisposable, DisposableCollection, PreferenceService } from '@opensumi/ide-core-browser';
+
 import { DebugConfiguration } from '../common';
 
 export class DebugConfigurationModel implements IDisposable {

@@ -1,6 +1,8 @@
 import { observable, computed } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
+
 import {
   ITerminalGroupViewService,
   IWidget,

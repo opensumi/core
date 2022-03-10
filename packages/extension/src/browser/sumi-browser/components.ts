@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { Injector } from '@opensumi/di';
-import * as Components from '@opensumi/ide-core-browser/lib/components';
-import { IExtension } from '../../common';
 import { AppConfig } from '@opensumi/ide-core-browser';
+import * as Components from '@opensumi/ide-core-browser/lib/components';
+
+import { IExtension } from '../../common';
 import { PortalRoot } from '../components/extension-portal-root';
 
 export function createBrowserComponents(injector: Injector, extension: IExtension) {

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+
 import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { InstallState, VSXExtension } from '../../common';
 

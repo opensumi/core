@@ -1,11 +1,13 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useEffect, createRef } from 'react';
-import { observer } from 'mobx-react-lite';
-import { useInjectable, isElectronRenderer, ViewState } from '@opensumi/ide-core-browser';
+
 import { Select, Option } from '@opensumi/ide-components';
+import { useInjectable, isElectronRenderer, ViewState } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
-import { OutputService } from './output.service';
+
 import styles from './output.module.less';
+import { OutputService } from './output.service';
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);

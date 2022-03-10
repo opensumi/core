@@ -6,10 +6,12 @@
 
 'use strict';
 
-import { isWindows } from '../platform';
 import { CharCode } from '../charCode';
-import { startsWithIgnoreCase } from './strings';
 import { posix } from '../path';
+import { isWindows } from '../platform';
+
+import { startsWithIgnoreCase } from './strings';
+
 /**
  * The forward slash path separator.
  */

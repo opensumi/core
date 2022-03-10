@@ -1,6 +1,8 @@
-import { Injectable } from '@opensumi/di';
-import { IProgressIndicator, IProgressRunner, IProgressModel } from '.';
 import { observable, action } from 'mobx';
+
+import { Injectable } from '@opensumi/di';
+
+import { IProgressIndicator, IProgressRunner, IProgressModel } from '.';
 
 @Injectable({ multiple: true })
 export class ProgressIndicator implements IProgressIndicator {

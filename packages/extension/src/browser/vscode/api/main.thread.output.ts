@@ -1,8 +1,9 @@
-import { IMainThreadOutput } from '../../../common/vscode';
 import { Injectable, Autowired } from '@opensumi/di';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
-import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+
+import { IMainThreadOutput } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadOutput implements IMainThreadOutput {

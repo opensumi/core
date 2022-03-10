@@ -1,6 +1,7 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
+
 import { ExtensionTreeRoot } from './tree-view.node.defined';
 
 @Injectable({ multiple: true })

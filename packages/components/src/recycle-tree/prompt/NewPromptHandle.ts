@@ -1,6 +1,7 @@
-import { PromptHandle } from './PromptHandle';
 import { TreeNode, CompositeTreeNode } from '../tree';
 import { TreeNodeType } from '../types';
+
+import { PromptHandle } from './PromptHandle';
 
 export class NewPromptHandle extends PromptHandle {
   private _id: number = TreeNode.nextId();

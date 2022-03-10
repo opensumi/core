@@ -1,10 +1,25 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { observable, transaction, action } from 'mobx';
+import React from 'react';
+import { createRef } from 'react';
+
 /**
  * 用于文件内容搜索
  */
-import React from 'react';
-import { createRef } from 'react';
+
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
+import {
+  Key,
+  URI,
+  Schemas,
+  IDisposable,
+  CommandService,
+  COMMON_COMMANDS,
+  RecentStorage,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
 import {
   Emitter,
   IEventBus,
@@ -17,30 +32,19 @@ import {
 } from '@opensumi/ide-core-common';
 import * as arrays from '@opensumi/ide-core-common/lib/arrays';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
-import {
-  Key,
-  URI,
-  Schemas,
-  IDisposable,
-  CommandService,
-  COMMON_COMMANDS,
-  RecentStorage,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
-import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
   IEditorDocumentModelContentChangedEventPayload,
 } from '@opensumi/ide-editor/lib/browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import { observable, transaction, action } from 'mobx';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -56,11 +60,12 @@ import {
   FilterFileWithGlobRelativePath,
   DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
 } from '../common';
-import { SearchPreferences } from './search-preferences';
-import { SearchHistory } from './search-history';
+
 import { replaceAll } from './replace';
-import { SearchResultCollection } from './search-result-collection';
 import { SearchContextKey } from './search-contextkey';
+import { SearchHistory } from './search-history';
+import { SearchPreferences } from './search-preferences';
+import { SearchResultCollection } from './search-result-collection';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;

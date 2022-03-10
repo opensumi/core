@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from '@opensumi/ide-core-common';
+
 import { Color } from '../common/color';
 import {
   ITheme,

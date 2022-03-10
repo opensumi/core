@@ -3,8 +3,8 @@ import { FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-s
 import { FileOperation } from '@opensumi/ide-workspace-edit';
 
 import { Disposable } from './ext-types';
-import { UriComponents } from './models';
 import { IWorkspaceEditDto } from './model.api';
+import { UriComponents } from './models';
 
 /**
  * Enumeration of file change types.

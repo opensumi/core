@@ -1,5 +1,6 @@
 import { Event } from '@opensumi/ide-core-common';
-
+import { localize, isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
+import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 export interface IPreferenceValue {
   name: string;
   value: string | number | boolean;
@@ -129,10 +130,6 @@ export const enum CodeTerminalSettingId {
   IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',
   AutoReplies = 'terminal.integrated.autoReplies',
 }
-
-import { localize, isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
-
-import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 
 const shellDeprecationMessageLinux = localize(
   'terminal.integrated.shell.linux.deprecation',

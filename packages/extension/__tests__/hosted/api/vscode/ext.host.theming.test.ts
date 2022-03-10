@@ -1,11 +1,13 @@
-import { Emitter } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostTheming } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.theming';
+import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadTheming } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.theming';
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { IThemeService, ThemeType } from '@opensumi/ide-theme';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { ColorThemeKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ExtHostTheming } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.theming';
+import { IThemeService, ThemeType } from '@opensumi/ide-theme';
+
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

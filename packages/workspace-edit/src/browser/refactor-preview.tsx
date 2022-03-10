@@ -1,26 +1,26 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
 
-import * as paths from '@opensumi/ide-core-common/lib/path';
-import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
-import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
-import { RecycleList } from '@opensumi/ide-components/lib/recycle-list';
 import { CheckBox } from '@opensumi/ide-components/lib/checkbox';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-service';
+import { RecycleList } from '@opensumi/ide-components/lib/recycle-list';
 import { ViewState } from '@opensumi/ide-core-browser/lib/layout';
-
-import { IRefactorPreviewService } from './refactor-preview.service';
-import styles from './refactor_preview.module.less';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-service';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
-import { isResourceFileEdit } from './utils';
+import * as paths from '@opensumi/ide-core-common/lib/path';
+import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type {
   ResourceFileEdit,
   ResourceTextEdit,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { IRefactorPreviewService } from './refactor-preview.service';
+import styles from './refactor_preview.module.less';
+import { isResourceFileEdit } from './utils';
 
 interface IRefactorNodeProps {
   data: ResourceTextEdit | ResourceFileEdit;

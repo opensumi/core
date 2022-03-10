@@ -1,3 +1,10 @@
+import ReactDOM from 'react-dom';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
+
+import { IResource, IEditorOpenType } from '../common';
+
 import {
   EditorComponentRegistry,
   IEditorComponent,
@@ -9,10 +16,7 @@ import {
   RegisterEditorComponentEvent,
   RegisterEditorSideComponentEvent,
 } from './types';
-import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
-import { IResource, IEditorOpenType } from '../common';
-import { Injectable, Autowired } from '@opensumi/di';
-import ReactDOM from 'react-dom';
+
 
 type SchemeKey = string;
 

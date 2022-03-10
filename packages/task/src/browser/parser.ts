@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IProblemReporter, getProblemPatternFn, getProblemMatcherFn } from './task-config';
 import {
   ProblemMatcher,
   ApplyToKind,
@@ -28,6 +27,8 @@ import {
   isNumber,
   deepClone,
 } from '@opensumi/ide-core-common';
+
+import { IProblemReporter, getProblemPatternFn, getProblemMatcherFn } from './task-config';
 
 export const enum ValidationState {
   OK = 0,

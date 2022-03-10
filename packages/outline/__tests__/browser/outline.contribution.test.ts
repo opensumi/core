@@ -1,8 +1,9 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
 import { OutlineContribution } from '@opensumi/ide-outline/lib/browser/outline.contribution';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('Outline contribution should be work', () => {
   let mockInjector: MockInjector;

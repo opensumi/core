@@ -1,4 +1,5 @@
 import React from 'react';
+
 import antdMessage from './message';
 import './style.less';
 

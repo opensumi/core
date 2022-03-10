@@ -1,11 +1,13 @@
 import { Injectable } from '@opensumi/di';
+import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
+
+import { AuthenticationContribution } from '../authentication/authentication.contribution';
 import { BrowserModule } from '../browser-module';
-import { ClientCommonContribution } from './common.contribution';
+import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 import { OpenerContribution } from '../opener';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
-import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
-import { AuthenticationContribution } from '../authentication/authentication.contribution';
-import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
+
+import { ClientCommonContribution } from './common.contribution';
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {

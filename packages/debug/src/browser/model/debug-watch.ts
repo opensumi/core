@@ -1,9 +1,11 @@
-import { DEBUG_REPORT_NAME } from '../../common';
-import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, IReporterService } from '@opensumi/ide-core-browser';
 import throttle = require('lodash.throttle');
-import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
+
+import { DisposableCollection, Emitter, Event, IReporterService } from '@opensumi/ide-core-browser';
+
+import { DEBUG_REPORT_NAME } from '../../common';
 import { DEBUG_COMMANDS } from '../debug-contribution';
+import { DebugSessionManager } from '../debug-session-manager';
+import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
 
 export const IDebugWatchData = Symbol('IDebugWatchData');
 export interface IDebugWatchData {

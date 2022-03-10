@@ -1,28 +1,7 @@
-import {
-  IMainThreadWebview,
-  WebviewPanelShowOptions,
-  IWebviewPanelOptions,
-  IWebviewOptions,
-  ExtHostAPIIdentifier,
-  IExtHostWebview,
-  IWebviewPanelViewState,
-  IMainThreadWebviewView,
-  IWebviewExtensionDescription,
-  IExtHostWebviewView,
-  WebviewViewResolverRegistrationEvent,
-  WebviewViewResolverRegistrationRemovalEvent,
-  WebviewViewOptions,
-} from '../../../common/vscode';
+import throttle = require('lodash.throttle');
+
 import { Injectable, Autowired, Optional } from '@opensumi/di';
-import {
-  IWebviewService,
-  IEditorWebviewComponent,
-  IWebview,
-  IPlainWebview,
-  IPlainWebviewComponentHandle,
-} from '@opensumi/ide-webview';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 import {
   Disposable,
   URI,
@@ -38,19 +17,42 @@ import {
   IDisposable,
   addMapElement,
 } from '@opensumi/ide-core-browser';
-import { EditorGroupChangeEvent, IEditorOpenType } from '@opensumi/ide-editor/lib/browser';
-import { ISumiExtHostWebviews } from '../../../common/sumi/webview';
-import { IIconService, IconType } from '@opensumi/ide-theme';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 import { IOpenerService } from '@opensumi/ide-core-browser';
-import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import throttle = require('lodash.throttle');
-import { IActivationEventService } from '../../types';
+import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { CancellationToken, WithEventBus, OnEvent } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+import { EditorGroupChangeEvent, IEditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+import {
+  IWebviewService,
+  IEditorWebviewComponent,
+  IWebview,
+  IPlainWebview,
+  IPlainWebviewComponentHandle,
+} from '@opensumi/ide-webview';
+
+import { ISumiExtHostWebviews } from '../../../common/sumi/webview';
+import {
+  IMainThreadWebview,
+  WebviewPanelShowOptions,
+  IWebviewPanelOptions,
+  IWebviewOptions,
+  ExtHostAPIIdentifier,
+  IExtHostWebview,
+  IWebviewPanelViewState,
+  IMainThreadWebviewView,
+  IWebviewExtensionDescription,
+  IExtHostWebviewView,
+  WebviewViewResolverRegistrationEvent,
+  WebviewViewResolverRegistrationRemovalEvent,
+  WebviewViewOptions,
+} from '../../../common/vscode';
+import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 import { WebviewViewShouldShowEvent } from '../../components/extension-webview-view';
+import { IActivationEventService } from '../../types';
 
 @Injectable({ multiple: true })
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {

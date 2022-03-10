@@ -8,6 +8,9 @@ import {
   ITestTag,
 } from '@opensumi/ide-testing/lib/common/testCollection';
 import { TestId } from '@opensumi/ide-testing/lib/common/testId';
+
+import * as Convert from '../converter';
+
 import {
   TestItemImpl,
   TestItemRootImpl,
@@ -16,7 +19,6 @@ import {
   ExtHostTestItemEventOp,
   diffTestItems,
 } from './testApi';
-import * as Convert from '../converter';
 
 type TestItemRaw = Convert.TestItem.Raw;
 

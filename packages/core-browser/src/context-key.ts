@@ -1,9 +1,9 @@
+import { Event, BasicEvent } from '@opensumi/ide-core-common';
+import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import {
   ContextKeyExpr,
   IContextKeyServiceTarget,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { Event, BasicEvent } from '@opensumi/ide-core-common';
 
 export interface IContextKey<T> {
   set(value: T | undefined): void;

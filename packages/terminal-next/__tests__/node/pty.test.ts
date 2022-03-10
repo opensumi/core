@@ -1,8 +1,10 @@
+import os from 'os';
+
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import { TerminalNodePtyModule } from '../../src/node';
 import { PtyService } from '../../src/node/pty';
-import os from 'os';
 
 describe('PtyService function should be valid', () => {
   jest.setTimeout(10000);

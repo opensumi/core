@@ -1,5 +1,7 @@
-import { Uri, CancellationToken, IRange } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Uri, CancellationToken, IRange } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as typeConvert from '../../../../common/vscode/converter';
 

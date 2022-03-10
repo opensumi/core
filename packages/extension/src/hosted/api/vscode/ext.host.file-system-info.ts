@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Schemas } from '@opensumi/ide-core-common';
+
 import { IExtHostFileSystemInfoShape } from '../../../common/vscode/file-system';
 
 export class ExtHostFileSystemInfo implements IExtHostFileSystemInfoShape {

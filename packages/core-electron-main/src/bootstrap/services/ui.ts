@@ -1,18 +1,24 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
-import { BrowserWindow, dialog, shell, webContents } from 'electron';
-import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';
-import { stat } from 'fs-extra';
-import { dirname } from 'path';
 import { spawn } from 'child_process';
-import semver from 'semver';
+import { dirname } from 'path';
 import qs from 'querystring';
-import { WindowCreatedEvent } from './events';
+
+import { BrowserWindow, dialog, shell, webContents } from 'electron';
+import { stat } from 'fs-extra';
+import semver from 'semver';
+
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';
 import {
   IElectronMainUIService,
   IElectronMainUIServiceShape,
   IElectronPlainWebviewWindowOptions,
 } from '@opensumi/ide-core-common/lib/electron';
+
+import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
+
+
+import { WindowCreatedEvent } from './events';
+
 
 @Injectable()
 export class ElectronMainUIService

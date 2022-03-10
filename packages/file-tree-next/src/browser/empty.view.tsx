@@ -1,7 +1,9 @@
 import React from 'react';
-import styles from './file-tree.module.less';
-import { localize, CommandService } from '@opensumi/ide-core-common';
+
 import { useInjectable, FILE_COMMANDS } from '@opensumi/ide-core-browser';
+import { localize, CommandService } from '@opensumi/ide-core-common';
+
+import styles from './file-tree.module.less';
 
 export const EmptyTreeView = () => {
   const commandService: CommandService = useInjectable(CommandService);

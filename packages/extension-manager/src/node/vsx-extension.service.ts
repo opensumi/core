@@ -1,11 +1,13 @@
-import path from 'path';
-import yauzl from 'yauzl';
-import { Readable } from 'stream';
 import os from 'os';
+import path from 'path';
+import { Readable } from 'stream';
+
 import fs from 'fs-extra';
 import nodeFetch from 'node-fetch';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
+import yauzl from 'yauzl';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node';
 

@@ -1,6 +1,5 @@
-import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { isEqual } from 'lodash';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   TreeModel,
@@ -19,7 +18,10 @@ import {
   IClipboardService,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugVariablesModel } from './debug-variables-model';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+
+import { DebugSession } from '../../debug-session';
 import {
   ExpressionContainer,
   ExpressionNode,
@@ -29,8 +31,9 @@ import {
   DebugScope,
 } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugSession } from '../../debug-session';
 
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
+import { DebugVariablesModel } from './debug-variables-model';
 import styles from './debug-variables.module.less';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {

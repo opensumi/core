@@ -1,4 +1,5 @@
-import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
+import pSeries from 'p-series';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -19,8 +20,13 @@ import {
   IClipboardService,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugConsoleTreeModel } from './debug-console-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
+
+import { IDebugSessionManager } from '../../../common';
+import { LinkDetector } from '../../debug-link-detector';
+import { DebugSession } from '../../debug-session';
+import { DidChangeActiveDebugSession } from '../../debug-session-manager';
+import { AnsiConsoleNode } from '../../tree';
 import {
   ExpressionContainer,
   ExpressionNode,
@@ -28,14 +34,12 @@ import {
   DebugConsoleRoot,
 } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
+
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
+import { DebugConsoleTreeModel } from './debug-console-model';
 import { DebugConsoleSession } from './debug-console-session';
-import pSeries from 'p-series';
 import styles from './debug-console.module.less';
-import { DebugSession } from '../../debug-session';
-import { IDebugSessionManager } from '../../../common';
-import { AnsiConsoleNode } from '../../tree';
-import { DidChangeActiveDebugSession } from '../../debug-session-manager';
-import { LinkDetector } from '../../debug-link-detector';
+
 
 export interface IDebugConsoleHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

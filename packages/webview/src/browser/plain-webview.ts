@@ -1,5 +1,6 @@
-import { IPlainWebview } from './types';
 import { Disposable, DomListener, electronEnv, Emitter, Deferred, Event } from '@opensumi/ide-core-browser';
+
+import { IPlainWebview } from './types';
 
 export class IframePlainWebview extends Disposable implements IPlainWebview {
   private _url: string | undefined;

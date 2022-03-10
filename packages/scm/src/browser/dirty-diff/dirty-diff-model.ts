@@ -1,9 +1,6 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@opensumi/ide-core-common';
-import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
+import { first } from '@opensumi/ide-core-common/lib/async';
 import {
   IDisposable,
   dispose,
@@ -11,15 +8,19 @@ import {
   DisposableStore,
   toDisposable,
 } from '@opensumi/ide-core-common/lib/disposable';
-import { first } from '@opensumi/ide-core-common/lib/async';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
+import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
+
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { DirtyDiffWidget } from './dirty-diff-widget';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {

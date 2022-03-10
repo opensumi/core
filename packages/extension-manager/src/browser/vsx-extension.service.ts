@@ -1,6 +1,6 @@
 import { observable, computed } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
   IStatusBarService,
   localize,
@@ -8,7 +8,9 @@ import {
   StatusBarEntryAccessor,
   URI,
 } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
+import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
 
 import {
   InstallState,
@@ -18,7 +20,6 @@ import {
   VSXExtensionServicePath,
 } from '../common';
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
-import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
 
 @Injectable()
 export class VSXExtensionService implements IVSXExtensionService {

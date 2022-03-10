@@ -1,7 +1,9 @@
-import { WSChannel, MessageString } from '../common/ws-channel';
 import shortid from 'shortid';
-import { stringify, parse } from '../common/utils';
+
 import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+
+import { stringify, parse } from '../common/utils';
+import { WSChannel, MessageString } from '../common/ws-channel';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
 

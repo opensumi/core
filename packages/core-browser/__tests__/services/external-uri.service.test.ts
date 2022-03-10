@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IExternalUriService } from '../../src/services';
 import { URI, AppConfig } from '../../src';
+import { IExternalUriService } from '../../src/services';
 
 describe(__filename, () => {
   const oldWindowLocationHostname = window.location.hostname;

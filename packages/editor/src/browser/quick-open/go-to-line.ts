@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
   CommandService,
   EDITOR_COMMANDS,
@@ -8,12 +7,14 @@ import {
   QuickOpenHandler,
   withNullAsUndefined,
 } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { AbstractGotoLineQuickAccessProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/quickAccess/gotoLineQuickAccess';
-import { WorkbenchEditorService } from '../types';
+import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Event as MonacoEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IRange as IMonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+import { AbstractGotoLineQuickAccessProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/quickAccess/gotoLineQuickAccess';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { WorkbenchEditorService } from '../types';
 
 class MonacoGoToLine extends AbstractGotoLineQuickAccessProvider {
   activeTextEditorControl: IMonacoCodeEditor | undefined;

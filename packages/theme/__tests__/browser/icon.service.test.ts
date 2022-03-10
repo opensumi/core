@@ -1,7 +1,4 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IconService } from '../../src/browser';
-import { IIconService, IconType } from '../../src';
+import { Injectable } from '@opensumi/di';
 import {
   PreferenceSchemaProvider,
   IPreferenceSettingsService,
@@ -9,13 +6,18 @@ import {
   IFileServiceClient,
   URI,
 } from '@opensumi/ide-core-browser';
+import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IIconService, IconType } from '../../src';
+import { IconService } from '../../src/browser';
+
 
 @Injectable()
 class MockFileServiceClient {

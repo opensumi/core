@@ -1,8 +1,6 @@
-import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@opensumi/ide-core-common';
 import { DomListener } from '@opensumi/ide-core-browser';
+import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@opensumi/ide-core-common';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import {
   Sash,
   IHorizontalSashLayoutProvider,
@@ -10,6 +8,8 @@ import {
   SashState,
   ISashEvent,
 } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/sash/sash';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;

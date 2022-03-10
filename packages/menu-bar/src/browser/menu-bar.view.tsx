@@ -1,16 +1,16 @@
-import React from 'react';
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { ClickOutside } from '@opensumi/ide-components';
+import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
+import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ClickOutside } from '@opensumi/ide-components';
-import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 
-import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
-
-import { MenubarStore } from './menu-bar.store';
 import styles from './menu-bar.module.less';
+import { MenubarStore } from './menu-bar.store';
 
 const MenubarItem = observer<
   IMenubarItem & {

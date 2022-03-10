@@ -1,9 +1,10 @@
+import type vscode from 'vscode';
+
+import { IWebSocket } from '@opensumi/ide-connection';
 import { Disposable, DisposableCollection, Event } from '@opensumi/ide-core-common';
 import { DebugStreamConnection } from '@opensumi/ide-debug';
-import type vscode from 'vscode';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { IWebSocket } from '@opensumi/ide-connection';
 import { getSequenceId } from '@opensumi/ide-debug';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
   constructor(readonly id: string) {}

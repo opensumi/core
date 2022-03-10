@@ -1,11 +1,11 @@
-import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Uri } from '@opensumi/ide-core-common';
+import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 
-import { createMockedMonacoEditorApi } from './editor';
 import { MockedMonacoUri } from './common/uri';
+import { createMockedMonacoEditorApi } from './editor';
 import { createMockedMonacoLanguageApi } from './language';
-import { createMockedMonacoRangeApi } from './range';
 import { createMockedMonacoPositionApi } from './position';
+import { createMockedMonacoRangeApi } from './range';
 
 export function createMockedMonaco() {
   const mockEditor = createMockedMonacoEditorApi();

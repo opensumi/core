@@ -1,22 +1,22 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { ViewState } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-common';
 import { IContextKeyService, View, useInjectable } from '@opensumi/ide-core-browser';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { localize } from '@opensumi/ide-core-common';
 import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
-import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
 import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
-import { ViewModelContext } from './scm-model';
 
+import { SCMProviderList } from './components/scm-provider-list';
 import { SCMResourceInput } from './components/scm-resource-input';
 import { SCMResourceTree } from './components/scm-resource-tree';
-import { SCMProviderList } from './components/scm-provider-list';
-
-import styles from './scm.module.less';
+import { ViewModelContext } from './scm-model';
 import { getSCMRepositoryDesc } from './scm-util';
-import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+import styles from './scm.module.less';
 
 export const SCMResourcesView: React.FC<{
   repository: ISCMRepository;

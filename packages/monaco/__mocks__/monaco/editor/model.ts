@@ -1,8 +1,10 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
+import { MockedMonacoUri } from '../common/uri';
+
 
 let id = 1;
 

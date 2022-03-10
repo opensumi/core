@@ -6,12 +6,13 @@ import {
   PreferenceConfigurations,
   ILogger,
 } from '@opensumi/ide-core-browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import {
   FolderPreferenceProvider,
   FolderPreferenceProviderFactory,
   FolderPreferenceProviderOptions,
 } from './folder-preference-provider';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
   @Autowired(FolderPreferenceProviderFactory)

@@ -1,6 +1,8 @@
-import React from 'react';
-import { Keybinding, KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
 import clx from 'classnames';
+import React from 'react';
+
+import { Keybinding, KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
+
 import styles from './styles.module.less';
 
 export const KeybindingView: React.FC<{

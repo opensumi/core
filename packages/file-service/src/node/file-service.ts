@@ -1,11 +1,13 @@
-import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import drivelist from 'drivelist';
-import paths from 'path';
-import * as fs from 'fs-extra';
 import os from 'os';
+import paths from 'path';
+
+import drivelist from 'drivelist';
 import fileType from 'file-type';
-import { Uri } from '@opensumi/ide-core-common';
+import * as fs from 'fs-extra';
 import { TextDocument } from 'vscode-languageserver-types';
+
+import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Uri } from '@opensumi/ide-core-common';
 import {
   URI,
   Emitter,
@@ -16,11 +18,10 @@ import {
   isArray,
   isEmptyObject,
 } from '@opensumi/ide-core-common';
-import { FileUri, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 import { parse, ParsedPattern, match } from '@opensumi/ide-core-common/lib/utils/glob';
+import { FileUri, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+
 import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
-import { FileSystemManage } from './file-system-manage';
-import { getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
   FileSystemError,
   FileStat,
@@ -36,6 +37,9 @@ import {
   containsExtraFileMethod,
   IDiskFileProvider,
 } from '../common';
+
+import { getEncodingInfo, decode, encode, UTF8 } from './encoding';
+import { FileSystemManage } from './file-system-manage';
 
 export abstract class FileSystemNodeOptions {
   public static DEFAULT: FileSystemNodeOptions = {

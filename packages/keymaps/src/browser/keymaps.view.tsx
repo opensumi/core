@@ -1,9 +1,9 @@
-import React, { useCallback } from 'react';
-import { observer } from 'mobx-react-lite';
 import cls from 'classnames';
-import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import styles from './keymaps.module.less';
+import { observer } from 'mobx-react-lite';
+import React, { useCallback } from 'react';
+
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
+import { RecycleList } from '@opensumi/ide-components';
 import {
   localize,
   useInjectable,
@@ -13,10 +13,14 @@ import {
   Key,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
-import { KeymapService } from './keymaps.service';
-import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { RecycleList } from '@opensumi/ide-components';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+
+import { IKeymapService, KeybindingItem } from '../common';
+
+import styles from './keymaps.module.less';
+import { KeymapService } from './keymaps.service';
+
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
   const {

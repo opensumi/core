@@ -1,6 +1,7 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { IEditorFeatureContribution } from '../types';
+
 import { IEditor } from '../../common';
+import { IEditorFeatureContribution } from '../types';
 
 export class EditorTopPaddingContribution implements IEditorFeatureContribution {
   contribute(editor: IEditor) {

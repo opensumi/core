@@ -1,4 +1,5 @@
 import fs from 'fs';
+
 import { promisify } from './util';
 
 const PATH_SEPARATOR = '/';

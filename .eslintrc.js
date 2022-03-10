@@ -148,18 +148,17 @@ module.exports = {
     'prefer-rest-params': 'warn',
     'no-control-regex': 'warn',
     // 让 import 中的内部包和外部包分组，看起来更美观
-    // TODO: 会触发大量代码改动，暂时不开启
-    // 'import/order': [
-    //   'error',
-    //   {
-    //     groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown'],
-    //     alphabetize: {
-    //       order: 'asc',
-    //       caseInsensitive: true,
-    //     },
-    //     'newlines-between': 'always',
-    //   },
-    // ],
+    'import/order': [
+      'error',
+      {
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown'],
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        'newlines-between': 'always',
+      },
+    ],
     'import/no-restricted-paths': [
       'error',
       {

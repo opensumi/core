@@ -1,7 +1,9 @@
 import { Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
-import { FileSearchService } from './file-search.service';
+
 import { IFileSearchService, FileSearchServicePath } from '../common';
+
+import { FileSearchService } from './file-search.service';
 
 @Injectable()
 export class FileSearchModule extends NodeModule {

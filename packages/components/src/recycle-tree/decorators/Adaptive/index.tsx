@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { IRecycleTreeProps, IRecycleTreeHandle } from '../../RecycleTree';
-import { TreeNodeEvent } from '../../types';
 import { TreeModel } from '../../tree';
+import { TreeNodeEvent } from '../../types';
 
 type AdaptiveTreeHoc<Props, ExtraProps = any> = (
   Component: React.ComponentType<Props>,

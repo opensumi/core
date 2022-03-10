@@ -1,4 +1,9 @@
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@opensumi/ide-core-common';
+import { QuickInputOptions } from '@opensumi/ide-quick-open';
+
 import {
   IExtHostMessage,
   IExtHostTreeView,
@@ -21,19 +26,17 @@ import {
   IExtHostUrls,
   WebviewViewProvider,
 } from '../../../common/vscode';
-import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@opensumi/ide-core-common';
-import { ExtensionHostEditorService } from './editor/editor.host';
-import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
+import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import * as types from '../../../common/vscode/ext-types';
 import { Uri } from '../../../common/vscode/ext-types';
-import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError, IExtensionDescription } from '../../../common/vscode/extension';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostProgress } from './ext.host.progress';
-import { QuickInputOptions } from '@opensumi/ide-quick-open';
-import { ExtHostTheming } from './ext.host.theming';
+
+import { ExtensionHostEditorService } from './editor/editor.host';
+import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 import { ExtHostEditorTabs } from './ext.host.editor-tabs';
+import { ExtHostProgress } from './ext.host.progress';
+import { ExtHostTheming } from './ext.host.theming';
 
 export function createWindowApiFactory(
   extension: IExtensionDescription,

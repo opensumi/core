@@ -1,10 +1,12 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+import { Emitter } from '@opensumi/ide-core-browser';
 import { CancellationToken, CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser';
-import { Emitter } from '@opensumi/ide-core-browser';
+
 
 describe('DebugSessionConnection', () => {
   let debugSessionConnection: DebugSessionConnection;

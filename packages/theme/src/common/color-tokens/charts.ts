@@ -1,5 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor, transparent } from '../color-registry';
+
 import { foreground } from './base';
 import { editorErrorForeground, editorInfoForeground, editorWarningForeground } from './editor';
 import { minimapFindMatch } from './minimap';

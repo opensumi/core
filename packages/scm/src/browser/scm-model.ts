@@ -1,3 +1,5 @@
+import { action, observable } from 'mobx';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event, getDebugLogger, Uri } from '@opensumi/ide-core-common';
@@ -9,7 +11,6 @@ import {
   toDisposable,
 } from '@opensumi/ide-core-common/lib/disposable';
 import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
-import { action, observable } from 'mobx';
 
 import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';
 

@@ -1,5 +1,8 @@
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IContextKey, IScopedContextKeyService } from '@opensumi/ide-core-browser';
+
+import { DebugState } from '../../common';
+
 import {
   CONTEXT_IN_DEBUG_REPL,
   CONTEXT_IN_DEBUG_CONSOLE,
@@ -10,7 +13,6 @@ import {
   CONTEXT_RESTART_FRAME_SUPPORTED,
   CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT,
 } from './../../common/constants';
-import { DebugState } from '../../common';
 
 @Injectable()
 export class DebugContextKey {

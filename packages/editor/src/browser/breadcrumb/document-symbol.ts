@@ -1,4 +1,5 @@
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import debounce = require('lodash.debounce');
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   WithEventBus,
@@ -10,10 +11,11 @@ import {
   Deferred,
   CancellationToken,
 } from '@opensumi/ide-core-browser';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
-import debounce = require('lodash.debounce');
-import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 @Injectable()
 export class DocumentSymbolStore extends WithEventBus {

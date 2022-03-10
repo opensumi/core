@@ -7,22 +7,23 @@ import {
   ILogger,
 } from '@opensumi/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
+import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import {
   IEditorConstructionOptions,
   isDiffEditor,
   MouseTargetType,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
-import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
-import { ICodeEditor, IDiffEditor } from './monaco-api/types';
-import { monaco } from './monaco-api';
-import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoService } from '../common';
+
+import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
+import { monaco } from './monaco-api';
+import { ICodeEditor, IDiffEditor } from './monaco-api/types';
+import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 
 // const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID = 'sumi-overflow-widgets-container';
 

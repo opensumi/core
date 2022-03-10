@@ -10,6 +10,7 @@ import {
   VariableContribution,
   localize,
 } from '@opensumi/ide-core-browser';
+
 import { VariableQuickOpenService } from './variable-quick-open.service';
 
 export const LIST_VARIABLES: Command = {

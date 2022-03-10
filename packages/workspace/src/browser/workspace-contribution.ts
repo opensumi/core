@@ -1,5 +1,4 @@
 import { Autowired } from '@opensumi/di';
-
 import {
   CommandRegistry,
   ClientAppContribution,
@@ -12,12 +11,13 @@ import {
   localize,
   URI,
 } from '@opensumi/ide-core-browser';
+import { IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '../common';
+
+import { WorkspaceContextKey } from './workspace-contextkey';
 import { workspacePreferenceSchema } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
-import { IWindowDialogService } from '@opensumi/ide-overlay';
-import { WorkspaceContextKey } from './workspace-contextkey';
 
 @Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)
 export class WorkspaceContribution

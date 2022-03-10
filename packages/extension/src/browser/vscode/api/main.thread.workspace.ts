@@ -1,4 +1,13 @@
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { FileStat } from '@opensumi/ide-file-service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
+
 import {
   ExtHostAPIIdentifier,
   IMainThreadWorkspace,
@@ -6,14 +15,6 @@ import {
   IExtHostWorkspace,
   reviveWorkspaceEditDto,
 } from '../../../common/vscode';
-import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { FileStat } from '@opensumi/ide-file-service';
-import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
-import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
 
 @Injectable({ multiple: true })

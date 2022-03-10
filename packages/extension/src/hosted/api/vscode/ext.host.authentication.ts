@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Emitter,
   Disposable,
@@ -13,7 +15,7 @@ import {
   AuthenticationSession,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { IRPCProtocol } from '@opensumi/ide-connection';
+
 import { MainThreadAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';
 import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
 

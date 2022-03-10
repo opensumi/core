@@ -1,15 +1,13 @@
-import { DisposableStore } from '@opensumi/ide-core-common';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuRegistryImpl, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { DisposableStore } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
-
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { SCMModule } from '../../src/browser';
 import { ISCMMenus } from '../../src/common';
+import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
 describe('test for scm-menu.ts', () => {
   let injector: MockInjector;

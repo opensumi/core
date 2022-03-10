@@ -3,8 +3,8 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import * as paths from '@opensumi/ide-core-common/lib/path';
 
-import { ViewModelContext } from '../../scm-model';
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
+import { ViewModelContext } from '../../scm-model';
 import { isSCMResourceGroup } from '../../scm-util';
 
 export interface ISCMTreeNodeDescription<T = ISCMResource | ISCMResourceGroup> {

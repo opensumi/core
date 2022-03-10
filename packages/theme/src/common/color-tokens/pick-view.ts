@@ -1,7 +1,9 @@
-import { registerColor } from '../color-registry';
-import { activeContrastBorder, contrastBorder } from './base';
 import { localize } from '@opensumi/ide-core-common';
+
 import { Color } from '../color';
+import { registerColor } from '../color-registry';
+
+import { activeContrastBorder, contrastBorder } from './base';
 
 export const peekViewTitleBackground = registerColor(
   'peekViewTitle.background',

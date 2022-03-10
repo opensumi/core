@@ -1,17 +1,4 @@
-import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
-import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
-import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
-import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
-import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import {
-  ContextKeyExpr,
-  ContextKeyExprType,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FormattingConflicts } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
   PreferenceService,
   JsonSchemaContribution,
@@ -43,8 +30,26 @@ import {
   IMenuItem,
   ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IThemeService } from '@opensumi/ide-theme';
 import { URI, ILogger } from '@opensumi/ide-core-common';
+import { IThemeService } from '@opensumi/ide-theme';
+import {
+  ISemanticTokenRegistry,
+  parseClassifierString,
+  TokenStyle,
+} from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { FormattingConflicts } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
+import {
+  ContextKeyExpr,
+  ContextKeyExprType,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import {
   ICommandServiceToken,
@@ -52,15 +57,11 @@ import {
   IMonacoCommandService,
   IMonacoCommandsRegistry,
 } from './contrib/command';
+import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
-import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
-import {
-  ISemanticTokenRegistry,
-  parseClassifierString,
-  TokenStyle,
-} from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution

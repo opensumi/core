@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/cancellation.ts
 
-import { Emitter, Event } from './event';
 import { IDisposable } from './disposable';
+import { Emitter, Event } from './event';
 
 export interface CancellationToken {
   readonly isCancellationRequested: boolean;
