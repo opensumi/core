@@ -143,7 +143,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
               key={'menu-' + p.name}
             >
               <span className={p.icon || getIcon('smile')}></span>
-              <span>{p.name}</span>
+              <span className={styles.navigation_menu_item_label}>{p.name}</span>
               {p.getChildren && (
                 <span
                   className={styles.navigation_right}
