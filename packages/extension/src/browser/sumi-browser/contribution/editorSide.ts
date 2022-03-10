@@ -39,6 +39,8 @@ export class EditorSideBrowserContributionRunner extends AbstractSumiBrowserCont
         initialProps: {
           kaitianExtendService: extendService,
           kaitianExtendSet: extendProtocol,
+          sumiExtendService: extendService,
+          sumiExtendSet: extendProtocol,
         },
         displaysOnResource: () => this.editorService.editorContextKeyService.match(viewContribution?.when),
       }),
