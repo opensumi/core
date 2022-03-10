@@ -11,7 +11,7 @@ import {
   isUndefined,
   Disposable,
 } from '@opensumi/ide-core-common';
-import { QuickPickItem, QuickPickOptions } from '@opensumi/ide-quick-open';
+import { QuickInputOptions, QuickPickItem, QuickPickOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
 
 import {
   MainThreadAPIIdentifier,
@@ -386,20 +386,19 @@ type QuickInputType = 'quickPick' | 'inputBox';
 
 abstract class QuickInputExt implements vscode.InputBox {
   abstract type: QuickInputType;
-  value: string;
+
+  private _value: string;
   private _placeholder: string | undefined;
-  password: boolean;
-  buttons: readonly vscode.QuickInputButton[];
+  private _password: boolean;
+  private _buttons: vscode.QuickInputButton[];
   private _prompt: string | undefined;
-
   private _validationMessage: string | undefined;
-
   private _title: string | undefined;
-  step: number | undefined;
-  totalSteps: number | undefined;
-  enabled: boolean;
-  busy: boolean;
-  ignoreFocusOut: boolean;
+  private _step: number | undefined;
+  private _totalSteps: number | undefined;
+  private _enabled: boolean;
+  private _busy: boolean;
+  private _ignoreFocusOut: boolean;
 
   private disposableCollection: DisposableCollection;
 
@@ -409,6 +408,9 @@ abstract class QuickInputExt implements vscode.InputBox {
   private _onDidHideEmitter: Emitter<void>;
 
   private _updateTimeout: any;
+  private _disposed = false;
+
+  private _pendingUpdate: Partial<QuickInputOptions> = {};
 
   constructor(
     readonly _id: number,
@@ -416,15 +418,16 @@ abstract class QuickInputExt implements vscode.InputBox {
     readonly quickOpen: IExtHostQuickOpen,
     onDispose: () => void,
   ) {
-    this.buttons = [];
-    this.step = 0;
+    this._buttons = [];
+    this._step = 0;
     this._title = '';
-    this.totalSteps = 0;
-    this.value = '';
+    this._totalSteps = 0;
+    this._value = '';
     this._prompt = '';
     this._placeholder = '';
-    this.password = false;
-    this.ignoreFocusOut = false;
+    this._password = false;
+    this._ignoreFocusOut = false;
+
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
@@ -433,36 +436,120 @@ abstract class QuickInputExt implements vscode.InputBox {
     this.disposableCollection.push(Disposable.create(onDispose));
   }
 
+  get ignoreFocusOut(): boolean {
+    return this._ignoreFocusOut;
+  }
+
+  set ignoreFocusOut(ignoreFocusOut: boolean) {
+    this._ignoreFocusOut = ignoreFocusOut;
+    this.update({ ignoreFocusOut });
+  }
+
+  get buttons(): vscode.QuickInputButton[] {
+    return this._buttons;
+  }
+
+  set buttons(buttons: vscode.QuickInputButton[]) {
+    // TODO: 可能是有问题的，但 MainThread 里可能是能 work 的。
+    // 具体也不太好解决，涉及到：
+    // - Uri 和 URI 类型不兼容
+    // - iconPath, iconClass 要在这一层就拿到
+    this._buttons = buttons;
+    this.update({ buttons: buttons as unknown as QuickTitleButton[] });
+  }
+
+  get busy(): boolean {
+    return this._busy;
+  }
+
+  set busy(busy: boolean) {
+    this._busy = busy;
+    this.update({ busy });
+  }
+
   get title() {
     return this._title;
   }
+
   set title(title: string | undefined) {
     this._title = title;
-    this.update();
+    this.update({ title });
   }
+
+  get enabled(): boolean {
+    return this._enabled;
+  }
+
+  set enabled(enabled: boolean) {
+    this._enabled = enabled;
+    this.update({ enabled });
+  }
+
+  get password(): boolean {
+    return this._password;
+  }
+
+  set password(password: boolean) {
+    this._password = password;
+    this.update({ password });
+  }
+
+  get value(): string {
+    return this._value;
+  }
+
+  // 当前设计下，输入框还不能响应插件设置的 value 值，不影响一般使用。
+  set value(value: string) {
+    this._value = value;
+    this.update({ value });
+  }
+
+  get totalSteps(): number | undefined {
+    return this._totalSteps;
+  }
+
+  set totalSteps(totalSteps: number | undefined) {
+    this._totalSteps = totalSteps;
+    this.update({ totalSteps });
+  }
+
+  get step(): number | undefined {
+    return this._step;
+  }
+
+  set step(step: number | undefined) {
+    this._step = step;
+    this.update({ step });
+  }
+
   get prompt(): string | undefined {
     return this._prompt;
   }
-  set prompt(value: string | undefined) {
-    this._prompt = value;
-    this.update();
+
+  set prompt(prompt: string | undefined) {
+    this._prompt = prompt;
+    this.update({ prompt });
   }
+
   get placeholder(): string | undefined {
     return this._placeholder;
   }
-  set placeholder(value: string | undefined) {
-    this._placeholder = value;
-    this.update();
-  }
-  public get validationMessage(): string | undefined {
-    return this._validationMessage;
-  }
-  public set validationMessage(value: string | undefined) {
-    this._validationMessage = value;
-    this.update();
+
+  set placeholder(placeHolder: string | undefined) {
+    this._placeholder = placeHolder;
+    this.update({ placeHolder });
   }
 
-  getOptions() {
+  get validationMessage(): string | undefined {
+    return this._validationMessage;
+  }
+
+  set validationMessage(validationMessage: string | undefined) {
+    this._validationMessage = validationMessage;
+    this.update({ validationMessage });
+  }
+
+  getOptions(): QuickInputOptions {
     return {
       value: this.value,
       prompt: this.prompt,
@@ -473,16 +560,30 @@ abstract class QuickInputExt implements vscode.InputBox {
       totalSteps: this.totalSteps,
       step: this.step,
       validationMessage: this.validationMessage,
+      buttons: this.buttons as unknown as QuickTitleButton[],
+      busy: this.busy,
+      enabled: this.enabled,
     };
   }
 
-  doUpdate() {
+  private doUpdate() {
     if (this.type === 'inputBox') {
-      this.proxy.$createOrUpdateInputBox(this._id, this.getOptions());
+      this.proxy.$createOrUpdateInputBox(this._id, this._pendingUpdate);
     }
+    this._pendingUpdate = {};
   }
 
-  update() {
+  private update(data: Partial<QuickInputOptions>) {
+    if (this._disposed) {
+      return;
+    }
+
+    for (const k of Object.keys(data)) {
+      this._pendingUpdate[k] = data[k] === undefined ? null : data[k];
+    }
+
+    this._pendingUpdate = { ...this._pendingUpdate, ...data };
+
     if (!this._updateTimeout) {
       // Defer the update so that multiple changes to setters dont cause a redraw each
       this._updateTimeout = setTimeout(() => {
@@ -526,8 +627,9 @@ abstract class QuickInputExt implements vscode.InputBox {
   }
 
   show(): void {
-    this.doUpdate();
+    this.update(this.getOptions());
   }
+
   hide(): void {
     if (this.type === 'inputBox') {
       this.proxy.$hideInputBox(this._id);
@@ -540,6 +642,7 @@ abstract class QuickInputExt implements vscode.InputBox {
       clearTimeout(this._updateTimeout);
       this._updateTimeout = undefined;
     }
+    this._disposed = true;
   }
 }
 

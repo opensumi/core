@@ -37,10 +37,12 @@ export interface Highlight {
 export { Mode as QuickOpenMode };
 
 export interface QuickTitleButton {
+  iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
   icon: string; // a background image coming from a url
   iconClass?: string; // a class such as one coming from font awesome
-  tooltip?: string | undefined;
-  side: QuickTitleButtonSide;
+  tooltip?: string;
+  // undefined 在 QuickTitleBar 中视为为右侧
+  side?: QuickTitleButtonSide;
 }
 
 /**
@@ -522,14 +524,6 @@ export class ThemeIcon {
   static readonly Folder: ThemeIcon = new ThemeIcon('folder');
 
   private constructor(public id: string) {}
-}
-
-export interface QuickTitleButton {
-  iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
-  icon: string; // a background image coming from a url
-  iconClass?: string; // a class such as one coming from font awesome
-  tooltip?: string | undefined;
-  side: QuickTitleButtonSide;
 }
 
 export const QuickOpenContribution = Symbol('QuickOpenContribution');
