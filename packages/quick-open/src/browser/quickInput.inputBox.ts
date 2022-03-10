@@ -117,6 +117,13 @@ export class InputBoxImpl {
     );
   }
 
+  dispose() {
+    this.onDidAcceptEmitter.dispose();
+    this.onDidChangeValueEmitter.dispose();
+    this.onDidHideEmitter.dispose();
+    this.onDidTriggerButtonEmitter.dispose();
+  }
+
   hide(): void {
     this.quickOpenService.hideDecoration();
     this.quickOpenService.hide();

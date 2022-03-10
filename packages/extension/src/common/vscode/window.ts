@@ -40,6 +40,7 @@ export interface IMainThreadQuickOpen {
   $hideQuickInput(): void;
   $createOrUpdateInputBox(id: number, options: QuickInputOptions): void;
   $hideInputBox(id: number): void;
+  $disposeInputBox(id: number): void;
 }
 
 type VSCodeQuickPickItem = string | vscode.QuickPickItem;

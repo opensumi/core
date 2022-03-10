@@ -637,11 +637,15 @@ abstract class QuickInputExt implements vscode.InputBox {
   }
 
   dispose(): void {
+    if (this._disposed) {
+      return;
+    }
     this.disposableCollection.dispose();
     if (this._updateTimeout) {
       clearTimeout(this._updateTimeout);
       this._updateTimeout = undefined;
     }
+    this.proxy.$disposeInputBox(this._id);
     this._disposed = true;
   }
 }
