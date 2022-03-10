@@ -1,4 +1,5 @@
 import type * as vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
@@ -30,10 +31,10 @@ import { ExtHostOutput } from '../vscode/ext.host.output';
 import { ExtHostPreference } from '../vscode/ext.host.preference';
 import { ExtHostProgress } from '../vscode/ext.host.progress';
 import { ExtHostQuickOpen } from '../vscode/ext.host.quickopen';
+import { ExtHostSCM } from '../vscode/ext.host.scm';
 import { ExtHostStatusBar } from '../vscode/ext.host.statusbar';
 import { ExtHostTerminal } from '../vscode/ext.host.terminal';
 import { ExtHostTheming } from '../vscode/ext.host.theming';
-import { ExtHostSCM } from '../vscode/ext.host.scm';
 import { ExtHostTreeViews } from '../vscode/ext.host.treeview';
 import { ExtHostUrls } from '../vscode/ext.host.urls';
 import { ExtHostWindowState } from '../vscode/ext.host.window-state';
