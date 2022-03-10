@@ -1,12 +1,12 @@
-import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { IQuickInputService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
-
 import { InputBoxImpl } from '@opensumi/ide-quick-open/lib/browser/quickInput.inputBox';
+
+import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickOpen {

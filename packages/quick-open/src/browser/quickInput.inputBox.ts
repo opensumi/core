@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   QuickInputOptions,
   QuickOpenItem,
@@ -6,9 +7,9 @@ import {
   Mode,
   QuickOpenItemOptions,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { QuickTitleBar } from './quick-title-bar';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+
+import { QuickTitleBar } from './quick-title-bar';
 
 @Injectable({ multiple: true })
 export class InputBoxImpl {
