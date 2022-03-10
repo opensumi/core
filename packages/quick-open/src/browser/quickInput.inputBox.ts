@@ -109,7 +109,7 @@ export class InputBoxImpl {
         onClose: (canceled) => {
           // VSCode 对于这里的表现是，如果不是用户主动取消（说明调用成功），则不会调用 onDidHide
           if (canceled) {
-            this.onDidHideEmitter.fire(canceled);
+            this.onDidHideEmitter.fire();
           }
           this.quickTitleBar.hide();
         },
@@ -138,10 +138,11 @@ export class InputBoxImpl {
   }
 
   /**
-   * 回调中的布尔值代表 QuickOpen 是否被取消
+   * 只在用户取消输入时触发，如果用户已经 accept 了输入，不会再触发该事件。
+   * 如果用户主动调用了 hide() 方法，也会触发该事件。
    */
-  private readonly onDidHideEmitter: Emitter<boolean> = new Emitter();
-  get onDidHide(): Event<boolean> {
+  private readonly onDidHideEmitter: Emitter<void> = new Emitter();
+  get onDidHide(): Event<void> {
     return this.onDidHideEmitter.event;
   }
 }
