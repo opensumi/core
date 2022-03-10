@@ -26,6 +26,7 @@ import {
   IMainThreadSecret,
   IMainThreadTesting,
   IMainThreadEditorTabsShape,
+  IMainThreadSCMShape,
 } from '../../../common/vscode'; // '../../common';
 import { VSCodeExtensionService } from '../../../common/vscode';
 
@@ -200,6 +201,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
   const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [workerProtocol]);
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [workerProtocol]);
+  const MainThreadFileSystemEventAPI = injector.get(MainThreadFileSystemEvent, [workerProtocol]);
   const MainThreadPreferenceAPI = injector.get(MainThreadPreference, [workerProtocol]);
   const MainThreadOutputAPI = injector.get(MainThreadOutput);
   const MainThreadMessageAPI = injector.get(MainThreadMessage, [workerProtocol]);
@@ -212,6 +214,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [workerProtocol, MainThreadWebviewAPI]);
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [workerProtocol]);
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [workerProtocol]);
+  const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
 
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -247,7 +250,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAuthenticationAPI,
   );
   workerProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
-
+  workerProtocol.set<IMainThreadSCMShape>(MainThreadAPIIdentifier.MainThreadSCM, MainThreadSCMAPI);
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();
 
@@ -261,6 +264,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadProgressAPI.dispose();
     MainThreadWorkspaceAPI.dispose();
     MainThreadFileSystemAPI.dispose();
+    MainThreadFileSystemEventAPI.dispose();
     MainThreadPreferenceAPI.dispose();
     MainThreadOutputAPI.dispose();
     MainThreadMessageAPI.dispose();
@@ -272,5 +276,6 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadCustomEditorAPI.dispose();
     MainThreadAuthenticationAPI.dispose();
     MainThreadSecretAPI.dispose();
+    MainThreadSCMAPI.dispose();
   };
 }

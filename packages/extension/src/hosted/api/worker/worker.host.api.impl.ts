@@ -1,3 +1,5 @@
+import type * as vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
@@ -29,6 +31,7 @@ import { ExtHostOutput } from '../vscode/ext.host.output';
 import { ExtHostPreference } from '../vscode/ext.host.preference';
 import { ExtHostProgress } from '../vscode/ext.host.progress';
 import { ExtHostQuickOpen } from '../vscode/ext.host.quickopen';
+import { ExtHostSCM } from '../vscode/ext.host.scm';
 import { ExtHostStatusBar } from '../vscode/ext.host.statusbar';
 import { ExtHostTerminal } from '../vscode/ext.host.terminal';
 import { ExtHostTheming } from '../vscode/ext.host.theming';
@@ -140,13 +143,17 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostCustomEditor,
     new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs),
   ) as ExtHostCustomEditorImpl;
-  // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
-  const reporter = new DefaultReporter();
-  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
   const extHostEditorTabs = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostEditorTabs,
     new ExtHostEditorTabs(rpcProtocol),
   ) as ExtHostEditorTabs;
+  const extHostSCM = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostSCM,
+    new ExtHostSCM(rpcProtocol, extHostCommands),
+  ) as ExtHostSCM;
+  // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
+  const reporter = new DefaultReporter();
+  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
 
   return (extension: IExtensionDescription) => ({
     ...workerExtTypes,
@@ -174,6 +181,14 @@ export function createAPIFactory(
       extHostTasks,
       extension,
     ),
+    scm: {
+      get inputBox() {
+        return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+      },
+      createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
+        return extHostSCM.createSourceControl(extension, id, label, rootUri);
+      },
+    },
     window: createWindowApiFactory(
       extension,
       extHostEditors,
