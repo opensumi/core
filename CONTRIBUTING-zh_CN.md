@@ -28,7 +28,7 @@ $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/canvas/
 
 - [Git](https://git-scm.com)
 - [Node.JS](https://nodejs.org/), **x64**, 版本号 `>= 12.x`, `<= 14.x`
-  - **注意:** Windows 用户通过这种方法快速安装编译环境，不再需要重复装 Python 和 Windows Build Tools：从 Node.js 官网下载的安装包运行，勾选“Automatically install the necessary tools.”，将会自动安装 Python 和 Windows 编译工具。 <img alt="示意图" src="https://img.alicdn.com/imgextra/i3/O1CN01uH4otG22z4SDCraOo_!!6000000007190-2-tps-976-760.png" style="max-width: 500px;">
+  - **注意:** Windows 用户通过这种方法快速安装编译环境，不再需要重复装 Python 和 Windows Build Tools：从 Node.js 官网下载的安装包运行，勾选“Automatically install the necessary tools.”，将会自动安装 Python 和 Windows 编译工具。示意图：<img alt="示意图" src="https://img.alicdn.com/imgextra/i3/O1CN01uH4otG22z4SDCraOo_!!6000000007190-2-tps-976-760.png" width="400" />
 - [Python](https://www.python.org/downloads/) (node-gyp 库的前置依赖; 查看 [node-gyp readme](https://github.com/nodejs/node-gyp#installation) 找到当前支持的合适版本)
 - 一个适合你系统的 C/C++ 编译工具:
   - **macOS**
