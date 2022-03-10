@@ -63,6 +63,8 @@ import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -547,6 +549,10 @@ export function setupExtensionServiceInjector() {
     {
       token: IRequireInterceptorService,
       useClass: RequireInterceptorService,
+    },
+    {
+      token: IWorkspaceFileService,
+      useClass: WorkspaceFileService,
     },
     BrowserRequireInterceptorContribution,
   );
