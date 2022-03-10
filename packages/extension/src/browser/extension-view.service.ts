@@ -79,7 +79,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   private extensions: IExtension[] = [];
 
-  // 被激活且在 contributes 中注册了 browserView 的 kaitian 插件
+  // 被激活且在 contributes 中注册了 browserView 的 sumi 插件
   public activatedViewExtensionMap: Map<string, IExtension> = new Map();
 
   public getExtension(extensionId: string): IExtension | undefined {
