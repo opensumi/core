@@ -275,13 +275,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     /**
      * 重启插件进程步骤：
      * 1、重置所有插件实例的状态至未激活
-     * 2、将负责前后端通信的 main.thread 全部 dispose 掉
-     * 3、杀掉后端插件进程
-     * 4、走正常激活插件流程，重新激活对应插件进程
-     * 5、将之前已经激活的插件重新激活一遍
+     * 2、dispose 掉所有被激活且在 contributes 里申明过 browserView 的 sumi 插件
+     * 3、将负责前后端通信的 main.thread 全部 dispose 掉
+     * 4、杀掉后端插件进程
+     * 5、走正常激活插件流程，重新激活对应插件进程
+     * 6、将之前已经激活的插件重新激活一遍
      */
     if (!init) {
       this.resetExtensionInstances();
+      this.disposeSumiViewExtension();
       await this.disposeExtProcess();
     }
 
@@ -289,6 +291,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await Promise.all([this.startNodeExtHost(init), this.startWorkerExtHost(init)]);
 
     if (!init) {
+      // 重启场景下需要将申明过 browserView 的 sumi 插件的 contributes 重新跑一遍
+      await this.rerunSumiViewExtensionContributes();
+
       // 重启场景下把 ActivationEvent 再发一次
       if (this.activationEventService.activatedEventSet.size) {
         const activatedEventArr = Array.from(this.activationEventService.activatedEventSet);
@@ -545,6 +550,29 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     this.nodeExtensionService.disposeApiFactory();
     this.workerExtensionService.disposeApiFactory();
+  }
+
+  /**
+   * 每次激活 sumi 插件的时候，都会尝试去激活 sumiContributes 中的 browserView，会导致 browserView 重复注册
+   * 因此重启场景下需要先将这部分被激活的插件 dispose 掉
+   */
+  private disposeSumiViewExtension() {
+    const paths = Array.from(this.viewExtensionService.activatedViewExtensionMap.keys());
+
+    this.extensionInstanceManageService.disposeExtensionInstancesByPath(paths);
+  }
+
+  private async rerunSumiViewExtensionContributes() {
+    const { activatedViewExtensionMap } = this.viewExtensionService;
+    const extensionPaths = Array.from(activatedViewExtensionMap.keys());
+
+    await Promise.all(
+      extensionPaths.map((path) =>
+        this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.contributeIfEnabled(),
+      ),
+    );
+
+    activatedViewExtensionMap.clear();
   }
 
   async disposeExtProcess() {

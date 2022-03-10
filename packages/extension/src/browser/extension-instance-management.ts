@@ -55,6 +55,14 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     this.extensionMap = new Map();
   }
 
+  public disposeExtensionInstancesByPath(paths: string[]) {
+    paths.forEach((path) => {
+      if (this.extensionMap.has(path)) {
+        this.extensionMap.get(path)!.dispose();
+      }
+    });
+  }
+
   public resetExtensionInstances() {
     for (const extensionInstance of this.extensionMap.values()) {
       extensionInstance.reset();
