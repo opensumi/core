@@ -58,6 +58,8 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
     const initialProps = {
       kaitianExtendService: extendService,
       kaitianExtendSet: extendProtocol,
+      sumiExtendService: extendService,
+      sumiExtendSet: extendProtocol,
     };
     this.layoutService.viewReady.promise.then(() => {
       if (kind === 'add') {

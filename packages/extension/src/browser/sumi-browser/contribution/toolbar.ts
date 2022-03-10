@@ -40,6 +40,8 @@ export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContrib
           initialProps: {
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,
+            sumiExtendService: extendService,
+            sumiExtendSet: extendProtocol,
           },
           description: view.description,
           order: view.order,

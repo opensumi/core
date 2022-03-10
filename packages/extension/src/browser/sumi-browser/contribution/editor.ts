@@ -48,6 +48,8 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
         {
           kaitianExtendService: extendService,
           kaitianExtendSet: extendProtocol,
+          sumiExtendService: extendService,
+          sumiExtendSet: extendProtocol,
         },
       ),
     );

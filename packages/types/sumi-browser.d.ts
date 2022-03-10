@@ -3,6 +3,13 @@ interface IComponentMethod {
 }
 
 interface IComponentProps<N, W = any> {
+  sumiExtendSet: {
+    set<T = IComponentMethod>(methods: T): void;
+  };
+  sumiExtendService: {
+    node: N;
+    worker: W;
+  };
   kaitianExtendSet: {
     set<T = IComponentMethod>(methods: T): void;
   };
