@@ -55,21 +55,24 @@
 .navigation_menu {
   position: fixed;
   background: var(--breadcrumb-background);
-  width: 200px;
-  box-shadow: 1px 1px 3px #000;
+  width: 350px;
   .overlay-shadow();
   .navigation_menu_items {
     > div {
-      overflow: hidden;
       padding-right: 20px;
       position: relative;
-      text-overflow: ellipsis;
-      white-space: nowrap;
       padding-left: 5px;
       cursor: pointer;
       height: 22px;
       display: flex;
       align-items: center;
+
+      .navigation_menu_item_label {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
       &:hover {
         background: var(--list-hoverBackground);
       }
