@@ -95,7 +95,6 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     if (this.createdInputBox.has(id)) {
       const box = this.createdInputBox.get(id);
       box?.hide();
-      this.createdInputBox.delete(id);
     }
   }
 

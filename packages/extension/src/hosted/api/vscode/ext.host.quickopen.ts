@@ -28,8 +28,8 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   private proxy: IMainThreadQuickOpen;
   private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
 
-  private createdQuicks = new Map<number, QuickPickExt<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
-  private createdInputBoxs = new Map<number, QuickInputExt>();
+  private createdQuicks = new Map<number, ExtQuickPick<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
+  private createdInputBoxs = new Map<number, ExtQuickInput>();
   private currentQuick = 0;
 
   constructor(rpc: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
@@ -151,14 +151,14 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
 
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
     const session = ++this.currentQuick;
-    const newQuickPick = new QuickPickExt(this, session);
+    const newQuickPick = new ExtQuickPick(this, session);
     this.createdQuicks.set(session, newQuickPick);
-    return newQuickPick as QuickPickExt<T>;
+    return newQuickPick as ExtQuickPick<T>;
   }
 
   createInputBox(): vscode.InputBox {
     const session = ++this.currentQuick;
-    const newInputBox = new InputBoxExt(session, this.proxy, this, () => {
+    const newInputBox = new ExtInputBox(session, this.proxy, this, () => {
       this.createdInputBoxs.delete(session);
     });
     this.createdInputBoxs.set(session, newInputBox);
@@ -197,7 +197,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     }
   }
   $onDidTriggerButton(btnHandler: number): void {
-    return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem>)?.attachBtn(btnHandler);
+    return (this.createdQuicks.get(this.currentQuick) as ExtQuickPick<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
   showInputBox(
     options: vscode.InputBoxOptions = {},
@@ -226,7 +226,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 }
 
-class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T> {
+class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T> {
   busy: boolean;
   canSelectMany: boolean;
   enabled: boolean;
@@ -384,7 +384,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
 type QuickInputType = 'quickPick' | 'inputBox';
 
-abstract class QuickInputExt implements vscode.InputBox {
+abstract class ExtQuickInput implements vscode.InputBox {
   abstract type: QuickInputType;
 
   private _value: string;
@@ -650,6 +650,6 @@ abstract class QuickInputExt implements vscode.InputBox {
   }
 }
 
-class InputBoxExt extends QuickInputExt {
+class ExtInputBox extends ExtQuickInput {
   type: QuickInputType = 'inputBox';
 }
