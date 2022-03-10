@@ -1,11 +1,14 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { MessageType } from '@opensumi/ide-core-browser';
-import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
-import debugConsoleStyles from '../view/console/debug-console.module.less';
+import cls from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import cls from 'classnames';
+
+import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
+import { MessageType } from '@opensumi/ide-core-browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
 import { LinkDetector } from '../debug-link-detector';
+import debugConsoleStyles from '../view/console/debug-console.module.less';
+
 
 const getColor = (severity?: MessageType): string => {
   if (typeof severity === 'undefined') {

@@ -16,8 +16,9 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/workspace-symbol.ts
 
-import { SymbolInformation } from 'vscode-languageserver-types';
 import type vscode from 'vscode';
+import { SymbolInformation } from 'vscode-languageserver-types';
+
 import * as Converter from '../../../../common/vscode/converter';
 
 export class WorkspaceSymbolAdapter {

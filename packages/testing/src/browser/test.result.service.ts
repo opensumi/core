@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, IContextKey, IContextKeyService, URI, uuid } from '@opensumi/ide-core-browser';
 import { TestingHasAnyResults, TestingIsRunning } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { findFirstInSorted } from '@opensumi/ide-core-common/lib/arrays';
+
 import { ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import {
   ITestResult,
@@ -18,6 +19,7 @@ import {
   TestResultState,
 } from '../common/testCollection';
 import { parseTestUri } from '../common/testingUri';
+
 import { TestDto } from './outputPeek/test-output-peek';
 
 export type ResultChangeEvent =

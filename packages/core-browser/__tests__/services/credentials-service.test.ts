@@ -1,9 +1,9 @@
+import { KeytarServicePath } from '@opensumi/ide-core-common';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
-import { CredentialsService } from '../../src/services';
-import { KeytarServicePath } from '@opensumi/ide-core-common';
 import { ICredentialsService } from '../../src';
+import { CredentialsService } from '../../src/services';
 
 describe('test for core-browser/src/services/credentials-service.ts', () => {
   let injector: MockInjector;

@@ -1,7 +1,15 @@
-import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
-import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action, runInAction } from 'mobx';
-import { DebugViewModel } from '../debug-view-model';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
+
+import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY, IDebugBreakpoint } from '../../../common';
+import { IDebugSessionManager } from '../../../common/debug-session';
 import {
   DebugBreakpoint,
   DebugExceptionBreakpoint,
@@ -10,15 +18,10 @@ import {
   BreakpointManager,
   DebugDecorator,
 } from '../../breakpoint';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@opensumi/ide-core-browser';
-import { BreakpointItem } from './debug-breakpoints.view';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
-import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY, IDebugBreakpoint } from '../../../common';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { DebugViewModel } from '../debug-view-model';
+
+import { BreakpointItem } from './debug-breakpoints.view';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {

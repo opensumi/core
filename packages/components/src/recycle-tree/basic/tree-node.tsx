@@ -1,10 +1,12 @@
-import React, { useCallback } from 'react';
-import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
-import { Icon } from '../../icon';
-import { Button } from '../../button';
-import { Loading } from '../../loading';
-import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
 import cls from 'classnames';
+import React, { useCallback } from 'react';
+
+import { Button } from '../../button';
+import { Icon } from '../../icon';
+import { Loading } from '../../loading';
+
+import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
 import './styles.less';
 
 export const BasicTreeNodeRenderer: React.FC<

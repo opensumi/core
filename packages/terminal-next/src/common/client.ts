@@ -1,5 +1,7 @@
 import { Terminal } from 'xterm';
+
 import { IDisposable, Disposable, Event, Deferred } from '@opensumi/ide-core-common';
+
 import { INodePtyInstance, TerminalOptions, ICreateTerminalOptions } from './pty';
 import { IWidget } from './resize';
 

@@ -1,4 +1,3 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   PreferenceSchemaProperties,
@@ -6,6 +5,8 @@ import {
   PreferenceProvider,
   PreferenceScope,
 } from '@opensumi/ide-core-browser';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export interface ConfigurationSnippets {
   body: {

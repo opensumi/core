@@ -1,8 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, PreferenceScope } from '@opensumi/ide-core-browser';
-import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
+
+import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
 export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;

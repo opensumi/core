@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { Uri } from '@opensumi/ide-core-common';
+
 import { Injectable } from '@opensumi/di';
+import { Uri } from '@opensumi/ide-core-common';
 
 import { IFileDropBackendService } from '../common';
 @Injectable()

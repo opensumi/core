@@ -9,6 +9,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { UTF8, encodingExists } from '@opensumi/ide-core-common/lib/encoding';
+
 import { PreferenceService } from './preferences';
 import { getLanguageIdFromMonaco } from './services/label-service';
 

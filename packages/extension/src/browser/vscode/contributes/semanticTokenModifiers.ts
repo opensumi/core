@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+
 import {
   VSCodeContributePoint,
   Contributes,

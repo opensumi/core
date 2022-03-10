@@ -1,14 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common';
+import { memoize, IContextKeyService } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
   IMenu,
   ICtxMenuRenderer,
   generateMergedCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService } from '@opensumi/ide-core-browser';
-import { MenuId } from '../common/menu';
+import { Disposable } from '@opensumi/ide-core-common';
+
 import { ITerminalController } from '../common';
+import { MenuId } from '../common/menu';
 
 @Injectable()
 export class TerminalContextMenuService extends Disposable {

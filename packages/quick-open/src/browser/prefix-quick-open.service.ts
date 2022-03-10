@@ -17,8 +17,10 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/quick-open/prefix-quick-open-service.ts
 
 import React from 'react';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import { localize, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
-import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   IQuickOpenHandlerRegistry,
   QuickOpenHandler,
@@ -29,10 +31,10 @@ import {
   QuickOpenItem,
   PrefixQuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { Injectable, Autowired } from '@opensumi/di';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { QuickTitleBar } from './quick-title-bar';
+import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+
 import { QuickOpenTabs } from './components/quick-open-tabs';
+import { QuickTitleBar } from './quick-title-bar';
 /**
  * @deprecated import from `@opensumi/ide-core-browser/lib/quick-open` instead
  */

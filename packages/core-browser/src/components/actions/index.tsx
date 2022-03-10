@@ -1,10 +1,10 @@
-import React from 'react';
 import clsx from 'classnames';
-import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
-
-import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
+import React from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
+import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
+import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
+
 import {
   MenuNode,
   ICtxMenuRenderer,
@@ -21,7 +21,6 @@ import { useInjectable } from '../../react-hooks';
 import { useMenus, useContextMenus } from '../../utils';
 
 import placements from './placements';
-
 import styles from './styles.module.less';
 
 const MenuAction: React.FC<{

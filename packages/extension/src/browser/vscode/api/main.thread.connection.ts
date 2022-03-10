@@ -1,7 +1,7 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Disposable, DisposableCollection } from '@opensumi/ide-core-common';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@opensumi/ide-core-browser';
+import { Disposable, DisposableCollection } from '@opensumi/ide-core-common';
 
 import {
   IMainThreadConnectionService,

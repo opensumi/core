@@ -1,3 +1,5 @@
+import debounce = require('lodash.debounce');
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   WithEventBus,
@@ -16,14 +18,7 @@ import {
   OnEvent,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import {
-  MainLayoutContribution,
-  IMainLayoutService,
-  ViewComponentOptions,
-  SUPPORT_ACCORDION_LOCATION,
-} from '../common';
-import { TabBarHandler } from './tabbar-handler';
-import { TabbarService } from './tabbar/tabbar.service';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   IMenuRegistry,
   AbstractContextMenuService,
@@ -31,11 +26,20 @@ import {
   AbstractMenuService,
   IContextMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
-import { AccordionService } from './accordion/accordion.service';
-import debounce = require('lodash.debounce');
 import { Deferred, getDebugLogger } from '@opensumi/ide-core-common';
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
+
+import {
+  MainLayoutContribution,
+  IMainLayoutService,
+  ViewComponentOptions,
+  SUPPORT_ACCORDION_LOCATION,
+} from '../common';
+
+import { AccordionService } from './accordion/accordion.service';
+import { TabBarHandler } from './tabbar-handler';
+import { TabbarService } from './tabbar/tabbar.service';
+
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {

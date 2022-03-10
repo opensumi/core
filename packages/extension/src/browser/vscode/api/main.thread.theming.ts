@@ -1,9 +1,11 @@
-import { IMainThreadTheming, IExtHostTheming } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IThemeService } from '@opensumi/ide-theme';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IDisposable } from '@opensumi/ide-core-common';
+import { IThemeService } from '@opensumi/ide-theme';
+
+import { IMainThreadTheming, IExtHostTheming } from '../../../common/vscode';
+import { ExtHostAPIIdentifier } from '../../../common/vscode';
+
 
 @Injectable({ multiple: true })
 export class MainThreadTheming implements IMainThreadTheming {

@@ -1,6 +1,8 @@
 import path from 'path';
-import * as fs from 'fs-extra';
+
 import archiver from 'archiver';
+import * as fs from 'fs-extra';
+
 import { toLocalISOString, getDebugLogger, Archive } from '@opensumi/ide-core-common';
 
 const debugLog = getDebugLogger('LogUtils');

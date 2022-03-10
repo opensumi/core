@@ -11,9 +11,7 @@ import {
   TreeModel,
   IRecycleTreeFilterHandle,
 } from '@opensumi/ide-components';
-import { FileTreeService } from '../file-tree.service';
-import { FileTreeModel } from '../file-tree-model';
-import { Directory, File } from '../../common/file-tree-node.define';
+import { ISerializableState, TreeStateWatcher } from '@opensumi/ide-components/lib/recycle-tree/tree/model/treeState';
 import {
   CorePreferences,
   IContextKey,
@@ -37,16 +35,21 @@ import {
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
-import { DragAndDropService } from './file-tree-dnd.service';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import styles from '../file-tree-node.module.less';
-import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
-import { ISerializableState, TreeStateWatcher } from '@opensumi/ide-components/lib/recycle-tree/tree/model/treeState';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+
+
+import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
+import { Directory, File } from '../../common/file-tree-node.define';
+import { FileTreeModel } from '../file-tree-model';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
+import styles from '../file-tree-node.module.less';
+import { FileTreeService } from '../file-tree.service';
+
+import { DragAndDropService } from './file-tree-dnd.service';
 
 export interface IParseStore {
   files: (File | Directory)[];

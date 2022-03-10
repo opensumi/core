@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, Uri, AppConfig } from '@opensumi/ide-core-browser';
+
 import { AbstractHttpFileService } from './browser-fs-provider';
 
 const mockFiles = [

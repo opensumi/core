@@ -1,4 +1,5 @@
 import type vscode from 'vscode';
+
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILogger, Disposable, PreferenceService, IDisposable } from '@opensumi/ide-core-browser';
@@ -22,8 +23,9 @@ import {
   EnvironmentVariableServiceToken,
 } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { deserializeEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
-import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ITerminalProfileService } from '@opensumi/ide-terminal-next/lib/common/profile';
+
+import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadTerminal implements IMainThreadTerminal {

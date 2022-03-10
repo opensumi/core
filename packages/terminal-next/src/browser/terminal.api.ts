@@ -1,7 +1,9 @@
+import { capitalize } from 'lodash';
 import type vscode from 'vscode';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter } from '@opensumi/ide-core-common';
-import { capitalize } from 'lodash';
+
 import {
   ITerminalApiService,
   ITerminalGroupViewService,

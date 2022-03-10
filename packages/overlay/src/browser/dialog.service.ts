@@ -1,7 +1,9 @@
-import { Injectable } from '@opensumi/di';
-import { IDialogService, AbstractMessageService, Icon } from '../common';
 import { observable, action } from 'mobx';
+
+import { Injectable } from '@opensumi/di';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';
+
+import { IDialogService, AbstractMessageService, Icon } from '../common';
 
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {

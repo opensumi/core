@@ -1,12 +1,12 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@opensumi/di';
+import { Disposable } from '@opensumi/ide-core-common/lib';
+import { join } from '@opensumi/ide-core-common/lib/path';
 import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
 import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@opensumi/ide-core-common/lib/utils/strings';
 import { format } from '@opensumi/ide-core-common/lib/utils/strings';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { join } from '@opensumi/ide-core-common/lib/path';
-import { Disposable } from '@opensumi/ide-core-common/lib';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export interface IResourceCreator {
   toResource: (folderRelativePath: string) => string | undefined;

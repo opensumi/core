@@ -1,5 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Emitter, Event, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
   static ID = 0;

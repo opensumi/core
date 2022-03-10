@@ -1,9 +1,13 @@
+// eslint-disable-next-line import/order
 import { mockElectronRenderer } from '@opensumi/ide-core-common/lib/mocks/electron/browserMock';
+
 mockElectronRenderer();
-import { WebviewPanelManager } from '../../src/webview-host/webview-manager';
-import { ElectronWebviewChannel } from '../../src/electron-webview/host-channel';
 import { MockedElectronIpcRenderer } from '@opensumi/ide-core-common/lib/mocks/electron/ipcRenderer';
+
+import { ElectronWebviewChannel } from '../../src/electron-webview/host-channel';
 import { WebIframeChannel } from '../../src/webview-host/web-preload';
+import { WebviewPanelManager } from '../../src/webview-host/webview-manager';
+
 const { JSDOM } = require('jsdom');
 
 describe('electron webview test', () => {

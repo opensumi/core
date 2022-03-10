@@ -1,20 +1,23 @@
-import { Injectable } from '@opensumi/di';
-import { Option, Select } from '@opensumi/ide-components';
-import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
-import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
+import { Injectable } from '@opensumi/di';
+import { Option, Select } from '@opensumi/ide-components';
+import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+
+import { DebugState } from '../../../common';
 import { DebugAction } from '../../components';
 import { DebugSession } from '../../debug-session';
 import { isExtensionHostDebugging } from '../../debugUtils';
+
+import styles from './debug-configuration.module.less';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
-import styles from './debug-configuration.module.less';
-import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { DebugState } from '../../../common';
+
 
 @Injectable()
 class FloatController {

@@ -1,15 +1,20 @@
-import { Injector } from '@opensumi/di';
-import { FileServiceModule, FileService } from '../../src/node';
-import { IFileService, FileChangeType } from '../../src/common';
-import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
-import { isWindows } from '@opensumi/ide-core-common';
-import * as fs from 'fs-extra';
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-// import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-// import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
-import * as fse from 'fs-extra';
 import os from 'os';
 import path from 'path';
+
+import * as fs from 'fs-extra';
+import * as fse from 'fs-extra';
+
+import { Injector } from '@opensumi/di';
+import { isWindows } from '@opensumi/ide-core-common';
+import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IFileService, FileChangeType } from '../../src/common';
+import { FileServiceModule, FileService } from '../../src/node';
+
+// import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+// import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
+
 
 // tslint:disable:variable-name
 describe('FileService', () => {

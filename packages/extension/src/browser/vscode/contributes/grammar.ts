@@ -1,9 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { GrammarsContribution } from '@opensumi/ide-monaco';
 import { localize, URI, Disposable } from '@opensumi/ide-core-common';
+import { GrammarsContribution } from '@opensumi/ide-monaco';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 

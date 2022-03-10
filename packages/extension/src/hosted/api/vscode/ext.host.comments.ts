@@ -6,6 +6,8 @@
 // some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostComments.ts#L32
 
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Uri as URI,
   MutableDisposable,
@@ -16,19 +18,19 @@ import {
   asPromise,
   CancellationToken,
 } from '@opensumi/ide-core-common';
-import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
-import { IRPCProtocol } from '@opensumi/ide-connection';
+import type { UriComponents } from '@opensumi/ide-core-common';
+
+import { getExtensionId } from '../../../common';
 import {
   MainThreadAPIIdentifier,
   IExtHostCommands,
   ExtensionDocumentDataManager,
   IExtensionDescription,
 } from '../../../common/vscode';
-import type { UriComponents } from '@opensumi/ide-core-common';
+import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
-import * as models from '../../../common/vscode/models';
 import * as types from '../../../common/vscode/ext-types';
-import { getExtensionId } from '../../../common';
+import * as models from '../../../common/vscode/models';
 
 type ProviderHandle = number;
 type ReactionHandler = (comment: vscode.Comment, reaction: vscode.CommentReaction) => Promise<void>;

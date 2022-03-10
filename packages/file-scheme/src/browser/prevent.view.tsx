@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { IEventBus, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ResourceOpenTypeChangedEvent } from '@opensumi/ide-editor/lib/browser/types';

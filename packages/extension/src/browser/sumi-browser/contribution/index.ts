@@ -1,10 +1,12 @@
-import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { TabbarBrowserContributionRunner } from './tabbar';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+
+import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
+
 import { EditorBrowserContributionRunner } from './editor';
-import { ToolBarBrowserContributionRunner } from './toolbar';
 import { EditorSideBrowserContributionRunner } from './editorSide';
+import { TabbarBrowserContributionRunner } from './tabbar';
+import { ToolBarBrowserContributionRunner } from './toolbar';
 
 @Injectable({ multiple: true })
 export class SumiBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {

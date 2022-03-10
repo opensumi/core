@@ -1,27 +1,21 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { observable } from 'mobx';
-import {
-  WorkbenchEditorService,
-  EditorCollectionService,
-  ICodeEditor,
-  IResource,
-  ResourceService,
-  IResourceOpenOptions,
-  IDiffEditor,
-  IDiffResource,
-  IEditor,
-  CursorStatus,
-  IEditorOpenType,
-  EditorGroupSplitAction,
-  IEditorGroup,
-  IOpenResourceResult,
-  IEditorGroupState,
-  ResourceDecorationChangeEvent,
-  IUntitledOptions,
-  SaveReason,
-  getSplitActionFromDragDrop,
-} from '../common';
+
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import {
+  FILE_COMMANDS,
+  ResizeEvent,
+  getSlotLocation,
+  AppConfig,
+  IContextKeyService,
+  ServiceNames,
+  IScopedContextKeyService,
+  IContextKey,
+  RecentFilesManager,
+  PreferenceService,
+  IOpenerService,
+} from '@opensumi/ide-core-browser';
+import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@opensumi/ide-core-common';
 import {
   CommandService,
   URI,
@@ -44,6 +38,35 @@ import {
   IDisposable,
   Disposable,
 } from '@opensumi/ide-core-common';
+import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
+import { IMessageService } from '@opensumi/ide-overlay';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import {
+  WorkbenchEditorService,
+  EditorCollectionService,
+  ICodeEditor,
+  IResource,
+  ResourceService,
+  IResourceOpenOptions,
+  IDiffEditor,
+  IDiffResource,
+  IEditor,
+  CursorStatus,
+  IEditorOpenType,
+  EditorGroupSplitAction,
+  IEditorGroup,
+  IOpenResourceResult,
+  IEditorGroupState,
+  ResourceDecorationChangeEvent,
+  IUntitledOptions,
+  SaveReason,
+  getSplitActionFromDragDrop,
+} from '../common';
+
+import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
+import { EditorTabChangedError, isEditorError } from './error';
+import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import {
   EditorComponentRegistry,
   IEditorComponent,
@@ -65,26 +88,6 @@ import {
   CodeEditorDidVisibleEvent,
   RegisterEditorComponentEvent,
 } from './types';
-import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
-import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
-import {
-  FILE_COMMANDS,
-  ResizeEvent,
-  getSlotLocation,
-  AppConfig,
-  IContextKeyService,
-  ServiceNames,
-  IScopedContextKeyService,
-  IContextKey,
-  RecentFilesManager,
-  PreferenceService,
-  IOpenerService,
-} from '@opensumi/ide-core-browser';
-import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
-import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@opensumi/ide-core-common';
-import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { EditorTabChangedError, isEditorError } from './error';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {

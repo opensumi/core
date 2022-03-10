@@ -1,4 +1,5 @@
 import { Autowired } from '@opensumi/di';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import {
   BrowserConnectionCloseEvent,
   BrowserConnectionOpenEvent,
@@ -7,7 +8,6 @@ import {
   CommandService,
   Domain,
 } from '@opensumi/ide-core-common';
-import { ClientAppContribution } from '@opensumi/ide-core-browser';
 
 @Domain(ClientAppContribution)
 export class StatusBarContribution extends WithEventBus implements ClientAppContribution {

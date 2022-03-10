@@ -8,6 +8,7 @@ import { posix } from '@opensumi/ide-core-common/lib/path';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
+
 import { getWorkerBootstrapUrl } from './loader';
 import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';

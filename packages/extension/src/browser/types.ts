@@ -1,6 +1,8 @@
 import { Injectable } from '@opensumi/di';
 import { BasicEvent, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
+
 import { IExtension, IExtensionMetaData } from '../common';
+
 import { Extension } from './extension';
 
 export type Serializable = any;

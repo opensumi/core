@@ -1,16 +1,17 @@
 import { Injector, Injectable } from '@opensumi/di';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient } from '@opensumi/ide-core-common';
-import { OutputService } from '../../src/browser/output.service';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { OutputPreferences } from '../../src/browser/output-preference';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+import { ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { MonacoService } from '@opensumi/ide-monaco';
 import { MockedMonacoService } from '@opensumi/ide-monaco/__mocks__/monaco.service.mock';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { OutputPreferences } from '../../src/browser/output-preference';
+import { OutputService } from '../../src/browser/output.service';
 
 @Injectable()
 class MockLoggerManagerClient {

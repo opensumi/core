@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { IInputBaseProps, Input as BaseInput } from './Input';
 
 export interface ProxiedInputProp extends IInputBaseProps {

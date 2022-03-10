@@ -1,6 +1,9 @@
-import { KeymapService } from '@opensumi/ide-keymaps/lib/browser/keymaps.service';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import os from 'os';
+import path from 'path';
+
+import * as fs from 'fs-extra';
+
+import { Injectable, Provider } from '@opensumi/di';
 import {
   KeybindingRegistry,
   KeybindingService,
@@ -14,18 +17,18 @@ import {
   BrowserModule,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { IUserStorageService } from '@opensumi/ide-preferences';
-import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
-import { Injectable, Provider } from '@opensumi/di';
-import { UserStorageContribution, UserStorageServiceImpl } from '@opensumi/ide-preferences/lib/browser/userstorage';
-import os from 'os';
-import path from 'path';
-import * as fs from 'fs-extra';
-import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { KeymapsModule } from '@opensumi/ide-keymaps/lib/browser';
+import { KeymapService } from '@opensumi/ide-keymaps/lib/browser/keymaps.service';
+import { IUserStorageService } from '@opensumi/ide-preferences';
+import { UserStorageContribution, UserStorageServiceImpl } from '@opensumi/ide-preferences/lib/browser/userstorage';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 @Injectable()
 export class AddonModule extends BrowserModule {

@@ -1,11 +1,14 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { DebugSession } from '../debug-session';
-import { DebugThread } from './debug-thread';
-import { DebugSource } from './debug-source';
-import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { IRange } from '@opensumi/ide-core-browser';
+import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
+import { DebugSession } from '../debug-session';
 import { DebugScope, ExpressionContainer } from '../tree/debug-tree-node.define';
+
+import { DebugSource } from './debug-source';
+import { DebugThread } from './debug-thread';
+
 
 export class DebugStackFrameData {
   readonly raw: DebugProtocol.StackFrame;

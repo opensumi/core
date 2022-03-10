@@ -15,12 +15,14 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/common/severity.ts
 
-import { Injectable } from '@opensumi/di';
 import { Diagnostic } from 'vscode';
-import { ProblemMatcher } from './problem-matcher';
-import { isArray, isString } from './utils/types';
+
+import { Injectable } from '@opensumi/di';
+
 import { IDisposable, Disposable, DisposableCollection } from './disposable';
+import { ProblemMatcher } from './problem-matcher';
 import { URI } from './uri';
+import { isArray, isString } from './utils/types';
 
 export enum ApplyToKind {
   allDocuments,

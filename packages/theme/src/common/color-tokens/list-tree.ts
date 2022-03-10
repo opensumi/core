@@ -1,6 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../color-registry';
+
 import { Color } from '../../common/color';
+import { registerColor } from '../color-registry';
+
 import { activeContrastBorder, contrastBorder, focusBorder } from './base';
 
 export const listFocusBackground = registerColor(

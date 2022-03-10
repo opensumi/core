@@ -9,36 +9,37 @@ import {
   WithEventBus,
   IEventBus,
 } from '@opensumi/ide-core-browser';
+
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 import { ExtensionWillContributeEvent } from '../../types';
 
+import { ActionContributionSchema, ActionsContributionPoint } from './actions';
+import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
+import { ColorsSchema, ColorsContributionPoint } from './color';
 import { CommandsSchema, CommandsContributionPoint } from './commands';
-import { ThemesSchema, ThemesContributionPoint } from './theme';
-import { LanguagesSchema, LanguagesContributionPoint } from './language';
-import { GrammarsContributionPoint, GrammarSchema } from './grammar';
 import { ConfigurationContributionPoint } from './configuration';
 import { ConfigurationDefaultsContributionPoint } from './configurationDefaults';
-import { ColorsSchema, ColorsContributionPoint } from './color';
-import { LocalizationsContributionPoint } from './localization';
-import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
-import { MenusContributionPoint, SubmenusContributionPoint } from './menu';
-import { SnippetSchema, SnippetsContributionPoint } from './snippets';
-import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
-import { ViewsSchema, ViewsContributionPoint } from './views';
-import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
-import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
-import { IconThemesContributionPoint } from './icon';
-import { ActionContributionSchema, ActionsContributionPoint } from './actions';
-import { ITaskDefinitionSchema, TaskDefinitionContributionPoint } from './taskDefinition';
-import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
-import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
 import { CustomEditorContributionPoint } from './customEditors';
-import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
-import { ViewsWelcomeContributionPoint } from './views-welcome';
+import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
+import { GrammarsContributionPoint, GrammarSchema } from './grammar';
+import { IconThemesContributionPoint } from './icon';
+import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
+import { LanguagesSchema, LanguagesContributionPoint } from './language';
+import { LocalizationsContributionPoint } from './localization';
+import { MenusContributionPoint, SubmenusContributionPoint } from './menu';
+import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
+import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
 import { SemanticTokenModifiersContributionPoint } from './semanticTokenModifiers';
 import { SemanticTokenScopesContributionPoint } from './semanticTokenScopes';
 import { SemanticTokenTypesContributionPoint } from './semanticTokenTypes';
+import { SnippetSchema, SnippetsContributionPoint } from './snippets';
+import { ITaskDefinitionSchema, TaskDefinitionContributionPoint } from './taskDefinition';
 import { TerminalContributionPoint } from './terminal';
+import { ThemesSchema, ThemesContributionPoint } from './theme';
+import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
+import { ViewsSchema, ViewsContributionPoint } from './views';
+import { ViewsWelcomeContributionPoint } from './views-welcome';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$';
 

@@ -1,5 +1,5 @@
-import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
 import { Tree } from '../../../src/recycle-tree/tree/Tree';
+import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
 import { TreeNodeEvent, MetadataChangeType, WatchEvent } from '../../../src/recycle-tree/types';
 
 describe('Tree', () => {

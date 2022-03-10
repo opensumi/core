@@ -1,10 +1,12 @@
-import React, { RefObject, useEffect, useRef } from 'react';
 import { marked } from 'marked';
+import React, { RefObject, useEffect, useRef } from 'react';
+
 import { Autowired, Injectable } from '@opensumi/di';
-import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@opensumi/ide-components';
-import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
 import { IOpenerService } from '@opensumi/ide-core-browser';
+import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
+
+import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {

@@ -17,10 +17,13 @@
  // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/on-type-formatting.ts
 
 import type vscode from 'vscode';
-import * as Converter from '../../../../common/vscode/converter';
+
 import { Uri as URI } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import * as Converter from '../../../../common/vscode/converter';
 import { FormattingOptions, SingleEditOperation, Position } from '../../../../common/vscode/model.api';
+
 import { createToken } from './util';
 
 export class OnTypeFormattingAdapter {

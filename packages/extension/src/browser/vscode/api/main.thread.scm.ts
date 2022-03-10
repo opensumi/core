@@ -1,4 +1,6 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { ILogger } from '@opensumi/ide-core-browser';
 import {
   UriComponents,
   Uri as URI,
@@ -9,7 +11,6 @@ import {
   CancellationToken,
 } from '@opensumi/ide-core-common';
 import { Sequence, ISplice } from '@opensumi/ide-core-common/lib/sequence';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   ISCMRepository,
   ISCMProvider,
@@ -19,9 +20,9 @@ import {
   IInputValidation,
   SCMService,
 } from '@opensumi/ide-scm/lib/common';
-import { ILogger } from '@opensumi/ide-core-browser';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { VSCommand } from '../../../common/vscode/model.api';
 import {
   IExtHostSCMShape,
   SCMProviderFeatures,
@@ -30,7 +31,6 @@ import {
   IMainThreadSCMShape,
 } from '../../../common/vscode/scm';
 
-import { VSCommand } from '../../../common/vscode/model.api';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   readonly elements: ISCMResource[] = [];

@@ -5,8 +5,8 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/tree/main/src/vs/workbench/contrib/testing/common
 
 import type vscode from 'vscode';
-import { CancellationToken } from '@opensumi/ide-core-common';
 
+import { CancellationToken } from '@opensumi/ide-core-common';
 import {
   CoverageDetails,
   ExtensionRunTestsRequest,

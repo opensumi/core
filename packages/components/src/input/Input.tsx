@@ -1,8 +1,8 @@
-import React from 'react';
 import clx from 'classnames';
-import warning from '../utils/warning';
+import React from 'react';
 
 import { Icon } from '../icon';
+import warning from '../utils/warning';
 
 import './input.less';
 

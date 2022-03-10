@@ -1,12 +1,6 @@
-import {
-  IDiskFileProvider,
-  FileChangeEvent,
-  FileStat,
-  FileType,
-  FileSystemError,
-  notEmpty,
-  isErrnoException,
-} from '@opensumi/ide-file-service/lib/common';
+import * as fs from 'fs';
+import * as paths from 'path';
+
 import {
   Event,
   URI,
@@ -16,13 +10,20 @@ import {
   FileChangeType,
   FileSystemProviderCapabilities,
 } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { promisify } from '@opensumi/ide-core-common/lib/browser-fs/util';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
-
-import * as fs from 'fs';
-import * as paths from 'path';
+import { promisify } from '@opensumi/ide-core-common/lib/browser-fs/util';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import {
+  IDiskFileProvider,
+  FileChangeEvent,
+  FileStat,
+  FileType,
+  FileSystemError,
+  notEmpty,
+  isErrnoException,
+} from '@opensumi/ide-file-service/lib/common';
+
 import { HttpTreeList } from './http-file.service';
 
 interface BrowserFsProviderOptions {

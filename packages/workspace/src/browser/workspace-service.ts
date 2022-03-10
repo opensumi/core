@@ -1,12 +1,6 @@
+import * as jsoncparser from 'jsonc-parser';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  DEFAULT_WORKSPACE_SUFFIX_NAME,
-  IWorkspaceService,
-  WorkspaceData,
-  WorkspaceInput,
-  WORKSPACE_USER_STORAGE_FOLDER_NAME,
-  UNTITLED_WORKSPACE,
-} from '../common';
 import {
   Deferred,
   ILogger,
@@ -23,12 +17,21 @@ import {
   IWindowService,
 } from '@opensumi/ide-core-browser';
 import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service';
 import { FileChangeEvent } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
+import {
+  DEFAULT_WORKSPACE_SUFFIX_NAME,
+  IWorkspaceService,
+  WorkspaceData,
+  WorkspaceInput,
+  WORKSPACE_USER_STORAGE_FOLDER_NAME,
+  UNTITLED_WORKSPACE,
+} from '../common';
+
 import { WorkspacePreferences } from './workspace-preferences';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {

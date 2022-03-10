@@ -1,16 +1,17 @@
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 import {
   Disposable,
   IContextKeyService,
   IFileServiceClient,
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
 import { QuickPickService } from '@opensumi/ide-core-browser';
+import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser';
+import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { IDebugSessionManager } from './../../../src/common/debug-session';
 
 describe('Editor Hover Contribution', () => {

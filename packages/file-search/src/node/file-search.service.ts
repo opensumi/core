@@ -1,11 +1,14 @@
-import fuzzy from 'fuzzy';
-import readline from 'readline';
 import path from 'path';
-import { rgPath } from '@opensumi/vscode-ripgrep';
+import readline from 'readline';
+
+import fuzzy from 'fuzzy';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@opensumi/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
 import { IProcessFactory } from '@opensumi/ide-process';
+import { rgPath } from '@opensumi/vscode-ripgrep';
+
 import { IFileSearchService } from '../common';
 
 @Injectable()

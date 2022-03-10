@@ -1,5 +1,6 @@
 import { Provider, Injectable, Autowired } from '@opensumi/di';
 import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@opensumi/ide-core-node';
+
 import {
   IExtensionNodeService,
   ExtensionNodeServiceServerPath,
@@ -8,10 +9,11 @@ import {
   ExtensionHostProfilerServiceToken,
   IExtensionHostManager,
 } from '../common';
+
+import { ExtensionHostManager } from './extension.host.manager';
+import { ExtensionProfilerService } from './extension.profiler.service';
 import { ExtensionNodeServiceImpl } from './extension.service';
 import { ExtensionServiceClientImpl } from './extension.service.client';
-import { ExtensionProfilerService } from './extension.profiler.service';
-import { ExtensionHostManager } from './extension.host.manager';
 
 @Injectable()
 export class ExtensionModule extends NodeModule {

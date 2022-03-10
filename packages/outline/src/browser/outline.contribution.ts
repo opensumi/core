@@ -9,14 +9,16 @@ import {
   CommandRegistry,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { OutlinePanel } from './outline';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
-import { MainLayoutContribution, IMainLayoutService } from '@opensumi/ide-main-layout';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@opensumi/ide-core-browser/lib/contextkey';
-import { OutlineTreeService } from './services/outline-tree.service';
-import { OutlineModelService } from './services/outline-model.service';
+import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { MainLayoutContribution, IMainLayoutService } from '@opensumi/ide-main-layout';
+
 import { OutlineSortOrder } from '../common';
+
+import { OutlinePanel } from './outline';
+import { OutlineModelService } from './services/outline-model.service';
+import { OutlineTreeService } from './services/outline-tree.service';
 
 @Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
 export class OutlineContribution implements MainLayoutContribution, TabBarToolbarContribution, CommandContribution {

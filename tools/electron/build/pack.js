@@ -1,5 +1,7 @@
-const electronBuilder = require('electron-builder');
 const path = require('path');
+
+const electronBuilder = require('electron-builder');
+
 const rootPackage = require('../package.json');
 
 if (process.env.NODE_ENV !== 'production') {

@@ -1,5 +1,8 @@
-import { Emitter, Disposable, ILogger } from '@opensumi/ide-core-common';
 import { RPCProtocol } from '@opensumi/ide-connection';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Emitter, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IExtension } from '@opensumi/ide-extension';
 import {
   ITerminalApiService,
   ITerminalController,
@@ -8,26 +11,25 @@ import {
   ITerminalService,
   ITerminalServicePath,
 } from '@opensumi/ide-terminal-next';
+import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
+import { TerminalProfileInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile.internal';
+import { NodePtyTerminalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import {
+  MockProfileService,
+  MockTerminalProfileInternalService,
+} from '../../../../../terminal-next/__tests__/browser/mock.service';
+import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import {
   EnvironmentVariableCollection,
   ExtHostTerminal,
   Terminal,
 } from '../../../../src/hosted/api/vscode/ext.host.terminal';
-import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtension } from '@opensumi/ide-extension';
-import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
-import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
-import { NodePtyTerminalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.service';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import { TerminalProfileInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile.internal';
-import {
-  MockProfileService,
-  MockTerminalProfileInternalService,
-} from '../../../../../terminal-next/__tests__/browser/mock.service';
+
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

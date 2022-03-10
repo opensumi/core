@@ -1,8 +1,4 @@
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { ITestResult } from './../common/test-result';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import { TestingServiceProviderCount } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import {
   CancellationToken,
   CancellationTokenSource,
@@ -13,14 +9,19 @@ import {
   localize,
   SlotLocation,
 } from '@opensumi/ide-core-browser';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
+import { TestingServiceProviderCount } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AmbiguousRunTestsRequest, ITestController, ITestService, TestId } from '../common';
+import { Testing } from '../common/constants';
 import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import { ITestResultService, TestResultServiceToken } from '../common/test-result';
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
-import { TestingView } from './components/testing.view';
 import { TestingContainerId } from '../common/testing-view';
-import { Testing } from '../common/constants';
+
+import { ITestResult } from './../common/test-result';
+import { TestingView } from './components/testing.view';
 
 @Injectable()
 export class TestServiceImpl extends Disposable implements ITestService {

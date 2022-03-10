@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Uri } from '@opensumi/ide-core-common/lib/uri';
 import { RPCService } from '@opensumi/ide-connection';
+import { Uri } from '@opensumi/ide-core-common/lib/uri';
 
 import {
   IExternalFileArgs,

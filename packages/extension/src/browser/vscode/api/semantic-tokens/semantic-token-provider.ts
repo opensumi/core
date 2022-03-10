@@ -1,6 +1,6 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IExtHostLanguages } from '../../../../common/vscode/languages';
 import { decodeSemanticTokensDto } from '../../../../common/vscode/semantic-tokens';

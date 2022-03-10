@@ -1,6 +1,7 @@
-import * as types from '../../../common/vscode/ext-types';
-import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+
+import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../../../common/vscode';
+import * as types from '../../../common/vscode/ext-types';
 
 export class ExtHostOutput implements IExtHostOutput {
   constructor(private rpcProtocol: IRPCProtocol) {}

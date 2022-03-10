@@ -1,8 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
-import { IEditorDocumentModelService } from '../doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { IEditorDocumentModelService } from '../doc-model/types';
 
 type IProvider = monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 

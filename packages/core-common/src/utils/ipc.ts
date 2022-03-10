@@ -1,8 +1,11 @@
 import { tmpdir } from 'os';
-import { isWindows } from '../platform';
 import { join, dirname } from 'path';
-import { uuid } from '../uuid';
+
 import { ensureDirSync } from 'fs-extra';
+
+import { isWindows } from '../platform';
+import { uuid } from '../uuid';
+
 
 export function normalizedIpcHandlerPath(name: string, uuidSuffix = false, ipcPath = tmpdir()) {
   let handler;

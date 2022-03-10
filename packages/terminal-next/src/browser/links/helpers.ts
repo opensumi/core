@@ -5,6 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalLinkHelpers.ts
 
 import type { IViewportRange, IBufferRange, IBufferLine, IBuffer, IBufferCellPosition } from 'xterm';
+
 import { IRange } from '@opensumi/ide-core-common/lib/types';
 
 export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: number, range: IRange, startLine: number) {

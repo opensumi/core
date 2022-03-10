@@ -1,13 +1,15 @@
-import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
-import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
-import { ICommandServiceToken } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { ICommandServiceToken } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
+import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
+import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
+
 
 describe('MainThreadCommandAPI Test Suites ', () => {
   let extHostCommands: ExtHostCommands;

@@ -1,19 +1,22 @@
+import React, { useEffect, useState } from 'react';
+
 import { BasicRecycleTree } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, localize } from '@opensumi/ide-core-common';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
-import React, { useEffect, useState } from 'react';
+
 import { TestPeekMessageToken } from '../../common';
 import { ITestResult, maxCountPriority, resultItemParents, TestResultServiceToken } from '../../common/test-result';
 import { ITestMessage, ITestTaskState, TestResultItem, TestResultState } from '../../common/testCollection';
 import { firstLine, parseMarkdownText } from '../../common/testingStates';
 import { buildTestUri, TestUriType } from '../../common/testingUri';
 import { ITestTreeData } from '../../common/tree-view.model';
+import styles from '../components/testing.module.less';
 import { getIconWithColor } from '../icons/icons';
 import { TestResultServiceImpl } from '../test.result.service';
+
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
-import styles from '../components/testing.module.less';
 
 enum ETestTreeType {
   RESULT = 'result',

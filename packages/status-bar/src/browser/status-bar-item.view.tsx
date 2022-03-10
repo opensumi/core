@@ -1,14 +1,16 @@
 import cls from 'classnames';
 import React from 'react';
-import { IThemeService } from '@opensumi/ide-theme';
+
+import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { IThemeColor, isThemeColor, CommandService, StatusBarHoverCommand } from '@opensumi/ide-core-common';
-import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
+import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
+import { IThemeColor, isThemeColor, CommandService, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+import { IThemeService } from '@opensumi/ide-theme';
 
 import styles from './status-bar.module.less';
-import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
-import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
+
 
 interface StatusBarPopoverContent {
   contents: StatusBarHoverContent[];

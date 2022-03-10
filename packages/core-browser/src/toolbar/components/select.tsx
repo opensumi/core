@@ -1,5 +1,6 @@
+import classnames from 'classnames';
 import React from 'react';
-import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
+
 import {
   Select,
   SelectOptionsList,
@@ -9,8 +10,9 @@ import {
   isDataOptionGroups,
 } from '@opensumi/ide-components';
 import { Emitter } from '@opensumi/ide-core-common';
-import classnames from 'classnames';
+
 import { getIcon } from '../../style/icon/icon';
+import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
 
 export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & IToolbarActionElementProps) {
   const [viewState, setViewState] = React.useState(props.defaultState || 'default');

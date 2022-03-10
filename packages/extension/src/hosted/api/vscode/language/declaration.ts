@@ -1,9 +1,12 @@
-import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Uri as URI } from '@opensumi/ide-core-common';
+
+import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode/doc';
 import * as types from '../../../../common/vscode/ext-types';
-import * as Converter from '../../../../common/vscode/converter';
 import { Position, Definition, DefinitionLink, Location } from '../../../../common/vscode/model.api';
+
 import { isDefinitionLinkArray, isLocationArray } from './util';
 
 export class DeclarationAdapter {

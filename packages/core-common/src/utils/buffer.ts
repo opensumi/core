@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
 
-import * as strings from './strings';
 import { toCanonicalName, iconvDecode, UTF8 } from '../encoding';
+
+import * as strings from './strings';
 
 let textEncoder: TextEncoder | null;
 

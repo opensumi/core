@@ -1,6 +1,7 @@
 import { FileUri } from '@opensumi/ide-core-node';
-import { FileChangeCollection } from '../../src/node/file-change-collection';
+
 import { FileChangeType } from '../../src/common';
+import { FileChangeCollection } from '../../src/node/file-change-collection';
 
 describe('FileChangeCollection', () => {
   assertChanges({

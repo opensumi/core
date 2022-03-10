@@ -1,10 +1,12 @@
 import { Provider, Injectable, Injector } from '@opensumi/di';
-import { MainLayoutModuleContribution } from './main-layout.contribution';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '../common';
-import { TabbarServiceFactory } from './tabbar/tabbar.service';
-import { LayoutService } from './layout.service';
+
 import { AccordionServiceFactory } from './accordion/accordion.service';
+import { LayoutService } from './layout.service';
+import { MainLayoutModuleContribution } from './main-layout.contribution';
+import { TabbarServiceFactory } from './tabbar/tabbar.service';
 import { ViewsRegistry } from './views-registry';
 
 @Injectable()

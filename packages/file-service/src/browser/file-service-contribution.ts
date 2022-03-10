@@ -5,7 +5,9 @@ import {
   ContributionProvider,
   ClientAppContribution,
 } from '@opensumi/ide-core-browser';
+
 import { IFileServiceClient, IDiskFileProvider, FILE_SCHEME } from '../common';
+
 import { FileServiceClient } from './file-service-client';
 
 // 常规文件资源读取

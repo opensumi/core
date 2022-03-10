@@ -1,10 +1,6 @@
-import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { visit } from 'jsonc-parser';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
-import { QuickPickService } from '@opensumi/ide-quick-open';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
 import {
   PreferenceConfigurations,
   IContextKey,
@@ -22,15 +18,24 @@ import {
   ThrottledDelayer,
   Deferred,
 } from '@opensumi/ide-core-browser';
-import { visit } from 'jsonc-parser';
-import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
-import { DebugConfigurationModel } from './debug-configuration-model';
-import { DebugSessionOptions } from '../common';
-import { FileSystemError } from '@opensumi/ide-file-service';
-import { DebugConfiguration } from '../common';
 import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-editor';
-import { DebugPreferences } from './debug-preferences';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileSystemError } from '@opensumi/ide-file-service';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { QuickPickService } from '@opensumi/ide-quick-open';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+
+import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
+import { DebugSessionOptions } from '../common';
+import { DebugConfiguration } from '../common';
+
+import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
+import { DebugConfigurationModel } from './debug-configuration-model';
+import { DebugPreferences } from './debug-preferences';
+
 
 export type WillProvideDebugConfiguration = WaitUntilEvent;
 export type WillInitialConfiguration = WaitUntilEvent;

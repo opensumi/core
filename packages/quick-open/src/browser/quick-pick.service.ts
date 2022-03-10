@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { getIcon, getIconClass, getExternalIcon } from '@opensumi/ide-core-browser';
 import {
   QuickOpenService,
   QuickOpenItem,
@@ -9,9 +10,10 @@ import {
   HideReason,
   Mode,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { getIcon, getIconClass, getExternalIcon } from '@opensumi/ide-core-browser';
-import { QuickTitleBar } from './quick-title-bar';
 import { Emitter, Event } from '@opensumi/ide-core-common';
+
+import { QuickTitleBar } from './quick-title-bar';
+
 
 @Injectable()
 export class QuickPickServiceImpl implements QuickPickService {

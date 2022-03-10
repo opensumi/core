@@ -1,4 +1,20 @@
-import { ExtHostFileSystemInfo } from '../../src/hosted/api/vscode/ext.host.file-system-info';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import util from 'util';
+
+import temp = require('temp');
+import vscode from 'vscode';
+
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import {
+  PreferenceProviderProvider,
+  PreferenceProvider,
+  PreferenceService,
+  PreferenceServiceImpl,
+} from '@opensumi/ide-core-browser';
+import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
+import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
   Uri as vscodeUri,
   Emitter,
@@ -14,48 +30,8 @@ import {
   IApplicationService,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
-import util from 'util';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
-import { ExtHostWorkspace, createWorkspaceApiFactory } from '../../src/hosted/api/vscode/ext.host.workspace';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
-import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
-import { ExtHostPreference } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.preference';
-import { ExtHostFileSystem } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { IDocPersistentCacheProvider, ResourceService } from '@opensumi/ide-editor/lib/common';
-import {
-  FileServiceClient,
-  BrowserFileSystemRegistryImpl,
-} from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import {
-  FileServicePath,
-  FileStat,
-  FileType,
-  IBrowserFileSystemRegistry,
-  IDiskFileProvider,
-} from '@opensumi/ide-file-service';
-import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
-import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
-import { ExtensionService } from '@opensumi/ide-extension';
-import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { MonacoService } from '@opensumi/ide-monaco';
-import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
-import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
 import { AppConfig } from '@opensumi/ide-core-node';
-import { MainThreadExtensionDocumentData } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.doc';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
@@ -64,37 +40,64 @@ import {
   EditorComponentRegistry,
   EditorPreferences,
 } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import {
   EditorDocumentModelContentRegistryImpl,
   EditorDocumentModelServiceImpl,
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
-import { FileSchemeDocumentProvider } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
-import { MainThreadPreference } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.preference';
-import {
-  PreferenceProviderProvider,
-  PreferenceProvider,
-  PreferenceService,
-  PreferenceServiceImpl,
-} from '@opensumi/ide-core-browser';
-import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
-import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
-import { ExtHostTasks } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
-import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { mockExtensions } from '../../__mocks__/extensions';
-import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IDocPersistentCacheProvider, ResourceService } from '@opensumi/ide-editor/lib/common';
+import { ExtensionService } from '@opensumi/ide-extension';
+import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
+import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
+import { MainThreadExtensionDocumentData } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.doc';
 import { MainThreadFileSystem } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.file-system';
-import { ExtHostFileSystemEvent } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system-event';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
-import temp = require('temp');
-import { IWebviewService } from '@opensumi/ide-webview';
-import vscode from 'vscode';
+import { MainThreadPreference } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.preference';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { Position, WorkspaceEdit } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
+import { ExtHostFileSystem } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
+import { ExtHostFileSystemEvent } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system-event';
+import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
+import { ExtHostPreference } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.preference';
+import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
+import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { ExtHostTasks } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
+import { FileSchemeDocumentProvider } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
+import {
+  FileServicePath,
+  FileStat,
+  FileType,
+  IBrowserFileSystemRegistry,
+  IDiskFileProvider,
+} from '@opensumi/ide-file-service';
+import {
+  FileServiceClient,
+  BrowserFileSystemRegistryImpl,
+} from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
+import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { MonacoService } from '@opensumi/ide-monaco';
+import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
+import { IWebviewService } from '@opensumi/ide-webview';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
 import { WorkspaceEditServiceImpl } from '@opensumi/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { mockExtensions } from '../../__mocks__/extensions';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
+import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
+import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
+import { ExtHostFileSystemInfo } from '../../src/hosted/api/vscode/ext.host.file-system-info';
+import { ExtHostWorkspace, createWorkspaceApiFactory } from '../../src/hosted/api/vscode/ext.host.workspace';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

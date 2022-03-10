@@ -1,8 +1,11 @@
-import React = require('react');
-import styles from './progress.module.less';
 import clsx from 'classnames';
-import { IProgressModel } from '.';
 import { observer } from 'mobx-react-lite';
+import React = require('react');
+
+import styles from './progress.module.less';
+
+import { IProgressModel } from '.';
+
 
 export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: string }> = observer(
   ({ progressModel, className }) => {

@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { IJSONSchemaMap, isString, basename, URI, ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
-import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
+
 import { IWorkspaceFolder } from './index';
 
 interface JSONType {

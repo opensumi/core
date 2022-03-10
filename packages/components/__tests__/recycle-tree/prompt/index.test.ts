@@ -1,7 +1,7 @@
-import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
-import { Tree } from '../../../src/recycle-tree/tree/Tree';
-import { NewPromptHandle, RenamePromptHandle } from '../../../src/recycle-tree/prompt';
 import { TreeNodeType, PromptValidateMessage, PROMPT_VALIDATE_TYPE } from '../../../src';
+import { NewPromptHandle, RenamePromptHandle } from '../../../src/recycle-tree/prompt';
+import { Tree } from '../../../src/recycle-tree/tree/Tree';
+import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
 
 describe('NewPromptHandle', () => {
   class TreeA extends Tree {

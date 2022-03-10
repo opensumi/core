@@ -1,5 +1,5 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
 
 import { defaultIconMap, defaultIconfont } from './iconfont/iconManager';
 import { getKaitianIcon, IIconShapeOptions } from './util';

@@ -19,6 +19,7 @@ import {
   AbstractWorkerExtProcessService,
   AbstractViewExtProcessService,
 } from '../common/extension.service';
+
 import { ActivationEventServiceImpl } from './activation.service';
 import { ExtCommandManagementImpl as ExtCommandManagementImpl } from './extension-command-management';
 import { ExtInstanceManagementService } from './extension-instance-management';
@@ -28,9 +29,9 @@ import { ViewExtProcessService } from './extension-view.service';
 import { WorkerExtProcessService } from './extension-worker.service';
 import { ExtensionClientAppContribution, ExtensionCommandContribution } from './extension.contribution';
 import { ExtensionServiceImpl } from './extension.service';
+import { BrowserRequireInterceptorContribution } from './require-interceptor.contribution';
 import { AbstractExtInstanceManagementService, IActivationEventService } from './types';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
-import { BrowserRequireInterceptorContribution } from './require-interceptor.contribution';
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {

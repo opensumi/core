@@ -1,4 +1,5 @@
 import { getExternalIcon } from '@opensumi/ide-core-browser';
+
 import { TestResultState } from '../../common/testCollection';
 
 export const defaultIconColor = 'testing_icon_iconPassed';

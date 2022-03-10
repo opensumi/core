@@ -1,7 +1,7 @@
-import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@opensumi/ide-core-common';
-import { IDisposable, dispose } from '@opensumi/ide-core-common/lib/disposable';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@opensumi/ide-core-common';
+import { IDisposable, dispose } from '@opensumi/ide-core-common/lib/disposable';
 import { IDecorationsService, IDecorationData } from '@opensumi/ide-decoration';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';

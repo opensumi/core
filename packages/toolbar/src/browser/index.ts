@@ -9,9 +9,10 @@ import {
   IToolbarRegistry,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+
 import { ToolBar } from './toolbar.view';
-import { IToolBarViewService, ToolBarContribution } from './types';
 import { ToolBarViewService } from './toolbar.view.service';
+import { IToolBarViewService, ToolBarContribution } from './types';
 export * from './types';
 
 @Injectable()

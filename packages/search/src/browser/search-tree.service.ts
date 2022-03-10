@@ -1,7 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import React from 'react';
 import { action } from 'mobx';
+import React from 'react';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   URI,
   Schemas,
@@ -15,25 +17,26 @@ import {
   MessageType,
   memoize,
 } from '@opensumi/ide-core-common';
-import { Injectable, Autowired } from '@opensumi/di';
+import { WorkbenchEditorService, TrackedRangeStickiness } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
 } from '@opensumi/ide-editor/lib/browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { WorkbenchEditorService, TrackedRangeStickiness } from '@opensumi/ide-editor';
-import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import { IDialogService } from '@opensumi/ide-overlay';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { ContentSearchResult, ISearchTreeItem } from '../common';
 
 import { replaceAll, replace } from './replace';
-import { ContentSearchClientService } from './search.service';
-import { ContentSearchResult, ISearchTreeItem } from '../common';
 import { SearchPreferences } from './search-preferences';
 import styles from './search.module.less';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { ContentSearchClientService } from './search.service';
+
 
 const REPLACE_PREVIEW = 'replacePreview';
 

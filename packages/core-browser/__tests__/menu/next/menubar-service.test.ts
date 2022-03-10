@@ -1,9 +1,10 @@
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
-import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { Injector } from '@opensumi/di';
+import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
+import { IContextKeyService } from '../../../src/context-key';
 import {
   AbstractMenubarService,
   MenubarServiceImpl,
@@ -12,7 +13,6 @@ import {
   MenuServiceImpl,
   IMenuRegistry,
 } from '../../../src/menu/next';
-import { IContextKeyService } from '../../../src/context-key';
 
 jest.useFakeTimers();
 

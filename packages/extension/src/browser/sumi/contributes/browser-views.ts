@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { VSCodeContributePoint, Contributes } from '../../../common';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-common';
-import { ExtensionLoadingView } from '../../components';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
+import { ExtensionLoadingView } from '../../components';
 
 export type KtViewLocation = 'left' | 'right' | 'bottom' | 'editor' | 'toolBar';
 

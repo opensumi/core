@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMemo, useState } from 'react';
+
 import {
   Domain,
   ComponentContribution,
@@ -10,11 +11,11 @@ import {
 } from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { Disposable, localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
+import { ThrottledDelayer } from '@opensumi/ide-core-common/lib/async';
+import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
 import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open/lib/common';
-import { Disposable, localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
-import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
-import { ThrottledDelayer } from '@opensumi/ide-core-common/lib/async';
 
 import styles from './editor-empty-component.module.less';
 

@@ -1,12 +1,13 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor, transparent, lighten, darken } from '../../color-registry';
-import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
-import { textLinkActiveForeground } from '../text';
-import { TAB_INACTIVE_BACKGROUND } from '../tab';
-import { foreground } from '../base';
-import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER } from '../activity-bar';
+import { foreground } from '../base';
+import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
+import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { SIDE_BAR_BORDER } from '../sidebar';
+import { TAB_INACTIVE_BACKGROUND } from '../tab';
+import { textLinkActiveForeground } from '../text';
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor(

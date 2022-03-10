@@ -1,7 +1,3 @@
-import { IDialogService } from '@opensumi/ide-overlay';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
 import {
   Disposable,
   URI,
@@ -11,22 +7,28 @@ import {
   OS,
   IApplicationService,
 } from '@opensumi/ide-core-browser';
+import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
 import { CommonServerPath } from '@opensumi/ide-core-common';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks/file-service-client';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
 import { FileSchemeDocNodeServicePath } from '@opensumi/ide-file-scheme';
 import {
   FileSchemeDocumentProvider,
   VscodeSchemeDocumentProvider,
 } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks/file-service-client';
+import { IDialogService } from '@opensumi/ide-overlay';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSchemeModule } from '../../src/browser';
-import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
-import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
-import {
-  HashCalculateServiceImpl,
-  IHashCalculateService,
-} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+
 
 describe('file scheme tests', () => {
   const injector = createBrowserInjector([FileSchemeModule]);

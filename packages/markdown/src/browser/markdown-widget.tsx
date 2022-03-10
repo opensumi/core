@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { useInjectable, Disposable, CancellationTokenSource, URI } from '@opensumi/ide-core-browser';
+
 import { IMarkdownService } from '../common';
 
 export const Markdown = ({

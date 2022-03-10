@@ -1,10 +1,11 @@
 import { Provider, Injectable } from '@opensumi/di';
-import { StatusBarView } from './status-bar.view';
-import { StatusBarService } from './status-bar.service';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+
 import { StatusBarContribution } from './status-bar.contribution';
 // import { IStatusBarService } from '../common';
-import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+import { StatusBarService } from './status-bar.service';
+import { StatusBarView } from './status-bar.view';
 
 @Injectable()
 export class StatusBarModule extends BrowserModule {

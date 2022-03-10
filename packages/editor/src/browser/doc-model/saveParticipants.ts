@@ -1,10 +1,4 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
-import {
-  getCodeActions,
-  CodeActionItem,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   ClientAppContribution,
   WithEventBus,
@@ -18,10 +12,19 @@ import {
   MonacoOverrideServiceRegistry,
   Progress,
 } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/di';
-import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
-import { SaveReason } from '../types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import {
+  getCodeActions,
+  CodeActionItem,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
+import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { SaveReason } from '../types';
+
+import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
+
 
 @Injectable()
 export class CodeActionOnSaveParticipant extends WithEventBus {

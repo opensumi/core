@@ -1,19 +1,21 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Injectable, Autowired } from '@opensumi/di';
+import { URI, ILogger, revive } from '@opensumi/ide-core-common';
+import { UriComponents } from '@opensumi/ide-editor';
+import {
+  ResourceEdit,
+  ResourceFileEdit,
+  ResourceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import type {
   IBulkEditPreviewHandler,
   IBulkEditResult,
   IBulkEditService,
   IBulkEditOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import {
-  ResourceEdit,
-  ResourceFileEdit,
-  ResourceTextEdit,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, ILogger, revive } from '@opensumi/ide-core-common';
-import { UriComponents } from '@opensumi/ide-editor';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';
+
 import { isResourceFileEdit, isResourceTextEdit } from './utils';
 
 function reviveWorkspaceEditDto2(data: ResourceEdit[] | undefined): ResourceEdit[] {

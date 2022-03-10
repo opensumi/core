@@ -1,5 +1,4 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { TreeNodeType } from '@opensumi/ide-components';
 import {
   URI,
   Disposable,
@@ -12,22 +11,24 @@ import {
   OS,
   Emitter,
 } from '@opensumi/ide-core-browser';
+import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Directory, File } from '../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@opensumi/ide-components';
-import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
-import styles from '../../src/browser/file-tree-node.modules.less';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
-import { IThemeService } from '@opensumi/ide-theme';
-import { IDecorationsService } from '@opensumi/ide-decoration';
-import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IThemeService } from '@opensumi/ide-theme';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
+import styles from '../../src/browser/file-tree-node.modules.less';
+import { Directory, File } from '../../src/common/file-tree-node.define';
 
 class TempDirectory {}
 

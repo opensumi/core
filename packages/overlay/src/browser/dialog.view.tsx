@@ -1,8 +1,9 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { Button, Dialog as DialogView } from '@opensumi/ide-components';
 import { useInjectable, localize } from '@opensumi/ide-core-browser';
 import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
-import { Button, Dialog as DialogView } from '@opensumi/ide-components';
 
 import { IDialogService } from '../common';
 

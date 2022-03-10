@@ -1,11 +1,13 @@
-import React from 'react';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@opensumi/ide-core-browser';
-import styles from './debug-breakpoints.module.less';
 import cls from 'classnames';
-import { CheckBox } from '@opensumi/ide-components';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { CheckBox } from '@opensumi/ide-components';
+import { Badge, RecycleList } from '@opensumi/ide-components';
+import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@opensumi/ide-core-browser';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
+import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
 import {
   DebugBreakpoint,
   DebugExceptionBreakpoint,
@@ -13,9 +15,10 @@ import {
   isRuntimeBreakpoint,
   getStatus,
 } from '../../breakpoint';
-import { Badge, RecycleList } from '@opensumi/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
+
+import styles from './debug-breakpoints.module.less';
+import { DebugBreakpointsService } from './debug-breakpoints.service';
 
 export interface BreakpointItem {
   name: string;

@@ -1,7 +1,9 @@
 import { IRange, Position } from '@opensumi/ide-core-common';
+
 import { IModelChangedEvent } from '../../../../common/vscode';
-import { PrefixSumComputer } from './prefixSumComputer';
 import { Uri } from '../../../../common/vscode/ext-types';
+
+import { PrefixSumComputer } from './prefixSumComputer';
 
 export class MirrorTextModel {
   protected _uri: Uri;

@@ -1,6 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
-import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import {
   Disposable,
   IDisposable,
@@ -9,12 +7,16 @@ import {
   IJSONSchemaSnippet,
   WaitUntilEvent,
 } from '@opensumi/ide-core-browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
-import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
+import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
+import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
+import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { DebugActivationEvent } from '../../../../common/vscode';
 import { IActivationEventService } from '../../../types';
+
+import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 
 export interface ExtensionDebugAdapterContributionRegistrator {
   /**

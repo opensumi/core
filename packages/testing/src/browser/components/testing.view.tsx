@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
+
 import { localize, useInjectable, ViewContextKeyRegistry } from '@opensumi/ide-core-browser';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
+
+import { Testing } from '../../common/constants';
 
 import { TestingExplorerTree } from './testing.explorer.tree';
 import styles from './testing.module.less';
-import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { Testing } from '../../common/constants';
 
 export const TestingView = () => {
   const menuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);

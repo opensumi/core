@@ -1,12 +1,15 @@
-import React from 'react';
-import Dialog from 'rc-dialog';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import addEventListener from 'rc-util/lib/Dom/addEventListener';
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
-import { getConfirmLocale, ModalLocale } from './locale';
+import classNames from 'classnames';
+import PropTypes from 'prop-types';
+import Dialog from 'rc-dialog';
+import addEventListener from 'rc-util/lib/Dom/addEventListener';
+import React from 'react';
+
 import { Button } from '../button';
 import type { ButtonType, ButtonProps } from '../button';
+
+import { getConfirmLocale, ModalLocale } from './locale';
+
 
 let mousePosition: { x: number; y: number } | null;
 export const destroyFns: Array<() => void> = [];

@@ -1,3 +1,5 @@
+import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   INativeMenuTemplate,
@@ -6,8 +8,8 @@ import {
   IDisposable,
   IElectronMainMenuService,
 } from '@opensumi/ide-core-common';
+
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
-import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
 @Injectable()
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {

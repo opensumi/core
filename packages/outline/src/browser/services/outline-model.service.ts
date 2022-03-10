@@ -1,4 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import pSeries from 'p-series';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
@@ -16,18 +17,20 @@ import {
   ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import { OutlineEventService } from './outline-event.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { OutlineTreeService } from './outline-tree.service';
-import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outline-node.define';
-import { OutlineTreeModel } from './outline-model';
 import {
   DocumentSymbolStore,
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { IOutlineDecorationService } from '../../common';
-import pSeries from 'p-series';
+import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outline-node.define';
 import styles from '../outline-node.module.less';
+
+import { OutlineEventService } from './outline-event.service';
+import { OutlineTreeModel } from './outline-model';
+import { OutlineTreeService } from './outline-tree.service';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

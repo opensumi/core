@@ -27,6 +27,7 @@ import {
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
 import { ExtHostAPIIdentifier } from '../common/vscode';
+
 import { createSumiApiFactory } from './sumi/main.thread.api.impl';
 import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
 

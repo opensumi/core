@@ -1,7 +1,8 @@
+import { ILogServiceManager, LogLevel } from '@opensumi/ide-core-common';
+import { INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
-import { ILogServiceManager, LogLevel } from '@opensumi/ide-core-common';
 
 describe('NodeLogger', () => {
   let logger: INodeLogger;

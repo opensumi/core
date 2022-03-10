@@ -1,9 +1,13 @@
-import { app } from 'electron';
-import { ElectronMainApp } from '@opensumi/ide-core-electron-main';
-import { URI } from '@opensumi/ide-core-common';
 import { join } from 'path';
-import { MainModule } from './services';
+
+import { app } from 'electron';
+
+import { URI } from '@opensumi/ide-core-common';
+import { ElectronMainApp } from '@opensumi/ide-core-electron-main';
 import { WebviewElectronMainModule } from '@opensumi/ide-webview/lib/electron-main';
+
+import { MainModule } from './services';
+
 // import { ElectronMainWorkspaceModule } from '@opensumi/ide-workspace/lib/electron-main';
 
 const getExtensionDir = () => {

@@ -1,14 +1,5 @@
-import {
-  ExtHostWebviewViews,
-  ExtHostWebviewService,
-} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
-import {
-  MainThreadWebview,
-  MainThreadWebviewView,
-} from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
-import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILoggerManagerClient } from '@opensumi/ide-logs';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import {
   Emitter,
   makeRandomHexString,
@@ -17,18 +8,28 @@ import {
   CancellationTokenSource,
   CommandRegistry,
 } from '@opensumi/ide-core-common';
-import { IWebviewService, IWebview } from '@opensumi/ide-webview';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
-import { WebviewViewShouldShowEvent } from '@opensumi/ide-extension/lib/browser/components/extension-webview-view';
-import { WebviewViewProvider, WebviewView } from '@opensumi/ide-extension/lib/common/vscode/webview';
-import { IExtensionDescription, ExtensionIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
-import { IIconService } from '@opensumi/ide-theme';
-import { StaticResourceService } from '@opensumi/ide-static-resource';
-import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
+import { WebviewViewShouldShowEvent } from '@opensumi/ide-extension/lib/browser/components/extension-webview-view';
+import {
+  MainThreadWebview,
+  MainThreadWebviewView,
+} from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
+import { IExtensionDescription, ExtensionIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { WebviewViewProvider, WebviewView } from '@opensumi/ide-extension/lib/common/vscode/webview';
+import {
+  ExtHostWebviewViews,
+  ExtHostWebviewService,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
+import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { StaticResourceService } from '@opensumi/ide-static-resource';
+import { IIconService } from '@opensumi/ide-theme';
+import { IWebviewService, IWebview } from '@opensumi/ide-webview';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
+import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
 
 async function delay(ms: number) {
   return new Promise<void>((resolve) => {

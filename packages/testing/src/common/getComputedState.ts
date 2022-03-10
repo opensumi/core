@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
+
 import { TestResultState } from './testCollection';
 import { maxPriority, statePriority } from './testingStates';
 

@@ -1,5 +1,6 @@
 import { Command } from '@opensumi/ide-core-common';
 import { ICommandService } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
+
 import { ICodeEditor } from '../monaco-api/types';
 
 export type {

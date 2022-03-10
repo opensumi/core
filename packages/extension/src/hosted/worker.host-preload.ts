@@ -1,8 +1,10 @@
 import path from 'path';
+
 import { Injector } from '@opensumi/di';
-import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
-import { setPerformance } from './api/vscode/language/util';
 import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+
+import { setPerformance } from './api/vscode/language/util';
+import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
 
 setPerformance(self.performance);
 // make sure Worker cors

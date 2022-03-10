@@ -1,9 +1,11 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
+
 import { Color, RGBA } from '../../common/color';
+import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
+
+import { badgeBackground, badgeForeground } from './badge';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
 import { backgroundColor, foregroundColor } from './basic-color';
-import { badgeBackground, badgeForeground } from './badge';
 
 export const editorErrorForeground = registerColor(
   'editorError.foreground',

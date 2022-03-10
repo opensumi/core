@@ -1,9 +1,10 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
-import { TreeViewDataProvider } from '../main.thread.treeview';
-import { ICommand } from '../../../../common/vscode/models';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IAccessibilityInformation } from '@opensumi/ide-core-common';
+
 import { ITreeItemLabel } from '../../../../common/vscode';
+import { ICommand } from '../../../../common/vscode/models';
+import { TreeViewDataProvider } from '../main.thread.treeview';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
   public static is(node: any): node is ExtensionTreeRoot {

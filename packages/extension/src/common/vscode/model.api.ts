@@ -1,7 +1,6 @@
-import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
-import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type vscode from 'vscode';
+import { SymbolInformation } from 'vscode-languageserver-types';
 
-// 内置的api类型声明
 import {
   Uri as URI,
   IRange,
@@ -12,13 +11,17 @@ import {
   Event,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import type vscode from 'vscode';
-import { SymbolInformation } from 'vscode-languageserver-types';
-import { IndentAction, SymbolKind } from './ext-types';
-import { IMarkdownString } from './models/html-content';
 // eslint-disable-next-line import/no-restricted-paths
 import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
+import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+// 内置的api类型声明
+
+import { IndentAction, SymbolKind } from './ext-types';
+import { IMarkdownString } from './models/html-content';
+
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
 export interface IRawColorInfo {

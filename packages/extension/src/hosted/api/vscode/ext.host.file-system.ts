@@ -16,13 +16,17 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-ext-impl.ts
 
 import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { FileChangeType, FileStat, FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
 import { URI, IDisposable, Schemas, toDisposable } from '@opensumi/ide-core-common';
+import { FileChangeType, FileStat, FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
+
 import { MainThreadAPIIdentifier } from '../../../common/vscode';
-import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
-import * as files from '../../../common/vscode/file-system';
 import { UriComponents } from '../../../common/vscode/ext-types';
+import * as files from '../../../common/vscode/file-system';
+
+import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
+
 
 export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
   return {

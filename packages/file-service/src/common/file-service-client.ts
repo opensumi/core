@@ -5,6 +5,9 @@ import {
   IDisposable,
   FileSystemProviderCapabilities,
 } from '@opensumi/ide-core-common';
+import { DidFilesChangedParams, FileChangeEvent } from '@opensumi/ide-core-common';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+
 import {
   FileStat,
   FileMoveOptions,
@@ -18,8 +21,6 @@ import {
   IFileSystemProviderCapabilitiesChangeEvent,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
-import { DidFilesChangedParams, FileChangeEvent } from '@opensumi/ide-core-common';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 export const IFileServiceClient = IFileServiceClientToken;
 

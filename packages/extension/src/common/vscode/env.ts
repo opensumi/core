@@ -1,5 +1,7 @@
-import { LogLevel as KTLogLevel, Emitter } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { LogLevel as KTLogLevel, Emitter } from '@opensumi/ide-core-common';
+
 import { LogLevel, UIKind, UriComponents } from './ext-types';
 
 export interface IMainThreadEnv {

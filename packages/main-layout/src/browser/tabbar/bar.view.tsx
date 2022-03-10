@@ -1,16 +1,19 @@
-import React from 'react';
 import clsx from 'classnames';
-import styles from './styles.module.less';
-import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { Badge, Icon } from '@opensumi/ide-components';
 import { ComponentRegistryInfo, useInjectable, KeybindingRegistry, usePreference } from '@opensumi/ide-core-browser';
-import { TabbarService, TabbarServiceFactory } from './tabbar.service';
-import { observer } from 'mobx-react-lite';
-import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '../../common';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+
+import { IMainLayoutService } from '../../common';
+
+import { TabbarConfig } from './renderer.view';
+import styles from './styles.module.less';
+import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
 function splitVisibleTabs(containers: ComponentRegistryInfo[], tabSize: number, availableSize: number) {
   const visibleCount = Math.floor(availableSize / tabSize);

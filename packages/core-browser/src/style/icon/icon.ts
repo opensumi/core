@@ -1,5 +1,5 @@
-import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { updateKaitianIconMap, getKaitianIcon } from '@opensumi/ide-components/lib/icon';
+import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { IDE_ICONFONT_CN_CSS, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS } from './ide-iconfont';
 

@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IOpenerService, IOpener } from '../../src/opener';
-import { OpenerService } from '../../src/opener/opener.service';
-import { DefaultOpener } from '../../src/opener/default-opener';
 import { URI } from '../../src';
+import { IOpenerService, IOpener } from '../../src/opener';
+import { DefaultOpener } from '../../src/opener/default-opener';
+import { OpenerService } from '../../src/opener/opener.service';
 
 describe('packages/core-browser/src/opener/opener.service.ts', () => {
   let openerService: IOpenerService;

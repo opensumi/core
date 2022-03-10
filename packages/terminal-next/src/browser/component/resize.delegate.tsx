@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { IWidget } from '../../common/resize';
 
 import styles from './resize.module.less';

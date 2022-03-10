@@ -1,4 +1,8 @@
+import { userInfo } from 'os';
+
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Event,
   Emitter,
@@ -10,7 +14,6 @@ import {
   Disposable,
   CancellationTokenSource,
 } from '@opensumi/ide-core-common';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   ITerminalInfo,
   TerminalDataBufferer,
@@ -24,17 +27,18 @@ import {
   ITerminalProfile,
 } from '@opensumi/ide-terminal-next';
 import {
+  EnvironmentVariableMutatorType,
+  ISerializableEnvironmentVariableCollection,
+} from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+
+import { IExtension } from '../../../common';
+import {
   IMainThreadTerminal,
   MainThreadAPIIdentifier,
   IExtHostTerminal,
   IExtensionDescription,
 } from '../../../common/vscode';
-import { userInfo } from 'os';
-import { IExtension } from '../../../common';
-import {
-  EnvironmentVariableMutatorType,
-  ISerializableEnvironmentVariableCollection,
-} from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+
 
 const debugLog = getDebugLogger();
 

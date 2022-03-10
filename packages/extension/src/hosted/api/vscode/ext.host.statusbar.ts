@@ -1,6 +1,9 @@
+import { v4 } from 'uuid';
+import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { formatLocalize } from '@opensumi/ide-core-common';
-import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
+
 import {
   MainThreadAPIIdentifier,
   IMainThreadStatusBar,
@@ -8,9 +11,9 @@ import {
   ArgumentProcessor,
   IExtensionDescription,
 } from '../../../common/vscode';
-import { v4 } from 'uuid';
+import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import * as types from '../../../common/vscode/ext-types';
-import type vscode from 'vscode';
+
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;

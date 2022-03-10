@@ -1,4 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
+
 import {
   IFileSchemeDocNodeService,
   FileSchemeDocNodeServicePath,
@@ -6,7 +8,6 @@ import {
   IContentChange,
   ISavingContent,
 } from '../common';
-import { IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
 
 @Injectable()
 export class FileSchemeDocClientService implements IFileSchemeDocClient {

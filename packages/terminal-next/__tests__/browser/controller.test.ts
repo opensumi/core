@@ -1,10 +1,13 @@
 /**
  * Terminal Controller Test
  */
-import { createProxyServer, createWsServer, resetPort } from './proxy';
-import { ITerminalController } from '../../src/common';
-import { injector } from './inject';
 import WebSocket from 'ws';
+
+import { ITerminalController } from '../../src/common';
+
+import { injector } from './inject';
+import { createProxyServer, createWsServer, resetPort } from './proxy';
+
 
 describe('Terminal Controller', () => {
   let controller: ITerminalController;

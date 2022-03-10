@@ -1,9 +1,11 @@
-import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Uri as URI } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { Position, DocumentHighlight } from '../../../../common/vscode/model.api';
-import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
+import * as types from '../../../../common/vscode/ext-types';
+import { Position, DocumentHighlight } from '../../../../common/vscode/model.api';
 
 export class DocumentHighlightAdapter {
   constructor(

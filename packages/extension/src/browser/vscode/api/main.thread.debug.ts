@@ -1,12 +1,5 @@
 import { Injectable, Optional, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import {
-  IMainThreadDebug,
-  ExtHostAPIIdentifier,
-  IExtHostDebug,
-  ExtensionWSChannel,
-  IMainThreadConnectionService,
-  IStartDebuggingOptions,
-} from '../../../common/vscode';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   DisposableCollection,
   Uri,
@@ -15,6 +8,7 @@ import {
   SupportLogNamespace,
   URI,
 } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   DebuggerDescription,
   IDebugService,
@@ -33,21 +27,30 @@ import {
   DebugModelManager,
   DebugBreakpoint,
 } from '@opensumi/ide-debug/lib/browser';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
-import { ExtensionDebugService } from './debug/extension-debug-service';
-import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
-import { IActivationEventService } from '../../types';
-import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+import {
+  IMainThreadDebug,
+  ExtHostAPIIdentifier,
+  IExtHostDebug,
+  ExtensionWSChannel,
+  IMainThreadConnectionService,
+  IStartDebuggingOptions,
+} from '../../../common/vscode';
+import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
+import { IActivationEventService } from '../../types';
+
+import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
+import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
+import { ExtensionDebugService } from './debug/extension-debug-service';
+
 
 @Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {

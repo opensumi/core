@@ -1,4 +1,3 @@
-import MonacoServiceImpl from './monaco.service';
 import { Provider, Injectable } from '@opensumi/di';
 import {
   BrowserModule,
@@ -11,13 +10,15 @@ import {
   IMimeService,
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
-import { MonacoClientContribution } from './monaco.contribution';
-import { SchemaStore, SchemaRegistry } from './schema-registry';
+import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+
 import { MonacoMimeService } from './monaco-mime';
 import { MonacoContextKeyService } from './monaco.context-key.service';
-import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import { ConfigurationService } from './monaco.context-key.service';
+import { MonacoClientContribution } from './monaco.contribution';
+import MonacoServiceImpl from './monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from './override.service.registry';
+import { SchemaStore, SchemaRegistry } from './schema-registry';
 
 @Injectable()
 export class MonacoModule extends BrowserModule {

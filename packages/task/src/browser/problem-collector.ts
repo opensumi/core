@@ -16,8 +16,9 @@
 
  // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-problem-collector.ts
 
-import { StartStopLineMatcher, WatchModeLineMatcher, AbstractLineMatcher } from './problem-line-matcher';
 import { ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
+
+import { StartStopLineMatcher, WatchModeLineMatcher, AbstractLineMatcher } from './problem-line-matcher';
 
 export function isWatchModeWatcher(matcher: ProblemMatcher): boolean {
   return !!matcher.watching;

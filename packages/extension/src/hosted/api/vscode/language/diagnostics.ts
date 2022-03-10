@@ -16,10 +16,12 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/diagnostics.ts
 
 import type vscode from 'vscode';
+
 import { Emitter, Event, IMarkerData, MarkerSeverity } from '@opensumi/ide-core-common';
+
 import { IMainThreadLanguages } from '../../../../common/vscode';
-import { DiagnosticSeverity, Uri as URI } from '../../../../common/vscode/ext-types';
 import { convertDiagnosticToMarkerData } from '../../../../common/vscode/converter';
+import { DiagnosticSeverity, Uri as URI } from '../../../../common/vscode/ext-types';
 
 export class DiagnosticCollection implements vscode.DiagnosticCollection {
   private static DIAGNOSTICS_PRIORITY = [

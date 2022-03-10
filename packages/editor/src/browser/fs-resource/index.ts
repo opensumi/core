@@ -1,10 +1,13 @@
-import { Domain } from '@opensumi/ide-core-browser';
-import { BrowserEditorContribution } from '../types';
 import { Autowired } from '@opensumi/di';
-import { FileSystemResourceProvider } from './fs-resource';
+import { Domain } from '@opensumi/ide-core-browser';
+
+
 import { ResourceService } from '../../common';
 import { IEditorDocumentModelContentRegistry } from '../doc-model/types';
+import { BrowserEditorContribution } from '../types';
+
 import { BaseFileSystemEditorDocumentProvider } from './fs-editor-doc';
+import { FileSystemResourceProvider } from './fs-resource';
 
 @Domain(BrowserEditorContribution)
 export class FileSystemResourceContribution implements BrowserEditorContribution {

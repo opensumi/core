@@ -1,13 +1,14 @@
 import { Injector, Injectable } from '@opensumi/di';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
-import { OutputChannel } from '../../src/browser/output.channel';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { OutputPreferences } from '../../src/browser/output-preference';
+import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { ContentChangeEvent, ContentChangeType } from '@opensumi/ide-output/lib/common';
+
+import { OutputPreferences } from '../../src/browser/output-preference';
+import { OutputChannel } from '../../src/browser/output.channel';
 
 @Injectable()
 class MockLoggerManagerClient {

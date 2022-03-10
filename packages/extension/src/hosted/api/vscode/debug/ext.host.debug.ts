@@ -1,4 +1,15 @@
 import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import {
+  DebugConfiguration,
+  DebugStreamConnection,
+  IDebuggerContribution,
+  IDebugSessionDTO,
+} from '@opensumi/ide-debug';
+
 import {
   IExtHostCommands,
   IExtHostDebugService,
@@ -6,7 +17,7 @@ import {
   ExtensionWSChannel,
   IExtHostConnectionService,
 } from '../../../../common/vscode';
-import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
+import { MainThreadAPIIdentifier } from '../../../../common/vscode';
 import {
   Disposable,
   Uri,
@@ -17,27 +28,19 @@ import {
   DebugAdapterNamedPipeServer,
   DebugConfigurationProviderTriggerKind,
 } from '../../../../common/vscode/ext-types';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier } from '../../../../common/vscode';
-import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import { Breakpoint } from '../../../../common/vscode/models';
-import {
-  DebugConfiguration,
-  DebugStreamConnection,
-  IDebuggerContribution,
-  IDebugSessionDTO,
-} from '@opensumi/ide-debug';
-import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
+import { CustomeChildProcessModule } from '../../../ext.process-base';
+
+import { IDebugConfigurationProvider } from './common';
+import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
+import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import {
   connectDebugAdapter,
   startDebugAdapter,
   directDebugAdapter,
   namedPipeDebugAdapter,
 } from './extension-debug-adapter-starter';
-import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { CustomeChildProcessModule } from '../../../ext.process-base';
-import { IDebugConfigurationProvider } from './common';
+import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
 
 export function createDebugApiFactory(extHostDebugService: IExtHostDebugService) {
   const debug: typeof vscode.debug = {

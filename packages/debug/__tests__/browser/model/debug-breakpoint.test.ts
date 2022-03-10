@@ -1,7 +1,7 @@
 import { join } from 'path';
+
 import { URI, uuid } from '@opensumi/ide-core-browser';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
+import { IDebugBreakpoint } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
   DebugBreakpoint,
@@ -9,7 +9,8 @@ import {
   isDebugBreakpoint,
   DebugDecorator,
 } from '@opensumi/ide-debug/lib/browser';
-import { IDebugBreakpoint } from '@opensumi/ide-debug';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 
 describe('Debug Breakpoints', () => {
   const mockInjector = createBrowserInjector([FileServiceClientModule]);

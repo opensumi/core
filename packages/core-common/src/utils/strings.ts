@@ -1,5 +1,6 @@
 import { CharCode } from '../charCode';
 import { Constants } from '../uint';
+
 import { isOSX, isWindows } from './os';
 /**
  * The empty string.

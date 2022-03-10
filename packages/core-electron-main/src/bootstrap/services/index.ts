@@ -1,7 +1,8 @@
 import { Provider } from '@opensumi/di';
+
 import { MenuElectronMainContribution } from './menu';
-import { UIElectronMainContribution } from './ui';
 import { ProtocolElectronMainContribution } from './protocol';
+import { UIElectronMainContribution } from './ui';
 import { UrlElectronMainContribution } from './url';
 
 export const serviceProviders: Provider[] = [

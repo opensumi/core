@@ -1,10 +1,11 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { Disposable } from '@opensumi/ide-core-common';
-import { DebugHoverTreeModelService } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-tree.model.service';
-import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { ExpressionContainer } from '@opensumi/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common';
+import { IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
+import { DebugHoverTreeModelService } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-tree.model.service';
+import { ExpressionContainer } from '@opensumi/ide-debug/lib/browser/tree';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import styles from '../../../src/browser/editor/debug-hover.module.less';
 
 describe('Debug Hover Model', () => {

@@ -1,7 +1,7 @@
-import React from 'react';
-import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@opensumi/ide-core-browser';
+import React from 'react';
+
 import {
   INodeRendererProps,
   ClasslistComposite,
@@ -12,6 +12,10 @@ import {
   TreeModel,
   CompositeTreeNode,
 } from '@opensumi/ide-components';
+import { Loading } from '@opensumi/ide-components';
+import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import { ViewState } from '@opensumi/ide-core-browser';
+
 import {
   ExpressionContainer,
   ExpressionNode,
@@ -19,10 +23,10 @@ import {
   DebugVariable,
   DebugScope,
 } from '../../tree/debug-tree-node.define';
+
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
-import { Loading } from '@opensumi/ide-components';
 import styles from './debug-variables.module.less';
-import cls from 'classnames';
+
 
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 

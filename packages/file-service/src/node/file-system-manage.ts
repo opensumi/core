@@ -1,4 +1,5 @@
 import { IDisposable } from '@opensumi/ide-core-common';
+
 import { FileSystemProvider, IDiskFileProvider } from '../common/';
 
 export class FileSystemManage {

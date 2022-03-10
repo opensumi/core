@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   QuickInputOptions,
   IQuickInputService,
@@ -6,9 +7,9 @@ import {
   QuickOpenService,
   Mode,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { QuickTitleBar } from './quick-title-bar';
 import { Deferred, localize, Emitter, Event } from '@opensumi/ide-core-common';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+
+import { QuickTitleBar } from './quick-title-bar';
 
 @Injectable()
 export class QuickInputService implements IQuickInputService {

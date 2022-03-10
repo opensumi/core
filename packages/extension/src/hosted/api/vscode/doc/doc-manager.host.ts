@@ -1,6 +1,9 @@
+import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, Emitter, IDisposable } from '@opensumi/ide-core-common';
-import type vscode from 'vscode';
+import { isUTF8 } from '@opensumi/ide-core-common/lib/encoding';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 import {
   ExtensionDocumentDataManager,
@@ -17,9 +20,8 @@ import {
 import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
 import { TextDocumentChangeReason, TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
+
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
-import { isUTF8 } from '@opensumi/ide-core-common/lib/encoding';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 

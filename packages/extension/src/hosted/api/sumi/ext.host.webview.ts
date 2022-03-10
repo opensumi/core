@@ -1,8 +1,9 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWebview, IExtensionDescription } from '../../../common/vscode';
 import { Disposable, Emitter } from '@opensumi/ide-core-common';
-import { IPlainWebviewHandle, IExtHostPlainWebview } from '../../../common/sumi/webview';
 import { join } from '@opensumi/ide-core-common/lib/path';
+
+import { IPlainWebviewHandle, IExtHostPlainWebview } from '../../../common/sumi/webview';
+import { MainThreadAPIIdentifier, IMainThreadWebview, IExtensionDescription } from '../../../common/vscode';
 
 export class ExtHostWebview {
   _proxy: IMainThreadWebview;

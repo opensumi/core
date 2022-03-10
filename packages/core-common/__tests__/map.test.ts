@@ -6,6 +6,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from 'vscode-uri';
+
+import { IteratorResult } from '../src/iterator';
 import {
   ResourceMap,
   TernarySearchTree,
@@ -18,8 +21,6 @@ import {
   serializableToMap,
   SetMap,
 } from '../src/map';
-import { URI } from 'vscode-uri';
-import { IteratorResult } from '../src/iterator';
 
 function assertDeepStrictEqual(a, b) {
   expect(a).toEqual(b);

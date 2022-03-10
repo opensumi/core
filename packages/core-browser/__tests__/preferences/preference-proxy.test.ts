@@ -1,5 +1,3 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import {
   createPreferenceProxy,
   DefaultPreferenceProvider,
@@ -17,8 +15,11 @@ import {
   PreferenceService,
   PreferenceServiceImpl,
 } from '@opensumi/ide-core-browser';
-import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockLogger } from '../../__mocks__/logger';
+import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
 
 describe('Preference Proxy', () => {
   let injector: MockInjector;

@@ -1,4 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor } from '../../color-registry';
 import { PANEL_ACTIVE_TITLE_BORDER, PANEL_ACTIVE_TITLE_FOREGROUND } from '../panel';
 

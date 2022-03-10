@@ -1,20 +1,23 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
-import { URI, IEventBus } from '@opensumi/ide-core-browser';
 
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { URI, IEventBus } from '@opensumi/ide-core-browser';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { IDocPersistentCacheProvider } from '../../../src/common';
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
 import {
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelContentChangedEvent,
 } from '../../../src/browser/doc-model/types';
-import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
-import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IDocPersistentCacheProvider } from '../../../src/common';
+
 
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;

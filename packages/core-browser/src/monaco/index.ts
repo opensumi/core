@@ -3,10 +3,11 @@ import type {
   IDiffEditor,
   IEditorConstructionOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as suggest from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',

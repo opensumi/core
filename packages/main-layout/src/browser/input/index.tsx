@@ -1,6 +1,8 @@
 import React, { PropsWithChildren, useRef, useEffect } from 'react';
+
 import { IInputBaseProps, Input } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+
 import { IMainLayoutService } from '../../common';
 
 export const AutoFocusedInput = ({

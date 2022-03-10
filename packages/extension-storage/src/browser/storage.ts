@@ -1,6 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler, Uri } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
+
 import {
   ExtensionStorageUri,
   IExtensionStoragePathServer,
@@ -10,7 +12,6 @@ import {
   DEFAULT_EXTENSION_STORAGE_DIR_NAME,
   IExtensionStorageTask,
 } from '../common/';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {

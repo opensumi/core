@@ -1,20 +1,23 @@
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import {
-  ExtHostCommands,
-  createCommandsApiFactory,
-} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
+import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
 import {
   MainThreadAPIIdentifier,
   IMainThreadCommands,
   CommandHandler,
 } from '@opensumi/ide-extension/lib/common/vscode';
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
-import * as modes from '@opensumi/ide-extension/lib/common/vscode/model.api';
 import * as types from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { SymbolKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
-import type vscode from 'vscode';
+import * as modes from '@opensumi/ide-extension/lib/common/vscode/model.api';
+import {
+  ExtHostCommands,
+  createCommandsApiFactory,
+} from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
+import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+
+import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;

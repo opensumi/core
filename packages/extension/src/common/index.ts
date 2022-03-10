@@ -1,3 +1,4 @@
+import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import {
   Disposable,
   IJSONSchema,
@@ -10,14 +11,17 @@ import {
   replaceNlsField,
   ILogger,
 } from '@opensumi/ide-core-common';
-import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
+import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
+import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
-import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
-import { IExtensionContributions, IMainThreadCommands } from './vscode';
-import { ISumiExtensionContributions } from './sumi/extension';
+
+
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
-import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { ISumiExtensionContributions } from './sumi/extension';
+import { IExtensionContributions, IMainThreadCommands } from './vscode';
+
 
 export { IExtensionProps } from '@opensumi/ide-core-common';
 

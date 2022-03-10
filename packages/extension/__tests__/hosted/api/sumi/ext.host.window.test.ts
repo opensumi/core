@@ -1,11 +1,13 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IWindowInfo } from '@opensumi/ide-extension/lib/common/sumi/window';
+import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';
+import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';
+
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';
-import { IWindowInfo } from '@opensumi/ide-extension/lib/common/sumi/window';
+
 
 const mockMainThreadIDEWindowProxy = {
   $createWebviewWindow: jest.fn(async () => {

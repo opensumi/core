@@ -1,5 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, Keybinding } from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { AbstractMenuService, MenuId, MenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
   CommandRegistry,
   Command,
@@ -8,12 +12,9 @@ import {
   IReporterService,
   REPORT_NAME,
 } from '@opensumi/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
-import { KeybindingRegistry, Keybinding } from '@opensumi/ide-core-browser';
-import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { AbstractMenuService, MenuId, MenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next';
+
+import { QuickOpenHandler } from './prefix-quick-open.service';
 
 @Injectable()
 export class QuickCommandHandler implements QuickOpenHandler {

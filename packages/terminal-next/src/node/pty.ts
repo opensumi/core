@@ -5,20 +5,25 @@
 
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalProcess.ts
 
+import { promises } from 'fs';
+import os from 'os';
+
+import omit from 'lodash.omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
-import os from 'os';
-import omit from 'lodash.omit';
-import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
-import { IPtyProcess } from '../common/pty';
-import { findExecutable } from './shell';
-import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-common/lib/platform';
+import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
+import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
+
+import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
+import { IPtyProcess } from '../common/pty';
+
+import { findExecutable } from './shell';
+
 
 export const IPtyService = Symbol('IPtyService');
 

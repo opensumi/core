@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { CheckBox, Select, Button } from '@opensumi/ide-components';
 import {
   useInjectable,
   PreferenceService,
@@ -7,8 +9,8 @@ import {
   IToolbarRegistry,
   localize,
 } from '@opensumi/ide-core-browser';
+
 import styles from './style.module.less';
-import { CheckBox, Select, Button } from '@opensumi/ide-components';
 
 @Injectable()
 export class ToolbarCustomizeViewService {

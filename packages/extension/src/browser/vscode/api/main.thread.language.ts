@@ -1,7 +1,6 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { CancellationToken } from 'vscode';
+import { DocumentFilter } from 'vscode-languageserver-protocol';
+
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
@@ -17,9 +16,23 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 import { extname } from '@opensumi/ide-core-common/lib/path';
-import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
-import { DocumentFilter } from 'vscode-languageserver-protocol';
+import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
+import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import { ILanguageService } from '@opensumi/ide-editor';
+import {
+  IEditorDocumentModelService,
+  ILanguageStatus,
+  ILanguageStatusService,
+  LanguageSelector,
+} from '@opensumi/ide-editor/lib/browser';
+import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+
+
 import {
   ExtHostAPIIdentifier,
   ICodeActionDto,
@@ -34,6 +47,7 @@ import {
   testGlob,
 } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
+import { UriComponents } from '../../../common/vscode/ext-types';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import {
   ILink,
@@ -49,23 +63,15 @@ import {
   ResourceFileEditDto,
   ILinkDto,
 } from '../../../common/vscode/model.api';
-import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
-import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from '../../../common/vscode/model.api';
-import { ILanguageService } from '@opensumi/ide-editor';
-import {
-  IEditorDocumentModelService,
-  ILanguageStatus,
-  ILanguageStatusService,
-  LanguageSelector,
-} from '@opensumi/ide-editor/lib/browser';
+import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
+
+
 import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
-import { CancellationToken } from 'vscode';
-import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
+
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {

@@ -1,6 +1,5 @@
 import React from 'react';
-import { IWelcomeMetaData } from './common';
-import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+
 import {
   useInjectable,
   localize,
@@ -10,6 +9,9 @@ import {
   FILE_COMMANDS,
   IWindowService,
 } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+
+import { IWelcomeMetaData } from './common';
 import styles from './welcome.module.less';
 
 export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({ resource }) => {

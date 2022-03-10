@@ -1,8 +1,10 @@
 import type vscode from 'vscode';
+
+import { IMainThreadDocumentsShape } from '../../../../common/vscode';
+import { Range, Position, EndOfLine, Schemas, Uri } from '../../../../common/vscode/ext-types';
+
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
-import { Range, Position, EndOfLine, Schemas, Uri } from '../../../../common/vscode/ext-types';
-import { IMainThreadDocumentsShape } from '../../../../common/vscode';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
 export function setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void {

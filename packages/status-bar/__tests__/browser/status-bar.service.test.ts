@@ -1,12 +1,12 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
-import { StatusBarModule } from '@opensumi/ide-status-bar/lib/browser';
 import { CommandRegistry, IContextKeyService, ILoggerManagerClient } from '@opensumi/ide-core-browser';
-import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { StatusBarModule } from '@opensumi/ide-status-bar/lib/browser';
 
 describe('template test', () => {
   const EN_CODING_ENTRY_ID = 'encoding';

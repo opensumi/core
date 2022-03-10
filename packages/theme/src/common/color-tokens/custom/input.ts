@@ -1,4 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor, contrastBorder } from '../../color-registry';
 import { inputBorder, inputOptionActiveBorder } from '../input';
 

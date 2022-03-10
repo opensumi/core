@@ -1,14 +1,14 @@
-import { Emitter } from '@opensumi/ide-core-common';
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { Emitter } from '@opensumi/ide-core-common';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import * as types from '../../src/common/vscode/ext-types';
-
-import { ExtHostOutput } from '../../src/hosted/api/vscode/ext.host.output';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockOutputService } from '../../__mocks__/api/output.service';
+import * as types from '../../src/common/vscode/ext-types';
+import { ExtHostOutput } from '../../src/hosted/api/vscode/ext.host.output';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

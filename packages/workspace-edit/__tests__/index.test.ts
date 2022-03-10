@@ -1,17 +1,19 @@
+import { URI } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import type {
   ResourceEdit,
   IBulkEditOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
-import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
-import { URI } from '@opensumi/ide-core-browser';
-import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../src/common';
-import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
 import { WorkspaceEditModule } from '../src/browser';
 import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
-import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../src/common';
+
 
 function mockService(target) {
   return new Proxy(target, {

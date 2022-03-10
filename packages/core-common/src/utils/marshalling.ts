@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { URI } from '../uri';
+
 import { regExpFlags } from './strings';
 
 export function stringify(obj: any): string {

@@ -1,8 +1,10 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+
 import { IMarkdownService } from '../common';
-import { MarkdownServiceImpl } from './markdown.service';
+
 import { EmbeddedMarkdownEditorContribution } from './contribution';
+import { MarkdownServiceImpl } from './markdown.service';
 export { Markdown } from './markdown-widget';
 @Injectable()
 export class MarkdownModule extends BrowserModule {

@@ -1,10 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
 import { URI } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { electronEnv } from '../utils/electron';
-import { IExternalUriService } from '../services';
+
 import { AppConfig } from '../react-providers';
+import { IExternalUriService } from '../services';
+import { electronEnv } from '../utils/electron';
+
+import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
 
 @Injectable()
 export class WindowService implements IWindowService {

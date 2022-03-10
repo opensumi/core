@@ -1,17 +1,4 @@
 import {
-  ChordKeybinding,
-  KeybindingModifier,
-  ResolvedKeybinding,
-  ResolvedKeybindingPart,
-  SimpleKeybinding,
-} from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-import {
-  AriaLabelProvider,
-  Modifiers,
-  UILabelProvider,
-} from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
-import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
-import {
   KeySequence,
   KeybindingRegistry,
   Key,
@@ -20,9 +7,24 @@ import {
   KeyCode,
   Keystroke,
 } from '@opensumi/ide-core-browser';
-import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { KeyCode as MonacoKeyCode } from '@opensumi/monaco-editor-core';
+import {
+  AriaLabelProvider,
+  Modifiers,
+  UILabelProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
+import {
+  ChordKeybinding,
+  KeybindingModifier,
+  ResolvedKeybinding,
+  ResolvedKeybindingPart,
+  SimpleKeybinding,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import * as platform from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
+import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
+
+import { KEY_CODE_MAP } from './monaco.keycode-map';
+
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];
 

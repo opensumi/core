@@ -1,6 +1,8 @@
+import btoa = require('btoa');
+
 import { URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import btoa = require('btoa');
+
 import { IRuntimeBreakpoint, IDebugBreakpoint } from '../../common';
 import { Marker } from '../markers';
 

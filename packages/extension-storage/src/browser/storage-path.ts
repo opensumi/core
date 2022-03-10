@@ -1,16 +1,19 @@
 import crypto from 'crypto';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
-import { IExtensionStoragePathServer } from '../common';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
+import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,
   WORKSPACE_USER_STORAGE_FOLDER_NAME,
   UNTITLED_WORKSPACE,
 } from '@opensumi/ide-workspace';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
-import { ILoggerManagerClient } from '@opensumi/ide-logs';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { AppConfig } from '@opensumi/ide-core-browser';
+
+import { IExtensionStoragePathServer } from '../common';
+
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {

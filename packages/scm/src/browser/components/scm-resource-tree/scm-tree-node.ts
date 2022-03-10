@@ -1,11 +1,12 @@
-import { URI, memoize } from '@opensumi/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { URI, memoize } from '@opensumi/ide-core-browser';
 import * as paths from '@opensumi/ide-core-common/lib/path';
 
-import { SCMTreeService } from './scm-tree.service';
 import { ISCMResourceGroup, ISCMResource } from '../../../common';
 import { isSCMResourceGroup } from '../../scm-util';
+
 import { ISCMTreeNodeDescription, collectSCMResourceDesc } from './scm-tree-api';
+import { SCMTreeService } from './scm-tree.service';
 
 export class SCMResourceRoot extends CompositeTreeNode {
   static is(node: any): node is SCMResourceRoot {

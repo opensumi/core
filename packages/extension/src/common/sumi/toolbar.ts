@@ -1,4 +1,5 @@
 import { Event } from '@opensumi/ide-core-common';
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/sumi/types';
 

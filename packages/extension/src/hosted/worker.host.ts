@@ -1,4 +1,5 @@
 import { Injector } from '@opensumi/di';
+import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import {
   Emitter,
   Deferred,
@@ -10,21 +11,23 @@ import {
   IReporter,
   REPORT_NAME,
 } from '@opensumi/ide-core-common';
-import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
+
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
-import { createAPIFactory } from './api/worker/worker.host.api.impl';
+import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
 import {
   MainThreadAPIIdentifier,
   ExtHostAPIIdentifier,
   ExtensionIdentifier,
   SumiWorkerExtensionService,
 } from '../common/vscode';
+
+import { ExtensionContext } from './api/vscode/ext.host.extensions';
+import { ExtHostSecret } from './api/vscode/ext.host.secrets';
+import { ExtHostStorage } from './api/vscode/ext.host.storage';
+import { createAPIFactory } from './api/worker/worker.host.api.impl';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
-import { ExtensionContext } from './api/vscode/ext.host.extensions';
-import { ExtHostStorage } from './api/vscode/ext.host.storage';
-import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
-import { ExtHostSecret } from './api/vscode/ext.host.secrets';
+
 
 export function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();

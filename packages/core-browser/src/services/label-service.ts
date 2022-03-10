@@ -1,7 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
-import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
+import classnames from 'classnames';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   URI,
@@ -14,8 +12,13 @@ import {
   BasicEvent,
   Disposable,
 } from '@opensumi/ide-core-common';
+import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
+import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+
 import { getIcon } from '../style/icon/icon';
-import classnames from 'classnames';
+
 
 /**
  * Data URI related helpers.

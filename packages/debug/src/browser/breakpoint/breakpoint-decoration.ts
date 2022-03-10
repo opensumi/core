@@ -1,5 +1,7 @@
 import { localize } from '@opensumi/ide-core-browser';
+
 import { IDebugBreakpoint } from '../../common';
+
 import { isRuntimeBreakpoint } from './breakpoint-marker';
 
 export interface IBreakpointDecoration {
