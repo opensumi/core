@@ -250,7 +250,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   async resolveChildren(parent?: Directory) {
     let children: (File | Directory)[] = [];
     if (!parent) {
-      // 加载根目录
+      // 加载根目录
       if (!this._roots) {
         this._roots = await this.workspaceService.roots;
       }
