@@ -158,7 +158,6 @@ export class FileTreeModelService {
   private locationQueueDeferred: Deferred<void> | null = new Deferred<void>();
   private isPatchingLocation = false;
   private _locationDispatchQueue: (URI | string)[] = [];
-  private collapsedAllDeferred: Deferred<undefined> | null;
 
   private treeStateWatcher: TreeStateWatcher;
   private willSelectedNodePath: string | null;
@@ -177,6 +176,10 @@ export class FileTreeModelService {
 
   get onFileTreeModelChange(): Event<TreeModel> {
     return this.onFileTreeModelChangeEmitter.event;
+  }
+
+  get loadSnapshotReady() {
+    return this._loadSnapshotReady;
   }
 
   get fileTreeHandle() {
@@ -381,7 +384,7 @@ export class FileTreeModelService {
         this.loadingDecoration.removeTarget(target);
       }),
     );
-    await this._loadSnapshotReady;
+    await this.loadSnapshotReady;
     // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
@@ -418,8 +421,8 @@ export class FileTreeModelService {
   }
 
   private async canHandleRefreshEvent() {
-    if (this.collapsedAllDeferred) {
-      await this.collapsedAllDeferred.promise;
+    if (this.loadSnapshotReady) {
+      await this.loadSnapshotReady;
     }
     if (this.locationQueueDeferred) {
       await this.locationQueueDeferred.promise;
@@ -901,7 +904,6 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    this.collapsedAllDeferred = new Deferred();
     await this.treeModel.root.collapsedAll();
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
@@ -914,8 +916,6 @@ export class FileTreeModelService {
         },
       });
     }
-    this.collapsedAllDeferred.resolve();
-    this.collapsedAllDeferred = null;
   }
 
   // 展开所有缓存目录
@@ -1592,9 +1592,7 @@ export class FileTreeModelService {
     if (this.willSelectedNodePath) {
       return;
     }
-    if (this._loadSnapshotReady) {
-      await this._loadSnapshotReady;
-    }
+
     return this.queueLocation(pathOrUri);
   };
 
@@ -1608,6 +1606,12 @@ export class FileTreeModelService {
         if (!this.locationQueueDeferred) {
           this.locationQueueDeferred = new Deferred<void>();
         }
+        if (this.loadSnapshotReady) {
+          await this.loadSnapshotReady;
+        }
+        // 每次触发定位操作前均等待一下前序的文件树刷新任务
+        await this.fileTreeService.willRefreshPromise;
+
         await this.doLocation();
         this.locationQueueDeferred?.resolve();
         this.locationQueueDeferred = null;
