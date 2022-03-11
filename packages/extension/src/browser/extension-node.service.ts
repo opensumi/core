@@ -172,6 +172,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       if ((window as any).getMessageConnection) {
         connection = (window as any).getMessageConnection();
       } else {
+        // eslint-disable-next-line import/no-restricted-paths
         const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
         const socket = (window as any).createNetConnection(connectPath);
         connection = createSocketConnection(socket);
