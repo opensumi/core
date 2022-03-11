@@ -15,22 +15,13 @@ export interface MenuItemProps
   className?: string;
   style?: React.CSSProperties;
   onClick?: (param: ClickParam) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
   onMouseEnter?: (e: { key: string; domEvent: React.MouseEvent<HTMLElement> }) => void;
   onMouseLeave?: (e: { key: string; domEvent: React.MouseEvent<HTMLElement> }) => void;
 }
 
 export default class MenuItem extends React.Component<MenuItemProps> {
   static isMenuItem = true;
-
-  private menuItem: this;
-
-  onKeyDown = (e: React.MouseEvent<HTMLElement>) => {
-    this.menuItem.onKeyDown(e);
-  };
-
-  saveMenuItem = (menuItem: this) => {
-    this.menuItem = menuItem;
-  };
 
   renderItem = () => {
     const { title, ...rest } = this.props;

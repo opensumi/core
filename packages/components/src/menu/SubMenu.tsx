@@ -16,6 +16,7 @@ export interface SubMenuProps {
   onTitleClick?: (e: TitleEventEntity) => void;
   onTitleMouseEnter?: (e: TitleEventEntity) => void;
   onTitleMouseLeave?: (e: TitleEventEntity) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
   popupOffset?: [number, number];
   popupClassName?: string;
 }
@@ -27,16 +28,6 @@ class SubMenu extends React.Component<SubMenuProps, any> {
 
   // fix issue:https://github.com/ant-design/ant-design/issues/8666
   static isSubMenu = 1;
-
-  private subMenu: any;
-
-  onKeyDown = (e: React.MouseEvent<HTMLElement>) => {
-    this.subMenu.onKeyDown(e);
-  };
-
-  saveSubMenu = (subMenu: any) => {
-    this.subMenu = subMenu;
-  };
 
   render() {
     const { popupClassName } = this.props;
