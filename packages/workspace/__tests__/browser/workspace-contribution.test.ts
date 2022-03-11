@@ -78,7 +78,7 @@ describe('WorkspaceContribution should be work', () => {
       }),
     };
     workspaceContribution.registerCommands(mockRegistry as any);
-    expect(mockRegistry.registerCommand).toBeCalledTimes(2);
+    expect(mockRegistry.registerCommand).toBeCalledTimes(3);
   });
 
   it('FsProviderContribution should be work', () => {
