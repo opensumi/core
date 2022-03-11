@@ -16,7 +16,12 @@ import { OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-comm
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
+import {
+  ILinkHoverTargetOptions,
+  ITerminalClient,
+  ITerminalExternalLinkProvider,
+  ITerminalHoverManagerService,
+} from '../../common';
 import { XTermCore } from '../../common/xterm-private';
 import { TerminalClient } from '../terminal.client';
 
@@ -34,7 +39,6 @@ import {
   lineAndColumnClauseGroupCount,
 } from './validated-local-link-provider';
 
-
 export type XtermLinkMatcherHandler = (event: MouseEvent | undefined, link: string) => Promise<void>;
 
 export interface ITextEditorSelection {
@@ -42,30 +46,6 @@ export interface ITextEditorSelection {
   readonly startColumn: number;
   readonly endLineNumber?: number;
   readonly endColumn?: number;
-}
-
-export interface ILinkHoverTargetOptions {
-  readonly viewportRange: IViewportRange;
-  readonly cellDimensions: {
-    width: number;
-    height: number;
-  };
-  readonly terminalDimensions: {
-    width: number;
-    height: number;
-  };
-  readonly boundingClientRect: {
-    bottom: number;
-    height: number;
-    left: number;
-    right: number;
-    top: number;
-    width: number;
-    x: number;
-    y: number;
-  };
-  readonly modifierDownCallback?: () => void;
-  readonly modifierUpCallback?: () => void;
 }
 
 /**

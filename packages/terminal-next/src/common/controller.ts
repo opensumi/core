@@ -1,14 +1,36 @@
+import type { IViewportRange } from 'xterm';
+
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
-
-// eslint-disable-next-line import/no-restricted-paths
-import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
 import { TerminalOptions, ITerminalInfo } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
+export interface ILinkHoverTargetOptions {
+  readonly viewportRange: IViewportRange;
+  readonly cellDimensions: {
+    width: number;
+    height: number;
+  };
+  readonly terminalDimensions: {
+    width: number;
+    height: number;
+  };
+  readonly boundingClientRect: {
+    bottom: number;
+    height: number;
+    left: number;
+    right: number;
+    top: number;
+    width: number;
+    x: number;
+    y: number;
+  };
+  readonly modifierDownCallback?: () => void;
+  readonly modifierUpCallback?: () => void;
+}
 export interface ITerminalExternalClient {
   readonly id: string;
   readonly processId: Promise<number | undefined>;
