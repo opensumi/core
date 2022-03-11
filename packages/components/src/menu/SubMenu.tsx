@@ -4,7 +4,7 @@ import React from 'react';
 
 interface TitleEventEntity {
   key: string;
-  domEvent: Event;
+  domEvent: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 }
 
 export interface SubMenuProps {
@@ -40,7 +40,7 @@ class SubMenu extends React.Component<SubMenuProps, any> {
 
   render() {
     const { popupClassName } = this.props;
-    return <RcSubMenu {...this.props} ref={this.saveSubMenu} popupClassName={popupClassName} />;
+    return <RcSubMenu {...this.props} popupClassName={popupClassName} />;
   }
 }
 
