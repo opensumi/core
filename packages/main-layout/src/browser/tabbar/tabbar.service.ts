@@ -39,7 +39,6 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 
-
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
@@ -251,7 +250,7 @@ export class TabbarService extends WithEventBus {
       const info = this.sortedContainers[i];
       const containerId = info.options?.containerId;
       if (containerId) {
-        const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+        const prevState = this.storedState[containerId] || this.getContainerState(containerId) || {}; // 保留原有的hidden状态
         this.state.set(containerId, { hidden: prevState.hidden, priority: i });
       }
     }
@@ -644,10 +643,10 @@ export class TabbarService extends WithEventBus {
     } else {
       state.hidden = !forceShow;
     }
-    if (state.hidden) {
-      if (this.currentContainerId === containerId) {
-        this.currentContainerId = this.visibleContainers[0].options!.containerId;
-      }
+
+    if (state.hidden && this.currentContainerId === containerId) {
+      // 如果隐藏的是当前激活的 tab，则激活第一个可见 tab
+      this.currentContainerId = this.visibleContainers[0].options!.containerId;
     }
     this.storeState();
   }
