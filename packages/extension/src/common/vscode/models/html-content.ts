@@ -1,13 +1,5 @@
-import { UriComponents } from './uri';
 import { illegalArgument } from '../utils';
-
-// TODO: edtior 中有相同interface，待统一
-export interface IMarkdownString {
-  value: string;
-  isTrusted?: boolean;
-  supportThemeIcons?: boolean;
-  uris?: { [href: string]: UriComponents };
-}
+import { IMarkdownString } from '@opensumi/ide-core-common';
 
 const escapeCodiconsRegex = /(\\)?\$\([a-z0-9-]+?(?:~[a-z0-9-]*?)?\)/gi;
 export function escapeCodicons(text: string): string {
@@ -23,7 +15,6 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
   // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
   return text.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
 }
-
 export class MarkdownString implements IMarkdownString {
   public value: string;
   public isTrusted?: boolean;

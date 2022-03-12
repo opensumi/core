@@ -54,6 +54,11 @@ export function createMockedMonacoTextModelApi(): typeof textModel {
         : null;
       this.afterContentClassName = options.afterContentClassName ? cleanClassName(options.afterContentClassName) : null;
     }
+    description: string;
+    minimap?: monaco.editor.IModelDecorationMinimapOptions | null | undefined;
+    firstLineDecorationClassName?: string | null | undefined;
+    after?: monaco.editor.InjectedTextOptions | null | undefined;
+    before?: monaco.editor.InjectedTextOptions | null | undefined;
   }
 
   const mockedMonacoTextModelApi: any = {

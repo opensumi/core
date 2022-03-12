@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { Emitter, IMarkdownString } from '@opensumi/ide-core-common';
 import { TEST_DATA_SCHEME } from './../common/testingUri';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import {
@@ -10,7 +10,6 @@ import {
   EditorComponentRegistry,
   ResourceService,
   IResource,
-  IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
