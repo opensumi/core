@@ -63,7 +63,7 @@ import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconM
 import { electronEnv } from '../utils';
 
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import { createElectronNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
@@ -229,7 +229,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
   public async start(
     container: HTMLElement | IAppRenderer,
-    type?: string,
+    type?: 'electron' | 'web' | string,
     connection?: RPCMessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
@@ -240,7 +240,7 @@ export class ClientApp implements IClientApp, IDisposable {
     } else {
       if (type === 'electron') {
         const netConnection = await (window as any).createRPCNetConnection();
-        await createNetClientConnection(this.injector, this.modules, netConnection);
+        await createElectronNetClientConnection(this.injector, this.modules, netConnection);
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,
