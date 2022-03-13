@@ -9,6 +9,7 @@ module.exports = {
   testRunner: 'jest-jasmine2',
   testEnvironment: 'node',
   coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
+  // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
   collectCoverageFrom: [
