@@ -161,22 +161,17 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const mainThreadCenter = new RPCServiceCenter();
 
     // Electron 环境下，未指定 isRemote 时默认使用本地连接
-    // 注意，这里要使用 node 端的 createSocketConnection
     // 否则使用 WebSocket 连接
     if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-      let connection: MessageConnection;
-      if ((window as any).getMessageConnection) {
-        connection = (window as any).getMessageConnection();
-      } else {
-        // eslint-disable-next-line import/no-restricted-paths
-        const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
-        const socket = (window as any).createNetConnection(connectPath);
-        connection = createSocketConnection(socket);
-      }
+      // 注意，这里要使用 node 端的 createSocketConnection
+      // eslint-disable-next-line import/no-restricted-paths
+      const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
+      const socket = (window as any).createNetConnection(connectPath);
+      const connection = createSocketConnection(socket) as MessageConnection;
       mainThreadCenter.setConnection(connection);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);

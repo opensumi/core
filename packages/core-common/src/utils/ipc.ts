@@ -6,7 +6,6 @@ import { ensureDirSync } from 'fs-extra';
 import { isWindows } from '../platform';
 import { uuid } from '../uuid';
 
-
 export function normalizedIpcHandlerPath(name: string, uuidSuffix = false, ipcPath = tmpdir()) {
   let handler;
   if (!isWindows) {

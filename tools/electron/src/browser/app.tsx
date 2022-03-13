@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 console.time('Render');
 import { Injector, Domain } from '@opensumi/di';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/browser';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { ClientApp, IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';
@@ -61,10 +61,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
     app.start(mainDom, 'web');
   } else {
     const netConnection = await window.createRPCNetConnection();
-    app.start(mainDom, 'electron', createSocketConnection(netConnection));
+    const messageConntect = createSocketConnection(netConnection);
+    app.start(mainDom, 'electron', messageConntect);
   }
-}
-
-declare global {
-  function createRPCNetConnection(): Promise<Worker>;
 }
