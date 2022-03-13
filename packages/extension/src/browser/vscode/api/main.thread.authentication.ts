@@ -6,6 +6,7 @@ import {
   IAuthenticationProvider,
   AuthenticationSessionsChangeEvent,
   AuthenticationSession,
+  AuthenticationGetSessionOptions,
 } from '@opensumi/ide-core-common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
@@ -242,13 +243,96 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return this.authenticationService.logout(providerId, sessionId);
   }
 
-  async $requestNewSession(
+  private async doGetSession(
     providerId: string,
     scopes: string[],
     extensionId: string,
     extensionName: string,
-  ): Promise<void> {
-    return this.authenticationService.requestNewSession(providerId, scopes, extensionId, extensionName);
+    options: AuthenticationGetSessionOptions,
+  ): Promise<AuthenticationSession | undefined> {
+    const sessions = await this.authenticationService.getSessions(providerId, scopes, true);
+    const supportsMultipleAccounts = this.authenticationService.supportsMultipleAccounts(providerId);
+
+    // Error cases
+    if (options.forceNewSession && !sessions.length) {
+      throw new Error('No existing sessions found.');
+    }
+    if (options.forceNewSession && options.createIfNone) {
+      throw new Error(
+        'Invalid combination of options. Please remove one of the following: forceNewSession, createIfNone',
+      );
+    }
+    if (options.forceNewSession && options.silent) {
+      throw new Error('Invalid combination of options. Please remove one of the following: forceNewSession, silent');
+    }
+    if (options.createIfNone && options.silent) {
+      throw new Error('Invalid combination of options. Please remove one of the following: createIfNone, silent');
+    }
+    // Check if the sessions we have are valid
+    if (!options.forceNewSession && sessions.length) {
+      if (supportsMultipleAccounts) {
+        if (options.clearSessionPreference) {
+          await this.authenticationService.removeExtensionSessionId(extensionName, providerId);
+        } else {
+          const existingSessionPreference = await this.authenticationService.getExtensionSessionId(
+            extensionName,
+            providerId,
+          );
+          if (existingSessionPreference) {
+            const matchingSession = sessions.find((session) => session.id === existingSessionPreference);
+            if (
+              matchingSession &&
+              (await this.authenticationService.isAccessAllowed(providerId, matchingSession.account.label, extensionId))
+            ) {
+              return matchingSession;
+            }
+          }
+        }
+      } else if (await this.authenticationService.isAccessAllowed(providerId, sessions[0].account.label, extensionId)) {
+        return sessions[0];
+      }
+    }
+    // We may need to prompt because we don't have a valid session
+    // modal flows
+    if (options.createIfNone || options.forceNewSession) {
+      const providerName = this.authenticationService.getLabel(providerId);
+      const detail = typeof options.forceNewSession === 'object' ? options.forceNewSession!.detail : undefined;
+      const isAllowed = await this.loginPrompt(providerName, extensionName, !!options.forceNewSession, detail);
+      if (!isAllowed) {
+        throw new Error('User did not consent to login.');
+      }
+      const session =
+        sessions?.length && !options.forceNewSession && supportsMultipleAccounts
+          ? await this.selectSession(
+              providerId,
+              providerName,
+              extensionId,
+              extensionName,
+              sessions,
+              scopes,
+              !!options.clearSessionPreference,
+            )
+          : await this.authenticationService.login(providerId, scopes);
+      await this.authenticationService.updatedAllowedExtension(
+        providerId,
+        session.account.label,
+        extensionId,
+        extensionName,
+        true,
+      );
+      await this.authenticationService.setExtensionSessionId(extensionName, providerId, session.id);
+      return session;
+    }
+
+    // passive flows (silent or default)
+    const validSession = sessions.find((s) =>
+      this.authenticationService.isAccessAllowed(providerId, s.account.label, extensionId),
+    );
+
+    if (!options.silent && !validSession) {
+      await this.authenticationService.requestNewSession(providerId, scopes, extensionId, extensionName);
+    }
+    return validSession;
   }
 
   async $getSession(
@@ -258,68 +342,21 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     extensionName: string,
     options: { createIfNone: boolean; clearSessionPreference: boolean },
   ): Promise<AuthenticationSession | undefined> {
-    const orderedScopes = scopes.sort().join(' ');
-    const sessions = (await this.$getSessions(providerId)).filter(
-      (session) => session.scopes.slice().sort().join(' ') === orderedScopes,
-    );
-    const label = this.authenticationService.getLabel(providerId);
+    const session = await this.doGetSession(providerId, scopes, extensionId, extensionName, options);
 
-    if (sessions.length) {
-      if (!this.authenticationService.supportsMultipleAccounts(providerId)) {
-        const session = sessions[0];
-        const allowed = await this.$getSessionsPrompt(
-          providerId,
-          session.account.label,
-          label,
-          extensionId,
-          extensionName,
-        );
-        if (allowed) {
-          return session;
-        } else {
-          throw new Error('User did not consent to login.');
-        }
-      }
-
-      // On renderer side, confirm consent, ask user to choose between accounts if multiple sessions are valid
-      const selected = await this.$selectSession(
-        providerId,
-        label,
-        extensionId,
-        extensionName,
-        sessions,
-        scopes,
-        !!options.clearSessionPreference,
-      );
-      return sessions.find((session) => session.id === selected.id);
-    } else {
-      if (options.createIfNone) {
-        const isAllowed = await this.$loginPrompt(label, extensionName);
-        if (!isAllowed) {
-          throw new Error('User did not consent to login.');
-        }
-
-        const session = await this.authenticationService.login(providerId, scopes);
-        await this.$setTrustedExtensionAndAccountPreference(
-          providerId,
-          session.account.label,
-          extensionId,
-          extensionName,
-          session.id,
-        );
-        return session;
-      } else {
-        await this.$requestNewSession(providerId, scopes, extensionId, extensionName);
-      }
+    if (session) {
+      await this.authenticationService.addAccountUsage(providerId, session.account.label, extensionId, extensionName);
     }
+
+    return session;
   }
 
-  async $selectSession(
+  async selectSession(
     providerId: string,
     providerName: string,
     extensionId: string,
     extensionName: string,
-    potentialSessions: AuthenticationSession[],
+    potentialSessions: readonly AuthenticationSession[],
     scopes: string[],
     clearSessionPreference: boolean,
   ): Promise<AuthenticationSession> {
@@ -408,9 +445,17 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return allow;
   }
 
-  async $loginPrompt(providerName: string, extensionName: string): Promise<boolean> {
+  // TODO: dialog detail 待实现
+  async loginPrompt(
+    providerName: string,
+    extensionName: string,
+    recreatingSession: boolean,
+    _detail?: string,
+  ): Promise<boolean> {
     const choice = await this.dialogService.info(
-      formatLocalize('authentication.confirmLogin', extensionName, providerName),
+      recreatingSession
+        ? formatLocalize('authentication.confirmReLogin', extensionName, providerName)
+        : formatLocalize('authentication.confirmLogin', extensionName, providerName),
       [localize('ButtonCancel'), localize('ButtonAllow')],
     );
 

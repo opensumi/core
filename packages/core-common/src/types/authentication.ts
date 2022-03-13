@@ -35,6 +35,7 @@ export interface AuthenticationProviderInformation {
 export interface AllowedExtension {
   id: string;
   name: string;
+  allowed?: boolean;
 }
 
 export interface IAuthenticationProvider {
@@ -80,10 +81,17 @@ export interface IAuthenticationService {
   getExtensionSessionId(extensionName: string, providerId: string): Promise<string | undefined>;
   setExtensionSessionId(extensionName: string, providerId: string, sessionId: string): Promise<void>;
   removeExtensionSessionId(extensionName: string, providerId: string): Promise<void>;
-
+  updatedAllowedExtension(
+    providerId: string,
+    accountName: string,
+    extensionId: string,
+    extensionName: string,
+    isAllowed: boolean,
+  ): Promise<void>;
   getAllowedExtensions(providerId: string, accountName: string): Promise<AllowedExtension[]>;
   setAllowedExtensions(providerId: string, accountName: string, allowList: AllowedExtension[]): Promise<void>;
   removeAllowedExtensions(providerId: any, accountName: string): Promise<void>;
+  isAccessAllowed(providerId: string, accountName: string, extensionId: string): Promise<boolean | undefined>;
 
   getAccountUsages(providerId: string, accountName: string): Promise<IAccountUsage[]>;
   addAccountUsage(providerId: string, accountName: string, extensionId: string, extensionName: string): Promise<void>;
@@ -103,4 +111,11 @@ export interface SessionRequest {
 
 export interface SessionRequestInfo {
   [scopes: string]: SessionRequest;
+}
+
+export interface AuthenticationGetSessionOptions {
+  createIfNone: boolean;
+  clearSessionPreference: boolean;
+  forceNewSession?: boolean | { detail: string };
+  silent?: boolean;
 }

@@ -861,6 +861,7 @@ export const localizationBundle = {
     'authentication.getSessionPlaceholder': "Select an account for '{0}' to use or Esc to cancel",
     'authentication.confirmAuthenticationAccess': "The extension '{0}' wants to access the {1} account '{2}'.",
     'authentication.confirmLogin': "The extension '{0}' wants to sign in using {1}.",
+    'authentication.confirmReLogin': "The extension '{0}' wants to sign in again using {1}.",
     'authentication.signInRequests': 'Sign in to use {0} (1)',
     'authentication.signOut': 'Sign out {0}',
     'authentication.noAccounts': 'You are not signed in to any accounts',

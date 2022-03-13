@@ -42,7 +42,8 @@
       "**/src/browser/**",
       "**/core-browser/**",
       "**/theme/**",
-      "**/src/hosted/**"
+      "**/src/hosted/**",
+      "**/*.d.ts"
     ],
     "verbose": true,
     "execMap": {
