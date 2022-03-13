@@ -229,7 +229,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
   public async start(
     container: HTMLElement | IAppRenderer,
-    type?: 'electron' | 'web' | string,
+    type?: 'electron' | 'web',
     connection?: RPCMessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
