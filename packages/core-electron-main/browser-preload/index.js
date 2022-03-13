@@ -18,9 +18,21 @@ function createNetConnection(connectPath) {
   return net.createConnection(connectPath);
 }
 
+function getSocketConnection(connectPath) {
+  let socket;
+  if (connectPath) {
+    socket = createNetConnection(connectPath);
+  } else {
+    socket = createRPCNetConnection();
+  }
+  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
+  return createSocketConnection(socket);
+}
+
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
 electronEnv.createRPCNetConnection = createRPCNetConnection;
+electronEnv.getSocketConnection = getSocketConnection;
 
 electronEnv.platform = os.platform();
 
