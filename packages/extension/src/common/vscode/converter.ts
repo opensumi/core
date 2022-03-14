@@ -32,7 +32,7 @@ import {
   LanguageFilter,
 } from '@opensumi/ide-editor/lib/common';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
   CoverageDetails,
@@ -59,7 +59,7 @@ import * as types from './ext-types';
 import { IRelativePattern } from './glob';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
-import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './models';
+import { isMarkdownString, parseHrefAndDimensions } from './models';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {

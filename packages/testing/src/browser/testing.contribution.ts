@@ -32,7 +32,6 @@ import {
   EditorComponentRegistry,
   ResourceService,
   IResource,
-  IMarkdownString,
 } from '@opensumi/ide-editor/lib/browser';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -67,7 +66,6 @@ import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.serv
 import { TestDecorationsContribution } from './test-decorations';
 import { TestResultServiceImpl } from './test.result.service';
 import { TestServiceImpl } from './test.service';
-
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {

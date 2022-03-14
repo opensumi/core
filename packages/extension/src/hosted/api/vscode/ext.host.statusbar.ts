@@ -11,10 +11,9 @@ import {
   ArgumentProcessor,
   IExtensionDescription,
 } from '../../../common/vscode';
+import { MarkdownString } from '../../../common/vscode/converter';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import * as types from '../../../common/vscode/ext-types';
-import type vscode from 'vscode';
-import { MarkdownString } from '../../../common/vscode/converter';
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;

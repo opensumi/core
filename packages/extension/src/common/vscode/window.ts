@@ -1,10 +1,14 @@
 import type vscode from 'vscode';
-import * as types from './ext-types';
-import { CancellationToken, MessageType, MaybePromise, IMarkdownString } from '@opensumi/ide-core-common';
-import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
 
-import { Event, IThemeColor } from '@opensumi/ide-core-common';
-import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
+import {
+  CancellationToken,
+  MessageType,
+  MaybePromise,
+  IMarkdownString,
+  IThemeColor,
+  Event,
+} from '@opensumi/ide-core-common';
+import { QuickPickItem, QuickPickOptions, QuickInputOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
 
 import * as types from './ext-types';
 import { UriComponents, QuickInputButton } from './ext-types';

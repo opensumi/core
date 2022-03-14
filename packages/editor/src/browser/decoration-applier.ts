@@ -6,7 +6,7 @@ import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/
 import { IThemeService } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
+import { IDecorationRenderOptions, IDecorationApplyOptions } from '../common';
 
 import {
   IEditorDecorationCollectionService,
