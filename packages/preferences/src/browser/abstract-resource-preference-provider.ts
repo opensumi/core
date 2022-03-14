@@ -1,4 +1,5 @@
 import * as jsoncparser from 'jsonc-parser';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   JSONUtils,
@@ -18,8 +19,9 @@ import {
   PreferenceProviderDataChange,
   PreferenceConfigurations,
 } from '@opensumi/ide-core-browser';
-import { IPreferenceTask, USER_STORAGE_SCHEME } from '../common';
 import { FILE_SCHEME, IFileServiceClient } from '@opensumi/ide-file-service';
+
+import { IPreferenceTask, USER_STORAGE_SCHEME } from '../common';
 
 // vscode 对语言的setting是根据这种格式来的
 // "[json]": { "editor.formatter": "xxxx" }

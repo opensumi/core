@@ -1,3 +1,9 @@
+import type vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@opensumi/ide-core-common';
+import type { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
+
 import {
   IExtHostTreeView,
   IMainThreadTreeView,
@@ -5,13 +11,11 @@ import {
   ITreeViewRevealOptions,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
-import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@opensumi/ide-core-common';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
+
 import { ExtHostCommands } from './ext.host.command';
-import type { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
-import type vscode from 'vscode';
+
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;

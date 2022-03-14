@@ -1,7 +1,6 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Autowired, Injectable } from '@opensumi/di';
 import { IRawThemeSetting } from 'vscode-textmate';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   URI,
   localize,
@@ -13,21 +12,12 @@ import {
   CharCode,
   isBoolean,
 } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import {
-  ITokenThemeRule,
-  IColors,
-  BuiltinTheme,
-  ITokenColorizationRule,
-  IColorMap,
-  getThemeType,
-  IThemeData,
-  ColorScheme,
-  ISemanticTokenColorizationSetting,
-} from '../common/theme.service';
-import { parse as parsePList } from '../common/plistParser';
-import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
+import { editorBackground, editorForeground } from '../common/color-tokens/editor';
+import { parse as parsePList } from '../common/plistParser';
 import {
   createMatchers,
   ISemanticTokenRegistry,
@@ -45,7 +35,18 @@ import {
   TokenStyleDefinitions,
   TokenStyleValue,
 } from '../common/semantic-tokens-registry';
-import { editorBackground, editorForeground } from '../common/color-tokens/editor';
+import {
+  ITokenThemeRule,
+  IColors,
+  BuiltinTheme,
+  ITokenColorizationRule,
+  IColorMap,
+  getThemeType,
+  IThemeData,
+  ColorScheme,
+  ISemanticTokenColorizationSetting,
+} from '../common/theme.service';
+import { convertSettings } from '../common/themeCompatibility';
 
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   const ruleScope = rule.scope;

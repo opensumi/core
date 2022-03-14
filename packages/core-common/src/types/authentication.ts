@@ -1,5 +1,5 @@
-import { Event } from '../event';
 import { IDisposable } from '../disposable';
+import { Event } from '../event';
 
 export const noAccountsId = 'authentication.noAccounts';
 

@@ -6,6 +6,7 @@ import {
   PreferenceSchema,
   localize,
 } from '@opensumi/ide-core-browser';
+
 import { SCMViewModelMode } from '../common';
 
 // 这里都是 scm 相关配置项注册

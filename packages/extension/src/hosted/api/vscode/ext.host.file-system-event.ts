@@ -15,6 +15,9 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-event-service-ext-impl.ts
 
+import vscode from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Event,
   Emitter,
@@ -25,13 +28,15 @@ import {
   CancellationToken,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import vscode from 'vscode';
+import { FileOperation } from '@opensumi/ide-workspace-edit';
+
 import {
   ExtensionDocumentDataManager,
   IMainThreadWorkspace,
   MainThreadAPIIdentifier,
   IExtensionDescription,
 } from '../../../common/vscode';
+import * as TypeConverts from '../../../common/vscode/converter';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
 import {
   FileSystemEvents,
@@ -40,9 +45,6 @@ import {
   SourceTargetPair,
 } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
-import * as TypeConverts from '../../../common/vscode/converter';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { FileOperation } from '@opensumi/ide-workspace-edit';
 import * as model from '../../../common/vscode/model.api';
 
 class FileSystemWatcher implements vscode.FileSystemWatcher {

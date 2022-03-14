@@ -1,4 +1,3 @@
-import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
 import { Injector } from '@opensumi/di';
 import {
   getNodeRequire,
@@ -8,6 +7,7 @@ import {
   IExtensionLogger,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
 
 export class ExtensionLogger2 implements IExtensionLogger {
   private injector: Injector;

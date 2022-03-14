@@ -4,6 +4,10 @@
  */
 
 import { Injectable, Autowired } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import * as path from '@opensumi/ide-core-common/lib/path';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+
 import {
   IResolveDefaultProfileOptions,
   ITerminalProfile,
@@ -13,9 +17,6 @@ import {
   ITerminalServiceClient,
   ITerminalServicePath,
 } from '../common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import * as path from '@opensumi/ide-core-common/lib/path';
-import { PreferenceService } from '@opensumi/ide-core-browser';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 import { WindowsShellType } from '../common/shell';
 

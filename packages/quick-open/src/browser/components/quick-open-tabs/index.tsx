@@ -1,6 +1,8 @@
-import React from 'react';
-import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
 import clx from 'classnames';
+import React from 'react';
+
+import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
+
 import { KeybindingView } from '../keybinding';
 
 import styles from './style.module.less';

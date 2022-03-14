@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/comparers.ts
 
-import { sep } from '../path';
-import { IdleValue } from '../async';
 import { IRange } from '..';
+import { IdleValue } from '../async';
+import { sep } from '../path';
 
 const intlFileNameCollator: IdleValue<{ collator: Intl.Collator; collatorIsNumeric: boolean }> = new IdleValue(() => {
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });

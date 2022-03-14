@@ -1,14 +1,18 @@
-import React from 'react';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { ConfigContext, localize } from '@opensumi/ide-core-browser';
-import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@opensumi/ide-core-browser/lib/components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import cls from 'classnames';
-import { SearchTreeService } from './search-tree.service';
-import { ContentSearchClientService } from './search.service';
-import styles from './search.module.less';
+import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@opensumi/ide-core-browser/lib/components';
+
+
 import { ResultTotal } from '../common';
+
+import { SearchTreeService } from './search-tree.service';
+import styles from './search.module.less';
+import { ContentSearchClientService } from './search.service';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];

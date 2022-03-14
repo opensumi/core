@@ -1,7 +1,7 @@
+import { IRange } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { partialMock } from './common/util';
-import { IRange } from '@opensumi/ide-core-common';
 
 export function createMockedMonacoRangeApi(): typeof monaco.Range {
   class MockedMonacoRange {

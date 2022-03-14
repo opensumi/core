@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITestErrorMessage, TestResultState } from './testCollection';
 import { marked } from 'marked';
+
 import { count } from '@opensumi/ide-core-common';
+
+import { ITestErrorMessage, TestResultState } from './testCollection';
 
 export interface TreeStateNode {
   statusNode: true;

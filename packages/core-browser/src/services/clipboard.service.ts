@@ -1,4 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
+
 import { ILogger } from '../logger';
 
 export const IClipboardService = Symbol('IClipboardService');

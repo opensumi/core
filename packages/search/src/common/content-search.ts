@@ -1,5 +1,5 @@
-import { endsWith, startsWith, Command, URI } from '@opensumi/ide-core-common';
 import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
+import { endsWith, startsWith, Command, URI } from '@opensumi/ide-core-common';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';

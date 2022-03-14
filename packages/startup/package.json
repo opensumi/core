@@ -40,7 +40,9 @@
       "**/node_modules/**",
       "**/__tests__/**",
       "**/src/browser/**",
-      "**/core-browser/**"
+      "**/core-browser/**",
+      "**/theme/**",
+      "**/src/hosted/**"
     ],
     "verbose": true,
     "execMap": {

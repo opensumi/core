@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { Autowired } from '@opensumi/di';
-import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
 import {
   KeybindingContribution,
   KeybindingRegistry,
@@ -11,14 +10,16 @@ import {
   createToolbarActionBtn,
   createToolbarActionSelect,
 } from '@opensumi/ide-core-browser';
-import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ISCMProvider } from '@opensumi/ide-scm';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { ISCMProvider } from '@opensumi/ide-scm';
+
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExamplePopover } from './exmaple-popover';
 

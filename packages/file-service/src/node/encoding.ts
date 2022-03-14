@@ -1,11 +1,12 @@
 // TODO: merge into core-common/encoding.ts
 
 import * as fs from 'fs-extra';
-import jschardet from 'jschardet';
 import iconv from 'iconv-lite';
+import jschardet from 'jschardet';
+
 import { URI } from '@opensumi/ide-core-common';
-import { FileUri } from '@opensumi/ide-core-node';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
+import { FileUri } from '@opensumi/ide-core-node';
 
 import { EncodingInfo } from '../common/encoding';
 

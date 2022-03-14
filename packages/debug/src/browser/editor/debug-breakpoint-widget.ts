@@ -1,8 +1,8 @@
-import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
-import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, positionToRange } from '@opensumi/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
+import { Disposable, positionToRange } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   DebugBreakpointWidgetContext,
   DebugEditor,
@@ -10,6 +10,8 @@ import {
   TSourceBrekpointProperties,
 } from '../../common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
+
+import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
 import { DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 
 export enum TopStackType {

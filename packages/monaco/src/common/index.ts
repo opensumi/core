@@ -1,9 +1,11 @@
 import { URI } from '@opensumi/ide-core-common';
-import {
+
+import type {
   FoldingRules,
   IAutoClosingPair,
   IAutoClosingPairConditional,
   LanguageConfiguration,
+  // eslint-disable-next-line import/no-restricted-paths
 } from '../browser/monaco-api/types';
 
 export * from '@opensumi/ide-core-browser/lib/monaco';

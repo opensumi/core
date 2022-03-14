@@ -1,12 +1,15 @@
 import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
-import { ClientAppContribution } from '../common/common.define';
 import { Domain, ContributionProvider } from '@opensumi/ide-core-common';
-import { OpenerContribution, IOpenerService } from '.';
+import { IElectronRendererURLService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
+
+import { ClientAppContribution } from '../common/common.define';
+import { AppConfig } from '../react-providers';
+import { electronEnv } from '../utils/electron';
+
 import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
-import { IElectronRendererURLService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
-import { electronEnv } from '../utils/electron';
-import { AppConfig } from '../react-providers';
+
+import { OpenerContribution, IOpenerService } from '.';
 
 @Domain(OpenerContribution)
 export class DefaultOpenerContribution implements OpenerContribution {

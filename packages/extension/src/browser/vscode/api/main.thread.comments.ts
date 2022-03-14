@@ -1,16 +1,15 @@
-import {
-  CommentThread,
-  CommentInput,
-  CommentReaction as CoreCommentReaction,
-  CommentMode as CoreCommentMode,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  UriComponents,
-  CommentThreadCollapsibleState,
-  Comment as CoreComment,
-  CommentThreadChanges,
-} from '../../../common/vscode/models';
+  ICommentsService,
+  ICommentsThread,
+  ICommentsFeatureRegistry,
+  CommentMode,
+  CommentReactionClick,
+  IThreadComment,
+  CommentReaction,
+} from '@opensumi/ide-comments';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IRange,
   Emitter,
@@ -25,23 +24,25 @@ import {
   OnEvent,
 } from '@opensumi/ide-core-common';
 import {
+  CommentThread,
+  CommentInput,
+  CommentReaction as CoreCommentReaction,
+  CommentMode as CoreCommentMode,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
+import {
   IMainThreadComments,
   CommentProviderFeatures,
   IExtHostComments,
   IMainThreadCommands,
 } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {
-  ICommentsService,
-  ICommentsThread,
-  ICommentsFeatureRegistry,
-  CommentMode,
-  CommentReactionClick,
-  IThreadComment,
-  CommentReaction,
-} from '@opensumi/ide-comments';
-import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+  UriComponents,
+  CommentThreadCollapsibleState,
+  Comment as CoreComment,
+  CommentThreadChanges,
+} from '../../../common/vscode/models';
 
 @Injectable({ multiple: true })
 export class MainthreadComments implements IDisposable, IMainThreadComments {

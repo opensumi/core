@@ -1,4 +1,3 @@
-import { IEditor } from '@opensumi/ide-editor';
 import {
   IRange,
   URI,
@@ -10,8 +9,10 @@ import {
   positionToRange,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { RecycleTreeProps } from '@opensumi/ide-core-browser/lib/components';
+import { IEditor } from '@opensumi/ide-editor';
+// eslint-disable-next-line import/no-restricted-paths
+import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 

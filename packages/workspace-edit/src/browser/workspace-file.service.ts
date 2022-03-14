@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   URI,
   Uri,
@@ -12,7 +12,8 @@ import {
   Event,
   FileStat,
 } from '@opensumi/ide-core-common';
-import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+
 import {
   FileOperation,
   FILE_OPERATION_TIMEOUT,

@@ -1,4 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor } from '../../color-registry';
 
 // 断网是状态栏用的颜色

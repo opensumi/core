@@ -1,5 +1,4 @@
 import { VSCodeExtensionService } from '../../src/common/vscode';
-
 import { mockExtensionProps, mockExtensionProps2 } from '../extensions';
 
 export class MainThreadExtensionService implements VSCodeExtensionService {

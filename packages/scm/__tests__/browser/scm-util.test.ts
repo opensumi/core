@@ -1,7 +1,7 @@
 import { SCMService } from '../../src';
+import { isSCMResource, getSCMResourceGroupContextValue, getSCMRepositoryDesc } from '../../src/browser/scm-util';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
-import { isSCMResource, getSCMResourceGroupContextValue, getSCMRepositoryDesc } from '../../src/browser/scm-util';
 
 describe('test for scm-util', () => {
   const mockSCMProvider = new MockSCMProvider(0);

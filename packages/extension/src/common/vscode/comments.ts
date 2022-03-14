@@ -1,6 +1,7 @@
+import { IRange, CancellationToken } from '@opensumi/ide-core-common';
+
 import * as modes from './models';
 import { UriComponents, CommentThreadChanges } from './models';
-import { IRange, CancellationToken } from '@opensumi/ide-core-common';
 
 export interface CommentProviderFeatures {
   reactionGroup?: modes.CommentReaction[];

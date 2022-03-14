@@ -1,7 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Schemas } from '@opensumi/ide-core-common';
-import { IOpener } from '.';
+
 import { IWindowService } from '../window';
+
+import { IOpener } from '.';
 
 @Injectable()
 export class HttpOpener implements IOpener {

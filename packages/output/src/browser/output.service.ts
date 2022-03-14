@@ -1,6 +1,7 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { observable, action } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { WithEventBus } from '@opensumi/ide-core-common';
 import {
   IEditorDocumentModelService,
@@ -8,7 +9,7 @@ import {
   ICodeEditor,
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
-import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { OutputChannel } from './output.channel';
 

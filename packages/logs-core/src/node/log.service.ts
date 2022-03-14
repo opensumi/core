@@ -1,9 +1,12 @@
-import path from 'path';
-import spdlog from 'spdlog';
-import process from 'process';
 import os from 'os';
-import { RPCService } from '@opensumi/ide-connection';
+import path from 'path';
+import process from 'process';
+
+import spdlog from 'spdlog';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { RPCService } from '@opensumi/ide-connection';
+
 import {
   ILogService,
   ILogServiceOptions,

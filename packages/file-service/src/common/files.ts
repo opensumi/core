@@ -13,7 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
+
+import { Range } from 'vscode-languageserver-types';
 
 import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
 import {
@@ -28,7 +31,6 @@ import {
   FileChangeEvent,
 } from '@opensumi/ide-core-common';
 import { FileSystemProvider, FileStat } from '@opensumi/ide-core-common/lib/types/file';
-import { Range } from 'vscode-languageserver-types';
 export {
   FileSystemProviderCapabilities,
   FileSystemProvider,

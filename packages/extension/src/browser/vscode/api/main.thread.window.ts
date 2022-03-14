@@ -1,4 +1,8 @@
+import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { URI } from '@opensumi/ide-core-browser';
+import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
+
 import {
   ExtHostAPIIdentifier,
   IMainThreadWindow,
@@ -6,9 +10,6 @@ import {
   IExtOpenDialogOptions,
   IExtSaveDialogOptions,
 } from '../../../common/vscode';
-import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-browser';
-import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
 @Injectable({ multiple: true })
 export class MainThreadWindow implements IMainThreadWindow {

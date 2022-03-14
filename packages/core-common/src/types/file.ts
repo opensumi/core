@@ -56,6 +56,11 @@ export interface FileStat {
    * 同 vscode FileType
    */
   type?: FileType;
+
+  /**
+   * 当前文件是否为只读
+   */
+  readonly?: boolean;
 }
 
 export namespace FileStat {

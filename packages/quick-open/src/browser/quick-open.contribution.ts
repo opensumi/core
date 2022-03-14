@@ -11,10 +11,12 @@ import {
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+
+import { QUICK_OPEN_COMMANDS } from '../common';
+
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';
-import { QUICK_OPEN_COMMANDS } from '../common';
 
 // 连接 monaco 内部的 quick-open
 // 作为 contribution provider 的职责

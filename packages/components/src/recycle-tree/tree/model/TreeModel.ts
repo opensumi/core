@@ -1,7 +1,9 @@
 import { Event, Emitter } from '../../../utils';
-import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
-import { CompositeTreeNode, TreeNode } from '../TreeNode';
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
+import { CompositeTreeNode, TreeNode } from '../TreeNode';
+
+import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
+
 
 export class TreeModel {
   private _state: TreeStateManager;

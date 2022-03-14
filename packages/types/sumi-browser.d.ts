@@ -3,6 +3,13 @@ interface IComponentMethod {
 }
 
 interface IComponentProps<N, W = any> {
+  sumiExtendSet: {
+    set<T = IComponentMethod>(methods: T): void;
+  };
+  sumiExtendService: {
+    node: N;
+    worker: W;
+  };
   kaitianExtendSet: {
     set<T = IComponentMethod>(methods: T): void;
   };
@@ -26,8 +33,8 @@ declare module 'kaitian-browser' {
 declare module 'sumi-browser' {
   export * from '@opensumi/ide-components';
 
-  import type vscode from 'vscode';
   import React from 'react';
+  import type vscode from 'vscode';
   import { URI as Uri } from 'vscode-uri';
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@opensumi/ide-components';

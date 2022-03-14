@@ -6,6 +6,7 @@ import {
   deepClone,
   localize,
 } from '@opensumi/ide-core-common';
+
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export namespace PatternSchemas {

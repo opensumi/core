@@ -1,11 +1,17 @@
-import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
-import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
-import { DebugSession } from '../../debug-session';
 import throttle = require('lodash.throttle');
-import { DebugConsoleTreeModel } from './debug-console-model';
+
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
+import { IThemeService } from '@opensumi/ide-theme';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
+import { handleANSIOutput } from '../../debug-ansi-handle';
 import { LinkDetector } from '../../debug-link-detector';
+import { DebugSession } from '../../debug-session';
+import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
+
+import { DebugConsoleTreeModel } from './debug-console-model';
+
 
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 
@@ -16,6 +22,9 @@ export class DebugConsoleSession {
 
   @Autowired(LinkDetector)
   private linkDetector: LinkDetector;
+
+  @Autowired(IThemeService)
+  protected readonly themeService: IThemeService;
 
   // 缓冲未完成的append进来的内容
   protected uncompletedItemContent: string | undefined;
@@ -38,6 +47,12 @@ export class DebugConsoleSession {
   resolveChildren() {
     const flattenedBranch = this.treeModel.root.flattenedBranch || [];
     return flattenedBranch.map((id: number) => this.treeModel.root.getTreeNodeById(id)) as ConsoleNodes[];
+  }
+
+  getLastItem(): ConsoleNodes | undefined {
+    const { flattenedBranch } = this.treeModel.root;
+    const lastBranch = flattenedBranch?.length ? flattenedBranch[flattenedBranch.length - 1] : undefined;
+    return lastBranch ? (this.treeModel.root.getTreeNodeById(lastBranch) as ConsoleNodes) : undefined;
   }
 
   async init() {
@@ -80,20 +95,36 @@ export class DebugConsoleSession {
         }
       }
     } else if (typeof body.output === 'string') {
-      for (const content of body.output.split('\n')) {
-        if (content) {
-          this.treeModel.root.insertItem(
-            new AnsiConsoleNode(content, this.treeModel?.root, this.linkDetector, severity, source, line),
-          );
-        }
+      const previousItem = this.getLastItem();
+      /**
+       * 如果上一条 output 结尾没有换行符则应该与下一条 output 拼接在一起
+       */
+      if (previousItem && !previousItem.description.endsWith('\n') && !previousItem.description.endsWith('\r\n')) {
+        this.treeModel.root.unlinkItem(previousItem);
+        await this.insertItemWithAnsi(previousItem.description + body.output, severity, source, line);
+      } else {
+        await this.insertItemWithAnsi(body.output, severity, source, line);
       }
     }
+
     this.fireDidChange();
+  }
+
+  private async insertItemWithAnsi(
+    output: string,
+    severity?: MessageType,
+    source?: DebugProtocol.Source,
+    line?: string | number,
+  ) {
+    const ansiNode = await handleANSIOutput(output, this.linkDetector, this.themeService, undefined);
+    this.treeModel.root.insertItem(
+      new AnsiConsoleNode(output, this.treeModel?.root, this.linkDetector, ansiNode, severity, source, line),
+    );
   }
 
   async execute(value: string): Promise<void> {
     this.treeModel.root.insertItem(
-      new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, MessageType.Info),
+      new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, undefined, MessageType.Info),
     );
     const expression = new DebugConsoleNode(this.session, value, this.treeModel?.root as ExpressionContainer);
     this.treeModel.root.insertItem(expression);
@@ -114,14 +145,20 @@ export class DebugConsoleSession {
     }
 
     this.treeModel.root.insertItem(
-      new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, this.linkDetector, MessageType.Info),
+      new AnsiConsoleNode(
+        this.uncompletedItemContent,
+        this.treeModel?.root,
+        this.linkDetector,
+        undefined,
+        MessageType.Info,
+      ),
     );
     this.fireDidChange();
   }
 
   appendLine(value: string): void {
     this.treeModel.root.insertItem(
-      new AnsiConsoleNode(value, this.treeModel?.root, this.linkDetector, MessageType.Info),
+      new AnsiConsoleNode(value, this.treeModel?.root, this.linkDetector, undefined, MessageType.Info),
     );
     this.fireDidChange();
   }

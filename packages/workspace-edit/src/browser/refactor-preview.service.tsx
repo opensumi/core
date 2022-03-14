@@ -1,12 +1,13 @@
-import React from 'react';
-import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { observable, action } from 'mobx';
+import React from 'react';
 
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { IDialogService } from '@opensumi/ide-overlay';
+import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { Deferred, localize, MessageType } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
 import { RefactorPreview } from './refactor-preview';
 
 export const PreviewViewId = 'RefactorPreview';

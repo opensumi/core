@@ -1,9 +1,11 @@
 import type vscode from 'vscode';
+
 import { Uri, UriUtils } from '@opensumi/ide-core-common';
-import { illegalArgument } from './utils';
-import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
+
+import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
+import { illegalArgument } from './utils';
 
 export { UriComponents } from './models/uri';
 

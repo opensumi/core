@@ -1,8 +1,10 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { VariableResolverContribution } from './variable-resolver.contribution';
-import { VariableQuickOpenService } from './variable-quick-open.service';
+
 import { IVariableResolverService } from '../common';
+
+import { VariableQuickOpenService } from './variable-quick-open.service';
+import { VariableResolverContribution } from './variable-resolver.contribution';
 import { VariableResolverService } from './variable-resolver.service';
 
 @Injectable()

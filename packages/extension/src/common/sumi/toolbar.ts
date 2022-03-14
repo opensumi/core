@@ -1,5 +1,7 @@
 import { Event } from '@opensumi/ide-core-common';
-import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/sumi/types';
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/sumi/types';
 
 export interface IToolbarButtonActionHandle {
   onClick: Event<void>;

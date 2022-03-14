@@ -1,11 +1,14 @@
 import os from 'os';
 import path from 'path';
+
 import * as fs from 'fs-extra';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { AppConfig } from '@opensumi/ide-core-node';
+
 import { toLocalISOString } from '@opensumi/ide-core-common';
-import { LogServiceModule } from '../../src/node';
+import { AppConfig } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
+import { LogServiceModule } from '../../src/node';
 
 const ktDir = path.join(os.homedir(), '.sumi-test');
 const logDir = path.join(ktDir, 'logs_0');

@@ -1,8 +1,6 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
 import * as jsoncparser from 'jsonc-parser';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   IRange,
   Uri,
@@ -12,8 +10,12 @@ import {
   IDisposable,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { isPatternInWord } from '@opensumi/ide-core-common/lib/filters';
+import { Path } from '@opensumi/ide-core-common/lib/path';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { ITextModel } from './monaco-api/types';
 
 @Injectable()

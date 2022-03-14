@@ -1,6 +1,15 @@
+import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { Button } from '@opensumi/ide-components';
+import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
+
+import { DomListener } from '../../dom';
+import { PreferenceService } from '../../preferences';
+import { useInjectable } from '../../react-hooks';
+import { AppConfig, ConfigProvider } from '../../react-providers';
 import {
   IToolbarActionReactElement,
   IToolbarActionElementProps,
@@ -10,13 +19,6 @@ import {
   IToolbarPopoverStyle,
   IToolbarPopoverRegistry,
 } from '../types';
-import { useInjectable } from '../../react-hooks';
-import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
-import classnames from 'classnames';
-import { AppConfig, ConfigProvider } from '../../react-providers';
-import { Button } from '@opensumi/ide-components';
-import { PreferenceService } from '../../preferences';
-import { DomListener } from '../../dom';
 
 enum BUTTON_TITLE_STYLE {
   HORIZONTAL = 'horizontal',
@@ -391,22 +393,28 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
           }
           const disposer = new Disposable();
           disposer.addDispose(
-            new DomListener(window, 'click', (e: MouseEvent) => {
-              if (e.target && ele.contains(e.target as Node)) {
-                return;
-              }
-              const rect = ele.getBoundingClientRect();
-              if (
-                rect.x <= e.clientX &&
-                rect.x + rect.width >= e.clientX &&
-                rect.y <= e.clientY &&
-                rect.y + rect.height >= e.clientY
-              ) {
-                // 点击在区域内，这里防止点击 target 已经被移除导致误判
-                return;
-              }
-              this.hidePopOver();
-            }),
+            new DomListener(
+              window,
+              'click',
+              (e: MouseEvent) => {
+                if (e.target && ele.contains(e.target as Node)) {
+                  return;
+                }
+                const rect = ele.getBoundingClientRect();
+                if (
+                  rect.x <= e.clientX &&
+                  rect.x + rect.width >= e.clientX &&
+                  rect.y <= e.clientY &&
+                  rect.y + rect.height >= e.clientY
+                ) {
+                  // 点击在区域内，这里防止点击 target 已经被移除导致误判
+                  return;
+                }
+                this.hidePopOver();
+              },
+              // 在捕获阶段处理，避免其他元素阻止冒泡导致不自动隐藏不生效
+              true,
+            ),
           );
           this._popOverClickOutsideDisposer = disposer;
         });

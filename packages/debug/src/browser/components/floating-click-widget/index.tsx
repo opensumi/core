@@ -1,9 +1,12 @@
 import React from 'react';
-import styles from './index.module.less';
-import { localize } from '@opensumi/ide-core-browser';
+
 import { Button } from '@opensumi/ide-components';
+import { localize } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser';
+
 import { DebugConfigurationService } from '../../view/configuration/debug-configuration.service';
+
+import styles from './index.module.less';
 
 export const FloatingClickWidget = (_: React.HtmlHTMLAttributes<HTMLDivElement>) => {
   const { addConfiguration } = useInjectable<DebugConfigurationService>(DebugConfigurationService);

@@ -1,17 +1,18 @@
-import React from 'react';
-import { useInjectable, DomListener, Disposable, useUpdateOnEvent, URI } from '@opensumi/ide-core-browser';
-import { Icon } from '@opensumi/ide-components';
-import { getIcon } from '@opensumi/ide-core-browser';
-
-import styles from './navigation.module.less';
-import { IBreadCrumbService, IBreadCrumbPart } from './types';
-import { Injectable } from '@opensumi/di';
+import classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { Injectable } from '@opensumi/di';
+import { Icon } from '@opensumi/ide-components';
+import { useInjectable, DomListener, Disposable, useUpdateOnEvent, URI } from '@opensumi/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
+
 import { Scroll, IScrollDelegate } from './component/scroll/scroll';
-import classnames from 'classnames';
-import { EditorGroup } from './workbench-editor.service';
+import styles from './navigation.module.less';
+import { IBreadCrumbService, IBreadCrumbPart } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
+import { EditorGroup } from './workbench-editor.service';
 
 export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => {
   const breadCrumbService = useInjectable(IBreadCrumbService) as IBreadCrumbService;
@@ -142,7 +143,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
               key={'menu-' + p.name}
             >
               <span className={p.icon || getIcon('smile')}></span>
-              <span>{p.name}</span>
+              <span className={styles.navigation_menu_item_label}>{p.name}</span>
               {p.getChildren && (
                 <span
                   className={styles.navigation_right}

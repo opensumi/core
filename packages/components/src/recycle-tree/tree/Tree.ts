@@ -1,6 +1,7 @@
-import { TreeNode, CompositeTreeNode } from './TreeNode';
 import { Emitter, DisposableCollection } from '../../utils';
 import { ITreeNodeOrCompositeTreeNode, ITree, ICompositeTreeNode } from '../types';
+
+import { TreeNode, CompositeTreeNode } from './TreeNode';
 
 export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;

@@ -112,10 +112,16 @@ export class WebviewPanelManager {
     newFrame.setAttribute('id', 'pending-frame');
     newFrame.setAttribute('frameborder', '0');
     newFrame.setAttribute('allow', 'autoplay');
-    newFrame.setAttribute(
-      'sandbox',
-      options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin',
-    );
+
+    const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
+    if (options.allowScripts) {
+      sandboxRules.add('allow-scripts');
+      sandboxRules.add('allow-downloads');
+    }
+    if (options.allowForms) {
+      sandboxRules.add('allow-forms');
+    }
+    newFrame.setAttribute('sandbox', Array.from(sandboxRules).join(' '));
     if (this.channel.fakeLoad) {
       // 使用service-worker时候
       newFrame.src = `./fake.html?id=${this.ID}`;

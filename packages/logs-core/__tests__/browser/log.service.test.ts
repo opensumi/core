@@ -1,6 +1,8 @@
 import { Injector, Injectable } from '@opensumi/di';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import { LogModule } from '../../src/browser';
+import { LogServiceClient } from '../../src/browser/log.service';
 import {
   ILoggerManagerClient,
   SupportLogNamespace,
@@ -8,7 +10,6 @@ import {
   LogServiceForClientPath,
   ILogServiceClient,
 } from '../../src/common';
-import { LogServiceClient } from '../../src/browser/log.service';
 
 @Injectable()
 class MockLogServiceForClient {

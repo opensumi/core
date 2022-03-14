@@ -1,5 +1,6 @@
-import { PromptHandle } from './PromptHandle';
 import { TreeNode, CompositeTreeNode } from '../tree';
+
+import { PromptHandle } from './PromptHandle';
 
 export class RenamePromptHandle extends PromptHandle {
   constructor(public readonly originalFileName: string, public readonly target: CompositeTreeNode | TreeNode) {

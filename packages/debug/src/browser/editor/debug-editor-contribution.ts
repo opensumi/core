@@ -1,11 +1,10 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { DEFAULT_WORD_REGEXP } from './../debugUtils';
-import { InlineValueContext } from './../../common/inline-values';
-import { DebugModelManager } from './debug-model-manager';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
-import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
+import { Injectable, Autowired } from '@opensumi/di';
+import {
+  IContextKeyService,
+  PreferenceService,
+  MonacoOverrideServiceRegistry,
+  ServiceNames,
+} from '@opensumi/ide-core-browser';
 import {
   IDisposable,
   Disposable,
@@ -17,19 +16,23 @@ import {
   Event,
 } from '@opensumi/ide-core-common';
 import { flatten } from '@opensumi/ide-core-common/lib/arrays';
-import { Injectable, Autowired } from '@opensumi/di';
-import {
-  IContextKeyService,
-  PreferenceService,
-  MonacoOverrideServiceRegistry,
-  ServiceNames,
-} from '@opensumi/ide-core-browser';
-import { InlineValuesProviderRegistry } from './inline-values';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { Constants } from '@opensumi/ide-core-common/lib/uint';
+import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
+import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
+import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+
+import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
+import { DebugSessionManager } from '../debug-session-manager';
+import { DebugStackFrame } from '../model';
+import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
+
 import {
   CONTEXT_DEBUG_STOPPED_KEY,
   DebugState,
@@ -37,10 +40,10 @@ import {
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_IN_DEBUG_MODE_KEY,
 } from './../../common';
-import { DebugSessionManager } from '../debug-session-manager';
-import { DebugStackFrame } from '../model';
-import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
-import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
+import { InlineValueContext } from './../../common/inline-values';
+import { DEFAULT_WORD_REGEXP } from './../debugUtils';
+import { DebugModelManager } from './debug-model-manager';
+import { InlineValuesProviderRegistry } from './inline-values';
 
 const INLINE_VALUE_DECORATION_KEY = 'inlinevaluedecoration';
 const MAX_NUM_INLINE_VALUES = 100;

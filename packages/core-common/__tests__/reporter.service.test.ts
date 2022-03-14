@@ -1,5 +1,5 @@
-import { REPORT_HOST } from '../src/types/reporter';
 import { ReporterService } from '../src/reporter';
+import { REPORT_HOST } from '../src/types/reporter';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -2,9 +2,11 @@
  * 为了模拟断连而设计的 pty 和 proxy 服务
  */
 import os from 'os';
+
+import httpProxy from 'http-proxy';
 import * as pty from 'node-pty';
 import WebSocket from 'ws';
-import httpProxy from 'http-proxy';
+
 import { uuid } from '@opensumi/ide-core-browser';
 
 function getRandomInt(min: number, max: number) {

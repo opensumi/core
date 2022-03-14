@@ -1,6 +1,7 @@
 import { Provider, Injectable } from '@opensumi/di';
-import { OutputContribution } from './output-contribution';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+
+import { OutputContribution } from './output-contribution';
 import { bindOutputPreference } from './output-preference';
 
 @Injectable()

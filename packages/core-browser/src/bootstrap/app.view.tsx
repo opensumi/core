@@ -1,15 +1,16 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import { getDebugLogger, IEventBus, URI } from '@opensumi/ide-core-common';
-import { ComponentContextProvider, IIconResourceOptions } from '@opensumi/ide-components';
 
-import { ResizeEvent } from '../layout';
-import { IClientApp } from '../browser-module';
-import { getIcon } from '../style/icon/icon';
-import { DefaultLayout } from '../components/layout/default-layout';
-import { ConfigProvider, allSlot } from '../react-providers';
+import { ComponentContextProvider, IIconResourceOptions } from '@opensumi/ide-components';
+import { getDebugLogger, IEventBus, URI } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common';
+
+import { IClientApp } from '../browser-module';
+import { DefaultLayout } from '../components/layout/default-layout';
+import { ResizeEvent } from '../layout';
+import { ConfigProvider, allSlot } from '../react-providers';
 import { LabelService } from '../services';
+import { getIcon } from '../style/icon/icon';
 
 export interface AppProps {
   app: IClientApp;

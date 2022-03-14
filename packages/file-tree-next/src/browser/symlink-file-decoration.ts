@@ -1,6 +1,7 @@
 import { Optional } from '@opensumi/di';
-import { IDecorationsProvider, IDecorationData } from '@opensumi/ide-decoration';
 import { Uri, Emitter, localize } from '@opensumi/ide-core-browser';
+import { IDecorationsProvider, IDecorationData } from '@opensumi/ide-decoration';
+
 import { FileTreeService } from './file-tree.service';
 
 export class SymlinkDecorationsProvider implements IDecorationsProvider {

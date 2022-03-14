@@ -1,8 +1,9 @@
-import { IExtensionContributions } from '@opensumi/ide-extension/lib/common/vscode/extension';
-import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
-import { Uri, asArray } from '@opensumi/ide-core-common';
 import { mergeWith } from 'lodash';
+
+import { Uri, asArray } from '@opensumi/ide-core-common';
+import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 import { ISumiExtensionContributions } from '@opensumi/ide-extension/lib/common/sumi/extension';
+import { IExtensionContributions } from '@opensumi/ide-extension/lib/common/vscode/extension';
 
 export function mergeContributes(
   contributes: IExtensionContributions | undefined,

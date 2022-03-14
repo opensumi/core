@@ -1,6 +1,16 @@
+import debounce = require('lodash.debounce');
+import throttle = require('lodash.throttle');
 import React from 'react';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
 import { CommandService, Emitter, Event, ILogger, localize, raceTimeout } from '@opensumi/ide-core-common';
+import { IDialogService } from '@opensumi/ide-overlay/lib/common';
+import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
+import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
+
+import { ITerminalProcessPath, ITerminalProcessService } from '../common';
+import { TERMINAL_COMMANDS } from '../common/commands';
 import {
   deserializeEnvironmentVariableCollection,
   IEnvironmentVariableCollectionWithPersistence,
@@ -11,17 +21,10 @@ import {
   mutatorTypeLabel,
   serializeEnvironmentVariableCollection,
 } from '../common/environmentVariable';
-import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
-import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
-import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
-import { IDialogService } from '@opensumi/ide-overlay/lib/common';
-
 import { MergedEnvironmentVariableCollection } from '../common/environmentVariableCollection';
-import { TERMINAL_COMMANDS } from '../common/commands';
+
 import { TerminalVariable } from './component/terminal.variable';
-import { ITerminalProcessPath, ITerminalProcessService } from '../common';
-import throttle = require('lodash.throttle');
-import debounce = require('lodash.debounce');
+
 
 export const ENVIRONMENT_VARIABLE_COLLECTIONS_KEY = 'terminal.integrated.environmentVariableCollections';
 

@@ -1,14 +1,16 @@
 import type vscode from 'vscode';
+
+import { Uri, CancellationToken } from '@opensumi/ide-core-common';
+import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import * as Converter from '../../../../common/vscode/converter';
 import {
   Position,
   IIncomingCallDto,
   IOutgoingCallDto,
   ICallHierarchyItemDto,
 } from '../../../../common/vscode/model.api';
-import * as Converter from '../../../../common/vscode/converter';
-import { Uri, CancellationToken } from '@opensumi/ide-core-common';
-import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 
 export class CallHierarchyAdapter {
   private readonly _idPool = new IdGenerator('');

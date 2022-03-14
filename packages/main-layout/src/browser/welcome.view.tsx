@@ -1,12 +1,16 @@
-import React from 'react';
-import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
-import { ViewsController } from './views-registry';
-import { IViewContentDescriptor } from '../common';
-import styles from './accordion/styles.module.less';
-import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
-import { Button } from '@opensumi/ide-components/lib/button';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
 import clsx from 'classnames';
+import React from 'react';
+
+import { Button } from '@opensumi/ide-components/lib/button';
+import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
+
+import { IViewContentDescriptor } from '../common';
+
+import styles from './accordion/styles.module.less';
+import { ViewsController } from './views-registry';
+
 
 export namespace CSSIcon {
   export const iconNameSegment = '[A-Za-z0-9]+';

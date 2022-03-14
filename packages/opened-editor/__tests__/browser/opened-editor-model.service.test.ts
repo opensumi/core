@@ -1,19 +1,21 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@opensumi/ide-core-browser';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { IThemeService } from '@opensumi/ide-theme';
-import { IDecorationsService } from '@opensumi/ide-decoration';
-import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
-import { EditorFile } from '../../src/browser/opened-editor-node.define';
-import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
-import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IThemeService } from '@opensumi/ide-theme';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import styles from '../../src/browser/file-tree-node.modules.less';
+import { EditorFile } from '../../src/browser/opened-editor-node.define';
+import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
+import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
+import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
+
 
 describe('OpenedEditorModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;

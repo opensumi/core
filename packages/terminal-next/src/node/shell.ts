@@ -7,11 +7,11 @@
 // - https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalEnvironment.ts
 // - https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/base/node/shell.ts
 
-import { userInfo, release } from 'os';
 import fs from 'fs';
+import { userInfo, release } from 'os';
 
-import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import * as path from '@opensumi/ide-core-common/lib/path';
+import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { isWindows } from '@opensumi/ide-core-node';
 
 export const WINDOWS_GIT_BASH_PATHS = [

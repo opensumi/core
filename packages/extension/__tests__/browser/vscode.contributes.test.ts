@@ -1,9 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import os from 'os';
+
 import { Injector } from '@opensumi/di';
-import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { mockExtensionProps } from '../../__mocks__/extensions';
+import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
+import { MockLogger, MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   CommandRegistry,
   CommandService,
@@ -14,22 +14,25 @@ import {
   ILoggerManagerClient,
   Uri,
 } from '@opensumi/ide-core-common';
-import { ExtensionWillContributeEvent } from '@opensumi/ide-extension/lib/browser/types';
-import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
-import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
+import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
-import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
-import { MockLogger, MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { ExtensionWillContributeEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { ExtensionNodeServiceServerPath } from '@opensumi/ide-extension/lib/common';
-import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
+import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
-import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
+import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
+import { mockExtensionProps } from '../../__mocks__/extensions';
+import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
+
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
-import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
 const extension = {
   ...mockExtensionProps,

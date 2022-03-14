@@ -24,29 +24,29 @@ import {
   IApplicationService,
   IAuthenticationService,
 } from '@opensumi/ide-core-common';
-import { ClientAppContribution } from '../common';
-import { ClientAppStateService } from '../application/application-state-service';
-import { ApplicationService } from '../application/application.service';
-import {
-  KeyboardNativeLayoutService,
-  KeyboardLayoutChangeNotifierService,
-} from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
-
-import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
-import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
-
-import { Logger, ILogger } from '../logger';
-import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
-import { useNativeContextMenu } from '../utils';
-import { createElectronMainApi } from '../utils/electron';
 import {
   IElectronMainUIService,
   IElectronMainLifeCycleService,
   IElectronURLService,
 } from '@opensumi/ide-core-common/lib/electron';
-import { PreferenceContribution } from '../preferences';
-import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import {
+  KeyboardNativeLayoutService,
+  KeyboardLayoutChangeNotifierService,
+} from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
+import { ClientAppStateService } from '../application/application-state-service';
+import { ApplicationService } from '../application/application.service';
+import { AuthenticationService } from '../authentication/authentication.service';
+import { ClientAppContribution } from '../common';
+import { FsProviderContribution } from '../fs';
+import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
+import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
+import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
+import { Logger, ILogger } from '../logger';
 import {
   AbstractMenuService,
   MenuServiceImpl,
@@ -59,6 +59,7 @@ import {
   ContextMenuServiceImpl,
 } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
+import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 import {
   ElectronCtxMenuRenderer,
   ElectronMenuBarService,
@@ -66,27 +67,25 @@ import {
   IElectronMenuBarService,
   ElectronMenuFactory,
 } from '../menu/next/renderer/ctxmenu/electron';
-import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
-import { AppConfig, SlotRendererContribution } from '../react-providers';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
-import { IProgressService } from '../progress';
-import { ProgressService } from '../progress/progress.service';
-import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
-import { FsProviderContribution } from '../fs';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
-import { IWindowService } from '../window';
-import { WindowService } from '../window/window.service';
+import { PreferenceContribution } from '../preferences';
+import { IProgressService } from '../progress';
+import { ProgressService } from '../progress/progress.service';
+import { AppConfig, SlotRendererContribution } from '../react-providers';
+import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
+import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
-import { AuthenticationService } from '../authentication/authentication.service';
-import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
-import {
-  HashCalculateServiceImpl,
-  IHashCalculateService,
-} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
+import { useNativeContextMenu } from '../utils';
+import { createElectronMainApi } from '../utils/electron';
+import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
+import { IWindowService } from '../window';
+import { WindowService } from '../window/window.service';
+
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider

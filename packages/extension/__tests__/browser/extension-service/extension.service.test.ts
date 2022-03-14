@@ -1,12 +1,5 @@
 import ReactDom from 'react-dom';
-import {
-  ExtensionService,
-  IExtCommandManagement,
-  AbstractExtensionManagementService,
-  IRequireInterceptorService,
-} from '../../../src/common';
-import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+
 import {
   CommandRegistryImpl,
   CommandRegistry,
@@ -15,16 +8,26 @@ import {
   KeybindingRegistryImpl,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { IThemeService, getColorRegistry } from '@opensumi/ide-theme/lib/common';
-import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
-import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
+import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import { NextToolbarRegistryImpl } from '@opensumi/ide-core-browser/src/toolbar/toolbar.registry';
 import { IActivationEventService, ExtensionBeforeActivateEvent } from '@opensumi/ide-extension/lib/browser/types';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { TabbarService } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
+import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
+import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
+import { IThemeService, getColorRegistry } from '@opensumi/ide-theme/lib/common';
+
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
+import {
+  ExtensionService,
+  IExtCommandManagement,
+  AbstractExtensionManagementService,
+  IRequireInterceptorService,
+} from '../../../src/common';
+
 import { MOCK_EXTENSIONS, setupExtensionServiceInjector } from './extension-service-mock-helper';
 
 describe('Extension service', () => {

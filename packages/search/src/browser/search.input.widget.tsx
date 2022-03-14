@@ -1,8 +1,9 @@
-import React, { RefObject } from 'react';
 import cls from 'classnames';
+import React, { RefObject } from 'react';
+
 import { ValidateInput, CheckBox, ValidateMessage } from '@opensumi/ide-components';
-import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import styles from './search.module.less';
 

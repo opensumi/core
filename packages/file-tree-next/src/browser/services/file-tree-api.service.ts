@@ -1,15 +1,16 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { ITree } from '@opensumi/ide-components';
+import { Path } from '@opensumi/ide-components/lib/utils';
+import { EDITOR_COMMANDS, CorePreferences } from '@opensumi/ide-core-browser';
+import { URI, localize, CommandService, formatLocalize } from '@opensumi/ide-core-common';
+import * as paths from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { ITree } from '@opensumi/ide-components';
-import { Directory, File } from '../../common/file-tree-node.define';
-import { IFileTreeAPI, IFileTreeService } from '../../common';
-import { URI, localize, CommandService, formatLocalize } from '@opensumi/ide-core-common';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import { EDITOR_COMMANDS, CorePreferences } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-components/lib/utils';
-import * as paths from '@opensumi/ide-core-common/lib/path';
+
+import { IFileTreeAPI, IFileTreeService } from '../../common';
+import { Directory, File } from '../../common/file-tree-node.define';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {

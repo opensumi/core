@@ -1,12 +1,5 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import {
-  ExtHostAPIIdentifier,
-  IMainThreadPreference,
-  PreferenceData,
-  PreferenceChangeExt,
-} from '../../../common/vscode';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { ConfigurationTarget } from '../../../common/vscode';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   PreferenceService,
   PreferenceProviderProvider,
@@ -14,8 +7,17 @@ import {
   DisposableCollection,
   PreferenceSchemaProvider,
 } from '@opensumi/ide-core-browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { FileStat } from '@opensumi/ide-file-service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import {
+  ExtHostAPIIdentifier,
+  IMainThreadPreference,
+  PreferenceData,
+  PreferenceChangeExt,
+} from '../../../common/vscode';
+import { ConfigurationTarget } from '../../../common/vscode';
+
 
 export function getPreferences(
   preferenceProviderProvider: PreferenceProviderProvider,

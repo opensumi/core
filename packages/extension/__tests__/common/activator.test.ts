@@ -1,5 +1,5 @@
-import { ExtensionsActivator, ActivatedExtension } from '../../src/common/activator';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { ExtensionsActivator, ActivatedExtension } from '../../src/common/activator';
 
 describe(__filename, () => {
   let extensionsActivator: ExtensionsActivator;

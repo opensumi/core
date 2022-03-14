@@ -1,8 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { deepClone, IJSONSchema, IJSONSchemaRegistry } from '@opensumi/ide-core-browser';
-import { DebugServer, IDebugServer } from '../common/debug-service';
-import { DebugConfigurationManager } from './debug-configuration-manager';
+
 import { launchSchemaUri } from '../common';
+import { DebugServer, IDebugServer } from '../common/debug-service';
+
+import { DebugConfigurationManager } from './debug-configuration-manager';
 
 @Injectable()
 export class DebugSchemaUpdater {

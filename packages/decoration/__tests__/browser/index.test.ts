@@ -2,9 +2,8 @@ import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@o
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
-import { DecorationModule } from '../../src/browser';
 import { IDecorationsService, IDecorationsProvider, IDecorationData } from '../../src';
+import { DecorationModule } from '../../src/browser';
 
 describe('DecorationsService', () => {
   let injector: MockInjector;

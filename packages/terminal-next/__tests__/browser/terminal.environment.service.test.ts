@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
-import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { CommandService, CommandServiceImpl } from '@opensumi/ide-core-common/lib/command';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { ILogger } from '@opensumi/ide-logs/lib/common';
@@ -11,6 +11,7 @@ import { ITerminalProcessPath } from '@opensumi/ide-terminal-next';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { MergedEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariableCollection';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
+
 import { TerminalEnvironmentService } from '../../src/browser/terminal.environment.service';
 
 const mockData = [

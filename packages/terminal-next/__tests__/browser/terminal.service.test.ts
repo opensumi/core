@@ -1,18 +1,21 @@
 import os from 'os';
 import path from 'path';
+
 import fse from 'fs-extra';
-import WebSocket from 'ws';
 import httpProxy from 'http-proxy';
+import WebSocket from 'ws';
+
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { NodePtyTerminalService } from '../../src/browser/terminal.service';
+import { IShellLaunchConfig, ITerminalService, ITerminalServicePath } from '../../src/common';
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
-import { IShellLaunchConfig, ITerminalService, ITerminalServicePath } from '../../src/common';
-import { NodePtyTerminalService } from '../../src/browser/terminal.service';
 
 describe('terminal service test cases', () => {
   let terminalService: ITerminalService;

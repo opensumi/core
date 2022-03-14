@@ -1,8 +1,10 @@
-import { IJSONSchema, IJSONSchemaSnippet, Event } from '@opensumi/ide-core-common';
-import { Breakpoint } from './models';
 import type vscode from 'vscode';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+import { IJSONSchema, IJSONSchemaSnippet, Event } from '@opensumi/ide-core-common';
 import { DebuggerDescription, DebugConfiguration, IDebuggerContribution, IDebugSessionDTO } from '@opensumi/ide-debug';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+import { Breakpoint } from './models';
 import { WorkspaceFolder } from './models';
 
 export type DebugSessionUUID = string;

@@ -1,6 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../../color-registry';
+
 import { RGBA, Color } from '../../color';
+import { registerColor } from '../../color-registry';
 import { foreground } from '../base';
 
 /* disable button */

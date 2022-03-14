@@ -1,6 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
 import {
   IContextKeyService,
   ClientAppContribution,
@@ -10,7 +8,7 @@ import {
   slotRendererRegistry,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '../common';
+import { getIcon } from '@opensumi/ide-core-browser';
 import {
   ComponentContribution,
   ComponentRegistry,
@@ -18,14 +16,20 @@ import {
   ToolbarRegistry,
 } from '@opensumi/ide-core-browser/lib/layout';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
-import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
-import { getIcon } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
   MenuCommandDesc,
   MenuContribution as MenuContribution,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
+
+import { IMainLayoutService } from '../common';
+
+
+import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
+
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {

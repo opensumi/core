@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TestIdPathParts } from '@opensumi/ide-testing/lib/common';
 import * as vscode from 'vscode';
+
+import { TestIdPathParts } from '@opensumi/ide-testing/lib/common';
 
 export const enum ExtHostTestItemEventOp {
   Upsert,

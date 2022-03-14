@@ -1,7 +1,9 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, ComponentRegistryInfo } from '@opensumi/ide-core-browser';
+import React from 'react';
+
 import { Button, Badge } from '@opensumi/ide-components';
+import { useInjectable, ComponentRegistryInfo } from '@opensumi/ide-core-browser';
+
 import { ITopbarService } from '../common';
 
 export const TopbarBadge: React.FC<{ component: ComponentRegistryInfo }> = observer(

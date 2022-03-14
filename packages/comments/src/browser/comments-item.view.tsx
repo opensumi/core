@@ -1,5 +1,12 @@
+import { marked } from 'marked';
+import { observer } from 'mobx-react-lite';
 import React from 'react';
-import styles from './comments.module.less';
+
+import { Button } from '@opensumi/ide-components';
+import { useInjectable, localize, IContextKeyService, isUndefined } from '@opensumi/ide-core-browser';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import {
   IThreadComment,
   ICommentsCommentTitle,
@@ -10,15 +17,11 @@ import {
   ICommentsFeatureRegistry,
   ICommentsThread,
 } from '../common';
-import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { observer } from 'mobx-react-lite';
-import { CommentsTextArea } from './comments-textarea.view';
-import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
-import { useInjectable, localize, IContextKeyService, isUndefined } from '@opensumi/ide-core-browser';
-import { Button } from '@opensumi/ide-components';
-import { CommentsBody } from './comments-body';
-import { marked } from 'marked';
+
 import { CommentReactions, CommentReactionSwitcher } from './comment-reactions.view';
+import { CommentsBody } from './comments-body';
+import { CommentsTextArea } from './comments-textarea.view';
+import styles from './comments.module.less';
 
 const useCommentContext = (
   contextKeyService: IContextKeyService,

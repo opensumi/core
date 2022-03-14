@@ -1,10 +1,11 @@
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
-import { IRemoteHostConverter, IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken } from '../../src/common';
 import { Disposable } from '@opensumi/ide-core-common';
 import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
 import { RemoteOpenerBrowserServiceImpl } from '@opensumi/ide-remote-opener/lib/browser';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IRemoteHostConverter, IRemoteOpenerBrowserService, RemoteOpenerBrowserServiceToken } from '../../src/common';
 
 describe('packages/remote-opener/src/browser/remote.opener.service.ts', () => {
   let remoteOpenerService: IRemoteOpenerBrowserService;
@@ -55,7 +56,7 @@ describe('packages/remote-opener/src/browser/remote.opener.service.ts', () => {
     };
     const spyOnConverter = jest.spyOn(converter, 'convert');
 
-    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '127.0.0.1', '0.0.0.0']));
+    disposes.addDispose(remoteOpenerService.registerSupportHosts(['localhost', '0.0.0.0', '0.0.0.0']));
     disposes.addDispose(remoteOpenerService.registerConverter(converter));
 
     const spyOnOpen = jest.spyOn(openerService, 'open');
@@ -69,7 +70,7 @@ describe('packages/remote-opener/src/browser/remote.opener.service.ts', () => {
 
     spyOnOpen.mockClear();
 
-    const mockLocalUrl = Uri.parse('http://127.0.0.1:3030');
+    const mockLocalUrl = Uri.parse('http://0.0.0.0:3030');
     await remoteOpenerService.$openExternal('url', mockLocalUrl);
 
     expect(spyOnOpenExternal).toBeCalledWith('url', mockLocalUrl);

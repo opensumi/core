@@ -1,5 +1,6 @@
-import { Autowired, Injectable } from '@opensumi/di';
 import type * as vscode from 'vscode';
+
+import { Autowired, Injectable } from '@opensumi/di';
 
 import { ILsifService, ILsifPayload } from './base';
 import { LsifClient } from './lsif-client';

@@ -1,8 +1,9 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+
+import { WebviewModuleContribution } from './contribution';
 import { IWebviewService } from './types';
 import { WebviewServiceImpl } from './webview.service';
-import { WebviewModuleContribution } from './contribution';
 export * from './types';
 export { PlainWebview } from './editor-webview';
 

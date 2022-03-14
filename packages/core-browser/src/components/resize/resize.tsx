@@ -1,6 +1,7 @@
-import React from 'react';
-import styles from './resize.module.less';
 import classnames from 'classnames';
+import React from 'react';
+
+import styles from './resize.module.less';
 
 export const RESIZE_LOCK = 'resize-lock';
 

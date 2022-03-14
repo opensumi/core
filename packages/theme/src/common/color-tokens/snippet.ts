@@ -1,6 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor } from '../color-registry';
+
 import { Color, RGBA } from '../../common/color';
+import { registerColor } from '../color-registry';
 
 /**
  * Snippet placeholder colors

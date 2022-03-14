@@ -1,17 +1,4 @@
-import {
-  IWebviewService,
-  IPlainWebviewConstructionOptions,
-  IPlainWebview,
-  IWebview,
-  IWebviewContentOptions,
-  IWebviewThemeData,
-  IEditorWebviewComponent,
-  EDITOR_WEBVIEW_SCHEME,
-  IEditorWebviewMetaData,
-  IPlainWebviewComponentHandle,
-  IPlainWebviewWindow,
-  IWebviewReviver,
-} from './types';
+import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   getDebugLogger,
   localize,
@@ -27,11 +14,6 @@ import {
   STORAGE_SCHEMA,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
-import { IFrameWebviewPanel } from './iframe-webview';
-import { ITheme } from '@opensumi/ide-theme';
-import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
@@ -39,8 +21,27 @@ import {
   EditorPreferences,
   EditorGroupChangeEvent,
 } from '@opensumi/ide-editor/lib/browser';
+import { ITheme } from '@opensumi/ide-theme';
+import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
+
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
+import { IFrameWebviewPanel } from './iframe-webview';
+import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
+import {
+  IWebviewService,
+  IPlainWebviewConstructionOptions,
+  IPlainWebview,
+  IWebview,
+  IWebviewContentOptions,
+  IWebviewThemeData,
+  IEditorWebviewComponent,
+  EDITOR_WEBVIEW_SCHEME,
+  IEditorWebviewMetaData,
+  IPlainWebviewComponentHandle,
+  IPlainWebviewWindow,
+  IWebviewReviver,
+} from './types';
 import { ElectronPlainWebviewWindow } from './webview-window';
 
 @Injectable()

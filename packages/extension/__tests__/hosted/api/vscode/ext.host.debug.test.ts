@@ -1,16 +1,19 @@
-import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
-import { ExtHostConnection } from '../../../../src/hosted/api/vscode/ext.host.connection';
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
-import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { URI } from '@opensumi/ide-core-common';
 import path from 'path';
+
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { URI } from '@opensumi/ide-core-common';
+
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import {
   DebugAdapterServer,
   DebugAdapterExecutable,
   DebugAdapterInlineImplementation,
 } from '../../../../src/common/vscode/ext-types';
+import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
+import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+import { ExtHostConnection } from '../../../../src/hosted/api/vscode/ext.host.connection';
+
 
 const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
@@ -220,7 +223,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     };
     let adapterDescriptor;
 
-    const descriptorServer = await execDADescriptor('mock', new DebugAdapterServer(7017, '127.0.0.1'));
+    const descriptorServer = await execDADescriptor('mock', new DebugAdapterServer(7017, '0.0.0.0'));
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorServer);
     expect(adapterDescriptor.type).toBe('server');
 

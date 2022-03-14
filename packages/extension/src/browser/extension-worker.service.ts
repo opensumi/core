@@ -8,6 +8,7 @@ import { posix } from '@opensumi/ide-core-common/lib/path';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
+
 import { getWorkerBootstrapUrl } from './loader';
 import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
@@ -125,7 +126,7 @@ export class WorkerExtProcessService
   }
 
   public async $getStaticServicePath() {
-    return this.appConfig.staticServicePath || 'http://127.0.0.1:8000';
+    return this.appConfig.staticServicePath || 'http://0.0.0.0:8000';
   }
 
   private async createExtProcess(ignoreCors?: boolean) {

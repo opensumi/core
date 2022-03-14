@@ -1,8 +1,10 @@
 import { Injectable } from '@opensumi/di';
-import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './markers';
+
+import { isFalsyOrEmpty } from '../../arrays';
 import { IDisposable } from '../../disposable';
 import { Emitter, MapMap, Event, WithEventBus } from '../../index';
-import { isFalsyOrEmpty } from '../../arrays';
+
+import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './markers';
 
 export interface IBaseMarkerManager {
   /**

@@ -346,48 +346,48 @@ declare module 'vscode' {
     handleTerminalLink(link: T): ProviderResult<void>;
   }
 
-	/**
-	 * A link on a terminal line.
-	 */
-   export class TerminalLink {
-		/**
-		 * The start index of the link on {@link TerminalLinkContext.line}.
-		 */
-		startIndex: number;
+  /**
+   * A link on a terminal line.
+   */
+  export class TerminalLink {
+    /**
+     * The start index of the link on {@link TerminalLinkContext.line}.
+     */
+    startIndex: number;
 
-		/**
-		 * The length of the link on {@link TerminalLinkContext.line}.
-		 */
-		length: number;
+    /**
+     * The length of the link on {@link TerminalLinkContext.line}.
+     */
+    length: number;
 
-		/**
-		 * The tooltip text when you hover over this link.
-		 *
-		 * If a tooltip is provided, is will be displayed in a string that includes instructions on
-		 * how to trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary
-		 * depending on OS, user settings, and localization.
-		 */
-		tooltip?: string;
+    /**
+     * The tooltip text when you hover over this link.
+     *
+     * If a tooltip is provided, is will be displayed in a string that includes instructions on
+     * how to trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary
+     * depending on OS, user settings, and localization.
+     */
+    tooltip?: string;
 
-		/**
-		 * Creates a new terminal link.
-		 * @param startIndex The start index of the link on {@link TerminalLinkContext.line}.
-		 * @param length The length of the link on {@link TerminalLinkContext.line}.
-		 * @param tooltip The tooltip text when you hover over this link.
-		 *
-		 * If a tooltip is provided, is will be displayed in a string that includes instructions on
-		 * how to trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary
-		 * depending on OS, user settings, and localization.
-		 */
-		constructor(startIndex: number, length: number, tooltip?: string);
-	}
+    /**
+     * Creates a new terminal link.
+     * @param startIndex The start index of the link on {@link TerminalLinkContext.line}.
+     * @param length The length of the link on {@link TerminalLinkContext.line}.
+     * @param tooltip The tooltip text when you hover over this link.
+     *
+     * If a tooltip is provided, is will be displayed in a string that includes instructions on
+     * how to trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary
+     * depending on OS, user settings, and localization.
+     */
+    constructor(startIndex: number, length: number, tooltip?: string);
+  }
 
 
   /**
    * Provides a terminal profile for the contributed terminal profile when launched via the UI or
    * command.
    */
-   export interface TerminalProfileProvider {
+  export interface TerminalProfileProvider {
     /**
      * Provide the terminal profile.
      * @param token A cancellation token that indicates the result is no longer needed.
@@ -813,6 +813,15 @@ declare module 'vscode' {
      * Defaults to false (scripts-disabled).
      */
     readonly enableScripts?: boolean;
+
+
+    /**
+     * Controls whether forms are enabled in the webview content or not.
+     *
+     * Defaults to true if {@link WebviewOptions.enableScripts scripts are enabled}. Otherwise defaults to false.
+     * Explicitly setting this property to either true or false overrides the default.
+     */
+    readonly enableForms?: boolean;
 
     /**
      * Controls whether command uris are enabled in webview content or not.
@@ -3001,6 +3010,20 @@ declare module 'vscode' {
     SymbolicLink = 64,
   }
 
+  //#region FileSystemProvider stat readonly - https://github.com/microsoft/vscode/issues/73122
+
+  export enum FilePermission {
+    /**
+     * The file is readonly.
+     *
+     * *Note:* All `FileStat` from a `FileSystemProvider` that is registered  with
+     * the option `isReadonly: true` will be implicitly handled as if `FilePermission.Readonly`
+     * is set. As a consequence, it is not possible to have a readonly file system provider
+     * registered where some `FileStat` are not readonly.
+     */
+    Readonly = 1
+  }
+
   /**
    * The `FileStat`-type represents metadata about a file
    */
@@ -3022,6 +3045,12 @@ declare module 'vscode' {
      * The size in bytes.
      */
     size: number;
+    /**
+     * The permissions of the file, e.g. whether the file is readonly.
+     *
+     * *Note:* This value might be a bitmask, e.g. `FilePermission.Readonly | FilePermission.Other`.
+     */
+    permissions?: FilePermission;
   }
 
   /**

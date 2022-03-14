@@ -1,11 +1,15 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@opensumi/ide-core-browser/lib/layout';
-import { TabBarHandler } from '../browser/tabbar-handler';
-import { TabbarService } from '../browser/tabbar/tabbar.service';
-import { AccordionService } from '../browser/accordion/accordion.service';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Deferred, Event } from '@opensumi/ide-core-common';
 import { IContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { AccordionService } from '../browser/accordion/accordion.service';
+// eslint-disable-next-line import/no-restricted-paths
+import type { TabBarHandler } from '../browser/tabbar-handler';
+// eslint-disable-next-line import/no-restricted-paths
+import type { TabbarService } from '../browser/tabbar/tabbar.service';
 
 export interface ComponentCollection {
   views?: View[];

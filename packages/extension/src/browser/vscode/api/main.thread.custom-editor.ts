@@ -1,4 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelService, ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser';
+import { IWebviewService } from '@opensumi/ide-webview';
+
 import {
   IMainThreadCustomEditor,
   IExtHostCustomEditor,
@@ -6,8 +11,6 @@ import {
   ICustomEditorOptions,
   ExtHostAPIIdentifier,
 } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@opensumi/ide-core-common';
 import {
   CustomEditorShouldDisplayEvent,
   CustomEditorOptionChangeEvent,
@@ -16,10 +19,9 @@ import {
   CustomEditorShouldRevertEvent,
   CustomEditorShouldEditEvent,
 } from '../../../common/vscode/custom-editor';
-import { IEditorDocumentModelService, ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser';
-import { MainThreadWebview } from './main.thread.api.webview';
-import { IWebviewService } from '@opensumi/ide-webview';
 import { UriComponents } from '../../../common/vscode/models';
+
+import { MainThreadWebview } from './main.thread.api.webview';
 
 @Injectable({ multiple: true })
 export class MainThreadCustomEditor extends WithEventBus implements IMainThreadCustomEditor {

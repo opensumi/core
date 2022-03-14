@@ -1,7 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { Domain, URI, FsProviderContribution, AppConfig, Uri } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
 import { ExtFsProvider } from './ext-fs-provider';
 import { HttpFileService } from './http-file.service';
 
@@ -47,7 +47,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
       scheme: 'file',
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走 scm raw 服务
-        // https://127.0.0.1:8080/asset-service/v3/project/$repo/repository/blobs/$ref
+        // https://0.0.0.0:8080/asset-service/v3/project/$repo/repository/blobs/$ref
         // GET /api/v3/projects/{id}/repository/blobs/{sha}
         const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
         const rootUri = new URI(this.workspaceService.workspace?.uri!);

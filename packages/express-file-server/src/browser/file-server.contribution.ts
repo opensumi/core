@@ -1,9 +1,10 @@
-import { Domain, URI, AppConfig } from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
+import { Domain, URI, AppConfig } from '@opensumi/ide-core-browser';
 import {
   StaticResourceContribution,
   StaticResourceService,
 } from '@opensumi/ide-static-resource/lib/browser/static.definition';
+
 import { EXPRESS_SERVER_PATH } from '../common';
 
 @Domain(StaticResourceContribution)
@@ -16,7 +17,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
       scheme: 'file',
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走静态服务
-        // http://127.0.0.1:8000/assets/${path}
+        // http://0.0.0.0:8000/assets/${path}
         const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
         /**
          * uri.path 在 Windows 下会被解析为  \c:\\Path\\to\file

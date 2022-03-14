@@ -1,4 +1,3 @@
-import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   Command,
@@ -16,7 +15,6 @@ import {
   Uri,
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
-
 import {
   CommandsRegistry as MonacoCommandsRegistry,
   EditorExtensionsRegistry,
@@ -27,8 +25,10 @@ import {
   IMonacoCommandsRegistry,
   MonacoEditorCommandHandler,
 } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StaticServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
 
 /**
@@ -241,6 +241,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
     'editor.action.quickCommand',
     'editor.action.quickOutline',
     'editor.action.toggleHighContrast',
+    'editor.action.gotoLine',
   ];
 
   @Autowired()

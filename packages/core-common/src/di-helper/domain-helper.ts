@@ -1,4 +1,5 @@
 import { markInjectable, getInjectableOpts, Domain } from '@opensumi/di';
+
 import { ConstructorOf } from '../declare';
 
 /**

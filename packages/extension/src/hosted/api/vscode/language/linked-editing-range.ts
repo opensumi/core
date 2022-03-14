@@ -1,6 +1,8 @@
 import type vscode from 'vscode';
-import type * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
 import { Uri, CancellationToken, IPosition, asPromise, coalesce } from '@opensumi/ide-core-common';
+import type * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as typeConvert from '../../../../common/vscode/converter';
 

@@ -208,34 +208,34 @@ declare module 'vscode' {
    */
   export class FileDecoration {
 
-  /**
-   * A very short string that represents this decoration.
-   */
+    /**
+     * A very short string that represents this decoration.
+     */
     badge?: string;
 
-  /**
-   * A human-readable tooltip for this decoration.
-   */
+    /**
+     * A human-readable tooltip for this decoration.
+     */
     tooltip?: string;
 
-  /**
-   * The color of this decoration.
-   */
+    /**
+     * The color of this decoration.
+     */
     color?: ThemeColor;
 
-  /**
-   * A flag expressing that this decoration should be
-   * propagated to its parents.
-   */
+    /**
+     * A flag expressing that this decoration should be
+     * propagated to its parents.
+     */
     propagate?: boolean;
 
-  /**
-   * Creates a new decoration.
-   *
-   * @param badge A letter that represents the decoration.
-   * @param tooltip The tooltip of the decoration.
-   * @param color The color of the decoration.
-   */
+    /**
+     * Creates a new decoration.
+     *
+     * @param badge A letter that represents the decoration.
+     * @param tooltip The tooltip of the decoration.
+     * @param color The color of the decoration.
+     */
     constructor(badge?: string, tooltip?: string, color?: ThemeColor);
   }
 
@@ -245,35 +245,35 @@ declare module 'vscode' {
    */
   export interface FileDecorationProvider {
 
-  /**
-   * An optional event to signal that decorations for one or many files have changed.
-   *
-   * *Note* that this event should be used to propagate information about children.
-   *
-   * @see {@link EventEmitter}
-   */
+    /**
+     * An optional event to signal that decorations for one or many files have changed.
+     *
+     * *Note* that this event should be used to propagate information about children.
+     *
+     * @see {@link EventEmitter}
+     */
     onDidChange: Event<undefined | Uri | Uri[]>;
 
-  /**
-   * An optional event to signal that decorations for one or many files have changed.
-   *
-   * *Note* that this event should be used to propagate information about children.
-   *
-   * @see [EventEmitter](#EventEmitter)
-   */
-  onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
+    /**
+     * An optional event to signal that decorations for one or many files have changed.
+     *
+     * *Note* that this event should be used to propagate information about children.
+     *
+     * @see [EventEmitter](#EventEmitter)
+     */
+    onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
 
-  /**
-   * Provide decorations for a given uri.
-   *
-   * *Note* that this function is only called when a file gets rendered in the UI.
-   * This means a decoration from a descendent that propagates upwards must be signaled
-   * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
-   *
-   * @param uri The uri of the file to provide a decoration for.
-   * @param token A cancellation token.
-   * @returns A decoration or a thenable that resolves to such.
-   */
+    /**
+     * Provide decorations for a given uri.
+     *
+     * *Note* that this function is only called when a file gets rendered in the UI.
+     * This means a decoration from a descendent that propagates upwards must be signaled
+     * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
+     *
+     * @param uri The uri of the file to provide a decoration for.
+     * @param token A cancellation token.
+     * @returns A decoration or a thenable that resolves to such.
+     */
     provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
   }
 
@@ -658,5 +658,23 @@ declare module 'vscode' {
      */
     provideInlayHints(model: TextDocument, range: Range, token: CancellationToken): ProviderResult<InlayHint[]>;
   }
+  //#endregion
+
+  //#region https://github.com/Microsoft/vscode/issues/15178
+
+  // TODO@API must be a class
+  export interface OpenEditorInfo {
+    name: string;
+    resource: Uri;
+    isActive: boolean;
+  }
+
+  export namespace window {
+    export const openEditors: ReadonlyArray<OpenEditorInfo>;
+
+    // todo@API proper event type
+    export const onDidChangeOpenEditors: Event<void>;
+  }
+
   //#endregion
 }

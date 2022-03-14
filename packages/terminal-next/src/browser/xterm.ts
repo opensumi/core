@@ -1,11 +1,12 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { ITerminalOptions, ITheme, Terminal, IEvent } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
-import { AttachAddon } from './terminal.addon';
+
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import styles from './component/terminal.module.less';
+import { AttachAddon } from './terminal.addon';
 
 export interface XTermOptions {
   cwd?: string;

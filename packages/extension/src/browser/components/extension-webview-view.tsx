@@ -1,3 +1,5 @@
+import React from 'react';
+
 import {
   BasicEvent,
   CancellationToken,
@@ -6,7 +8,7 @@ import {
   CancellationTokenSource,
   Disposable,
 } from '@opensumi/ide-core-browser';
-import React from 'react';
+
 import { ExtensionService } from '../../common';
 
 export class WebviewViewShouldShowEvent extends BasicEvent<{

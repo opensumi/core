@@ -1,6 +1,7 @@
-import { FileSystemWatcher } from '../../src/browser/watcher';
-import { FileChangeType, FileChange } from '../../src';
 import { URI } from '@opensumi/ide-core-common';
+
+import { FileChangeType, FileChange } from '../../src';
+import { FileSystemWatcher } from '../../src/browser/watcher';
 
 describe('ExtensionFileSystemManage', () => {
   const calledMap: Map<string, any[]> = new Map();

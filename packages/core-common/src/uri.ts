@@ -1,4 +1,5 @@
 import { URI as Uri } from 'vscode-uri';
+
 import { Path } from './path';
 import { IRelativePattern, match } from './utils/glob';
 

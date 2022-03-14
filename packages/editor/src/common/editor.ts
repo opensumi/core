@@ -1,7 +1,5 @@
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@opensumi/di';
+import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
 import {
   URI,
   Event,
@@ -15,9 +13,15 @@ import {
   IThemeColor,
   IMarkdownString,
 } from '@opensumi/ide-core-common';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
+
 import { IResource } from './resource';
-import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
-import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
 
 export interface CursorStatus {
   position: MaybeNull<IPosition>;

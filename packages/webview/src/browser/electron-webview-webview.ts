@@ -1,4 +1,4 @@
-import { IWebview, IWebviewContentOptions } from './types';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
   DomListener,
@@ -7,9 +7,11 @@ import {
   AppConfig,
   electronEnv,
 } from '@opensumi/ide-core-browser';
-import { AbstractWebviewPanel } from './abstract-webview';
-import { Injectable, Autowired } from '@opensumi/di';
+
 import { WebviewScheme } from '../common';
+
+import { AbstractWebviewPanel } from './abstract-webview';
+import { IWebview, IWebviewContentOptions } from './types';
 
 @Injectable({ multiple: true })
 export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements IWebview {

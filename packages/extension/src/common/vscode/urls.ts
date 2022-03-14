@@ -1,5 +1,7 @@
 import type vscode from 'vscode';
+
 import { IDisposable } from '@opensumi/ide-core-common';
+
 import { UriComponents } from './ext-types';
 
 export interface IMainThreadUrls extends IDisposable {

@@ -2,6 +2,7 @@ import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
 import { IOptions, ZoneWidget } from './zone-widget';
 
 export interface IPeekViewOptions extends IOptions {

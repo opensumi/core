@@ -1,11 +1,11 @@
 import clx from 'classnames';
 import React from 'react';
 
-import antdNotification, { ArgsProps } from './notification';
-
 import { Button } from '../button';
-import './notification.less';
 import { MessageType } from '../common';
+
+import antdNotification, { ArgsProps } from './notification';
+import './notification.less';
 
 const DURATION: { [type: number]: number } = {
   [MessageType.Info]: 15000,

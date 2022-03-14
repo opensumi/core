@@ -1,17 +1,19 @@
-import path from 'path';
-import * as fs from 'fs-extra';
 import os from 'os';
+import path from 'path';
+
+import * as fs from 'fs-extra';
+
 import { Injector } from '@opensumi/di';
 import { AppConfig, INodeLogger, getDebugLogger } from '@opensumi/ide-core-node';
-
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
-import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
-import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
 import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
+import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
+import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
 describe('Extension Client Serivce', () => {
   let injector: Injector;

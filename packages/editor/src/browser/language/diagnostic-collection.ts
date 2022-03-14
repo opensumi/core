@@ -1,8 +1,13 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import IModel = monaco.editor.IModel;
 import IMarkerData = monaco.editor.IMarkerData;
-import { DiagnosticCollection, Diagnostic, asDiagnostics } from '../../common';
+
+// eslint-disable-next-line import/order
 import { DisposableCollection, Disposable, IDisposable } from '@opensumi/ide-core-common';
+
+// eslint-disable-next-line import/order
+import { DiagnosticCollection, Diagnostic, asDiagnostics } from '../../common';
 
 export class MonacoDiagnosticCollection implements DiagnosticCollection {
   protected readonly diagnostics = new Map<string, MonacoModelDiagnostics | undefined>();

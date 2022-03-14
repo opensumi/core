@@ -1,3 +1,4 @@
+import { Autowired } from '@opensumi/di';
 import {
   URI,
   Domain,
@@ -13,7 +14,7 @@ import {
   IClipboardService,
   PreferenceScope,
 } from '@opensumi/ide-core-browser';
-import { Autowired } from '@opensumi/di';
+
 import {
   ITerminalController,
   ITerminalRestore,
@@ -22,9 +23,11 @@ import {
   ITerminalApiService,
   TERMINAL_COMMANDS,
 } from '../../common';
-import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
-import { TerminalKeyBoardInputService } from '../terminal.input';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
+import { TerminalKeyBoardInputService } from '../terminal.input';
+
+import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
+
 
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {

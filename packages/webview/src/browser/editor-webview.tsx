@@ -1,7 +1,9 @@
 import React from 'react';
-import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService, isWebview } from './types';
+
 import { Disposable, DomListener, useInjectable } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+
+import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService, isWebview } from './types';
 import { WebviewServiceImpl } from './webview.service';
 
 declare const ResizeObserver: any;

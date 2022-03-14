@@ -1,5 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Disposable, IDisposable, DisposableCollection } from '@opensumi/ide-core-common';
+
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import {
   IExtHostIDEWindow,

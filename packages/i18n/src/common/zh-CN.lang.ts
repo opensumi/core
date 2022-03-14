@@ -126,10 +126,16 @@ export const localizationBundle = {
     'editor.editor.goToSymbol': '转到符号...',
     'editor.goToLine': '转到行...',
 
+    'quickopen.goToLine.defaultMessage': '当前行: {0}， 列: {1}。 请输入要转到的行号： 1 至 {2} 之间的数字。',
+    'quickopen.goToLine.notValid': '请打开一个有效的编辑器。',
+    'quickopen.goToLine.lineInfo': '转到行: {0}',
+    'quickopen.goToLine.colInfo': '，列: {0}',
+    'quickopen.goToLine.desc': '转到行...',
+
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
     'quickopen.command.nohandler': '找不到结果',
-    'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
+    'quickopen.quickinput.prompt': "请按 'Enter' 确认或 'Esc' 取消",
     'quickopen.tab.file': '文件',
     'quickopen.tab.class': '类',
     'quickopen.tab.symbol': '符号',
@@ -150,7 +156,7 @@ export const localizationBundle = {
     'search.replace.title': '替换',
     'search.input.checkbox': '显示搜索条件',
     'file-search.command.fileOpen.description': '打开文件',
-    'file-search.command.fileOpen.placeholder': '按名称搜索文件（追加@转到符号）',
+    'file-search.command.fileOpen.placeholder': '按名称搜索文件（追加:转到行或追加@转到符号）',
     'search.includes': '要包含的文件',
     'search.includes.description': '输入文件名或文件夹名，多个用 ", " 分隔',
     'search.excludes': '要排除的文件',
@@ -502,6 +508,7 @@ export const localizationBundle = {
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
 
     'status.editor.chooseLanguage': '选择语言模式',
+    'status.editor.goToLineCol': '转到行/列',
     'status.editor.chooseEncoding': '选择编码',
     'status.editor.changeEol': '选择行尾序列',
 
@@ -644,6 +651,9 @@ export const localizationBundle = {
     'terminal.launchFail.cwdDoesNotExist': '终端启动目录 (cwd) "{0}" 不存在',
     'terminal.launchFail.executableIsNotFileOrSymlink': '终端启动的可执行文件 "{0}" 的路径非文件或符号链接',
     'terminal.launchFail.executableDoesNotExist': '终端启动的可执行文件 "{0}" 的路径不存在',
+    'terminal.openFile': '打开文件',
+    'terminal.focusFolder': '聚焦资源管理器中的文件夹',
+    'terminal.openFolder': '在新窗口中打开文件夹',
 
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
@@ -707,7 +717,7 @@ export const localizationBundle = {
     'status-bar.editor-language': '选择语言',
     'status-bar.editor-encoding': '选择编码',
     'status-bar.editor-space': '选择空格符',
-    'status-bar.editor-eol': '选择行位字符',
+    'status-bar.editor-eol': '选择行尾字符',
     'status-bar.editor-indentation': '选择缩进',
     'status-bar.editor-langStatus': '语言服务器状态',
     saveChangesMessage: '是否要保存对 {0} 的更改?',
@@ -928,6 +938,9 @@ export const localizationBundle = {
     'editor.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
+
+    'view.component.renderedError': '视图组件渲染异常',
+    'view.component.tryAgain': '重新加载',
 
     // #region Testing
     'test.title': '测试管理器',

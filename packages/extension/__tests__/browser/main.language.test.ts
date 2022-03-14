@@ -1,42 +1,44 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
-import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
-import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
-import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
-import { URI, Uri, Position } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
-import * as types from '../../src/common/vscode/ext-types';
-import * as modes from '../../src/common/vscode/model.api';
+
 
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
-import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
-import { ExtHostAPIIdentifier, IExtensionDescription, MainThreadAPIIdentifier } from '../../src/common/vscode';
-import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
-import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
-import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { URI, Uri, Position } from '@opensumi/ide-core-common';
+import {
+  EvaluatableExpressionServiceImpl,
+  IEvaluatableExpressionService,
+} from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { TestEditorDocumentProvider } from '@opensumi/ide-editor/__tests__/browser/test-providers';
+import {
+  EditorDocumentModelServiceImpl,
+  EditorDocumentModelContentRegistryImpl,
+} from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { CallHierarchyService } from '@opensumi/ide-editor/lib/browser/monaco-contrib';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
   EmptyDocCacheImpl,
 } from '@opensumi/ide-editor/src/browser';
-import {
-  EditorDocumentModelServiceImpl,
-  EditorDocumentModelContentRegistryImpl,
-} from '@opensumi/ide-editor/lib/browser/doc-model/main';
-import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import {
-  EvaluatableExpressionServiceImpl,
-  IEvaluatableExpressionService,
-} from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
-import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { TestEditorDocumentProvider } from '@opensumi/ide-editor/__tests__/browser/test-providers';
-import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
+import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
+import { ExtHostAPIIdentifier, IExtensionDescription, MainThreadAPIIdentifier } from '../../src/common/vscode';
+import * as types from '../../src/common/vscode/ext-types';
+import * as modes from '../../src/common/vscode/model.api';
+import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
+import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
+import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -64,7 +66,6 @@ let model: ITextModel;
 
 describe('ExtHostLanguageFeatures', () => {
   const injector = createBrowserInjector([]);
-  (global as any).amdLoader = { require: null };
   let monacoService: MonacoService;
 
   injector.addProviders(
@@ -102,8 +103,6 @@ describe('ExtHostLanguageFeatures', () => {
 
   const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
   editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
-
-  (global as any).amdLoader = { require: null };
 
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);

@@ -1,14 +1,15 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { CommentsModule } from '../../src/browser';
 import { Injector } from '@opensumi/di';
-import { ICommentsService, CommentMode } from '../../src/common';
-import { URI, positionToRange } from '@opensumi/ide-core-common';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { URI, positionToRange } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { CommentsModule } from '../../src/browser';
+import { ICommentsService, CommentMode } from '../../src/common';
 
 describe('comment service test', () => {
   let injector: MockInjector;

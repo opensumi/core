@@ -1,13 +1,3 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { URI } from '@opensumi/ide-core-common';
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import {
-  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
-  CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_SET_VARIABLE_SUPPORTED,
-} from './../../../common/constants';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Autowired } from '@opensumi/di';
 import {
   Domain,
@@ -17,12 +7,26 @@ import {
   IQuickInputService,
   IReporterService,
 } from '@opensumi/ide-core-browser';
-import { DebugVariablesModelService } from './debug-variables-tree.model.service';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { DEBUG_REPORT_NAME } from '../../../common';
-import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { URI } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+import { DEBUG_REPORT_NAME } from '../../../common';
+import { DEBUG_COMMANDS } from '../../debug-contribution';
+
+import {
+  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_SET_VARIABLE_SUPPORTED,
+} from './../../../common/constants';
+import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
+import { DebugVariablesModelService } from './debug-variables-tree.model.service';
+
+
 @Domain(MenuContribution, CommandContribution)
 export class VariablesPanelContribution implements MenuContribution, CommandContribution {
   @Autowired(IQuickInputService)

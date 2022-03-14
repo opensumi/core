@@ -1,7 +1,9 @@
-import React, { RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize } from '@opensumi/ide-core-common/lib/localize';
+import React, { RefObject } from 'react';
+
 import { Input } from '@opensumi/ide-components';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
+
 import styles from './search.module.less';
 
 interface SearchReplaceWidgetProps {

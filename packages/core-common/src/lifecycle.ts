@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { once } from './functional';
 import { IDisposable } from './disposable';
+import { once } from './functional';
 
 // 保留
 export interface IReference<T> extends IDisposable {

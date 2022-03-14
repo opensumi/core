@@ -1,4 +1,5 @@
 import debounce = require('lodash.debounce');
+
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
@@ -22,6 +23,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IEditor } from '../../common';
 import { EditorSelectionChangeEvent, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
+
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
 
 @Injectable()

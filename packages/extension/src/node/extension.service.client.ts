@@ -1,8 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import path from 'path';
-import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
-import os from 'os';
 import { createHash } from 'crypto';
+import os from 'os';
+import path from 'path';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { RPCService } from '@opensumi/ide-connection';
+import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
+import { IFileService } from '@opensumi/ide-file-service';
 
 import {
   IExtraMetaData,
@@ -11,9 +14,9 @@ import {
   IExtensionNodeClientService,
   ICreateProcessOptions,
 } from '../common';
-import { RPCService } from '@opensumi/ide-connection';
+
+
 import * as lp from './languagePack';
-import { IFileService } from '@opensumi/ide-file-service';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.sumi');
 

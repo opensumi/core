@@ -1,9 +1,10 @@
 // tslint:disable:no-var-requires
+const path = require('path');
+
+const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const path = require('path');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const srcDir = path.join(__dirname, '../src/browser');
@@ -126,7 +127,6 @@ module.exports = {
       chunkFilename: '[id].css',
     }),
     new CopyPlugin([
-      { from: path.join(srcDir, './vendor'), to: distDir },
       {
         from: require.resolve('@opensumi/ide-core-electron-main/browser-preload/index.js'),
         to: path.join(distDir, 'preload.js'),

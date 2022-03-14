@@ -10,11 +10,13 @@ import {
   IDebugService,
   IDebugSessionManager,
 } from '../common';
+
 import { BreakpointManager } from './breakpoint';
 import { DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugContribution } from './debug-contribution';
 import { injectDebugPreferences } from './debug-preferences';
+import { DebugProgressService } from './debug-progress.service';
 import { DebugService } from './debug-service';
 import {
   DebugSessionContribution,
@@ -26,17 +28,16 @@ import {
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
+import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
-import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
 import { DebugConsoleContribution } from './view/console/debug-console.contribution';
+import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
+import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
 import { WatchPanelContribution } from './view/watch/debug-watch.contribution';
 
 import './debug-style.less';
-import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
-import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
-import { DebugProgressService } from './debug-progress.service';
 
 @Injectable()
 export class DebugModule extends BrowserModule {

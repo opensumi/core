@@ -1,12 +1,15 @@
 import React from 'react';
+
 import { ViewState, getIcon, useInjectable, localize, DisposableCollection } from '@opensumi/ide-core-browser';
-import { DebugThread } from '../../model/debug-thread';
-import { DebugStackFramesView } from './debug-call-stack-frame.view';
-import { DebugStackOperationView } from './debug-call-stack.operation';
-import { DebugSessionManager } from '../../debug-session-manager';
+
 import { IDebugSessionManager } from '../../../common';
-import styles from './debug-call-stack.module.less';
 import { DebugSession } from '../../debug-session';
+import { DebugSessionManager } from '../../debug-session-manager';
+import { DebugThread } from '../../model/debug-thread';
+
+import { DebugStackFramesView } from './debug-call-stack-frame.view';
+import styles from './debug-call-stack.module.less';
+import { DebugStackOperationView } from './debug-call-stack.operation';
 import { DebugCallStackService } from './debug-call-stack.service';
 
 export interface DebugStackThreadViewProps {

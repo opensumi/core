@@ -1,4 +1,5 @@
 import { Disposable, QuickPickService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
   DebugConfigurationManager,
@@ -7,7 +8,6 @@ import {
 } from '@opensumi/ide-debug/lib/browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceStorageService, IWorkspaceService } from '@opensumi/ide-workspace';
 

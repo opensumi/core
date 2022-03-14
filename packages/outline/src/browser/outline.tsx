@@ -1,13 +1,15 @@
 import React from 'react';
-import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+
+import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-browser';
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
-import styles from './outline.module.less';
-import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
-import { OutlineModelService } from './services/outline-model.service';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+
 import { OUTLINE_TREE_NODE_HEIGHT, OutlineNode } from './outline-node';
+import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
+import styles from './outline.module.less';
 import { OutlineTreeModel } from './services/outline-model';
+import { OutlineModelService } from './services/outline-model.service';
 
 export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [model, setModel] = React.useState<OutlineTreeModel | undefined>();

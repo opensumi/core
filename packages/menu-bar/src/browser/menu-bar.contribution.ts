@@ -1,10 +1,11 @@
 import { Autowired } from '@opensumi/di';
-import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { ToolBarActionContribution, AppConfig, IToolbarRegistry } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { MenuBarMixToolbarAction } from './menu-bar.view';
 import { ToolbarAction } from './toolbar-action.view';
-import { ToolBarActionContribution, AppConfig, IToolbarRegistry } from '@opensumi/ide-core-browser';
+
 
 @Domain(ComponentContribution, ToolBarActionContribution)
 export class MenuBarContribution implements ComponentContribution, ToolBarActionContribution {

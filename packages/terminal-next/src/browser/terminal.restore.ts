@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
+
 import { ITerminalRestore, ITerminalController, ITerminalInternalService } from '../common';
 
 @Injectable()

@@ -1,6 +1,5 @@
 import { Injectable, Autowired, Optional } from '@opensumi/di';
-import { FileTreeModelService } from './file-tree-model.service';
-import { Directory, File } from '../../common/file-tree-node.define';
+import { Decoration, TargetMatchMode } from '@opensumi/ide-components';
 import {
   DisposableCollection,
   Disposable,
@@ -10,14 +9,17 @@ import {
   ThrottledDelayer,
   FileStat,
 } from '@opensumi/ide-core-browser';
-import { IFileTreeAPI, IFileTreeService } from '../../common';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { Decoration, TargetMatchMode } from '@opensumi/ide-components';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import { FileTreeService } from '../file-tree.service';
-import styles from '../file-tree.module.less';
-import treeNodeStyles from '../file-tree-node.module.less';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
+import { IMessageService } from '@opensumi/ide-overlay';
+
+import { IFileTreeAPI, IFileTreeService } from '../../common';
+import { Directory, File } from '../../common/file-tree-node.define';
+import treeNodeStyles from '../file-tree-node.module.less';
+import styles from '../file-tree.module.less';
+import { FileTreeService } from '../file-tree.service';
+
+import { FileTreeModelService } from './file-tree-model.service';
 
 @Injectable()
 export class DragAndDropService extends WithEventBus {

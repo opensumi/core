@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ThemeContribution, IThemeService } from '@opensumi/ide-theme';
 import { URI } from '@opensumi/ide-core-common';
+import { ThemeContribution, IThemeService } from '@opensumi/ide-theme';
+
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;

@@ -1,12 +1,15 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Uri, setLanguageId } from '@opensumi/ide-core-browser';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionMetaData } from '../../src/common';
 import paths from 'path';
-import { ExtensionServiceImpl } from '../../src/browser/extension.service';
-import { ExtensionService } from '../../src/common';
-import { Extension } from '../../src/browser/extension';
+
+import { URI, Uri, setLanguageId } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { Extension } from '../../src/browser/extension';
+import { ExtensionServiceImpl } from '../../src/browser/extension.service';
+import { IExtensionMetaData } from '../../src/common';
+import { ExtensionService } from '../../src/common';
+
 import '@opensumi/ide-i18n';
 
 const mockExtension: IExtensionMetaData = {

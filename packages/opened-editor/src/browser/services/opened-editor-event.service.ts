@@ -1,3 +1,4 @@
+import { Injectable } from '@opensumi/di';
 import { Event, Emitter, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import {
   IResource,
@@ -5,7 +6,6 @@ import {
   ResourceDecorationChangeEvent,
   IResourceDecorationChangeEventPayload,
 } from '@opensumi/ide-editor';
-import { Injectable } from '@opensumi/di';
 import {
   EditorGroupOpenEvent,
   EditorGroupCloseEvent,

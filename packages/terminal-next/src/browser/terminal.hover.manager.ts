@@ -1,6 +1,8 @@
 import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
+
 import { ITerminalHoverManagerService } from '../common';
+
 import { ILinkHoverTargetOptions } from './links/link-manager';
 
 const TIPS_OFFSET_Y = 20;

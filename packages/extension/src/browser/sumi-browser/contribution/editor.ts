@@ -1,10 +1,11 @@
-import { IRunTimeParams, AbstractSumiBrowserContributionRunner, IEditorViewContribution } from '../types';
-import { IDisposable, Disposable, URI } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IIconService, IconType } from '@opensumi/ide-theme';
+import { IDisposable, Disposable, URI } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+
+import { IRunTimeParams, AbstractSumiBrowserContributionRunner, IEditorViewContribution } from '../types';
 
 @Injectable({ multiple: true })
 export class EditorBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
@@ -47,6 +48,8 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
         {
           kaitianExtendService: extendService,
           kaitianExtendSet: extendProtocol,
+          sumiExtendService: extendService,
+          sumiExtendSet: extendProtocol,
         },
       ),
     );

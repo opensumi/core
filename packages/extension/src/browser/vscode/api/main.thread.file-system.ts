@@ -1,7 +1,8 @@
-import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@opensumi/ide-core-common';
-import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { Injectable, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@opensumi/ide-core-common';
+import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import {
   IFileServiceClient,
@@ -11,7 +12,9 @@ import {
   FileSystemProvider,
   IBrowserFileSystemRegistry,
 } from '@opensumi/ide-file-service/lib/common';
+
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import {
   IExtHostFileSystemShape,
@@ -21,9 +24,8 @@ import {
   FileSystemProviderErrorCode,
   FileOverwriteOptions,
   IExtHostFileSystemInfoShape,
+  FilePermission,
 } from '../../../common/vscode/file-system';
-import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {
@@ -257,7 +259,7 @@ class RemoteFileSystemProvider implements FileSystemProvider {
 
   // --- forwarding calls
 
-  async stat(resource: Uri) {
+  async stat(resource: Uri): Promise<IFileStat> {
     const stat = await this.doGetStat(resource);
     return stat;
   }
@@ -297,6 +299,9 @@ class RemoteFileSystemProvider implements FileSystemProvider {
     if (mainStat.isDirectory) {
       mainStat.children = await this.doGetChildren(resource, depth);
     }
+    mainStat.readonly =
+      Boolean((stat.permissions ?? 0) & FilePermission.Readonly) ||
+      Boolean(this.capabilities & FileSystemProviderCapabilities.Readonly);
     return mainStat;
   }
 

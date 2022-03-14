@@ -1,7 +1,8 @@
-import React from 'react';
-import RcDropdown from 'rc-dropdown';
-import classNames from 'classnames';
 import RightOutlined from '@ant-design/icons/RightOutlined';
+import classNames from 'classnames';
+import RcDropdown from 'rc-dropdown';
+import React from 'react';
+
 import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
 

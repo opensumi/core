@@ -1,5 +1,7 @@
 import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
+
 import { Injectable, Autowired } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   IDisposable,
@@ -8,12 +10,17 @@ import {
   Event,
   isOSX,
   RunOnceScheduler,
+  localize,
 } from '@opensumi/ide-core-common';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+
 import { convertBufferRangeToViewport } from './helpers';
 
 // default delay time (ms) for showing tooltip when mouse is over a link
 const DEFAULT_HOVER_DELAY = 500;
+
+export const OPEN_FILE_LABEL = localize('terminal.openFile', 'Open file in editor');
+export const FOLDER_IN_WORKSPACE_LABEL = localize('terminal.focusFolder', 'Focus folder in explorer');
+export const FOLDER_NOT_IN_WORKSPACE_LABEL = localize('terminal.openFolder', 'Open folder in new window');
 
 @Injectable({ multiple: true })
 export class TerminalLink extends Disposable implements ILink {

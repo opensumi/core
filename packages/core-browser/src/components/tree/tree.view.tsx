@@ -1,7 +1,9 @@
+import cls from 'classnames';
 import React from 'react';
-import { TreeNode, SelectableTreeNode } from './';
-import { TreeContainerNode, CommandActuator } from './tree-node.view';
+
+import { ValidateMessage } from '@opensumi/ide-components';
 import { isOSX, Event } from '@opensumi/ide-core-common';
+
 import {
   FileDecorationsProvider,
   ThemeProvider,
@@ -9,9 +11,12 @@ import {
   ExpandableTreeNode,
   TreeViewAction,
 } from '../../tree';
-import cls from 'classnames';
+
+import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import styles from './tree.module.less';
-import { ValidateMessage } from '@opensumi/ide-components';
+
+import { TreeNode, SelectableTreeNode } from './';
+
 
 export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {

@@ -1,3 +1,4 @@
+import { IPreferences } from '../src';
 import {
   registerExternalPreferenceProvider,
   getPreferenceLanguageId,
@@ -8,7 +9,6 @@ import {
   getExternalPreference,
   registerLocalStorageProvider,
 } from '../src/preferences';
-import { IPreferences } from '../src';
 
 describe('external preference tests', () => {
   it('should be able to register preference provider and work properly', () => {

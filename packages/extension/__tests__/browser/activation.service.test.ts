@@ -1,6 +1,6 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IActivationEventService } from '../../src/browser/types';
 import { ExtensionModule } from '../../src/browser';
+import { IActivationEventService } from '../../src/browser/types';
 
 describe('activation event test', () => {
   const injector = createBrowserInjector([ExtensionModule]);

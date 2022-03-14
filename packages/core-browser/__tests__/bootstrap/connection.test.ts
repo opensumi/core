@@ -1,9 +1,10 @@
+import { WebSocket, Server } from 'mock-socket';
+
 import { IEventBus, EventBusImpl, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
 import { createClientConnection2 } from '../../src/bootstrap/connection';
-import { WebSocket, Server } from 'mock-socket';
 (global as any).WebSocket = WebSocket;
 
 describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {

@@ -1,5 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
+import { INodeLogger } from '@opensumi/ide-core-node';
+
 import {
   IShellLaunchConfig,
   ITerminalNodeService,
@@ -7,13 +10,13 @@ import {
   INodePtyInstance,
   ITerminalError,
 } from '../common';
+import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { IPtyProcess } from '../common/pty';
-import { INodeLogger } from '@opensumi/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
+
 import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
-import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
-import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
+
 
 /**
  * this RPC target: NodePtyTerminalService
@@ -78,7 +81,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
-        this.logger.log(`client ${id} create ${pty} with options `, launchConfig);
+        this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
         this.terminalMap.set(id, pty);
         return {
           id,

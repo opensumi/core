@@ -1,3 +1,9 @@
+import { observable } from 'mobx';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { URI, IDisposable, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
+import { Disposable, addElement, LRUMap, ILogger, Emitter } from '@opensumi/ide-core-common';
+
 import {
   ResourceService,
   IResource,
@@ -8,10 +14,6 @@ import {
   ResourceDecorationNeedChangeEvent,
   ResourceDecorationChangeEvent,
 } from '../common';
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, IDisposable, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
-import { observable } from 'mobx';
-import { Disposable, addElement, LRUMap, ILogger, Emitter } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class ResourceServiceImpl extends WithEventBus implements ResourceService {

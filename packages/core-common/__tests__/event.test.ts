@@ -6,6 +6,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { timeout } from '../src/async';
+import { CancellationToken } from '../src/cancellation';
+import { IDisposable, Disposable } from '../src/disposable';
+import { errorHandler, setUnexpectedErrorHandler } from '../src/errors';
 import {
   Event,
   Emitter,
@@ -15,10 +19,6 @@ import {
   AsyncEmitter,
   WaitUntilEvent,
 } from '../src/event';
-import { IDisposable, Disposable } from '../src/disposable';
-import { errorHandler, setUnexpectedErrorHandler } from '../src/errors';
-import { timeout } from '../src/async';
-import { CancellationToken } from '../src/cancellation';
 
 function deepStrictEqual(a, b) {
   expect(a).toEqual(b);

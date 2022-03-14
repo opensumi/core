@@ -1,13 +1,17 @@
-import * as fs from 'fs-extra';
-import nsfw from 'nsfw';
 import paths from 'path';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
-import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';
-import { FileUri } from '@opensumi/ide-core-node';
-import { FileChangeType, FileSystemWatcherClient, FileSystemWatcherServer, WatchOptions } from '..';
-import { FileChangeCollection } from './file-change-collection';
-import { INsfw } from '../common/watcher';
+
+import * as fs from 'fs-extra';
 import debounce = require('lodash.debounce');
+import nsfw from 'nsfw';
+
+import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';
+import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
+import { FileUri } from '@opensumi/ide-core-node';
+
+import { FileChangeType, FileSystemWatcherClient, FileSystemWatcherServer, WatchOptions } from '..';
+import { INsfw } from '../common/watcher';
+
+import { FileChangeCollection } from './file-change-collection';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];

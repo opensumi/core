@@ -6,6 +6,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { URI } from 'vscode-uri';
+
 import { parse, stringify } from '../../src/utils/marshalling';
 
 describe('Marshalling', () => {

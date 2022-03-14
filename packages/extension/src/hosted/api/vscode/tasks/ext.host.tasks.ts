@@ -5,8 +5,9 @@
 // some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostTask.ts
 
 import type vscode from 'vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   getDebugLogger,
   Event,
@@ -18,7 +19,11 @@ import {
   Uri,
   IDisposable,
 } from '@opensumi/ide-core-common';
+import { UriComponents } from '@opensumi/ide-editor/lib/common';
+
 import { IExtensionProps } from '../../../../common';
+import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
+import * as types from '../../../../common/vscode/ext-types';
 import {
   IExtHostTasks,
   TaskHandlerData,
@@ -39,10 +44,8 @@ import {
   TaskHandleDTO,
   TaskProcessEndedDTO,
 } from '../../../../common/vscode/tasks';
-import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
 import { Terminal } from '../ext.host.terminal';
-import * as types from '../../../../common/vscode/ext-types';
-import { UriComponents } from '@opensumi/ide-editor/lib/common';
+
 import { toTask, TaskDto } from './taskTypes';
 
 namespace TaskDefinitionDTO {

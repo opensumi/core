@@ -119,6 +119,11 @@
       display: block;
       z-index: 0;
     }
+
+    :global(.loading_indicator) {
+      width: 16px;
+      height: 22px;
+    }
   }
   .kt_editor_tab_preview {
     font-style: italic;
@@ -179,6 +184,7 @@
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
       border-bottom: 1px solid var(--tab-border);
+      border-top: 1px solid transparent;
       box-sizing: border-box;
       z-index: 1;
 
@@ -197,7 +203,6 @@
       }
       &:hover {
         background-color: var(--tab-hoverBackground);
-        border-bottom-color: var(--tab-hoverBorder) !important;
       }
       div:first-child {
         margin-right: 5px;

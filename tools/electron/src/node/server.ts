@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import net from 'net';
+
 import yargs from 'yargs';
+
 import { Deferred } from '@opensumi/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 

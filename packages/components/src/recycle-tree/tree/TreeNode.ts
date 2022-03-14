@@ -1,3 +1,4 @@
+import { Event, Emitter, DisposableCollection, Path } from '../../utils';
 import {
   IWatcherCallback,
   IWatchTerminator,
@@ -15,7 +16,6 @@ import {
   TreeNodeType,
   IAccessibilityInformation,
 } from '../types';
-import { Event, Emitter, DisposableCollection, Path } from '../../utils';
 
 /**
  * 裁剪数组

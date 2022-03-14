@@ -1,8 +1,9 @@
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
 import { replaceLocalizePlaceholder, localize } from '@opensumi/ide-core-browser';
+import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ColorsSchema = Array<ExtColorContribution>;
 const colorIdPattern = '^\\w+[.\\w+]*$';

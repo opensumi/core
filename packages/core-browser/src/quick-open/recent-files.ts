@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { RecentStorage } from '../common/common.storage';
-import { WithEventBus } from '..';
 import { OnEvent, FileChangeType, IPosition } from '@opensumi/ide-core-common';
+
+import { WithEventBus } from '..';
+import { RecentStorage } from '../common/common.storage';
 import { FilesChangeEvent } from '../fs';
 
 const OPENED_FILE = 'OPENED_FILE';

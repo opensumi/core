@@ -1,5 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { ClientAppContribution } from '../common/common.define';
 import {
   Domain,
   IAuthenticationService,
@@ -7,6 +6,8 @@ import {
   CommandRegistry,
   noAccountsId,
 } from '@opensumi/ide-core-common';
+
+import { ClientAppContribution } from '../common/common.define';
 
 @Domain(ClientAppContribution, CommandContribution)
 export class AuthenticationContribution implements ClientAppContribution, CommandContribution {

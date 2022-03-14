@@ -1,14 +1,17 @@
+import fuzzy from 'fuzzy';
 import React from 'react';
 import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
-import { TreeModel } from './tree/model/TreeModel';
-import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
+
+import { ScrollbarsVirtualList } from '../scrollbars';
+import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
+
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
+import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
+import { TreeModel } from './tree/model/TreeModel';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
-import { ScrollbarsVirtualList } from '../scrollbars';
-import fuzzy from 'fuzzy';
+
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 

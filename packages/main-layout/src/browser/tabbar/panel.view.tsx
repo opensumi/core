@@ -1,6 +1,7 @@
-import React from 'react';
 import clsx from 'classnames';
-import styles from './styles.module.less';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   ComponentRegistryInfo,
@@ -11,16 +12,18 @@ import {
   ErrorBoundary,
   useViewState,
 } from '@opensumi/ide-core-browser';
-import { TabbarService, TabbarServiceFactory } from './tabbar.service';
-import { observer } from 'mobx-react-lite';
-import { TabbarConfig } from './renderer.view';
-import { AccordionContainer } from '../accordion/accordion.view';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
-import { TitleBar } from '../accordion/titlebar.view';
-import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+
+import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
+import { AccordionContainer } from '../accordion/accordion.view';
+import { TitleBar } from '../accordion/titlebar.view';
+
+import { TabbarConfig } from './renderer.view';
+import styles from './styles.module.less';
+import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
 const NoUpdateBoundary: React.FC<{ visible: boolean; children: React.ReactElement }> = React.memo(
   ({ children }) => children,

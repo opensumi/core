@@ -3,11 +3,11 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import { ISCMMenus, SCMService, IDirtyDiffWorkbenchController } from '../common';
 
-import { SCMContribution } from './scm.contribution';
-import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
-import { bindSCMPreference } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
+import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { SCMMenus } from './scm-menu';
+import { bindSCMPreference } from './scm-preference';
+import { SCMContribution } from './scm.contribution';
 
 @Injectable()
 export class SCMModule extends BrowserModule {

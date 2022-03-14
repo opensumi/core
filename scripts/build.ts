@@ -22,10 +22,6 @@ import * as fs from 'fs-extra';
   const testFile = path.join(__dirname, 'test/build.js');
 
   // // await run(`npx jest ${testFile} -c ${configFile}`);
-
-  // build webview resources
-  // await run('cd ./packages/webview && npm run copy-resources');
-
 })().catch((e) => {
   console.trace(e);
   process.exit(128);

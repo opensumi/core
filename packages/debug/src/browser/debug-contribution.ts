@@ -1,9 +1,4 @@
-import {
-  CONTEXT_DEBUGGERS_AVAILABLE,
-  CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_BREAKPOINT_INPUT_FOCUSED,
-} from './../common/constants';
-import { URI } from '@opensumi/ide-core-common';
+import { Autowired } from '@opensumi/di';
 import {
   Domain,
   ClientAppContribution,
@@ -27,26 +22,21 @@ import {
   IPreferenceSettingsService,
   COMMON_COMMANDS,
 } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
-import { DebugVariableView } from './view/variables/debug-variables.view';
-import { DebugCallStackView } from './view/frames/debug-call-stack.view';
-import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
-import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
-import { Autowired } from '@opensumi/di';
-import { DebugModelManager } from './editor/debug-model-manager';
-import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
-import { DebugConfigurationManager } from './debug-configuration-manager';
-import { launchSchema } from './debug-schema-updater';
-import { DebugWatchView } from './view/watch/debug-watch.view';
-
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
-import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
-import { DebugViewModel } from './view/debug-view-model';
-import { DebugSession } from './debug-session';
-import { DebugSessionManager } from './debug-session-manager';
-import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
+import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { URI } from '@opensumi/ide-core-common';
+import {
+  BrowserEditorContribution,
+  IEditorFeatureRegistry,
+  EditorComponentRegistry,
+  IEditor,
+} from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
+import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   IDebugSessionManager,
   launchSchemaUri,
@@ -61,23 +51,34 @@ import {
   DEBUG_SCHEME,
   TSourceBrekpointProperties,
 } from '../common';
-import { DebugConsoleService } from './view/console/debug-console.service';
-import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
-import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import {
-  BrowserEditorContribution,
-  IEditorFeatureRegistry,
-  EditorComponentRegistry,
-  IEditor,
-} from '@opensumi/ide-editor/lib/browser';
-import { DebugEditorContribution } from './editor/debug-editor-contribution';
+  CONTEXT_DEBUGGERS_AVAILABLE,
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_BREAKPOINT_INPUT_FOCUSED,
+} from './../common/constants';
+import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { FloatingClickWidget } from './components/floating-click-widget';
-import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
-import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { DebugProgressService } from './debug-progress.service';
-import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 import { DebugContextKey } from './contextkeys/debug-contextkey.service';
+import { DebugConfigurationManager } from './debug-configuration-manager';
+import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
+import { DebugProgressService } from './debug-progress.service';
+import { launchSchema } from './debug-schema-updater';
+import { DebugSession } from './debug-session';
+import { DebugSessionManager } from './debug-session-manager';
+import { DebugEditorContribution } from './editor/debug-editor-contribution';
+import { DebugModelManager } from './editor/debug-model-manager';
+import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
+import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
+import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
+import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
+import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
+import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
+import { DebugConsoleService } from './view/console/debug-console.service';
+import { DebugViewModel } from './view/debug-view-model';
+import { DebugCallStackView } from './view/frames/debug-call-stack.view';
+import { DebugVariableView } from './view/variables/debug-variables.view';
+import { DebugWatchView } from './view/watch/debug-watch.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 

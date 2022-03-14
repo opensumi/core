@@ -1,6 +1,7 @@
 import { URI as Uri } from 'vscode-uri';
-import { Iterator, IteratorResult, FIN } from './iterator';
+
 import { CharCode } from './charCode';
+import { Iterator, IteratorResult, FIN } from './iterator';
 
 export function values<V = any>(set: Set<V>): V[];
 export function values<K = any, V = any>(map: Map<K, V>): V[];

@@ -1,9 +1,9 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
-import { CredentialService } from '../../src/common-module/credential.server';
 import { INativeCredentialService, isLinux } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { CredentialService } from '../../src/common-module/credential.server';
 
 describe('test for core-browser/src/services/credentials-service.ts', () => {
   let injector: MockInjector;

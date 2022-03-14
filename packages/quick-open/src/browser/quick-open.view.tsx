@@ -1,6 +1,7 @@
-import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-import React from 'react';
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import {
   Button,
   CheckBox,
@@ -9,6 +10,7 @@ import {
   ValidateInput,
   VALIDATE_TYPE,
 } from '@opensumi/ide-components';
+import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import {
   HideReason,
   QuickOpenAction,
@@ -17,14 +19,13 @@ import {
   QuickTitleButton,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
-import clx from 'classnames';
-import styles from './styles.module.less';
+import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
 import { QuickOpenContext } from './quick-open.type';
-import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';
+import styles from './styles.module.less';
 
 interface IQuickOpenItemProps {
   data: QuickOpenItem;
@@ -66,9 +67,9 @@ export const QuickOpenHeader = observer(() => {
   const onSelectButton = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {
       event.stopPropagation();
-      quickTitleBar.onDidTriggerButtonEmitter.fire(button);
+      quickTitleBar.fireDidTriggerButton(button);
     },
-    [quickTitleBar.onDidTriggerButtonEmitter],
+    [quickTitleBar.fireDidTriggerButton],
   );
 
   return quickTitleBar.isAttached ? (
@@ -95,7 +96,7 @@ export const QuickOpenHeader = observer(() => {
 });
 
 export const QuickOpenInput = observer(() => {
-  const { widget } = React.useContext(QuickOpenContext)!;
+  const { widget } = React.useContext(QuickOpenContext);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -326,15 +327,16 @@ export const QuickOpenView = observer(() => {
 
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
-      // 判断其是否在父元素内，如果在父元素内就不做处理
-      if (focusInCurrentTarget(event)) {
+      // 要判断 nativeEvent，不然可能在 React 重绘时导致判断会出错
+      // 目前遇到的一个 case 是：
+      //   GoToLineQuickOpenHandler:
+      //     按 enter 后 hide 面板，但不知道为什么这里的 onBlur 也会生效，导致二次触发 onClose
+      //     这里改成 nativeEvent 后不再有该问题
+      if (focusInCurrentTarget(event.nativeEvent)) {
+        // 判断触发事件的元素是否在父元素内，如果在父元素内就不做处理
         return;
       }
-      // 判断移出焦点后是否需要关闭组件
-      const keepShow = widget.callbacks.onFocusLost();
-      if (!keepShow) {
-        widget.hide(HideReason.FOCUS_LOST);
-      }
+      widget.blur();
     },
     [widget],
   );

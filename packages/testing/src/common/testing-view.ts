@@ -1,4 +1,5 @@
 import { IBasicInlineMenu, IBasicInlineMenuPosition } from '@opensumi/ide-components';
+
 import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from './commands';
 
 export const TestingViewId = '@opensumi/ide-testing';

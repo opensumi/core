@@ -1,6 +1,7 @@
 import { Injectable } from '@opensumi/di';
-import { IContextKeyService } from '../../context-key';
 import { Emitter } from '@opensumi/ide-core-common';
+
+import { IContextKeyService } from '../../context-key';
 
 @Injectable()
 export class ViewContextKeyRegistry {

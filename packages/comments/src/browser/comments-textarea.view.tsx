@@ -1,11 +1,15 @@
 import React from 'react';
-import styles from './comments.module.less';
-import { Tabs } from '@opensumi/ide-components';
-import { CommentsBody } from './comments-body';
-import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { MentionsInput, Mention } from 'react-mentions';
-import { getMentionBoxStyle } from './mentions.style';
+
+import { Tabs } from '@opensumi/ide-components';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
+
 import { ICommentsFeatureRegistry } from '../common';
+
+import { CommentsBody } from './comments-body';
+import styles from './comments.module.less';
+import { getMentionBoxStyle } from './mentions.style';
+
 
 export interface ICommentTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   focusDelay?: number;

@@ -31,20 +31,20 @@ const getTypeSorter = () => {
     sorterDesc.push(sorterKey);
   }
   return sorterDesc;
-}
+};
 
-const prTypeMap  = {
-  '新特性提交': '🎉 New Features',
+const prTypeMap = {
+  新特性提交: '🎉 New Features',
   '日常 bug 修复': '🐛 Bug Fixes',
-  '代码风格优化': '💄 Code Style Changes',
-  '重构': '🪚 Refactors',
-  '其他改动': '🧹 Chores',
-  '性能优化': '🚀 Performance Improvements',
-  '文档改进': '📚 Documentation Changes',
-  '样式改进': '💄 Style Changes',
-  '测试用例': '⏱ Tests',
-  'Other Changes': '🧹 Chores'
-}
+  代码风格优化: '💄 Code Style Changes',
+  重构: '🪚 Refactors',
+  其他改动: '🧹 Chores',
+  性能优化: '🚀 Performance Improvements',
+  文档改进: '📚 Documentation Changes',
+  样式改进: '💄 Style Changes',
+  测试用例: '⏱ Tests',
+  'Other Changes': '🧹 Chores',
+};
 
 function convertToEnglishType(type: string) {
   if (prTypeMap[type]) {
@@ -55,15 +55,17 @@ function convertToEnglishType(type: string) {
 }
 
 function convertToMarkdown(logs: ICommitLogFields[]) {
-  const extendedLogs = logs.map((log) => {
-    return {
-      ...log,
-      changelog: getChangelog(log.pullRequestDescription),
-      type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
-      href: Github.getPullRequestLink(log.pullRequestId),
-      nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
-    };
-  });
+  const extendedLogs = logs
+    .map((log) => {
+      return {
+        ...log,
+        changelog: getChangelog(log.pullRequestDescription),
+        type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
+        href: Github.getPullRequestLink(log.pullRequestId),
+        nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
+      };
+    })
+    .filter((log) => !!log.changelog);
 
   const prTypedList = groupBy(extendedLogs, 'type');
 
@@ -72,33 +74,37 @@ function convertToMarkdown(logs: ICommitLogFields[]) {
   return Array.prototype.concat.apply(
     [],
     Object.keys(prTypedList)
-    // 按照 MERGE_TEMPLATE 中顺序做排序
-    .sort((a, b) => {
-      const aPos = sorterDesc.indexOf(a);
-      const bPos = sorterDesc.indexOf(b);
+      // 按照 MERGE_TEMPLATE 中顺序做排序
+      .sort((a, b) => {
+        const aPos = sorterDesc.indexOf(a);
+        const bPos = sorterDesc.indexOf(b);
 
-      if (aPos > -1 && bPos > -1) {
-        return aPos - bPos;
-      }
+        if (aPos > -1 && bPos > -1) {
+          return aPos - bPos;
+        }
 
-      if (aPos > -1) {
-        return -1;
-      }
+        if (aPos > -1) {
+          return -1;
+        }
 
-      if (bPos > -1) {
-        return 1;
-      }
-      return a.localeCompare(b);
-    })
-    .map((type) => {
-      return [`#### ${type}`].concat(
-        ...(prTypedList[type] ? prTypedList[type].map((commit) => {
-          return `- ${commit.changelog || commit.message}`
-            + ` [#${commit.pullRequestId}](${commit.href})`
-            + ` by ${commit.nickNameDesc}`;
-        }) : [])
-      );
-    }),
+        if (bPos > -1) {
+          return 1;
+        }
+        return a.localeCompare(b);
+      })
+      .map((type) => {
+        return [`#### ${type}`].concat(
+          ...(prTypedList[type]
+            ? prTypedList[type].map((commit) => {
+                return (
+                  `- ${commit.changelog || commit.message}` +
+                  ` [#${commit.pullRequestId}](${commit.href})` +
+                  ` by ${commit.nickNameDesc}`
+                );
+              })
+            : []),
+        );
+      }),
   );
 }
 
@@ -130,7 +136,7 @@ async function getTagsByV(isRemote?: boolean) {
     const remoteTagList = await Github.getTagList();
     list = remoteTagList.map((tag) => {
       VERSION_COMMIT_MAP.set(tag.name, tag.commit.sha);
-      return  tag.name;
+      return tag.name;
     });
   }
   return list;
@@ -158,12 +164,13 @@ async function findSymmetricRevision(isRemote: boolean = false) {
   return [tagA, tagB];
 }
 
-export async function run(from: string, to: string, isRemote?: boolean) {
+export async function run(from: string, to: string, options: { isRemote?: boolean; isRelease?: boolean }) {
+  const { isRemote, isRelease } = options;
   console.log(`from: ${from}`, `to: ${to}`, isRemote ? 'remote' : 'local');
-  const [tagFrom, tagTo] = (!from || !to) ? await findSymmetricRevision(isRemote) : [];
+  const [tagFrom, tagTo] = !from || !to ? await findSymmetricRevision(isRemote) : [];
   const tagA = from || tagFrom;
   const tagB = to || tagTo;
-  if ((!tagA || !tagB)) {
+  if (!tagA || !tagB) {
     throw new Error(`Missing revision ${tagA}..${tagB}`);
   }
 
@@ -174,7 +181,10 @@ export async function run(from: string, to: string, isRemote?: boolean) {
   if (isRemote) {
     let base;
     let head;
-    if (process.env.GITHUB_SHA) {
+    if (isRelease) {
+      base = VERSION_COMMIT_MAP.get(tagA);
+      head = VERSION_COMMIT_MAP.get(tagB);
+    } else if (process.env.GITHUB_SHA) {
       // 如果存在 GITHUB_SHA，说明当前处于 Github Actions 环境，使用最新的 Release 版本与当前提供的 Commit SHA 做比较
       base = VERSION_COMMIT_MAP.get(tagB);
       head = process.env.GITHUB_SHA;

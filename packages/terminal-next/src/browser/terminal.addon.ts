@@ -1,9 +1,13 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
+
 import { URI, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
-import { TerminalKeyBoardInputService } from './terminal.input';
+import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
+
 import { ITerminalConnection } from '../common';
+
+import { TerminalKeyBoardInputService } from './terminal.input';
+
 
 const segmentClause = '\\~\\w\\.@_\\-';
 const posClause = [

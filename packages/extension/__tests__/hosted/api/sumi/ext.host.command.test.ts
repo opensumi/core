@@ -1,7 +1,8 @@
-import { ExtHostCommands } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
-import { createCommandsApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.command';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadCommands } from '@opensumi/ide-extension/lib/common/vscode';
+import { createCommandsApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.command';
+import { ExtHostCommands } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
+
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
 describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {

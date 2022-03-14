@@ -1,4 +1,7 @@
+import classnames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import {
   DisposableCollection,
   getIcon,
@@ -13,11 +16,12 @@ import {
   useInjectable,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
-import styles from './preferences.module.less';
-import classnames from 'classnames';
-import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
-import { PreferenceSettingsService } from './preference-settings.service';
+
 import { toPreferenceReadableName } from '../common';
+
+import { PreferenceSettingsService } from './preference-settings.service';
+import styles from './preferences.module.less';
+
 
 interface IPreferenceItemProps {
   preferenceName: string;
@@ -368,17 +372,7 @@ function SelectPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
-  useEffect(() => {
-    if (!value && !!schema.enum) {
-      for (const item of schema.enum as (string | boolean | number)[]) {
-        if (!value && item === schema.default) {
-          setValue(String(item));
-        }
-      }
-    }
-  }, [schema, value]);
-
-  const handlerValueChange = useCallback(
+  const handleValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
       setValue(val);
@@ -460,7 +454,7 @@ function SelectPreferenceItem({
         <Select
           dropdownRenderType='absolute'
           maxHeight='200'
-          onChange={handlerValueChange}
+          onChange={handleValueChange}
           value={value}
           className={styles.select_control}
           description={description}

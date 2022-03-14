@@ -1,5 +1,7 @@
 import { Terminal, ILinkProvider, IViewportRange } from 'xterm';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IOpenerService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   URI,
   Disposable,
@@ -9,11 +11,17 @@ import {
   FileUri,
   localize,
 } from '@opensumi/ide-core-common';
-import { OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { posix, win32, IPath } from '@opensumi/ide-core-common/lib/path';
-import { IOpenerService, PreferenceService } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+
+import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
+import { XTermCore } from '../../common/xterm-private';
+import { TerminalClient } from '../terminal.client';
+
+import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
+import { TerminalLink } from './link';
 import { TerminalProtocolLinkProvider } from './protocol-link-provider';
 import {
   TerminalValidatedLocalLinkProvider,
@@ -25,11 +33,7 @@ import {
   unixLineAndColumnMatchIndex,
   lineAndColumnClauseGroupCount,
 } from './validated-local-link-provider';
-import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
-import { TerminalLink } from './link';
-import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
-import { TerminalClient } from '../terminal.client';
-import { XTermCore } from '../../common/xterm-private';
+
 
 export type XtermLinkMatcherHandler = (event: MouseEvent | undefined, link: string) => Promise<void>;
 

@@ -1,8 +1,11 @@
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 import { Event, Emitter } from '@opensumi/ide-core-browser';
-import { DebugSession } from '../debug-session';
-import { DebugStackFrame } from './debug-stack-frame';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
 import { DEBUG_REPORT_NAME } from '../../common';
+import { DebugSession } from '../debug-session';
+
+import { DebugStackFrame } from './debug-stack-frame';
+
 
 export type StoppedDetails = DebugProtocol.StoppedEvent['body'] & {
   framesErrorMessage?: string;

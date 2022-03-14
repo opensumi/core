@@ -2,8 +2,11 @@ import type vscode from 'vscode';
 import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise, IMarkdownString } from '@opensumi/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
+
 import { Event, IThemeColor } from '@opensumi/ide-core-common';
-import { QuickTitleButton } from '@opensumi/ide-core-browser/lib/quick-open';
+import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
+
+import * as types from './ext-types';
 import { UriComponents, QuickInputButton } from './ext-types';
 import { IExtensionDescription } from './extension';
 
@@ -35,7 +38,10 @@ export interface IMainThreadQuickOpen {
   ): Promise<number | undefined>;
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
-  $hideQuickinput(): void;
+  $hideQuickInput(): void;
+  $createOrUpdateInputBox(id: number, options: QuickInputOptions): void;
+  $hideInputBox(id: number): void;
+  $disposeInputBox(id: number): void;
 }
 
 type VSCodeQuickPickItem = string | vscode.QuickPickItem;
@@ -74,6 +80,10 @@ export interface IExtHostQuickOpen {
   hideInputBox(): void;
   $validateInput(input: string): MaybePromise<string | null | undefined>;
   $onDidChangeValue(sessionId: number, value: string): void;
+  $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void;
+  $onCreatedInputBoxDidAccept(sessionId: number): void;
+  $onCreatedInputBoxDidHide(sessionId: number): void;
+  $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number): void;
 }
 
 export interface QuickInputTitleButtonHandle extends QuickTitleButton {

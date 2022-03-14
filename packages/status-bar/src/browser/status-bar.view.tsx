@@ -1,11 +1,14 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
-import styles from './status-bar.module.less';
-import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { StatusBarItem } from './status-bar-item.view';
-import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 import cls from 'classnames';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { generateCtxMenu, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+
+import { StatusBarItem } from './status-bar-item.view';
+import styles from './status-bar.module.less';
+
 
 export const StatusBarView = React.memo(
   observer(() => {

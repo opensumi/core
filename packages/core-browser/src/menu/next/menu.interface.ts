@@ -1,12 +1,13 @@
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { CommandRegistry, CommandService, Command, isOSX } from '@opensumi/ide-core-common';
 import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
 import { Event } from '@opensumi/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional } from '@opensumi/di';
 
 import { IContextKeyService } from '../../context-key';
+import { KeybindingRegistry } from '../../keybinding';
+
 import { ISubmenuItem, MenuNode, IMenuActionDisplayType, IComponentMenuItem, IComponentMenuItemProps } from './base';
 import { MenuId } from './menu-id';
-import { KeybindingRegistry } from '../../keybinding';
 import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 
 export type TupleMenuNodeResult = [MenuNode[], MenuNode[]];

@@ -1,4 +1,3 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   IClientApp,
@@ -34,9 +33,11 @@ import {
   AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   WorkbenchEditorService,
@@ -49,23 +50,24 @@ import {
   IEditor,
   SaveReason,
 } from '../common';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
-import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
+import { AUTO_SAVE_MODE } from '../common/editor';
+
+import { MonacoTextModelService } from './doc-model/override';
+import { IEditorDocumentModelService } from './doc-model/types';
+import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { EditorOpener } from './editor-opener';
+import { MonacoCodeService, MonacoContextViewService } from './editor.override';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
+import { FormattingSelector } from './format/formatterSelect';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
-import { IEditorDocumentModelService } from './doc-model/types';
-import { FormattingSelector } from './format/formatterSelect';
-import { EditorTopPaddingContribution } from './view/topPadding';
+import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
+import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
-import { MonacoCodeService, MonacoContextViewService } from './editor.override';
-import { MonacoTextModelService } from './doc-model/override';
-import { EditorOpener } from './editor-opener';
-import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
-import { AUTO_SAVE_MODE } from '../common/editor';
-import { IEditorDocumentModelContentRegistry } from './doc-model/types';
-import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EditorTopPaddingContribution } from './view/topPadding';
+import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -143,6 +145,9 @@ export class EditorContribution
 
   @Autowired(PrefixQuickOpenService)
   private readonly prefixQuickOpenService: PrefixQuickOpenService;
+
+  @Autowired()
+  private readonly goToLineQuickOpenHandler: GoToLineQuickOpenHandler;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -1032,9 +1037,11 @@ export class EditorContribution
     commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL, {
       execute: () => this.prefixQuickOpenService.open('#'),
     });
-
     commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS, {
       execute: () => this.prefixQuickOpenService.open('##'),
+    });
+    commands.registerCommand(EDITOR_COMMANDS.GO_TO_LINE, {
+      execute: () => this.prefixQuickOpenService.open(':'),
     });
 
     commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
@@ -1131,6 +1138,11 @@ export class EditorContribution
           commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
         },
       },
+    });
+    handlers.registerHandler(this.goToLineQuickOpenHandler, {
+      title: localize('editor.goToLine'),
+      commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
+      order: 5,
     });
   }
 }

@@ -1,5 +1,6 @@
-import { AbstractMessageWriter, MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
 import { Message } from '@opensumi/vscode-jsonrpc/lib/common/messages';
+import { AbstractMessageWriter, MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
+
 import { IExtHostConnection } from './connection';
 
 /**

@@ -1,5 +1,6 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
+
 import { IBasicTreeMenu } from './types';
 
 export const BasicMenuItem: React.FC<

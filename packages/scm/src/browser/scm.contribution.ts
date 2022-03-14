@@ -1,5 +1,14 @@
 import { Autowired } from '@opensumi/di';
 import {
+  ClientAppContribution,
+  PreferenceContribution,
+  PreferenceService,
+  getExternalIcon,
+} from '@opensumi/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
   CommandContribution,
   CommandRegistry,
   Command,
@@ -8,18 +17,11 @@ import {
   URI,
   PreferenceScope,
 } from '@opensumi/ide-core-common';
-import {
-  ClientAppContribution,
-  PreferenceContribution,
-  PreferenceService,
-  getExternalIcon,
-} from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
+import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 
-import { SCMViewContainer } from './scm-view-container';
 import {
   scmContainerId,
   IDirtyDiffWorkbenchController,
@@ -32,13 +34,13 @@ import {
   SET_SCM_LIST_VIEW_MODE,
   SCMViewModelMode,
 } from '../common';
+
+import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
+import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
-import { DirtyDiffWorkbenchController } from './dirty-diff';
-import { getIcon } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
+import { SCMViewContainer } from './scm-view-container';
+
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',

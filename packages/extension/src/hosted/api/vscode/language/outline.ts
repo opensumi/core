@@ -13,14 +13,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/outline.ts
 
-import { Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { Uri as URI } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { DocumentSymbol, Range } from '../../../../common/vscode/model.api';
-import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
+import * as types from '../../../../common/vscode/ext-types';
+import { DocumentSymbol, Range } from '../../../../common/vscode/model.api';
 
 /** Adapts the calls from main to extension thread for providing the document symbols. */
 export class OutlineAdapter {

@@ -1,3 +1,4 @@
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   AllowedExtension,
   IAuthenticationService,
@@ -23,7 +24,7 @@ import {
   noAccountsId,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
-import { Autowired, Injectable } from '@opensumi/di';
+
 import { IMenuRegistry, MenuId } from '../menu/next';
 
 @Injectable()

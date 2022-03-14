@@ -1,9 +1,7 @@
-import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-
+import { marked } from 'marked';
 import type vscode from 'vscode';
-import * as types from './ext-types';
-import * as model from './model.api';
-import * as debugModel from '@opensumi/ide-debug';
+import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
+
 import {
   URI,
   Uri,
@@ -22,6 +20,8 @@ import {
   asArray,
   IMarkdownString,
 } from '@opensumi/ide-core-common';
+import * as debugModel from '@opensumi/ide-debug';
+import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {
   IDecorationRenderOptions,
   IThemeDecorationRenderOptions,
@@ -31,17 +31,9 @@ import {
   LanguageSelector,
   LanguageFilter,
 } from '@opensumi/ide-editor/lib/common';
-import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
-import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
-import { ExtensionDocumentDataManager } from './doc';
-import { ViewColumn as ViewColumnEnums } from './enums';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import { isMarkdownString, parseHrefAndDimensions } from './models';
-import { marked } from 'marked';
-import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IInlineValueContextDto } from './languages';
+import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
   CoverageDetails,
   DetailType,
@@ -56,9 +48,19 @@ import {
   SerializedTestResultItem,
   TestMessageType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
-import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
-import { TestId } from '@opensumi/ide-testing/lib/common';
+import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
+import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
+
+import { ExtensionDocumentDataManager } from './doc';
+import { ViewColumn as ViewColumnEnums } from './enums';
+import * as types from './ext-types';
 import { IRelativePattern } from './glob';
+import { IInlineValueContextDto } from './languages';
+import * as model from './model.api';
+import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './models';
+import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;

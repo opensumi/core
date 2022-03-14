@@ -1,4 +1,5 @@
 import { Injectable } from '@opensumi/di';
+
 import { ITopbarNodeServer } from '../common';
 
 @Injectable()

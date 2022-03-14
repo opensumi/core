@@ -1,12 +1,12 @@
-import { Disposable } from '@opensumi/ide-core-common';
-import { Event, Emitter } from '@opensumi/ide-core-browser';
 import { Injectable } from '@opensumi/di';
+import { Event, Emitter } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
-import { AbstractMenubarStore, MenubarStore } from '../src/browser/menu-bar.store';
 import { MenuBarModule } from '../src';
+import { AbstractMenubarStore, MenubarStore } from '../src/browser/menu-bar.store';
 
 jest.useFakeTimers();
 

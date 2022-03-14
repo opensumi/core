@@ -1,13 +1,16 @@
 import path from 'path';
+
 import type vscode from 'vscode';
+
 import { Uri } from '@opensumi/ide-core-common/lib/uri';
 
-import { IExtHostTerminal } from '../../../common/vscode';
-import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
-import { ExtensionMode } from '../../../common/vscode/ext-types';
-import { ExtensionGlobalMemento, ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
+import { IExtHostTerminal } from '../../../common/vscode';
+import { ExtensionMode } from '../../../common/vscode/ext-types';
+import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
+
 import { ExtensionSecrets, ExtHostSecret } from './ext.host.secrets';
+import { ExtensionGlobalMemento, ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
 export interface IKTContextOptions {
   extensionId: string;

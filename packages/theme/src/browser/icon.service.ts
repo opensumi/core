@@ -1,3 +1,4 @@
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   URI,
   PreferenceService,
@@ -9,8 +10,9 @@ import {
   CODICON_OWNER,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired } from '@opensumi/di';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+
 import {
   ThemeType,
   IIconService,
@@ -22,7 +24,8 @@ import {
   IconShape,
   IconThemeInfo,
 } from '../common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+
+
 import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';

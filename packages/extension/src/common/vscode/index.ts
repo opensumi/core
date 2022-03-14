@@ -1,9 +1,47 @@
 import type vscode from 'vscode';
-import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
-import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
+
+import { IExtension, IExtensionHostService } from '..';
+// eslint-disable-next-line import/no-restricted-paths
+import type { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
+import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
+import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
+import { ExtHostFileSystemInfo } from '../../hosted/api/vscode/ext.host.file-system-info';
+import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
+import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
+import { ISumiExtHostWebviews } from '../sumi/webview';
+
+import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
 import { IMainThreadCommands, IExtHostCommands } from './command';
+import { IExtHostComments, IMainThreadComments } from './comments';
+import { IExtHostConnection, IMainThreadConnection } from './connection';
+import { IExtHostDebug, IMainThreadDebug } from './debug';
+import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
+import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import {
+  IMainThreadEditorsService,
+  IExtensionHostEditorService,
+  IMainThreadCustomEditor,
+  IExtHostCustomEditor,
+} from './editor';
+import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
+import { IMainThreadEnv, IExtHostEnv } from './env';
+import { IMainThreadFileSystemShape } from './file-system';
+import { IMainThreadLanguages } from './languages';
+import { IMainThreadPreference, IExtHostPreference } from './preference';
+import { IExtHostProgress, IMainThreadProgress } from './progress';
+import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
+import { IExtHostSecret, IMainThreadSecret } from './secret';
+import { IMainThreadStorage, IExtHostStorage } from './storage';
+import { IExtHostTasks, IMainThreadTasks } from './tasks';
+import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
+import { IExtHostTests, IMainThreadTesting } from './tests';
+import { IExtHostTheming, IMainThreadTheming } from './theming';
+import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
+import { IMainThreadUrls, IExtHostUrls } from './urls';
+import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWebviewView } from './webview';
 import {
   IMainThreadMessage,
   IExtHostMessage,
@@ -18,40 +56,6 @@ import {
   IMainThreadWindow,
 } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
-import {
-  IMainThreadEditorsService,
-  IExtensionHostEditorService,
-  IMainThreadCustomEditor,
-  IExtHostCustomEditor,
-} from './editor';
-import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
-import { IExtension, IExtensionHostService } from '..';
-import { IMainThreadPreference, IExtHostPreference } from './preference';
-import { IMainThreadEnv, IExtHostEnv } from './env';
-import { IMainThreadStorage, IExtHostStorage } from './storage';
-import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
-import { IMainThreadLanguages } from './languages';
-import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWebviewView } from './webview';
-import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
-import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
-import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
-import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
-import { IExtHostDebug, IMainThreadDebug } from './debug';
-import { IExtHostConnection, IMainThreadConnection } from './connection';
-import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
-import { IMainThreadFileSystemShape } from './file-system';
-import { ISumiExtHostWebviews } from '../sumi/webview';
-import { IExtHostProgress, IMainThreadProgress } from './progress';
-import { IExtHostTheming, IMainThreadTheming } from './theming';
-import { IExtHostTasks, IMainThreadTasks } from './tasks';
-import { IExtHostComments, IMainThreadComments } from './comments';
-import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
-import { ExtHostFileSystemInfo } from '../../hosted/api/vscode/ext.host.file-system-info';
-import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
-import { IMainThreadUrls, IExtHostUrls } from './urls';
-import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
-import { IExtHostSecret, IMainThreadSecret } from './secret';
-import { IExtHostTests } from './tests';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -70,35 +74,36 @@ export const MainThreadAPIIdentifier = {
   MainThreadOutput: createMainContextProxyIdentifier<IMainThreadOutput>('MainThreadOutput'),
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionService: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionService'),
-  MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
-  MainThreadEditors: createExtHostContextProxyIdentifier<IMainThreadEditorsService>('MainThreadEditors'),
-  MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
-  MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
-  MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
-  MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
-  MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
-  MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
-  MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystemShape>('MainThreadFileSystem'),
-  MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
-  MainThreadWebviewView: createExtHostContextProxyIdentifier<IMainThreadWebviewView>('MainThreadWebviewView'),
-  MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
-  MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
-  MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
-  MainThreadDecorations: createExtHostContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
-  MainThreadDebug: createExtHostContextProxyIdentifier<IMainThreadDebug>('MainThreadDebug'),
-  MainThreadConnection: createExtHostContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
-  MainThreadTerminal: createExtHostContextProxyIdentifier<IMainThreadTerminal>('MainThreadTerminal'),
-  MainThreadWindow: createExtHostContextProxyIdentifier<IMainThreadWindow>('MainThreadWindow'),
-  MainThreadProgress: createExtHostContextProxyIdentifier<IMainThreadProgress>('MainThreadProgress'),
-  MainThreadTasks: createExtHostContextProxyIdentifier<IMainThreadTasks>('MainThreadTasks'),
-  MainThreadComments: createExtHostContextProxyIdentifier<IMainThreadComments>('MainThreadComments'),
-  MainThreadUrls: createExtHostContextProxyIdentifier<IMainThreadUrls>('MainThreadUrls'),
-  MainThreadTheming: createExtHostContextProxyIdentifier<IMainThreadTheming>('MainThreadTheming'),
-  MainThreadCustomEditor: createExtHostContextProxyIdentifier<IMainThreadCustomEditor>('MainThreadCustomEditor'),
-  MainThreadAuthentication: createExtHostContextProxyIdentifier<IMainThreadAuthentication>('MainThreadAuthentication'),
-  MainThreadSecret: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
-  MainThreadReporter: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
-  MainThreadTests: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadTests'),
+  MainThreadDocuments: createMainContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
+  MainThreadEditors: createMainContextProxyIdentifier<IMainThreadEditorsService>('MainThreadEditors'),
+  MainThreadMessages: createMainContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
+  MainThreadWorkspace: createMainContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
+  MainThreadPreference: createMainContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
+  MainThreadEnv: createMainContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
+  MainThreadQuickOpen: createMainContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
+  MainThreadStorage: createMainContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
+  MainThreadFileSystem: createMainContextProxyIdentifier<IMainThreadFileSystemShape>('MainThreadFileSystem'),
+  MainThreadWebview: createMainContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
+  MainThreadWebviewView: createMainContextProxyIdentifier<IMainThreadWebviewView>('MainThreadWebviewView'),
+  MainThreadTreeView: createMainContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
+  MainThreadSCM: createMainContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
+  MainThreadWindowState: createMainContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
+  MainThreadDecorations: createMainContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
+  MainThreadDebug: createMainContextProxyIdentifier<IMainThreadDebug>('MainThreadDebug'),
+  MainThreadConnection: createMainContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
+  MainThreadTerminal: createMainContextProxyIdentifier<IMainThreadTerminal>('MainThreadTerminal'),
+  MainThreadWindow: createMainContextProxyIdentifier<IMainThreadWindow>('MainThreadWindow'),
+  MainThreadProgress: createMainContextProxyIdentifier<IMainThreadProgress>('MainThreadProgress'),
+  MainThreadTasks: createMainContextProxyIdentifier<IMainThreadTasks>('MainThreadTasks'),
+  MainThreadComments: createMainContextProxyIdentifier<IMainThreadComments>('MainThreadComments'),
+  MainThreadUrls: createMainContextProxyIdentifier<IMainThreadUrls>('MainThreadUrls'),
+  MainThreadTheming: createMainContextProxyIdentifier<IMainThreadTheming>('MainThreadTheming'),
+  MainThreadCustomEditor: createMainContextProxyIdentifier<IMainThreadCustomEditor>('MainThreadCustomEditor'),
+  MainThreadAuthentication: createMainContextProxyIdentifier<IMainThreadAuthentication>('MainThreadAuthentication'),
+  MainThreadSecret: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
+  MainThreadReporter: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
+  MainThreadTests: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadTests'),
+  MainThreadEditorTabs: createMainContextProxyIdentifier<IMainThreadEditorTabsShape>('MainThreadEditorTabs'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -139,6 +144,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostAuthentication: createExtHostContextProxyIdentifier<IExtHostAuthentication>('ExtHostAuthentication'),
   ExtHostSecret: createExtHostContextProxyIdentifier<IExtHostSecret>('ExtHostSecret'),
   ExtHostTests: createExtHostContextProxyIdentifier<IExtHostTests>('ExtHostTests'),
+  ExtHostEditorTabs: createExtHostContextProxyIdentifier<IExtHostEditorTabs>('ExtHostEditorTabs'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -186,3 +192,5 @@ export * from './theming';
 export * from './authentication';
 export * from './secret';
 export * from './tests';
+export * from './editor-tabs';
+export * from './scm';

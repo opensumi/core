@@ -1,15 +1,15 @@
-/**
- * 前端提供一套 Slot 的注册和渲染的机制
- */
-
 import React from 'react';
-import { getDebugLogger } from '@opensumi/ide-core-common';
-import { LayoutConfig } from '../bootstrap';
-import { useInjectable } from '../react-hooks';
-import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
-import { ConfigContext } from './config-provider';
+
 import { Button } from '@opensumi/ide-components';
+import { getDebugLogger, localize } from '@opensumi/ide-core-common';
+
+import { LayoutConfig } from '../bootstrap';
 import { IClientApp } from '../browser-module';
+import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
+import { useInjectable } from '../react-hooks';
+
+import { ConfigContext } from './config-provider';
+import styles from './slot.module.less';
 
 const logger = getDebugLogger();
 export type SlotLocation = string;
@@ -80,14 +80,13 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.errorInfo) {
       return (
-        <div>
-          <h2>模块渲染异常</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
-            {this.state.error && (this.state.error as any).toString()}
-            <br />
-            {(this.state.errorInfo as any).componentStack}
+        <div className={styles.error_message}>
+          <h2 className={styles.title}>{localize('view.component.renderedError')}</h2>
+          <details className={styles.detial}>
+            <div className={styles.label}>{this.state.error && (this.state.error as any).toString()}</div>
+            <div className={styles.message}>{(this.state.errorInfo as any).componentStack}</div>
           </details>
-          <Button onClick={() => this.update()}>重新加载</Button>
+          <Button onClick={() => this.update()}>{localize('view.component.tryAgain')}</Button>
         </div>
       );
     }
@@ -105,11 +104,7 @@ export const SlotDecorator: React.FC<{ slot: string; color?: string }> = ({ slot
     }
   }, [ref]);
   return (
-    <div
-      ref={(ele) => (ref.current = ele!)}
-      className='resize-wrapper'
-      style={props.color ? { backgroundColor: props.color } : {}}
-    >
+    <div ref={(ele) => (ref.current = ele!)} className='resize-wrapper'>
       {props.children}
     </div>
   );

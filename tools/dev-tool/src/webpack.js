@@ -1,22 +1,29 @@
 // tslint:disable:no-var-requires
+const path = require('path');
+
+const CopyPlugin = require('copy-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const webpack = require('webpack');
-const path = require('path');
 const threadLoader = require('thread-loader');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const webpack = require('webpack');
 const merge = require('webpack-merge');
 
 threadLoader.warmup({}, ['ts-loader']);
 
 const utils = require('./utils');
 
+const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
+const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
+
+const defaultWorkspace = path.join(__dirname, '../../workspace');
+fse.mkdirpSync(defaultWorkspace);
 
 // eslint-disable-next-line no-console
 console.log('front port', PORT);
@@ -47,6 +54,10 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             configFile: tsConfigPath,
           }),
         ],
+        alias: {
+          react: reactPath,
+          'react-dom': reactDOMPath,
+        },
       },
       bail: true,
       mode: 'development',
@@ -177,9 +188,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         }),
         new webpack.DefinePlugin({
           'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
-          'process.env.WORKSPACE_DIR': JSON.stringify(
-            process.env.MY_WORKSPACE || path.join(__dirname, '../../workspace'),
-          ),
+          'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || defaultWorkspace),
           'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
           'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
@@ -198,10 +207,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           onErrors: utils.createNotifierCallback(),
           clearConsole: true,
         }),
-        new CopyPlugin([
-          { from: path.join(__dirname, '../vendor'), to: path.join(dir, 'dist') },
-          { from: path.join(__dirname, '../resources'), to: path.join(dir, 'dist', 'resources') },
-        ]),
         new ForkTsCheckerWebpackPlugin({
           typescript: {
             diagnosticOptions: {

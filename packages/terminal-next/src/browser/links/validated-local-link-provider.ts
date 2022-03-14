@@ -2,23 +2,29 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.2/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
 
 import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IDisposable, URI } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
+import { CommandService, IDisposable, URI } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace-defination';
+
 import type { TerminalClient } from '../terminal.client';
-import { TerminalLink } from './link';
-import { XtermLinkMatcherHandler } from './link-manager';
+
 import { TerminalBaseLinkProvider } from './base';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
+import { FOLDER_IN_WORKSPACE_LABEL, FOLDER_NOT_IN_WORKSPACE_LABEL, OPEN_FILE_LABEL, TerminalLink } from './link';
+import { XtermLinkMatcherHandler } from './link-manager';
 
 const pathPrefix = '(\\.\\.?|\\~)';
 const pathSeparatorClause = '\\/';
 // '":; are allowed in paths but they are often separators so ignore them
-// Also disallow \\ to prevent a catastropic backtracking case #24798
-const excludedPathCharactersClause = '[^\\0\\s!$`&*()\\[\\]\'":;\\\\]';
+// Also disallow \\ to prevent a catastropic backtracking case #24795
+const excludedPathCharactersClause = '[^\\0\\s!`&*()\\[\\]\'":;\\\\]';
 /** A regex that matches paths in the form /foo, ~/foo, ./foo, ../foo, foo/bar */
 export const unixLocalLinkClause =
   '((' +
@@ -34,7 +40,7 @@ export const unixLocalLinkClause =
 export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\)?[a-zA-Z]:';
 const winPathPrefix = '(' + winDrivePrefix + '|\\.\\.?|\\~)';
 const winPathSeparatorClause = '(\\\\|\\/)';
-const winExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!$`&*()\\[\\]\'":;]';
+const winExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!`&*()\\[\\]\'":;]';
 /** A regex that matches paths in the form \\?\c:\foo c:\foo, ~\foo, .\foo, ..\foo, foo\bar */
 export const winLocalLinkClause =
   '((' +
@@ -50,8 +56,8 @@ export const winLocalLinkClause =
 /** As xterm reads from DOM, space in that case is nonbreaking char ASCII code - 160,
 replacing space with nonBreakningSpace or space ASCII code - 32. */
 export const lineAndColumnClause = [
-  '((\\S*)", line ((\\d+)( column (\\d+))?))', // "(file path)", line 45 [see #40468]
-  '((\\S*)",((\\d+)(:(\\d+))?))', // "(file path)",45 [see #78205]
+  '((\\S*)[\'"], line ((\\d+)( column (\\d+))?))', // "(file path)", line 45 [see #40468]
+  '((\\S*)[\'"],((\\d+)(:(\\d+))?))', // "(file path)",45 [see #78205]
   '((\\S*) on line ((\\d+)(, column (\\d+))?))', // (file path) on line 8, column 13
   '((\\S*):line ((\\d+)(, column (\\d+))?))', // (file path):line 8, column 13
   '(([^\\s\\(\\)]*)(\\s?[\\(\\[](\\d+)(,\\s?(\\d+))?)[\\)\\]])', // (file path)(45), (file path) (45), (file path)(45,18), (file path) (45,18), (file path)(45, 18), (file path) (45, 18), also with []
@@ -73,6 +79,18 @@ const MAX_LENGTH = 2000;
 export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(IWindowService)
+  protected readonly windowService: IWindowService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
+  @Autowired(IWorkspaceService)
+  private readonly workspaceService: IWorkspaceService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   constructor(
     private readonly _xterm: Terminal,
@@ -168,10 +186,19 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
       );
 
       const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
-        this._validationCallback(link, (result) => {
-          if (result && !result.isDirectory) {
+        this._validationCallback(link, async (result) => {
+          if (result) {
+            const label = result.isDirectory
+              ? (await this._isDirectoryInsideWorkspace(result.uri))
+                ? FOLDER_IN_WORKSPACE_LABEL
+                : FOLDER_NOT_IN_WORKSPACE_LABEL
+              : OPEN_FILE_LABEL;
             const activateCallback = this._wrapLinkHandler((event: MouseEvent | undefined, text: string) => {
-              this._activateFileCallback(event, text);
+              if (result.isDirectory) {
+                this._handleLocalFolderLink(result.uri);
+              } else {
+                this._activateFileCallback(event, text);
+              }
             });
             r(
               this.injector.get(TerminalLink, [
@@ -182,7 +209,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
                 activateCallback,
                 this._tooltipCallback,
                 true,
-                undefined,
+                label,
               ]),
             );
           } else {
@@ -202,5 +229,28 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
     // Append line and column number regex
     return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
+  }
+
+  private async _handleLocalFolderLink(uri: URI): Promise<void> {
+    // If the folder is within one of the window's workspaces, focus it in the explorer
+    if (await this._isDirectoryInsideWorkspace(uri)) {
+      await this.commandService.executeCommand('revealInExplorer', uri);
+      return;
+    }
+
+    // Open a new window for the folder
+    if (this.appConfig.isElectronRenderer) {
+      this.windowService.openWorkspace(uri, { newWindow: true });
+    }
+  }
+
+  private async _isDirectoryInsideWorkspace(uri: URI) {
+    const folders = await this.workspaceService.roots;
+    for (const folder of folders) {
+      if (URI.parse(folder.uri).isEqualOrParent(uri)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

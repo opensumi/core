@@ -1,5 +1,12 @@
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import path from 'path';
+
+import * as fs from 'fs-extra';
+import temp from 'temp';
+
+import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
+import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
   FileUri,
   URI,
@@ -10,33 +17,30 @@ import {
   isLinux,
   OS,
 } from '@opensumi/ide-core-common';
-import { FileTreeNextModule } from '../../src';
-import { IFileTreeAPI, IFileTreeService } from '../../src/common';
-import { FileTreeService } from '../../src/browser/file-tree.service';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { FileStat, FileServicePath, IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
-import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { IThemeService } from '@opensumi/ide-theme';
-import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { Directory, File } from '../../src/common/file-tree-node.define';
-import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
-import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@opensumi/ide-core-browser';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
-import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
-import { PasteTypes } from '../../src';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import temp from 'temp';
-import * as fs from 'fs-extra';
-import path from 'path';
-import styles from '../../src/browser/file-tree-node.module.less';
+import { FileStat, FileServicePath, IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IThemeService } from '@opensumi/ide-theme';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { FileTreeNextModule } from '../../src';
+import { PasteTypes } from '../../src';
+import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
+import styles from '../../src/browser/file-tree-node.module.less';
+import { FileTreeService } from '../../src/browser/file-tree.service';
+import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
+import { IFileTreeAPI, IFileTreeService } from '../../src/common';
+import { Directory, File } from '../../src/common/file-tree-node.define';
+
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));

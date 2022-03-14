@@ -1,40 +1,43 @@
-import * as ideCoreCommon from '@opensumi/ide-core-common';
 import { Injectable, Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import * as types from '../../src/common/vscode/ext-types';
-import { createExtensionsApiFactory } from '../../src/hosted/api/vscode/ext.host.extensions';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
-import { ExtensionNodeServiceServerPath } from '../../src/common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../src/common/vscode';
-import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
-import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log';
-import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { IContextKeyService, AppConfig } from '@opensumi/ide-core-browser';
-import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-import { IGlobalStorageServer } from '@opensumi/ide-storage';
-import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
-
-import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
+import * as ideCoreCommon from '@opensumi/ide-core-common';
+import { IReporter, DefaultReporter } from '@opensumi/ide-core-common';
+import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { IGlobalStorageServer } from '@opensumi/ide-storage';
 import { IThemeService, IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
-import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
-import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
+import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
-import { IReporter, DefaultReporter } from '@opensumi/ide-core-common';
+import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
+import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
+import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
+import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
+import { ExtensionNodeServiceServerPath } from '../../src/common';
+import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../src/common/vscode';
+import * as types from '../../src/common/vscode/ext-types';
+import { createExtensionsApiFactory } from '../../src/hosted/api/vscode/ext.host.extensions';
+import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
+
+
+import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
+
 
 @Injectable()
 class MockLoggerManagerClient {

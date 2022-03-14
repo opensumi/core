@@ -1,23 +1,24 @@
-import { ResourceService, IResource, IEditorOpenType } from '@opensumi/ide-editor';
-import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@opensumi/ide-core-browser';
 import { Autowired } from '@opensumi/di';
+import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@opensumi/ide-core-browser';
 import { getLanguageIdFromMonaco } from '@opensumi/ide-core-browser/lib/services';
+import { ResourceService, IResource, IEditorOpenType } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
   BrowserEditorContribution,
   IEditorDocumentModelContentRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-
-import { ImagePreview, VideoPreview } from './preview.view';
-import { BinaryEditorComponent } from './external.view';
-import { FILE_SCHEME } from '../common';
-import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
 import {
   UntitledSchemeResourceProvider,
   UntitledSchemeDocumentProvider,
 } from '@opensumi/ide-editor/lib/browser/untitled-resource';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
+import { FILE_SCHEME } from '../common';
+
+import { BinaryEditorComponent } from './external.view';
+import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
 import { LargeFilePrevent } from './prevent.view';
+import { ImagePreview, VideoPreview } from './preview.view';
 
 const VIDEO_PREVIEW_COMPONENT_ID = 'video-preview';
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';

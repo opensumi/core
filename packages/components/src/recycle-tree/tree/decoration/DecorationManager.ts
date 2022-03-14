@@ -1,8 +1,9 @@
 import { IDisposable, DisposableCollection } from '../../../utils';
-import { TreeNode, CompositeTreeNode } from '../TreeNode';
-import { Decoration, IDecorationTargetChangeEventData } from './Decoration';
-import { CompositeDecoration, CompositeDecorationType, ClasslistComposite } from './CompositeDecoration';
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../types';
+import { TreeNode, CompositeTreeNode } from '../TreeNode';
+
+import { CompositeDecoration, CompositeDecorationType, ClasslistComposite } from './CompositeDecoration';
+import { Decoration, IDecorationTargetChangeEventData } from './Decoration';
 
 interface IDecorationMeta {
   /**

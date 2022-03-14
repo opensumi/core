@@ -1,9 +1,3 @@
-import {
-  CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
-  CONTEXT_WATCH_ITEM_TYPE,
-} from './../../../common/constants';
-import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Autowired } from '@opensumi/di';
 import {
   Domain,
@@ -16,11 +10,19 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
-import { DEBUG_WATCH_ID } from '../../../common';
-import { DebugWatchModelService } from './debug-watch-tree.model.service';
+import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+
+import { DEBUG_WATCH_ID } from '../../../common';
+import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
+
+import {
+  CONTEXT_IN_DEBUG_MODE,
+  CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
+  CONTEXT_WATCH_ITEM_TYPE,
+} from './../../../common/constants';
+import { DebugWatchModelService } from './debug-watch-tree.model.service';
 
 @Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution)
 export class WatchPanelContribution

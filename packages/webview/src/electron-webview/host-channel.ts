@@ -1,6 +1,7 @@
+import { ipcRenderer } from 'electron';
+
 import { IWebviewChannel } from '../webview-host/common';
 import { WebviewPanelManager } from '../webview-host/webview-manager';
-import { ipcRenderer } from 'electron';
 
 export class ElectronWebviewChannel implements IWebviewChannel {
   private handlers = new Map();

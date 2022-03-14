@@ -1,10 +1,13 @@
 import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
+
 import { ILinkComputerTarget, LinkComputer } from '../../common';
+
+import { TerminalBaseLinkProvider } from './base';
 import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
 import { TerminalLink } from './link';
-import { TerminalBaseLinkProvider } from './base';
 
 @Injectable({ multiple: true })
 export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {

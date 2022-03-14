@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useCallback, useRef, useContext, useMemo, forwardRef } from 'react';
-import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
-import styles from './editor.module.less';
 import classnames from 'classnames';
+import React, { useEffect, useState, useCallback, useRef, useContext, useMemo, forwardRef } from 'react';
+
 import {
   getIcon,
   MaybeNull,
@@ -17,14 +15,19 @@ import {
   DisposableCollection,
   Event,
 } from '@opensumi/ide-core-browser';
-import { Scroll } from './component/scroll/scroll';
-import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { TabTitleMenuService } from './menu/title-context.menu';
-import { useUpdateOnGroupTabChange } from './view/react-hook';
-import { Icon } from '@opensumi/ide-components';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+
+import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
+
+import { Scroll } from './component/scroll/scroll';
+import styles from './editor.module.less';
+import { TabTitleMenuService } from './menu/title-context.menu';
+import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
+import { useUpdateOnGroupTabChange } from './view/react-hook';
+import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
+
 
 const pkgName = require('../../package.json').name;
 

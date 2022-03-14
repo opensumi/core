@@ -1,8 +1,8 @@
 import { Injectable } from '@opensumi/di';
-import { lockedCreate } from './lockedCreate';
-import { Mutex } from './mutex';
 
+import { lockedCreate } from './lockedCreate';
 import wasmJson from './md5.wasm.json';
+import { Mutex } from './mutex';
 import { IDataType } from './util';
 
 export const IHashCalculateService = Symbol('IHashCalculateService');

@@ -1,16 +1,18 @@
-import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
-import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
-import { createWebSocketConnection } from '../../src/common/message';
+import http from 'http';
 
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
-import { RPCService } from '../../src';
-import { WSChannel } from '../../src/common/ws-channel';
-import { parse } from '../../src/common/utils';
+import ws from 'ws';
 
 import { Emitter, Uri } from '@opensumi/ide-core-common';
 
-import ws from 'ws';
-import http from 'http';
+import { RPCService } from '../../src';
+import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
+import { createWebSocketConnection } from '../../src/common/message';
+import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
+import { parse } from '../../src/common/utils';
+import { WSChannel } from '../../src/common/ws-channel';
+import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
+
+
 const WebSocket = ws;
 
 class MockFileService extends RPCService {
@@ -46,7 +48,7 @@ describe('connection', () => {
       dispose: () => {},
     });
 
-    const connection = new WebSocket('ws://127.0.0.1:7788/service');
+    const connection = new WebSocket('ws://0.0.0.0:7788/service');
 
     connection.on('error', () => {
       connection.close();
@@ -99,7 +101,7 @@ describe('connection', () => {
       }),
 
       new Promise<void>((resolve) => {
-        clientConnection = new WebSocket('ws://127.0.0.1:7788/service');
+        clientConnection = new WebSocket('ws://0.0.0.0:7788/service');
         clientConnection.on('open', () => {
           resolve(undefined);
         });

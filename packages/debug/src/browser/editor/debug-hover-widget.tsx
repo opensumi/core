@@ -1,7 +1,7 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import debounce = require('lodash.debounce');
 import React from 'react';
 import ReactDOM from 'react-dom';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   DisposableCollection,
@@ -10,7 +10,9 @@ import {
   ConfigProvider,
   IReporterService,
 } from '@opensumi/ide-core-browser';
-import { DebugSessionManager } from '../debug-session-manager';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   DebugEditor,
   IDebugSessionManager,
@@ -19,10 +21,12 @@ import {
   ShowDebugHoverOptions,
   HideDebugHoverOptions,
 } from '../../common';
+import { DebugSessionManager } from '../debug-session-manager';
+
 import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
 import { DebugHoverView } from './debug-hover.view';
-import debounce = require('lodash.debounce');
+
 
 @Injectable()
 export class DebugHoverWidget implements IDebugHoverWidget {

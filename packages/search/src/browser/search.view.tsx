@@ -1,16 +1,20 @@
-import React from 'react';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+import { ViewState } from '@opensumi/ide-core-browser';
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import { ViewState } from '@opensumi/ide-core-browser';
-import cls from 'classnames';
-import styles from './search.module.less';
+
+
 import { SEARCH_STATE } from '../common/';
-import { ContentSearchClientService } from './search.service';
+
 import { SearchTree } from './search-tree.view';
 import { SearchInputWidget } from './search.input.widget';
+import styles from './search.module.less';
 import { SearchReplaceWidget } from './search.replace.widget';
 import { SearchRulesWidget } from './search.rules.widget';
+import { ContentSearchClientService } from './search.service';
 
 export const Search = React.memo(
   observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {

@@ -1,5 +1,3 @@
-import { DebugConsoleFilterService } from './debug-console-filter.service';
-import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { Autowired } from '@opensumi/di';
 import {
   CommandContribution,
@@ -14,17 +12,21 @@ import {
   KeybindingRegistry,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
-import { DebugConsoleView } from './debug-console.view';
-import { DebugConsoleInputDocumentProvider, DebugConsoleService } from './debug-console.service';
-import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { DebugConsoleFilterView } from './debug-console-filter.view';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
-import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DebugConsoleNode } from '../../tree';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
+
+import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
+import { DEBUG_COMMANDS } from '../../debug-contribution';
+import { DebugConsoleNode } from '../../tree';
+
+import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
+import { DebugConsoleFilterService } from './debug-console-filter.service';
+import { DebugConsoleFilterView } from './debug-console-filter.view';
+import { DebugConsoleModelService } from './debug-console-tree.model.service';
+import { DebugConsoleInputDocumentProvider, DebugConsoleService } from './debug-console.service';
+import { DebugConsoleView } from './debug-console.view';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
@@ -99,7 +101,6 @@ export class DebugConsoleContribution
       execute: () => {
         this.debugConsoleModelService.clear();
       },
-      isEnabled: () => this.debugContextKey.contextInDebugConsole.get() === true,
     });
     registry.registerCommand(DEBUG_COMMANDS.COPY_CONSOLE_ITEM, {
       execute: (node: DebugConsoleNode) => {

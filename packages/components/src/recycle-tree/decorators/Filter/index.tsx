@@ -1,5 +1,5 @@
-import React from 'react';
 import throttle from 'lodash/throttle';
+import React from 'react';
 
 import { Icon } from '../../../icon';
 import { IInputBaseProps, Input } from '../../../input';

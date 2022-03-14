@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services';
-import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 import { FileStat } from '@opensumi/ide-file-service';
+
+import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 
 /*
  * 为存在 Browser (LocalStorage) 的数据添加命名空间

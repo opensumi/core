@@ -1,16 +1,18 @@
-import { Injector } from '@opensumi/di';
-import { ClientApp, IClientAppOpts, DEFAULT_WORKSPACE_STORAGE_DIR_NAME, Uri } from '@opensumi/ide-core-browser';
-import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import * as BrowserFS from 'browserfs';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+
+import { Injector } from '@opensumi/di';
+import { ClientApp, IClientAppOpts, DEFAULT_WORKSPACE_STORAGE_DIR_NAME, Uri } from '@opensumi/ide-core-browser';
+import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
+import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
+
 import {
   AbstractHttpFileService,
   BrowserFsProvider,
   BROWSER_HOME_DIR,
 } from './lite-module/file-provider/browser-fs-provider';
 import { HttpFileService } from './lite-module/file-provider/http-file.service';
-import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
