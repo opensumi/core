@@ -19,7 +19,6 @@ import { defaultName } from './mock.service';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { delay } from './utils';
 
-
 function createDOMContainer() {
   const div = document.createElement('div');
   div.style.width = '400px';
@@ -68,7 +67,7 @@ describe('Terminal Client', () => {
     widget = view.createWidget(group);
     // clientHeight === 0 时会跳过视图渲染，这里强行修改一下 clientHeight 用于测试
     widget.element = new Proxy(createDOMContainer(), {
-      get(target, prop, _receiver) {
+      get(target, prop) {
         if (prop === 'clientHeight') {
           return 400;
         }

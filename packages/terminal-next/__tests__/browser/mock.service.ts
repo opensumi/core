@@ -54,7 +54,7 @@ export class MockSocketService implements ITerminalService {
     sessionId: string,
     cols: number,
     rows: number,
-    launchConfig: IShellLaunchConfig,
+    _launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
     const sock = new WebSocket(localhost(getPort()));
     this._socks.set(sessionId, sock);

@@ -20,10 +20,14 @@ describe('TerminalServiceClientImpl', () => {
     shellPath = 'sh';
   }
 
-  beforeEach(() => {
-    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
+  beforeAll(() => {
+    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]), true);
     terminalServiceClient = injector.get(ITerminalServiceClient);
     terminalService = injector.get(ITerminalNodeService);
+  });
+
+  afterAll(() => {
+    injector.disposeAll();
   });
 
   it('setConnectionClientId, should be set the id correctly.', () => {

@@ -7,8 +7,7 @@ import { TerminalProfileServiceNode } from '../../src/node/terminal.profile.serv
 describe('TerminalServiceClientImpl', () => {
   let injector: Injector;
   let terminalProfileService: TerminalProfileServiceNode;
-
-  beforeEach(() => {
+  beforeAll(() => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
     terminalProfileService = injector.get(TerminalProfileServiceNode);
   });

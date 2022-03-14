@@ -15,7 +15,7 @@ describe('MergedEnvironmentVariableCollection', () => {
 
   const colleciton1 = new MergedEnvironmentVariableCollection(mockCollection1);
 
-  it('MergedEnvironmentVariableCollection#applyToProcessEnvironment', async (done) => {
+  it('MergedEnvironmentVariableCollection#applyToProcessEnvironment', async () => {
     const env = {};
     await colleciton1.applyToProcessEnvironment(env, OS.Type.Linux, (val) => Promise.resolve(val));
     expect(env).toEqual({
@@ -23,7 +23,6 @@ describe('MergedEnvironmentVariableCollection', () => {
       'VARIABLE1-2': 'value1-2',
       'VARIABLE1-3': 'value1-3',
     });
-    done();
   });
 
   it('MergedEnvironmentVariableCollection#diff#1', () => {

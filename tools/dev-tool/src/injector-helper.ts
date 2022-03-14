@@ -47,7 +47,11 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   return app.injector as MockInjector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
+export function createNodeInjector(
+  constructors: Array<ConstructorOf<NodeModule>>,
+  inj?: Injector,
+  notDispose?: boolean,
+): MockInjector {
   const injector = inj || new MockInjector();
 
   // Mock logger
@@ -62,10 +66,10 @@ export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>
       injector.addProviders(...instance.providers);
     }
   }
-
-  afterAll(() => {
-    injector.disposeAll();
-  });
-
+  if (!notDispose) {
+    afterAll(() => {
+      injector.disposeAll();
+    });
+  }
   return injector as MockInjector;
 }
