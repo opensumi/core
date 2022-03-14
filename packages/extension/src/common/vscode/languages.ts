@@ -42,7 +42,6 @@ import {
   SemanticTokensLegend,
   WithDuration,
   CompletionItemInsertTextRule,
-  IMarkdownString,
   CompletionItemKind,
   CompletionItemTag,
   ChainedCacheId,
@@ -62,7 +61,7 @@ import type {
 import { Disposable } from './ext-types';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
-import { IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-common';
+import { IMarkdownString, IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-common';
 import { CompletionContext } from './model.api';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';

@@ -37,3 +37,4 @@ export * from './window';
 export * from './opener';
 export * from './services';
 export * from './encoding-registry';
+export * from './markdown';
