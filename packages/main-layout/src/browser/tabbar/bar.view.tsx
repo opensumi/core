@@ -82,8 +82,6 @@ export const TabbarViewBase: React.FC<{
     hideContainers.forEach((componentInfo) => {
       tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
     });
-    // tslint:disable-next-line:no-unused-variable
-    const forceUpdate = tabbarService.forceUpdate;
 
     return (
       <div className={clsx([styles.tab_bar, className])}>
@@ -264,7 +262,6 @@ export const BottomTabbarRenderer: React.FC = () => (
 export const NextBottomTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-
   return (
     <div
       onContextMenu={tabbarService.handleContextMenu}
