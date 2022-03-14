@@ -27,7 +27,7 @@ function createDOMContainer() {
   return div;
 }
 
-describe('Terminal Client', () => {
+describe.skip('Terminal Client', () => {
   let client: ITerminalClient;
   let widget: IWidget;
   let proxy: httpProxy;
