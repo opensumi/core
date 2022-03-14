@@ -705,7 +705,9 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.hide': '隐藏面板',
+    'layout.tabbar.toggle': '切换面板',
+    'layout.tabbar.expand': '最大化底部面板',
+    'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
