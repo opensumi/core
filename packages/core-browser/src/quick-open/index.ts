@@ -403,6 +403,10 @@ export interface QuickPickService {
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
 export interface PrefixQuickOpenService {
   open(prefix: string): void;
+  toggleTab(): void;
+  onChangeTab(prefix: string): void;
+  loading: boolean;
+  activePrefix: string | undefined;
 }
 
 export const IQuickInputService = Symbol('IQuickInputService');

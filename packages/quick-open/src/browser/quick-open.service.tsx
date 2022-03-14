@@ -110,8 +110,6 @@ export class MonacoQuickOpenService implements QuickOpenService {
       inputEnable: opts.enabled ?? true,
       valueSelection: opts.valueSelection,
       canSelectMany: opts.canSelectMany,
-      renderTab: opts.renderTab,
-      toggleTab: opts.toggleTab,
     });
 
     this.inQuickOpenContextKey.set(true);

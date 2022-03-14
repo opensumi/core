@@ -11,8 +11,10 @@ import {
   VALIDATE_TYPE,
 } from '@opensumi/ide-components';
 import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import {
   HideReason,
+  PrefixQuickOpenService,
   QuickOpenAction,
   QuickOpenItem,
   QuickOpenMode,
@@ -20,9 +22,9 @@ import {
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
+import { QuickOpenTabs } from './components/quick-open-tabs';
 import { QuickOpenContext } from './quick-open.type';
 import { QuickTitleBar } from './quick-title-bar';
 import styles from './styles.module.less';
@@ -306,6 +308,7 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
 export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
+  const prefixQuickOpen = useInjectable<PrefixQuickOpenService>(PrefixQuickOpenService);
 
   // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
   const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
@@ -460,11 +463,9 @@ export const QuickOpenView = observer(() => {
         break;
       }
       case Key.TAB.keyCode: {
-        if (widget.toggleTab) {
-          event.preventDefault();
-          event.stopPropagation();
-          widget.toggleTab();
-        }
+        event.preventDefault();
+        event.stopPropagation();
+        prefixQuickOpen.toggleTab();
         break;
       }
     }
@@ -474,7 +475,10 @@ export const QuickOpenView = observer(() => {
     <div className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
-      {widget.renderTab?.()}
+      <QuickOpenTabs />
+      <div className={styles.loadingBar}>
+        <ProgressBar loading={prefixQuickOpen.loading} />
+      </div>
       <QuickOpenList onReady={onListReady} />
     </div>
   ) : null;

@@ -56,6 +56,7 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   // 每次打开命令面板后会触发一次
   async init() {
+    console.log('call init>>');
     await this.initDeferred.promise;
     this.items = this.getItems();
   }

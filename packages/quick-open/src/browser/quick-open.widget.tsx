@@ -109,15 +109,15 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   @action
   show(prefix: string, options: QuickOpenInputOptions): void {
-    this._isShow = true;
+    if (!this._isShow) {
+      this._isShow = true;
+    }
     this.inputValue = prefix;
     this._inputPlaceholder = options.placeholder;
     this._isPassword = options.password;
     this._inputEnable = options.inputEnable;
     this._valueSelection = options.valueSelection;
     this._canSelectMany = options.canSelectMany;
-    this.renderTab = options.renderTab;
-    this.toggleTab = options.toggleTab;
     // 获取第一次要展示的内容
     this.callbacks.onType(prefix);
   }
