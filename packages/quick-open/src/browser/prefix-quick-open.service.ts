@@ -15,7 +15,6 @@
  ********************************************************************************/
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/quick-open/prefix-quick-open-service.ts
-import { debounce } from 'lodash';
 import { observable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -34,6 +33,7 @@ import {
 import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
 
 import { QuickTitleBar } from './quick-title-bar';
+
 /**
  * @deprecated import from `@opensumi/ide-core-browser/lib/quick-open` instead
  */
@@ -144,7 +144,6 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
 
 @Injectable()
 export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
-
   @Autowired(QuickOpenHandlerRegistry)
   protected readonly handlers: QuickOpenHandlerRegistry;
 
@@ -166,23 +165,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   private currentLookFor = '';
 
   open(prefix: string): void {
-    const handler = this.handlers.getHandlerOrDefault(prefix);
-    // 恢复同一 tab 上次的输入，连续输入相同的快捷键也可以保留历史输入
-    let shouldSelect = false;
-    if (
-      this.corePreferences['workbench.quickOpen.preserveInput'] &&
-      handler &&
-      handler === this.currentHandler &&
-      this.currentLookFor &&
-      // 同一 handler，不同 tab 切换需要重置
-      this.handlers.getTabByHandler(handler, this.currentLookFor) === this.handlers.getTabByHandler(handler, prefix)
-    ) {
-      prefix = this.currentLookFor;
-      shouldSelect = true;
-    } else {
-      this.currentLookFor = '';
-    }
-    this.setCurrentHandler(prefix, handler, shouldSelect);
+    this.onChangeTab(prefix);
   }
 
   protected toDisposeCurrent = new DisposableCollection();
@@ -207,12 +190,28 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
 
   onChangeTab(prefix: string) {
     const handler = this.handlers.getHandlerOrDefault(prefix);
-    if(!handler) {
+    if (!handler) {
       return;
     }
 
+    this.currentHandler = handler;
+
     if (handler?.init) {
-      handler.init();
+      const r = handler.init();
+      if (r instanceof Promise) {
+        const delayTimer = setTimeout(() => {
+          this.loading = true;
+        }, 60);
+
+        r.finally(() => {
+          if (delayTimer) {
+            clearTimeout(delayTimer);
+          }
+          if (this.loading) {
+            this.loading = false;
+          }
+        });
+      }
     }
 
     let shouldSelect = false;
@@ -249,59 +248,10 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
         }
       },
     });
-  }
 
-  protected async setCurrentHandler(
-    prefix: string,
-    handler: QuickOpenHandler | undefined,
-    select?: boolean,
-  ): Promise<void> {
-    if (handler !== this.currentHandler) {
-      this.toDisposeCurrent.dispose();
-      this.currentHandler = handler;
-      this.toDisposeCurrent.push(
-        Disposable.create(() => {
-          const closingHandler = handler && handler.getOptions().onClose;
-          if (closingHandler) {
-            closingHandler(true);
-          }
-        }),
-      );
+    if (this.loading) {
+      this.loading = false;
     }
-    if (!handler) {
-      this.doOpen();
-      return;
-    }
-    if (handler.init) {
-      await handler.init();
-    }
-
-    this.setActivePrefix(handler, prefix);
-
-    let optionsPrefix = prefix;
-    if (this.handlers.isDefaultHandler(handler) && prefix.startsWith(handler.prefix)) {
-      optionsPrefix = prefix.substr(handler.prefix.length);
-    }
-    const skipPrefix = this.handlers.isDefaultHandler(handler)
-      ? 0
-      : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
-    const handlerOptions = handler.getOptions();
-
-    this.doOpen({
-      prefix: optionsPrefix,
-      skipPrefix,
-      valueSelection: select ? [skipPrefix, prefix.length] : undefined,
-      ...handlerOptions,
-      onClose: (canceled: boolean) => {
-        if (handlerOptions.onClose) {
-          handlerOptions.onClose(canceled);
-        }
-        // 最后 prefix-quick 执行
-        if (handler.onClose) {
-          handler.onClose(canceled);
-        }
-      },
-    });
   }
 
   protected doOpen(options?: QuickOpenOptions): void {
@@ -335,13 +285,10 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       );
       acceptor(items);
       this.loading = false;
-    } else if (handler !== this.currentHandler) {
-      this.setCurrentHandler(lookFor, handler);
-      this.loading = false;
     } else {
       const handlerModel = handler.getModel();
       const searchValue = this.handlers.isDefaultHandler(handler) ? lookFor : lookFor.substr(handler.prefix.length);
-      debounce(handlerModel.onType, 100)(searchValue, (items, actionProvider) => {
+      handlerModel.onType(searchValue, (items, actionProvider) => {
         acceptor(items, actionProvider);
         this.loading = false;
       });

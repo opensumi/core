@@ -1,4 +1,5 @@
 import clx from 'classnames';
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -22,6 +23,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
 import { QuickOpenTabs } from './components/quick-open-tabs';
@@ -100,11 +102,19 @@ export const QuickOpenHeader = observer(() => {
 export const QuickOpenInput = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const onType = React.useCallback(
+    debounce((value: string) => {
+      widget.callbacks.onType(value);
+      widget.inputValue = value;
+    }, 200),
+    [widget],
+  );
+
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
-      widget.inputValue = value;
-      widget.callbacks.onType(value);
+      onType(value);
     },
     [widget],
   );
