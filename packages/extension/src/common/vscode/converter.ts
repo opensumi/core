@@ -32,7 +32,7 @@ import {
   LanguageFilter,
 } from '@opensumi/ide-editor/lib/common';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco';
+import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/common/types';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
   CoverageDetails,
