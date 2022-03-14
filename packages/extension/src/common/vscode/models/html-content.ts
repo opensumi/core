@@ -1,5 +1,6 @@
-import { illegalArgument } from '../utils';
 import { IMarkdownString } from '@opensumi/ide-core-common';
+
+import { illegalArgument } from '../utils';
 
 const escapeCodiconsRegex = /(\\)?\$\([a-z0-9-]+?(?:~[a-z0-9-]*?)?\)/gi;
 export function escapeCodicons(text: string): string {

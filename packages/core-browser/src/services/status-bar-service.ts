@@ -1,4 +1,5 @@
 import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+
 import { IMenu } from '../menu/next';
 
 export const IStatusBarService = Symbol('IStatusBarService');
