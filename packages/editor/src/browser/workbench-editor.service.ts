@@ -255,8 +255,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         this._onCursorChange.fire(e);
       }
     });
-    this._sortedEditorGroups = undefined;
-    this._onDidEditorGroupsChanged.fire();
+
     return editorGroup;
   }
 
@@ -356,9 +355,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
           }),
         );
       }
-      this._onDidEditorGroupsChanged.fire();
     }
-    this._sortedEditorGroups = undefined;
   }
 
   public async saveOpenedResourceState() {
@@ -420,10 +417,19 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     }
   }
 
+  private notifyGroupChanged() {
+    this._sortedEditorGroups = undefined;
+    this._onDidEditorGroupsChanged.fire();
+  }
+
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
     state = this.openedResourceState.get<IEditorGridState>('grid', state);
     this.topGrid = new EditorGrid();
+    this.topGrid.onDidGridAndDesendantStateChange(() => {
+      this._sortedEditorGroups = undefined;
+      this._onDidEditorGroupsChanged.fire();
+    });
     const editorRestorePromises = [];
     const promise = this.topGrid
       .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)
@@ -433,6 +439,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }
         this.gridReady = true;
         this._onDidGridReady.fire();
+        this.notifyGroupChanged();
       });
     Promise.all(editorRestorePromises).then(() => {
       this._restoring = false;
