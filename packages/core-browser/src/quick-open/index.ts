@@ -578,6 +578,7 @@ interface QuickOpenTabBase {
   title: string;
   order: number;
   commandId: string;
+  // 不在 Tab 栏展示（但是功能都可以使用，用户按下 tab 时也不会切换到该功能）
   hideTab?: boolean;
 }
 

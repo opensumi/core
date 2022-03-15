@@ -1143,7 +1143,6 @@ export class EditorContribution
       title: localize('quickopen.tab.goToLine'),
       commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
       order: 5,
-      hideTab: true,
     });
   }
 }
