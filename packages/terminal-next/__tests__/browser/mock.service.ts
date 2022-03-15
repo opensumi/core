@@ -57,9 +57,8 @@ export class MockSocketService implements ITerminalService {
     _launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
     const sock = new WebSocket(localhost(getPort()));
+    await this.waitForOpenConnection(sock);
     this._socks.set(sessionId, sock);
-
-    await delay(1000);
 
     this._handleMethod(sessionId);
 
@@ -77,6 +76,7 @@ export class MockSocketService implements ITerminalService {
       },
     ];
   }
+
   async getDefaultSystemShell(): Promise<string> {
     return (await this.getProfiles(true))[0].path;
   }
@@ -147,6 +147,24 @@ export class MockSocketService implements ITerminalService {
     sock.send(JSON.stringify(json));
   }
 
+  private waitForOpenConnection = (socket) =>
+    new Promise((resolve, reject) => {
+      const maxNumberOfAttempts = 10;
+      const intervalTime = 200; // ms
+
+      let currentAttempt = 0;
+      const interval = setInterval(() => {
+        if (currentAttempt > maxNumberOfAttempts - 1) {
+          clearInterval(interval);
+          reject(new Error('Maximum number of attempts exceeded'));
+        } else if (socket.readyState === socket.OPEN) {
+          clearInterval(interval);
+          resolve(true);
+        }
+        currentAttempt++;
+      }, intervalTime);
+    });
+
   private async _doMethod(sessionId: string, method: string, params: any) {
     return new Promise((resolve) => {
       const id = MockSocketService.resId++;
@@ -196,7 +214,7 @@ export class MockSocketService implements ITerminalService {
 
     if (socket) {
       try {
-        socket.close();
+        socket.terminate();
       } catch {
         /** nothing */
       }

@@ -12,7 +12,7 @@ import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
+import { ITerminalClientFactory2, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 
 import { injector } from './inject';
 import { defaultName } from './mock.service';
@@ -27,13 +27,13 @@ function createDOMContainer() {
   return div;
 }
 
-describe.skip('Terminal Client', () => {
+describe('Terminal Client', () => {
   let client: ITerminalClient;
   let widget: IWidget;
   let proxy: httpProxy;
   let server: WebSocket.Server;
   let view: ITerminalGroupViewService;
-  let factory: ITerminalClientFactory;
+  let factory: ITerminalClientFactory2;
   let workspaceService: IWorkspaceService;
   let root: URI | null;
 
@@ -58,7 +58,7 @@ describe.skip('Terminal Client', () => {
       isDirectory: true,
     });
     resetPort();
-    factory = injector.get(ITerminalClientFactory);
+    factory = injector.get(ITerminalClientFactory2);
     view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
@@ -78,11 +78,15 @@ describe.skip('Terminal Client', () => {
     client.addDispose(
       Disposable.create(async () => {
         if (root) {
-          await fs.remove(root.path.toString());
+          try {
+            await fs.remove(root.path.toString());
+          } catch (e) {}
         }
       }),
     );
     await client.attached.promise;
+    (client.term as any)._core._renderService.dimensions.actualCellWidth = 12;
+    (client.term as any)._core._renderService.dimensions.actualCellHeight = 12;
   });
 
   afterAll(() => {
@@ -110,8 +114,7 @@ describe.skip('Terminal Client', () => {
     expect(position && position.endColumn).toEqual(client.term.cols);
   });
 
-  it('Terminal getSelection', async () => {
-    await client.attached.promise;
+  it.skip('Terminal getSelection', async () => {
     await client.sendText('pwd\r');
     await delay(500);
     client.selectAll();
@@ -119,8 +122,7 @@ describe.skip('Terminal Client', () => {
     expect(selection.includes('pwd')).toBeTruthy();
   });
 
-  it('Terminal Send Text', async () => {
-    await client.attached.promise;
+  it.skip('Terminal Send Text', async () => {
     client.clear();
     await client.sendText('pwd\r');
     await delay(500);
@@ -130,13 +132,13 @@ describe.skip('Terminal Client', () => {
     expect(lineText.trim().length).toBeGreaterThan(0);
   });
 
-  it('Terminal Find Next', async () => {
+  it.skip('Terminal Find Next', async () => {
     const searched = 'pwd';
     client.findNext(searched);
     expect(client.term.getSelection()).toEqual(searched);
   });
 
-  it('Terminal Dispose', (done) => {
+  it.skip('Terminal Dispose', (done) => {
     client.onExit((e) => {
       expect(e.code).toBe(-1);
       expect(e.id).toBe(client.id);
@@ -149,8 +151,7 @@ describe.skip('Terminal Client', () => {
     expect(client.container.children.length).toBe(0);
   });
 
-  it('After Terminal Dispose', async () => {
-    await client.attached.promise;
+  it.skip('After Terminal Dispose', async () => {
     client.sendText('pwd\r');
     client.focus();
     client.selectAll();
