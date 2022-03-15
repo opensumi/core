@@ -11,6 +11,6 @@ describe('test for ', () => {
 
   it('empty module', () => {
     const ins = injector.get(AddonsModule);
-    expect(ins.providers.length).toBe(1);
+    expect(ins.providers.length).toBe(2);
   });
 });
