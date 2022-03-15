@@ -131,6 +131,10 @@ export abstract class PromptHandle {
       // 移动到与input-box同级别
       this.$.parentElement?.parentElement?.parentElement?.appendChild(this.$validate);
       this._hasValidateElement = true;
+    } else {
+      this.$.parentElement?.parentElement?.classList.remove('validate-error');
+      this.$.parentElement?.parentElement?.classList.remove('validate-warning');
+      this.$.parentElement?.parentElement?.classList.remove('validate-info');
     }
     let validateBoxClassName = 'validate-message popup ';
     if (validateMessage && validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
