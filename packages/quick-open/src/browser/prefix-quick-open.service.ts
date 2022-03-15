@@ -240,7 +240,6 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       skipPrefix,
       valueSelection: select ? [skipPrefix, prefix.length] : undefined,
       ...handlerOptions,
-      ignoreFocusOut: true,
       onClose: (canceled: boolean) => {
         if (handlerOptions.onClose) {
           handlerOptions.onClose(canceled);
