@@ -30,7 +30,14 @@ import {
   QuickOpenItem,
   PrefixQuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import {
+  DisposableCollection,
+  IDisposable,
+  Disposable,
+  ILogger,
+  CancellationTokenSource,
+  CancellationToken,
+} from '@opensumi/ide-core-common';
 
 import { QuickTitleBar } from './quick-title-bar';
 
@@ -156,6 +163,8 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
+  private cancellationTokenSource?: CancellationTokenSource;
+
   @observable
   activePrefix = '';
 
@@ -192,6 +201,10 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     const handler = this.handlers.getHandlerOrDefault(prefix);
     if (!handler) {
       return;
+    }
+
+    if (this.cancellationTokenSource) {
+      this.cancellationTokenSource.cancel();
     }
 
     this.currentHandler = handler;
@@ -269,8 +282,22 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
 
   protected onType(
     lookFor: string,
-    acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void,
+    acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider, token?: CancellationToken) => void,
   ): void {
+    if (!this.cancellationTokenSource) {
+      this.cancellationTokenSource = new CancellationTokenSource();
+      const disposer = this.cancellationTokenSource.token.onCancellationRequested(() => {
+        if (this.loading) {
+          this.loading = false;
+        }
+        disposer.dispose();
+      });
+    } else {
+      this.cancellationTokenSource.cancel();
+      this.cancellationTokenSource.dispose();
+      this.cancellationTokenSource = undefined;
+    }
+
     if (!this.loading) {
       this.loading = true;
     }
@@ -283,15 +310,26 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
           label: localize('quickopen.command.nohandler'),
         }),
       );
-      acceptor(items);
+
+      if (this.cancellationTokenSource?.token.isCancellationRequested) {
+        return;
+      }
+
+      acceptor(items, undefined, this.cancellationTokenSource?.token);
       this.loading = false;
     } else {
       const handlerModel = handler.getModel();
       const searchValue = this.handlers.isDefaultHandler(handler) ? lookFor : lookFor.substr(handler.prefix.length);
-      handlerModel.onType(searchValue, (items, actionProvider) => {
-        acceptor(items, actionProvider);
-        this.loading = false;
-      });
+      handlerModel.onType(
+        searchValue,
+        (items, actionProvider) => {
+          if (!this.cancellationTokenSource?.token.isCancellationRequested) {
+            acceptor(items, actionProvider, this.cancellationTokenSource?.token);
+            this.loading = false;
+          }
+        },
+        this.cancellationTokenSource?.token,
+      );
       this.setActivePrefix(handler, lookFor);
     }
   }

@@ -122,10 +122,9 @@ export const QuickOpenInput = observer(() => {
   const type = React.useMemo(() => (widget.isPassword ? 'password' : 'text'), [widget.isPassword]);
 
   React.useEffect(() => {
-    // 当切换 item 时重新获取焦点
-    setTimeout(() => {
+    window.queueMicrotask(() => {
       inputRef.current?.focus();
-    }, 0);
+    });
   }, [widget.items]);
 
   React.useEffect(() => {

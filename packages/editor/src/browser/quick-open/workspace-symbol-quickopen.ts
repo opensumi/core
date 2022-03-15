@@ -87,33 +87,44 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
       onType: (
         lookFor: string,
         acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider | undefined) => void,
+        token?: CancellationToken,
       ) => {
         if (lookFor === '') {
-          acceptor([
-            new QuickOpenItem({
-              label: localize('editor.workspaceSymbol.search'),
-              run: () => false,
-            }),
-          ]);
+          if (!token?.isCancellationRequested) {
+            acceptor([
+              new QuickOpenItem({
+                label: localize('editor.workspaceSymbol.search'),
+                run: () => false,
+              }),
+            ]);
+          }
           return;
         }
 
         if (lookFor === '#') {
-          return void acceptor([
-            new QuickOpenItem({
-              label: localize('editor.workspaceSymbolClass.search'),
-              run: () => false,
-            }),
-          ]);
+          if (!token?.isCancellationRequested) {
+            return void acceptor([
+              new QuickOpenItem({
+                label: localize('editor.workspaceSymbolClass.search'),
+                run: () => false,
+              }),
+            ]);
+          }
         }
 
         if (this.languageService.workspaceSymbolProviders.length === 0) {
-          acceptor([
-            new QuickOpenItem({
-              label: localize('editor.workspaceSymbol.notfound'),
-              run: () => false,
-            }),
-          ]);
+          if (!token?.isCancellationRequested) {
+            acceptor([
+              new QuickOpenItem({
+                label: localize('editor.workspaceSymbol.notfound'),
+                run: () => false,
+              }),
+            ]);
+          }
+          return;
+        }
+
+        if (token?.isCancellationRequested) {
           return;
         }
 

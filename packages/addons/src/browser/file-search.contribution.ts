@@ -184,7 +184,7 @@ export class FileSearchQuickCommandHandler {
 
   getModel(): QuickOpenModel {
     return {
-      onType: async (lookFor, acceptor) => {
+      onType: async (lookFor, acceptor, cancellationToken?: CancellationToken) => {
         this.cancelIndicator.cancel();
         this.cancelIndicator = new CancellationTokenSource();
         const token = this.cancelIndicator.token;
@@ -202,7 +202,7 @@ export class FileSearchQuickCommandHandler {
           findResults = await this.getFindOutItems(alreadyCollected, validLookFor, token);
         }
 
-        if (token.isCancellationRequested) {
+        if (token.isCancellationRequested || cancellationToken?.isCancellationRequested) {
           return;
         }
 

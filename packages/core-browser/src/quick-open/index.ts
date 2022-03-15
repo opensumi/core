@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import React from 'react';
 
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import { URI, MaybePromise, IDisposable, Event, CancellationToken } from '@opensumi/ide-core-common';
 
 import { Keybinding } from '../keybinding';
 
@@ -193,7 +193,11 @@ export enum HideReason {
 }
 
 export interface QuickOpenModel {
-  onType(lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void): void;
+  onType(
+    lookFor: string,
+    acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void,
+    cancellationToken?: CancellationToken,
+  ): void;
 }
 
 export const QuickOpenService = Symbol('QuickOpenService');

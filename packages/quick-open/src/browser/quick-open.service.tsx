@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   AppConfig,
+  CancellationToken,
   compareAnything,
   ConfigProvider,
   IContextKey,
@@ -272,8 +273,11 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   }
 
   onType(lookFor: string, acceptor: (model: IQuickOpenModel) => void): void {
-    this.model.onType(lookFor, (items, actionProvider) => {
+    this.model.onType(lookFor, (items, actionProvider, token?: CancellationToken) => {
       const result = this.toOpenModel(lookFor, items, actionProvider);
+      if (token?.isCancellationRequested) {
+        return;
+      }
       acceptor(result);
     });
   }

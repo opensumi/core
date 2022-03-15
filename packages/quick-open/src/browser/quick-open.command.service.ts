@@ -11,6 +11,7 @@ import {
   Deferred,
   IReporterService,
   REPORT_NAME,
+  CancellationToken,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -56,7 +57,6 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   // 每次打开命令面板后会触发一次
   async init() {
-    console.log('call init>>');
     await this.initDeferred.promise;
     this.items = this.getItems();
   }
@@ -73,11 +73,13 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   getModel(): QuickOpenModel {
     return {
-      onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
-        acceptor(this.items);
-        this.reporterService.point(REPORT_NAME.QUICK_OPEN_MEASURE, 'command', {
-          lookFor,
-        });
+      onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void, token?: CancellationToken) => {
+        if (!token?.isCancellationRequested) {
+          acceptor(this.items);
+          this.reporterService.point(REPORT_NAME.QUICK_OPEN_MEASURE, 'command', {
+            lookFor,
+          });
+        }
       },
     };
   }
