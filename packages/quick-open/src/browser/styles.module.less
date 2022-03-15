@@ -1,10 +1,13 @@
 .container {
-  position: absolute;
-  width: 600px;
+  position: relative;
+  max-width: 750px;
+  min-width: 600px;
   z-index: 2000;
   font-size: 12px;
+  margin: auto;
   left: 50%;
-  margin-left: -300px;
+  top: 0;
+  white-space: nowrap;
   :global(.scrollbar-decoration) {
     display: none;
   }
