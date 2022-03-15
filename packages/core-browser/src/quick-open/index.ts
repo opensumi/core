@@ -578,6 +578,7 @@ interface QuickOpenTabBase {
   title: string;
   order: number;
   commandId: string;
+  hideTab?: boolean;
 }
 
 export interface QuickOpenTab extends QuickOpenTabBase {

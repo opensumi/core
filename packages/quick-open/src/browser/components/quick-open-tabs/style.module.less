@@ -4,25 +4,41 @@
   padding: 6px 8px 0;
   margin-bottom: 8px;
   font-size: 12px;
-}
+  &_left {
+    display: flex;
+    flex-wrap: nowrap;
+    &_item {
+      display: flex;
+      height: 24px;
+      margin-right: 16px;
+      width: fit-content;
+      &:last-of-type {
+        margin-left: 0;
+      }
+    }
 
-.quickopen_tabs_item {
-  display: flex;
-  height: 24px;
-  margin-right: 16px;
-  &:last-of-type {
-    margin-left: 0;
+    &_item_text {
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+      cursor: pointer;
+      width: fit-content;
+      color: var(--foreground);
+      &.selected {
+        border-bottom-color: var(--kt-tab-activeBorder);
+        color: var(--kt-tab-activeForeground);
+      }
+    }
   }
-}
-
-.quickopen_tabs_item_text {
-  border-bottom: 2px solid transparent;
-  padding-bottom: 2px;
-  cursor: pointer;
-  color: var(--foreground);
-  &.selected {
-    border-bottom-color: var(--kt-tab-activeBorder);
-    color: var(--kt-tab-activeForeground);
+  &_tip {
+    order: 1000;
+    text-align: right;
+    color: var(--descriptionForeground);
+    word-break: keep-all;
+    user-select: none;
+    .tab_key {
+      width: 25px;
+      margin: 0 5px;
+    }
   }
 }
 
@@ -54,17 +70,5 @@
   .tab_key {
     box-shadow: inset 0 -1px 0 #bbb;
     background-color: #ddd;
-  }
-}
-
-.quickopen_tabs_tip {
-  flex: 1;
-  order: 1000;
-  text-align: right;
-  color: var(--descriptionForeground);
-
-  .tab_key {
-    width: 25px;
-    margin: 0 5px;
   }
 }

@@ -1140,9 +1140,10 @@ export class EditorContribution
       },
     });
     handlers.registerHandler(this.goToLineQuickOpenHandler, {
-      title: localize('editor.goToLine'),
+      title: localize('quickopen.tab.goToLine'),
       commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
       order: 5,
+      hideTab: true,
     });
   }
 }

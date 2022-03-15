@@ -71,7 +71,7 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
       this.defaultHandler = handler;
     }
 
-    if (tabConfig) {
+    if (tabConfig && !tabConfig.hideTab) {
       const tabs: QuickOpenTab[] = [];
       const { sub, ...tabProps } = tabConfig;
       if (sub) {
@@ -219,11 +219,28 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       ? 0
       : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
     const handlerOptions = handler.getOptions();
+    const toggleTab = () => {
+      handler.onToggle?.();
+      const tabs = this.handlers.getSortedTabs();
+      let nextTab: QuickOpenTab | null = null;
+      if (this.activePrefix) {
+        let index = tabs.findIndex((t) => t.prefix === this.activePrefix);
+        index = index === tabs.length - 1 ? 0 : index + 1;
+        nextTab = tabs[index];
+      } else {
+        nextTab = tabs[0];
+      }
+      if (nextTab) {
+        this.open(nextTab.prefix);
+      }
+    };
+
     this.doOpen({
       prefix: optionsPrefix,
       skipPrefix,
       valueSelection: select ? [skipPrefix, prefix.length] : undefined,
       ...handlerOptions,
+      ignoreFocusOut: true,
       onClose: (canceled: boolean) => {
         if (handlerOptions.onClose) {
           handlerOptions.onClose(canceled);
@@ -241,21 +258,12 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
             handler.onToggle?.();
             this.open(prefix);
           },
+          toggleTab: () => {
+            toggleTab();
+          },
         }),
       toggleTab: () => {
-        handler.onToggle?.();
-        const tabs = this.handlers.getSortedTabs();
-        let nextTab: QuickOpenTab | null = null;
-        if (this.activePrefix) {
-          let index = tabs.findIndex((t) => t.prefix === this.activePrefix);
-          index = index === tabs.length - 1 ? 0 : index + 1;
-          nextTab = tabs[index];
-        } else {
-          nextTab = tabs[0];
-        }
-        if (nextTab) {
-          this.open(nextTab.prefix);
-        }
+        toggleTab();
       },
     });
   }
