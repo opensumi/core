@@ -1,12 +1,12 @@
 import clsx from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, URI, IEventBus } from '@opensumi/ide-core-common';
+import { Disposable, URI, IEventBus, IMarkdownString } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IThemeService } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
+import { IDecorationRenderOptions, IDecorationApplyOptions } from '../common';
 
 import {
   IEditorDecorationCollectionService,
@@ -16,7 +16,6 @@ import {
   EditorDecorationTypeRemovedEvent,
   DidApplyEditorDecorationFromProvider,
 } from './types';
-
 
 @Injectable({ multiple: true })
 export class MonacoEditorDecorationApplier extends Disposable {

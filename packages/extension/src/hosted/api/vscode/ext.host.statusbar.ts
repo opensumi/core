@@ -11,9 +11,9 @@ import {
   ArgumentProcessor,
   IExtensionDescription,
 } from '../../../common/vscode';
+import { MarkdownString } from '../../../common/vscode/converter';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import * as types from '../../../common/vscode/ext-types';
-
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;
@@ -72,7 +72,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   private readonly _entryId = StatusBarItemImpl.nextId();
 
   private _text: string;
-  private _tooltip: string;
+  private _tooltip?: string | vscode.MarkdownString;
   private _name?: string;
   private _color: string | ThemeColor | undefined;
   private _backgroundColor: ThemeColor | undefined;
@@ -128,10 +128,10 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     this.update();
   }
 
-  public get tooltip(): string {
+  public get tooltip() {
     return this._tooltip;
   }
-  public set tooltip(tooltip: string) {
+  public set tooltip(tooltip: string | vscode.MarkdownString | undefined) {
     this._tooltip = tooltip;
     this.update();
   }
@@ -239,7 +239,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
         this.alignment,
         color,
         this._backgroundColor,
-        this.tooltip,
+        MarkdownString.fromStrict(this.tooltip),
         this.accessibilityInformation,
         commandId,
         commandArgs,

@@ -103,3 +103,5 @@ interface IIndentationRules {
   indentNextLinePattern?: string | IRegExp;
   unIndentedLinePattern?: string | IRegExp;
 }
+
+export * from './types';
