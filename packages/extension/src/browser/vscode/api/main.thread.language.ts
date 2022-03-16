@@ -32,7 +32,6 @@ import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes'
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-
 import {
   ExtHostAPIIdentifier,
   ICodeActionDto,
@@ -66,12 +65,10 @@ import {
 import { FoldingRangeProvider } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 
-
 import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
-
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -634,11 +631,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
   ) {
     const languageSelector = fromLanguageSelector(selector);
+
     const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(
       handle,
       extension,
       languageSelector,
     );
+
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {

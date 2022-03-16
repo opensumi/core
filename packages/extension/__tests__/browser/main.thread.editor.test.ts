@@ -229,7 +229,6 @@ describe('MainThreadEditor Test Suites', () => {
       },
     });
     monacoservice = injector.get(MonacoService);
-    await monacoservice.loadMonaco();
     workbenchEditorService = injector.get(WorkbenchEditorService);
     const extHostDocs = rpcProtocolExt.set(
       ExtHostAPIIdentifier.ExtHostDocuments,

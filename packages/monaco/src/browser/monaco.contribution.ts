@@ -41,7 +41,10 @@ import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/edito
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { FormattingConflicts } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import {
+  FormattingConflicts,
+  IFormattingEditProviderSelector,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
@@ -61,7 +64,6 @@ import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokeniz
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
-
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution
@@ -125,21 +127,12 @@ export class MonacoClientContribution
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
   async initialize() {
-    // 保留这个空的 loadMonaco 行为
-    await this.monacoService.loadMonaco();
     // 注册 monaco 模块原有的 override services
     // 由于历史原因，这部分实现在 monaco 模块，后需要迁移到 editor 模块
     this.registerOverrideServices();
 
     // 执行所有 MonacoContribution
     for (const contribution of this.monacoContributionProvider.getContributions()) {
-      // onMonacoLoaded 待废弃, 暂时也会触发 onMonacoLoaded 事件，待集成方改造以后去除
-      if (contribution.onMonacoLoaded) {
-        // eslint-disable-next-line no-console
-        console.warn(!!contribution.onMonacoLoaded, 'MonacoContribution#onMonacoLoaded was deprecated.');
-        contribution.onMonacoLoaded(this.monacoService);
-      }
-
       // 执行所有 MonacoContribution 的 registerOverrideService 方法，用来注册 overrideService
       if (contribution.registerOverrideService) {
         contribution.registerOverrideService(this.overrideServicesRegistry);
@@ -148,16 +141,6 @@ export class MonacoClientContribution
       // 注册 Monaco 内置的格式化选择器，触发 Select 操作时使用 KAITIAN 自己实现的选择器
       if (contribution.registerMonacoDefaultFormattingSelector) {
         contribution.registerMonacoDefaultFormattingSelector(this.registryDefaultFormattingSelector);
-      }
-
-      // onContextKeyServiceReady 待废弃, 暂时也会触发 onContextKeyServiceReady 事件，待集成方改造以后去除
-      if (contribution.onContextKeyServiceReady) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          !!contribution.onContextKeyServiceReady,
-          'MonacoContribution#onContextKeyServiceReady was deprecated.',
-        );
-        contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
       }
     }
 
@@ -266,7 +249,7 @@ export class MonacoClientContribution
     this.textmateService.initialized = true;
   }
 
-  private registryDefaultFormattingSelector(selector: FormattingSelectorType) {
+  private registryDefaultFormattingSelector(selector: IFormattingEditProviderSelector) {
     (FormattingConflicts as unknown as any)._selectors.unshift(selector);
   }
 

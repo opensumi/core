@@ -1,6 +1,4 @@
-
 import type vscode from 'vscode';
-
 
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
@@ -106,7 +104,6 @@ describe('ExtHostLanguageFeatures', () => {
 
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     model = createModel(
       ['This is the first line', 'This is the second line', 'This is the third line'].join('\n'),
       undefined,

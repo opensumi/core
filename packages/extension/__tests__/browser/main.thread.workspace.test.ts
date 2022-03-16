@@ -267,7 +267,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extWorkspace);
     extHostWorkspace = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWorkspace, extWorkspace);
     const monacoservice = injector.get(MonacoService);
-    await monacoservice.loadMonaco();
     const mainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [rpcProtocolMain]);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, mainThreadWorkspaceAPI);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));

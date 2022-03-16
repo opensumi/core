@@ -92,7 +92,6 @@ describe('Output.service.ts', () => {
 
   beforeAll(async () => {
     const monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     outputService = injector.get(OutputService);
   });
 
