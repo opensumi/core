@@ -17,7 +17,6 @@ import {
   IDisposable,
   toDisposable,
 } from '@opensumi/ide-core-browser';
-import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -167,12 +166,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-      // 注意，这里要使用 node 端的 createSocketConnection
-      // eslint-disable-next-line import/no-restricted-paths
-      const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
-      const socket = (window as any).createNetConnection(connectPath);
-      const connection = createSocketConnection(socket) as MessageConnection;
-      mainThreadCenter.setConnection(connection);
+      mainThreadCenter.setConnection(electronEnv.getSocketConnection());
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel('ExtMainThreadConnection');

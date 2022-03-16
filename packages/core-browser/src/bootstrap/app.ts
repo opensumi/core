@@ -63,7 +63,7 @@ import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconM
 import { electronEnv } from '../utils';
 
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createElectronNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import { createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
@@ -239,8 +239,7 @@ export class ClientApp implements IClientApp, IDisposable {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
       if (type === 'electron') {
-        const netConnection = await (window as any).createRPCNetConnection();
-        await createElectronNetClientConnection(this.injector, this.modules, netConnection);
+        await bindConnectionService(this.injector, this.modules, await electronEnv.getSocketConnection());
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,

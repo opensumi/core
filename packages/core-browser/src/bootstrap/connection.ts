@@ -1,6 +1,6 @@
 import { Injector, Provider } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { createSocketConnection, WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   getDebugLogger,
@@ -12,6 +12,8 @@ import {
   IEventBus,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
+
+import { electronEnv } from '../utils';
 
 import { ModuleConstructor } from './app';
 
@@ -58,16 +60,13 @@ export async function createClientConnection2(
   bindConnectionService(injector, modules, createWebSocketConnection(channel));
 }
 
-export async function createElectronNetClientConnection(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  connection: any,
-) {
-  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
+/**
+ * electron 环境下不要调用这个函数，该函数的 createSocketConnection 是 browser 环境下的
+ * electron 环境下请使用 `electronEnv.getSocketConnection()` 来获得与后端的连接
+ */
+export async function createNetClientConnection(injector: Injector, modules: ModuleConstructor[], connection: any) {
   bindConnectionService(injector, modules, createSocketConnection(connection));
 }
-export const createNetClientConnection = createElectronNetClientConnection;
-
 export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
