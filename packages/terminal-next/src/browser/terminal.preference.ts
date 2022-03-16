@@ -66,9 +66,15 @@ export class TerminalPreference implements ITerminalPreference {
     });
   }
 
-  getCodeCompatibleOption() {
+  getCodeCompatibleOption(): Partial<DefaultOptions> {
     return {
       copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection, false),
+      cursorBlink: this.service.get(
+        CodeTerminalSettingId.CursorBlinking,
+        TerminalPreference.defaultOptions.cursorBlink,
+      ),
+      fontSize: this.service.get(CodeTerminalSettingId.FontSize, TerminalPreference.defaultOptions.fontSize),
+      scrollback: this.service.get(CodeTerminalSettingId.Scrollback, TerminalPreference.defaultOptions.scrollback),
     };
   }
 
@@ -93,6 +99,7 @@ export class TerminalPreference implements ITerminalPreference {
       }
     });
 
+    // Code 兼容设置项优先级低于 Sumi 设置项
     return {
       ...TerminalPreference.defaultOptions,
       ...this.getCodeCompatibleOption(),
